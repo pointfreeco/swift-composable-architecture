@@ -60,7 +60,7 @@ extension Store {
                 state = $0 ?? state
                 return state
               },
-              id: \State.self,
+              id: ScopeID(state: \Wrapped?.!, action: \Case<Action>.self),
               action: { $0 },
               isInvalid: nil,
               removeDuplicates: nil

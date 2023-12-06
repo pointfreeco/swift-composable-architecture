@@ -204,7 +204,10 @@ public struct ForEachStore<
               element = $0[id: id] ?? element
               return element
             },
-            id: id,
+            id: ScopeID(
+              state: \IdentifiedArray<ID, EachState>.[id: id],
+              action: \IdentifiedAction<ID, EachAction>.Cases[id: id]
+            ),
             action: { (id, $0) },
             isInvalid: { !$0.ids.contains(id) },
             removeDuplicates: nil
