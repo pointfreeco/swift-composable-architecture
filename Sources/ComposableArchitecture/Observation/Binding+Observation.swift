@@ -89,7 +89,7 @@ extension Store where State: ObservableState, Action: BindableAction, Action.Sta
   public subscript<Value: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, Value>
   ) -> Value {
-    get { self.observableState[keyPath: keyPath] }
+    get { self.state[keyPath: keyPath] }
     set { self.send(.binding(.set(keyPath, newValue))) }
   }
 }
@@ -119,7 +119,7 @@ where
   public subscript<Value: Equatable>(
     dynamicMember keyPath: WritableKeyPath<State, Value>
   ) -> Value {
-    get { self.observableState[keyPath: keyPath] }
+    get { self.state[keyPath: keyPath] }
     set { self.send(.view(.binding(.set(keyPath, newValue)))) }
   }
 }
@@ -147,7 +147,7 @@ where
     ) -> Binding<Member>
     where Value == Store<State, Action>, Action.State == State {
       Binding<Member>(
-        get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
+        get: { self.wrappedValue.state[keyPath: keyPath] },
         set: { newValue, transaction in
           BindingLocal.$isActive.withValue(true) {
             _ = self.wrappedValue.send(.binding(.set(keyPath, newValue)), transaction: transaction)
@@ -184,7 +184,7 @@ where
     ) -> Binding<Member>
     where Value == Store<State, Action>, Action.State == State {
       Binding<Member>(
-        get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
+        get: { self.wrappedValue.state[keyPath: keyPath] },
         set: { newValue, transaction in
           BindingLocal.$isActive.withValue(true) {
             _ = self.wrappedValue.send(.binding(.set(keyPath, newValue)), transaction: transaction)
