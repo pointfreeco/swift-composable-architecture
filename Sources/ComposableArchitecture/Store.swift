@@ -290,7 +290,7 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.scope(
       state: { $0[keyPath: state] },
-      id: ScopeID(state: state, action: action),
+      id: self.id(state: state, action: action),
       action: { action($0) },
       isInvalid: nil,
       removeDuplicates: nil
@@ -635,11 +635,6 @@ extension Store: CustomDebugStringConvertible {
   public var debugDescription: String {
     storeTypeName(of: self)
   }
-}
-
-struct ScopeID<State, Action, ChildState, ChildAction>: Hashable {
-  let state: KeyPath<State, ChildState>
-  let action: CaseKeyPath<Action, ChildAction>
 }
 
 /// A convenience type alias for referring to a store of a given reducer's domain.
