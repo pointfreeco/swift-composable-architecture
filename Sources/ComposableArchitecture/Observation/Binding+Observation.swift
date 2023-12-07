@@ -223,7 +223,7 @@ where
       Action: BindableAction
     {
       Binding<Member>(
-        get: { self.wrappedValue.stateSubject.value[keyPath: keyPath] },
+        get: { self.wrappedValue.state[keyPath: keyPath] },
         set: { newValue, transaction in
           BindingLocal.$isActive.withValue(true) {
             _ = self.wrappedValue.send(.binding(.set(keyPath, newValue)), transaction: transaction)
