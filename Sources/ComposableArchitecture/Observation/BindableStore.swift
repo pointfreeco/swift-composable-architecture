@@ -51,4 +51,12 @@ public struct BindableStore<State: ObservableState, Action> {
   public var projectedValue: BindableStore<State, Action> {
     self 
   }
+  public subscript<Subject>(
+    dynamicMember keyPath: ReferenceWritableKeyPath<Store<State, Action>, Subject>
+  ) -> Binding<Subject> {
+    Binding(
+      get: { self.wrappedValue[keyPath: keyPath] },
+      set: { self.wrappedValue[keyPath: keyPath] = $0 }
+    )
+  }
 }

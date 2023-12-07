@@ -53,16 +53,13 @@ extension Store {
       .publisher
       .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
       .sink { state in
-        if var state = state {
+        if state != nil {
           unwrap(
             self.scope(
-              state: {
-                state = $0 ?? state
-                return state
-              },
-              id: ScopeID(state: \Wrapped?.!, action: \Case<Action>.self),
+              state: { $0! },
+              id: self.id(state: \.!, action: \.self),
               action: { $0 },
-              isInvalid: nil,
+              isInvalid: { $0 == nil },
               removeDuplicates: nil
             )
           )

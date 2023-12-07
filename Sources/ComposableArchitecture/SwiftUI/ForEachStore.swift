@@ -133,18 +133,11 @@ public struct ForEachStore<
       removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
     ) { viewStore in
       ForEach(viewStore.state, id: viewStore.state.id) { element in
-        var element = element
         let id = element[keyPath: viewStore.state.id]
         content(
           store.scope(
-            state: {
-              element = $0[id: id] ?? element
-              return element
-            },
-            id: ScopeID(
-              state: \IdentifiedArray<ID, EachState>.[id: id],
-              action: \IdentifiedAction<ID, EachAction>.Cases[id: id]
-            ),
+            state: { $0[id: id]! },
+            id: store.id(state: \.[id: id]!, action: \.[id: id]),
             action: { .element(id: id, action: $0) },
             isInvalid: { !$0.ids.contains(id) },
             removeDuplicates: nil
@@ -196,18 +189,11 @@ public struct ForEachStore<
       removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
     ) { viewStore in
       ForEach(viewStore.state, id: viewStore.state.id) { element in
-        var element = element
         let id = element[keyPath: viewStore.state.id]
         content(
           store.scope(
-            state: {
-              element = $0[id: id] ?? element
-              return element
-            },
-            id: ScopeID(
-              state: \IdentifiedArray<ID, EachState>.[id: id],
-              action: \IdentifiedAction<ID, EachAction>.Cases[id: id]
-            ),
+            state: { $0[id: id]! },
+            id: store.id(state: \.[id: id]!, action: \.[id: id]),
             action: { (id, $0) },
             isInvalid: { !$0.ids.contains(id) },
             removeDuplicates: nil
@@ -219,5 +205,15 @@ public struct ForEachStore<
 
   public var body: some View {
     self.content
+  }
+}
+
+extension Case {
+  fileprivate subscript<ID: Hashable, Action>(id id: ID) -> Case<Action>
+  where Value == (id: ID, action: Action) {
+    Case<Action>(
+      embed: { (id: id, action: $0) },
+      extract: { $0.id == id ? $0.action : nil }
+    )
   }
 }
