@@ -436,6 +436,52 @@ final class ViewActionMacroTests: XCTestCase {
     }
   }
 
+  func testAccess_PublicView_PrivateStore_OtherModifiers() {
+    assertMacro {
+      """
+      @ViewAction(for: Feature.self)
+      public struct FeatureView: View {
+        @State private var store: StoreOf<Feature>
+        var body: some View {
+          EmptyView()
+        }
+      }
+      """
+    } diagnostics: {
+      """
+      @ViewAction(for: Feature.self)
+      public struct FeatureView: View {
+        @State private var store: StoreOf<Feature>
+               ┬──────
+               ╰─ 🛑 'store' variable must be same access level as enclosing type.
+                  ✏️ Add public
+        var body: some View {
+          EmptyView()
+        }
+      }
+      """
+    }fixes: {
+      """
+      @ViewAction(for: Feature.self)
+      public struct FeatureView: View {
+        @State publicvar store: StoreOf<Feature>
+      }
+      """
+    }expansion: {
+      """
+      public struct FeatureView: View {
+        private var store: StoreOf<Feature>
+        var body: some View {
+          EmptyView()
+        }
+      }
+
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
+      }
+      """
+    }
+  }
+
   func testAccess_PublicView_UnspecifiedStore() {
     assertMacro {
       """
