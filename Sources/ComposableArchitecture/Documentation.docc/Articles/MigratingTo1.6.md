@@ -23,6 +23,7 @@ you are targeting older platforms.
 * [Replacing ForEachStore with ForEach](#Replacing-ForEachStore-with-ForEach)
 * [Replacing SwitchStore and CaseLet with ‘switch’ and ‘case’](#Replacing-SwitchStore-and-CaseLet-with-switch-and-case)
 * [Replacing navigation view modifiers with SwiftUI modifiers](#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers)
+* [Updating alert and confirmationDialog](#Updating-alert-and-confirmationDialog)
 * [Replacing NavigationStackStore with NavigationStack](#Replacing-NavigationStackStore-with-NavigationStack)
 * [@BindingState](#BindingState)
 * [ViewStore.binding](#ViewStorebinding)
@@ -325,7 +326,7 @@ struct Feature {
 }
 ```
 
-Then previously you would drive a sheet presentation from this feature like so:
+Then previously you would drive a sheet presentation from the view like so:
 
 ```swift
 .sheet(store: store.scope(state: \.$child, action: \.child)) { store in
@@ -389,6 +390,42 @@ This can now be changed to this:
 
 Note that the state key path is simply `state: \.destination?.editForm`, and not 
 `state: \.$destination.editForm`.
+
+## Updating alert and confirmationDialog
+
+The ``SwiftUI/View/alert(store:)`` and ``SwiftUI/View/confirmationDialog(store:)`` modifiers have
+been used to drive alerts and dialogs from stores, but new modifiers are now available that can
+drive alerts and dialogs from the same store binding scope operation that can power vanilla SwiftUI
+presentation, like `sheet(item:)`.
+
+For example, if your feature's reducer presents an alert:
+
+```swift
+@Reducer
+struct Feature {
+  @ObservableState
+  struct State {
+    @Presents var alert: AlertState<Action.Alert>?
+  }
+  enum Action {
+    case alert(PresentationAction<Alert>)
+    enum Alert { /* ... */ }
+  }
+  var body: some ReducerOf<Self> { /* ... */ }
+}
+```
+
+Then previously you would drive it from the feature's view like so:
+
+```swift
+.alert(store: store.scope(state: \.$alert, action: \.alert))
+```
+
+You can now replace `alert(store:)` with a new modifier, ``SwiftUI/View/alert(_:)``:
+
+```swift
+.alert($store.scope(state: \.alert, action: \.alert))
+```
 
 ## Replacing NavigationStackStore with NavigationStack
 

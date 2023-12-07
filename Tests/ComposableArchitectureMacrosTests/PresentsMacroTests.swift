@@ -35,7 +35,7 @@
               return _destination.wrappedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.wrappedValue) == true {
+              if _$isIdentityEqual(newValue, _destination.wrappedValue) {
                 _destination.wrappedValue = newValue
               } else {
                 withMutation(keyPath: \.destination) {
@@ -46,16 +46,12 @@
           }
 
           var $destination: ComposableArchitecture.PresentationState<Destination.State> {
-            @storageRestrictions(initializes: _destination)
-            init(initialValue) {
-              _destination = initialValue
-            }
             get {
               access(keyPath: \.destination)
               return _destination.projectedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination) == true {
+              if _$isIdentityEqual(newValue, _destination.projectedValue) {
                 _destination.projectedValue = newValue
               } else {
                 withMutation(keyPath: \.destination) {
@@ -91,7 +87,7 @@
               return _destination.wrappedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.wrappedValue) == true {
+              if _$isIdentityEqual(newValue, _destination.wrappedValue) {
                 _destination.wrappedValue = newValue
               } else {
                 withMutation(keyPath: \.destination) {
@@ -102,16 +98,12 @@
           }
 
           public var $destination: ComposableArchitecture.PresentationState<Destination.State> {
-            @storageRestrictions(initializes: _destination)
-            init(initialValue) {
-              _destination = initialValue
-            }
             get {
               access(keyPath: \.destination)
               return _destination.projectedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination) == true {
+              if _$isIdentityEqual(newValue, _destination.projectedValue) {
                 _destination.projectedValue = newValue
               } else {
                 withMutation(keyPath: \.destination) {
