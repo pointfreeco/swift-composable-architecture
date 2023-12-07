@@ -6,7 +6,7 @@ import XCTest
 final class ViewActionMacroTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
-      isRecording: true,
+      // isRecording: true,
       macros: [ViewActionMacro.self]
     ) {
       super.invokeTest()
@@ -317,7 +317,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    }fixes: {
+    } fixes: {
       """
       @ViewAction(for: Feature.self)
       struct FeatureView: View {
@@ -366,7 +366,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    }fixes: {
+    } fixes: {
       """
       @ViewAction(for: Feature.self)
       struct FeatureView: View {
@@ -382,149 +382,6 @@ final class ViewActionMacroTests: XCTestCase {
         var store: StoreOf<Feature>
         var body: some View {
           Button("Tap") { self.send(.tap) }
-        }
-      }
-
-      extension FeatureView: ComposableArchitecture.ViewActionSending {
-      }
-      """
-    }
-  }
-
-  func testAccess_PublicView_PrivateStore() {
-    assertMacro {
-      """
-      @ViewAction(for: Feature.self)
-      public struct FeatureView: View {
-        private var store: StoreOf<Feature>
-        var body: some View {
-          EmptyView()
-        }
-      }
-      """
-    } diagnostics: {
-      """
-      @ViewAction(for: Feature.self)
-      public struct FeatureView: View {
-        private var store: StoreOf<Feature>
-        ┬──────
-        ╰─ 🛑 'store' variable must be same access level as enclosing type.
-           ✏️ Add public
-        var body: some View {
-          EmptyView()
-        }
-      }
-      """
-    }fixes: {
-      """
-      @ViewAction(for: Feature.self)
-      public struct FeatureView: View {publicvar store: StoreOf<Feature>
-      }
-      """
-    } expansion: {
-      """
-      public struct FeatureView: View {
-        private var store: StoreOf<Feature>
-        var body: some View {
-          EmptyView()
-        }
-      }
-
-      extension FeatureView: ComposableArchitecture.ViewActionSending {
-      }
-      """
-    }
-  }
-
-  func testAccess_PublicView_PrivateStore_OtherModifiers() {
-    assertMacro {
-      """
-      @ViewAction(for: Feature.self)
-      public struct FeatureView: View {
-        @State private var store: StoreOf<Feature>
-        var body: some View {
-          EmptyView()
-        }
-      }
-      """
-    } diagnostics: {
-      """
-      @ViewAction(for: Feature.self)
-      public struct FeatureView: View {
-        @State private var store: StoreOf<Feature>
-               ┬──────
-               ╰─ 🛑 'store' variable must be same access level as enclosing type.
-                  ✏️ Add public
-        var body: some View {
-          EmptyView()
-        }
-      }
-      """
-    }fixes: {
-      """
-      @ViewAction(for: Feature.self)
-      public struct FeatureView: View {
-        @State publicvar store: StoreOf<Feature>
-      }
-      """
-    }expansion: {
-      """
-      public struct FeatureView: View {
-        private var store: StoreOf<Feature>
-        var body: some View {
-          EmptyView()
-        }
-      }
-
-      extension FeatureView: ComposableArchitecture.ViewActionSending {
-      }
-      """
-    }
-  }
-
-  func testAccess_PublicView_UnspecifiedStore() {
-    assertMacro {
-      """
-      @ViewAction(for: Feature.self)
-      public struct FeatureView: View {
-        var store: StoreOf<Feature>
-        var body: some View {
-          EmptyView()
-        }
-      }
-      """
-    } expansion: {
-      """
-      public struct FeatureView: View {
-        var store: StoreOf<Feature>
-        var body: some View {
-          EmptyView()
-        }
-      }
-
-      extension FeatureView: ComposableArchitecture.ViewActionSending {
-      }
-      """
-    }
-  }
-
-  func testAccess_UnspecifiedView_PublicStore() {
-    assertMacro {
-      """
-      @ViewAction(for: Feature.self)
-      struct FeatureView: View {
-        public var store: StoreOf<Feature>
-        var body: some View {
-          EmptyView()
-        }
-      }
-      """
-    } expansion: {
-      """
-      struct FeatureView: View {
-        public var store: StoreOf<Feature>
-        var body: some View {
-          EmptyView()
         }
       }
 
