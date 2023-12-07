@@ -24,11 +24,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } diagnostics: {
-      """
-
-      """
-    }expansion: {
+    } expansion: {
       """
       struct FeatureView: View {
         let store: StoreOf<Feature>
@@ -54,11 +50,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } diagnostics: {
-      """
-
-      """
-    }expansion: {
+    } expansion: {
       """
       struct FeatureView: View {
         @State var store: StoreOf<Feature>
@@ -86,11 +78,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } diagnostics: {
-      """
-
-      """
-    }expansion: {
+    } expansion: {
       """
       struct FeatureView: View {
         @State var store = Store(initialState: Feature.State()) {
@@ -118,11 +106,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } diagnostics: {
-      """
-
-      """
-    }expansion: {
+    } expansion: {
       """
       struct FeatureView: View {
         @Bindable var store: StoreOf<Feature>
