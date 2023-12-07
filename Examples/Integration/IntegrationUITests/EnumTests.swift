@@ -84,13 +84,6 @@ final class EnumTests: BaseIntegrationTests {
       """
       EnumView.body
       PresentationStoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature>.scope
@@ -118,7 +111,6 @@ final class EnumTests: BaseIntegrationTests {
       PresentationStoreOf<EnumView.Feature.Destination>.scope
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -126,7 +118,6 @@ final class EnumTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<EnumView.Feature.Destination>.scope
@@ -237,17 +228,10 @@ final class EnumTests: BaseIntegrationTests {
       PresentationStoreOf<EnumView.Feature.Destination>.scope
       PresentationStoreOf<EnumView.Feature.Destination>.scope
       StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<EnumView.Feature.Destination>.scope
       StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination>.scope
-      StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope
       StoreOf<EnumView.Feature.Destination?>.scope

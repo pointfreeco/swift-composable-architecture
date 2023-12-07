@@ -49,16 +49,11 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ) {
     self.root = root()
     self.destination = { component in
-      var state = component.element
-      return destination(
+      destination(
         store
           .scope(
-            state: {
-              state = $0[id: component.id] ?? state
-              return state
-            },
-            id: ScopeID(
-              state: \StackState<State>.[id: component.id],
+            state: { $0[id: component.id]! },
+            id: store.id(state: \.[id: component.id]!, action: \.[id: component.id]),
               action: \StackAction<State, Action>.Cases.[id: component.id]
             ),
             action: { .element(id: component.id, action: $0) },
@@ -92,16 +87,11 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ) where Destination == SwitchStore<State, Action, D> {
     self.root = root()
     self.destination = { component in
-      var state = component.element
-      return SwitchStore(
+      SwitchStore(
         store
           .scope(
-            state: {
-              state = $0[id: component.id] ?? state
-              return state
-            },
-            id: ScopeID(
-              state: \StackState<State>.[id: component.id],
+            state: { $0[id: component.id]! },
+            id: store.id(state: \.[id: component.id]!, action: \.[id: component.id]),
               action: \StackAction<State, Action>.Cases.[id: component.id]
             ),
             action: { .element(id: component.id, action: $0) },
