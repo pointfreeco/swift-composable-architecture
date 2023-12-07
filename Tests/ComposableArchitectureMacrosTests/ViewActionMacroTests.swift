@@ -24,7 +24,11 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } expansion: {
+    } diagnostics: {
+      """
+
+      """
+    }expansion: {
       """
       struct FeatureView: View {
         let store: StoreOf<Feature>
@@ -50,7 +54,11 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } expansion: {
+    } diagnostics: {
+      """
+
+      """
+    }expansion: {
       """
       struct FeatureView: View {
         @State var store: StoreOf<Feature>
@@ -78,7 +86,11 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } expansion: {
+    } diagnostics: {
+      """
+
+      """
+    }expansion: {
       """
       struct FeatureView: View {
         @State var store = Store(initialState: Feature.State()) {
@@ -106,7 +118,11 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } expansion: {
+    } diagnostics: {
+      """
+
+      """
+    }expansion: {
       """
       struct FeatureView: View {
         @Bindable var store: StoreOf<Feature>
@@ -240,7 +256,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } expansion: {
+    }expansion: {
       """
       struct FeatureView: View {
         var store: StoreOf<Feature>
@@ -278,7 +294,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } expansion: {
+    }expansion: {
       """
       struct FeatureView: View {
         var store: StoreOf<Feature>
@@ -317,7 +333,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } fixes: {
+    }fixes: {
       """
       @ViewAction(for: Feature.self)
       struct FeatureView: View {
@@ -366,7 +382,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } fixes: {
+    }fixes: {
       """
       @ViewAction(for: Feature.self)
       struct FeatureView: View {
@@ -447,22 +463,36 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    } diagnostics: {
+    } expansion: {
       """
-      @ViewAction(for: Feature.self)
       public struct FeatureView: View {
         var store: StoreOf<Feature>
-        ┬──
-        ╰─ 🛑 'store' variable must be same access level as enclosing type.
+        var body: some View {
+          EmptyView()
+        }
+      }
+
+      extension FeatureView: ComposableArchitecture.ViewActionSending {
+      }
+      """
+    }
+  }
+
+  func testAccess_UnspecifiedView_PublicStore() {
+    assertMacro {
+      """
+      @ViewAction(for: Feature.self)
+      struct FeatureView: View {
+        public var store: StoreOf<Feature>
         var body: some View {
           EmptyView()
         }
       }
       """
-    }expansion: {
+    } expansion: {
       """
-      public struct FeatureView: View {
-        private var store: StoreOf<Feature>
+      struct FeatureView: View {
+        public var store: StoreOf<Feature>
         var body: some View {
           EmptyView()
         }

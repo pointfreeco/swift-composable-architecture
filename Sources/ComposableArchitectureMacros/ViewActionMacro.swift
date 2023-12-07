@@ -18,20 +18,7 @@ public struct ViewActionMacro: ExtensionMacro {
     else { return [] }
     let inputType = String("\(memberAccessExpr)".dropLast(5))
 
-    let typeAccessLevel = declaration.modifiers.compactMap {
-      switch $0.name.tokenKind {
-      case
-          .keyword(.public),
-          .keyword(.internal),
-          .keyword(.private),
-          .keyword(.fileprivate),
-          .keyword(.package):
-        return $0.name.text
-      default:
-        return nil
-      }
-    }
-    .first
+    let typeAccessLevel = declaration.modifiers.compactMap(\.name.accessLevel).first
 
     guard let storeVariable = declaration.storeVariable
     else {
@@ -41,10 +28,7 @@ public struct ViewActionMacro: ExtensionMacro {
           leadingTrivia: declarationWithStoreVariable.memberBlock.members.first?.leadingTrivia
             ?? "\n    ",
           decl: VariableDeclSyntax(
-            bindingSpecifier: declaration.modifiers
-              .contains(where: { $0.name.tokenKind == .keyword(.public) })
-              ? "public let"
-              : "let",
+            bindingSpecifier: typeAccessLevel.map { "\(raw: $0) let" } ?? "let",
             bindings: [
               PatternBindingSyntax(
                 pattern: " store" as PatternSyntax,
@@ -79,56 +63,47 @@ public struct ViewActionMacro: ExtensionMacro {
       return []
     }
 
-    let accessLevelHierarchy = ["public", "package", "internal", "fileprivate", "private"]
-    guard
-      let storeAccessLevelIndex = accessLevelHierarchy
-        .firstIndex(of: storeVariable.modifiers.accessLevelToken?.text ?? "internal"),
-      let typeAccessLevelIndex = accessLevelHierarchy
-        .firstIndex(of: typeAccessLevel ?? "internal"),
-      storeAccessLevelIndex.distance(to: typeAccessLevelIndex) >= 0
-    else {
-      var newStoreVariable = storeVariable
-      newStoreVariable.modifiers = [
-        DeclModifierListSyntax.Element(name: .keyword(.public))
-      ]
-
-      if let accessLevelToken = storeVariable.modifiers.accessLevelToken {
-        context.diagnose(
-          Diagnostic(
-            node: accessLevelToken,
-            message: MacroExpansionErrorMessage(
-              "'store' variable must be same access level as enclosing type."
-            ),
-            fixIt: .replace(
-              message: MacroExpansionFixItMessage("Add public"),
-              oldNode: storeVariable,
-              newNode: newStoreVariable
-            )
-          )
-        )
-      } else {
-        context.diagnose(
-          Diagnostic(
-            node: storeVariable.bindingSpecifier,
-            message: MacroExpansionErrorMessage(
-              "'store' variable must be same access level as enclosing type."
-            )
-          )
-        )
-      }
-      return []
-    }
-
     declaration.diagnoseDirectStoreDotSend(
       declaration: declaration,
       context: context
     )
 
-    let ext: DeclSyntax =
+    guard
+      let storeAccessLevelToken = storeVariable.modifiers.accessLevelToken,
+      let storeAccessLevel = storeAccessLevelToken.accessLevel,
+      let typeAccessLevel,
+      storeAccessLevel > typeAccessLevel
+    else {
+      let ext: DeclSyntax =
       """
       extension \(type.trimmed): ComposableArchitecture.ViewActionSending {}
       """
-    return [ext.cast(ExtensionDeclSyntax.self)]
+      return [ext.cast(ExtensionDeclSyntax.self)]
+    }
+
+    var newStoreVariable = storeVariable
+    newStoreVariable.modifiers = DeclModifierListSyntax(
+      newStoreVariable.modifiers.map { modifier in
+        modifier.accessLevelToken == nil
+        ? modifier
+        : DeclModifierListSyntax.Element(name: .keyword(typeAccessLevel.keyword))
+      }
+    )
+
+    context.diagnose(
+      Diagnostic(
+        node: storeAccessLevelToken,
+        message: MacroExpansionErrorMessage(
+          "'store' variable must be same access level as enclosing type."
+        ),
+        fixIt: .replace(
+          message: MacroExpansionFixItMessage("Add \(typeAccessLevel.rawValue)"),
+          oldNode: storeVariable,
+          newNode: newStoreVariable
+        )
+      )
+    )
+    return []
   }
 }
 
@@ -193,21 +168,50 @@ extension DeclGroupSyntax {
   }
 }
 
+extension VariableDeclSyntax {
+  fileprivate var accessLevel: AccessLevel? {
+    self.modifiers.accessLevelToken?.accessLevel
+  }
+}
+
 extension DeclModifierListSyntax {
   var accessLevelToken: TokenSyntax? {
-    self.compactMap {
-      switch $0.name.tokenKind {
-      case
-          .keyword(.public),
-          .keyword(.internal),
-          .keyword(.private),
-          .keyword(.fileprivate),
-          .keyword(.package):
-        return $0.name
-      default:
-        return nil
-      }
-    }.first
+    self.compactMap(\.accessLevelToken).first
+  }
+}
+
+extension DeclModifierSyntax {
+  var accessLevelToken: TokenSyntax? {
+    switch self.name.tokenKind {
+    case
+        .keyword(.public),
+        .keyword(.internal),
+        .keyword(.private),
+        .keyword(.fileprivate),
+        .keyword(.package):
+      return self.name
+    default:
+      return nil
+    }
+  }
+}
+
+extension TokenSyntax {
+  fileprivate var accessLevel: AccessLevel? {
+    switch self.tokenKind {
+    case .keyword(.public):
+      return .`public`
+    case .keyword(.internal):
+      return .`internal`
+    case .keyword(.private):
+      return .`private`
+    case .keyword(.fileprivate):
+      return .`fileprivate`
+    case .keyword(.package):
+      return .`package`
+    default:
+      return nil
+    }
   }
 }
 
@@ -253,5 +257,40 @@ extension FunctionCallExprSyntax {
     }
 
     return nil
+  }
+}
+
+private enum AccessLevel: String, Comparable {
+  case `fileprivate`
+  case `internal`
+  case `package`
+  case `private`
+  case `public`
+
+  static let heirarchy: [Self] = [
+    .`public`,
+    .`package`,
+    .`internal`,
+    .`fileprivate`,
+    .`private`,
+  ]
+
+  static func < (lhs: Self, rhs: Self) -> Bool {
+    Self.heirarchy.firstIndex(of: lhs)! < Self.heirarchy.firstIndex(of: rhs)!
+  }
+
+  var keyword: Keyword {
+    switch self {
+    case .fileprivate:
+      return .fileprivate
+    case .internal:
+      return .internal
+    case .package:
+      return .package
+    case .private:
+      return .private
+    case .public:
+      return .public
+    }
   }
 }
