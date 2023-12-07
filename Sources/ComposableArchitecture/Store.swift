@@ -637,11 +637,6 @@ extension Store: CustomDebugStringConvertible {
   }
 }
 
-struct ScopeID<State, Action, ChildState, ChildAction>: Hashable {
-  let state: KeyPath<State, ChildState>
-  let action: CaseKeyPath<Action, ChildAction>
-}
-
 /// A convenience type alias for referring to a store of a given reducer's domain.
 ///
 /// Instead of specifying two generics:

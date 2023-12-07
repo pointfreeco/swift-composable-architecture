@@ -54,9 +54,6 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
           .scope(
             state: { $0[id: component.id]! },
             id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
-              state: \StackState<State>.[id: component.id],
-              action: \StackAction<State, Action>.Cases.[id: component.id]
-            ),
             action: { .element(id: component.id, action: $0) },
             isInvalid: { !$0.ids.contains(component.id) },
             removeDuplicates: nil
@@ -93,9 +90,6 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
           .scope(
             state: { $0[id: component.id]! },
             id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
-              state: \StackState<State>.[id: component.id],
-              action: \StackAction<State, Action>.Cases.[id: component.id]
-            ),
             action: { .element(id: component.id, action: $0) },
             isInvalid: { !$0.ids.contains(component.id) },
             removeDuplicates: nil
