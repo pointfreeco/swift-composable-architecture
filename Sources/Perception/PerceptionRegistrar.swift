@@ -209,11 +209,9 @@ extension PerceptionRegistrar: Hashable {
     determineIfInSwiftUIBodyMemoized(Thread.callStackReturnAddresses)
   }
 
-  let determineIfInSwiftUIBodyMemoized = memoize(
-    { (_ : [NSNumber]) in
+  let determineIfInSwiftUIBodyMemoized = memoize({ (_ : [NSNumber]) in
       determineIfInSwiftUIBody
-    }
-  )
+  })
 
   var determineIfInSwiftUIBody: Bool {
     for callStackSymbol in Thread.callStackSymbols {

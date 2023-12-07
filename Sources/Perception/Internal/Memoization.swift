@@ -50,14 +50,12 @@ final class MemoizedCache<Key: Hashable, Value>: @unchecked Sendable {
 
 func memoize<Input: Hashable, Result>(
   maxCapacity: Int = 500,
-  _ apply: @escaping (_ key: Input) -> Result
+  _ apply: @escaping (Input) -> Result
 ) -> (Input) -> Result {
   let cache = MemoizedCache<Input, Result>(maxCapacity: maxCapacity)
   
   return { input in
-    //    defer {
-    //       cache.printStats()
-    //    }
+//    defer { cache.printStats() }
     if let memoizedResult = cache[input] {
       return memoizedResult
     }
