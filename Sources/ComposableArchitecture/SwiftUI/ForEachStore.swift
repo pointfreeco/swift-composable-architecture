@@ -117,7 +117,7 @@ public struct ForEachStore<
         content(
           store.scope(
             state: { $0[id: id]! },
-            id: store.id(state: \.[id: id]!, action: \.[id: id]),
+            id: store.id(state: \.[id:id]!, action: \.[id:id]),
             action: { .element(id: id, action: $0) },
             isInvalid: { !$0.ids.contains(id) },
             removeDuplicates: nil
@@ -173,7 +173,7 @@ public struct ForEachStore<
         content(
           store.scope(
             state: { $0[id: id]! },
-            id: store.id(state: \.[id: id]!, action: \.[id: id]),
+            id: store.id(state: \.[id:id]!, action: \.[id:id]),
             action: { (id, $0) },
             isInvalid: { !$0.ids.contains(id) },
             removeDuplicates: nil
