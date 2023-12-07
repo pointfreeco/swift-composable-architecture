@@ -39,7 +39,7 @@ public struct TwoFactorView: View {
         }
       }
     }
-    .alert(store: store.scope(state: \.$alert, action: \.alert))
+    .alert($store.scope(state: \.alert, action: \.alert))
     .disabled(store.isFormDisabled)
     .navigationTitle("Confirmation Code")
   }

@@ -125,7 +125,7 @@ struct SyncUpsListView: View {
       }
     }
     .navigationTitle("Daily Sync-ups")
-    .alert(store: store.scope(state: \.$destination.alert, action: \.destination.alert))
+    .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
     .sheet(item: $store.scope(state: \.destination?.add, action: \.destination.add)) { store in
       NavigationStack {
         SyncUpFormView(store: store)

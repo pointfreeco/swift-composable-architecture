@@ -207,7 +207,7 @@ struct SharedStateView: View {
 }
 
 struct SharedStateCounterView: View {
-  let store: StoreOf<SharedState.Counter>
+  @Bindable var store: StoreOf<SharedState.Counter>
 
   var body: some View {
     VStack(spacing: 64) {
@@ -236,7 +236,7 @@ struct SharedStateCounterView: View {
     }
     .padding(.top)
     .navigationTitle("Shared State Demo")
-    .alert(store: store.scope(state: \.$alert, action: \.alert))
+    .alert($store.scope(state: \.alert, action: \.alert))
   }
 }
 

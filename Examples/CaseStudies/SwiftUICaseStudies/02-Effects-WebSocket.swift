@@ -198,7 +198,7 @@ struct WebSocketView: View {
         Text("Received messages")
       }
     }
-    .alert(store: store.scope(state: \.$alert, action: \.alert))
+    .alert($store.scope(state: \.alert, action: \.alert))
     .navigationTitle("Web Socket")
   }
 }

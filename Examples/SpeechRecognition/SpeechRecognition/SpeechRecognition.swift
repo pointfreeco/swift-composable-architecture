@@ -110,7 +110,7 @@ struct SpeechRecognition {
 }
 
 struct SpeechRecognitionView: View {
-  let store: StoreOf<SpeechRecognition>
+  @Bindable var store: StoreOf<SpeechRecognition>
 
   var body: some View {
     VStack {
@@ -148,7 +148,7 @@ struct SpeechRecognitionView: View {
       }
     }
     .padding()
-    .alert(store: store.scope(state: \.$alert, action: \.alert))
+    .alert($store.scope(state: \.alert, action: \.alert))
   }
 }
 
