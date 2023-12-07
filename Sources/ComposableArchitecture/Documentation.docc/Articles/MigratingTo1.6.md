@@ -325,7 +325,7 @@ struct Feature {
 }
 ```
 
-Then previously you would drive a sheet presentation from the feature's view like so:
+Then previously you would drive a sheet presentation from the view like so:
 
 ```swift
 .sheet(store: store.scope(state: \.$child, action: \.child)) { store in
@@ -414,7 +414,7 @@ struct Feature {
 }
 ```
 
-Then previously you would drive an alert from the feature's view like so:
+Then previously you would drive it from the feature's view like so:
 
 ```swift
 .alert(store: store.scope(state: \.$alert, action: \.alert))
