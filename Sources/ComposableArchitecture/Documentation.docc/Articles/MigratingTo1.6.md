@@ -23,6 +23,7 @@ you are targeting older platforms.
 * [Replacing ForEachStore with ForEach](#Replacing-ForEachStore-with-ForEach)
 * [Replacing SwitchStore and CaseLet with ‘switch’ and ‘case’](#Replacing-SwitchStore-and-CaseLet-with-switch-and-case)
 * [Replacing navigation view modifiers with SwiftUI modifiers](#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers)
+* [Updating alert and confirmationDialog](#Updating-alert-and-confirmationDialog)
 * [Replacing NavigationStackStore with NavigationStack](#Replacing-NavigationStackStore-with-NavigationStack)
 * [@BindingState](#BindingState)
 * [ViewStore.binding](#ViewStorebinding)
@@ -390,7 +391,7 @@ This can now be changed to this:
 Note that the state key path is simply `state: \.destination?.editForm`, and not 
 `state: \.$destination.editForm`.
 
-## Replacing alert(store:) and confirmationDialog(store:)
+## Updating alert and confirmationDialog
 
 The ``SwiftUI/View/alert(store:)`` and ``SwiftUI/View/confirmationDialog(store:)`` modifiers have
 been used to drive alerts and dialogs from stores, but new modifiers are now available that can
