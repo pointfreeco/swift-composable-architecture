@@ -259,13 +259,7 @@ public struct PresentationStore<
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
       removeDuplicates: nil
     )
-    let viewStore = ViewStore(
-      store,
-      observe: { $0 },
-      removeDuplicates: {
-        toID($0) == toID($1)
-      }
-    )
+    let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
 
     self.store = store
     self.toDestinationState = toDestinationState
@@ -273,7 +267,10 @@ public struct PresentationStore<
     self.fromDestinationAction = fromDestinationAction
     self.destinationStore = store.scope(
       state: { $0.wrappedValue.flatMap(toDestinationState) },
-      action: { .presented(fromDestinationAction($0)) }
+      id: nil,
+      action: { .presented(fromDestinationAction($0)) },
+      isInvalid: nil,
+      removeDuplicates: nil
     )
     self.content = content
     self.viewStore = viewStore

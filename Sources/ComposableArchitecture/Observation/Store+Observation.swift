@@ -82,14 +82,11 @@ extension Store where State: ObservableState {
         )
       }
     #endif
-    guard var childState = self.observableState[keyPath: state]
+    guard self.observableState[keyPath: state] != nil
     else { return nil }
     return self.scope(
-      state: {
-        childState = $0[keyPath: state] ?? childState
-        return childState
-      },
-      id: ScopeID(state: state, action: action),
+      state: { $0[keyPath: state]! },
+      id: self.id(state: state.appending(path: \.!), action: action),
       action: { action($0) },
       isInvalid: { $0[keyPath: state] == nil },
       removeDuplicates: nil
