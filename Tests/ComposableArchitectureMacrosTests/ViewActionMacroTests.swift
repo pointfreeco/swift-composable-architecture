@@ -240,7 +240,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    }expansion: {
+    } expansion: {
       """
       struct FeatureView: View {
         var store: StoreOf<Feature>
@@ -278,7 +278,7 @@ final class ViewActionMacroTests: XCTestCase {
         }
       }
       """
-    }expansion: {
+    } expansion: {
       """
       struct FeatureView: View {
         var store: StoreOf<Feature>
