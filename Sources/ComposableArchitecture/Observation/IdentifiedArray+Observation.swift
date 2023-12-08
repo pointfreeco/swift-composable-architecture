@@ -1,7 +1,7 @@
 import OrderedCollections
 import SwiftUI
 
-extension Store {
+extension Store where State: ObservableState {
   /// Scopes the store to an identified array of child state and actions.
   ///
   /// TODO: Example
