@@ -31,6 +31,8 @@
 		CAA1CAFC296DEE79000665B1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAA1CAFB296DEE79000665B1 /* Preview Assets.xcassets */; };
 		CAA1CB10296DEE79000665B1 /* ForEachBindingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA1CB0F296DEE79000665B1 /* ForEachBindingTests.swift */; };
 		CAA1CB1F296DEEAC000665B1 /* ForEachBindingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA1CB1E296DEEAC000665B1 /* ForEachBindingTestCase.swift */; };
+		CAE2E9232B23417000EE370B /* IfLetStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE2E9222B23417000EE370B /* IfLetStoreTestCase.swift */; };
+		CAE2E9252B2341AB00EE370B /* IfLetStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE2E9242B2341AB00EE370B /* IfLetStoreTests.swift */; };
 		CAF5801B29A5642B0042FB62 /* TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF5801A29A5642B0042FB62 /* TestCase.swift */; };
 		CAF5801C29A564440042FB62 /* TestCases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAF57FFC29A564210042FB62 /* TestCases.framework */; };
 		CAF5801D29A564440042FB62 /* TestCases.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CAF57FFC29A564210042FB62 /* TestCases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -117,6 +119,8 @@
 		CAA1CB0B296DEE79000665B1 /* IntegrationUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IntegrationUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAA1CB0F296DEE79000665B1 /* ForEachBindingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForEachBindingTests.swift; sourceTree = "<group>"; };
 		CAA1CB1E296DEEAC000665B1 /* ForEachBindingTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForEachBindingTestCase.swift; sourceTree = "<group>"; };
+		CAE2E9222B23417000EE370B /* IfLetStoreTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IfLetStoreTestCase.swift; sourceTree = "<group>"; };
+		CAE2E9242B2341AB00EE370B /* IfLetStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IfLetStoreTests.swift; sourceTree = "<group>"; };
 		CAF57FFC29A564210042FB62 /* TestCases.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TestCases.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAF5801A29A5642B0042FB62 /* TestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestCase.swift; sourceTree = "<group>"; };
 		CAF5802429A5651D0042FB62 /* LegacyPresentationTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LegacyPresentationTestCase.swift; sourceTree = "<group>"; };
@@ -179,9 +183,10 @@
 				E9919D41296E47A400C8716B /* BindingsAnimationsTestBench.swift */,
 				E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */,
 				CAA1CB1E296DEEAC000665B1 /* ForEachBindingTestCase.swift */,
+				CAE2E9222B23417000EE370B /* IfLetStoreTestCase.swift */,
+				CAF5802429A5651D0042FB62 /* LegacyPresentationTestCase.swift */,
 				CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */,
 				DC92799A2A1E59D500B2031A /* PresentationItemTestCase.swift */,
-				CAF5802429A5651D0042FB62 /* LegacyPresentationTestCase.swift */,
 				DC140CC429E0BB2C006DF553 /* SwitchStoreTestCase.swift */,
 			);
 			path = Legacy;
@@ -193,6 +198,7 @@
 				DCFFB8E82A15792C006AF839 /* BindingLocalTests.swift */,
 				E9919D3F296E3EF400C8716B /* EscapedWithViewStoreTests.swift */,
 				CAA1CB0F296DEE79000665B1 /* ForEachBindingTests.swift */,
+				CAE2E9242B2341AB00EE370B /* IfLetStoreTests.swift */,
 				CA4BA5EA29E76F110004FF9D /* LegacyNavigationTests.swift */,
 				CAF5802629A567BB0042FB62 /* LegacyPresentationTests.swift */,
 				DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */,
@@ -445,6 +451,7 @@
 				CA8B2E9F2AC57706008272E0 /* BasicsTestCase.swift in Sources */,
 				CA4BA5E929E76A7F0004FF9D /* NavigationStackTestCase.swift in Sources */,
 				E9919D42296E47A400C8716B /* BindingsAnimationsTestBench.swift in Sources */,
+				CAE2E9232B23417000EE370B /* IfLetStoreTestCase.swift in Sources */,
 				DCFFB8E72A156488006AF839 /* BindingLocalTestCase.swift in Sources */,
 				CAF5802529A5651D0042FB62 /* LegacyPresentationTestCase.swift in Sources */,
 				CA8B2EB22AC5AD63008272E0 /* NavigationTestCase.swift in Sources */,
@@ -465,6 +472,7 @@
 				CA8B2EB02AC5A8CC008272E0 /* PresentationTests.swift in Sources */,
 				CA4BA5EB29E76F110004FF9D /* LegacyNavigationTests.swift in Sources */,
 				CA8B2EB42AC5AF70008272E0 /* NavigationTests.swift in Sources */,
+				CAE2E9252B2341AB00EE370B /* IfLetStoreTests.swift in Sources */,
 				E9919D40296E3EF400C8716B /* EscapedWithViewStoreTests.swift in Sources */,
 				CA3A7B9D29CB61E9002CD272 /* TestHelpers.swift in Sources */,
 				CA8B2E9B2AC576CA008272E0 /* EnumTests.swift in Sources */,
