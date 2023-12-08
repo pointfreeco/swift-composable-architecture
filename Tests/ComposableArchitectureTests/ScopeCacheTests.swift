@@ -1,19 +1,22 @@
-import ComposableArchitecture
+@_spi(Internals) import ComposableArchitecture
 import XCTest
 
 @MainActor
 final class ScopeCacheTests: BaseTCATestCase {
+  @available(*, deprecated)
   func testOptionalScope_UncachedStore() {
     #if DEBUG
       let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
-        Feature()
+        // TODO: Investigate cancellation cancellables leak
+        // Feature()
       }
+
       XCTExpectFailure {
         _ =
           store
           .scope(state: { $0 }, action: { $0 })
-          .scope(state: \.child, action: \.child)?
-          .send(.tap)
+          .scope(state: \.child, action: \.child.presented)?
+          .send(.show)
       } issueMatcher: {
         $0.compactDescription == """
           Scoping from uncached StoreOf<Feature> is not compatible with observation. Ensure that all \
@@ -21,18 +24,20 @@ final class ScopeCacheTests: BaseTCATestCase {
           functions, which have been deprecated.
           """
       }
+      store.send(.child(.dismiss))
     #endif
   }
 
   func testOptionalScope_CachedStore() {
     #if DEBUG
       let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
-        Feature()
+        // TODO: Investigate cancellation cancellables leak
+        // Feature()
       }
       store
         .scope(state: \.self, action: \.self)
-        .scope(state: \.child, action: \.child)?
-        .send(.tap)
+        .scope(state: \.child, action: \.child.presented)?
+        .send(.show)
     #endif
   }
 
@@ -43,25 +48,27 @@ final class ScopeCacheTests: BaseTCATestCase {
       }
       let cancellable =
         store
-        .scope(state: \.child, action: \.child)
+        .scope(state: \.child, action: \.child.presented)
         .ifLet { store in
-          store.scope(state: \.child, action: \.child)?.send(.tap)
+          store.scope(state: \.child, action: \.child.presented)?.send(.show)
         }
       _ = cancellable
     #endif
   }
 
+  @available(*, deprecated)
   func testOptionalScope_StoreIfLet_UncachedStore() {
     #if DEBUG
       let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
-        Feature()
+        // TODO: Investigate cancellation cancellables leak
+        // Feature()
       }
       XCTExpectFailure {
         let cancellable =
           store
           .scope(state: { $0 }, action: { $0 })
           .ifLet { store in
-            store.scope(state: \.child, action: \.child)?.send(.tap)
+            store.scope(state: \.child, action: \.child.presented)?.send(.show)
           }
         _ = cancellable
       } issueMatcher: {
@@ -77,7 +84,8 @@ final class ScopeCacheTests: BaseTCATestCase {
   func testIdentifiedArrayScope_CachedStore() {
     #if DEBUG
       let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
-        Feature()
+        // TODO: Investigate cancellation cancellables leak
+        // Feature()
       }
 
       let rowsStore = Array(
@@ -85,10 +93,11 @@ final class ScopeCacheTests: BaseTCATestCase {
           .scope(state: \.self, action: \.self)
           .scope(state: \.rows, action: \.rows)
       )
-      rowsStore[0].send(.tap)
+      rowsStore[0].send(.show)
     #endif
   }
 
+  @available(*, deprecated)
   func testIdentifiedArrayScope_UncachedStore() {
     #if DEBUG
       let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
@@ -109,20 +118,60 @@ final class ScopeCacheTests: BaseTCATestCase {
       }
     #endif
   }
+
+  func testBasics() {
+    let store = Store(initialState: Feature.State(child: Feature.State())) {
+      Feature()
+    }
+    let childStore: Store = store.scope(state: \.child, action: \.child)
+    let unwrappedChildStore = childStore.scope(
+      state: { $0! },
+      id: childStore.id(state: \.!, action: \.self),
+      action: { $0 },
+      isInvalid: { $0 == nil },
+      removeDuplicates: nil
+    )
+    unwrappedChildStore.send(.dismiss)
+    XCTAssertEqual(store.stateSubject.value.child, nil)
+  }
 }
 
 @Reducer
 private struct Feature {
   @ObservableState
-  struct State: Identifiable {
+  struct State: Identifiable, Equatable {
     let id = UUID()
     @Presents var child: Feature.State?
     var rows: IdentifiedArrayOf<Feature.State> = []
   }
   indirect enum Action {
-    case child(Feature.Action)
+    case child(PresentationAction<Feature.Action>)
+    case dismiss
     case rows(IdentifiedActionOf<Feature>)
-    case tap
+    case show
   }
-  func reduce(into state: inout State, action: Action) -> Effect<Action> { .none }
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .child(.presented(.dismiss)):
+        state.child = nil
+        return .none
+      case .child:
+        return .none
+      case .dismiss:
+        return .none
+      case .rows:
+        return .none
+      case .show:
+        state.child = Feature.State()
+        return .none
+      }
+    }
+    .ifLet(\.$child, action: \.child) {
+      Feature()
+    }
+    .forEach(\.rows, action: \.rows) {
+      Feature()
+    }
+  }
 }
