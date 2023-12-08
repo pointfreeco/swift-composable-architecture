@@ -57,14 +57,6 @@ struct IfLetStoreTestCase: View {
   struct Child {
     struct State {}
     enum Action { case dismiss }
-    var body: some ReducerOf<Self> {
-      Reduce {
-        state, action in
-        switch action {
-        case .dismiss:
-          return .none
-        }
-      }
-    }
+    var body: some ReducerOf<Self> { EmptyReducer() }
   }
 }
