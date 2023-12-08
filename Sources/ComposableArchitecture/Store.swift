@@ -463,7 +463,7 @@ public final class Store<State, Action> {
     )
   }
 
-  func scope<ChildState, ChildAction>(
+  @_spi(Internals) public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
     id: ScopeID<State, Action>?,
     action fromChildAction: @escaping (ChildAction) -> Action,
@@ -745,7 +745,7 @@ public final class Store<State, Action> {
     StorePublisher(store: self, upstream: self.stateSubject)
   }
 
-  func id<ChildState, ChildAction>(
+  @_spi(Internals) public func id<ChildState, ChildAction>(
     state: KeyPath<State, ChildState>,
     action: CaseKeyPath<Action, ChildAction>
   ) -> ScopeID<State, Action> {
@@ -753,7 +753,7 @@ public final class Store<State, Action> {
   }
 }
 
-struct ScopeID<State, Action>: Hashable {
+@_spi(Internals) public struct ScopeID<State, Action>: Hashable {
   let state: PartialKeyPath<State>
   let action: PartialCaseKeyPath<Action>
 }
@@ -1007,7 +1007,9 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
     }
     self.isSending = true
     defer {
-      state = self.toState(self.rootStore.stateSubject.value)
+      if !self.isInvalid() {
+        state = self.toState(self.rootStore.stateSubject.value)
+      }
       self.isSending = false
     }
     if let action = self.fromAction(action),

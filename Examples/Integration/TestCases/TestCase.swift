@@ -1,5 +1,6 @@
 public enum TestCase: String, CaseIterable, Identifiable, RawRepresentable {
   case escapedWithViewStore = "Escaped WithViewStore"
+  case ifLetStore = "IfLetStore"
   case forEachBinding = "ForEach Binding"
   case navigationStack = "NavigationStack"
   case presentation = "Presentation APIs"

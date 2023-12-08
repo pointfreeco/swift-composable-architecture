@@ -124,6 +124,11 @@ struct ContentView: View {
                   EscapedWithViewStoreTestCaseView()
                 }
 
+              case .ifLetStore:
+                NavigationLink(test.rawValue) {
+                  IfLetStoreTestCase()
+                }
+
               case .forEachBinding:
                 NavigationLink(test.rawValue) {
                   ForEachBindingTestCaseView()
