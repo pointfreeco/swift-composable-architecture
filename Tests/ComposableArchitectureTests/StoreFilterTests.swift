@@ -1,7 +1,6 @@
 import Combine
-import XCTest
-
 @_spi(Internals) import ComposableArchitecture
+import XCTest
 
 @MainActor
 final class StoreInvalidationTests: BaseTCATestCase {
