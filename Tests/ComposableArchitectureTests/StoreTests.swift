@@ -45,6 +45,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(store.effectCancellables.count, 0)
   }
 
+  @available(*, deprecated)
   func testScopedStoreReceivesUpdatesFromParent() {
     let counterReducer = Reduce<Int, Void>({ state, _ in
       state += 1
@@ -68,6 +69,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(values, ["0", "1"])
   }
 
+  @available(*, deprecated)
   func testParentStoreReceivesUpdatesFromChild() {
     let counterReducer = Reduce<Int, Void>({ state, _ in
       state += 1
@@ -91,6 +93,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(values, [0, 1])
   }
 
+  @available(*, deprecated)
   func testScopeCallCount() {
     let counterReducer = Reduce<Int, Void>({ state, _ in
       state += 1
@@ -110,6 +113,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(numCalls1, 1)
   }
 
+  @available(*, deprecated)
   func testScopeCallCount2() {
     let counterReducer = Reduce<Int, Void>({ state, _ in
       state += 1
@@ -251,6 +255,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(ViewStore(store, observe: { $0 }).state, 100_000)
   }
 
+  @available(*, deprecated)
   func testIfLetAfterScope() {
     struct AppState: Equatable {
       var count: Int?
@@ -402,6 +407,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(emissions, [0, 3])
   }
 
+  @available(*, deprecated)
   func testBufferedActionProcessing() {
     struct ChildState: Equatable {
       var count: Int?
@@ -508,6 +514,7 @@ final class StoreTests: BaseTCATestCase {
     await store.send(.task).cancel()
   }
 
+  @available(*, deprecated)
   func testScopeCancellation() async throws {
     let neverEndingTask = Task<Void, Error> { try await Task.never() }
 
@@ -851,6 +858,8 @@ final class StoreTests: BaseTCATestCase {
       }
     }
   }
+
+  @available(*, deprecated)
   func testPresentationScope() async {
     let store = Store(
       initialState: Feature_testPresentationScope.State(
