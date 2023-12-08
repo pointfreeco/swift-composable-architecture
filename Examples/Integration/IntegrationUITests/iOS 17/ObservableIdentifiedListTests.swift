@@ -54,9 +54,6 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
       """
       IdentifiedStoreOf<ObservableBasicsView.Feature>.scope
       ObservableBasicsView.body
-      ObservableIdentifiedListView.body
-      ObservableIdentifiedListView.body.ForEach
-      ObservableIdentifiedListView.body.ForEach
       StoreOf<ObservableIdentifiedListView.Feature>.scope
       """
     }

@@ -18,9 +18,6 @@ final class iOS17_ObservableSiblingsTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      ObservableBasicsView.body
-      ObservableBasicsView.body
-      ObservableSiblingFeaturesView.body
       StoreOf<ObservableSiblingFeaturesView.Feature>.scope
       """
     }

@@ -22,38 +22,45 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
 
   public static let _$inert = Self()
 
+  // TODO: inlinable?
   public func _$tag(_ tag: Int?) -> Self {
     var copy = self
     copy.tag = tag
     return copy
   }
 
+  // TODO: inlinable?
   public static func _$id<T>(for value: T) -> Self {
     (value as? any ObservableState)?._$id ?? ._$inert
   }
+  // TODO: inlinable?
   public static func _$id(for value: some ObservableState) -> Self {
     value._$id
   }
 }
 
+// TODO: inlinable?
 public func _$isIdentityEqual<ID: Hashable, T: ObservableState>(
   _ lhs: IdentifiedArray<ID, T>, _ rhs: IdentifiedArray<ID, T>
 ) -> Bool {
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
+// TODO: inlinable?
 public func _$isIdentityEqual<T: ObservableState>(
   _ lhs: PresentationState<T>, _ rhs: PresentationState<T>
 ) -> Bool {
   lhs.wrappedValue?._$id == rhs.wrappedValue?._$id
 }
 
+// TODO: inlinable?
 public func _$isIdentityEqual<T: ObservableState>(
   _ lhs: StackState<T>, _ rhs: StackState<T>
 ) -> Bool {
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
+// TODO: inlinable?
 // TODO: When is this hit?
 @_disfavoredOverload
 public func _$isIdentityEqual<C: Collection>(_ lhs: C, _ rhs: C) -> Bool
@@ -68,11 +75,13 @@ where C.Element: ObservableState {
   // lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
 }
 
+// TODO: inlinable?
 // NB: Add this fast path so that String is not checked as a collection.
 public func _$isIdentityEqual(_ lhs: String, _ rhs: String) -> Bool {
   false
 }
 
+// TODO: inlinable?
 public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   func openCollection<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
     guard C.Element.self is ObservableState.Type else { return false }
@@ -106,10 +115,12 @@ public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   }
 }
 
+// TODO: inlinable?
 public func _$isObservableState<T>(_: T) -> Bool {
   T.self is ObservableState.Type
 }
 
+// TODO: inlinable?
 public func _$isObservableState(_: some ObservableState) -> Bool {
   true
 }
