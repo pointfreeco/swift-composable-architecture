@@ -134,8 +134,8 @@ import SwiftUI
 @dynamicMemberLookup
 public final class Store<State, Action> {
   private var bufferedActions: [Action] = []
-  fileprivate var canCacheChildren = true
-  fileprivate var children: [AnyHashable: AnyObject] = [:]
+  var canCacheChildren = true
+  fileprivate var children: [ScopeID<State, Action>: AnyObject] = [:]
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   var _isInvalidated = { false }
   private var isSending = false
@@ -290,7 +290,7 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.scope(
       state: { $0[keyPath: state] },
-      id: ScopeID(state: state, action: action),
+      id: self.id(state: state, action: action),
       action: { action($0) },
       isInvalid: nil,
       removeDuplicates: nil
@@ -298,22 +298,7 @@ public final class Store<State, Action> {
   }
 
   @available(
-    iOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    macOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    tvOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    watchOS, deprecated: 9999,
+    *, deprecated,
     message:
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )
@@ -331,22 +316,7 @@ public final class Store<State, Action> {
   }
 
   @available(
-    iOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    macOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    tvOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    watchOS, deprecated: 9999,
+    *, deprecated,
     message:
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )
@@ -366,7 +336,7 @@ public final class Store<State, Action> {
 
   func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
-    id: AnyHashable?,
+    id: ScopeID<State, Action>?,
     action fromChildAction: @escaping (ChildAction) -> Action,
     isInvalid: ((State) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
@@ -388,7 +358,7 @@ public final class Store<State, Action> {
     }
   }
 
-  fileprivate func invalidateChild(id: AnyHashable) {
+  fileprivate func invalidateChild(id: ScopeID<State, Action>) {
     guard self.children.keys.contains(id) else { return }
     (self.children[id] as? any AnyStore)?.invalidate()
     self.children[id] = nil
@@ -426,7 +396,9 @@ public final class Store<State, Action> {
     while index < self.bufferedActions.endIndex {
       defer { index += 1 }
       let action = self.bufferedActions[index]
-      let effect = self.reducer.reduce(into: &currentState, action: action)
+      let effect = withoutPerceptionChecking {
+        self.reducer.reduce(into: &currentState, action: action)
+      }
 
       switch effect.operation {
       case .none:
@@ -646,21 +618,23 @@ public final class Store<State, Action> {
     StorePublisher(store: self, upstream: self.stateSubject)
   }
 
-  private struct Scope<ChildState, ChildAction>: Hashable {
-    let state: KeyPath<State, ChildState>
-    let action: CaseKeyPath<Action, ChildAction>
+  func id<ChildState, ChildAction>(
+    state: KeyPath<State, ChildState>,
+    action: CaseKeyPath<Action, ChildAction>
+  ) -> ScopeID<State, Action> {
+    ScopeID(state: state, action: action)
   }
+}
+
+struct ScopeID<State, Action>: Hashable {
+  let state: PartialKeyPath<State>
+  let action: PartialCaseKeyPath<Action>
 }
 
 extension Store: CustomDebugStringConvertible {
   public var debugDescription: String {
     storeTypeName(of: self)
   }
-}
-
-struct ScopeID<State, Action, ChildState, ChildAction>: Hashable {
-  let state: KeyPath<State, ChildState>
-  let action: CaseKeyPath<Action, ChildAction>
 }
 
 /// A convenience type alias for referring to a store of a given reducer's domain.
@@ -851,7 +825,7 @@ extension Reducer {
   fileprivate func scope<ChildState, ChildAction>(
     store: Store<State, Action>,
     state toChildState: @escaping (State) -> ChildState,
-    id: AnyHashable?,
+    id: ScopeID<State, Action>?,
     action fromChildAction: @escaping (ChildAction) -> Action,
     isInvalid: ((State) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
@@ -928,7 +902,7 @@ private protocol AnyScopedStoreReducer {
   func scope<S, A, ChildState, ChildAction>(
     store: Store<S, A>,
     state toChildState: @escaping (S) -> ChildState,
-    id: AnyHashable?,
+    id: ScopeID<S, A>?,
     action fromChildAction: @escaping (ChildAction) -> A,
     isInvalid: ((S) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
@@ -939,24 +913,19 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
   func scope<S, A, ChildState, ChildAction>(
     store: Store<S, A>,
     state toChildState: @escaping (S) -> ChildState,
-    id: AnyHashable?,
+    id: ScopeID<S, A>?,
     action fromChildAction: @escaping (ChildAction) -> A,
     isInvalid: ((S) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
-    guard isInvalid?(store.stateSubject.value) != true || ChildState.self is _OptionalProtocol.Type
-    else {
-      return Store()
-    }
-
-    let initialChildState = toChildState(store.observableState)
-
     if store.canCacheChildren,
       let id = id,
       let childStore = store.children[id] as? Store<ChildState, ChildAction>
     {
+      _ = toChildState(store.observableState)
       return childStore
     }
+
     let fromAction = self.fromAction as! (A) -> RootAction?
 
     // NB: This strong/weak self dance forces the child to retain the parent when the parent doesn't
@@ -983,7 +952,9 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
         store?.invalidateChild(id: id)
       }
     )
-    let childStore = Store<ChildState, ChildAction>(initialState: initialChildState) {
+    let childStore = Store<ChildState, ChildAction>(
+      initialState: toChildState(store.observableState)
+    ) {
       reducer
     }
     childStore._isInvalidated = isInvalid

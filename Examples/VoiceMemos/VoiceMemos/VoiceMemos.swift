@@ -162,7 +162,7 @@ struct VoiceMemosView: View {
         .frame(maxWidth: .infinity)
         .background(Color.init(white: 0.95))
       }
-      .alert(store: store.scope(state: \.$alert, action: \.alert))
+      .alert($store.scope(state: \.alert, action: \.alert))
       .navigationTitle("Voice memos")
     }
   }

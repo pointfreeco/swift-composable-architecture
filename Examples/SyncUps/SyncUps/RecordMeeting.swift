@@ -163,7 +163,7 @@ struct RecordMeeting {
 }
 
 struct RecordMeetingView: View {
-  @BindableStore var store: StoreOf<RecordMeeting>
+  @Bindable var store: StoreOf<RecordMeeting>
 
   var body: some View {
     ZStack {
@@ -200,7 +200,7 @@ struct RecordMeetingView: View {
       }
     }
     .navigationBarBackButtonHidden(true)
-    .alert(store: store.scope(state: \.$alert, action: \.alert))
+    .alert($store.scope(state: \.alert, action: \.alert))
     .task { await store.send(.onTask).finish() }
   }
 }

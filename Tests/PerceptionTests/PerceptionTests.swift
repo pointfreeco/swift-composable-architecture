@@ -30,6 +30,34 @@ final class PerceptionTests: XCTestCase {
     self.render(FeatureView())
   }
 
+  func testRuntimeWarning_NotInPerceptionBody_InSwiftUIBody_Wrapper() {
+    self.expectFailure()
+
+    struct FeatureView: View {
+      let model = Model()
+      var body: some View {
+        Wrapper {
+          Text(self.model.count.description)
+        }
+      }
+    }
+    self.render(FeatureView())
+  }
+
+  func testRuntimeWarning_InPerceptionBody_InSwiftUIBody_Wrapper() {
+    struct FeatureView: View {
+      let model = Model()
+      var body: some View {
+        WithPerceptionTracking {
+          Wrapper {
+            Text(self.model.count.description)
+          }
+        }
+      }
+    }
+    self.render(FeatureView())
+  }
+
   func testRuntimeWarning_InPerceptionBody_InSwiftUIBody() {
     struct FeatureView: View {
       let model = Model()
@@ -227,6 +255,19 @@ final class PerceptionTests: XCTestCase {
 
     self.render(FeatureView())
   }
+
+  func testRuntimeWarning_ActionClosure() {
+    struct FeatureView: View {
+      @State var model = Model()
+      var body: some View {
+        Text("Hi")
+          .onAppear { _ = self.model.count }
+      }
+    }
+    
+    self.render(FeatureView())
+  }
+
   private func expectFailure() {
     if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10) {
       XCTExpectFailure {
@@ -261,5 +302,12 @@ private class Model: Identifiable {
     self.count = count
     self.list = list
     self.text = text
+  }
+}
+
+struct Wrapper<Content: View>: View {
+  @ViewBuilder var content: Content
+  var body: some View {
+    self.content
   }
 }

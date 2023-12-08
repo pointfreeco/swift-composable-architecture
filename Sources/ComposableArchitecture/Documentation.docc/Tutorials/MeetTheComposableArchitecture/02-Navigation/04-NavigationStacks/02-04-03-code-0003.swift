@@ -10,7 +10,7 @@ struct ContactDetailView: View {
       }
     }
     .navigationBarTitle(Text(store.contact.name))
-    .alert(store: store.scope(state: \.$alert, action: \.alert))
+    .alert($store.scope(state: \.alert, action: \.alert))
   }
 }
 

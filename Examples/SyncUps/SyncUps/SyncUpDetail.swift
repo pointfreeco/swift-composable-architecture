@@ -143,7 +143,7 @@ struct SyncUpDetail {
 }
 
 struct SyncUpDetailView: View {
-  @BindableStore var store: StoreOf<SyncUpDetail>
+  @Bindable var store: StoreOf<SyncUpDetail>
 
   var body: some View {
     List {
@@ -217,7 +217,7 @@ struct SyncUpDetailView: View {
         store.send(.editButtonTapped)
       }
     }
-    .alert(store: store.scope(state: \.$destination.alert, action: \.destination.alert))
+    .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
     .sheet(item: $store.scope(state: \.destination?.edit, action: \.destination.edit)) { store in
       NavigationStack {
         SyncUpFormView(store: store)

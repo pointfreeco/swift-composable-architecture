@@ -317,13 +317,13 @@ If the "add" item sheet was presented, and you decided to mutate the `destinatio
 to the `.detailItem` case, then you can be certain that the sheet will be dismissed and the 
 drill-down will occur immediately. 
 
-#### API Unification
+### API Unification
 
 One of the best features of tree-based navigation is that it unifies all forms of navigation with a
 single style of API. First of all, regardless of the type of navigation you plan on performing,
 integrating the parent and child features together can be done with the single
-``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator. This one single API services all
-forms of optional-driven navigation.
+``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator. This one single API services
+all forms of optional-driven navigation.
 
 And then in the view, whether you are wanting to perform a drill-down, show a sheet, display
 an alert, or even show a custom navigation component, all you need to do is invoke an API that
@@ -362,6 +362,72 @@ forms of navigation could be as simple as this:
 In each case we provide a store scoped to the presentation domain, and a view that will be presented
 when its corresponding state flips to non-`nil`. It is incredibly powerful to see that so many
 seemingly disparate forms of navigation can be unified under a single style of API.
+
+#### Backwards compatible availability
+
+Depending on your deployment target, certain APIs may be unavailable. For example, if you target
+iOS 16, you will not have access to iOS 17's `navigationDestination(item:)` view modifier. You can
+start migration while continuing to support older clients by using an availability condition:
+
+```swift
+extension View {
+  @ViewBuilder
+  func navigationDestinationWrapper<D: Hashable, C: View>(
+    item: Binding<D?>,
+    @ViewBuilder destination: @escaping (D) -> C
+  ) -> some View {
+    if #available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *) {
+      navigationDestination(item: item, destination: destination)
+    } else {
+      navigationDestination(
+        isPresented: Binding(
+          get: { item.wrappedValue != nil },
+          set: { isPresented, transaction in
+            if !isPresented {
+              item.transaction(transaction).wrappedValue = nil
+            }
+          }
+        )
+      ) {
+        if let item = item.wrappedValue {
+          destination(item)
+        }
+      }
+    }
+  }
+}
+```
+
+If you target earlier OSes, you may find yourself reaching for `NavigationLink`'s deprecated binding
+APIs. You can similarly define your own initializer that takes a binding of an optional "item" to
+programmatically drive navigation links with store bindings:
+
+```swift
+@available(iOS, introduced: 13, deprecated: 16)
+@available(macOS, introduced: 10.15, deprecated: 13)
+@available(tvOS, introduced: 13, deprecated: 16)
+@available(watchOS, introduced: 6, deprecated: 9)
+extension NavigationLink {
+  public init<D, C: View>(
+    item: Binding<D?>,
+    @ViewBuilder destination: (D) -> C,
+    @ViewBuilder label: () -> Label
+  ) where Destination == C? {
+    self.init(
+      destination: item.wrappedValue.map(destination),
+      isActive: Binding(
+        get: { item.wrappedValue != nil },
+        set: { isActive, transaction in
+          if !isActive {
+            item.transaction(transaction).wrappedValue = nil
+          }
+        }
+      ),
+      label: label
+    )
+  }
+}
+```
 
 ## Integration
 

@@ -71,14 +71,22 @@ extension Store where State: ObservableState {
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction>? {
-    guard var childState = self.observableState[keyPath: state]
+    #if DEBUG
+      if !self.canCacheChildren {
+        runtimeWarn(
+          """
+          Scoping from uncached \(self) is not compatible with observation. Ensure that all parent \
+          store scoping operations take key paths and case key paths instead of transform \
+          functions, which have been deprecated.
+          """
+        )
+      }
+    #endif
+    guard self.observableState[keyPath: state] != nil
     else { return nil }
     return self.scope(
-      state: {
-        childState = $0[keyPath: state] ?? childState
-        return childState
-      },
-      id: ScopeID(state: state, action: action),
+      state: { $0[keyPath: state]! },
+      id: self.id(state: state.appending(path: \.!), action: action),
       action: { action($0) },
       isInvalid: { $0[keyPath: state] == nil },
       removeDuplicates: nil

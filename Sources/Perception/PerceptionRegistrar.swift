@@ -44,7 +44,6 @@ public struct PerceptionRegistrar: Sendable {
     public func access<Subject: Observable, Member>(
       _ subject: Subject, keyPath: KeyPath<Subject, Member>
     ) {
-      perceptionCheck()
       self.registrar.access(subject, keyPath: keyPath)
     }
 
@@ -53,11 +52,13 @@ public struct PerceptionRegistrar: Sendable {
     ) rethrows -> T {
       try self.registrar.withMutation(of: subject, keyPath: keyPath, mutation)
     }
+
     public func willSet<Subject: Observable, Member>(
       _ subject: Subject, keyPath: KeyPath<Subject, Member>
     ) {
       self.registrar.willSet(subject, keyPath: keyPath)
     }
+
     public func didSet<Subject: Observable, Member>(
       _ subject: Subject, keyPath: KeyPath<Subject, Member>
     ) {
@@ -76,7 +77,6 @@ extension PerceptionRegistrar {
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
-    perceptionCheck()
     #if canImport(Observation)
       if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
         func `open`<T: Observable>(_ subject: T) {
@@ -89,6 +89,7 @@ extension PerceptionRegistrar {
           open(subject)
         }
       } else {
+        perceptionCheck()
         self.perceptionRegistrar.access(subject, keyPath: keyPath)
       }
     #endif
@@ -125,22 +126,21 @@ extension PerceptionRegistrar {
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
-#if canImport(Observation)
-    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
-       let subject = subject as? any Observable
-    {
-      func `open`<S: Observable>(_ subject: S) {
-        return self.registrar.willSet(
-          subject,
-          keyPath: unsafeDowncast(keyPath, to: KeyPath<S, Member>.self)
-        )
+    #if canImport(Observation)
+      if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
+        let subject = subject as? any Observable
+      {
+        func `open`<S: Observable>(_ subject: S) {
+          return self.registrar.willSet(
+            subject,
+            keyPath: unsafeDowncast(keyPath, to: KeyPath<S, Member>.self)
+          )
+        }
+        return open(subject)
+      } else {
+        return self.perceptionRegistrar.willSet(subject, keyPath: keyPath)
       }
-      return open(subject)
-    } else {
-      return self.perceptionRegistrar.willSet(subject, keyPath: keyPath)
-    }
-#else
-#endif
+    #endif
   }
 
   @_disfavoredOverload
@@ -148,22 +148,21 @@ extension PerceptionRegistrar {
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
-#if canImport(Observation)
-    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
-       let subject = subject as? any Observable
-    {
-      func `open`<S: Observable>(_ subject: S) {
-        return self.registrar.didSet(
-          subject,
-          keyPath: unsafeDowncast(keyPath, to: KeyPath<S, Member>.self)
-        )
+    #if canImport(Observation)
+      if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *),
+        let subject = subject as? any Observable
+      {
+        func `open`<S: Observable>(_ subject: S) {
+          return self.registrar.didSet(
+            subject,
+            keyPath: unsafeDowncast(keyPath, to: KeyPath<S, Member>.self)
+          )
+        }
+        return open(subject)
+      } else {
+        return self.perceptionRegistrar.didSet(subject, keyPath: keyPath)
       }
-      return open(subject)
-    } else {
-      return self.perceptionRegistrar.didSet(subject, keyPath: keyPath)
-    }
-#else
-#endif
+    #endif
   }
 }
 
@@ -194,6 +193,7 @@ extension PerceptionRegistrar: Hashable {
   private func perceptionCheck() {
     if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
       !PerceptionLocals.isInPerceptionTracking,
+      !PerceptionLocals.isInWithoutPerceptionChecking,
       isInSwiftUIBody
     {
       runtimeWarn(
@@ -207,24 +207,13 @@ extension PerceptionRegistrar: Hashable {
 
   var isInSwiftUIBody: Bool {
     for callStackSymbol in Thread.callStackSymbols {
+      let mangledSymbol = callStackSymbol.utf8
+        .drop(while: { $0 != .init(ascii: "$") })
+        .prefix(while: { $0 != .init(ascii: " ") })
       guard
-        let symbol = callStackSymbol.split(separator: " ").dropFirst(3).first
-      else {
-        continue
-      }
-      guard
-        symbol.utf8.first == .init(ascii: "$")
-      else {
-        continue
-      }
-      guard
-        let demangled = String(symbol).demangled
-      else {
-        continue
-      }
-      guard
-        demangled.hasPrefix("protocol witness for SwiftUI.View.body.getter : ")
-          || demangled.contains(" SwiftUI.") && demangled.contains("body.getter : some")
+        let demangled = String(Substring(mangledSymbol)).demangled,
+        demangled.contains("body.getter : "),
+        !demangled.isActionClosure
       else {
         continue
       }
@@ -234,6 +223,13 @@ extension PerceptionRegistrar: Hashable {
   }
 
   extension String {
+    fileprivate var isActionClosure: Bool {
+      var view = self[...].utf8
+      guard view.starts(with: "closure #".utf8) else { return false }
+      view = view.drop(while: { $0 != .init(ascii: "-") })
+      return view.starts(with: "-> () in ".utf8)
+    }
+
     fileprivate var demangled: String? {
       return self.utf8CString.withUnsafeBufferPointer { mangledNameUTF8CStr in
         let demangledNamePtr = swift_demangle(
@@ -265,4 +261,30 @@ extension PerceptionRegistrar: Hashable {
   @_transparent
   @inline(__always)
   private func perceptionCheck() {}
+#endif
+
+#if DEBUG
+@available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
+public func withoutPerceptionChecking<T>(
+  _ apply: () -> T
+) -> T {
+    return PerceptionLocals.$isInWithoutPerceptionChecking.withValue(true) {
+      apply()
+    }
+}
+#else
+@available(iOS, deprecated: 17, message: "TODO")
+@available(macOS, deprecated: 14, message: "TODO")
+@available(tvOS, deprecated: 17, message: "TODO")
+@available(watchOS, deprecated: 10, message: "TODO")
+@_transparent
+@inline(__always)
+public func withoutPerceptionChecking<T>(
+  _ apply: () -> T
+) -> T {
+    apply()
+}
 #endif

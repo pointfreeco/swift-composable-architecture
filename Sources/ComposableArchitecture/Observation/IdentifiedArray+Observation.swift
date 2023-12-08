@@ -1,7 +1,7 @@
 import OrderedCollections
 import SwiftUI
 
-extension Store {
+extension Store where State: ObservableState {
   /// Scopes the store to an identified array of child state and actions.
   ///
   /// TODO: Example
@@ -15,7 +15,18 @@ extension Store {
     state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
     action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>
   ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
-    _StoreCollection(self.scope(state: state, action: action))
+    #if DEBUG
+      if !self.canCacheChildren {
+        runtimeWarn(
+          """
+          Scoping from uncached \(self) is not compatible with observation. Ensure that all parent \
+          store scoping operations take key paths and case key paths instead of transform \
+          functions, which have been deprecated.
+          """
+        )
+      }
+    #endif
+    return _StoreCollection(self.scope(state: state, action: action))
   }
 }
 
@@ -33,13 +44,14 @@ public struct _StoreCollection<ID: Hashable, State, Action>: RandomAccessCollect
   public var startIndex: Int { self.ids.startIndex }
   public var endIndex: Int { self.ids.endIndex }
   public subscript(position: Int) -> Store<State, Action> {
+    guard self.ids.indices.contains(position)
+    else {
+      return Store()
+    }
     let id = self.ids[position]
     return self.store.scope(
       state: { $0[id: id]! },
-      id: ScopeID(
-        state: \IdentifiedArray<ID, State>.[id: id],
-        action: \IdentifiedAction<ID, Action>.Cases[id: id]
-      ),
+      id: self.store.id(state: \.[id: id]!, action: \.[id: id]),
       action: { .element(id: id, action: $0) },
       isInvalid: { !$0.ids.contains(id) },
       removeDuplicates: nil
