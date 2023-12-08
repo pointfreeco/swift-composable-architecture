@@ -1,3 +1,7 @@
+#if canImport(Observation)
+  import Observation
+#endif
+
 //===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
@@ -58,9 +62,9 @@ public struct PerceptionTracking: Sendable {
   @available(tvOS, deprecated: 17, message: "TODO")
   @available(watchOS, deprecated: 10, message: "TODO")
   public struct _AccessList: Sendable {
-    internal var entries = [ObjectIdentifier : Entry]()
+    internal var entries = [ObjectIdentifier: Entry]()
 
-    internal init() { }
+    internal init() {}
 
     internal mutating func addAccess<Subject: Perceptible>(
       keyPath: PartialKeyPath<Subject>,
@@ -89,19 +93,23 @@ public struct PerceptionTracking: Sendable {
     let values = tracking.list.entries.mapValues {
       switch (willSet, didSet) {
       case (.some(let willSetPerceptor), .some(let didSetPerceptor)):
-        return Id.full($0.addWillSetPerceptor {
-          willSetPerceptor(tracking)
-        }, $0.addDidSetPerceptor {
-          didSetPerceptor(tracking)
-        })
+        return Id.full(
+          $0.addWillSetPerceptor {
+            willSetPerceptor(tracking)
+          },
+          $0.addDidSetPerceptor {
+            didSetPerceptor(tracking)
+          })
       case (.some(let willSetPerceptor), .none):
-        return Id.willSet($0.addWillSetPerceptor {
-          willSetPerceptor(tracking)
-        })
+        return Id.willSet(
+          $0.addWillSetPerceptor {
+            willSetPerceptor(tracking)
+          })
       case (.none, .some(let didSetPerceptor)):
-        return Id.didSet($0.addDidSetPerceptor {
-          didSetPerceptor(tracking)
-        })
+        return Id.didSet(
+          $0.addDidSetPerceptor {
+            didSetPerceptor(tracking)
+          })
       case (.none, .none):
         fatalError()
       }
@@ -116,10 +124,12 @@ public struct PerceptionTracking: Sendable {
     onChange: @escaping @Sendable () -> Void
   ) {
     let tracking = PerceptionTracking(list)
-    _installTracking(tracking, willSet: { _ in
-      onChange()
-      tracking.cancel()
-    })
+    _installTracking(
+      tracking,
+      willSet: { _ in
+        onChange()
+        tracking.cancel()
+      })
   }
 
   struct State {
@@ -135,7 +145,7 @@ public struct PerceptionTracking: Sendable {
     self.list = list ?? _AccessList()
   }
 
-  internal func install(_ values:  [ObjectIdentifier : PerceptionTracking.Id]) {
+  internal func install(_ values: [ObjectIdentifier: PerceptionTracking.Id]) {
     state.withCriticalRegion {
       if !$0.cancelled {
         $0.values = values
@@ -164,14 +174,16 @@ public struct PerceptionTracking: Sendable {
   }
 }
 
-fileprivate func generateAccessList<T>(_ apply: () -> T) -> (T, PerceptionTracking._AccessList?) {
+private func generateAccessList<T>(_ apply: () -> T) -> (T, PerceptionTracking._AccessList?) {
   var accessList: PerceptionTracking._AccessList?
   let result = withUnsafeMutablePointer(to: &accessList) { ptr in
     let previous = _ThreadLocal.value
     _ThreadLocal.value = UnsafeMutableRawPointer(ptr)
     defer {
       if let scoped = ptr.pointee, let previous {
-        if var prevList = previous.assumingMemoryBound(to: PerceptionTracking._AccessList?.self).pointee {
+        if var prevList = previous.assumingMemoryBound(to: PerceptionTracking._AccessList?.self)
+          .pointee
+        {
           prevList.merge(scoped)
           previous.assumingMemoryBound(to: PerceptionTracking._AccessList?.self).pointee = prevList
         } else {
@@ -217,52 +229,15 @@ public func withPerceptionTracking<T>(
   _ apply: () -> T,
   onChange: @autoclosure () -> @Sendable () -> Void
 ) -> T {
+  #if canImport(Observation)
+    if #available(iOS 17, *) {
+      return withObservationTracking(apply, onChange: onChange())
+    }
+  #endif
+
   let (result, accessList) = generateAccessList(apply)
   if let accessList {
     PerceptionTracking._installTracking(accessList, onChange: onChange())
   }
-  return result
-}
-
-@_spi(SwiftUI)
-@available(iOS, deprecated: 17, message: "TODO")
-@available(macOS, deprecated: 14, message: "TODO")
-@available(tvOS, deprecated: 17, message: "TODO")
-@available(watchOS, deprecated: 10, message: "TODO")
-public func withPerceptionTracking<T>(
-  _ apply: () -> T,
-  willSet: @escaping @Sendable (PerceptionTracking) -> Void,
-  didSet: @escaping @Sendable (PerceptionTracking) -> Void
-) -> T {
-  let (result, accessList) = generateAccessList(apply)
-  PerceptionTracking._installTracking(PerceptionTracking(accessList), willSet: willSet, didSet: didSet)
-  return result
-}
-
-@_spi(SwiftUI)
-@available(iOS, deprecated: 17, message: "TODO")
-@available(macOS, deprecated: 14, message: "TODO")
-@available(tvOS, deprecated: 17, message: "TODO")
-@available(watchOS, deprecated: 10, message: "TODO")
-public func withPerceptionTracking<T>(
-  _ apply: () -> T,
-  willSet: @escaping @Sendable (PerceptionTracking) -> Void
-) -> T {
-  let (result, accessList) = generateAccessList(apply)
-  PerceptionTracking._installTracking(PerceptionTracking(accessList), willSet: willSet, didSet: nil)
-  return result
-}
-
-@_spi(SwiftUI)
-@available(iOS, deprecated: 17, message: "TODO")
-@available(macOS, deprecated: 14, message: "TODO")
-@available(tvOS, deprecated: 17, message: "TODO")
-@available(watchOS, deprecated: 10, message: "TODO")
-public func withPerceptionTracking<T>(
-  _ apply: () -> T,
-  didSet: @escaping @Sendable (PerceptionTracking) -> Void
-) -> T {
-  let (result, accessList) = generateAccessList(apply)
-  PerceptionTracking._installTracking(PerceptionTracking(accessList), willSet: nil, didSet: didSet)
   return result
 }

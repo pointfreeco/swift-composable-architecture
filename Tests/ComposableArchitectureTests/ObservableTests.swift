@@ -326,6 +326,28 @@ final class ObservableTests: BaseTCATestCase {
     await self.fulfillment(of: [countDidChange], timeout: 0)
     XCTAssertEqual(store.count, 0)
   }
+
+  func testReplaceWithCopy() async {
+    XCTTODO("This currently fails but it should not.")
+
+    let childState = ChildState(count: 1)
+    var childStateCopy = childState
+    childStateCopy.count = 2
+    var state = ParentState(child: childState, sibling: childStateCopy)
+    let childCountDidChange = self.expectation(description: "child.count.didChange")
+
+    withPerceptionTracking {
+      _ = state.child.count
+    } onChange: {
+      childCountDidChange.fulfill()
+    }
+
+    state.child.replace(with: state.sibling)
+
+    await self.fulfillment(of: [childCountDidChange], timeout: 0)
+    XCTAssertEqual(state.child.count, 2)
+    XCTAssertEqual(state.sibling.count, 2)
+  }
 }
 
 @ObservableState
