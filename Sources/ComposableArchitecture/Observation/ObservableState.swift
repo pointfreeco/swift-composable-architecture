@@ -115,13 +115,3 @@ public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
     return false
   }
 }
-
-// TODO: inlinable?
-public func _$isObservableState<T>(_: T) -> Bool {
-  T.self is ObservableState.Type
-}
-
-// TODO: inlinable?
-public func _$isObservableState(_: some ObservableState) -> Bool {
-  true
-}
