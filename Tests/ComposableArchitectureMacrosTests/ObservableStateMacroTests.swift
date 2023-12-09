@@ -86,7 +86,7 @@
             }
           }
 
-          public var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
           internal nonisolated func access<Member>(
             keyPath: KeyPath<State, Member>
@@ -184,7 +184,7 @@
             }
           }
 
-          public var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
           internal nonisolated func access<Member>(
             keyPath: KeyPath<State, Member>
@@ -226,7 +226,7 @@
         struct State {
           var count = 0
 
-          public var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
           internal nonisolated func access<Member>(
             keyPath: KeyPath<State, Member>

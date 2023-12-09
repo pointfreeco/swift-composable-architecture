@@ -52,7 +52,7 @@ public struct ObservableStateMacro {
   static func registrarVariable(_ observableType: TokenSyntax) -> DeclSyntax {
     return
       """
-      @\(raw: ignoredMacroName) public var \(raw: registrarVariableName) = \(raw: qualifiedRegistrarTypeName)()
+      @\(raw: ignoredMacroName) var \(raw: registrarVariableName) = \(raw: qualifiedRegistrarTypeName)()
       """
   }
 
