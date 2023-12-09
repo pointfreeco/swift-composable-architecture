@@ -509,8 +509,9 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
         yield &_\(identifier)
         guard
           let newValue = _\(identifier) as? any ObservableState,
-          !_$isIdentityEqual(oldValue, newValue),
-          newValue._$id.isFlagOn
+          !_$isIdentityEqual(oldValue, newValue)
+          //,
+          //newValue._$id.isFlagOn
         else {
           return
         }

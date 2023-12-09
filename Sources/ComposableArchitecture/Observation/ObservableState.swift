@@ -21,11 +21,11 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
     self.uuid = UUID()
   }
 
-//  public static func == (lhs: Self, rhs: Self) -> Bool {
-//    lhs.uuid == rhs.uuid
-//    && lhs.tag == rhs.tag
-//    && lhs._flag.value == rhs._flag.value
-//  }
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.uuid == rhs.uuid
+    && lhs.tag == rhs.tag
+    && lhs._flag.value == rhs._flag.value
+  }
 
   public static let _$inert = Self()
 
