@@ -13,7 +13,7 @@ public protocol ObservableState: Perceptible {
 
 /// A unique identifier for a observed value.
 public struct ObservableStateID: Equatable, Hashable, Sendable {
-  public var uuid: UUID
+  private var uuid: UUID
   private var tag: Int?
   public var _flag = false
 
