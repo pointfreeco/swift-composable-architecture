@@ -239,8 +239,8 @@ extension ObservableStateMacro: MemberMacro {
     declaration.addIfNeeded(
       """
       \(access)var _$id: \(raw: qualifiedIDName) {
-      get { self.\(raw: registrarVariableName).id }
-      set { self.\(raw: registrarVariableName).id = newValue }
+        get { self.\(raw: registrarVariableName).id }
+        set { self.\(raw: registrarVariableName).id = newValue }
       }
       """ as DeclSyntax,
       to: &declarations

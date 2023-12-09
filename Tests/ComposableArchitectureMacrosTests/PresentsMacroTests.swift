@@ -153,7 +153,7 @@
         """
         struct State: Equatable {
 
-          public var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
           internal nonisolated func access<Member>(
             keyPath: KeyPath<State, Member>
