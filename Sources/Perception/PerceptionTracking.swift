@@ -1,5 +1,5 @@
 #if canImport(Observation)
-  import Observation
+import Observation
 #endif
 
 //===----------------------------------------------------------------------===//
@@ -62,9 +62,9 @@ public struct PerceptionTracking: Sendable {
   @available(tvOS, deprecated: 17, message: "TODO")
   @available(watchOS, deprecated: 10, message: "TODO")
   public struct _AccessList: Sendable {
-    internal var entries = [ObjectIdentifier: Entry]()
+    internal var entries = [ObjectIdentifier : Entry]()
 
-    internal init() {}
+    internal init() { }
 
     internal mutating func addAccess<Subject: Perceptible>(
       keyPath: PartialKeyPath<Subject>,
@@ -93,23 +93,19 @@ public struct PerceptionTracking: Sendable {
     let values = tracking.list.entries.mapValues {
       switch (willSet, didSet) {
       case (.some(let willSetPerceptor), .some(let didSetPerceptor)):
-        return Id.full(
-          $0.addWillSetPerceptor {
-            willSetPerceptor(tracking)
-          },
-          $0.addDidSetPerceptor {
-            didSetPerceptor(tracking)
-          })
+        return Id.full($0.addWillSetPerceptor {
+          willSetPerceptor(tracking)
+        }, $0.addDidSetPerceptor {
+          didSetPerceptor(tracking)
+        })
       case (.some(let willSetPerceptor), .none):
-        return Id.willSet(
-          $0.addWillSetPerceptor {
-            willSetPerceptor(tracking)
-          })
+        return Id.willSet($0.addWillSetPerceptor {
+          willSetPerceptor(tracking)
+        })
       case (.none, .some(let didSetPerceptor)):
-        return Id.didSet(
-          $0.addDidSetPerceptor {
-            didSetPerceptor(tracking)
-          })
+        return Id.didSet($0.addDidSetPerceptor {
+          didSetPerceptor(tracking)
+        })
       case (.none, .none):
         fatalError()
       }
@@ -124,12 +120,10 @@ public struct PerceptionTracking: Sendable {
     onChange: @escaping @Sendable () -> Void
   ) {
     let tracking = PerceptionTracking(list)
-    _installTracking(
-      tracking,
-      willSet: { _ in
-        onChange()
-        tracking.cancel()
-      })
+    _installTracking(tracking, willSet: { _ in
+      onChange()
+      tracking.cancel()
+    })
   }
 
   struct State {
@@ -145,7 +139,7 @@ public struct PerceptionTracking: Sendable {
     self.list = list ?? _AccessList()
   }
 
-  internal func install(_ values: [ObjectIdentifier: PerceptionTracking.Id]) {
+  internal func install(_ values:  [ObjectIdentifier : PerceptionTracking.Id]) {
     state.withCriticalRegion {
       if !$0.cancelled {
         $0.values = values
@@ -174,16 +168,14 @@ public struct PerceptionTracking: Sendable {
   }
 }
 
-private func generateAccessList<T>(_ apply: () -> T) -> (T, PerceptionTracking._AccessList?) {
+fileprivate func generateAccessList<T>(_ apply: () -> T) -> (T, PerceptionTracking._AccessList?) {
   var accessList: PerceptionTracking._AccessList?
   let result = withUnsafeMutablePointer(to: &accessList) { ptr in
     let previous = _ThreadLocal.value
     _ThreadLocal.value = UnsafeMutableRawPointer(ptr)
     defer {
       if let scoped = ptr.pointee, let previous {
-        if var prevList = previous.assumingMemoryBound(to: PerceptionTracking._AccessList?.self)
-          .pointee
-        {
+        if var prevList = previous.assumingMemoryBound(to: PerceptionTracking._AccessList?.self).pointee {
           prevList.merge(scoped)
           previous.assumingMemoryBound(to: PerceptionTracking._AccessList?.self).pointee = prevList
         } else {

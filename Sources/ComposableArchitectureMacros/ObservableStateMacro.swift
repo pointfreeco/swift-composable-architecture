@@ -510,8 +510,6 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
         guard
           let newValue = _\(identifier) as? any ObservableState,
           !_$isIdentityEqual(oldValue, newValue)
-          //,
-          //newValue._$id.isFlagOn
         else {
           return
         }
@@ -522,24 +520,6 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
         }
       }
       """
-
-    /*
-     // assume current.id is RW, you may need additional plumbing
-        let oldID = _current.id
-        _current.id = UUID()
-        let oldValue = _current
-        yield &_current
-        guard !_$isIdentityEqual(oldValue, _current)
-        else {
-			_current.id = oldID
-            return
-        }
-        let newValue = _current
-        _current = oldValue
-        withMutation(keyPath: \.current) {
-            _current = newValue
-        }
-     */
 
     return [initAccessor, getAccessor, setAccessor, modifyAccessor]
   }
