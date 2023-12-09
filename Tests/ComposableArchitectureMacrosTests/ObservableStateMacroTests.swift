@@ -67,18 +67,17 @@
 
               let oldValueID = oldValue._$id.uuid
               oldValue._$id.uuid = UUID()
-              defer { oldValue._$id.uuid = oldValueID }
-              forceSet(of: &self, keyPath: \._child, member: oldValue)
+              forceSet(of: &self, keyPath: \._count, member: oldValue)
               yield &_count
-              guard
-                let newValue = _count as? any ObservableState,
-                !_$isIdentityEqual(oldValue, newValue)
+              var newValue = _count as! any ObservableState
+              guard !_$isIdentityEqual(oldValue, newValue)
               else {
-                newValue._$id = oldValueID
-                forceSet(of: &self, keyPath: \._child, member: newValue)
+                newValue._$id.uuid = oldValueID
+                forceSet(of: &self, keyPath: \._count, member: newValue)
                 return
               }
 
+              oldValue._$id.uuid = oldValueID
               forceSet(of: &self, keyPath: \._count, member: oldValue)
               withMutation(keyPath: \.count) {
                 forceSet(of: &self, keyPath: \._count, member: newValue)
@@ -163,18 +162,19 @@
                 return
               }
 
-              oldValue._$id.setFlag(true)
-              defer {
-                oldValue._$id.setFlag(false)
-              }
+              let oldValueID = oldValue._$id.uuid
+              oldValue._$id.uuid = UUID()
+              forceSet(of: &self, keyPath: \._count, member: oldValue)
               yield &_count
-              guard
-                let newValue = _count as? any ObservableState,
-                !_$isIdentityEqual(oldValue, newValue)
+              var newValue = _count as! any ObservableState
+              guard !_$isIdentityEqual(oldValue, newValue)
               else {
+                newValue._$id.uuid = oldValueID
+                forceSet(of: &self, keyPath: \._count, member: newValue)
                 return
               }
 
+              oldValue._$id.uuid = oldValueID
               forceSet(of: &self, keyPath: \._count, member: oldValue)
               withMutation(keyPath: \.count) {
                 forceSet(of: &self, keyPath: \._count, member: newValue)
