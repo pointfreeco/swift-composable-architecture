@@ -46,16 +46,19 @@
               }
             }
             _modify {
-              func forceSet<Subject, Member>(
+              func _$forceSet<Subject, Member>(
                 of subject: inout Subject,
                 keyPath: WritableKeyPath<Subject, Member>,
-                member: Any
+                member: any ObservableState
               ) {
                 subject[keyPath: keyPath] = member as! Member
               }
+              func _$asObservableState<T>(_ subject: T) -> (any ObservableState)? {
+                subject as? any ObservableState
+              }
 
               guard
-                var oldValue = _count as? any ObservableState
+                var oldValue = _$asObservableState(_count)
               else {
                 _$observationRegistrar.willSet(self, keyPath: \.count)
                 defer {
@@ -65,22 +68,20 @@
                 return
               }
 
-              let oldValueID = oldValue._$id.uuid
-              oldValue._$id.uuid = UUID()
-              forceSet(of: &self, keyPath: \._count, member: oldValue)
+              oldValue._$id._flag = true
+              _$forceSet(of: &self, keyPath: \._count, member: oldValue)
               yield &_count
               var newValue = _count as! any ObservableState
               guard !_$isIdentityEqual(oldValue, newValue)
               else {
-                newValue._$id.uuid = oldValueID
-                forceSet(of: &self, keyPath: \._count, member: newValue)
+                newValue._$id._flag = false
+                _$forceSet(of: &self, keyPath: \._count, member: newValue)
                 return
               }
 
-              oldValue._$id.uuid = oldValueID
-              forceSet(of: &self, keyPath: \._count, member: oldValue)
+              _$forceSet(of: &self, keyPath: \._count, member: oldValue)
               withMutation(keyPath: \.count) {
-                forceSet(of: &self, keyPath: \._count, member: newValue)
+                _$forceSet(of: &self, keyPath: \._count, member: newValue)
               }
             }
           }
@@ -143,16 +144,19 @@
               }
             }
             _modify {
-              func forceSet<Subject, Member>(
+              func _$forceSet<Subject, Member>(
                 of subject: inout Subject,
                 keyPath: WritableKeyPath<Subject, Member>,
-                member: Any
+                member: any ObservableState
               ) {
                 subject[keyPath: keyPath] = member as! Member
               }
+              func _$asObservableState<T>(_ subject: T) -> (any ObservableState)? {
+                subject as? any ObservableState
+              }
 
               guard
-                var oldValue = _count as? any ObservableState
+                var oldValue = _$asObservableState(_count)
               else {
                 _$observationRegistrar.willSet(self, keyPath: \.count)
                 defer {
@@ -162,22 +166,20 @@
                 return
               }
 
-              let oldValueID = oldValue._$id.uuid
-              oldValue._$id.uuid = UUID()
-              forceSet(of: &self, keyPath: \._count, member: oldValue)
+              oldValue._$id._flag = true
+              _$forceSet(of: &self, keyPath: \._count, member: oldValue)
               yield &_count
               var newValue = _count as! any ObservableState
               guard !_$isIdentityEqual(oldValue, newValue)
               else {
-                newValue._$id.uuid = oldValueID
-                forceSet(of: &self, keyPath: \._count, member: newValue)
+                newValue._$id._flag = false
+                _$forceSet(of: &self, keyPath: \._count, member: newValue)
                 return
               }
 
-              oldValue._$id.uuid = oldValueID
-              forceSet(of: &self, keyPath: \._count, member: oldValue)
+              _$forceSet(of: &self, keyPath: \._count, member: oldValue)
               withMutation(keyPath: \.count) {
-                forceSet(of: &self, keyPath: \._count, member: newValue)
+                _$forceSet(of: &self, keyPath: \._count, member: newValue)
               }
             }
           }

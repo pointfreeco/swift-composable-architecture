@@ -487,16 +487,19 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
       """
     let modifyAccessor: AccessorDeclSyntax = """
       _modify {
-        func forceSet<Subject, Member>(
+        func _$forceSet<Subject, Member>(
           of subject: inout Subject,
           keyPath: WritableKeyPath<Subject, Member>,
-          member: Any
+          member: any ObservableState
         ) {
           subject[keyPath: keyPath] = member as! Member
         }
+        func _$asObservableState<T>(_ subject: T) -> (any ObservableState)? {
+          subject as? any ObservableState
+        }
 
         guard
-          var oldValue = _\(identifier) as? any ObservableState
+          var oldValue = _$asObservableState(_\(identifier))
         else {
           _$observationRegistrar.willSet(self, keyPath: \\.\(identifier))
           defer { _$observationRegistrar.didSet(self, keyPath: \\.\(identifier)) }
@@ -504,22 +507,20 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
           return
         }
 
-        let oldValueID = oldValue._$id.uuid
-        oldValue._$id.uuid = UUID()
-        forceSet(of: &self, keyPath: \\._\(identifier), member: oldValue)
+        oldValue._$id._flag = true
+        _$forceSet(of: &self, keyPath: \\._\(identifier), member: oldValue)
         yield &_\(identifier)
         var newValue = _\(identifier) as! any ObservableState
         guard !_$isIdentityEqual(oldValue, newValue)
         else {
-          newValue._$id.uuid = oldValueID
-          forceSet(of: &self, keyPath: \\._\(identifier), member: newValue)
+          newValue._$id._flag = false
+          _$forceSet(of: &self, keyPath: \\._\(identifier), member: newValue)
           return
         }
 
-        oldValue._$id.uuid = oldValueID
-        forceSet(of: &self, keyPath: \\._\(identifier), member: oldValue)
+        _$forceSet(of: &self, keyPath: \\._\(identifier), member: oldValue)
         withMutation(keyPath: \\.\(identifier)) {
-          forceSet(of: &self, keyPath: \\._\(identifier), member: newValue)
+          _$forceSet(of: &self, keyPath: \\._\(identifier), member: newValue)
         }
       }
       """

@@ -15,7 +15,7 @@ public protocol ObservableState: Perceptible {
 public struct ObservableStateID: Equatable, Hashable, Sendable {
   public var uuid: UUID
   private var tag: Int?
-  private var _flag = LockIsolated(false)  
+  public var _flag = false
 
   public init() {
     self.uuid = UUID()
