@@ -8,7 +8,7 @@
   final class PresentsMacroTests: XCTestCase {
     override func invokeTest() {
       withMacroTesting(
-        // isRecording: true,
+        //isRecording: true,
         macros: [PresentsMacro.self]
       ) {
         super.invokeTest()
@@ -153,7 +153,7 @@
         """
         struct State: Equatable {
 
-          private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+          public var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
           internal nonisolated func access<Member>(
             keyPath: KeyPath<State, Member>
@@ -169,7 +169,12 @@
           }
 
           var _$id: ComposableArchitecture.ObservableStateID {
-            self._$observationRegistrar.id
+            get {
+              self._$observationRegistrar.id
+            }
+            set {
+              self._$observationRegistrar.id = newValue
+            }
           }
         }
         """
