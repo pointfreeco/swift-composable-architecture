@@ -269,7 +269,7 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssertEqual(state.sibling.count, 2)
   }
 
-  func testReplaceChild_Store() async {
+  func testStore_ReplaceChild() async {
     let store = Store<ParentState, Void>(initialState: ParentState()) {
       Reduce { state, _ in
         state.child.replace(with: ChildState(count: 42))
@@ -289,7 +289,7 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssertEqual(store.child.count, 42)
   }
 
-  func testReplace_Store() async {
+  func testStore_Replace() async {
     let store = Store<ChildState, Void>(initialState: ChildState()) {
       Reduce { state, _ in
         state.replace(with: ChildState(count: 42))
@@ -309,7 +309,7 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssertEqual(store.count, 42)
   }
 
-  func testResetChild_Store() async {
+  func testStore_ResetChild() async {
     let store = Store<ParentState, Void>(initialState: ParentState(child: ChildState(count: 42))) {
       Reduce { state, _ in
         state.child.reset()
@@ -329,7 +329,7 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssertEqual(store.child.count, 0)
   }
 
-  func testReset_Store() async {
+  func testStore_Reset() async {
     let store = Store<ChildState, Void>(initialState: ChildState(count: 42)) {
       Reduce { state, _ in
         state.reset()
