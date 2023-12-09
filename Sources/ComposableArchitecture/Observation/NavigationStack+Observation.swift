@@ -2,7 +2,57 @@ import Perception
 import SwiftUI
 
 extension Binding {
-  // TODO: Document
+  /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
+  ///
+  /// This operator is most used in conjunction with ``SwiftUI/NavigationStack``, and in particular
+  /// the initializer ``SwiftUI/NavigationStack/init(path:root:destination:)`` that ships with this
+  /// library.
+  ///
+  /// For example, suppose you have a feature that holds onto ``StackState`` in its state in order
+  /// to represent all the screens that can be pushed onto a navigation stack:
+  ///
+  /// ```swift
+  /// @Reducer
+  /// struct Feature {
+  ///   @ObservableState
+  ///   struct State {
+  ///     var path: StackState<Path.State> = []
+  ///   }
+  ///   enum Action {
+  ///     case path(StackActionOf<Path>)
+  ///   }
+  ///   var body: some ReducerOf<Self> {
+  ///     Reduce { state, action in
+  ///       // Core feature logic
+  ///     }
+  ///     .forEach(\.rows, action: \.rows) {
+  ///       Child()
+  ///     }
+  ///   }
+  ///   @Reducer
+  ///   struct Path {
+  ///     // ...
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// Then in the view you can use this operator, with
+  /// ``SwiftUI/NavigationStack`` ``SwiftUI/NavigationStack/init(path:root:destination:)``, to
+  /// derive a store for each element in the stack:
+  ///
+  /// ```swift
+  /// struct FeatureView: View {
+  ///   @BindableStore var store: StoreOf<Feature>
+  ///
+  ///   var body: some View {
+  ///     NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+  ///       // Root view
+  ///     } destination: {
+  ///       // Destinations
+  ///     }
+  ///   }
+  /// }
+  /// ```
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
@@ -23,7 +73,10 @@ extension Binding {
 
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension Bindable {
-  // TODO: Document
+  /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
+  ///
+  /// See ``SwiftUI/Binding/scope(state:action:)-3wrri`` defined on ``SwiftUI/Binding`` for more
+  /// information.
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
@@ -37,7 +90,10 @@ extension Bindable {
 }
 
 extension BindableStore {
-  // TODO: Document
+  /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
+  ///
+  /// See ``SwiftUI/Binding/scope(state:action:)-3wrri`` defined on ``SwiftUI/Binding`` for more
+  /// information.
   public func scope<ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>

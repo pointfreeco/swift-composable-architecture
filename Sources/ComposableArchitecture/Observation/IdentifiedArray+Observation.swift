@@ -2,9 +2,48 @@ import OrderedCollections
 import SwiftUI
 
 extension Store where State: ObservableState {
-  /// Scopes the store to an identified array of child state and actions.
+  /// Scopes the store of an identified collection to a collection of stores.
   ///
-  /// TODO: Example
+  /// This operator is most often used with SwiftUI's `ForEach` view. For example, suppose you have
+  /// a feature that contains an `IdentifiedArray` of child features like so:
+  ///
+  /// ```swift
+  /// @Reducer
+  /// struct Feature {
+  ///   @ObservableState
+  ///   struct State {
+  ///     var rows: IdentifiedArrayOf<Child.State> = []
+  ///   }
+  ///   enum Action {
+  ///     case rows(IdentifiedActionOf<Child>)
+  ///   }
+  ///   var body: some ReducerOf<Self> {
+  ///     Reduce { state, action in
+  ///       // Core feature logic
+  ///     }
+  ///     .forEach(\.rows, action: \.rows) {
+  ///       Child()
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// Then in the view you can use this operator, with ``SwiftUI/ForEach``, to derive a store for
+  /// each element in the identified collection:
+  ///
+  /// ```swift
+  /// struct FeatureView: View {
+  ///   let store: StoreOf<Feature>
+  ///
+  ///   var body: some View {
+  ///     List {
+  ///       ForEach(store.scope(state: \.rows, action: \.rows) { store in
+  ///         ChildView(store: store)
+  ///       }
+  ///     }
+  ///   }
+  /// }
+  /// ```
   ///
   /// - Parameters:
   ///   - state: A key path to an identified array of child state.
