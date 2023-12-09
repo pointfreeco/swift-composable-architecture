@@ -46,15 +46,18 @@
               }
             }
             _modify {
-              func _$forceSet<Subject, Member>(
-                of subject: inout Subject,
-                keyPath: WritableKeyPath<Subject, Member>,
+              func _$forceSet<Member>(
+                of subject: inout Self,
+                keyPath: WritableKeyPath<Self, Member>,
                 member: any ObservableState
               ) {
                 subject[keyPath: keyPath] = member as! Member
               }
               func _$asObservableState<T>(_ subject: T) -> (any ObservableState)? {
                 subject as? any ObservableState
+              }
+              func _$forceAsObservableState<T>(_ subject: T) -> any ObservableState {
+                subject as! any ObservableState
               }
 
               guard
@@ -71,7 +74,7 @@
               oldValue._$id._flag = true
               _$forceSet(of: &self, keyPath: \._count, member: oldValue)
               yield &_count
-              var newValue = _count as! any ObservableState
+              var newValue = _$forceAsObservableState(_count)
               guard !_$isIdentityEqual(oldValue, newValue)
               else {
                 newValue._$id._flag = false
@@ -144,15 +147,18 @@
               }
             }
             _modify {
-              func _$forceSet<Subject, Member>(
-                of subject: inout Subject,
-                keyPath: WritableKeyPath<Subject, Member>,
+              func _$forceSet<Member>(
+                of subject: inout Self,
+                keyPath: WritableKeyPath<Self, Member>,
                 member: any ObservableState
               ) {
                 subject[keyPath: keyPath] = member as! Member
               }
               func _$asObservableState<T>(_ subject: T) -> (any ObservableState)? {
                 subject as? any ObservableState
+              }
+              func _$forceAsObservableState<T>(_ subject: T) -> any ObservableState {
+                subject as! any ObservableState
               }
 
               guard
@@ -169,7 +175,7 @@
               oldValue._$id._flag = true
               _$forceSet(of: &self, keyPath: \._count, member: oldValue)
               yield &_count
-              var newValue = _count as! any ObservableState
+              var newValue = _$forceAsObservableState(_count)
               guard !_$isIdentityEqual(oldValue, newValue)
               else {
                 newValue._$id._flag = false

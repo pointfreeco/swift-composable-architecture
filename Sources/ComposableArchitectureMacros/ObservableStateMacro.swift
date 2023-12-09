@@ -487,15 +487,18 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
       """
     let modifyAccessor: AccessorDeclSyntax = """
       _modify {
-        func _$forceSet<Subject, Member>(
-          of subject: inout Subject,
-          keyPath: WritableKeyPath<Subject, Member>,
+        func _$forceSet<Member>(
+          of subject: inout Self,
+          keyPath: WritableKeyPath<Self, Member>,
           member: any ObservableState
         ) {
           subject[keyPath: keyPath] = member as! Member
         }
         func _$asObservableState<T>(_ subject: T) -> (any ObservableState)? {
           subject as? any ObservableState
+        }
+        func _$forceAsObservableState<T>(_ subject: T) -> any ObservableState {
+          subject as! any ObservableState
         }
 
         guard
@@ -510,7 +513,7 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
         oldValue._$id._flag = true
         _$forceSet(of: &self, keyPath: \\._\(identifier), member: oldValue)
         yield &_\(identifier)
-        var newValue = _\(identifier) as! any ObservableState
+        var newValue = _$forceAsObservableState(_\(identifier))
         guard !_$isIdentityEqual(oldValue, newValue)
         else {
           newValue._$id._flag = false
