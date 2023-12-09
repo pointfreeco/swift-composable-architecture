@@ -8,19 +8,37 @@ import Perception
 /// functionality to the type. Instead, always use the ``ObservableState()`` macro when adding
 /// observation support to a type.
 public protocol ObservableState: Perceptible {
-  var _$id: ObservableStateID { get }
+  var _$id: ObservableStateID { get set }
 }
 
 /// A unique identifier for a observed value.
 public struct ObservableStateID: Equatable, Hashable, Sendable {
   private let uuid: UUID
   private var tag: Int?
+  private var _flag = LockIsolated(false)  
 
   public init() {
     self.uuid = UUID()
   }
 
+//  public static func == (lhs: Self, rhs: Self) -> Bool {
+//    lhs.uuid == rhs.uuid
+//    && lhs.tag == rhs.tag
+//    && lhs._flag.value == rhs._flag.value
+//  }
+
   public static let _$inert = Self()
+
+  // TODO: inlinable?
+  public var isFlagOn: Bool { _flag.value }
+  // TODO: inlinable?
+  public mutating func setFlag(_ isOn: Bool) {
+    if isKnownUniquelyReferenced(&self._flag) {
+      self._flag.setValue(isOn)
+    } else {
+      self._flag = LockIsolated(isOn)
+    }
+  }
 
   // TODO: inlinable?
   public func _$tag(_ tag: Int?) -> Self {

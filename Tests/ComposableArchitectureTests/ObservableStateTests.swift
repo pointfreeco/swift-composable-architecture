@@ -328,7 +328,7 @@ final class ObservableTests: BaseTCATestCase {
   }
 
   func testReplaceWithCopy() async {
-    XCTTODO("This currently fails but it should not.")
+    //XCTTODO("This currently fails but it should not.")
 
     let childState = ChildState(count: 1)
     var childStateCopy = childState

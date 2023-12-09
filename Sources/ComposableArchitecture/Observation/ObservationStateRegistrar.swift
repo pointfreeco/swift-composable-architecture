@@ -1,7 +1,7 @@
 import Perception
 
 public struct ObservationStateRegistrar: Sendable {
-  public let id = ObservableStateID()
+  public var id = ObservableStateID()
   private let registrar = PerceptionRegistrar()
 
   public init() {}

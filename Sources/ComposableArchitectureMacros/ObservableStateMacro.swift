@@ -52,7 +52,7 @@ public struct ObservableStateMacro {
   static func registrarVariable(_ observableType: TokenSyntax) -> DeclSyntax {
     return
       """
-      @\(raw: ignoredMacroName) private let \(raw: registrarVariableName) = \(raw: qualifiedRegistrarTypeName)()
+      @\(raw: ignoredMacroName) public var \(raw: registrarVariableName) = \(raw: qualifiedRegistrarTypeName)()
       """
   }
 
@@ -239,7 +239,8 @@ extension ObservableStateMacro: MemberMacro {
     declaration.addIfNeeded(
       """
       \(access)var _$id: \(raw: qualifiedIDName) {
-      self.\(raw: registrarVariableName).id
+      get { self.\(raw: registrarVariableName).id }
+      set { self.\(raw: registrarVariableName).id = newValue }
       }
       """ as DeclSyntax,
       to: &declarations
@@ -262,20 +263,34 @@ extension ObservableStateMacro {
 
     let enumCaseDecls = declaration.memberBlock.members
       .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
-    var cases: [String] = []
+    var getCases: [String] = []
+    var setCases: [String] = []
     for (tag, enumCaseDecl) in enumCaseDecls.enumerated() {
       if enumCaseDecl.parameterClause?.parameters.count == 1 {
-        cases.append(
+        getCases.append(
           """
           case let .\(enumCaseDecl.name.text)(state):
           return ._$id(for: state)._$tag(\(tag))
           """
         )
+        setCases.append(
+          """
+          case var .\(enumCaseDecl.name.text)(state):
+             state._$id = newValue
+             self = .\(enumCaseDecl.name.text)(state)
+          """
+        )
       } else {
-        cases.append(
+        getCases.append(
           """
           case .\(enumCaseDecl.name.text):
           return ._$inert._$tag(\(tag))
+          """
+        )
+        setCases.append(
+          """
+          case .\(enumCaseDecl.name.text):
+            break
           """
         )
       }
@@ -284,9 +299,16 @@ extension ObservableStateMacro {
     return [
       """
       \(access)var _$id: \(raw: qualifiedIDName) {
-      switch self {
-      \(raw: cases.joined(separator: "\n"))
-      }
+        get {
+          switch self {
+          \(raw: getCases.joined(separator: "\n"))
+          }
+        }
+        set {
+         switch self {
+         \(raw: setCases.joined(separator: "\n"))
+         }
+        }
       }
       """
     ]
@@ -465,23 +487,58 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
       """
     let modifyAccessor: AccessorDeclSyntax = """
       _modify {
-        if _$isObservableState(_\(identifier)) {
-          let oldValue = _\(identifier)
-          yield &_\(identifier)
-          guard !_$isIdentityEqual(oldValue, _\(identifier))
-          else { return }
-          let newValue = _\(identifier)
-          _\(identifier) = oldValue
-          withMutation(keyPath: \\.\(identifier)) {
-            _\(identifier) = newValue
-          }
-        } else {
+        func forceSet<Subject, Member>(
+          of subject: inout Subject,
+          keyPath: WritableKeyPath<Subject, Member>,
+          member: Any
+        ) {
+          subject[keyPath: keyPath] = member as! Member
+        }
+
+        guard
+          var oldValue = _\(identifier) as? any ObservableState
+        else {
           _$observationRegistrar.willSet(self, keyPath: \\.\(identifier))
           defer { _$observationRegistrar.didSet(self, keyPath: \\.\(identifier)) }
           yield &_\(identifier)
+          return
+        }
+
+        oldValue._$id.setFlag(true)
+        defer { oldValue._$id.setFlag(false) }
+        yield &_\(identifier)
+        guard
+          let newValue = _\(identifier) as? any ObservableState,
+          !_$isIdentityEqual(oldValue, newValue),
+          newValue._$id.isFlagOn
+        else {
+          return
+        }
+
+        forceSet(of: &self, keyPath: \\._\(identifier), member: oldValue)
+        withMutation(keyPath: \\.\(identifier)) {
+          forceSet(of: &self, keyPath: \\._\(identifier), member: newValue)
         }
       }
       """
+
+    /*
+     // assume current.id is RW, you may need additional plumbing
+        let oldID = _current.id
+        _current.id = UUID()
+        let oldValue = _current
+        yield &_current
+        guard !_$isIdentityEqual(oldValue, _current)
+        else {
+			_current.id = oldID
+            return
+        }
+        let newValue = _current
+        _current = oldValue
+        withMutation(keyPath: \.current) {
+            _current = newValue
+        }
+     */
 
     return [initAccessor, getAccessor, setAccessor, modifyAccessor]
   }
