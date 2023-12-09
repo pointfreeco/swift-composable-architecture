@@ -504,16 +504,19 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
           return
         }
 
-        oldValue._$id.setFlag(true)
-        defer { oldValue._$id.setFlag(false) }
+        let oldValueID = oldValue._$id.uuid
+        oldValue._$id.uuid = UUID()
+        forceSet(of: &self, keyPath: \\._\(identifier), member: oldValue)
         yield &_\(identifier)
-        guard
-          let newValue = _\(identifier) as? any ObservableState,
-          !_$isIdentityEqual(oldValue, newValue)
+        var newValue = _\(identifier) as! any ObservableState
+        guard !_$isIdentityEqual(oldValue, newValue)
         else {
+          newValue._$id.uuid = oldValueID
+          forceSet(of: &self, keyPath: \\._\(identifier), member: newValue)
           return
         }
 
+        oldValue._$id.uuid = oldValueID
         forceSet(of: &self, keyPath: \\._\(identifier), member: oldValue)
         withMutation(keyPath: \\.\(identifier)) {
           forceSet(of: &self, keyPath: \\._\(identifier), member: newValue)

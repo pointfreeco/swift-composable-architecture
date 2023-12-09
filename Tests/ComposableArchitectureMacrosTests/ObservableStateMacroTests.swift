@@ -65,15 +65,17 @@
                 return
               }
 
-              oldValue._$id.setFlag(true)
-              defer {
-                oldValue._$id.setFlag(false)
-              }
+              let oldValueID = oldValue._$id.uuid
+              oldValue._$id.uuid = UUID()
+              defer { oldValue._$id.uuid = oldValueID }
+              forceSet(of: &self, keyPath: \._child, member: oldValue)
               yield &_count
               guard
                 let newValue = _count as? any ObservableState,
                 !_$isIdentityEqual(oldValue, newValue)
               else {
+                newValue._$id = oldValueID
+                forceSet(of: &self, keyPath: \._child, member: newValue)
                 return
               }
 
