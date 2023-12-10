@@ -18,7 +18,7 @@
   ///     case incrementButtonTapped
   ///   }
   ///   var body: some ReducerOf<Self> {
-  ///     Reducer { state, action in
+  ///     Reduce { state, action in
   ///       switch action {
   ///       case .decrementButtonTapped:
   ///         state.count -= 1
@@ -58,7 +58,7 @@
   /// ```diff
   /// +@CasePathable
   /// +@dynamicMemberLookup
-  ///  enum Struct {
+  ///  enum State {
   ///    // …
   ///  }
   /// ```
