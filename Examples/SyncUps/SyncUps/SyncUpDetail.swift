@@ -7,15 +7,6 @@ struct SyncUpDetail {
   struct State: Equatable {
     @Presents var destination: Destination.State?
     var syncUp: SyncUp
-
-    // TODO: Why is this needed?
-    init(
-      destination: Destination.State? = nil,
-      syncUp: SyncUp
-    ) {
-      self.destination = destination
-      self.syncUp = syncUp
-    }
   }
 
   enum Action: Sendable {

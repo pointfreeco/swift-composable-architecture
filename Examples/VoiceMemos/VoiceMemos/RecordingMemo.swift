@@ -10,19 +10,6 @@ struct RecordingMemo {
     var mode: Mode = .recording
     var url: URL
 
-    // TODO: Why is this needed?
-    init(
-      date: Date,
-      duration: TimeInterval = 0,
-      mode: Mode = .recording,
-      url: URL
-    ) {
-      self.date = date
-      self.duration = duration
-      self.mode = mode
-      self.url = url
-    }
-
     enum Mode {
       case recording
       case encoding

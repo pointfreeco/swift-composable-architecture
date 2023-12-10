@@ -11,21 +11,6 @@ struct VoiceMemo {
     var title = ""
     var url: URL
 
-    // TODO: Why is this needed?
-    init(
-      date: Date,
-      duration: TimeInterval,
-      mode: Mode = .notPlaying,
-      title: String = "",
-      url: URL
-    ) {
-      self.date = date
-      self.duration = duration
-      self.mode = mode
-      self.title = title
-      self.url = url
-    }
-
     var id: URL { self.url }
 
     @CasePathable
