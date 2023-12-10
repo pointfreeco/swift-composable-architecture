@@ -1,5 +1,3 @@
-extension CounterFeature.State: Equatable {}
-
 struct CounterView: View {
   let store: StoreOf<CounterFeature>
   

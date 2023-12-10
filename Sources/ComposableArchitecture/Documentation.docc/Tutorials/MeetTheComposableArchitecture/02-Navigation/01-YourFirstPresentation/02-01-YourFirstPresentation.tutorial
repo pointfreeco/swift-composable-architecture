@@ -22,8 +22,7 @@
         data type, and a simple reducer with a collection of contacts, and a single action for when
         the "+" button is tapped. Currently that action is not yet implemented.
         
-        > Note: We conform `State` and `Action` to the `Equatable` protocol in order to test this 
-        > feature later.
+        > Note: We conform `State` to the `Equatable` protocol in order to test this feature later.
 
         @Code(name: "ContactsFeature.swift", file: "02-01-01-code-0000")
       }
@@ -50,20 +49,46 @@
         button for dismissing, and a "Save" button that when tapped should dismiss the feature
         _and_ add the contact to the list of contacts in the parent.
         
+        > Note: There is nothing to do in the `cancelButtonTapped` and `saveButtonTapped` actions
+        > right now. They will be implemented later.
+        
         @Code(name: "AddContactFeature.swift", file: "02-01-01-code-0003", reset: true)
       }
       
       @Step {
-        Add a view that holds onto a ``ComposableArchitecture/Store`` of the `AddContactFeature`
-        and observes the state in order to show a text field for the contact name and send actions. 
+        Add a view that holds onto a ``ComposableArchitecture/Store`` of the `AddContactFeature`.
+        Since our view is going to have a text field, we will need to be able to derive bindings
+        from the store. To do this we use the `@Bindable` property wrapper from SwiftUI.
         
+        > Note: If you are targeting older platforms and do not have access to `@Bindable`, you can
+        > instead use ``ComposableArchitecture/BindableStore`` that comes with the library.
+
         @Code(name: "AddContactFeature.swift", file: "02-01-01-code-0004", reset: true)
+      }
+      
+      @Step {
+        Add a form to the view with a text fielid for editing the name of the contact. We can
+        use the dynamic member lookup on `$store` to describe what piece of state you want to
+        drive the binding, and then you can use the `sending` method to describe which action 
+        you want to send when the binding is written to.
+        
+        > Note: See <doc:Bindings> for more information on using bindings in the Composable 
+        Architecture.
+        
+        @Code(name: "AddContactFeature.swift", file: "02-01-01-code-0005")
+      }
+      
+      @Step {
+        Add a "Save" and "Cancel" button to the view and send the corresponding actions when those
+        buttons are tapped.
+        
+        @Code(name: "AddContactFeature.swift", file: "02-01-01-code-0006")
       }
       
       @Step {
         Add a preview so that we can see what the feature looks like. 
         
-        @Code(name: "AddContactFeature.swift", file: "02-01-01-code-0005", reset: true) {
+        @Code(name: "AddContactFeature.swift", file: "02-01-01-code-0007", reset: true) {
           @Image(source: "ch02-sub01-sec01-image-0002")
         }
       }
@@ -194,6 +219,9 @@
         `sheet(item:)` view modifier. When the `addContact` state becomes non-`nil`, a new store
         will be derived focused only on the `AddContactFeature` domain, which is what you can pass
         to the `AddContactView`.
+        
+        > Note: If you are targeting older platforms and do not have access to `@Bindable`, you can
+        > instead use ``ComposableArchitecture/BindableStore`` that comes with the library.
         
         @Code(name: "ContactsFeature.swift", file: "02-01-02-code-0009")
       }

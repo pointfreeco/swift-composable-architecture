@@ -207,7 +207,7 @@ ForEachStore(store.scope(state: \.rows, action: \.rows)) { childStore in
 ```
 
 This can now be updated to use the vanilla `ForEach` view in SwiftUI, along with 
-``Store/scope(state:action:)-88iqh``:
+``Store/scope(state:action:)-1nelp``:
 
 ```swift
 ForEach(store.scope(state: \.rows, action: \.rows)) { childStore in
@@ -547,7 +547,7 @@ NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
 ## @BindingState
 
 Bindings in the Composable Architecture have historically been handled by a zoo of types, including
-``BindingState``, ``BindableAction``, ``BindingAction``, ``BindingViewState`` and 
+<doc:BindingState>, ``BindableAction``, ``BindingAction``, ``BindingViewState`` and 
 ``BindingViewStore``. For example, if your view needs to be able to derive bindings to many fields
 on your state, you may have the reducer built somewhat like this:
 

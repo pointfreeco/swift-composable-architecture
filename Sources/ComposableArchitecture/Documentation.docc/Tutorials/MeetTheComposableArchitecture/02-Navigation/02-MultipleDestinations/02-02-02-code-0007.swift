@@ -3,6 +3,8 @@ struct ContactsFeature {
   @ObservableState
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
+    // @Presents var addContact: AddContactFeature.State?
+    // @Presents var alert: AlertState<Action.Alert>?
     @Presents var destination: Destination.State?
   }
   enum Action {

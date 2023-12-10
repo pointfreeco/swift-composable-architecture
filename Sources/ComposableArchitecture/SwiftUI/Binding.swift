@@ -15,6 +15,30 @@ import SwiftUI
 /// > SwiftUI components.
 ///
 /// Read <doc:Bindings> for more information.
+@available(
+  iOS,
+  deprecated: 9999,
+  message:
+    "TODO: better message. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6#BindingState"
+)
+@available(
+  macOS,
+  deprecated: 9999,
+  message:
+    "TODO: better message. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#BindingState"
+)
+@available(
+  tvOS,
+  deprecated: 9999,
+  message:
+    "TODO: better message. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#BindingState"
+)
+@available(
+  watchOS,
+  deprecated: 9999,
+  message:
+    "TODO: better message. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#BindingState"
+)
 @propertyWrapper
 public struct BindingState<Value> {
   /// The underlying value wrapped by the binding state.

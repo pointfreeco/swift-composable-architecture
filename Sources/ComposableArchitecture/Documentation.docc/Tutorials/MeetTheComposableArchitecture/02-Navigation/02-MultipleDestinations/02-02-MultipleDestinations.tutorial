@@ -73,8 +73,12 @@
       ``ComposableArchitecture/Store``s.
       
       @Step {
-        Add the ``SwiftUI/View/alert(store:)`` view modifier to the `ContactsView`, and hand it a
+        Add the ``SwiftUI/View/alert(_:)`` view modifier to the `ContactsView`, and hand it a
         store that is scoped to the alert domain.
+        
+        > Note: In order for the `$store.scope` syntax to work you must hold onto the store in the
+        > view using the `@Bindable` property wrapper, or ``ComposableArchitecture/BindableStore``
+        > if you are targeting older platforms.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0006, previousFile: 02-02-01-code-0006-previous)
       }
@@ -234,15 +238,15 @@
       @Step {
         When you model all of your destinations in a single optional values, you start by scoping to
         the destination domain and then you further scope into the the state and action cases
-        associated with the specific destination. This can be done with familiar dot syntax because
-        the ``ComposableArchitecture/Reducer()`` macro applies the `@CasePathable` macro to each
-        enum.
+        associated with the specific destination using familiar key path dot-chaining syntax. This 
+        can be done with familiar dot syntax because the ``ComposableArchitecture/Reducer()`` 
+        macro applies the `@CasePathable` macro to each enum.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0015, previousFile: 02-02-02-code-0015-previous)
       }
 
       @Step {
-        The same can be done for the `alert(store:)` view modifier.
+        The same can be done for the `alert` view modifier.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0016)
       }

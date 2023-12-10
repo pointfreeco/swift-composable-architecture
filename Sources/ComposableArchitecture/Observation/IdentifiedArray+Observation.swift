@@ -28,7 +28,7 @@ extension Store where State: ObservableState {
   /// }
   /// ```
   ///
-  /// Then in the view you can use this operator, with ``SwiftUI/ForEach``, to derive a store for
+  /// Then in the view you can use this operator, with `ForEach`, to derive a store for
   /// each element in the identified collection:
   ///
   /// ```swift

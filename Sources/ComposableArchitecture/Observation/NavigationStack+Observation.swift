@@ -75,7 +75,7 @@ extension Binding {
 extension Bindable {
   /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
   ///
-  /// See ``SwiftUI/Binding/scope(state:action:)-3wrri`` defined on ``SwiftUI/Binding`` for more
+  /// See ``SwiftUI/Binding/scope(state:action:)-4mj4d`` defined on `Binding` for more
   /// information.
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
@@ -92,7 +92,7 @@ extension Bindable {
 extension BindableStore {
   /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
   ///
-  /// See ``SwiftUI/Binding/scope(state:action:)-3wrri`` defined on ``SwiftUI/Binding`` for more
+  /// See ``SwiftUI/Binding/scope(state:action:)-4mj4d`` defined on `Binding` for more
   /// information.
   public func scope<ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
