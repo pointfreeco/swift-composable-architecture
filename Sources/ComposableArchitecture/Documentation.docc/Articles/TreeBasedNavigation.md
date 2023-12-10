@@ -352,10 +352,10 @@ forms of navigation could be as simple as this:
   DetailFeatureView(store: store)
 }
 .alert(
-  store: store.scope(state: \.alert, action: \.alert)
+  $store.scope(state: \.alert, action: \.alert)
 )
 .confirmationDialog(
-  store: store.scope(state: \.confirmationDialog, action: \.confirmationDialog)
+  $store.scope(state: \.confirmationDialog, action: \.confirmationDialog)
 )
 ```
 
