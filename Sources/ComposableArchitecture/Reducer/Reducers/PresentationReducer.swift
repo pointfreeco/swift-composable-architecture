@@ -521,7 +521,6 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
   }
 
   public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
-    // TODO: don't hold onto this. just compute the things we need from it
     let initialPresentationState = state[keyPath: self.toPresentationState]
     let presentationAction = self.toPresentationAction.extract(from: action)
 
