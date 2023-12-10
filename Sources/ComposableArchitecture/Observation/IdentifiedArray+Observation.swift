@@ -71,25 +71,23 @@ extension Store where State: ObservableState {
 
 public struct _StoreCollection<ID: Hashable, State, Action>: RandomAccessCollection {
   private let store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
-  // TODO: Should this be an entire snapshot of store state? `IdentifiedArray<ID, State>`?
-  // Could return inert stores that warn when sending actions or accessing state without crashing.
-  private let ids: OrderedSet<ID>
+  private let data: IdentifiedArray<ID, State>
 
   fileprivate init(_ store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>) {
     self.store = store
-    self.ids = store.withState(\.ids)
+    self.data = store.withState { $0 }
   }
 
-  public var startIndex: Int { self.ids.startIndex }
-  public var endIndex: Int { self.ids.endIndex }
+  public var startIndex: Int { self.data.startIndex }
+  public var endIndex: Int { self.data.endIndex }
   public subscript(position: Int) -> Store<State, Action> {
-    guard self.ids.indices.contains(position)
+    guard self.data.indices.contains(position)
     else {
       return Store()
     }
-    let id = self.ids[position]
+    let id = self.data.ids[position]
     return self.store.scope(
-      state: { $0[id: id]! },
+      state: { $0[id: id] ?? self.data[id: id]! },
       id: self.store.id(state: \.[id: id]!, action: \.[id: id]),
       action: { .element(id: id, action: $0) },
       isInvalid: { !$0.ids.contains(id) },
