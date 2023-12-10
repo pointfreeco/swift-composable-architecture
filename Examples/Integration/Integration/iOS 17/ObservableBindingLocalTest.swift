@@ -89,40 +89,42 @@ struct ObservableBindingLocalTestCaseView: View {
   }
 
   var body: some View {
-    NavigationStack(path: self.$store.scope(state: \.path, action: \.path)) {
-      VStack {
-        Button("Full-screen-cover") {
-          self.store.send(.fullScreenCoverButtonTapped)
+    WithPerceptionTracking {
+      NavigationStack(path: self.$store.scope(state: \.path, action: \.path)) {
+        VStack {
+          Button("Full-screen-cover") {
+            self.store.send(.fullScreenCoverButtonTapped)
+          }
+          Button("Navigation destination") {
+            self.store.send(.navigationDestinationButtonTapped)
+          }
+          NavigationLink("Path", state: Child.State())
+          Button("Popover") {
+            self.store.send(.popoverButtonTapped)
+          }
+          Button("Sheet") {
+            self.store.send(.sheetButtonTapped)
+          }
         }
-        Button("Navigation destination") {
-          self.store.send(.navigationDestinationButtonTapped)
+        .fullScreenCover(
+          item: self.$store.scope(state: \.fullScreenCover, action: \.fullScreenCover)
+        ) { store in
+          ChildView(store: store)
         }
-        NavigationLink("Path", state: Child.State())
-        Button("Popover") {
-          self.store.send(.popoverButtonTapped)
+        .navigationDestination(
+          store: self.store.scope(state: \.$navigationDestination, action: \.navigationDestination)
+        ) { store in
+          ChildView(store: store)
         }
-        Button("Sheet") {
-          self.store.send(.sheetButtonTapped)
+        .popover(item: self.$store.scope(state: \.popover, action: \.popover)) { store in
+          ChildView(store: store)
         }
-      }
-      .fullScreenCover(
-        item: self.$store.scope(state: \.fullScreenCover, action: \.fullScreenCover)
-      ) { store in
+        .sheet(item: self.$store.scope(state: \.sheet, action: \.sheet)) { store in
+          ChildView(store: store)
+        }
+      } destination: { store in
         ChildView(store: store)
       }
-      .navigationDestination(
-        store: self.store.scope(state: \.$navigationDestination, action: \.navigationDestination)
-      ) { store in
-        ChildView(store: store)
-      }
-      .popover(item: self.$store.scope(state: \.popover, action: \.popover)) { store in
-        ChildView(store: store)
-      }
-      .sheet(item: self.$store.scope(state: \.sheet, action: \.sheet)) { store in
-        ChildView(store: store)
-      }
-    } destination: { store in
-      ChildView(store: store)
     }
   }
 }

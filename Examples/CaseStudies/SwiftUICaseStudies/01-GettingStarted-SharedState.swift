@@ -137,14 +137,6 @@ struct SharedState {
       private(set) var minCount: Int
       private(set) var numberOfCounts: Int
 
-      init(currentTab: Tab, count: Int = 0, maxCount: Int, minCount: Int, numberOfCounts: Int) {
-        self.currentTab = currentTab
-        self.count = count
-        self.maxCount = maxCount
-        self.minCount = minCount
-        self.numberOfCounts = numberOfCounts
-      }
-
       fileprivate mutating func resetCount() {
         self.currentTab = .counter
         self.count = 0
