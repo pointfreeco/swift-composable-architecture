@@ -33,6 +33,7 @@ extension Store: Perceptible {
 #endif
 
 extension Store where State: ObservableState {
+  /// Direct access to state in the store when `State` conforms to ``ObservableState``.
   private(set) public var state: State {
     get { self.observableState }
     set { self.observableState = newValue }
@@ -60,8 +61,35 @@ extension Store: Identifiable {}
 extension Store where State: ObservableState {
   /// Scopes the store to optional child state and actions.
   ///
-  /// TODO: Example
-  /// TODO: Document that this should only be used with SwiftUI.
+  /// If your feature holds onto a child feature as an optional:
+  ///
+  /// ```swift
+  /// @Reducer
+  /// struct Feature {
+  ///   @ObservableState
+  ///   struct State {
+  ///     var child: Child.State?
+  ///     // ...
+  ///   }
+  ///   enum Action {
+  ///     case child(Child.Action)
+  ///     // ...
+  ///   }
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// …then you can use this `scope` operator in order to transform a store of your feature into
+  /// a non-optional store of the child domain:
+  ///
+  /// ```swift
+  /// if let childStore = store.scope(state: \.child, action: \.child) {
+  ///   ChildView(store: childStore)
+  /// }
+  /// ```
+  ///
+  /// > Important: This operation should only be used from within a SwiftUI view or within
+  /// > `withPerceptionTracking` in order for changes of the optional state to be properly observed.
   ///
   /// - Parameters:
   ///   - state: A key path to optional child state.
@@ -97,7 +125,45 @@ extension Store where State: ObservableState {
 extension Binding {
   /// Scopes the binding of a store to a binding of an optional presentation store.
   ///
-  /// TODO: Example
+  /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
+  /// view modifiers, such as `sheet(item:)`, popover(item:)`, etc.
+  ///
+  ///
+  /// For example, suppose your feature can present a child feature in a sheet. Then your feature's
+  /// domain would hold onto the child's domain using the library's presentation tools (see
+  /// <doc:TreeBasedNavigation> for more information on these tools):
+  ///
+  /// ```swift
+  /// @Reducer
+  /// struct Feature {
+  ///   @ObservableState
+  ///   struct State {
+  ///     @Presents var child: Child.State?
+  ///     // ...
+  ///   }
+  ///   enum Action {
+  ///     case child(PresentationActionOf<Child>)
+  ///     // ...
+  ///   }
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// Then you can derive a binding to the child domain that can be handed to the `sheet(item:)`
+  /// view modifier:
+  ///
+  /// ```swift
+  /// struct FeatureView: View {
+  ///   @Bindable var store: StoreOf<Feature>
+  ///
+  ///   var body: some View {
+  ///     // ...
+  ///     .sheet(item: $store.scope(state: \.child, action: \.child)) { store in
+  ///       ChildView(store: store)
+  ///     }
+  ///   }
+  /// }
+  /// ```
   ///
   /// - Parameters:
   ///   - state: A key path to optional child state.
@@ -129,7 +195,45 @@ extension Binding {
 extension Bindable {
   /// Scopes the binding of a store to a binding of an optional presentation store.
   ///
-  /// TODO: Example
+  /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
+  /// view modifiers, such as `sheet(item:)`, popover(item:)`, etc.
+  ///
+  ///
+  /// For example, suppose your feature can present a child feature in a sheet. Then your feature's
+  /// domain would hold onto the child's domain using the library's presentation tools (see
+  /// <doc:TreeBasedNavigation> for more information on these tools):
+  ///
+  /// ```swift
+  /// @Reducer
+  /// struct Feature {
+  ///   @ObservableState
+  ///   struct State {
+  ///     @Presents var child: Child.State?
+  ///     // ...
+  ///   }
+  ///   enum Action {
+  ///     case child(PresentationActionOf<Child>)
+  ///     // ...
+  ///   }
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// Then you can derive a binding to the child domain that can be handed to the `sheet(item:)`
+  /// view modifier:
+  ///
+  /// ```swift
+  /// struct FeatureView: View {
+  ///   @Bindable var store: StoreOf<Feature>
+  ///
+  ///   var body: some View {
+  ///     // ...
+  ///     .sheet(item: $store.scope(state: \.child, action: \.child)) { store in
+  ///       ChildView(store: store)
+  ///     }
+  ///   }
+  /// }
+  /// ```
   ///
   /// - Parameters:
   ///   - state: A key path to optional child state.
@@ -154,7 +258,45 @@ extension Bindable {
 extension BindableStore {
   /// Scopes the binding of a store to a binding of an optional presentation store.
   ///
-  /// TODO: Example
+  /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
+  /// view modifiers, such as `sheet(item:)`, popover(item:)`, etc.
+  ///
+  ///
+  /// For example, suppose your feature can present a child feature in a sheet. Then your feature's
+  /// domain would hold onto the child's domain using the library's presentation tools (see
+  /// <doc:TreeBasedNavigation> for more information on these tools):
+  ///
+  /// ```swift
+  /// @Reducer
+  /// struct Feature {
+  ///   @ObservableState
+  ///   struct State {
+  ///     @Presents var child: Child.State?
+  ///     // ...
+  ///   }
+  ///   enum Action {
+  ///     case child(PresentationActionOf<Child>)
+  ///     // ...
+  ///   }
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// Then you can derive a binding to the child domain that can be handed to the `sheet(item:)`
+  /// view modifier:
+  ///
+  /// ```swift
+  /// struct FeatureView: View {
+  ///   @BindableStore var store: StoreOf<Feature>
+  ///
+  ///   var body: some View {
+  ///     // ...
+  ///     .sheet(item: $store.scope(state: \.child, action: \.child)) { store in
+  ///       ChildView(store: store)
+  ///     }
+  ///   }
+  /// }
+  /// ```
   ///
   /// - Parameters:
   ///   - state: A key path to optional child state.

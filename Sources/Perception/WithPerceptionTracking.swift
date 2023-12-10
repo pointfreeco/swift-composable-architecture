@@ -24,6 +24,7 @@ public struct WithPerceptionTracking<Content: View>: View {
     if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
       return self.content()
     } else {
+      // NB: View will not re-render when 'id' changes unless we access it in the view.
       let _ = self.id
       return withPerceptionTracking {
         PerceptionLocals.$isInPerceptionTracking.withValue(true) {
