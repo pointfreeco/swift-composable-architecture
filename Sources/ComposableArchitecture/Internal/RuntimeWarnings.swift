@@ -1,7 +1,7 @@
 import Foundation
 
 extension Notification.Name {
-  public static let runtimeWarning = Self("ComposableArchitecture.runtimeWarning")
+  public static let _runtimeWarning = Self("ComposableArchitecture.runtimeWarning")
 }
 
 @_transparent
@@ -14,7 +14,7 @@ func runtimeWarn(
   #if DEBUG
     let message = message()
     NotificationCenter.default.post(
-      name: .runtimeWarning,
+      name: ._runtimeWarning,
       object: nil,
       userInfo: ["message": message]
     )
