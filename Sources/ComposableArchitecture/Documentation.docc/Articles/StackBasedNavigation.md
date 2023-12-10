@@ -21,11 +21,11 @@ It also allows for complex and recursive navigation paths in your application.
 The tools for this style of navigation include ``StackState``, ``StackAction`` and the
 ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` operator, as well as a new 
 initializer ``SwiftUI/NavigationStack/init(path:root:destination:)`` on 
-``SwiftUI/NavigationStack`` that behaves like the normal initializer, but is tuned specifically for 
+`NavigationStack` that behaves like the normal initializer, but is tuned specifically for 
 the Composable Architecture.
 
 The process of integrating features into a navigation stack largely consists of 2 steps: 
-integrating the features' domains together, and constructing a ``SwiftUI/NavigationStack`` for a 
+integrating the features' domains together, and constructing a `NavigationStack` for a 
 store describing all the views in the stack. One typically starts by integrating the features' 
 domains together. This consists of defining a new reducer, typically called `Path`, that holds the 
 domains of all the features that can be pushed onto the stack:
@@ -110,7 +110,7 @@ struct RootFeature {
 That completes the steps to integrate the child and parent features together for a navigation stack.
 
 Next we must integrate the child and parent views together. This is done by a 
-``SwiftUI/NavigationStack`` using a special initializer that comes with this library, called
+`NavigationStack` using a special initializer that comes with this library, called
 ``SwiftUI/NavigationStack/init(path:root:destination:)``. This initializer takes 3 arguments: a
 binding of a store focused in on ``StackState`` and ``StackAction`` in your domain, a trailing view
 builder for the root view of the stack, and another trailing view builder for all of the views that

@@ -23,7 +23,7 @@ their strengths and weaknesses.
 
 The word "navigation" can mean a lot of different things to different people. For example, most
 people would say that an example of "navigation" is the drill-down style of navigation afforded to 
-us by ``SwiftUI/NavigationStack`` in SwiftUI and `UINavigationController` in UIKit "navigation". 
+us by `NavigationStack` in SwiftUI and `UINavigationController` in UIKit "navigation". 
 However, if drill-downs are considered navigation, then surely sheets and fullscreen covers should 
 be too.  The only difference is that sheets and covers animate from bottom-to-top instead of from 
 right-to-left, but is that actually substantive?
@@ -148,7 +148,7 @@ of modeling the presentation of a child feature with optional state. This takes 
 structure in which a deeply nested feature is represented by a deeply nested piece of state.
 
 There is another powerful tool for modeling the existence and non-existence of state for driving
-navigation: collections. This is most used with SwiftUI's ``SwiftUI/NavigationStack`` view in which 
+navigation: collections. This is most used with SwiftUI's `NavigationStack` view in which 
 an entire stack of features are represented by a collection of data. When an item is added to the 
 collection it represents a new feature being pushed onto the stack, and when an item is removed from 
 the collection it represents popping the feature off the stack.
@@ -187,7 +187,7 @@ Composable Architecture to implement stack-based navigation in your application.
 
 Most real-world applications will use a mixture of tree-based and stack-based navigation. For
 example, the root of your application may use stack-based navigation with a 
-``SwiftUI/NavigationStack`` view, but then each feature inside the stack may use tree-based 
+`NavigationStack` view, but then each feature inside the stack may use tree-based 
 navigation for showing sheets, popovers, alerts, etc. But, there are pros and cons to each form of 
 navigation, and so it can be important to be aware of their differences when modeling your domains.
 
@@ -271,9 +271,9 @@ recursion in this navigation since it is just a flat array.
 stack. This means the features can be put into their own modules with no dependencies on each
 other, and can be compiled without compiling any other features.
 
-* The ``SwiftUI/NavigationStack`` API in SwiftUI typically has fewer bugs than 
+* The `NavigationStack` API in SwiftUI typically has fewer bugs than 
 `NavigationLink(isActive:)` and `navigationDestination(isPresented:)`, which are used in tree-based 
-navigation. There are still a few bugs in ``SwiftUI/NavigationStack``, but on average it is a lot 
+navigation. There are still a few bugs in `NavigationStack`, but on average it is a lot 
 more stable.
 
 #### Cons of stack-based navigation
@@ -318,7 +318,7 @@ more stable.
     edit feature interact with each other. The only way to write that test is to compile and run the
     entire application.
 
-  * And finally, stack-based navigation and ``SwiftUI/NavigationStack`` only applies to drill-downs 
+  * And finally, stack-based navigation and `NavigationStack` only applies to drill-downs 
     and does not address at all other forms of navigation, such as sheets, popovers, alerts, etc. 
     It's still on you to do the work to decouple those kinds of navigations.
 

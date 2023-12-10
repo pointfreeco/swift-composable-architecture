@@ -525,7 +525,7 @@ Then in the view you must start holding onto the `store` in a bindable manner, u
 ```
 
 And the original code can now be updated to our custom initializer 
-``SwiftUI/NavigationStack/init(path:root:destination:)`` on ``SwiftUI/NavigationStack``:
+``SwiftUI/NavigationStack/init(path:root:destination:)`` on `NavigationStack`:
 
 ```swift
 NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
