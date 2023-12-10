@@ -22,6 +22,7 @@ you are targeting older platforms.
 * [Replacing IfLetStore with ‘if let’](#Replacing-IfLetStore-with-if-let)
 * [Replacing ForEachStore with ForEach](#Replacing-ForEachStore-with-ForEach)
 * [Replacing SwitchStore and CaseLet with ‘switch’ and ‘case’](#Replacing-SwitchStore-and-CaseLet-with-switch-and-case)
+* [Replacing @PresentationState with @Presentation](#Replacing-PresentationState-with-Presentation)
 * [Replacing navigation view modifiers with SwiftUI modifiers](#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers)
 * [Updating alert and confirmationDialog](#Updating-alert-and-confirmationDialog)
 * [Replacing NavigationStackStore with NavigationStack](#Replacing-NavigationStackStore-with-NavigationStack)
@@ -132,11 +133,6 @@ apply all of the updates above, but with one additional simplification to the `b
 ```
 
 You no longer need the ``WithViewStore`` or `WithPerceptionTracking` at all.
-
-> When you apply the ``ObservableState()`` macro to state that presents child state via the
-> ``PresentationState`` property wrapper, you will encounter a diagnostic directing you to use the
-> ``Presents()`` macro instead, which will wrap the given field with ``PresentationState`` _and_
-> instrument it with observation.
 
 ## Replacing IfLetStore with 'if let'
 
@@ -300,6 +296,29 @@ case .settings:
   if let store = store.scope(state: \.settings, action: \.settings) {
     SettingsView(store: store)
   }
+}
+```
+
+## Replacing @PresentationState with @Presentation
+
+It is a well-known limitation of Swift macros that they cannot be used with property wrappers.
+This means that if your feature uses ``PresentationState`` you will get compiler errors when 
+applying the ``ObservableState()`` macro:
+
+```swift
+@ObservableState 
+struct State {
+  @PresentationState var child: Child.State?  // 🛑
+}
+```
+
+Instead of using the ``PresentationState`` property wrapper you can now use the ``Presents()`` 
+macro:
+
+```swift
+@ObservableState 
+struct State {
+  @Presents var child: Child.State?  // ✅
 }
 ```
 
