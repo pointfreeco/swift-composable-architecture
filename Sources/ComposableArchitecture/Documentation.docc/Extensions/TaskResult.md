@@ -20,3 +20,4 @@
 - ``map(_:)``
 - ``flatMap(_:)``
 - ``init(_:)``
+- ``Swift/Result/init(_:)``

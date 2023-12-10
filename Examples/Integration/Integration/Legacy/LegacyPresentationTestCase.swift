@@ -312,7 +312,7 @@ struct PresentationTestCaseView: View {
       Button("Open alert") {
         self.viewStore.send(.alertButtonTapped)
       }
-      .alert($store.scope(state: \.$destination.alert, action: \.destination.alert))
+      .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
 
       Button("Open custom alert") {
         self.viewStore.send(.customAlertButtonTapped)

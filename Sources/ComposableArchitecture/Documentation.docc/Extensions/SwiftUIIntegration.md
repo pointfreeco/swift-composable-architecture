@@ -9,8 +9,18 @@ designed with SwiftUI in mind, and comes with many powerful tools to integrate i
 
 ## Topics
 
+### Alerts and dialogs
+
+- ``SwiftUI/View/alert(_:)``
+- ``SwiftUI/View/confirmationDialog(_:)``
+
+### Presentation
+
+- ``SwiftUI/Binding/scope(state:action:)-4mj4d``
+
 ### Navigation stacks and links
 
+- ``SwiftUI/Binding/scope(state:action:)-35r82``
 - ``SwiftUI/NavigationStack/init(path:root:destination:)``
 - ``SwiftUI/NavigationLink/init(state:label:fileID:line:)``
 
@@ -20,6 +30,7 @@ designed with SwiftUI in mind, and comes with many powerful tools to integrate i
 - ``BindableAction``
 - ``BindingAction``
 - ``BindingReducer``
+- ``BindableStore``
 
 ### Deprecations
 

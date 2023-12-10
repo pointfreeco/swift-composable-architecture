@@ -19,7 +19,7 @@ use these tools.
 ### Tree-based navigation
 
 - <doc:TreeBasedNavigation>
-- ``PresentationState``
+- ``Presents()``
 - ``PresentationAction``
 - ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``
 
@@ -34,3 +34,5 @@ use these tools.
 ### Dismissal
 
 - ``DismissEffect``
+- ``Dependencies/DependencyValues/dismiss``
+- ``Dependencies/DependencyValues/isPresented``

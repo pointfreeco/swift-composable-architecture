@@ -109,9 +109,6 @@ extension BindableStore {
 extension NavigationStack {
   /// Drives a navigation stack with a store.
   ///
-  /// > Warning: The feature state containing ``StackState`` must be annotated with
-  /// > ``ObservableObject`` for navigation to be observed.
-  ///
   /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
   /// tools, and in particular see <doc:StackBasedNavigation> for information on using this view.
   public init<State, Action, Destination: View, R>(
