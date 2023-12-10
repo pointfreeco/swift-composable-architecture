@@ -7,9 +7,7 @@
 
   final class ObservableStateMacroTests: MacroBaseTestCase {
     override func invokeTest() {
-      withMacroTesting(
-        // isRecording: true
-      ) {
+      withMacroTesting {
         super.invokeTest()
       }
     }
@@ -236,6 +234,42 @@
               return ._$inert._$tag(0)
             }
           }
+        }
+        """
+      }
+    }
+
+    func testObservableState_Class() {
+      assertMacro {
+        """
+        @ObservableState
+        public class Model {
+        }
+        """
+      } diagnostics: {
+        """
+        @ObservableState
+        ┬───────────────
+        ╰─ 🛑 '@ObservableState' cannot be applied to class type 'Model'
+        public class Model {
+        }
+        """
+      }
+    }
+
+    func testObservableState_Actor() {
+      assertMacro {
+        """
+        @ObservableState
+        public actor Model {
+        }
+        """
+      } diagnostics: {
+        """
+        @ObservableState
+        ┬───────────────
+        ╰─ 🛑 '@ObservableState' cannot be applied to actor type 'Model'
+        public actor Model {
         }
         """
       }
