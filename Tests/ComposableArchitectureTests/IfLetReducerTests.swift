@@ -4,7 +4,9 @@ import XCTest
 @MainActor
 final class IfLetReducerTests: XCTestCase {
   #if DEBUG
-    func testNilChild() async {
+    func testNilChild() async throws {
+      try XCTSkipIfWindowsExpectFailure()
+
       let store = TestStore(
         initialState: Int?.none,
         reducer: EmptyReducer<Int?, Void>()

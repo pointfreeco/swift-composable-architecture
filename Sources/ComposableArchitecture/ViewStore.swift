@@ -1,5 +1,12 @@
+#if canImport(OpenCombine)
+import OpenCombine
+#else
 import Combine
+#endif
+
+#if canImport(SwiftUI)
 import SwiftUI
+#endif
 
 /// A `ViewStore` is an object that can observe state changes and send actions. They are most
 /// commonly used in views, such as SwiftUI views, UIView or UIViewController, but they can be used
@@ -70,6 +77,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   private let _send: (ViewAction) -> Task<Void, Never>?
   fileprivate let _state: CurrentValueRelay<ViewState>
   private var viewCancellable: AnyCancellable?
+  private let instrumentation: Instrumentation
 
   /// Initializes a view store from a store which observes changes to state.
   ///
@@ -88,11 +96,21 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   public init<State>(
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (State) -> ViewState,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
+    file: StaticString = #file,
+    line: UInt = #line
   ) {
-    self._send = { store.send($0) }
+    self._send = { [instrumentation = store.instrumentation] in
+      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0, file: file, line: line).eraseToAny()
+      instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
+      defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
+
+      return store.send($0, file: file, line: line)
+    }
     self._state = CurrentValueRelay(toViewState(store.state.value))
+    self.instrumentation = store.instrumentation
     self.viewCancellable = store.state
+      // TODO: measure `viewStoreToLocalState`?
       .map(toViewState)
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
@@ -100,6 +118,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
         objectWillChange.send()
         _state.value = $0
       }
+    store.instrumentation.viewStoreCreated?(self as AnyObject, ViewStore<ViewState, ViewAction>.self, nil, file, line)
   }
 
   /// Initializes a view store from a store which observes changes to state.
@@ -121,11 +140,21 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     _ store: Store<State, Action>,
     observe toViewState: @escaping (State) -> ViewState,
     send fromViewAction: @escaping (ViewAction) -> Action,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
+    file: StaticString = #file,
+    line: UInt = #line
   ) {
-    self._send = { store.send(fromViewAction($0)) }
+    self._send = { [instrumentation = store.instrumentation] in
+      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0, file: file, line: line).eraseToAny()
+      instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
+      defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
+
+      return store.send(fromViewAction($0), file: file, line: line)
+    }
     self._state = CurrentValueRelay(toViewState(store.state.value))
+    self.instrumentation = store.instrumentation
     self.viewCancellable = store.state
+      // TODO: measure `viewStoreToLocalState`?
       .map(toViewState)
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
@@ -133,6 +162,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
         objectWillChange.send()
         _state.value = $0
       }
+    store.instrumentation.viewStoreCreated?(self as AnyObject, ViewStore<ViewState, ViewAction>.self, nil, file, line)
   }
 
   /// Initializes a view store from a store.
@@ -198,24 +228,73 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   )
   public init(
     _ store: Store<ViewState, ViewAction>,
-    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool
+    removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
+    file: StaticString = #file,
+    line: UInt = #line
   ) {
-    self._send = { store.send($0) }
+    self.instrumentation = store.instrumentation
+    self._send = { [instrumentation = store.instrumentation] in
+      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0, file: file, line: line).eraseToAny()
+      instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
+      defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
+
+      return store.send($0, file: file, line: line)
+    }
     self._state = CurrentValueRelay(store.state.value)
+
+    let stateChangeCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: nil as ViewAction?, file: file, line: line).eraseToAny()
     self.viewCancellable = store.state
-      .removeDuplicates(by: isDuplicate)
-      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
+      .removeDuplicates(by: { [instrumentation = store.instrumentation] in
+        instrumentation.callback?(stateChangeCallbackInfo, .pre, .viewStoreDeduplicate)
+        defer { instrumentation.callback?(stateChangeCallbackInfo, .post, .viewStoreDeduplicate) }
+
+        return isDuplicate($0, $1)
+      })
+      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state, instrumentation = store.instrumentation] in
         guard let objectWillChange = objectWillChange, let _state = _state else { return }
+
+        instrumentation.callback?(stateChangeCallbackInfo, .pre, .viewStoreChangeState)
+        defer { instrumentation.callback?(stateChangeCallbackInfo, .post, .viewStoreChangeState) }
+
         objectWillChange.send()
         _state.value = $0
       }
+
+    store.instrumentation.viewStoreCreated?(self as AnyObject, ViewStore<ViewState, ViewAction>.self, nil, file, line)
   }
 
-  init(_ viewStore: ViewStore<ViewState, ViewAction>) {
+  /// Initializes a view store from a store that has a state of type void. This special initializer prevents this view
+  /// store from taking part in state propagation for any actions sent since a void state has no value to update.
+  ///
+  /// - Parameters:
+  ///   - store: A store
+  ///   - instrumentation: Instrumentation instance that may be used to trace behavior of this ViewStore
+  public init(
+    _ store: Store<ViewState, ViewAction>,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) where ViewState == Void {
+    self.instrumentation = store.instrumentation
+    self._send = { [instrumentation = store.instrumentation] in
+      let sendCallbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: $0, file: file, line: line).eraseToAny()
+      instrumentation.callback?(sendCallbackInfo, .pre, .viewStoreSend)
+      defer { instrumentation.callback?(sendCallbackInfo, .post, .viewStoreSend) }
+
+      return store.send($0, file: file, line: line)
+    }
+    self._state = CurrentValueRelay(())
+
+    store.instrumentation.viewStoreCreated?(self as AnyObject, ViewStore<ViewState, ViewAction>.self, nil, file, line)
+  }
+
+  internal init(_ viewStore: ViewStore<ViewState, ViewAction>, file: StaticString = #file, line: UInt = #line) {
     self._send = viewStore._send
     self._state = viewStore._state
+    self.instrumentation = viewStore.instrumentation
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
+
+    self.instrumentation.viewStoreCreated?(self as AnyObject, ViewStore<ViewState, ViewAction>.self, nil, file, line)
   }
 
   /// A publisher that emits when state changes.
@@ -280,7 +359,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   public func send(_ action: ViewAction) -> ViewStoreTask {
     .init(rawValue: self._send(action))
   }
-
+  #if canImport(SwiftUI)
   /// Sends an action to the store with a given animation.
   ///
   /// See ``ViewStore/send(_:)`` for more info.
@@ -290,7 +369,9 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - animation: An animation.
   @discardableResult
   public func send(_ action: ViewAction, animation: Animation?) -> ViewStoreTask {
-    send(action, transaction: Transaction(animation: animation))
+      withAnimation(animation) {
+        self.send(action)
+      }
   }
 
   /// Sends an action to the store with a given transaction.
@@ -306,6 +387,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       self.send(action)
     }
   }
+  #endif
 
   /// Sends an action into the store and then suspends while a piece of state is `true`.
   ///
@@ -387,7 +469,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       task.rawValue?.cancel()
     }
   }
-
+  #if canImport(SwiftUI)
   /// Sends an action into the store and then suspends while a piece of state is `true`.
   ///
   /// See the documentation of ``send(_:while:)`` for more information.
@@ -410,7 +492,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       task.rawValue?.cancel()
     }
   }
-
+  #endif
   /// Suspends the current task while a predicate on state is `true`.
   ///
   /// If you want to suspend at the same time you send an action to the view store, use
@@ -447,7 +529,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       }
     }
   }
-
+  #if canImport(SwiftUI)
   /// Derives a binding from the store that prevents direct writes to state and instead sends
   /// actions to the store.
   ///
@@ -572,6 +654,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   public func binding(send action: ViewAction) -> Binding<ViewState> {
     self.binding(send: { _ in action })
   }
+  #endif
 
   private subscript<Value>(
     get state: HashableWrapper<(ViewState) -> Value>,
@@ -604,17 +687,21 @@ public typealias ViewStoreOf<R: ReducerProtocol> = ViewStore<R.State, R.Action>
 extension ViewStore where ViewState: Equatable {
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (State) -> ViewState
+    observe toViewState: @escaping (State) -> ViewState,
+    file: StaticString = #file,
+    line: UInt = #line
   ) {
-    self.init(store, observe: toViewState, removeDuplicates: ==)
+    self.init(store, observe: toViewState, removeDuplicates: ==, file: file, line: line)
   }
 
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (State) -> ViewState,
-    send fromViewAction: @escaping (ViewAction) -> Action
+    send fromViewAction: @escaping (ViewAction) -> Action,
+    file: StaticString = #file,
+    line: UInt = #line
   ) {
-    self.init(store, observe: toViewState, send: fromViewAction, removeDuplicates: ==)
+    self.init(store, observe: toViewState, send: fromViewAction, removeDuplicates: ==, file: file, line: line)
   }
 
   /// Initializes a view store from a store.
@@ -676,14 +763,8 @@ extension ViewStore where ViewState: Equatable {
       https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance#View-stores
       """
   )
-  public convenience init(_ store: Store<ViewState, ViewAction>) {
-    self.init(store, removeDuplicates: ==)
-  }
-}
-
-extension ViewStore where ViewState == Void {
-  public convenience init(_ store: Store<Void, ViewAction>) {
-    self.init(store, removeDuplicates: ==)
+  public convenience init(_ store: Store<ViewState, ViewAction>, file: StaticString = #file, line: UInt = #line) {
+    self.init(store, removeDuplicates: ==, file: file, line: line)
   }
 }
 

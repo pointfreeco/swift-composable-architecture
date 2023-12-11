@@ -4,4 +4,6 @@
 @_exported import CustomDump
 @_exported import Dependencies
 @_exported import IdentifiedCollections
-@_exported import _SwiftUINavigationState
+#if canImport(SwiftUI)
+@_exported import SwiftUINavigationCore
+#endif

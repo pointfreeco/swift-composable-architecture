@@ -41,7 +41,9 @@ final class ScopeTests: XCTestCase {
   }
 
   #if DEBUG
-    func testNilChild() async {
+    func testNilChild() async throws {
+      try XCTSkipIfWindowsExpectFailure()
+
       let store = TestStore(
         initialState: Child2.State.count(0),
         reducer: Scope(state: /Child2.State.name, action: /Child2.Action.name) {}

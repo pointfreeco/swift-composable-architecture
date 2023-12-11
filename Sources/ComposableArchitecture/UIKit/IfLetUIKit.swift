@@ -1,4 +1,8 @@
+#if canImport(OpenCombine)
+import OpenCombine
+#else
 import Combine
+#endif
 
 extension Store {
   /// Calls one of two closures depending on whether a store's optional state is `nil` or not, and
@@ -47,17 +51,25 @@ extension Store {
   ///   goes from `nil` to non-`nil` and vice versa, so that the caller can react to these changes.
   public func ifLet<Wrapped>(
     then unwrap: @escaping (Store<Wrapped, Action>) -> Void,
-    else: @escaping () -> Void = {}
+    removeDuplicates isDuplicate: ((Wrapped, Wrapped) -> Bool)? = nil,
+    else: @escaping () -> Void = {},
+    file: StaticString = #file,
+    line: UInt = #line
   ) -> Cancellable where State == Wrapped? {
     return self.state
       .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
       .sink { state in
         if var state = state {
           unwrap(
-            self.scope {
-              state = $0 ?? state
-              return state
-            }
+            self.scope(
+                state: {
+                    state = $0 ?? state
+                    return state
+                },
+                removeDuplicates: isDuplicate,
+                file: file,
+                line: line
+            )
           )
         } else {
           `else`()

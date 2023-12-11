@@ -1,5 +1,9 @@
-import Combine
 import Foundation
+#if canImport(OpenCombine)
+import OpenCombine
+#else
+import Combine
+#endif
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -136,6 +140,8 @@ public final class Store<State, Action> {
     private let mainThreadChecksEnabled: Bool
   #endif
 
+  public let instrumentation: Instrumentation
+
   /// Initializes a store from an initial state and a reducer.
   ///
   /// - Parameters:
@@ -143,22 +149,35 @@ public final class Store<State, Action> {
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
   ///     by the reducer.
+  ///   - instrumentation: The instrumentation object to use
   public convenience init<R: ReducerProtocol>(
     initialState: @autoclosure () -> R.State,
     reducer: R,
-    prepareDependencies: ((inout DependencyValues) -> Void)? = nil
+    parentStore: AnyObject? = nil,
+    instrumentation: Instrumentation = .noop,
+    prepareDependencies: ((inout DependencyValues) -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
   ) where R.State == State, R.Action == Action {
     if let prepareDependencies = prepareDependencies {
       self.init(
         initialState: withDependencies(prepareDependencies) { initialState() },
         reducer: reducer.transformDependency(\.self, transform: prepareDependencies),
-        mainThreadChecksEnabled: true
+        mainThreadChecksEnabled: true,
+        parentStore: parentStore,
+        instrumentation: instrumentation,
+        file: file,
+        line: line
       )
     } else {
       self.init(
         initialState: initialState(),
         reducer: reducer,
-        mainThreadChecksEnabled: true
+        mainThreadChecksEnabled: true,
+        parentStore: parentStore,
+        instrumentation: instrumentation,
+        file: file,
+        line: line
       )
     }
   }
@@ -304,15 +323,33 @@ public final class Store<State, Action> {
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
-    action fromChildAction: @escaping (ChildAction) -> Action
+    action fromChildAction: @escaping (ChildAction) -> Action,
+    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
-
     #if swift(>=5.7)
-      return self.reducer.rescope(self, state: toChildState, action: { fromChildAction($1) })
+      return self.reducer.rescope(
+        self,
+        state: toChildState,
+        action: { fromChildAction($1) },
+        removeDuplicates: isDuplicate,
+        instrumentation: instrumentation,
+        file: file,
+        line: line
+      )
     #else
       return (self.scope ?? StoreScope(root: self))
-        .rescope(self, state: toChildState, action: { fromChildAction($1) })
+        .rescope(
+          self,
+          state: toChildState,
+          action: { fromChildAction($1) },
+          removeDuplicates: isDuplicate,
+          instrumentation: instrumentation,
+          file: file,
+          line: line
+      )
     #endif
   }
 
@@ -323,37 +360,67 @@ public final class Store<State, Action> {
   /// - Parameter toChildState: A function that transforms `State` into `ChildState`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState>(
-    state toChildState: @escaping (State) -> ChildState
+    state toChildState: @escaping (State) -> ChildState,
+    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
   ) -> Store<ChildState, Action> {
-    self.scope(state: toChildState, action: { $0 })
+    self.scope(state: toChildState, action: { $0 }, removeDuplicates: isDuplicate, file: file, line: line)
   }
 
   func filter(
-    _ isSent: @escaping (State, Action) -> Bool
+    _ isSent: @escaping (State, Action) -> Bool,
+    file: StaticString = #file,
+    line: UInt = #line
   ) -> Store<State, Action> {
     self.threadCheck(status: .scope)
 
     #if swift(>=5.7)
-      return self.reducer.rescope(self, state: { $0 }, action: { isSent($0, $1) ? $1 : nil })
+      return self.reducer.rescope(
+        self,
+        state: { $0 },
+        action: { isSent($0, $1) ? $1 : nil },
+        instrumentation: instrumentation,
+        file: file,
+        line: line
+      )
     #else
       return (self.scope ?? StoreScope(root: self))
-        .rescope(self, state: { $0 }, action: { isSent($0, $1) ? $1 : nil })
+        .rescope(
+            self,
+            state: { $0 },
+            action: { isSent($0, $1) ? $1 : nil },
+            instrumentation: instrumentation,
+            file: file,
+            line: line
+        )
     #endif
   }
 
   @_spi(Internals) public func send(
     _ action: Action,
-    originatingFrom originatingAction: Action? = nil
+    originatingFrom originatingAction: Action? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
   ) -> Task<Void, Never>? {
     self.threadCheck(status: .send(action, originatingAction: originatingAction))
 
     self.bufferedActions.append(action)
     guard !self.isSending else { return nil }
 
+    let callbackInfo = Instrumentation.CallbackInfo(storeKind: Self.self, action: action, originatingAction: originatingAction, file: file, line: line).eraseToAny()
+    instrumentation.callback?(callbackInfo, .pre, .storeSend)
+    defer { instrumentation.callback?(callbackInfo, .post, .storeSend) }
+
     self.isSending = true
     var currentState = self.state.value
+
     let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
+
     defer {
+      instrumentation.callback?(callbackInfo, .pre, .storeChangeState)
+      defer { instrumentation.callback?(callbackInfo, .post, .storeChangeState) }
+
       withExtendedLifetime(self.bufferedActions) {
         self.bufferedActions.removeAll()
       }
@@ -361,7 +428,10 @@ public final class Store<State, Action> {
       self.isSending = false
       if !self.bufferedActions.isEmpty {
         if let task = self.send(
-          self.bufferedActions.removeLast(), originatingFrom: originatingAction
+          self.bufferedActions.removeLast(),
+          originatingFrom: originatingAction,
+          file: file,
+          line: line
         ) {
           tasks.wrappedValue.append(task)
         }
@@ -372,6 +442,16 @@ public final class Store<State, Action> {
     while index < self.bufferedActions.endIndex {
       defer { index += 1 }
       let action = self.bufferedActions[index]
+      let processCallbackInfo = Instrumentation.CallbackInfo(
+        storeKind: Self.self,
+        action: action,
+        originatingAction: nil,
+        file: file,
+        line: line
+      ).eraseToAny()
+      instrumentation.callback?(processCallbackInfo, .pre, .storeProcessEvent)
+      defer { instrumentation.callback?(processCallbackInfo, .post, .storeProcessEvent) }
+
       #if swift(>=5.7)
         let effect = self.reducer.reduce(into: &currentState, action: action)
       #else
@@ -466,7 +546,7 @@ public final class Store<State, Action> {
     }
 
     guard !tasks.wrappedValue.isEmpty else { return nil }
-    return Task {
+    return Task { @MainActor in
       await withTaskCancellationHandler {
         var index = tasks.wrappedValue.startIndex
         while index < tasks.wrappedValue.endIndex {
@@ -484,14 +564,14 @@ public final class Store<State, Action> {
   }
 
   /// Returns a "stateless" store by erasing state to `Void`.
-  public var stateless: Store<Void, Action> {
-    self.scope(state: { _ in () })
+  public func stateless(file: StaticString = #file, line: UInt = #line) -> Store<Void, Action> {
+    self.scope(state: { _ in () }, file: file, line: line)
   }
 
   /// Returns an "actionless" store by erasing action to `Never`.
-  public var actionless: Store<State, Never> {
+  public func actionless(file: StaticString = #file, line: UInt = #line) -> Store<State, Never> {
     func absurd<A>(_ never: Never) -> A {}
-    return self.scope(state: { $0 }, action: absurd)
+    return self.scope(state: { $0 }, action: absurd, file: file, line: line)
   }
 
   private enum ThreadCheckStatus {
@@ -584,7 +664,11 @@ public final class Store<State, Action> {
   init<R: ReducerProtocol>(
     initialState: R.State,
     reducer: R,
-    mainThreadChecksEnabled: Bool
+    mainThreadChecksEnabled: Bool,
+    parentStore: AnyObject? = nil,
+    instrumentation: Instrumentation = .noop,
+    file: StaticString = #file,
+    line: UInt = #line
   ) where R.State == State, R.Action == Action {
     self.state = CurrentValueSubject(initialState)
     #if swift(>=5.7)
@@ -595,7 +679,9 @@ public final class Store<State, Action> {
     #if DEBUG
       self.mainThreadChecksEnabled = mainThreadChecksEnabled
     #endif
+    self.instrumentation = instrumentation
     self.threadCheck(status: .`init`)
+    self.instrumentation.storeCreated?(self as AnyObject, Store<State, Action>.self, parentStore, file, line)
   }
 }
 
@@ -619,10 +705,22 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     fileprivate func rescope<ChildState, ChildAction>(
       _ store: Store<State, Action>,
       state toChildState: @escaping (State) -> ChildState,
-      action fromChildAction: @escaping (ChildState, ChildAction) -> Action?
+      action fromChildAction: @escaping (ChildState, ChildAction) -> Action?,
+      removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)? = nil,
+      instrumentation: Instrumentation,
+      file: StaticString = #file,
+      line: UInt = #line
     ) -> Store<ChildState, ChildAction> {
       (self as? any AnyScopedReducer ?? ScopedReducer(rootStore: store))
-        .rescope(store, state: toChildState, action: fromChildAction)
+        .rescope(
+            store,
+            state: toChildState,
+            action: fromChildAction,
+            removeDuplicates: isDuplicate,
+            instrumentation: instrumentation,
+            file: file,
+            line: line
+        )
     }
   }
 
@@ -678,7 +776,11 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ store: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
+      removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)?,
+      instrumentation: Instrumentation,
+      file: StaticString,
+      line: UInt
     ) -> Store<RescopedState, RescopedAction>
   }
 
@@ -687,7 +789,11 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ store: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
+      removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)? = nil,
+      instrumentation: Instrumentation,
+      file: StaticString = #file,
+      line: UInt = #line
     ) -> Store<RescopedState, RescopedAction> {
       let fromScopedAction = self.fromScopedAction as! (ScopedState, ScopedAction) -> RootAction?
       let reducer = ScopedReducer<RootState, RootAction, RescopedState, RescopedAction>(
@@ -698,13 +804,40 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
       )
       let childStore = Store<RescopedState, RescopedAction>(
         initialState: toRescopedState(store.state.value),
-        reducer: reducer
+        reducer: reducer,
+        parentStore: store,
+        instrumentation: instrumentation,
+        file: file,
+        line: line
       )
       childStore.parentCancellable = store.state
         .dropFirst()
         .sink { [weak childStore] newValue in
           guard !reducer.isSending else { return }
-          childStore?.state.value = toRescopedState(newValue)
+          let callbackInfo = Instrumentation.CallbackInfo<Store<RescopedState, RescopedAction>.Type, Any>(
+            storeKind: Store<RescopedState, RescopedAction>.self, action: nil, file: file, line: line
+          ).eraseToAny()
+
+          instrumentation.callback?(callbackInfo, .pre, .scopedStoreToLocal)
+          let newChildState = toRescopedState(newValue)
+          instrumentation.callback?(callbackInfo, .post, .scopedStoreToLocal)
+
+          guard let previousState = childStore?.state.value, let isDuplicate = isDuplicate else {
+            instrumentation.callback?(callbackInfo, .pre, .scopedStoreChangeState)
+            childStore?.state.value = newChildState
+            instrumentation.callback?(callbackInfo, .post, .scopedStoreChangeState)
+            return
+          }
+
+          instrumentation.callback?(callbackInfo, .pre, .scopedStoreDeduplicate)
+          let newStateIsDuplicate = isDuplicate(newChildState, previousState)
+          instrumentation.callback?(callbackInfo, .post, .scopedStoreDeduplicate)
+
+          if !newStateIsDuplicate {
+            instrumentation.callback?(callbackInfo, .pre, .scopedStoreChangeState)
+            childStore?.state.value = newChildState
+            instrumentation.callback?(callbackInfo, .post, .scopedStoreChangeState)
+          }
         }
       return childStore
     }
@@ -714,7 +847,11 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ store: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
+      removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)? = nil,
+      instrumentation: Instrumentation,
+      file: StaticString = #file,
+      line: UInt = #line
     ) -> Store<RescopedState, RescopedAction>
   }
 
@@ -740,7 +877,11 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
     func rescope<ScopedState, ScopedAction, RescopedState, RescopedAction>(
       _ scopedStore: Store<ScopedState, ScopedAction>,
       state toRescopedState: @escaping (ScopedState) -> RescopedState,
-      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?
+      action fromRescopedAction: @escaping (RescopedState, RescopedAction) -> ScopedAction?,
+      removeDuplicates isDuplicate: ((RescopedState, RescopedState) -> Bool)? = nil,
+      instrumentation: Instrumentation,
+      file: StaticString = #file,
+      line: UInt = #line
     ) -> Store<RescopedState, RescopedAction> {
       let fromScopedAction = self.fromScopedAction as! (ScopedState, ScopedAction) -> RootAction?
 
@@ -762,13 +903,40 @@ public typealias StoreOf<R: ReducerProtocol> = Store<R.State, R.Action>
             return .none
           }
         },
-        environment: ()
+        removeDuplicates: isDuplicate,
+        parentStore: root,
+        instrumentation: instrumentation,
+        file: file,
+        line: line
       )
       rescopedStore.parentCancellable = scopedStore.state
         .dropFirst()
         .sink { [weak rescopedStore] newValue in
           guard !isSending else { return }
-          rescopedStore?.state.value = toRescopedState(newValue)
+          let callbackInfo = Instrumentation.CallbackInfo<Store<RescopedState, RescopedAction>.Type, Any>(
+            storeKind: Store<RescopedState, RescopedAction>.self, action: nil, file: file, line: line
+          ).eraseToAny()
+
+          instrumentation.callback?(callbackInfo, .pre, .scopedStoreToLocal)
+          let newRescopedState = toRescopedState(newValue)
+          instrumentation.callback?(callbackInfo, .post, .scopedStoreToLocal)
+
+          guard let previousState = childStore?.state.value, let isDuplicate = isDuplicate else {
+            instrumentation.callback?(callbackInfo, .pre, .scopedStoreChangeState)
+            childStore?.state.value = newRescopedState
+            instrumentation.callback?(callbackInfo, .post, .scopedStoreChangeState)
+            return
+          }
+
+          instrumentation.callback?(callbackInfo, .pre, .scopedStoreDeduplicate)
+          let newStateIsDuplicate = isDuplicate(newRescopedState, previousState)
+          instrumentation.callback?(callbackInfo, .post, .scopedStoreDeduplicate)
+
+          if !newStateIsDuplicate {
+            instrumentation.callback?(callbackInfo, .pre, .scopedStoreChangeState)
+            rescopedStore?.state.value = newRescopedState
+            instrumentation.callback?(callbackInfo, .post, .scopedStoreChangeState)
+          }
         }
       rescopedStore.scope = StoreScope<RootState, RootAction>(
         root: self.root,

@@ -1,7 +1,14 @@
+#if canImport(OpenCombine)
+import OpenCombine
+#else
 import Combine
+#endif
 import Foundation
-import SwiftUI
 import XCTestDynamicOverlay
+
+#if canImport(SwiftUI)
+import SwiftUI
+#endif
 
 /// This type is deprecated in favor of ``EffectTask``. See its documentation for more information.
 @available(
@@ -348,9 +355,11 @@ extension EffectPublisher where Failure == Never {
   /// - Parameters:
   ///   - action: The action that is immediately emitted by the effect.
   ///   - animation: An animation.
+  #if canImport(SwiftUI)
   public static func send(_ action: Action, animation: Animation? = nil) -> Self {
     Self(value: action).animation(animation)
   }
+  #endif
 }
 
 /// A type that can send actions back into the system when used from
@@ -397,26 +406,19 @@ public struct Send<Action> {
     self.send(action)
   }
 
+  #if canImport(SwiftUI)
   /// Sends an action back into the system from an effect with animation.
   ///
   /// - Parameters:
   ///   - action: An action.
   ///   - animation: An animation.
   public func callAsFunction(_ action: Action, animation: Animation?) {
-    callAsFunction(action, transaction: Transaction(animation: animation))
-  }
-
-  /// Sends an action back into the system from an effect with transaction.
-  ///
-  /// - Parameters:
-  ///   - action: An action.
-  ///   - transaction: A transaction.
-  public func callAsFunction(_ action: Action, transaction: Transaction) {
     guard !Task.isCancelled else { return }
-    withTransaction(transaction) {
+    withAnimation(animation) {
       self(action)
     }
   }
+  #endif
 }
 
 // MARK: - Composing Effects
@@ -572,8 +574,6 @@ extension EffectPublisher {
     }
   }
 }
-
-// MARK: - Testing Effects
 
 extension EffectPublisher {
   /// An effect that causes a test to fail if it runs.

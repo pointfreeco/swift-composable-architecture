@@ -1,5 +1,9 @@
-import Combine
 import CombineSchedulers
+#if canImport(OpenCombine)
+import OpenCombine
+#else
+import Combine
+#endif
 
 extension EffectPublisher where Failure == Never {
   /// Returns an effect that repeatedly emits the current time of the given scheduler on the given
@@ -89,6 +93,7 @@ extension EffectPublisher where Failure == Never {
   ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
   ///     allows any variance.
   ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
+
   @available(iOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")
   @available(macOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")
   @available(tvOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")
@@ -123,6 +128,7 @@ extension EffectPublisher where Failure == Never {
   ///   - tolerance: The allowed timing variance when emitting events. Defaults to `nil`, which
   ///     allows any variance.
   ///   - options: Scheduler options passed to the timer. Defaults to `nil`.
+
   @available(iOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")
   @available(macOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")
   @available(tvOS, deprecated: 9999.0, message: "Use 'clock.timer' in an 'Effect.run', instead.")

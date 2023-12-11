@@ -36,7 +36,9 @@ final class ForEachReducerTests: XCTestCase {
   }
 
   #if DEBUG
-    func testMissingElement() async {
+    func testMissingElement() async throws {
+      try XCTSkipIfWindowsExpectFailure()
+
       let store = TestStore(
         initialState: Elements.State(),
         reducer: EmptyReducer()

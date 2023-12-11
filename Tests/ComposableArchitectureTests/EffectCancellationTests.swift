@@ -1,5 +1,13 @@
-import Combine
 @_spi(Internals) import ComposableArchitecture
+
+import Dispatch
+
+#if canImport(OpenCombine)
+import OpenCombine
+#else
+import Combine
+#endif
+
 import XCTest
 
 final class EffectCancellationTests: XCTestCase {
@@ -196,9 +204,14 @@ final class EffectCancellationTests: XCTestCase {
       DispatchQueue.global(qos: .utility),
     ]
     let ids = (1...10).map { _ in UUID() }
-
+    #if os(Windows)
+    // See https://github.com/thebrowsercompany/swift-composable-architecture/pull/45#discussion_r1274175528 for details on this value.
+    let count = 50
+    #else
+    let count = 1_000
+    #endif
     let effect = EffectPublisher.merge(
-      (1...1_000).map { idx -> EffectPublisher<Int, Never> in
+      (1...count).map { idx -> EffectPublisher<Int, Never> in
         let id = ids[idx % 10]
 
         return EffectPublisher.merge(
@@ -240,8 +253,14 @@ final class EffectCancellationTests: XCTestCase {
       .eraseToEffect()
       .cancellable(id: id)
 
-    for _ in 1...1_000 {
-      effect = effect.cancellable(id: id)
+    #if os(Windows)
+    let count = 100
+    #else
+    let count = 1_000
+    #endif
+
+    for _ in 1...count {
+        effect = effect.cancellable(id: id)
     }
 
     effect

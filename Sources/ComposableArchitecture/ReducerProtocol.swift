@@ -322,6 +322,8 @@
   }
 #endif
 
+// NB: This is available only in Swift 5.7.1 due to the following bug:
+//     https://github.com/apple/swift/issues/60550
 extension ReducerProtocol where Body == Never {
   /// A non-existent body.
   ///
@@ -339,6 +341,8 @@ extension ReducerProtocol where Body == Never {
   }
 }
 
+// NB: This is available only in Swift 5.7.1 due to the following bug:
+//     https://github.com/apple/swift/issues/60550
 extension ReducerProtocol where Body: ReducerProtocol, Body.State == State, Body.Action == Action {
   /// Invokes the ``Body-40qdd``'s implementation of ``reduce(into:action:)-8yinq``.
   @inlinable

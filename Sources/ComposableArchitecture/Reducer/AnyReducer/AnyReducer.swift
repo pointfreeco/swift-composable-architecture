@@ -1,5 +1,9 @@
 import CasePaths
+#if canImport(OpenCombine)
+import OpenCombine
+#else
 import Combine
+#endif
 
 /// This API has been soft-deprecated in favor of ``ReducerProtocol``.
 /// Read <doc:MigratingToTheReducerProtocol> for more information.

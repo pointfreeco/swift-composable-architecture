@@ -1,3 +1,4 @@
+#if canImport(OSLog)
 import OSLog
 
 extension ReducerProtocol {
@@ -21,7 +22,6 @@ extension ReducerProtocol {
   ///   - log: An `OSLog` to use for signposts.
   /// - Returns: A reducer that has been enhanced with instrumentation.
   @inlinable
-  @warn_unqualified_access
   public func signpost(
     _ prefix: String = "",
     log: OSLog = OSLog(
@@ -76,3 +76,4 @@ public struct _SignpostReducer<Base: ReducerProtocol>: ReducerProtocol {
     return effects
   }
 }
+#endif

@@ -1,3 +1,4 @@
+#if canImport(OSLog) && canImport(Combine)
 import Combine
 import os.signpost
 
@@ -147,6 +148,7 @@ extension EffectPublisher where Failure == Never {
     }
   }
 }
+#endif
 
 @usableFromInline
 func debugCaseOutput(_ value: Any) -> String {

@@ -1,4 +1,4 @@
-#if DEBUG
+#if DEBUG && !os(Windows)
   import Combine
   import ComposableArchitecture
   import XCTest
@@ -185,35 +185,35 @@
         )
         await ViewStore(store, observe: { $0 }).send(.tap).finish()
       }
+
+      @MainActor
+      func testBindingUnhandledAction() {
+        struct State: Equatable {
+          @BindingState var value = 0
+        }
+        enum Action: BindableAction, Equatable {
+          case binding(BindingAction<State>)
+        }
+        let store = Store(
+          initialState: State(),
+          reducer: EmptyReducer<State, Action>()
+        )
+
+        var line: UInt = 0
+        XCTExpectFailure {
+          line = #line
+          ViewStore(store, observe: { $0 }).binding(\.$value).wrappedValue = 42
+        } issueMatcher: {
+          $0.compactDescription == """
+            A binding action sent from a view store at "\(#fileID):\(line + 1)" was not handled. …
+
+              Action:
+                RuntimeWarningTests.Action.binding(.set(_, 42))
+
+            To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+            """
+        }
+      }
     #endif
-
-    @MainActor
-    func testBindingUnhandledAction() {
-      struct State: Equatable {
-        @BindingState var value = 0
-      }
-      enum Action: BindableAction, Equatable {
-        case binding(BindingAction<State>)
-      }
-      let store = Store(
-        initialState: State(),
-        reducer: EmptyReducer<State, Action>()
-      )
-
-      var line: UInt = 0
-      XCTExpectFailure {
-        line = #line
-        ViewStore(store, observe: { $0 }).binding(\.$value).wrappedValue = 42
-      } issueMatcher: {
-        $0.compactDescription == """
-          A binding action sent from a view store at "\(#fileID):\(line + 1)" was not handled. …
-
-            Action:
-              RuntimeWarningTests.Action.binding(.set(_, 42))
-
-          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
-          """
-      }
-    }
   }
 #endif

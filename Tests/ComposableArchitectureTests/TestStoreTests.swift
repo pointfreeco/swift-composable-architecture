@@ -1,6 +1,13 @@
+#if canImport(OpenCombine)
+import OpenCombine
+#else
 import Combine
+#endif
 import ComposableArchitecture
 import XCTest
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 @MainActor
 final class TestStoreTests: XCTestCase {
@@ -84,125 +91,125 @@ final class TestStoreTests: XCTestCase {
     }
   }
 
-  #if DEBUG
-    func testExpectedStateEquality() async {
-      struct State: Equatable {
-        var count: Int = 0
-        var isChanging: Bool = false
-      }
+  #if DEBUG && !os(Windows)
+  func testExpectedStateEquality() async {
+    struct State: Equatable {
+      var count: Int = 0
+      var isChanging: Bool = false
+    }
 
-      enum Action: Equatable {
-        case increment
-        case changed(from: Int, to: Int)
-      }
+    enum Action: Equatable {
+      case increment
+      case changed(from: Int, to: Int)
+    }
 
-      let reducer = Reduce<State, Action> { state, action in
-        switch action {
-        case .increment:
-          state.isChanging = true
-          return EffectTask(value: .changed(from: state.count, to: state.count + 1))
-        case .changed(let from, let to):
-          state.isChanging = false
-          if state.count == from {
-            state.count = to
-          }
-          return .none
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .increment:
+        state.isChanging = true
+        return EffectTask(value: .changed(from: state.count, to: state.count + 1))
+      case .changed(let from, let to):
+        state.isChanging = false
+        if state.count == from {
+          state.count = to
         }
+        return .none
       }
+    }
 
-      let store = TestStore(initialState: State(), reducer: reducer)
+    let store = TestStore(initialState: State(), reducer: reducer)
 
-      await store.send(.increment) {
-        $0.isChanging = true
-      }
-      await store.receive(.changed(from: 0, to: 1)) {
+    await store.send(.increment) {
+      $0.isChanging = true
+    }
+    await store.receive(.changed(from: 0, to: 1)) {
+      $0.isChanging = false
+      $0.count = 1
+    }
+
+    XCTExpectFailure {
+      _ = store.send(.increment) {
         $0.isChanging = false
-        $0.count = 1
       }
+    }
+    XCTExpectFailure {
+      store.receive(.changed(from: 1, to: 2)) {
+        $0.isChanging = true
+        $0.count = 1100
+      }
+    }
+  }
 
-      XCTExpectFailure {
-        _ = store.send(.increment) {
-          $0.isChanging = false
-        }
-      }
-      XCTExpectFailure {
-        store.receive(.changed(from: 1, to: 2)) {
-          $0.isChanging = true
-          $0.count = 1100
-        }
+  func testExpectedStateEqualityMustModify() async {
+    struct State: Equatable {
+      var count: Int = 0
+    }
+
+    enum Action: Equatable {
+      case noop, finished
+    }
+
+    let reducer = Reduce<State, Action> { state, action in
+      switch action {
+      case .noop:
+        return EffectTask(value: .finished)
+      case .finished:
+        return .none
       }
     }
 
-    func testExpectedStateEqualityMustModify() async {
-      struct State: Equatable {
-        var count: Int = 0
+    let store = TestStore(initialState: State(), reducer: reducer)
+
+    await store.send(.noop)
+    await store.receive(.finished)
+
+    XCTExpectFailure {
+      _ = store.send(.noop) {
+        $0.count = 0
       }
-
-      enum Action: Equatable {
-        case noop, finished
+    }
+    XCTExpectFailure {
+      store.receive(.finished) {
+        $0.count = 0
       }
+    }
+  }
 
-      let reducer = Reduce<State, Action> { state, action in
-        switch action {
-        case .noop:
-          return EffectTask(value: .finished)
-        case .finished:
-          return .none
-        }
-      }
+  func testReceiveActionMatchingPredicate() async {
+    enum Action: Equatable {
+      case noop, finished
+    }
 
-      let store = TestStore(initialState: State(), reducer: reducer)
-
-      await store.send(.noop)
-      await store.receive(.finished)
-
-      XCTExpectFailure {
-        _ = store.send(.noop) {
-          $0.count = 0
-        }
-      }
-      XCTExpectFailure {
-        store.receive(.finished) {
-          $0.count = 0
-        }
+    let reducer = Reduce<Int, Action> { state, action in
+      switch action {
+      case .noop:
+        return EffectTask(value: .finished)
+      case .finished:
+        return .none
       }
     }
 
-    func testReceiveActionMatchingPredicate() async {
-      enum Action: Equatable {
-        case noop, finished
-      }
+    let store = TestStore(initialState: 0, reducer: reducer)
 
-      let reducer = Reduce<Int, Action> { state, action in
-        switch action {
-        case .noop:
-          return EffectTask(value: .finished)
-        case .finished:
-          return .none
-        }
-      }
-
-      let store = TestStore(initialState: 0, reducer: reducer)
-
-      let predicateShouldBeCalledExpectation = expectation(
-        description: "predicate should be called")
-      await store.send(.noop)
-      await store.receive { action in
-        predicateShouldBeCalledExpectation.fulfill()
-        return action == .finished
-      }
-      wait(for: [predicateShouldBeCalledExpectation], timeout: 0)
-
-      XCTExpectFailure {
-        store.send(.noop)
-        store.receive(.noop)
-      }
-
-      XCTExpectFailure {
-        store.send(.noop)
-        store.receive { $0 == .noop }
-      }
+    let predicateShouldBeCalledExpectation = expectation(
+      description: "predicate should be called")
+    await store.send(.noop)
+    await store.receive { action in
+      predicateShouldBeCalledExpectation.fulfill()
+      return action == .finished
     }
+    await fulfillment(of: [predicateShouldBeCalledExpectation], timeout: 0)
+
+    XCTExpectFailure {
+      store.send(.noop)
+      store.receive(.noop)
+    }
+
+    XCTExpectFailure {
+      store.send(.noop)
+      store.receive { $0 == .noop }
+    }
+  }
   #endif
 
   func testStateAccess() async {

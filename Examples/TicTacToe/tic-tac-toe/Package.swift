@@ -28,7 +28,7 @@ let package = Package(
   ],
   dependencies: [
     .package(name: "swift-composable-architecture", path: "../../.."),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.1.0"),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.0.0"),
   ],
   targets: [
     .target(
