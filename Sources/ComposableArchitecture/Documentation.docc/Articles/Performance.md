@@ -382,6 +382,39 @@ store.send(.textFieldChanged("Hello") {
 }
 ```
 
+##### Sharing logic in child features
+
+There is another common scenario for sharing logic in features where the parent feature wants to
+invoke logic in a child feature. One can technically do this by sending actions from the parent 
+to the child, but we do not recommend it:
+
+```swift
+// Handling action from parent feature
+case .buttonTapped:
+  return .send(.child(.refresh))
+```
+
+Instead, we recommend adding a mutating function to the child feature's state, and that mutating
+function can even return effects for the child:
+
+```swift
+extension Child.State {
+  mutating func refresh() -> Effect<Child.Action> {
+    // Perform mutations on child state
+    return // Effects that emit child actions
+  }
+}
+```
+
+Then this can be called from the parent reducer, and the returned effects can be mapped into the 
+parent domain:
+
+```swift
+case .buttonTapped:
+  return state.child.refresh()
+    .map(Action.child))
+```
+
 ### CPU intensive calculations
 
 Reducers are run on the main thread and so they are not appropriate for performing intense CPU
