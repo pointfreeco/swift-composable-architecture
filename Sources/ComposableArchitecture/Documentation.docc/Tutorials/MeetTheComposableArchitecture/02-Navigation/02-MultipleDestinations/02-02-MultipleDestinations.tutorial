@@ -19,7 +19,7 @@
         Go back to ContactsFeature.swift that we worked in from the last section. Add a new action
         that will be sent when the delete button is tapped on a row in the contacts list.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0000, previousFile: 02-02-01-code-0000-previous)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0000.swift, previousFile: 02-02-01-code-0000-previous.swift)
       }
       
       When the delete button is tapped we want to show an alert asking the user to confirm deletion
@@ -30,7 +30,7 @@
         `ContactsFeature` state. We will further use `AlertState` as it allows us to describe all
         of the details of the alert in a manner that is test friendly since it is `Equatable`.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0001)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0001.swift)
       }
       
       @Step {
@@ -40,7 +40,7 @@
         > Note: The only choices in the alert are to cancel or confirm deletion, but we do not need 
         to model the cancel action. That will be handled automatically for us.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0002)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0002.swift)
       }
       
       Now that we have new state modeled in our domain for the presentation of the alert, we can
@@ -50,21 +50,21 @@
         When the delete button is tapped we can populate the `alert` state in order to ask the user
         to confirm deletion of the contact.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0003)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0003.swift)
       }
       
       @Step {
         Integrate the alert's logic into the `ContactsFeature` by making another use of the 
         ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0004)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0004.swift)
       }
       
       @Step {
         Listen for when the confirmation action is sent in the alert, and at that time we can
         actually remove the element from the array.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0005)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0005.swift)
       }
       
       That's all it takes to integrate the alert it the `ContactsFeature` and implement all of its 
@@ -77,14 +77,14 @@
         Add the `alert(store:)` view modifier to the `ContactsView`, and hand it a store that is
         scoped to the alert domain.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0006, previousFile: 02-02-01-code-0006-previous)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0006.swift, previousFile: 02-02-01-code-0006-previous.swift)
       }
       
       @Step {
         Add a button to each row of the contacts list in order to send the `deleteButtonTapped`
         action to the view store.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0007)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0007.swift)
       }
       
       @Step {
@@ -121,14 +121,14 @@
         reducer will hold the domain and logic for every feature that can be navigated to from
         the contacts feature.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0000)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0000.swift)
       }
       
       @Step {
         Implement the `State` requirement as an enum because we want to express the fact that only
         one single destination can be active at a time, and enums are perfect for that.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0001)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0001.swift)
       }
       
       @Step {
@@ -136,26 +136,26 @@
         hold onto that feature's state. Right now this includes the `AddContactFeature` and the 
         alert.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0002)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0002.swift)
       }
       
       @Step {
         Implement the `Action` requirement as an enum. 
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0003)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0003.swift)
       }
       
       @Step {
         Add a case to the `Action` enum for each destination feature that can be navigated to, and
         hold onto that feature's action.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0004)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0004.swift)
       }
       
       @Step {
         Implement the ``ComposableArchitecture/Reducer/body-swift.property`` of the reducer.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0005)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0005.swift)
       }
       
       @Step {
@@ -164,21 +164,21 @@
         you will need one ``ComposableArchitecture/Scope`` reducer for each destination except for
         alerts and confirmation dialogs since they do not have a reducer of their own.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0006)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0006.swift)
       }
       
       @Step {
         Replace the two pieces of optional ``ComposableArchitecture/PresentationState`` with a 
         single option pointed at `Destination.State`.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0007, previousFile: 02-02-02-code-0007-previous)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0007.swift, previousFile: 02-02-02-code-0007-previous.swift)
       }
       
       @Step {
         Replace the two action cases that held onto ``ComposableArchitecture/PresentationAction``
         with a single case that holds onto `Destination.Action`.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0008)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0008.swift)
       }
       
       Now our model is more concisely defined, and we have compile time guarantees that only 
@@ -189,7 +189,7 @@
         Instead of populating a piece of `addContact` optional state in order to drive navigation
         to that feature, we will now mutate `destination` to point it to the `addContact` case.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0009)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0009.swift)
       }
       
       @Step {
@@ -197,34 +197,34 @@
         `.destination(.presented(_))` case, such as when the "Add Contact" feature tells us to 
         save the contact.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0010)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0010.swift)
       }
       
       @Step {
         And when the alert confirms deletion of the contact.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0011)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0011.swift)
       }
       
       @Step {
         We can handle all other destination actions by simply returning a `.none` effect to 
         represent there is no other work to perform.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012.swift)
       }
       
       @Step {
         Update the state mutation for showing an alert to instead point the `destination` to the
         `alert` case.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0013)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0013.swift)
       }
       
       @Step {
         Replace the two `ifLet`s that were used at the bottom of the reducer with a single one that
         runs the `Destination` reducer whenever the `destination` state is non-`nil`.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0014)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0014.swift)
       }
       
       That's all it takes to convert two independent, imprecisely modeled optional values into a 
@@ -239,13 +239,13 @@
         the ``ComposableArchitecture/Reducer()`` macro applies the `@CasePathable` macro to each
         enum.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0015, previousFile: 02-02-02-code-0015-previous)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0015.swift, previousFile: 02-02-02-code-0015-previous.swift)
       }
 
       @Step {
         The same can be done for the `alert(store:)` view modifier.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0016)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0016.swift)
       }
 
       That completes the refactor of the reducer and view to use a single piece of optional enum
