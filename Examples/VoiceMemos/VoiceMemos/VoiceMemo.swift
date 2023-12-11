@@ -13,6 +13,24 @@ struct VoiceMemo {
 
     var id: URL { self.url }
 
+    // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
+    //     this). We can remove when Xcode 15.1 is released and CI uses it.
+    #if swift(<5.9.2)
+      init(
+        date: Date,
+        duration: TimeInterval,
+        mode: Mode = Mode.notPlaying,
+        title: String = "",
+        url: URL
+      ) {
+        self.date = date
+        self.duration = duration
+        self.mode = mode
+        self.title = title
+        self.url = url
+      }
+    #endif
+
     @CasePathable
     @dynamicMemberLookup
     enum Mode: Equatable {
