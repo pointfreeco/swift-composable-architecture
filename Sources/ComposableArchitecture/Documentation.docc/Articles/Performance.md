@@ -386,7 +386,8 @@ store.send(.textFieldChanged("Hello") {
 
 There is another common scenario for sharing logic in features where the parent feature wants to
 invoke logic in a child feature. One can technically do this by sending actions from the parent 
-to the child, but we do not recommend it:
+to the child, but we do not recommend it (see above in <doc:Performance#Sharing-logic-with-actions>
+to learn why):
 
 ```swift
 // Handling action from parent feature:
