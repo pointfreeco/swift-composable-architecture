@@ -1,5 +1,5 @@
 import Combine
-@_spi(Internals) import ComposableArchitecture
+@_spi(Logging) @_spi(Internals) import ComposableArchitecture
 import XCTest
 
 @MainActor
@@ -930,6 +930,78 @@ final class StoreTests: BaseTCATestCase {
 
     store.send(.child(.dismiss))
     _ = (childViewStore1, childViewStore2, childStore1, childStore2)
+  }
+
+  func testStoreDeinit() {
+    Logger.shared.isEnabled = true
+    do {
+      let store = Store<Void, Void>(initialState: ()) {}
+      _ = store
+    }
+
+    XCTAssertEqual(
+      Logger.shared.logs,
+      [
+        "Store<(), ()>.init",
+        "Store<(), ()>.deinit",
+      ]
+    )
+  }
+
+  func testStoreDeinit_RunningEffect() {
+    Logger.shared.isEnabled = true
+
+    let effectFinished = self.expectation(description: "Effect finished")
+    do {
+      let store = Store<Void, Void>(initialState: ()) {
+        Reduce { state, _ in
+          .run { _ in
+            try? await Task.never()
+            effectFinished.fulfill()
+          }
+        }
+      }
+      store.send(())
+      _ = store
+    }
+
+    XCTAssertEqual(
+      Logger.shared.logs,
+      [
+        "Store<(), ()>.init",
+        "Store<(), ()>.deinit",
+      ]
+    )
+    self.wait(for: [effectFinished], timeout: 0)
+  }
+
+  func testStoreDeinit_RunningCombineEffect() {
+    Logger.shared.isEnabled = true
+
+    let effectFinished = self.expectation(description: "Effect finished")
+    do {
+      let store = Store<Void, Void>(initialState: ()) {
+        Reduce { state, _ in
+          .publisher {
+            Empty(completeImmediately: false)
+              .handleEvents(receiveCancel: {
+                effectFinished.fulfill()
+              })
+          }
+        }
+      }
+      store.send(())
+      _ = store
+    }
+
+    XCTAssertEqual(
+      Logger.shared.logs,
+      [
+        "Store<(), ()>.init",
+        "Store<(), ()>.deinit",
+      ]
+    )
+    self.wait(for: [effectFinished], timeout: 0)
   }
 }
 

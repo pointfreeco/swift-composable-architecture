@@ -178,6 +178,9 @@ public final class Store<State, Action> {
 
   deinit {
     self.invalidate()
+    self.effectCancellables.forEach { uuid, cancellable in dump(uuid)
+      cancellable.cancel()
+    }
     Logger.shared.log("\(storeTypeName(of: self)).deinit")
   }
 
@@ -526,6 +529,7 @@ public final class Store<State, Action> {
       defer { index += 1 }
       let action = self.bufferedActions[index]
       let effect = self.reducer.reduce(into: &currentState, action: action)
+      let uuid = UUID()
 
       switch effect.operation {
       case .none:
@@ -533,7 +537,6 @@ public final class Store<State, Action> {
       case let .publisher(publisher):
         var didComplete = false
         let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
-        let uuid = UUID()
         let effectCancellable = withEscapedDependencies { continuation in
           publisher
             .handleEvents(
@@ -570,13 +573,15 @@ public final class Store<State, Action> {
           self.effectCancellables[uuid] = effectCancellable
         }
       case let .run(priority, operation):
-        withEscapedDependencies { continuation in
-          tasks.wrappedValue.append(
-            Task(priority: priority) { @MainActor in
-              #if DEBUG
-                let isCompleted = LockIsolated(false)
-                defer { isCompleted.setValue(true) }
-              #endif
+        withEscapedDependencies { dependencies in
+          let task = Task(priority: priority) { @MainActor[weak self] in
+            guard let self else { return }
+
+            #if DEBUG
+              let isCompleted = LockIsolated(false)
+              defer { isCompleted.setValue(true) }
+            #endif
+            do {
               await operation(
                 Send { effectAction in
                   #if DEBUG
@@ -601,7 +606,7 @@ public final class Store<State, Action> {
                       )
                     }
                   #endif
-                  if let task = continuation.yield({
+                  if let task = dependencies.yield({
                     self.send(effectAction, originatingFrom: action)
                   }) {
                     tasks.wrappedValue.append(task)
@@ -609,7 +614,11 @@ public final class Store<State, Action> {
                 }
               )
             }
-          )
+          }
+          tasks.wrappedValue.append(task)
+          self.effectCancellables[dump(uuid)] = AnyCancellable {
+            task.cancel()
+          }
         }
       }
     }
