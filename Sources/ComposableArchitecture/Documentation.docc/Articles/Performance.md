@@ -396,24 +396,11 @@ case .buttonTapped:
   return .send(.child(.refresh))
 ```
 
-Instead, we recommend adding a mutating function to the child feature's state, and that mutating
-function can even return effects for the child:
-
-```swift
-extension Child.State {
-  mutating func refresh() -> Effect<Child.Action> {
-    // Perform mutations on child state
-    return // Effects that emit child actions
-  }
-}
-```
-
-Then this can be called from the parent reducer, and the returned effects can be mapped into the 
-parent domain:
+Instead, we recommend invoking the child reducer directly:
 
 ```swift
 case .buttonTapped:
-  return state.child.refresh()
+  return Child().reduce(into: state.child, action: .refresh)
     .map(Action.child))
 ```
 
