@@ -17,7 +17,7 @@
         Add a new file, ContactsFeatureTests.swift, to your test target and paste in some basic
         scaffolding for a test.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0000)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0000.swift)
       }
       
       @Step {
@@ -27,7 +27,7 @@
         > Note: See <doc:01-03-TestingYourFeature> for a tutorial on testing, as well as the article
         <doc:Testing> for more detailed information.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0001)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0001.swift)
       }
       
       @Step {
@@ -35,27 +35,27 @@
         trailing closure provided is where we will assert on how state changes after sending
         the action.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0002)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0002.swift)
       }
       
       @Step {
         The only mutation we expect to happen is that the `destination` field becomes populated
         with some data, in particular the `addContact` case of the destination enum.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0003)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0003.swift)
       }
       
       @Step {
         The `addContact` case will hold onto some data, which is `AddContactFeature.State`.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0004)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0004.swift)
       }
       
       @Step {
         To construct that state we need to construct a `Contact` value, and now we run into 
         trouble. What can we provide for the ID?
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0005)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0005.swift)
       }
       
       The `ContactsFeature` currently makes use of an uncontrolled dependency, making it very hard
@@ -66,14 +66,14 @@
       @Step {
         Go back to ContactsFeature.swift, and add a dependency on the UUID generator.
         
-        @Code(name: "ContactsFeature.swift", file: 02-03-01-code-0006, previousFile: 02-03-01-code-0006-previous)
+        @Code(name: "ContactsFeature.swift", file: 02-03-01-code-0006.swift, previousFile: 02-03-01-code-0006-previous.swift)
       }
       
       @Step {
         Use the newly added UUID dependency for creating UUIDs rather than reaching out to the
         global, uncontrollable initializer.
         
-        @Code(name: "ContactsFeature.swift", file: 02-03-01-code-0007)
+        @Code(name: "ContactsFeature.swift", file: 02-03-01-code-0007.swift)
       }
       
       @Step {
@@ -81,7 +81,7 @@
         that it uses a controlled UUID generator. In particular, we will use the "incrementing"
         generator, which generates sequential, increasing IDs starting at 0.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0008, previousFile: 02-03-01-code-0008-previous)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0008.swift, previousFile: 02-03-01-code-0008-previous.swift)
       }
       
       @Step {
@@ -93,7 +93,7 @@
         
         [swift-dependencies]: http://github.com/pointfreeco/swift-dependencies
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0009)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0009.swift)
       }
       
       This test passes! So this proves that when the "+" button is tapped, that a sheet will fly
@@ -103,7 +103,7 @@
         Emulate the user typing into the name text field of the contact. The trailing closure is
         where we can assert on how state changed after sending the action.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0010)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0010.swift)
       }
       
       @Step {
@@ -117,7 +117,7 @@
         > Tip: See ``ComposableArchitecture/PresentationState/subscript(case:)-2sweb`` for 
         > documentation on this subscript.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0011)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0011.swift)
       }
       
       @Step {
@@ -125,21 +125,21 @@
         expect the state to change immediately when sending this action, and so we do not need
         to provide a trailing closure.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0012)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0012.swift)
       }
       
       @Step {
         Emulate the delegate action `saveContact` being received by the test store. This action is
         sent from the `AddContactFeature` when the "Save" button is tapped.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0013)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0013.swift)
       }
       
       @Step {
         Assert that when the `saveContact` delegate action is received that state mutates by adding
         a contact to the array.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0014)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0014.swift)
       }
       
       @Step {
@@ -147,7 +147,7 @@
         ``ComposableArchitecture/PresentationAction/dismiss`` action, which causes the "Add Contact"
         feature to be dismissed.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0015)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0015.swift)
       }
       
       This is a fully passing test, and proves the end-to-end lifecycle of presenting a child
@@ -176,13 +176,13 @@
         Start a new test case to test the same "Add Contact" user flow as above, but this time
         we will do it in the non-exhaustive style.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0000)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0000.swift)
       }
       
       @Step {
         Set the test store's ``ComposableArchitecture/TestStore/exhaustivity`` to `.off`.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0001)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0001.swift)
       }
       
       @Step {
@@ -190,20 +190,20 @@
         closure. In non-exhaustive test stores there is no need to assert on state changes if you
         do not want to.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0002)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0002.swift)
       } 
       
       @Step {
         Emulate the user typing into the name text field of the contact, but again do not assert
         on any state changes in the child feature.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0003)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0003.swift)
       }
       
       @Step {
         Emulate the user tapping the "Save" button in the child feature.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0004)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0004.swift)
       }
       
       @Step {
@@ -212,14 +212,14 @@
         on that until all the actions have been received, and so we can do that by using
         ``ComposableArchitecture/TestStore/skipReceivedActions(strict:file:line:)``.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0005)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0005.swift)
       }
       
       @Step {
         Assert that the final state of the feature has a new contact added to the array and the
         `destination` state is `nil`'d out.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0006)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0006.swift)
       }
       
       That's all it takes to write a very high level test covering the full user flow of adding
@@ -240,7 +240,7 @@
       @Step {
         Start a new test method to test the delete flow.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0000)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0000.swift)
       }
       
       @Step {
@@ -248,35 +248,35 @@
         This time we do not need to override any dependencies because we do not expect any to be
         used
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0001)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0001.swift)
       }
       
       @Step {
         Start the initial state of the feature with some contacts already added to the array. This
         will make it easier to test the deletion behavior.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0002)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0002.swift)
       }
       
       @Step {
         Emulate the user tapping on the delete button by sending the `deleteButtonTapped` action.
         We will test deleting the second contact, which has an ID of `UUID(1)`.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0003)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0003.swift)
       }
       
       @Step {
         We expect that the state's `destination` field will be populated with the `alert` case 
         since an alert should appear.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0004)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0004.swift)
       }
       
       @Step {
         Technically we can simply repeat exactly what we did in the reducer for constructing the
         alert. It's verbose, but it does get the test passing.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0005)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0005.swift)
       }
       
       However, that is a bit of a pain to repeat all of that work. There is a better way.
@@ -286,14 +286,14 @@
         with its `Action` generic constrained to `ContactsFeature.Action`. Add a static function
         that constructs the alert, which allows us to reuse this logic in multiple places.
         
-        @Code(name: "ContactsFeature.swift", file: 02-03-03-code-0006)
+        @Code(name: "ContactsFeature.swift", file: 02-03-03-code-0006.swift)
       }
       
       @Step {
         Make use of the new `deleteConfirmation` static alert function in the `CounterFeature` 
         reducer, rather than building `AlertState` from scratch.
         
-        @Code(name: "ContactsFeature.swift", file: 02-03-03-code-0007, previousFile: 02-03-03-code-0007-previous)
+        @Code(name: "ContactsFeature.swift", file: 02-03-03-code-0007.swift, previousFile: 02-03-03-code-0007-previous.swift)
       }
       
       @Step {
@@ -303,21 +303,21 @@
         Run the test to see this passes. This proves that when the delete button is tapped, an
         alert is shown to the user.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0008, previousFile: 02-03-03-code-0008-previous)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0008.swift, previousFile: 02-03-03-code-0008-previous.swift)
       }
       
       @Step {
         Emulate the user confirming to delete contact by sending the `confirmDeletion` action 
         in the alert.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0009)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0009.swift)
       }
       
       @Step {
         Assert that the alert was dismissed and that the contact corresponding to the ID of 
         `UUID(1)` was removed. 
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0010)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-03-code-0010.swift)
       }
       
       That is all it takes to test the deletion flow. Run the test suite to see everything passes,
