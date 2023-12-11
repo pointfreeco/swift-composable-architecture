@@ -1,4 +1,5 @@
-import ComposableArchitecture
+import Combine
+@_spi(Logging) import ComposableArchitecture
 import XCTest
 
 @MainActor
@@ -43,6 +44,76 @@ final class StoreLifetimeTests: BaseTCATestCase {
     grandparentStore.send(.incrementGrandchild)
     XCTAssertEqual(4, grandparentStore.withState(\.child.child.count))
     XCTAssertEqual(4, childStore.withState(\.count))
+  }
+
+  func testStoreDeinit() {
+    Logger.shared.isEnabled = true
+    do {
+      let store = Store<Void, Void>(initialState: ()) {}
+      _ = store
+    }
+
+    XCTAssertEqual(
+      Logger.shared.logs,
+      [
+        "Store<(), ()>.init",
+        "Store<(), ()>.deinit",
+      ]
+    )
+  }
+
+  func testStoreDeinit_RunningEffect() async {
+    Logger.shared.isEnabled = true
+    let effectFinished = self.expectation(description: "Effect finished")
+    do {
+      let store = Store<Void, Void>(initialState: ()) {
+        Reduce { state, _ in
+          .run { _ in
+            try? await Task.never()
+            effectFinished.fulfill()
+          }
+        }
+      }
+      store.send(())
+      _ = store
+    }
+
+    XCTAssertEqual(
+      Logger.shared.logs,
+      [
+        "Store<(), ()>.init",
+        "Store<(), ()>.deinit",
+      ]
+    )
+    await self.fulfillment(of: [effectFinished], timeout: 0.5)
+  }
+
+  func testStoreDeinit_RunningCombineEffect() async {
+    Logger.shared.isEnabled = true
+    let effectFinished = self.expectation(description: "Effect finished")
+    do {
+      let store = Store<Void, Void>(initialState: ()) {
+        Reduce { state, _ in
+          .publisher {
+            Empty(completeImmediately: false)
+              .handleEvents(receiveCancel: {
+                effectFinished.fulfill()
+              })
+          }
+        }
+      }
+      store.send(())
+      _ = store
+    }
+
+    XCTAssertEqual(
+      Logger.shared.logs,
+      [
+        "Store<(), ()>.init",
+        "Store<(), ()>.deinit",
+      ]
+    )
+    await self.fulfillment(of: [effectFinished], timeout: 0.5)
   }
 }
 
