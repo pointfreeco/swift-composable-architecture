@@ -28,8 +28,5 @@ final class ContactsFeatureTests: XCTestCase {
         Contact(id: UUID(0), name: "Blob Jr.")
       ]
     }
-    await store.receive(\.destination.dismiss) {
-      $0.destination = nil
-    }
   }
 }
