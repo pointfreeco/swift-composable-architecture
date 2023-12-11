@@ -745,7 +745,7 @@ final class StoreTests: BaseTCATestCase {
           return .none
         }
       }
-      .ifLet(\.child, action: /Action.child) {
+      .ifLet(\.child, action: \.child) {
         Child_testChildParentEffectCancellation()
       }
     }
