@@ -1,5 +1,5 @@
 import Combine
-@_spi(Internals) import ComposableArchitecture
+@_spi(Internals) @_spi(Logging) import ComposableArchitecture
 import XCTest
 
 @MainActor
@@ -930,6 +930,84 @@ final class StoreTests: BaseTCATestCase {
 
     store.send(.child(.dismiss))
     _ = (childViewStore1, childViewStore2, childStore1, childStore2)
+  }
+
+  func testStoreDeinit() {
+    Logger.shared.isEnabled = true
+    defer { Logger.shared.isEnabled = false }
+    Logger.shared.clear()
+    do {
+      let store = Store<Void, Void>(initialState: ()) {}
+      _ = store
+    }
+
+    XCTAssertEqual(
+      Logger.shared.logs,
+      [
+        "Store<(), ()>.init",
+        "Store<(), ()>.deinit",
+      ]
+    )
+  }
+
+  func testStoreDeinit_RunningEffect() async {
+    Logger.shared.isEnabled = true
+    defer { Logger.shared.isEnabled = false }
+    Logger.shared.clear()
+
+    let effectFinished = self.expectation(description: "Effect finished")
+    do {
+      let store = Store<Void, Void>(initialState: ()) {
+        Reduce { state, _ in
+          .run { _ in
+            try? await Task.never()
+            effectFinished.fulfill()
+          }
+        }
+      }
+      store.send(())
+      _ = store
+    }
+
+    XCTAssertEqual(
+      Logger.shared.logs,
+      [
+        "Store<(), ()>.init",
+        "Store<(), ()>.deinit",
+      ]
+    )
+    await self.fulfillment(of: [effectFinished], timeout: 0.5)
+  }
+
+  func testStoreDeinit_RunningCombineEffect() async {
+    Logger.shared.isEnabled = true
+    defer { Logger.shared.isEnabled = false }
+    Logger.shared.clear()
+
+    let effectFinished = self.expectation(description: "Effect finished")
+    do {
+      let store = Store<Void, Void>(initialState: ()) {
+        Reduce { state, _ in
+          .publisher {
+            Empty(completeImmediately: false)
+              .handleEvents(receiveCancel: {
+                effectFinished.fulfill()
+              })
+          }
+        }
+      }
+      store.send(())
+      _ = store
+    }
+
+    XCTAssertEqual(
+      Logger.shared.logs,
+      [
+        "Store<(), ()>.init",
+        "Store<(), ()>.deinit",
+      ]
+    )
+    await self.fulfillment(of: [effectFinished], timeout: 0.5)
   }
 }
 
