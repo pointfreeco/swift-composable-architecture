@@ -389,8 +389,9 @@ invoke logic in a child feature. One can technically do this by sending actions 
 to the child, but we do not recommend it:
 
 ```swift
-// Handling action from parent feature
+// Handling action from parent feature:
 case .buttonTapped:
+  // Send action to child to perform logic:
   return .send(.child(.refresh))
 ```
 
