@@ -589,8 +589,8 @@ final class StackReducerTests: BaseTCATestCase {
         case child2(Child.Action)
       }
       var body: some ReducerOf<Self> {
-        Scope(state: /State.child1, action: /Action.child1) { Child() }
-        Scope(state: /State.child2, action: /Action.child2) { Child() }
+        Scope(state: \.child1, action: \.child1) { Child() }
+        Scope(state: \.child2, action: \.child2) { Child() }
       }
     }
     @Reducer
@@ -616,7 +616,7 @@ final class StackReducerTests: BaseTCATestCase {
             return .none
           }
         }
-        .forEach(\.path, action: /Action.path) {
+        .forEach(\.path, action: \.path) {
           Path()
         }
       }
@@ -715,7 +715,7 @@ final class StackReducerTests: BaseTCATestCase {
             return .none
           }
         }
-        .forEach(\.path, action: /Action.path) {
+        .forEach(\.path, action: \.path) {
           Path()
         }
       }
