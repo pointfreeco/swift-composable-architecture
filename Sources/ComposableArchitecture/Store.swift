@@ -488,6 +488,7 @@ public final class Store<State, Action> {
     self.effectCancellables.values.forEach { cancellable in
       cancellable.cancel()
     }
+    self.effectCancellables.removeAll()
   }
 
   fileprivate func invalidateChild(id: ScopeID<State, Action>) {
