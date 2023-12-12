@@ -43,7 +43,7 @@
   /// ```diff
   /// +@CasePathable
   ///  enum Action {
-  ///    // …
+  ///    // ...
   ///  }
   /// ```
   ///
@@ -59,7 +59,7 @@
   /// +@CasePathable
   /// +@dynamicMemberLookup
   ///  enum State {
-  ///    // …
+  ///    // ...
   ///  }
   /// ```
   ///
@@ -132,11 +132,8 @@
   ///
   /// > Error: CasePathsMacros Target 'CasePathsMacros' must be enabled before it can be used.
   /// >
-  /// >
   /// > ComposableArchitectureMacros Target 'ComposableArchitectureMacros' must be enabled
   /// before it can be used.
-  ///
-  ///
   ///
   /// You can fix this in one of two ways. You can write a default to the CI machine that allows
   /// Xcode to skip macro validation:

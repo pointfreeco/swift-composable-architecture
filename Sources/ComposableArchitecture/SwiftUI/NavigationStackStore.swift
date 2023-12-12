@@ -168,8 +168,8 @@ extension NavigationLink where Destination == Never {
   /// ``StackState``.
   ///
   /// When someone activates the navigation link that this initializer creates, SwiftUI looks for a
-  /// parent ``NavigationStackStore`` view with a store of ``StackState`` containing elements that
-  /// matches the type of this initializer's `state` input.
+  /// parent `NavigationStack` view with a store of ``StackState`` containing elements that matches
+  /// the type of this initializer's `state` input.
   ///
   /// See SwiftUI's documentation for `NavigationLink.init(value:label:)` for more.
   ///
