@@ -142,12 +142,16 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
     #if DEBUG
       self.label.onAppear {
         if self.navigationDestinationType != State.self {
+          let elementType = self.navigationDestinationType.map(typeName)
+            ?? """
+              (None found in view hierarchy. Is this link inside a store-powered 'NavigationStack'?)
+              """
           runtimeWarn(
             """
             A navigation link at "\(self.fileID):\(self.line)" is unpresentable. …
 
-              NavigationStackStore element type:
-                \(self.navigationDestinationType.map(typeName) ?? "(None found in view hierarchy)")
+              NavigationStack state element type:
+                \(elementType)
               NavigationLink state type:
                 \(typeName(State.self))
               NavigationLink state value:
