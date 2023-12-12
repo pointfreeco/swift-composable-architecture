@@ -56,25 +56,29 @@ public struct ObservableStateMacro {
       """
   }
 
-  static func accessFunction(_ observableType: TokenSyntax) -> DeclSyntax {
+  static func idVariable(_ access: DeclModifierListSyntax.Element?) -> DeclSyntax {
     return
       """
-      internal nonisolated func access<Member>(
-      keyPath: KeyPath<\(observableType), Member>
-      ) {
-      \(raw: registrarVariableName).access(self, keyPath: keyPath)
+      \(access)var _$id: \(raw: qualifiedIDName) {
+      \(raw: registrarVariableName).id
       }
       """
   }
 
-  static func withMutationFunction(_ observableType: TokenSyntax) -> DeclSyntax {
+  static func willSetFunction(_ access: DeclModifierListSyntax.Element?) -> DeclSyntax {
     return
       """
-      internal nonisolated func withMutation<Member, MutationResult>(
-      keyPath: KeyPath<\(observableType), Member>,
-      _ mutation: () throws -> MutationResult
-      ) rethrows -> MutationResult {
-      try \(raw: registrarVariableName).withMutation(of: self, keyPath: keyPath, mutation)
+      \(access)mutating func _$willSet() {
+      \(raw: registrarVariableName).id._flag = true
+      }
+      """
+  }
+
+  static func didSetFunction(_ access: DeclModifierListSyntax.Element?) -> DeclSyntax {
+    return
+      """
+      \(access)mutating func _$didSet() {
+      \(raw: registrarVariableName).id._flag = false
       }
       """
   }
@@ -232,19 +236,11 @@ extension ObservableStateMacro: MemberMacro {
 
     var declarations = [DeclSyntax]()
 
-    declaration.addIfNeeded(ObservableStateMacro.registrarVariable(observableType), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.accessFunction(observableType), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.withMutationFunction(observableType), to: &declarations)
     let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
-    declaration.addIfNeeded(
-      """
-      \(access)var _$id: \(raw: qualifiedIDName) {
-        get { self.\(raw: registrarVariableName).id }
-        set { self.\(raw: registrarVariableName).id = newValue }
-      }
-      """ as DeclSyntax,
-      to: &declarations
-    )
+    declaration.addIfNeeded(ObservableStateMacro.registrarVariable(observableType), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.idVariable(access), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.willSetFunction(access), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.didSetFunction(access), to: &declarations)
 
     return declarations
   }
@@ -264,7 +260,8 @@ extension ObservableStateMacro {
     let enumCaseDecls = declaration.memberBlock.members
       .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
     var getCases: [String] = []
-    var setCases: [String] = []
+    var willSetCases: [String] = []
+    var didSetCases: [String] = []
     for (tag, enumCaseDecl) in enumCaseDecls.enumerated() {
       if enumCaseDecl.parameterClause?.parameters.count == 1 {
         getCases.append(
@@ -273,11 +270,18 @@ extension ObservableStateMacro {
           return ._$id(for: state)._$tag(\(tag))
           """
         )
-        setCases.append(
+        willSetCases.append(
           """
           case var .\(enumCaseDecl.name.text)(state):
-             state._$id = newValue
-             self = .\(enumCaseDecl.name.text)(state)
+          state._$willSet()
+          self = .\(enumCaseDecl.name.text)(state)
+          """
+        )
+        didSetCases.append(
+          """
+          case var .\(enumCaseDecl.name.text)(state):
+          state._$didSet()
+          self = .\(enumCaseDecl.name.text)(state)
           """
         )
       } else {
@@ -287,10 +291,16 @@ extension ObservableStateMacro {
           return ._$inert._$tag(\(tag))
           """
         )
-        setCases.append(
+        willSetCases.append(
           """
           case .\(enumCaseDecl.name.text):
-            break
+          break
+          """
+        )
+        didSetCases.append(
+          """
+          case .\(enumCaseDecl.name.text):
+          break
           """
         )
       }
@@ -299,18 +309,25 @@ extension ObservableStateMacro {
     return [
       """
       \(access)var _$id: \(raw: qualifiedIDName) {
-        get {
-          switch self {
-          \(raw: getCases.joined(separator: "\n"))
-          }
-        }
-        set {
-         switch self {
-         \(raw: setCases.joined(separator: "\n"))
-         }
-        }
+      switch self {
+      \(raw: getCases.joined(separator: "\n"))
       }
+      }
+      """,
       """
+      \(access)mutating func _$willSet() {
+      switch self {
+      \(raw: willSetCases.joined(separator: "\n"))
+      }
+      }
+      """,
+      """
+      \(access)mutating func _$didSet() {
+      switch self {
+      \(raw: didSetCases.joined(separator: "\n"))
+      }
+      }
+      """,
     ]
   }
 }
@@ -411,8 +428,8 @@ extension ObservableStateMacro: ExtensionMacro {
     }
 
     let decl: DeclSyntax = """
-        extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName) {}
-        """
+      extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName) {}
+      """
     // TODO: Take maximum of current availability and 17/14/17/10/etc...
     let obsDecl: DeclSyntax = """
       @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
@@ -461,70 +478,31 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
       """
       @storageRestrictions(initializes: _\(identifier))
       init(initialValue) {
-        _\(identifier) = initialValue
+      _\(identifier) = initialValue
       }
       """
 
     let getAccessor: AccessorDeclSyntax =
       """
       get {
-        access(keyPath: \\.\(identifier))
-        return _\(identifier)
+      \(raw: ObservableStateMacro.registrarVariableName).access(self, keyPath: \\.\(identifier))
+      return _\(identifier)
       }
       """
 
     let setAccessor: AccessorDeclSyntax =
       """
       set {
-        if _$isIdentityEqual(newValue, _\(identifier)) {
-          _\(identifier) = newValue
-        } else {
-          withMutation(keyPath: \\.\(identifier)) {
-            _\(identifier) = newValue
-          }
-        }
+      \(raw: ObservableStateMacro.registrarVariableName).mutate(self, keyPath: \\.\(identifier), &_\(identifier), newValue, _$isIdentityEqual)
       }
       """
     let modifyAccessor: AccessorDeclSyntax = """
       _modify {
-        func _$forceSet<Member>(
-          of subject: inout Self,
-          keyPath: WritableKeyPath<Self, Member>,
-          member: any ObservableState
-        ) {
-          subject[keyPath: keyPath] = member as! Member
-        }
-        func _$asObservableState<T>(_ subject: T) -> (any ObservableState)? {
-          subject as? any ObservableState
-        }
-        func _$forceAsObservableState<T>(_ subject: T) -> any ObservableState {
-          subject as! any ObservableState
-        }
-
-        guard
-          var oldValue = _$asObservableState(_\(identifier))
-        else {
-          _$observationRegistrar.willSet(self, keyPath: \\.\(identifier))
-          defer { _$observationRegistrar.didSet(self, keyPath: \\.\(identifier)) }
-          yield &_\(identifier)
-          return
-        }
-
-        oldValue._$id._flag = true
-        _$forceSet(of: &self, keyPath: \\._\(identifier), member: oldValue)
-        yield &_\(identifier)
-        var newValue = _$forceAsObservableState(_\(identifier))
-        guard !_$isIdentityEqual(oldValue, newValue)
-        else {
-          newValue._$id._flag = false
-          _$forceSet(of: &self, keyPath: \\._\(identifier), member: newValue)
-          return
-        }
-
-        _$forceSet(of: &self, keyPath: \\._\(identifier), member: oldValue)
-        withMutation(keyPath: \\.\(identifier)) {
-          _$forceSet(of: &self, keyPath: \\._\(identifier), member: newValue)
-        }
+      let oldValue = _$observationRegistrar.willSet(self, keyPath: \\.\(identifier), &_\(identifier))
+      defer {
+      _$observationRegistrar.didSet(self, keyPath: \\.\(identifier), &_\(identifier), oldValue, _$isIdentityEqual)
+      }
+      yield &_\(identifier)
       }
       """
 

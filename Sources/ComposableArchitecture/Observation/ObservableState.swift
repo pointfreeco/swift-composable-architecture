@@ -8,7 +8,9 @@ import Perception
 /// functionality to the type. Instead, always use the ``ObservableState()`` macro when adding
 /// observation support to a type.
 public protocol ObservableState: Perceptible {
-  var _$id: ObservableStateID { get set }
+  var _$id: ObservableStateID { get }
+  mutating func _$willSet()
+  mutating func _$didSet()
 }
 
 /// A unique identifier for a observed value.

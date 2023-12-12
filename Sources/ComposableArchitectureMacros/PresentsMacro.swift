@@ -33,7 +33,7 @@ extension PresentsMacro: AccessorMacro {
     let getAccessor: AccessorDeclSyntax =
       """
       get {
-      access(keyPath: \\.\(identifier))
+      _$observationRegistrar.access(self, keyPath: \\.\(identifier))
       return _\(identifier).wrappedValue
       }
       """
@@ -41,15 +41,11 @@ extension PresentsMacro: AccessorMacro {
     let setAccessor: AccessorDeclSyntax =
       """
       set {
-      if _$isIdentityEqual(newValue, _\(identifier).wrappedValue) {
-      _\(identifier).wrappedValue = newValue
-      } else {
-      withMutation(keyPath: \\.\(identifier)) {
-      _\(identifier).wrappedValue = newValue
-      }
-      }
+      _$observationRegistrar.mutate(self, keyPath: \\.\(identifier), &_\(identifier).wrappedValue, newValue, _$isIdentityEqual)
       }
       """
+
+    // TODO: _modify accessor?
 
     return [initAccessor, getAccessor, setAccessor]
   }
@@ -191,22 +187,17 @@ extension PatternBindingListSyntax {
           ),
           typeAnnotation: binding.typeAnnotation,
           accessorBlock: AccessorBlockSyntax(
+            // TODO: Should this use the same, non-projected key path for access/mutation to work
             accessors: .accessors([
               """
               get {
-              access(keyPath: \\.\(identifier))
+              _$observationRegistrar.access(self, keyPath: \\.$\(identifier))
               return _\(identifier.identifier).projectedValue
               }
               """,
               """
               set {
-              if _$isIdentityEqual(newValue, _\(identifier).projectedValue) {
-              _\(identifier).projectedValue = newValue
-              } else {
-              withMutation(keyPath: \\.\(identifier)) {
-              _\(identifier).projectedValue = newValue
-              }
-              }
+              _$observationRegistrar.mutate(self, keyPath: \\.$\(identifier), &_\(identifier).projectedValue, newValue, _$isIdentityEqual)
               }
               """
             ])
