@@ -1,5 +1,5 @@
 #if canImport(Observation)
-import Observation
+  import Observation
 #endif
 
 //===----------------------------------------------------------------------===//
