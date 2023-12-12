@@ -340,6 +340,46 @@
       }
     }
 
+    func testObservableState_Enum_NonObservableCase() {
+      assertMacro(record: true) {
+        """
+        @ObservableState
+        public enum Path {
+          case foo(Int)
+        }
+        """
+      } expansion: {
+        """
+        public enum Path {
+          case foo(Int)
+
+          public var _$id: ComposableArchitecture.ObservableStateID {
+            switch self {
+            case let .foo(state):
+              return ._$id(for: state)._$tag(0)
+            }
+          }
+
+          public mutating func _$willSet() {
+            switch self {
+            case var .foo(state):
+              ComposableArchitecture._$willSet(&state)
+              self = .foo(state)
+            }
+          }
+
+          public mutating func _$didSet() {
+            switch self {
+            case var .foo(state):
+              ComposableArchitecture._$didSet(&state)
+              self = .foo(state)
+            }
+          }
+        }
+        """
+      }
+    }
+
     func testObservableState_Enum_MultipleAssociatedValues() {
       assertMacro {
         """

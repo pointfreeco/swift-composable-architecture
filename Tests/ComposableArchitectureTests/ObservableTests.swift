@@ -497,4 +497,5 @@ private struct ParentState: Equatable {
 private enum DestinationState: Equatable {
   case child1(ChildState)
   case child2(ChildState)
+  case child3(Int)
 }

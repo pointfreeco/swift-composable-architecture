@@ -117,3 +117,12 @@ public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
     return false
   }
 }
+
+public func _$willSet<T>(_: inout T) {}
+public func _$willSet<T: ObservableState>(_ value: inout T) {
+  value._$willSet()
+}
+public func _$didSet<T>(_: inout T) {}
+public func _$didSet<T: ObservableState>(_ value: inout T) {
+  value._$didSet()
+}

@@ -273,14 +273,14 @@ extension ObservableStateMacro {
         willSetCases.append(
           """
           case var .\(enumCaseDecl.name.text)(state):
-          state._$willSet()
+          \(moduleName)._$willSet(&state)
           self = .\(enumCaseDecl.name.text)(state)
           """
         )
         didSetCases.append(
           """
           case var .\(enumCaseDecl.name.text)(state):
-          state._$didSet()
+          \(moduleName)._$didSet(&state)
           self = .\(enumCaseDecl.name.text)(state)
           """
         )
