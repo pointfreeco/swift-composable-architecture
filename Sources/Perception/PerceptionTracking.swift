@@ -1,3 +1,7 @@
+#if canImport(Observation)
+  import Observation
+#endif
+
 //===----------------------------------------------------------------------===//
 //
 // This source file is part of the Swift.org open source project
@@ -217,52 +221,15 @@ public func withPerceptionTracking<T>(
   _ apply: () -> T,
   onChange: @autoclosure () -> @Sendable () -> Void
 ) -> T {
+  #if canImport(Observation)
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
+      return withObservationTracking(apply, onChange: onChange())
+    }
+  #endif
+
   let (result, accessList) = generateAccessList(apply)
   if let accessList {
     PerceptionTracking._installTracking(accessList, onChange: onChange())
   }
-  return result
-}
-
-@_spi(SwiftUI)
-@available(iOS, deprecated: 17, message: "TODO")
-@available(macOS, deprecated: 14, message: "TODO")
-@available(tvOS, deprecated: 17, message: "TODO")
-@available(watchOS, deprecated: 10, message: "TODO")
-public func withPerceptionTracking<T>(
-  _ apply: () -> T,
-  willSet: @escaping @Sendable (PerceptionTracking) -> Void,
-  didSet: @escaping @Sendable (PerceptionTracking) -> Void
-) -> T {
-  let (result, accessList) = generateAccessList(apply)
-  PerceptionTracking._installTracking(PerceptionTracking(accessList), willSet: willSet, didSet: didSet)
-  return result
-}
-
-@_spi(SwiftUI)
-@available(iOS, deprecated: 17, message: "TODO")
-@available(macOS, deprecated: 14, message: "TODO")
-@available(tvOS, deprecated: 17, message: "TODO")
-@available(watchOS, deprecated: 10, message: "TODO")
-public func withPerceptionTracking<T>(
-  _ apply: () -> T,
-  willSet: @escaping @Sendable (PerceptionTracking) -> Void
-) -> T {
-  let (result, accessList) = generateAccessList(apply)
-  PerceptionTracking._installTracking(PerceptionTracking(accessList), willSet: willSet, didSet: nil)
-  return result
-}
-
-@_spi(SwiftUI)
-@available(iOS, deprecated: 17, message: "TODO")
-@available(macOS, deprecated: 14, message: "TODO")
-@available(tvOS, deprecated: 17, message: "TODO")
-@available(watchOS, deprecated: 10, message: "TODO")
-public func withPerceptionTracking<T>(
-  _ apply: () -> T,
-  didSet: @escaping @Sendable (PerceptionTracking) -> Void
-) -> T {
-  let (result, accessList) = generateAccessList(apply)
-  PerceptionTracking._installTracking(PerceptionTracking(accessList), willSet: nil, didSet: didSet)
   return result
 }
