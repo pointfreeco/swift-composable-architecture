@@ -346,10 +346,129 @@ final class ObservableTests: BaseTCATestCase {
     await self.fulfillment(of: [countDidChange], timeout: 0)
     XCTAssertEqual(store.count, 0)
   }
+
+  func testIdentifiedArray_AddElement() {
+    var state = ParentState()
+    let rowsDidChange = self.expectation(description: "rowsDidChange")
+
+    withPerceptionTracking {
+      _ = state.rows
+    } onChange: {
+      rowsDidChange.fulfill()
+    }
+
+    state.rows.append(ChildState())
+    XCTAssertEqual(state.rows.count, 1)
+    self.wait(for: [rowsDidChange])
+  }
+
+  func testIdentifiedArray_MutateElement() {
+    var state = ParentState(rows: [
+      ChildState(),
+      ChildState(),
+    ])
+    let firstRowCountDidChange = self.expectation(description: "firstRowCountDidChange")
+
+    withPerceptionTracking { _ = state.rows } onChange: {
+      XCTFail("rows should not change")
+    }
+    withPerceptionTracking { _ = state.rows[0] } onChange: {
+      XCTFail("rows[0] should not change")
+    }
+    withPerceptionTracking { _ = state.rows[0].count } onChange: {
+      firstRowCountDidChange.fulfill()
+    }
+    withPerceptionTracking { _ = state.rows[1].count } onChange: {
+      XCTFail("rows[1].count should not change")
+    }
+
+    state.rows[0].count += 1
+    XCTAssertEqual(state.rows[0].count, 1)
+    self.wait(for: [firstRowCountDidChange])
+  }
+
+  func testPresents_NilToNonNil() {
+    var state = ParentState()
+    let presentationDidChange = self.expectation(description: "presentationDidChange")
+
+    withPerceptionTracking {
+      _ = state.presentation
+    } onChange: {
+      presentationDidChange.fulfill()
+    }
+
+    state.presentation = ChildState()
+    XCTAssertEqual(state.presentation?.count, 0)
+    self.wait(for: [presentationDidChange])
+  }
+
+  func testPresents_Mutate() {
+    var state = ParentState(presentation: ChildState())
+    let presentationCountDidChange = self.expectation(description: "presentationCountDidChange")
+
+    withPerceptionTracking {
+      _ = state.presentation
+    } onChange: {
+      XCTFail("presentation should not change")
+    }
+    withPerceptionTracking {
+      _ = state.presentation?.count
+    } onChange: {
+      presentationCountDidChange.fulfill()
+    }
+
+    state.presentation?.count += 1
+    XCTAssertEqual(state.presentation?.count, 1)
+    self.wait(for: [presentationCountDidChange])
+  }
+
+  func testStackState_AddElement() {
+    var state = ParentState()
+    let pathDidChange = self.expectation(description: "pathDidChange")
+
+    withPerceptionTracking {
+      _ = state.path
+    } onChange: {
+      pathDidChange.fulfill()
+    }
+
+    state.path.append(ChildState())
+    XCTAssertEqual(state.path.count, 1)
+    self.wait(for: [pathDidChange])
+  }
+
+  func testStackState_MutateElement() {
+    var state = ParentState(
+      path: StackState([
+        ChildState(),
+        ChildState(),
+      ])
+    )
+    let firstElementCountDidChange = self.expectation(description: "firstElementCountDidChange")
+
+    withPerceptionTracking { _ = state.path } onChange: {
+      XCTFail("path should not change")
+    }
+    withPerceptionTracking { _ = state.path[0] } onChange: {
+      XCTFail("path[0] should not change")
+    }
+    withPerceptionTracking { _ = state.path[0].count } onChange: {
+      firstElementCountDidChange.fulfill()
+    }
+    withPerceptionTracking { _ = state.path[1].count } onChange: {
+      XCTFail("path[1].count should not change")
+    }
+
+    state.path[id: 0]?.count += 1
+    XCTAssertEqual(state.path[0].count, 1)
+    self.wait(for: [firstElementCountDidChange])
+  }
+
 }
 
 @ObservableState
-private struct ChildState: Equatable {
+private struct ChildState: Equatable, Identifiable {
+  let id = UUID()
   var count = 0
   mutating func replace(with other: Self) {
     self = other
@@ -363,6 +482,9 @@ private struct ParentState: Equatable {
   var child = ChildState()
   @Presents var destination: DestinationState?
   @Presents var optional: ChildState?
+  var path = StackState<ChildState>()
+  @Presents var presentation: ChildState?
+  var rows: IdentifiedArrayOf<ChildState> = []
   var sibling = ChildState()
   mutating func swap() {
     let childCopy = child
