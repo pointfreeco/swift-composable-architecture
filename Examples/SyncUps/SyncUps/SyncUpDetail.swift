@@ -8,14 +8,14 @@ struct SyncUpDetail {
     @Presents var destination: Destination.State?
     var syncUp: SyncUp
 
-    // TODO: Why is this needed?
-    init(
-      destination: Destination.State? = nil,
-      syncUp: SyncUp
-    ) {
-      self.destination = destination
-      self.syncUp = syncUp
-    }
+    // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
+    //     this). We can remove when Xcode 15.1 is released and CI uses it.
+    #if swift(<5.9.2)
+      init(destination: Destination.State? = nil, syncUp: SyncUp) {
+        self.destination = destination
+        self.syncUp = syncUp
+      }
+    #endif
   }
 
   enum Action: Sendable {

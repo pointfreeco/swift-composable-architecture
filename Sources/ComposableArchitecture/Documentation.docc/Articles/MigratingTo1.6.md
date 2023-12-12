@@ -22,6 +22,7 @@ you are targeting older platforms.
 * [Replacing IfLetStore with ‘if let’](#Replacing-IfLetStore-with-if-let)
 * [Replacing ForEachStore with ForEach](#Replacing-ForEachStore-with-ForEach)
 * [Replacing SwitchStore and CaseLet with ‘switch’ and ‘case’](#Replacing-SwitchStore-and-CaseLet-with-switch-and-case)
+* [Replacing @PresentationState with @Presentation](#Replacing-PresentationState-with-Presentation)
 * [Replacing navigation view modifiers with SwiftUI modifiers](#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers)
 * [Updating alert and confirmationDialog](#Updating-alert-and-confirmationDialog)
 * [Replacing NavigationStackStore with NavigationStack](#Replacing-NavigationStackStore-with-NavigationStack)
@@ -133,11 +134,6 @@ apply all of the updates above, but with one additional simplification to the `b
 
 You no longer need the ``WithViewStore`` or `WithPerceptionTracking` at all.
 
-> When you apply the ``ObservableState()`` macro to state that presents child state via the
-> ``PresentationState`` property wrapper, you will encounter a diagnostic directing you to use the
-> ``Presents()`` macro instead, which will wrap the given field with ``PresentationState`` _and_
-> instrument it with observation.
-
 ## Replacing IfLetStore with 'if let'
 
 The ``IfLetStore`` view was a helper for transforming a ``Store`` of optional state into a store of
@@ -211,7 +207,7 @@ ForEachStore(store.scope(state: \.rows, action: \.rows)) { childStore in
 ```
 
 This can now be updated to use the vanilla `ForEach` view in SwiftUI, along with 
-``Store/scope(state:action:)-88iqh``:
+``Store/scope(state:action:)-1nelp``:
 
 ```swift
 ForEach(store.scope(state: \.rows, action: \.rows)) { childStore in
@@ -300,6 +296,29 @@ case .settings:
   if let store = store.scope(state: \.settings, action: \.settings) {
     SettingsView(store: store)
   }
+}
+```
+
+## Replacing @PresentationState with @Presentation
+
+It is a well-known limitation of Swift macros that they cannot be used with property wrappers.
+This means that if your feature uses ``PresentationState`` you will get compiler errors when 
+applying the ``ObservableState()`` macro:
+
+```swift
+@ObservableState 
+struct State {
+  @PresentationState var child: Child.State?  // 🛑
+}
+```
+
+Instead of using the ``PresentationState`` property wrapper you can now use the ``Presents()`` 
+macro:
+
+```swift
+@ObservableState 
+struct State {
+  @Presents var child: Child.State?  // ✅
 }
 ```
 
@@ -505,7 +524,8 @@ Then in the view you must start holding onto the `store` in a bindable manner, u
 @Bindable var store: StoreOf<Feature>
 ```
 
-And the original code can now be updated to our custom initializer on `NavigationStack`:
+And the original code can now be updated to our custom initializer 
+``SwiftUI/NavigationStack/init(path:root:destination:)`` on `NavigationStack`:
 
 ```swift
 NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
@@ -527,7 +547,7 @@ NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
 ## @BindingState
 
 Bindings in the Composable Architecture have historically been handled by a zoo of types, including
-``BindingState``, ``BindableAction``, ``BindingAction``, ``BindingViewState`` and 
+<doc:BindingState>, ``BindableAction``, ``BindingAction``, ``BindingViewState`` and 
 ``BindingViewStore``. For example, if your view needs to be able to derive bindings to many fields
 on your state, you may have the reducer built somewhat like this:
 

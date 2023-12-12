@@ -12,24 +12,27 @@ struct RecordMeeting {
     var syncUp: SyncUp
     var transcript = ""
 
-    // TODO: Why is this needed?
-    init(
-      alert: AlertState<Action.Alert>? = nil,
-      secondsElapsed: Int = 0,
-      speakerIndex: Int = 0,
-      syncUp: SyncUp,
-      transcript: String = ""
-    ) {
-      self.alert = alert
-      self.secondsElapsed = secondsElapsed
-      self.speakerIndex = speakerIndex
-      self.syncUp = syncUp
-      self.transcript = transcript
-    }
-
     var durationRemaining: Duration {
       self.syncUp.duration - .seconds(self.secondsElapsed)
     }
+
+    // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
+    //     this). We can remove when Xcode 15.1 is released and CI uses it.
+    #if swift(<5.9.2)
+      init(
+        alert: AlertState<Action.Alert>? = nil,
+        secondsElapsed: Int = 0,
+        speakerIndex: Int = 0,
+        syncUp: SyncUp,
+        transcript: String = ""
+      ) {
+        self.alert = alert
+        self.secondsElapsed = secondsElapsed
+        self.speakerIndex = speakerIndex
+        self.syncUp = syncUp
+        self.transcript = transcript
+      }
+    #endif
   }
 
   enum Action {

@@ -7,29 +7,33 @@ struct NewPresentsOldTestCase: View {
   }
 
   var body: some View {
-    let _ = Logger.shared.log("\(Self.self).body")
-    Form {
-      Section {
-        Text(self.store.count.description)
-        Button("Increment") { self.store.send(.incrementButtonTapped) }
-      }
-      Section {
-        if self.store.isObservingChildCount {
-          Text("Child count: " + (store.child?.count.description ?? "N/A"))
-        }
-        Button("Toggle observe child count") {
-          self.store.send(.toggleObservingChildCount)
-        }
-      }
-      Section {
-        Button("Present child") { self.store.send(.presentChildButtonTapped) }
-      }
-    }
-    .sheet(store: self.store.scope(state: \.$child, action: \.child)) { store in
+    WithPerceptionTracking {
+      let _ = Logger.shared.log("\(Self.self).body")
       Form {
-        BasicsView(store: store)
+        Section {
+          Text(self.store.count.description)
+          Button("Increment") {
+            self.store.send(.incrementButtonTapped)
+          }
+        }
+        Section {
+          if self.store.isObservingChildCount {
+            Text("Child count: " + (store.child?.count.description ?? "N/A"))
+          }
+          Button("Toggle observe child count") {
+            self.store.send(.toggleObservingChildCount)
+          }
+        }
+        Section {
+          Button("Present child") { self.store.send(.presentChildButtonTapped) }
+        }
       }
-      .presentationDetents([.medium])
+      .sheet(store: self.store.scope(state: \.$child, action: \.child)) { store in
+        Form {
+          BasicsView(store: store)
+        }
+        .presentationDetents([.medium])
+      }
     }
   }
 

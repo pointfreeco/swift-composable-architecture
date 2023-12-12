@@ -279,11 +279,11 @@ public class CancellablesCollection {
     at id: ID,
     path: NavigationIDPath
   ) -> Bool {
-    return self.storage[_CancelID(id: id, navigationIDPath: path)] != nil
+    self.storage[_CancelID(id: id, navigationIDPath: path)] != nil
   }
 
   public var count: Int {
-    return self.storage.count
+    self.storage.count
   }
 
   public func removeAll() {

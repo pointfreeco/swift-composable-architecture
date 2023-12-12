@@ -1,5 +1,4 @@
 import ComposableArchitecture
-import Perception
 import SwiftUI
 
 private let readMe = """

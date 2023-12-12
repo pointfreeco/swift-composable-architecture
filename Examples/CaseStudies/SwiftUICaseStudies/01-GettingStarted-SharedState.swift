@@ -137,13 +137,17 @@ struct SharedState {
       private(set) var minCount: Int
       private(set) var numberOfCounts: Int
 
-      init(currentTab: Tab, count: Int = 0, maxCount: Int, minCount: Int, numberOfCounts: Int) {
-        self.currentTab = currentTab
-        self.count = count
-        self.maxCount = maxCount
-        self.minCount = minCount
-        self.numberOfCounts = numberOfCounts
-      }
+      // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
+      //     this). We can remove when Xcode 15.1 is released and CI uses it.
+      #if swift(<5.9.2)
+        init(currentTab: Tab, count: Int = 0, maxCount: Int, minCount: Int, numberOfCounts: Int) {
+          self.currentTab = currentTab
+          self.count = count
+          self.maxCount = maxCount
+          self.minCount = minCount
+          self.numberOfCounts = numberOfCounts
+        }
+      #endif
 
       fileprivate mutating func resetCount() {
         self.currentTab = .counter

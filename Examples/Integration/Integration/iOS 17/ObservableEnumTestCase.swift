@@ -1,5 +1,4 @@
 @_spi(Logging) import ComposableArchitecture
-import Perception
 import SwiftUI
 
 struct ObservableEnumView: View {

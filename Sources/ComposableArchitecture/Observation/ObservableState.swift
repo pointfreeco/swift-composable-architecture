@@ -77,7 +77,7 @@ where C.Element: ObservableState {
 }
 
 // TODO: inlinable?
-// NB: Add this fast path so that String is not checked as a collection.
+// NB: This is a fast path so that String is not checked as a collection.
 public func _$isIdentityEqual(_ lhs: String, _ rhs: String) -> Bool {
   false
 }

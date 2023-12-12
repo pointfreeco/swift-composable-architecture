@@ -90,8 +90,8 @@ struct InventoryFeature {
 > tuned for enums, and uses the forward slash syntax.
 
 That's all that it takes to integrate the domains and logic of the parent and child features. Next
-we need to integrate the features' views. This is done by passing bindings of store to SwiftUI's
-view modifiers.
+we need to integrate the features' views. This is done by passing a binding of a store to one
+of SwiftUI's view modifiers.
 
 For example, to show a sheet from the `addItem` state in the `InventoryFeature`, we can hand
 the `sheet(item:)` modifier a binding of a ``Store`` as an argument that is focused on presentation
@@ -274,40 +274,49 @@ For example, suppose the "add" screen is presented as a sheet, the "edit" screen
 by a popover, and the "detail" screen is presented in a drill-down. Then we can use the 
 `.sheet(item:)`, `.popover(item:)`, and `.navigationDestination(item:)` view modifiers that come
 from SwiftUI to have each of those styles of presentation powered by the respective case of the
-destination enum:
+destination enum.
+
+To do this you must first hold onto the store in a bindable manner by using the ``BindableStore``
+property wrapper:
 
 ```swift
 struct InventoryView: View {
   @BindableStore var store: StoreOf<InventoryFeature>
+  // ...
+}
+```
 
-  var body: some View {
-    List {
-      // ...
-    }
-    .sheet(
-      item: $store.scope(
-        state: \.destination?.addItem,
-        action: \.destination.addItem
-      )
-    ) { store in 
-      AddFeatureView(store: store)
-    }
-    .popover(
-      item: $store.scope(
-        state: \.destination?.editItem,
-        action: \.destination.editItem
-      )
-    ) { store in 
-      EditFeatureView(store: store)
-    }
-    .navigationDestination(
-      item: $store.scope(
-        state: \.destination?.detailItem,
-        action: \.destination.detailItem
-      )
-    ) { store in 
-      DetailFeatureView(store: store)
-    }
+And then in the `body` of the view you can use the ``SwiftUI/Binding/scope(state:action:)-4mj4d``
+operator to derive bindings from `$store`:
+
+```swift
+var body: some View {
+  List {
+    // ...
+  }
+  .sheet(
+    item: $store.scope(
+      state: \.destination?.addItem,
+      action: \.destination.addItem
+    )
+  ) { store in 
+    AddFeatureView(store: store)
+  }
+  .popover(
+    item: $store.scope(
+      state: \.destination?.editItem,
+      action: \.destination.editItem
+    )
+  ) { store in 
+    EditFeatureView(store: store)
+  }
+  .navigationDestination(
+    item: $store.scope(
+      state: \.destination?.detailItem,
+      action: \.destination.detailItem
+    )
+  ) { store in 
+    DetailFeatureView(store: store)
   }
 }
 ```
@@ -352,10 +361,10 @@ forms of navigation could be as simple as this:
   DetailFeatureView(store: store)
 }
 .alert(
-  store: store.scope(state: \.alert, action: \.alert)
+  $store.scope(state: \.alert, action: \.alert)
 )
 .confirmationDialog(
-  store: store.scope(state: \.confirmationDialog, action: \.confirmationDialog)
+  $store.scope(state: \.confirmationDialog, action: \.confirmationDialog)
 )
 ```
 

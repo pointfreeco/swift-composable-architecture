@@ -66,9 +66,9 @@ day-to-day when building applications, such as:
 
 ### Integrations
 
-- <doc:ObservationBackport>
 - <doc:SwiftConcurrency>
 - <doc:SwiftUIIntegration>
+- <doc:ObservationBackport>
 - <doc:UIKit>
 
 ### Migration guides

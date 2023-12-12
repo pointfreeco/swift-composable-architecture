@@ -23,13 +23,10 @@ final class ContactsFeatureTests: XCTestCase {
       $0.$destination[case: \.addContact]?.contact.name = "Blob Jr."
     }
     await store.send(.destination(.presented(.addContact(.saveButtonTapped))))
-    await store.receive(\.destination.presented.addContact.delegate.saveContact) {
+    await store.receive(\.destination.addContact.delegate.saveContact) {
       $0.contacts = [
         Contact(id: UUID(0), name: "Blob Jr.")
       ]
-    }
-    await store.receive(\.destination.dismiss) {
-      $0.destination = nil
     }
   }
 }

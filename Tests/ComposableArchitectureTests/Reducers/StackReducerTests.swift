@@ -589,8 +589,8 @@ final class StackReducerTests: BaseTCATestCase {
         case child2(Child.Action)
       }
       var body: some ReducerOf<Self> {
-        Scope(state: /State.child1, action: /Action.child1) { Child() }
-        Scope(state: /State.child2, action: /Action.child2) { Child() }
+        Scope(state: \.child1, action: \.child1) { Child() }
+        Scope(state: \.child2, action: \.child2) { Child() }
       }
     }
     @Reducer
@@ -616,7 +616,7 @@ final class StackReducerTests: BaseTCATestCase {
             return .none
           }
         }
-        .forEach(\.path, action: /Action.path) {
+        .forEach(\.path, action: \.path) {
           Path()
         }
       }
@@ -715,7 +715,7 @@ final class StackReducerTests: BaseTCATestCase {
             return .none
           }
         }
-        .forEach(\.path, action: /Action.path) {
+        .forEach(\.path, action: \.path) {
           Path()
         }
       }
@@ -846,63 +846,65 @@ final class StackReducerTests: BaseTCATestCase {
     }
   #endif
 
-  func testChildWithInFlightEffect() async {
-    struct Child: Reducer {
-      struct State: Equatable {}
-      enum Action { case tap }
-      var body: some Reducer<State, Action> {
-        Reduce { state, action in
-          .run { _ in try await Task.never() }
+  #if DEBUG
+    func testChildWithInFlightEffect() async {
+      struct Child: Reducer {
+        struct State: Equatable {}
+        enum Action { case tap }
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            .run { _ in try await Task.never() }
+          }
         }
       }
-    }
-    struct Parent: Reducer {
-      struct State: Equatable {
-        var path = StackState<Child.State>()
+      struct Parent: Reducer {
+        struct State: Equatable {
+          var path = StackState<Child.State>()
+        }
+        enum Action {
+          case path(StackAction<Child.State, Child.Action>)
+        }
+        var body: some ReducerOf<Self> {
+          EmptyReducer()
+            .forEach(\.path, action: /Action.path) { Child() }
+        }
       }
-      enum Action {
-        case path(StackAction<Child.State, Child.Action>)
+
+      var path = StackState<Child.State>()
+      path.append(Child.State())
+      let store = TestStore(initialState: Parent.State(path: path)) {
+        Parent()
       }
-      var body: some ReducerOf<Self> {
-        EmptyReducer()
-          .forEach(\.path, action: /Action.path) { Child() }
+      let line = #line
+      await store.send(.path(.element(id: 0, action: .tap)))
+
+      XCTExpectFailure {
+        $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
+          || $0.sourceCodeContext.location?.lineNumber == line + 1
+            && $0.compactDescription == """
+              An effect returned for this action is still running. It must complete before the end \
+              of the test. …
+
+              To fix, inspect any effects the reducer returns for this action and ensure that all \
+              of them complete by the end of the test. There are a few reasons why an effect may \
+              not have completed:
+
+              • If using async/await in your effect, it may need a little bit of time to properly \
+              finish. To fix you can simply perform "await store.finish()" at the end of your test.
+
+              • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", \
+              etc.), make sure that you wait enough time for it to perform the effect. If you are \
+              using a test clock/scheduler, advance it so that the effects may complete, or \
+              consider using an immediate clock/scheduler to immediately perform the effect instead.
+
+              • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+              then make sure those effects are torn down by marking the effect ".cancellable" and \
+              returning a corresponding cancellation effect ("Effect.cancel") from another action, \
+              or, if your effect is driven by a Combine subject, send it a completion.
+              """
       }
     }
-
-    var path = StackState<Child.State>()
-    path.append(Child.State())
-    let store = TestStore(initialState: Parent.State(path: path)) {
-      Parent()
-    }
-    let line = #line
-    await store.send(.path(.element(id: 0, action: .tap)))
-
-    XCTExpectFailure {
-      $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
-        || $0.sourceCodeContext.location?.lineNumber == line + 1
-          && $0.compactDescription == """
-            An effect returned for this action is still running. It must complete before the end \
-            of the test. …
-
-            To fix, inspect any effects the reducer returns for this action and ensure that all \
-            of them complete by the end of the test. There are a few reasons why an effect may \
-            not have completed:
-
-            • If using async/await in your effect, it may need a little bit of time to properly \
-            finish. To fix you can simply perform "await store.finish()" at the end of your test.
-
-            • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", \
-            etc.), make sure that you wait enough time for it to perform the effect. If you are \
-            using a test clock/scheduler, advance it so that the effects may complete, or \
-            consider using an immediate clock/scheduler to immediately perform the effect instead.
-
-            • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
-            then make sure those effects are torn down by marking the effect ".cancellable" and \
-            returning a corresponding cancellation effect ("Effect.cancel") from another action, \
-            or, if your effect is driven by a Combine subject, send it a completion.
-            """
-    }
-  }
+  #endif
 
   func testMultipleChildEffects() async {
     struct Child: Reducer {

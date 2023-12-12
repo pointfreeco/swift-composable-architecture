@@ -18,7 +18,7 @@
   ///     case incrementButtonTapped
   ///   }
   ///   var body: some ReducerOf<Self> {
-  ///     Reducer { state, action in
+  ///     Reduce { state, action in
   ///       switch action {
   ///       case .decrementButtonTapped:
   ///         state.count -= 1
@@ -43,7 +43,7 @@
   /// ```diff
   /// +@CasePathable
   ///  enum Action {
-  ///    // …
+  ///    // ...
   ///  }
   /// ```
   ///
@@ -58,8 +58,8 @@
   /// ```diff
   /// +@CasePathable
   /// +@dynamicMemberLookup
-  ///  enum Struct {
-  ///    // …
+  ///  enum State {
+  ///    // ...
   ///  }
   /// ```
   ///
@@ -132,11 +132,8 @@
   ///
   /// > Error: CasePathsMacros Target 'CasePathsMacros' must be enabled before it can be used.
   /// >
-  /// >
   /// > ComposableArchitectureMacros Target 'ComposableArchitectureMacros' must be enabled
   /// before it can be used.
-  ///
-  ///
   ///
   /// You can fix this in one of two ways. You can write a default to the CI machine that allows
   /// Xcode to skip macro validation:

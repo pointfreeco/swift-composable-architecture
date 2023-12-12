@@ -3,10 +3,11 @@ import SwiftUI
 /// A property wrapper type that supports creating bindings to the mutable properties of a
 /// ``Store``.
 ///
-/// Use this property wrapper in iOS 16, macOS 13, tvOS 16, watchOS 9, and earlier, for deriving
-/// bindings to properties of your features. For example, if your feature has state for the
-/// selected tab of a `TabView`, as well as an action to change the tab, then you can derive
-/// a binding like so:
+/// Use this property wrapper in iOS 16, macOS 13, tvOS 16, watchOS 9, and earlier, when `@Bindable`
+/// is unavailable, to derive bindings to properties of your features.
+///
+/// For example, if your feature has state for the selected tab of a `TabView`, as well as an action
+/// to change the tab, then you can derive a binding like so:
 ///
 /// ```swift
 /// struct AppView: View {
