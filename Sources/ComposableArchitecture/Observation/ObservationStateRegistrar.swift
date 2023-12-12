@@ -44,7 +44,6 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
       keyPath: KeyPath<Subject, Member>,
       _ member: inout Member
     ) -> Member {
-      self.registrar.willSet(subject, keyPath: keyPath)
       return member
     }
 
@@ -64,7 +63,11 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
       _ oldValue: Member,
       _ isIdentityEqual: (Member, Member) -> Bool
     ) {
-      self.registrar.didSet(subject, keyPath: keyPath)
+      if !isIdentityEqual(oldValue, member) {
+        let newValue = member
+        member = oldValue
+        self.mutate(subject, keyPath: keyPath, &member, newValue, isIdentityEqual)
+      }
     }
 
     public func didSet<Subject: Observable, Member: ObservableState>(
@@ -117,7 +120,6 @@ extension ObservationStateRegistrar {
     keyPath: KeyPath<Subject, Member>,
     _ member: inout Member
   ) -> Member {
-    self.registrar.willSet(subject, keyPath: keyPath)
     return member
   }
 
@@ -139,7 +141,11 @@ extension ObservationStateRegistrar {
     _ oldValue: Member,
     _ isIdentityEqual: (Member, Member) -> Bool
   ) {
-    self.registrar.didSet(subject, keyPath: keyPath)
+    if !isIdentityEqual(oldValue, member) {
+      let newValue = member
+      member = oldValue
+      self.mutate(subject, keyPath: keyPath, &member, newValue, isIdentityEqual)
+    }
   }
 
   @_disfavoredOverload
