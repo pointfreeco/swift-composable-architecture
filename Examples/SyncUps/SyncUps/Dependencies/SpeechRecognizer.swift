@@ -1,13 +1,16 @@
-import Dependencies
+import ComposableArchitecture
 @preconcurrency import Speech
 
+@DependencyClient
 struct SpeechClient {
-  var authorizationStatus: @Sendable () -> SFSpeechRecognizerAuthorizationStatus
-  var requestAuthorization: @Sendable () async -> SFSpeechRecognizerAuthorizationStatus
+  var authorizationStatus: @Sendable () -> SFSpeechRecognizerAuthorizationStatus = { .denied }
+  var requestAuthorization: @Sendable () async -> SFSpeechRecognizerAuthorizationStatus = {
+    .denied
+  }
   var startTask:
-    @Sendable (SFSpeechAudioBufferRecognitionRequest) async -> AsyncThrowingStream<
+    @Sendable (_ request: SFSpeechAudioBufferRecognitionRequest) async -> AsyncThrowingStream<
       SpeechRecognitionResult, Error
-    >
+    > = { _ in .finished() }
 }
 
 extension SpeechClient: DependencyKey {
@@ -69,11 +72,7 @@ extension SpeechClient: DependencyKey {
     )
   }
 
-  static let testValue = SpeechClient(
-    authorizationStatus: unimplemented("SpeechClient.authorizationStatus", placeholder: .denied),
-    requestAuthorization: unimplemented("SpeechClient.requestAuthorization", placeholder: .denied),
-    startTask: unimplemented("SpeechClient.startTask")
-  )
+  static let testValue = SpeechClient()
 
   static func fail(after duration: Duration) -> Self {
     return Self(

@@ -1,9 +1,9 @@
-import Dependencies
+import ComposableArchitecture
 import Foundation
-import XCTestDynamicOverlay
 
+@DependencyClient
 struct AudioPlayerClient {
-  var play: @Sendable (URL) async throws -> Bool
+  var play: @Sendable (_ url: URL) async throws -> Bool
 }
 
 extension AudioPlayerClient: TestDependencyKey {
@@ -14,9 +14,7 @@ extension AudioPlayerClient: TestDependencyKey {
     }
   )
 
-  static let testValue = Self(
-    play: unimplemented("\(Self.self).play")
-  )
+  static let testValue = Self()
 }
 
 extension DependencyValues {

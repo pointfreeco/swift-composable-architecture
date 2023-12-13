@@ -9,7 +9,7 @@ final class TwoFactorCoreTests: XCTestCase {
     let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
       TwoFactor()
     } withDependencies: {
-      $0.authenticationClient.twoFactor = { _ in
+      $0.authenticationClient.twoFactor = { @Sendable _, _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
       }
     }
@@ -39,7 +39,7 @@ final class TwoFactorCoreTests: XCTestCase {
     let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
       TwoFactor()
     } withDependencies: {
-      $0.authenticationClient.twoFactor = { _ in
+      $0.authenticationClient.twoFactor = { @Sendable _, _ in
         throw AuthenticationError.invalidTwoFactor
       }
     }

@@ -53,7 +53,7 @@ struct DownloadComponent {
           state.mode = .startingToDownload
 
           return .run { [url = state.url] send in
-            for try await event in self.downloadClient.download(url) {
+            for try await event in self.downloadClient.download(url: url) {
               await send(.downloadClient(.success(event)), animation: .default)
             }
           } catch: { error, send in

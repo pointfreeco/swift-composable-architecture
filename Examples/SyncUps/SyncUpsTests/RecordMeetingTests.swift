@@ -102,7 +102,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.continuousClock = clock
       $0.dismiss = DismissEffect { dismissed.fulfill() }
       $0.speechClient.authorizationStatus = { .authorized }
-      $0.speechClient.startTask = { _ in
+      $0.speechClient.startTask = { @Sendable _ in
         AsyncThrowingStream { continuation in
           continuation.yield(
             SpeechRecognitionResult(
@@ -267,7 +267,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.continuousClock = clock
       $0.dismiss = DismissEffect { dismissed.fulfill() }
       $0.speechClient.authorizationStatus = { .authorized }
-      $0.speechClient.startTask = { _ in
+      $0.speechClient.startTask = { @Sendable _ in
         AsyncThrowingStream {
           $0.yield(
             SpeechRecognitionResult(
@@ -322,7 +322,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.continuousClock = clock
       $0.dismiss = DismissEffect { dismissed.fulfill() }
       $0.speechClient.authorizationStatus = { .authorized }
-      $0.speechClient.startTask = { _ in
+      $0.speechClient.startTask = { @Sendable _ in
         AsyncThrowingStream {
           struct SpeechRecognitionFailure: Error {}
           $0.finish(throwing: SpeechRecognitionFailure())

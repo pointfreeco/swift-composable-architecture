@@ -9,7 +9,7 @@ final class SearchTests: XCTestCase {
     let store = TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
-      $0.weatherClient.search = { _ in .mock }
+      $0.weatherClient.search = { @Sendable _ in .mock }
     }
 
     await store.send(.searchQueryChanged("S")) {
@@ -29,7 +29,7 @@ final class SearchTests: XCTestCase {
     let store = TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
-      $0.weatherClient.search = { _ in throw SomethingWentWrong() }
+      $0.weatherClient.search = { @Sendable _ in throw SomethingWentWrong() }
     }
 
     await store.send(.searchQueryChanged("S")) {
@@ -43,7 +43,7 @@ final class SearchTests: XCTestCase {
     let store = TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
-      $0.weatherClient.search = { _ in .mock }
+      $0.weatherClient.search = { @Sendable _ in .mock }
     }
 
     let searchQueryChanged = await store.send(.searchQueryChanged("S")) {
@@ -70,7 +70,7 @@ final class SearchTests: XCTestCase {
     let store = TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
-      $0.weatherClient.forecast = { _ in .mock }
+      $0.weatherClient.forecast = { @Sendable _ in .mock }
     }
 
     await store.send(.searchResultTapped(specialResult)) {
@@ -124,7 +124,7 @@ final class SearchTests: XCTestCase {
     let store = TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
-      $0.weatherClient.forecast = { _ in
+      $0.weatherClient.forecast = { @Sendable _ in
         try await clock.sleep(for: .seconds(0))
         return .mock
       }
@@ -174,7 +174,7 @@ final class SearchTests: XCTestCase {
     let store = TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
-      $0.weatherClient.forecast = { _ in throw SomethingWentWrong() }
+      $0.weatherClient.forecast = { @Sendable _ in throw SomethingWentWrong() }
     }
 
     await store.send(.searchResultTapped(results.first!)) {

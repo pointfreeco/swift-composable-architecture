@@ -60,7 +60,7 @@ public struct TwoFactor: Sendable {
           await send(
             .twoFactorResponse(
               await Result {
-                try await self.authenticationClient.twoFactor(.init(code: code, token: token))
+                try await self.authenticationClient.twoFactor(code: code, token: token)
               }
             )
           )

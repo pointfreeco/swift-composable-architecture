@@ -15,13 +15,13 @@ final class VoiceMemosTests: XCTestCase {
     let store = TestStore(initialState: VoiceMemos.State()) {
       VoiceMemos()
     } withDependencies: {
-      $0.audioPlayer.play = { _ in
+      $0.audioPlayer.play = { @Sendable _ in
         try await self.clock.sleep(for: .milliseconds(2_500))
         return true
       }
       $0.audioRecorder.currentTime = { 2.5 }
       $0.audioRecorder.requestRecordPermission = { true }
-      $0.audioRecorder.startRecording = { _ in
+      $0.audioRecorder.startRecording = { @Sendable _ in
         try await didFinish.stream.first { _ in true }!
       }
       $0.audioRecorder.stopRecording = {
@@ -94,7 +94,7 @@ final class VoiceMemosTests: XCTestCase {
     } withDependencies: {
       $0.audioRecorder.currentTime = { 2.5 }
       $0.audioRecorder.requestRecordPermission = { true }
-      $0.audioRecorder.startRecording = { _ in
+      $0.audioRecorder.startRecording = { @Sendable _ in
         try await didFinish.stream.first { _ in true }!
       }
       $0.audioRecorder.stopRecording = {
@@ -178,7 +178,7 @@ final class VoiceMemosTests: XCTestCase {
       VoiceMemos()
     } withDependencies: {
       $0.audioRecorder.requestRecordPermission = { true }
-      $0.audioRecorder.startRecording = { _ in
+      $0.audioRecorder.startRecording = { @Sendable _ in
         try await didFinish.stream.first { _ in true }!
       }
       $0.continuousClock = self.clock
@@ -217,7 +217,7 @@ final class VoiceMemosTests: XCTestCase {
     } withDependencies: {
       $0.audioRecorder.currentTime = { 2.5 }
       $0.audioRecorder.requestRecordPermission = { true }
-      $0.audioRecorder.startRecording = { _ in
+      $0.audioRecorder.startRecording = { @Sendable _ in
         try await didFinish.stream.first { _ in true }!
       }
       $0.continuousClock = self.clock
@@ -253,7 +253,7 @@ final class VoiceMemosTests: XCTestCase {
     ) {
       VoiceMemos()
     } withDependencies: {
-      $0.audioPlayer.play = { _ in
+      $0.audioPlayer.play = { @Sendable _ in
         try await self.clock.sleep(for: .milliseconds(1_250))
         return true
       }
@@ -297,7 +297,7 @@ final class VoiceMemosTests: XCTestCase {
     ) {
       VoiceMemos()
     } withDependencies: {
-      $0.audioPlayer.play = { _ in throw SomeError() }
+      $0.audioPlayer.play = { @Sendable _ in throw SomeError() }
       $0.continuousClock = self.clock
     }
 
@@ -430,7 +430,7 @@ final class VoiceMemosTests: XCTestCase {
     ) {
       VoiceMemos()
     } withDependencies: {
-      $0.audioPlayer.play = { _ in try await Task.never() }
+      $0.audioPlayer.play = { @Sendable _ in try await Task.never() }
       $0.continuousClock = self.clock
     }
 

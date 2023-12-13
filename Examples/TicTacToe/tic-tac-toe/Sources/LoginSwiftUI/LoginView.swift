@@ -90,10 +90,10 @@ struct LoginView_Previews: PreviewProvider {
         store: Store(initialState: Login.State()) {
           Login()
         } withDependencies: {
-          $0.authenticationClient.login = { _ in
+          $0.authenticationClient.login = { @Sendable _, _ in
             AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
           }
-          $0.authenticationClient.twoFactor = { _ in
+          $0.authenticationClient.twoFactor = { @Sendable _, _ in
             AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
           }
         }

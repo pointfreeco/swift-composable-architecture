@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import Foundation
-import XCTestDynamicOverlay
 
+@DependencyClient
 struct FactClient {
   var fetch: @Sendable (Int) async throws -> String
 }
@@ -28,7 +28,5 @@ extension FactClient: DependencyKey {
 
   /// This is the "unimplemented" fact dependency that is useful to plug into tests that you want
   /// to prove do not need the dependency.
-  static let testValue = Self(
-    fetch: unimplemented("\(Self.self).fetch")
-  )
+  static let testValue = Self()
 }

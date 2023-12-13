@@ -64,7 +64,7 @@ struct VoiceMemo {
             await send(.delegate(.playbackStarted))
 
             async let playAudio: Void = send(
-              .audioPlayerClient(Result { try await self.audioPlayer.play(url) })
+              .audioPlayerClient(Result { try await self.audioPlayer.play(url: url) })
             )
 
             var start: TimeInterval = 0

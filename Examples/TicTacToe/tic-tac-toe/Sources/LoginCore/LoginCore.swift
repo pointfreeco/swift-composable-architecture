@@ -65,10 +65,8 @@ public struct Login: Sendable {
         return .run { [email = state.email, password = state.password] send in
           await send(
             .loginResponse(
-              await Result {
-                try await self.authenticationClient.login(
-                  .init(email: email, password: password)
-                )
+              Result {
+                try await self.authenticationClient.login(email: email, password: password)
               }
             )
           )

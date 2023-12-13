@@ -1,6 +1,5 @@
 import ComposableArchitecture
 import SwiftUI
-import XCTestDynamicOverlay
 
 private let readMe = """
   This application demonstrates how to handle long-living effects, for example notifications from \
@@ -64,9 +63,6 @@ private enum ScreenshotsKey: DependencyKey {
         .map { _ in }
     )
   }
-  static let testValue: @Sendable () async -> AsyncStream<Void> = unimplemented(
-    #"@Dependency(\.screenshots)"#, placeholder: .finished
-  )
 }
 
 // MARK: - Feature view
