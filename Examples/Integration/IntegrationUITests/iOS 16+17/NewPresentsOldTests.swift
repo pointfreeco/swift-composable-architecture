@@ -46,8 +46,6 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
       StoreOf<NewPresentsOldTestCase.Feature>.scope
       ViewPresentationStoreOf<BasicsView.Feature>.deinit
       ViewPresentationStoreOf<BasicsView.Feature>.init
@@ -71,8 +69,6 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       """
       NewPresentsOldTestCase.body
       NewPresentsOldTestCase.body
-      PresentationStoreOf<BasicsView.Feature>.deinit
-      PresentationStoreOf<BasicsView.Feature>.deinit
       PresentationStoreOf<BasicsView.Feature>.init
       PresentationStoreOf<BasicsView.Feature>.init
       PresentationStoreOf<BasicsView.Feature>.scope
@@ -83,8 +79,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
@@ -94,8 +89,6 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<NewPresentsOldTestCase.Feature>.scope
       StoreOf<NewPresentsOldTestCase.Feature>.scope
-      ViewPresentationStoreOf<BasicsView.Feature>.deinit
-      ViewPresentationStoreOf<BasicsView.Feature>.deinit
       ViewPresentationStoreOf<BasicsView.Feature>.init
       ViewPresentationStoreOf<BasicsView.Feature>.init
       ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
@@ -145,6 +138,8 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.scope
+      StoreOf<BasicsView.Feature?>.scope
       StoreOf<NewPresentsOldTestCase.Feature>.scope
       ViewPresentationStoreOf<BasicsView.Feature>.deinit
       ViewPresentationStoreOf<BasicsView.Feature>.init
@@ -203,6 +198,8 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       """
       NewPresentsOldTestCase.body
       NewPresentsOldTestCase.body
+      PresentationStoreOf<BasicsView.Feature>.deinit
+      PresentationStoreOf<BasicsView.Feature>.deinit
       PresentationStoreOf<BasicsView.Feature>.init
       PresentationStoreOf<BasicsView.Feature>.init
       PresentationStoreOf<BasicsView.Feature>.scope
@@ -210,10 +207,13 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
       PresentationStoreOf<BasicsView.Feature>.scope
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.scope
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<BasicsView.Feature?>.scope
@@ -223,10 +223,14 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.scope
       StoreOf<NewPresentsOldTestCase.Feature>.scope
       StoreOf<NewPresentsOldTestCase.Feature>.scope
+      ViewPresentationStoreOf<BasicsView.Feature>.deinit
+      ViewPresentationStoreOf<BasicsView.Feature>.deinit
       ViewPresentationStoreOf<BasicsView.Feature>.init
       ViewPresentationStoreOf<BasicsView.Feature>.init
       ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.init
       WithViewStoreOf<BasicsView.Feature?>.body
@@ -244,6 +248,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     self.assertLogs {
       """
       PresentationStoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
       ViewPresentationStoreOf<BasicsView.Feature>.deinit
       """
     }

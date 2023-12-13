@@ -73,6 +73,8 @@ final class iOS17_ObservableEnumTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, false)
     self.assertLogs {
       """
+      ObservableEnumView.body
+      StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableEnumView.Feature.Destination>.deinit
       StoreOf<ObservableEnumView.Feature>.scope
       """
