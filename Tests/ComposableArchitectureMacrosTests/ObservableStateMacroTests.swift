@@ -249,7 +249,7 @@
     }
 
     func testObservableState_Enum_NonObservableCase() {
-      assertMacro(record: true) {
+      assertMacro {
         """
         @ObservableState
         public enum Path {
