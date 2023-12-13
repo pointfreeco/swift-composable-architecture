@@ -247,6 +247,19 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssertEqual(state.destination?[case: \.child2]?.count, 42)
   }
 
+  func testMutatingDestination_NonObservableCase() async {
+    var state = ParentState(destination: .inert(0))
+
+    withPerceptionTracking {
+      _ = state.destination
+    } onChange: {
+      XCTFail("destination should not change")
+    }
+
+    state.destination = .inert(1)
+    XCTAssertEqual(state.destination, .inert(1))
+  }
+
   func testReplaceWithCopy() async {
     XCTTODO("This currently fails but it should not.")
 
@@ -499,4 +512,5 @@ private struct ParentState: Equatable {
 private enum DestinationState: Equatable {
   case child1(ChildState)
   case child2(ChildState)
+  case inert(Int)
 }
