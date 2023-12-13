@@ -398,6 +398,7 @@ public final class Store<State, Action> {
       let action = self.bufferedActions[index]
       let effect = withoutPerceptionChecking {
         self.reducer.reduce(into: &currentState, action: action)
+      }
 
       switch effect.operation {
       case .none:
@@ -886,8 +887,7 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
       }
       self.isSending = false
     }
-    if
-      let action = self.fromAction(action),
+    if let action = self.fromAction(action),
       let task = self.rootStore.send(action, originatingFrom: nil)
     {
       return .run { _ in await task.cancellableValue }
