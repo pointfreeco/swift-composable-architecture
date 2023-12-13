@@ -55,11 +55,11 @@
           }
 
           mutating func _$willSet() {
-            _$observationRegistrar.id._flag = true
+            _$observationRegistrar._$willSet()
           }
 
           mutating func _$didSet() {
-            _$observationRegistrar.id._flag = false
+            _$observationRegistrar._$didSet()
           }
         }
         """#
@@ -105,11 +105,11 @@
           }
 
           mutating func _$willSet() {
-            _$observationRegistrar.id._flag = true
+            _$observationRegistrar._$willSet()
           }
 
           mutating func _$didSet() {
-            _$observationRegistrar.id._flag = false
+            _$observationRegistrar._$didSet()
           }
         }
         """#
@@ -137,11 +137,11 @@
           }
 
           mutating func _$willSet() {
-            _$observationRegistrar.id._flag = true
+            _$observationRegistrar._$willSet()
           }
 
           mutating func _$didSet() {
-            _$observationRegistrar.id._flag = false
+            _$observationRegistrar._$didSet()
           }
         }
         """

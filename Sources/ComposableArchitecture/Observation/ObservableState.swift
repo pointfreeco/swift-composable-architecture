@@ -15,9 +15,9 @@ public protocol ObservableState: Perceptible {
 
 /// A unique identifier for a observed value.
 public struct ObservableStateID: Equatable, Hashable, Sendable {
-  private var uuid: UUID
+  private let uuid: UUID
   private var tag: Int?
-  public var _flag = false
+  private var _isSetting = false
 
   public init() {
     self.uuid = UUID()
@@ -39,6 +39,14 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   // TODO: inlinable?
   public static func _$id(for value: some ObservableState) -> Self {
     value._$id
+  }
+
+  public mutating func _$willSet() {
+    _isSetting = true
+  }
+
+  public mutating func _$didSet() {
+    _isSetting = false
   }
 }
 

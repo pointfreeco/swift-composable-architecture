@@ -69,7 +69,7 @@ public struct ObservableStateMacro {
     return
       """
       \(access)mutating func _$willSet() {
-      \(raw: registrarVariableName).id._flag = true
+      \(raw: registrarVariableName)._$willSet()
       }
       """
   }
@@ -78,7 +78,7 @@ public struct ObservableStateMacro {
     return
       """
       \(access)mutating func _$didSet() {
-      \(raw: registrarVariableName).id._flag = false
+      \(raw: registrarVariableName)._$didSet()
       }
       """
   }
