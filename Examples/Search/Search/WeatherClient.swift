@@ -1,6 +1,5 @@
 import ComposableArchitecture
 import Foundation
-import XCTestDynamicOverlay
 
 // MARK: - API models
 
@@ -38,9 +37,10 @@ struct Forecast: Decodable, Equatable, Sendable {
 // Typically this interface would live in its own module, separate from the live implementation.
 // This allows the search feature to compile faster since it only depends on the interface.
 
+@DependencyClient
 struct WeatherClient {
-  var forecast: @Sendable (GeocodingSearch.Result) async throws -> Forecast
-  var search: @Sendable (String) async throws -> GeocodingSearch
+  var forecast: @Sendable (_ location: GeocodingSearch.Result) async throws -> Forecast
+  var search: @Sendable (_ query: String) async throws -> GeocodingSearch
 }
 
 extension WeatherClient: TestDependencyKey {
@@ -49,10 +49,7 @@ extension WeatherClient: TestDependencyKey {
     search: { _ in .mock }
   )
 
-  static let testValue = Self(
-    forecast: unimplemented("\(Self.self).forecast"),
-    search: unimplemented("\(Self.self).search")
-  )
+  static let testValue = Self()
 }
 
 extension DependencyValues {

@@ -1,14 +1,16 @@
-import Dependencies
+import ComposableArchitecture
 import Speech
-import XCTestDynamicOverlay
 
+@DependencyClient
 struct SpeechClient {
   var finishTask: @Sendable () async -> Void
-  var requestAuthorization: @Sendable () async -> SFSpeechRecognizerAuthorizationStatus
+  var requestAuthorization: @Sendable () async -> SFSpeechRecognizerAuthorizationStatus = {
+    .notDetermined
+  }
   var startTask:
-    @Sendable (SFSpeechAudioBufferRecognitionRequest) async -> AsyncThrowingStream<
+    @Sendable (_ request: SFSpeechAudioBufferRecognitionRequest) async -> AsyncThrowingStream<
       SpeechRecognitionResult, Error
-    >
+    > = { _ in .finished() }
 
   enum Failure: Error, Equatable {
     case taskError
@@ -62,13 +64,7 @@ extension SpeechClient: TestDependencyKey {
     )
   }
 
-  static let testValue = Self(
-    finishTask: unimplemented("\(Self.self).finishTask"),
-    requestAuthorization: unimplemented(
-      "\(Self.self).requestAuthorization", placeholder: .notDetermined
-    ),
-    startTask: unimplemented("\(Self.self).recognitionTask", placeholder: .never)
-  )
+  static let testValue = Self()
 }
 
 extension DependencyValues {

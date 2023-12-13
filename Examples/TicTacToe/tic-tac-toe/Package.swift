@@ -64,7 +64,8 @@ let package = Package(
     .target(
       name: "AuthenticationClient",
       dependencies: [
-        .product(name: "Dependencies", package: "swift-dependencies")
+        .product(name: "Dependencies", package: "swift-dependencies"),
+        .product(name: "DependenciesMacros", package: "swift-dependencies"),
       ]
     ),
     .target(

@@ -207,7 +207,7 @@ struct SyncUpsList_Previews: PreviewProvider {
       store: Store(initialState: SyncUpsList.State()) {
         SyncUpsList()
       } withDependencies: {
-        $0.dataManager.load = { _ in
+        $0.dataManager.load = { @Sendable _ in
           try JSONEncoder().encode([
             SyncUp.mock,
             .designMock,

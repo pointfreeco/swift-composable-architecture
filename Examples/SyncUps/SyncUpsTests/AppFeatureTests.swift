@@ -50,9 +50,9 @@ final class AppFeatureTests: XCTestCase {
       dependencies.dataManager = .mock(
         initialData: try! JSONEncoder().encode([syncUp])
       )
-      dependencies.dataManager.save = { [dependencies] data, url in
+      dependencies.dataManager.save = { @Sendable [dependencies] data, url in
         savedData.setValue(data)
-        try await dependencies.dataManager.save(data, url)
+        try await dependencies.dataManager.save(data, to: url)
       }
     }
 
@@ -124,7 +124,7 @@ final class AppFeatureTests: XCTestCase {
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       $0.continuousClock = ImmediateClock()
       $0.speechClient.authorizationStatus = { .authorized }
-      $0.speechClient.startTask = { _ in
+      $0.speechClient.startTask = { @Sendable _ in
         AsyncThrowingStream { continuation in
           continuation.yield(speechResult)
           continuation.finish()

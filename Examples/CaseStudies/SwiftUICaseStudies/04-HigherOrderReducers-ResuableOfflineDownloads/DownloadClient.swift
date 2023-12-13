@@ -1,9 +1,9 @@
 import ComposableArchitecture
 import Foundation
-import XCTestDynamicOverlay
 
+@DependencyClient
 struct DownloadClient {
-  var download: @Sendable (URL) -> AsyncThrowingStream<Event, Error>
+  var download: @Sendable (_ url: URL) -> AsyncThrowingStream<Event, Error> = { _ in .finished() }
 
   @CasePathable
   enum Event: Equatable {
@@ -47,7 +47,5 @@ extension DownloadClient: DependencyKey {
     }
   )
 
-  static let testValue = Self(
-    download: unimplemented("\(Self.self).download")
-  )
+  static let testValue = Self()
 }
