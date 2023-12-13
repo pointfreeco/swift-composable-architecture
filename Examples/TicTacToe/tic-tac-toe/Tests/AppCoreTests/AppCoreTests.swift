@@ -12,7 +12,7 @@ final class AppCoreTests: XCTestCase {
     let store = TestStore(initialState: TicTacToe.State()) {
       TicTacToe()
     } withDependencies: {
-      $0.authenticationClient.login = { _ in
+      $0.authenticationClient.login = { @Sendable _, _ in
         AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
       }
     }
@@ -50,10 +50,10 @@ final class AppCoreTests: XCTestCase {
     let store = TestStore(initialState: TicTacToe.State()) {
       TicTacToe()
     } withDependencies: {
-      $0.authenticationClient.login = { _ in
+      $0.authenticationClient.login = { @Sendable _, _ in
         AuthenticationResponse(token: "deadbeef", twoFactorRequired: true)
       }
-      $0.authenticationClient.twoFactor = { _ in
+      $0.authenticationClient.twoFactor = { @Sendable _, _ in
         AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
       }
     }

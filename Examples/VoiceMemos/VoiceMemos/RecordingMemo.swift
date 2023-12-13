@@ -66,7 +66,7 @@ struct RecordingMemo {
         return .run { [url = state.url] send in
           async let startRecording: Void = send(
             .audioRecorderDidFinish(
-              Result { try await self.audioRecorder.startRecording(url) }
+              Result { try await self.audioRecorder.startRecording(url: url) }
             )
           )
           for await _ in self.clock.timer(interval: .seconds(1)) {

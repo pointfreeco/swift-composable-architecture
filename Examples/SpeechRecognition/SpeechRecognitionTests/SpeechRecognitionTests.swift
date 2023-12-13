@@ -50,7 +50,7 @@ final class SpeechRecognitionTests: XCTestCase {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.finishTask = { self.recognitionTask.continuation.finish() }
-      $0.speechClient.startTask = { _ in self.recognitionTask.stream }
+      $0.speechClient.startTask = { @Sendable _ in self.recognitionTask.stream }
       $0.speechClient.requestAuthorization = { .authorized }
     }
 
@@ -92,7 +92,7 @@ final class SpeechRecognitionTests: XCTestCase {
     let store = TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
-      $0.speechClient.startTask = { _ in self.recognitionTask.stream }
+      $0.speechClient.startTask = { @Sendable _ in self.recognitionTask.stream }
       $0.speechClient.requestAuthorization = { .authorized }
     }
 
@@ -112,7 +112,7 @@ final class SpeechRecognitionTests: XCTestCase {
     let store = TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
-      $0.speechClient.startTask = { _ in self.recognitionTask.stream }
+      $0.speechClient.startTask = { @Sendable _ in self.recognitionTask.stream }
       $0.speechClient.requestAuthorization = { .authorized }
     }
 

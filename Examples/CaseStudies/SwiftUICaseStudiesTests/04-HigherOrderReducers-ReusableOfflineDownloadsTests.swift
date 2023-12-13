@@ -17,7 +17,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     ) {
       DownloadComponent()
     } withDependencies: {
-      $0.downloadClient.download = { _ in self.download.stream }
+      $0.downloadClient.download = { @Sendable _ in self.download.stream }
     }
 
     await store.send(.buttonTapped) {
@@ -46,7 +46,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     ) {
       DownloadComponent()
     } withDependencies: {
-      $0.downloadClient.download = { _ in self.download.stream }
+      $0.downloadClient.download = { @Sendable _ in self.download.stream }
     }
 
     await store.send(.buttonTapped) {
@@ -87,7 +87,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     ) {
       DownloadComponent()
     } withDependencies: {
-      $0.downloadClient.download = { _ in self.download.stream }
+      $0.downloadClient.download = { @Sendable _ in self.download.stream }
     }
 
     let task = await store.send(.buttonTapped) {
@@ -127,7 +127,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     ) {
       DownloadComponent()
     } withDependencies: {
-      $0.downloadClient.download = { _ in self.download.stream }
+      $0.downloadClient.download = { @Sendable _ in self.download.stream }
     }
 
     await store.send(.buttonTapped) {

@@ -1,6 +1,5 @@
 import ComposableArchitecture
 import SwiftUI
-import XCTestDynamicOverlay
 
 private let readMe = """
   This application demonstrates how to work with a web socket in the Composable Architecture.
@@ -57,8 +56,11 @@ struct WebSocket {
         case .disconnected:
           state.connectivityState = .connecting
           return .run { send in
-            let actions = await self.webSocket
-              .open(WebSocketClient.ID(), URL(string: "wss://echo.websocket.events")!, [])
+            let actions = await self.webSocket.open(
+              id: WebSocketClient.ID(),
+              url: URL(string: "wss://echo.websocket.events")!,
+              protocols: []
+            )
             await withThrowingTaskGroup(of: Void.self) { group in
               for await action in actions {
                 // NB: Can't call `await send` here outside of `group.addTask` due to task local
@@ -71,11 +73,11 @@ struct WebSocket {
                   group.addTask {
                     while !Task.isCancelled {
                       try await self.clock.sleep(for: .seconds(10))
-                      try? await self.webSocket.sendPing(WebSocketClient.ID())
+                      try? await self.webSocket.sendPing(id: WebSocketClient.ID())
                     }
                   }
                   group.addTask {
-                    for await result in try await self.webSocket.receive(WebSocketClient.ID()) {
+                    for await result in try await self.webSocket.receive(id: WebSocketClient.ID()) {
                       await send(.receivedSocketMessage(result))
                     }
                   }
@@ -105,7 +107,7 @@ struct WebSocket {
         let messageToSend = state.messageToSend
         state.messageToSend = ""
         return .run { send in
-          try await self.webSocket.send(WebSocketClient.ID(), .string(messageToSend))
+          try await self.webSocket.send(id: WebSocketClient.ID(), message: .string(messageToSend))
           await send(.sendResponse(didSucceed: true))
         } catch: { _, send in
           await send(.sendResponse(didSucceed: false))
@@ -194,6 +196,7 @@ struct WebSocketView: View {
 
 // MARK: - WebSocketClient
 
+@DependencyClient
 struct WebSocketClient {
   struct ID: Hashable, @unchecked Sendable {
     let rawValue: AnyHashable
@@ -230,10 +233,12 @@ struct WebSocketClient {
     }
   }
 
-  var open: @Sendable (ID, URL, [String]) async -> AsyncStream<Action>
-  var receive: @Sendable (ID) async throws -> AsyncStream<Result<Message, Error>>
-  var send: @Sendable (ID, URLSessionWebSocketTask.Message) async throws -> Void
-  var sendPing: @Sendable (ID) async throws -> Void
+  var open: @Sendable (_ id: ID, _ url: URL, _ protocols: [String]) async -> AsyncStream<Action> = {
+    _, _, _ in .finished
+  }
+  var receive: @Sendable (_ id: ID) async throws -> AsyncStream<Result<Message, Error>>
+  var send: @Sendable (_ id: ID, _ message: URLSessionWebSocketTask.Message) async throws -> Void
+  var sendPing: @Sendable (_ id: ID) async throws -> Void
 }
 
 extension WebSocketClient: DependencyKey {
@@ -343,12 +348,7 @@ extension WebSocketClient: DependencyKey {
     }
   }
 
-  static let testValue = Self(
-    open: unimplemented("\(Self.self).open", placeholder: AsyncStream.never),
-    receive: unimplemented("\(Self.self).receive"),
-    send: unimplemented("\(Self.self).send"),
-    sendPing: unimplemented("\(Self.self).sendPing")
-  )
+  static let testValue = Self()
 }
 
 extension DependencyValues {

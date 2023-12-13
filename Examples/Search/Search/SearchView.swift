@@ -83,7 +83,7 @@ struct Search {
           return .none
         }
         return .run { [query = state.searchQuery] send in
-          await send(.searchResponse(Result { try await self.weatherClient.search(query) }))
+          await send(.searchResponse(Result { try await self.weatherClient.search(query: query) }))
         }
         .cancellable(id: CancelID.location)
 
@@ -102,7 +102,7 @@ struct Search {
           await send(
             .forecastResponse(
               location.id,
-              Result { try await self.weatherClient.forecast(location) }
+              Result { try await self.weatherClient.forecast(location: location) }
             )
           )
         }

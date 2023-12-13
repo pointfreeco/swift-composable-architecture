@@ -1,9 +1,10 @@
-import Dependencies
+import ComposableArchitecture
 import Foundation
 
+@DependencyClient
 struct DataManager: Sendable {
-  var load: @Sendable (URL) throws -> Data
-  var save: @Sendable (Data, URL) async throws -> Void
+  var load: @Sendable (_ from: URL) throws -> Data
+  var save: @Sendable (Data, _ to: URL) async throws -> Void
 }
 
 extension DataManager: DependencyKey {
@@ -12,10 +13,7 @@ extension DataManager: DependencyKey {
     save: { data, url in try data.write(to: url) }
   )
 
-  static let testValue = Self(
-    load: unimplemented("DataManager.load"),
-    save: unimplemented("DataManager.save")
-  )
+  static let testValue = Self()
 }
 
 extension DependencyValues {

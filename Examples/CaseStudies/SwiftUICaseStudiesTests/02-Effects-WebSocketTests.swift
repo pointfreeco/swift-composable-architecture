@@ -13,10 +13,10 @@ final class WebSocketTests: XCTestCase {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
-      $0.webSocket.open = { _, _, _ in actions.stream }
-      $0.webSocket.receive = { _ in messages.stream }
-      $0.webSocket.send = { _, _ in }
-      $0.webSocket.sendPing = { _ in try await Task.never() }
+      $0.webSocket.open = { @Sendable _, _, _ in actions.stream }
+      $0.webSocket.receive = { @Sendable _ in messages.stream }
+      $0.webSocket.send = { @Sendable _, _ in }
+      $0.webSocket.sendPing = { @Sendable _ in try await Task.never() }
     }
 
     // Connect to the socket
@@ -64,13 +64,13 @@ final class WebSocketTests: XCTestCase {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
-      $0.webSocket.open = { _, _, _ in actions.stream }
-      $0.webSocket.receive = { _ in messages.stream }
-      $0.webSocket.send = { _, _ in
+      $0.webSocket.open = { @Sendable _, _, _ in actions.stream }
+      $0.webSocket.receive = { @Sendable _ in messages.stream }
+      $0.webSocket.send = { @Sendable _, _ in
         struct SendFailure: Error, Equatable {}
         throw SendFailure()
       }
-      $0.webSocket.sendPing = { _ in try await Task.never() }
+      $0.webSocket.sendPing = { @Sendable _ in try await Task.never() }
     }
 
     // Connect to the socket
@@ -111,9 +111,9 @@ final class WebSocketTests: XCTestCase {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = clock
-      $0.webSocket.open = { _, _, _ in actions.stream }
-      $0.webSocket.receive = { _ in try await Task.never() }
-      $0.webSocket.sendPing = { @MainActor _ in pingsCount += 1 }
+      $0.webSocket.open = { @Sendable _, _, _ in actions.stream }
+      $0.webSocket.receive = { @Sendable _ in try await Task.never() }
+      $0.webSocket.sendPing = { @Sendable @MainActor _ in pingsCount += 1 }
     }
 
     // Connect to the socket
@@ -143,9 +143,9 @@ final class WebSocketTests: XCTestCase {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
-      $0.webSocket.open = { _, _, _ in actions.stream }
-      $0.webSocket.receive = { _ in try await Task.never() }
-      $0.webSocket.sendPing = { _ in try await Task.never() }
+      $0.webSocket.open = { @Sendable _, _, _ in actions.stream }
+      $0.webSocket.receive = { @Sendable _ in try await Task.never() }
+      $0.webSocket.sendPing = { @Sendable _ in try await Task.never() }
     }
 
     // Attempt to connect to the socket
