@@ -2,7 +2,7 @@ import Perception
 
 /// Provides storage for tracking and access to data changes.
 public struct ObservationStateRegistrar: Sendable {
-  public var id = ObservableStateID()
+  public private(set) var id = ObservableStateID()
   private let registrar = PerceptionRegistrar()
   public init() {}
 
