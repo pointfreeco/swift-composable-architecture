@@ -72,18 +72,18 @@ public struct NavigationLinkStore<
     @ViewBuilder label: () -> Label
   ) {
     let store = store.scope(
-      state: { $0 },
+      state: .keyPath(\.self),
       id: nil,
-      action: { $0 },
+      action: .keyPath(\.self),
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
       removeDuplicates: nil
     )
     self.store = store
     self.viewStore = ViewStore(
       store.scope(
-        state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+        state: .function { $0.wrappedValue.flatMap(toDestinationState) != nil },
         id: nil,
-        action: { $0 },
+        action: .keyPath(\.self),
         isInvalid: nil,
         removeDuplicates: nil
       ),
@@ -125,18 +125,18 @@ public struct NavigationLinkStore<
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
     let store = store.scope(
-      state: { $0 },
+      state: .keyPath(\.self),
       id: nil,
-      action: { $0 },
+      action: .keyPath(\.self),
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id },
       removeDuplicates: nil
     )
     self.store = store
     self.viewStore = ViewStore(
       store.scope(
-        state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
+        state: .function { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
         id: nil,
-        action: { $0 },
+        action: .keyPath(\.self),
         isInvalid: nil,
         removeDuplicates: nil
       ),
@@ -164,9 +164,11 @@ public struct NavigationLinkStore<
     ) {
       IfLetStore(
         self.store.scope(
-          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
+          state: .function(
+            returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) }
+          ),
           id: nil,
-          action: { .presented(self.fromDestinationAction($0)) },
+          action: .function { .presented(self.fromDestinationAction($0)) },
           isInvalid: nil,
           removeDuplicates: nil
         ),

@@ -56,9 +56,9 @@ extension Store {
         if state != nil {
           unwrap(
             self.scope(
-              state: { $0! },
+              state: .keyPath(\.!),
               id: self.id(state: \.!, action: \.self),
-              action: { $0 },
+              action: .keyPath(\.self),
               isInvalid: { $0 == nil },
               removeDuplicates: nil
             )

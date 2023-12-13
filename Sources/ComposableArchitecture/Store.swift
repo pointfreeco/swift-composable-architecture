@@ -289,9 +289,9 @@ public final class Store<State, Action> {
     action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
     self.scope(
-      state: { $0[keyPath: state] },
+      state: .keyPath(state),
       id: self.id(state: state, action: action),
-      action: { action($0) },
+      action: .keyPath(action),
       isInvalid: nil,
       removeDuplicates: nil
     )
@@ -307,9 +307,9 @@ public final class Store<State, Action> {
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
     self.scope(
-      state: toChildState,
+      state: .function(toChildState),
       id: nil,
-      action: fromChildAction,
+      action: .function(fromChildAction),
       isInvalid: nil,
       removeDuplicates: nil
     )
@@ -326,18 +326,18 @@ public final class Store<State, Action> {
       Action
   ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
     self.scope(
-      state: toChildState,
+      state: .function(toChildState),
       id: nil,
-      action: fromChildAction,
+      action: .function(fromChildAction),
       isInvalid: nil,
       removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
 
   @_spi(Internals) public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> ChildState,
+    state toChildState: ToState<State, ChildState>,
     id: ScopeID<State, Action>?,
-    action fromChildAction: @escaping (ChildAction) -> Action,
+    action fromChildAction: FromAction<Action, ChildAction>,
     isInvalid: ((State) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
@@ -824,9 +824,9 @@ func typeName(
 extension Reducer {
   fileprivate func scope<ChildState, ChildAction>(
     store: Store<State, Action>,
-    state toChildState: @escaping (State) -> ChildState,
+    state toChildState: ToState<State, ChildState>,
     id: ScopeID<State, Action>?,
-    action fromChildAction: @escaping (ChildAction) -> Action,
+    action fromChildAction: FromAction<Action, ChildAction>,
     isInvalid: ((State) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
@@ -841,10 +841,56 @@ extension Reducer {
   }
 }
 
+@_spi(Internals) public enum ToState<RootState, State> {
+  case function((RootState) -> State)
+  case keyPath(KeyPath<RootState, State>)
+  func callAsFunction(_ rootState: RootState) -> State {
+    switch self {
+    case let .function(function):
+      function(rootState)
+    case let .keyPath(keyPath):
+      rootState[keyPath: keyPath]
+    }
+  }
+  func appending<ChildState>(
+    _ toChildState: ToState<State, ChildState>
+  ) -> ToState<RootState, ChildState> {
+    switch (self, toChildState) {
+    case let (.keyPath(lhs), .keyPath(rhs)):
+      return .keyPath(lhs.appending(path: rhs))
+    case (.function, _), (_, .function):
+      return .function { toChildState(self($0)) }
+    }
+  }
+}
+
+@_spi(Internals) public enum FromAction<RootAction, Action> {
+  case function((Action) -> RootAction)
+  case keyPath(CaseKeyPath<RootAction, Action>)
+  func callAsFunction(_ action: Action) -> RootAction {
+    switch self {
+    case let .function(function):
+      function(action)
+    case let .keyPath(keyPath):
+      keyPath(action)
+    }
+  }
+  func appending<ChildAction>(
+    _ fromChildAction: FromAction<Action, ChildAction>
+  ) -> FromAction<RootAction, ChildAction> {
+    switch (self, fromChildAction) {
+    case let (.keyPath(lhs), .keyPath(rhs)):
+      return .keyPath(lhs.appending(path: rhs))
+    case (.function, _), (_, .function):
+      return .function { self(fromChildAction($0)) }
+    }
+  }
+}
+
 private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Reducer {
   private let rootStore: Store<RootState, RootAction>
-  private let toState: (RootState) -> State
-  private let fromAction: (Action) -> RootAction
+  private let toState: ToState<RootState, State>
+  private let fromAction: FromAction<RootAction, Action>
   private let isInvalid: () -> Bool
   private let onInvalidate: () -> Void
   private(set) var isSending = false
@@ -852,8 +898,8 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
   @inlinable
   init(
     rootStore: Store<RootState, RootAction>,
-    state toState: @escaping (RootState) -> State,
-    action fromAction: @escaping (Action) -> RootAction,
+    state toState: ToState<RootState, State>,
+    action fromAction: FromAction<RootAction, Action>,
     isInvalid: @escaping () -> Bool,
     onInvalidate: @escaping () -> Void
   ) {
@@ -868,8 +914,8 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
   init(rootStore: Store<RootState, RootAction>)
   where RootState == State, RootAction == Action {
     self.rootStore = rootStore
-    self.toState = { $0 }
-    self.fromAction = { $0 }
+    self.toState = .keyPath(\.self)
+    self.fromAction = .keyPath(\.self)
     self.isInvalid = { false }
     self.onInvalidate = {}
   }
@@ -899,9 +945,9 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
 private protocol AnyScopedStoreReducer {
   func scope<S, A, ChildState, ChildAction>(
     store: Store<S, A>,
-    state toChildState: @escaping (S) -> ChildState,
+    state toChildState: ToState<S, ChildState>,
     id: ScopeID<S, A>?,
-    action fromChildAction: @escaping (ChildAction) -> A,
+    action fromChildAction: FromAction<A, ChildAction>,
     isInvalid: ((S) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction>
@@ -910,9 +956,9 @@ private protocol AnyScopedStoreReducer {
 extension ScopedStoreReducer: AnyScopedStoreReducer {
   func scope<S, A, ChildState, ChildAction>(
     store: Store<S, A>,
-    state toChildState: @escaping (S) -> ChildState,
+    state toChildState: ToState<S, ChildState>,
     id: ScopeID<S, A>?,
-    action fromChildAction: @escaping (ChildAction) -> A,
+    action fromChildAction: FromAction<A, ChildAction>,
     isInvalid: ((S) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
@@ -924,7 +970,8 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
       return childStore
     }
 
-    let fromAction = self.fromAction as! (A) -> RootAction
+    let toState = self.toState as! ToState<RootState, S>
+    let fromAction = self.fromAction as! FromAction<RootAction, A>
 
     // NB: This strong/weak self dance forces the child to retain the parent when the parent doesn't
     //     retain the child.
@@ -939,8 +986,11 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
       }
     let reducer = ScopedStoreReducer<RootState, RootAction, ChildState, ChildAction>(
       rootStore: self.rootStore,
-      state: { [stateSubject = store.stateSubject!] _ in toChildState(stateSubject.value) },
-      action: { fromAction(fromChildAction($0)) },
+      state: toState.appending(toChildState),
+      // state: .function {
+      //   [stateSubject = store.stateSubject!] _ in toChildState(stateSubject.value)
+      // },
+      action: fromAction.appending(fromChildAction),
       isInvalid: isInvalid,
       onInvalidate: { [weak store] in
         guard let id = id else { return }

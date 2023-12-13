@@ -216,10 +216,10 @@ public struct PresentationStore<
   ) where State == DestinationState, Action == DestinationAction {
     let viewStore = ViewStore(
       store.scope(
-        state: { $0 },
+        state: .keyPath(\.self),
         // NB: Introducing a `\.self` cache key here prevents dismissal from working.
         id: nil,
-        action: { $0 },
+        action: .keyPath(\.self),
         isInvalid: { $0.wrappedValue == nil },
         removeDuplicates: nil
       ),
@@ -232,9 +232,9 @@ public struct PresentationStore<
     self.toID = toID
     self.fromDestinationAction = { $0 }
     self.destinationStore = store.scope(
-      state: { $0.wrappedValue },
+      state: .keyPath(\.wrappedValue),
       id: store.id(state: \.wrappedValue, action: \.presented),
-      action: { .presented($0) },
+      action: .keyPath(\.presented),
       isInvalid: { $0.wrappedValue == nil },
       removeDuplicates: nil
     )
@@ -253,9 +253,9 @@ public struct PresentationStore<
     ) -> Content
   ) {
     let store = store.scope(
-      state: { $0 },
+      state: .keyPath(\.self),
       id: nil,
-      action: { $0 },
+      action: .keyPath(\.self),
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
       removeDuplicates: nil
     )
@@ -266,9 +266,9 @@ public struct PresentationStore<
     self.toID = toID
     self.fromDestinationAction = fromDestinationAction
     self.destinationStore = store.scope(
-      state: { $0.wrappedValue.flatMap(toDestinationState) },
+      state: .function { $0.wrappedValue.flatMap(toDestinationState) },
       id: nil,
-      action: { .presented(fromDestinationAction($0)) },
+      action: .function { .presented(fromDestinationAction($0)) },
       isInvalid: nil,
       removeDuplicates: nil
     )
@@ -317,9 +317,9 @@ public struct DestinationContent<State, Action> {
   ) -> some View {
     IfLetStore(
       self.store.scope(
-        state: returningLastNonNilValue { $0 },
+        state: .function(returningLastNonNilValue { $0 }),
         id: self.store.id(state: \.self, action: \.self),
-        action: { $0 },
+        action: .keyPath(\.self),
         isInvalid: nil,
         removeDuplicates: nil
       ),

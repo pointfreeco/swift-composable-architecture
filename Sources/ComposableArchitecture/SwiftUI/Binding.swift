@@ -425,9 +425,9 @@ public struct BindingViewStore<State> {
     line: UInt = #line
   ) where Action.State == State {
     self.store = store.scope(
-      state: { $0 },
+      state: .keyPath(\.self),
       id: nil,
-      action: Action.binding,
+      action: .keyPath(\.binding),
       isInvalid: nil,
       removeDuplicates: nil
     )
@@ -487,6 +487,15 @@ public struct BindingViewStore<State> {
   }
 }
 
+extension Case where Value: BindableAction {
+  fileprivate var binding: Case<BindingAction<Value.State>> {
+    Case<BindingAction<Value.State>>(
+      embed: Value.binding,
+      extract: \.binding
+    )
+  }
+}
+
 extension ViewStore {
   /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
   /// to compute bindings from state.
@@ -512,9 +521,9 @@ extension ViewStore {
         toViewState(
           BindingViewStore(
             store: store.scope(
-              state: { $0 },
+              state: .keyPath(\.self),
               id: nil,
-              action: fromViewAction,
+              action: .function(fromViewAction),
               isInvalid: nil,
               removeDuplicates: nil
             )
@@ -630,9 +639,9 @@ extension WithViewStore where Content: View {
         toViewState(
           BindingViewStore(
             store: store.scope(
-              state: { $0 },
+              state: .keyPath(\.self),
               id: nil,
-              action: fromViewAction,
+              action: .function(fromViewAction),
               isInvalid: nil,
               removeDuplicates: nil
             )

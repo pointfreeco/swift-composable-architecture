@@ -55,9 +55,9 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @ViewBuilder else elseContent: () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     let store = store.scope(
-      state: { $0 },
+      state: .keyPath(\.self),
       id: store.id(state: \.self, action: \.self),
-      action: { $0 },
+      action: .keyPath(\.self),
       isInvalid: { $0 == nil },
       removeDuplicates: nil
     )
@@ -68,9 +68,9 @@ public struct IfLetStore<State, Action, Content: View>: View {
         return ViewBuilder.buildEither(
           first: ifContent(
             store.scope(
-              state: { $0! },
+              state: .keyPath(\.!),
               id: store.id(state: \.!, action: \.self),
-              action: { $0 },
+              action: .keyPath(\.self),
               isInvalid: { $0 == nil },
               removeDuplicates: nil
             )
@@ -94,9 +94,9 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
     let store = store.scope(
-      state: { $0 },
+      state: .keyPath(\.self),
       id: store.id(state: \.self, action: \.self),
-      action: { $0 },
+      action: .keyPath(\.self),
       isInvalid: { $0 == nil },
       removeDuplicates: nil
     )
@@ -105,9 +105,9 @@ public struct IfLetStore<State, Action, Content: View>: View {
       if viewStore.state != nil {
         return ifContent(
           store.scope(
-            state: { $0! },
+            state: .keyPath(\.!),
             id: store.id(state: \.!, action: \.self),
-            action: { $0 },
+            action: .keyPath(\.self),
             isInvalid: { $0 == nil },
             removeDuplicates: nil
           )

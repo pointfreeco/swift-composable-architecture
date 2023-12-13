@@ -52,9 +52,9 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       destination(
         store
           .scope(
-            state: { $0[id: component.id]! },
+            state: .keyPath(\.[id: component.id]!),
             id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
-            action: { .element(id: component.id, action: $0) },
+            action: .keyPath(\.[id: component.id]),
             isInvalid: { !$0.ids.contains(component.id) },
             removeDuplicates: nil
           )
@@ -88,9 +88,9 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       SwitchStore(
         store
           .scope(
-            state: { $0[id: component.id]! },
+            state: .keyPath(\.[id: component.id]!),
             id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
-            action: { .element(id: component.id, action: $0) },
+            action: .keyPath(\.[id: component.id]),
             isInvalid: { !$0.ids.contains(component.id) },
             removeDuplicates: nil
           )

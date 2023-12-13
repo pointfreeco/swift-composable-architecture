@@ -498,9 +498,9 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ) {
     self.init(
       store: store.scope(
-        state: toViewState,
+        state: .function(toViewState),
         id: nil,
-        action: fromViewAction,
+        action: .function(fromViewAction),
         isInvalid: nil,
         removeDuplicates: nil
       ),
@@ -593,9 +593,9 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ) {
     self.init(
       store: store.scope(
-        state: toViewState,
+        state: .function(toViewState),
         id: nil,
-        action: { $0 },
+        action: .keyPath(\.self),
         isInvalid: nil,
         removeDuplicates: nil
       ),
@@ -689,9 +689,9 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ) {
     self.init(
       store: store.scope(
-        state: toViewState,
+        state: .function(toViewState),
         id: nil,
-        action: fromViewAction,
+        action: .function(fromViewAction),
         isInvalid: nil,
         removeDuplicates: nil
       ),
@@ -781,9 +781,9 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ) {
     self.init(
       store: store.scope(
-        state: toViewState,
+        state: .function(toViewState),
         id: nil,
-        action: { $0 },
+        action: .keyPath(\.self),
         isInvalid: nil,
         removeDuplicates: nil
       ),

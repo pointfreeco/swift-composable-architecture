@@ -87,9 +87,10 @@ public struct _StoreCollection<ID: Hashable, State, Action>: RandomAccessCollect
     }
     let id = self.data.ids[position]
     return self.store.scope(
-      state: { $0[id: id] ?? self.data[id: id]! },
+      state: .keyPath(\.[id: id]!),
+      // state: { $0[id: id] ?? self.data[id: id]! },
       id: self.store.id(state: \.[id: id]!, action: \.[id: id]),
-      action: { .element(id: id, action: $0) },
+      action: .keyPath(\.[id: id]),
       isInvalid: { !$0.ids.contains(id) },
       removeDuplicates: nil
     )

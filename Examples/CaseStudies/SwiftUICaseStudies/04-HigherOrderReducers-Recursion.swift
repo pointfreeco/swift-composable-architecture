@@ -32,10 +32,14 @@ struct Nested {
     Reduce { state, action in
       switch action {
       case .addRowButtonTapped:
+        print("addRowButtonTapped", Thread.callStackSymbols.count)
         state.rows.append(State(id: self.uuid()))
-        return .none
+        return .run { send in
+          await send(.nameTextFieldChanged("!!!"))
+        }
 
       case let .nameTextFieldChanged(name):
+        print("nameTextFieldChanged", Thread.callStackSymbols.count)
         state.name = name
         return .none
 

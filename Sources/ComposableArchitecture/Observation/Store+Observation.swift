@@ -113,9 +113,9 @@ extension Store where State: ObservableState {
     guard self.observableState[keyPath: state] != nil
     else { return nil }
     return self.scope(
-      state: { $0[keyPath: state]! },
+      state: .keyPath(state.appending(path: \.!)),
       id: self.id(state: state.appending(path: \.!), action: action),
-      action: { action($0) },
+      action: .keyPath(action),
       isInvalid: { $0[keyPath: state] == nil },
       removeDuplicates: nil
     )

@@ -162,9 +162,9 @@ public struct _NavigationDestinationViewModifier<
         self
           .destination(
             self.store.scope(
-              state: { $0[id: component.id]! },
+              state: .keyPath(\.[id: component.id]!),
               id: self.store.id(state: \.[id: component.id], action: \.[id: component.id]),
-              action: { .element(id: component.id, action: $0) },
+              action: .keyPath(\.[id: component.id]),
               isInvalid: { !$0.ids.contains(component.id) },
               removeDuplicates: nil
             )
