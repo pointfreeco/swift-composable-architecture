@@ -6,8 +6,8 @@ func memoize<Result>(
   _ apply: @escaping () -> Result
 ) -> () -> Result {
   let cache = Cache<[NSNumber], Result>(maxCapacity: maxCapacity)
-  let callStack = Thread.callStackReturnAddresses
   return {
+    let callStack = Thread.callStackReturnAddresses
     guard let memoizedResult = cache[callStack]
     else {
       let result = apply()
@@ -27,7 +27,7 @@ private final class Cache<Key: Hashable, Value>: @unchecked Sendable {
   }
   subscript(key: Key) -> Value? {
     get {
-      return self.lock.sync {
+      self.lock.sync {
         self.dictionary[key]
       }
     }
