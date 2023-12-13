@@ -191,13 +191,13 @@ extension PatternBindingListSyntax {
             accessors: .accessors([
               """
               get {
-              _$observationRegistrar.access(self, keyPath: \\.$\(identifier))
+              _$observationRegistrar.access(self, keyPath: \\.\(identifier))
               return _\(identifier.identifier).projectedValue
               }
               """,
               """
               set {
-              _$observationRegistrar.mutate(self, keyPath: \\.$\(identifier), &_\(identifier).projectedValue, newValue, _$isIdentityEqual)
+              _$observationRegistrar.mutate(self, keyPath: \\.\(identifier), &_\(identifier).projectedValue, newValue, _$isIdentityEqual)
               }
               """
             ])

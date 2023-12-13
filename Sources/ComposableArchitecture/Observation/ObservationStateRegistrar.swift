@@ -23,18 +23,18 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
       self.registrar.access(subject, keyPath: keyPath)
     }
 
-    public func mutate<Subject: Observable, Member>(
+    public func mutate<Subject: Observable, Member, Value>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>,
-      _ member: inout Member,
-      _ newValue: Member,
-      _ isIdentityEqual: (Member, Member) -> Bool
+      _ value: inout Value,
+      _ newValue: Value,
+      _ isIdentityEqual: (Value, Value) -> Bool
     ) {
-      if isIdentityEqual(member, newValue) {
-        member = newValue
+      if isIdentityEqual(value, newValue) {
+        value = newValue
       } else {
         self.registrar.withMutation(of: subject, keyPath: keyPath) {
-          member = newValue
+          value = newValue
         }
       }
     }
@@ -98,18 +98,18 @@ extension ObservationStateRegistrar {
   }
 
   @_disfavoredOverload
-  public func mutate<Subject: Perceptible, Member>(
+  public func mutate<Subject: Perceptible, Member, Value>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>,
-    _ member: inout Member,
-    _ newValue: Member,
-    _ isIdentityEqual: (Member, Member) -> Bool
+    _ value: inout Value,
+    _ newValue: Value,
+    _ isIdentityEqual: (Value, Value) -> Bool
   ) {
-    if isIdentityEqual(member, newValue) {
-      member = newValue
+    if isIdentityEqual(value, newValue) {
+      value = newValue
     } else {
       self.registrar.withMutation(of: subject, keyPath: keyPath) {
-        member = newValue
+        value = newValue
       }
     }
   }

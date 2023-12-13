@@ -8,7 +8,7 @@
   final class ObservableStateMacroTests: MacroBaseTestCase {
     override func invokeTest() {
       withMacroTesting(
-        //isRecording: true
+        // isRecording: true
       ) {
         super.invokeTest()
       }
@@ -175,10 +175,10 @@
           mutating func _$willSet() {
             switch self {
             case var .feature1(state):
-              state._$willSet()
+              ComposableArchitecture._$willSet(&state)
               self = .feature1(state)
             case var .feature2(state):
-              state._$willSet()
+              ComposableArchitecture._$willSet(&state)
               self = .feature2(state)
             }
           }
@@ -186,10 +186,10 @@
           mutating func _$didSet() {
             switch self {
             case var .feature1(state):
-              state._$didSet()
+              ComposableArchitecture._$didSet(&state)
               self = .feature1(state)
             case var .feature2(state):
-              state._$didSet()
+              ComposableArchitecture._$didSet(&state)
               self = .feature2(state)
             }
           }
@@ -225,10 +225,10 @@
           public mutating func _$willSet() {
             switch self {
             case var .feature1(state):
-              state._$willSet()
+              ComposableArchitecture._$willSet(&state)
               self = .feature1(state)
             case var .feature2(state):
-              state._$willSet()
+              ComposableArchitecture._$willSet(&state)
               self = .feature2(state)
             }
           }
@@ -236,10 +236,10 @@
           public mutating func _$didSet() {
             switch self {
             case var .feature1(state):
-              state._$didSet()
+              ComposableArchitecture._$didSet(&state)
               self = .feature1(state)
             case var .feature2(state):
-              state._$didSet()
+              ComposableArchitecture._$didSet(&state)
               self = .feature2(state)
             }
           }

@@ -8,7 +8,7 @@
   final class PresentsMacroTests: XCTestCase {
     override func invokeTest() {
       withMacroTesting(
-        //isRecording: true,
+        // isRecording: true,
         macros: [PresentsMacro.self]
       ) {
         super.invokeTest()
@@ -31,33 +31,21 @@
               _destination = PresentationState(wrappedValue: initialValue)
             }
             get {
-              access(keyPath: \.destination)
+              _$observationRegistrar.access(self, keyPath: \.destination)
               return _destination.wrappedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.wrappedValue) {
-                _destination.wrappedValue = newValue
-              } else {
-                withMutation(keyPath: \.destination) {
-                  _destination.wrappedValue = newValue
-                }
-              }
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.wrappedValue, newValue, _$isIdentityEqual)
             }
           }
 
           var $destination: ComposableArchitecture.PresentationState<Destination.State> {
             get {
-              access(keyPath: \.destination)
+              _$observationRegistrar.access(self, keyPath: \.destination)
               return _destination.projectedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.projectedValue) {
-                _destination.projectedValue = newValue
-              } else {
-                withMutation(keyPath: \.destination) {
-                  _destination.projectedValue = newValue
-                }
-              }
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.projectedValue, newValue, _$isIdentityEqual)
             }
           }
 
@@ -83,33 +71,21 @@
               _destination = PresentationState(wrappedValue: initialValue)
             }
             get {
-              access(keyPath: \.destination)
+              _$observationRegistrar.access(self, keyPath: \.destination)
               return _destination.wrappedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.wrappedValue) {
-                _destination.wrappedValue = newValue
-              } else {
-                withMutation(keyPath: \.destination) {
-                  _destination.wrappedValue = newValue
-                }
-              }
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.wrappedValue, newValue, _$isIdentityEqual)
             }
           }
 
           public var $destination: ComposableArchitecture.PresentationState<Destination.State> {
             get {
-              access(keyPath: \.destination)
+              _$observationRegistrar.access(self, keyPath: \.destination)
               return _destination.projectedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.projectedValue) {
-                _destination.projectedValue = newValue
-              } else {
-                withMutation(keyPath: \.destination) {
-                  _destination.projectedValue = newValue
-                }
-              }
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.projectedValue, newValue, _$isIdentityEqual)
             }
           }
 
@@ -155,26 +131,16 @@
 
           var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
-          internal nonisolated func access<Member>(
-            keyPath: KeyPath<State, Member>
-          ) {
-            _$observationRegistrar.access(self, keyPath: keyPath)
-          }
-
-          internal nonisolated func withMutation<Member, MutationResult>(
-            keyPath: KeyPath<State, Member>,
-            _ mutation: () throws -> MutationResult
-          ) rethrows -> MutationResult {
-            try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-          }
-
           var _$id: ComposableArchitecture.ObservableStateID {
-            get {
-              self._$observationRegistrar.id
-            }
-            set {
-              self._$observationRegistrar.id = newValue
-            }
+            _$observationRegistrar.id
+          }
+
+          mutating func _$willSet() {
+            _$observationRegistrar.id._flag = true
+          }
+
+          mutating func _$didSet() {
+            _$observationRegistrar.id._flag = false
           }
         }
         """
