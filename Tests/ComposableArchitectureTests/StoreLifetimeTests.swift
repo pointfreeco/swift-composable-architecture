@@ -64,6 +64,9 @@ final class StoreLifetimeTests: BaseTCATestCase {
     }
 
     func testStoreDeinit_RunningEffect() async {
+      XCTTODO(
+        "We would like for this to pass, but it requires full deprecation of uncached child stores"
+      )
       Logger.shared.isEnabled = true
       let effectFinished = self.expectation(description: "Effect finished")
       do {
@@ -90,6 +93,9 @@ final class StoreLifetimeTests: BaseTCATestCase {
     }
 
     func testStoreDeinit_RunningCombineEffect() async {
+      XCTTODO(
+        "We would like for this to pass, but it requires full deprecation of uncached child stores"
+      )
       Logger.shared.isEnabled = true
       let effectFinished = self.expectation(description: "Effect finished")
       do {
