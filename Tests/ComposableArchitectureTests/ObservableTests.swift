@@ -477,6 +477,24 @@ final class ObservableTests: BaseTCATestCase {
     self.wait(for: [firstElementCountDidChange])
   }
 
+  func testCopy() {
+    XCTTODO("This should pass, but currently does not.")
+
+    var state = ParentState()
+    var childCopy = state.child.copy()
+    childCopy.count = 42
+    let childCountDidChange = self.expectation(description: "childCountDidChange")
+
+    withPerceptionTracking {
+      _ = state.child.count
+    } onChange: {
+      childCountDidChange.fulfill()
+    }
+
+    state.child.replace(with: childCopy)
+    XCTAssertEqual(state.child.count, 42)
+    self.wait(for: [childCountDidChange], timeout: 0)
+  }
 }
 
 @ObservableState
@@ -488,6 +506,9 @@ private struct ChildState: Equatable, Identifiable {
   }
   mutating func reset() {
     self = Self()
+  }
+  mutating func copy() -> Self {
+    self
   }
 }
 @ObservableState
