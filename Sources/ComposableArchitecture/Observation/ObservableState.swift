@@ -16,7 +16,7 @@ public protocol ObservableState: Perceptible {
 public struct ObservableStateID: Equatable, Hashable, Sendable {
   private let uuid: UUID
   private var tag: Int?
-  private var _location = UUID()
+  private var location = UUID()
 
   public init() {
     self.uuid = UUID()
@@ -41,7 +41,7 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   }
 
   public mutating func _$willSet() {
-    _location = UUID()
+    self.location = UUID()
   }
 }
 
