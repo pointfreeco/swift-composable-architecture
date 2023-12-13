@@ -206,6 +206,14 @@ extension PerceptionRegistrar: Hashable {
   }
 
   var isInSwiftUIBody: Bool {
+    determineIfInSwiftUIBodyMemoized(Thread.callStackReturnAddresses)
+  }
+
+  let determineIfInSwiftUIBodyMemoized = memoize({ (_ : [NSNumber]) in
+      determineIfInSwiftUIBody
+  })
+
+  var determineIfInSwiftUIBody: Bool {
     for callStackSymbol in Thread.callStackSymbols {
       let mangledSymbol = callStackSymbol.utf8
         .drop(while: { $0 != .init(ascii: "$") })

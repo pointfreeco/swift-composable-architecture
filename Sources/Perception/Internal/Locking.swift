@@ -49,3 +49,12 @@ extension _ManagedCriticalState: Identifiable {
     ObjectIdentifier(buffer)
   }
 }
+
+extension NSLock {
+  @inlinable @discardableResult
+  @_spi(Internals) public func sync<R>(work: () -> R) -> R {
+    self.lock()
+    defer { self.unlock() }
+    return work()
+  }
+}
