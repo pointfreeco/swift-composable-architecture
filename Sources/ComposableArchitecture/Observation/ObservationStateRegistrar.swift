@@ -5,7 +5,6 @@ public struct ObservationStateRegistrar: Sendable {
   public private(set) var id = ObservableStateID()
   private let registrar = PerceptionRegistrar()
   public init() {}
-
   public mutating func _$willSet() { id._$willSet() }
   public mutating func _$didSet() { id._$didSet() }
 }
