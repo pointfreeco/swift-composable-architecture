@@ -138,10 +138,6 @@
           mutating func _$willSet() {
             _$observationRegistrar.id._flag = true
           }
-
-          mutating func _$didSet() {
-            _$observationRegistrar.id._flag = false
-          }
         }
         """
       }

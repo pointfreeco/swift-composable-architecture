@@ -8,7 +8,7 @@
   final class ObservableStateMacroTests: MacroBaseTestCase {
     override func invokeTest() {
       withMacroTesting(
-        // isRecording: true
+        //isRecording: true
       ) {
         super.invokeTest()
       }
@@ -57,10 +57,6 @@
           mutating func _$willSet() {
             _$observationRegistrar._$willSet()
           }
-
-          mutating func _$didSet() {
-            _$observationRegistrar._$didSet()
-          }
         }
         """#
       }
@@ -107,10 +103,6 @@
           mutating func _$willSet() {
             _$observationRegistrar._$willSet()
           }
-
-          mutating func _$didSet() {
-            _$observationRegistrar._$didSet()
-          }
         }
         """#
       }
@@ -138,10 +130,6 @@
 
           mutating func _$willSet() {
             _$observationRegistrar._$willSet()
-          }
-
-          mutating func _$didSet() {
-            _$observationRegistrar._$didSet()
           }
         }
         """
@@ -179,17 +167,6 @@
               self = .feature1(state)
             case var .feature2(state):
               ComposableArchitecture._$willSet(&state)
-              self = .feature2(state)
-            }
-          }
-
-          mutating func _$didSet() {
-            switch self {
-            case var .feature1(state):
-              ComposableArchitecture._$didSet(&state)
-              self = .feature1(state)
-            case var .feature2(state):
-              ComposableArchitecture._$didSet(&state)
               self = .feature2(state)
             }
           }
@@ -232,17 +209,6 @@
               self = .feature2(state)
             }
           }
-
-          public mutating func _$didSet() {
-            switch self {
-            case var .feature1(state):
-              ComposableArchitecture._$didSet(&state)
-              self = .feature1(state)
-            case var .feature2(state):
-              ComposableArchitecture._$didSet(&state)
-              self = .feature2(state)
-            }
-          }
         }
         """
       }
@@ -275,14 +241,6 @@
               self = .foo(state)
             }
           }
-
-          public mutating func _$didSet() {
-            switch self {
-            case var .foo(state):
-              ComposableArchitecture._$didSet(&state)
-              self = .foo(state)
-            }
-          }
         }
         """
       }
@@ -309,13 +267,6 @@
           }
 
           public mutating func _$willSet() {
-            switch self {
-            case .foo:
-              break
-            }
-          }
-
-          public mutating func _$didSet() {
             switch self {
             case .foo:
               break

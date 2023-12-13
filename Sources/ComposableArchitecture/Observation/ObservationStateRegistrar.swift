@@ -6,7 +6,6 @@ public struct ObservationStateRegistrar: Sendable {
   private let registrar = PerceptionRegistrar()
   public init() {}
   public mutating func _$willSet() { id._$willSet() }
-  public mutating func _$didSet() { id._$didSet() }
 }
 
 extension ObservationStateRegistrar: Equatable, Hashable, Codable {
@@ -71,22 +70,6 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
         self.mutate(subject, keyPath: keyPath, &member, newValue, isIdentityEqual)
       }
     }
-
-    public func didSet<Subject: Observable, Member: ObservableState>(
-      _ subject: Subject,
-      keyPath: KeyPath<Subject, Member>,
-      _ member: inout Member,
-      _ oldValue: Member,
-      _ isIdentityEqual: (Member, Member) -> Bool
-    ) {
-      if isIdentityEqual(oldValue, member) {
-        member._$didSet()
-      } else {
-        let newValue = member
-        member = oldValue
-        self.mutate(subject, keyPath: keyPath, &member, newValue, isIdentityEqual)
-      }
-    }
   }
 #endif
 
@@ -144,23 +127,6 @@ extension ObservationStateRegistrar {
     _ isIdentityEqual: (Member, Member) -> Bool
   ) {
     if !isIdentityEqual(oldValue, member) {
-      let newValue = member
-      member = oldValue
-      self.mutate(subject, keyPath: keyPath, &member, newValue, isIdentityEqual)
-    }
-  }
-
-  @_disfavoredOverload
-  public func didSet<Subject: Perceptible, Member: ObservableState>(
-    _ subject: Subject,
-    keyPath: KeyPath<Subject, Member>,
-    _ member: inout Member,
-    _ oldValue: Member,
-    _ isIdentityEqual: (Member, Member) -> Bool
-  ) {
-    if isIdentityEqual(oldValue, member) {
-      member._$didSet()
-    } else {
       let newValue = member
       member = oldValue
       self.mutate(subject, keyPath: keyPath, &member, newValue, isIdentityEqual)

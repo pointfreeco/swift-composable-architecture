@@ -10,14 +10,13 @@ import Perception
 public protocol ObservableState: Perceptible {
   var _$id: ObservableStateID { get }
   mutating func _$willSet()
-  mutating func _$didSet()
 }
 
 /// A unique identifier for a observed value.
 public struct ObservableStateID: Equatable, Hashable, Sendable {
   private let uuid: UUID
   private var tag: Int?
-  private var _isSetting = false
+  private var _location = UUID()
 
   public init() {
     self.uuid = UUID()
@@ -42,11 +41,7 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   }
 
   public mutating func _$willSet() {
-    _isSetting = true
-  }
-
-  public mutating func _$didSet() {
-    _isSetting = false
+    _location = UUID()
   }
 }
 
@@ -129,8 +124,4 @@ public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
 public func _$willSet<T>(_: inout T) {}
 public func _$willSet<T: ObservableState>(_ value: inout T) {
   value._$willSet()
-}
-public func _$didSet<T>(_: inout T) {}
-public func _$didSet<T: ObservableState>(_ value: inout T) {
-  value._$didSet()
 }

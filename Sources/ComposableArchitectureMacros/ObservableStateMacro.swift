@@ -74,15 +74,6 @@ public struct ObservableStateMacro {
       """
   }
 
-  static func didSetFunction(_ access: DeclModifierListSyntax.Element?) -> DeclSyntax {
-    return
-      """
-      \(access)mutating func _$didSet() {
-      \(raw: registrarVariableName)._$didSet()
-      }
-      """
-  }
-
   static var ignoredAttribute: AttributeSyntax {
     AttributeSyntax(
       leadingTrivia: .space,
@@ -240,7 +231,6 @@ extension ObservableStateMacro: MemberMacro {
     declaration.addIfNeeded(ObservableStateMacro.registrarVariable(observableType), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.idVariable(access), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.willSetFunction(access), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.didSetFunction(access), to: &declarations)
 
     return declarations
   }
@@ -261,7 +251,6 @@ extension ObservableStateMacro {
       .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
     var getCases: [String] = []
     var willSetCases: [String] = []
-    var didSetCases: [String] = []
     for (tag, enumCaseDecl) in enumCaseDecls.enumerated() {
       if enumCaseDecl.parameterClause?.parameters.count == 1 {
         getCases.append(
@@ -277,13 +266,6 @@ extension ObservableStateMacro {
           self = .\(enumCaseDecl.name.text)(state)
           """
         )
-        didSetCases.append(
-          """
-          case var .\(enumCaseDecl.name.text)(state):
-          \(moduleName)._$didSet(&state)
-          self = .\(enumCaseDecl.name.text)(state)
-          """
-        )
       } else {
         getCases.append(
           """
@@ -292,12 +274,6 @@ extension ObservableStateMacro {
           """
         )
         willSetCases.append(
-          """
-          case .\(enumCaseDecl.name.text):
-          break
-          """
-        )
-        didSetCases.append(
           """
           case .\(enumCaseDecl.name.text):
           break
@@ -318,13 +294,6 @@ extension ObservableStateMacro {
       \(access)mutating func _$willSet() {
       switch self {
       \(raw: willSetCases.joined(separator: "\n"))
-      }
-      }
-      """,
-      """
-      \(access)mutating func _$didSet() {
-      switch self {
-      \(raw: didSetCases.joined(separator: "\n"))
       }
       }
       """,

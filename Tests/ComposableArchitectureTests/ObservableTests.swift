@@ -478,8 +478,6 @@ final class ObservableTests: BaseTCATestCase {
   }
 
   func testCopy() {
-    XCTTODO("This should pass, but currently does not.")
-
     var state = ParentState()
     var childCopy = state.child.copy()
     childCopy.count = 42
