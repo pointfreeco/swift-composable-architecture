@@ -971,7 +971,7 @@ extension Reducer {
 private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Reducer {
   private let rootStore: Store<RootState, RootAction>
   private let toState: (RootState) -> State
-  private let fromAction: (Action) -> RootAction?
+  private let fromAction: (Action) -> RootAction
   private let isInvalid: () -> Bool
   private let onInvalidate: () -> Void
   private(set) var isSending = false
@@ -980,7 +980,7 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
   init(
     rootStore: Store<RootState, RootAction>,
     state toState: @escaping (RootState) -> State,
-    action fromAction: @escaping (Action) -> RootAction?,
+    action fromAction: @escaping (Action) -> RootAction,
     isInvalid: @escaping () -> Bool,
     onInvalidate: @escaping () -> Void
   ) {
@@ -1014,9 +1014,8 @@ private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Re
       }
       self.isSending = false
     }
-    if let action = self.fromAction(action),
-      let task = self.rootStore.send(action, originatingFrom: nil)
-    {
+    if BindingLocal.isActive && isInvalid() { return .none }
+    if let task = self.rootStore.send(self.fromAction(action), originatingFrom: nil) {
       return .run { _ in await task.cancellableValue }
     } else {
       return .none
@@ -1050,7 +1049,7 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
     {
       return childStore
     }
-    let fromAction = self.fromAction as! (A) -> RootAction?
+    let fromAction = self.fromAction as! (A) -> RootAction
     let isInvalid =
       id == nil || !store.canCacheChildren
       ? {
@@ -1060,13 +1059,10 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
         guard let store = store else { return true }
         return store._isInvalidated() || isInvalid?(store.stateSubject.value) == true
       }
-    let fromChildAction = {
-      BindingLocal.isActive && isInvalid() ? nil : fromChildAction($0)
-    }
     let reducer = ScopedStoreReducer<RootState, RootAction, ChildState, ChildAction>(
       rootStore: self.rootStore,
       state: { [stateSubject = store.stateSubject] _ in toChildState(stateSubject.value) },
-      action: { fromChildAction($0).flatMap(fromAction) },
+      action: { fromAction(fromChildAction($0)) },
       isInvalid: isInvalid,
       onInvalidate: { [weak store] in
         guard let id = id else { return }
