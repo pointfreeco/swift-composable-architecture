@@ -187,7 +187,6 @@ extension PatternBindingListSyntax {
           ),
           typeAnnotation: binding.typeAnnotation,
           accessorBlock: AccessorBlockSyntax(
-            // TODO: Should this use the same, non-projected key path for access/mutation to work
             accessors: .accessors([
               """
               get {
