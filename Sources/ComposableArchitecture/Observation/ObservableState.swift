@@ -14,12 +14,36 @@ public protocol ObservableState: Perceptible {
 
 /// A unique identifier for a observed value.
 public struct ObservableStateID: Equatable, Hashable, Sendable {
-  private let uuid: UUID
-  private var tag: Int?
-  private var location = UUID()
+  var storage: Storage
+
+  private var uuid: UUID {
+    get { self.storage.uuid }
+    set { self.storage.uuid = newValue }
+  }
+  private var tag: Int? {
+    get { self.storage.tag }
+    set { self.storage.tag = newValue }
+  }
+
+  class Storage: @unchecked Sendable, Hashable {
+    fileprivate var uuid: UUID
+    fileprivate var tag: Int?
+    init(uuid: UUID = UUID(), tag: Int? = nil) {
+      self.uuid = uuid
+      self.tag = tag
+    }
+    static func == (lhs: Storage, rhs: Storage) -> Bool {
+      lhs.uuid == rhs.uuid && lhs.tag == rhs.tag
+    }
+    func hash(into hasher: inout Hasher) {
+      hasher.combine(self.uuid)
+      hasher.combine(self.tag)
+    }
+  }
 
   public init() {
-    self.uuid = UUID()
+    self.storage = Storage()
+    //self.uuid = UUID()
   }
 
   public static let _$inert = Self()
@@ -27,7 +51,7 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   // TODO: inlinable?
   public func _$tag(_ tag: Int?) -> Self {
     var copy = self
-    copy.tag = tag
+    copy.storage = Storage(uuid: copy.uuid, tag: tag)
     return copy
   }
 
@@ -41,11 +65,16 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   }
 
   public mutating func _$willSet() {
-    self.location = UUID()
+
+    if !isKnownUniquelyReferenced(&self.storage) {
+      self.storage = Storage(tag: self.tag)
+    }
+
+//    self.uuid = UUID()
   }
 }
 
-// TODO: inlinable?
+@inlinable
 public func _$isIdentityEqual<ID: Hashable, T: ObservableState>(
   _ lhs: IdentifiedArray<ID, T>, 
   _ rhs: IdentifiedArray<ID, T>
@@ -53,7 +82,7 @@ public func _$isIdentityEqual<ID: Hashable, T: ObservableState>(
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
-// TODO: inlinable?
+@inlinable
 public func _$isIdentityEqual<T: ObservableState>(
   _ lhs: PresentationState<T>, 
   _ rhs: PresentationState<T>
@@ -61,7 +90,7 @@ public func _$isIdentityEqual<T: ObservableState>(
   lhs.wrappedValue?._$id == rhs.wrappedValue?._$id
 }
 
-// TODO: inlinable?
+@inlinable
 public func _$isIdentityEqual<T: ObservableState>(
   _ lhs: StackState<T>, 
   _ rhs: StackState<T>
@@ -69,9 +98,9 @@ public func _$isIdentityEqual<T: ObservableState>(
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
-// TODO: inlinable?
 // TODO: When is this hit?
 @_disfavoredOverload
+@inlinable
 public func _$isIdentityEqual<C: Collection>(_ lhs: C, _ rhs: C) -> Bool
 where C.Element: ObservableState {
   fatalError(
@@ -84,13 +113,13 @@ where C.Element: ObservableState {
   // lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
 }
 
-// TODO: inlinable?
 // NB: This is a fast path so that String is not checked as a collection.
+@inlinable
 public func _$isIdentityEqual(_ lhs: String, _ rhs: String) -> Bool {
   false
 }
 
-// TODO: inlinable?
+@inlinable
 public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   func openCollection<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
     guard C.Element.self is ObservableState.Type else { return false }

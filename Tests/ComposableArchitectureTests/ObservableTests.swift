@@ -372,7 +372,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.rows.append(ChildState())
     XCTAssertEqual(state.rows.count, 1)
-    self.wait(for: [rowsDidChange])
+    self.wait(for: [rowsDidChange], timeout: 0)
   }
 
   func testIdentifiedArray_MutateElement() {
@@ -397,7 +397,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.rows[0].count += 1
     XCTAssertEqual(state.rows[0].count, 1)
-    self.wait(for: [firstRowCountDidChange])
+    self.wait(for: [firstRowCountDidChange], timeout: 0)
   }
 
   func testPresents_NilToNonNil() {
@@ -412,7 +412,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.presentation = ChildState()
     XCTAssertEqual(state.presentation?.count, 0)
-    self.wait(for: [presentationDidChange])
+    self.wait(for: [presentationDidChange], timeout: 0)
   }
 
   func testPresents_Mutate() {
@@ -432,7 +432,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.presentation?.count += 1
     XCTAssertEqual(state.presentation?.count, 1)
-    self.wait(for: [presentationCountDidChange])
+    self.wait(for: [presentationCountDidChange], timeout: 0)
   }
 
   func testStackState_AddElement() {
@@ -447,7 +447,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.path.append(ChildState())
     XCTAssertEqual(state.path.count, 1)
-    self.wait(for: [pathDidChange])
+    self.wait(for: [pathDidChange], timeout: 0)
   }
 
   func testStackState_MutateElement() {
@@ -474,7 +474,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.path[id: 0]?.count += 1
     XCTAssertEqual(state.path[0].count, 1)
-    self.wait(for: [firstElementCountDidChange])
+    self.wait(for: [firstElementCountDidChange], timeout: 0)
   }
 
   func testCopy() {
