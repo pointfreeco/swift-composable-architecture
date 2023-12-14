@@ -47,21 +47,24 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
 
 // TODO: inlinable?
 public func _$isIdentityEqual<ID: Hashable, T: ObservableState>(
-  _ lhs: IdentifiedArray<ID, T>, _ rhs: IdentifiedArray<ID, T>
+  _ lhs: IdentifiedArray<ID, T>, 
+  _ rhs: IdentifiedArray<ID, T>
 ) -> Bool {
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
 // TODO: inlinable?
 public func _$isIdentityEqual<T: ObservableState>(
-  _ lhs: PresentationState<T>, _ rhs: PresentationState<T>
+  _ lhs: PresentationState<T>, 
+  _ rhs: PresentationState<T>
 ) -> Bool {
   lhs.wrappedValue?._$id == rhs.wrappedValue?._$id
 }
 
 // TODO: inlinable?
 public func _$isIdentityEqual<T: ObservableState>(
-  _ lhs: StackState<T>, _ rhs: StackState<T>
+  _ lhs: StackState<T>, 
+  _ rhs: StackState<T>
 ) -> Bool {
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
