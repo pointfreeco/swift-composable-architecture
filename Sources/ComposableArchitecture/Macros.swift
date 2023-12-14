@@ -150,7 +150,6 @@
   /// ```
   @attached(memberAttribute)
   @attached(extension, conformances: Reducer)
-  @attached(memberAttribute)
   public macro Reducer() = #externalMacro(
     module: "ComposableArchitectureMacros", type: "ReducerMacro"
   )
