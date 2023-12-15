@@ -27,13 +27,24 @@ struct TodosApp: App {
 
 import Combine
 
-
-
 private class RootStore {
-  var state: Any
+  fileprivate let didSet = PassthroughSubject<Void, Never>()
+  private(set) var state: Any
+  private let reducer: any Reducer
 
-  init(_ state: Any) {
-    self.state = state
+  init<State, Action>(
+    initialState: State,
+    reducer: some Reducer<State, Action>
+  ) {
+    self.state = initialState
+    self.reducer = reducer
+  }
+
+  func send(_ action: Any) {
+    func open<State, Action>(reducer: some Reducer<State, Action>) {
+      _ = reducer.reduce(into: &self[cast: State.self], action: action as! Action)
+    }
+    open(reducer: self.reducer)
   }
 
   subscript<Value>(cast type: Value.Type = Value.self) -> Value {
@@ -43,26 +54,26 @@ private class RootStore {
 }
 
 final class Store2<State, Action> {
-  private var rootStore: RootStore
+  private let actionKeyPath: Case<Action>
+  fileprivate var rootStore: RootStore
   private let stateKeyPath: AnyKeyPath
-  var send: (Action) -> Void
-  let didSet: PassthroughSubject<Void, Never>
 
   private init(
-    didSet: PassthroughSubject<Void, Never>,
+    actionKeyPath: Case<Action>,
     rootStore: RootStore,
-    send: @escaping (Action) -> Void,
     stateKeyPath: AnyKeyPath
   ) {
-    self.didSet = didSet
     self.rootStore = rootStore
-    self.send = send
+    self.actionKeyPath = actionKeyPath
     self.stateKeyPath = stateKeyPath
   }
 
-
   var state: State {
     self.rootStore.state[keyPath: self.stateKeyPath] as! State
+  }
+
+  func send(_ action: Action) {
+    self.rootStore.send(self.actionKeyPath.embed(action))
   }
 
   subscript<Member>(dynamicMember keyPath: KeyPath<State, Member>) -> Member {
@@ -73,16 +84,13 @@ final class Store2<State, Action> {
     initialState: State,
     @ReducerBuilder<State, Action> reducer: () -> some Reducer<State, Action>
   ) {
-    let rootStore = RootStore(initialState)
-    let reducer = reducer()
-    let didSet = PassthroughSubject<Void, Never>()
+    let rootStore = RootStore(
+      initialState: initialState,
+      reducer: reducer()
+    )
     self.init(
-      didSet: didSet,
+      actionKeyPath: Case<Action>(),
       rootStore: rootStore,
-      send: { action in
-        _ = reducer.reduce(into: &rootStore[cast: State.self], action: action)
-        didSet.send()
-      },
       stateKeyPath: \State.self
     )
   }
@@ -92,11 +100,8 @@ final class Store2<State, Action> {
     action actionCP: CaseKeyPath<Action, ChildAction>
   ) -> Store2<ChildState, ChildAction> {
     return Store2<ChildState, ChildAction>(
-      didSet: self.didSet,
+      actionKeyPath: self.actionKeyPath[keyPath: actionCP],
       rootStore: self.rootStore,
-      send: { action in
-        self.send(actionCP(action))
-      },
       stateKeyPath: self.stateKeyPath.appending(path: state)!
     )
   }
@@ -110,7 +115,7 @@ class ViewStore2<State: Equatable, Action>: ObservableObject {
     self.store = store
 
     var previous = store.state
-    self.cancellable = self.store.didSet
+    self.cancellable = store.rootStore.didSet
       .removeDuplicates { [weak self] _, _ in
         guard let self else { return true }
         defer { previous = self.store.state }
@@ -234,6 +239,24 @@ struct ListView: View {
       ForEachStore2(
         store: store
           .scope(state: \.rows, action: \.rows)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.self, action: \.self)
           .scope(state: \.self, action: \.self)
           .scope(state: \.self, action: \.self)
           .scope(state: \.self, action: \.self)
