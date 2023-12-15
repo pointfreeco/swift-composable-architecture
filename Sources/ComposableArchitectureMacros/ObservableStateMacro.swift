@@ -65,7 +65,7 @@ public struct ObservableStateMacro {
       """
   }
 
-  static func willSetFunction(_ access: DeclModifierListSyntax.Element?) -> DeclSyntax {
+  static func willModifyFunction(_ access: DeclModifierListSyntax.Element?) -> DeclSyntax {
     return
       """
       \(access)mutating func _$willModify() {
@@ -230,7 +230,7 @@ extension ObservableStateMacro: MemberMacro {
     let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
     declaration.addIfNeeded(ObservableStateMacro.registrarVariable(observableType), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.idVariable(access), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.willSetFunction(access), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.willModifyFunction(access), to: &declarations)
 
     return declarations
   }
@@ -250,7 +250,7 @@ extension ObservableStateMacro {
     let enumCaseDecls = declaration.memberBlock.members
       .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
     var getCases: [String] = []
-    var willSetCases: [String] = []
+    var willModifyCases: [String] = []
     for (tag, enumCaseDecl) in enumCaseDecls.enumerated() {
       if enumCaseDecl.parameterClause?.parameters.count == 1 {
         getCases.append(
@@ -259,7 +259,7 @@ extension ObservableStateMacro {
           return ._$id(for: state)._$tag(\(tag))
           """
         )
-        willSetCases.append(
+        willModifyCases.append(
           """
           case var .\(enumCaseDecl.name.text)(state):
           \(moduleName)._$willModify(&state)
@@ -273,7 +273,7 @@ extension ObservableStateMacro {
           return ._$inert._$tag(\(tag))
           """
         )
-        willSetCases.append(
+        willModifyCases.append(
           """
           case .\(enumCaseDecl.name.text):
           break
@@ -293,7 +293,7 @@ extension ObservableStateMacro {
       """
       \(access)mutating func _$willModify() {
       switch self {
-      \(raw: willSetCases.joined(separator: "\n"))
+      \(raw: willModifyCases.joined(separator: "\n"))
       }
       }
       """,
