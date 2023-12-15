@@ -493,6 +493,32 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssertEqual(state.child.count, 42)
     self.wait(for: [childCountDidChange], timeout: 0)
   }
+
+  func testArrayAppend() {
+    var state = ParentState()
+    let childrenDidChange = self.expectation(description: "childrenDidChange")
+
+    withPerceptionTracking {
+      _ = state.children
+    } onChange: {
+      childrenDidChange.fulfill()
+    }
+
+    state.children.append(ChildState())
+    self.wait(for: [childrenDidChange])
+  }
+
+  func testArrayMutate() {
+    var state = ParentState(children: [ChildState()])
+
+    withPerceptionTracking {
+      _ = state.children
+    } onChange: {
+      XCTFail("children should not change")
+    }
+
+    state.children[0].count += 1
+  }
 }
 
 @ObservableState
@@ -513,6 +539,7 @@ private struct ChildState: Equatable, Identifiable {
 private struct ParentState: Equatable {
   var child = ChildState()
   @Presents var destination: DestinationState?
+  var children: [ChildState] = []
   @Presents var optional: ChildState?
   var path = StackState<ChildState>()
   @Presents var presentation: ChildState?

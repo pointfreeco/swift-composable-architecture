@@ -118,19 +118,14 @@ public func _$isIdentityEqual<T: ObservableState>(
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
-// TODO: When is this hit?
-@_disfavoredOverload
 @inlinable
-public func _$isIdentityEqual<C: Collection>(_ lhs: C, _ rhs: C) -> Bool
-where C.Element: ObservableState {
-  fatalError(
-    """
-    If you encounter this fatal error, please let us know on GitHub:
-
-    https://github.com/pointfreeco/swift-composable-architecture
-    """
-  )
-  // lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
+public func _$isIdentityEqual<C: Collection>(
+  _ lhs: C,
+  _ rhs: C
+) -> Bool
+where C.Element: ObservableState
+{
+  lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
 }
 
 // NB: This is a fast path so that String is not checked as a collection.
@@ -142,7 +137,7 @@ public func _$isIdentityEqual(_ lhs: String, _ rhs: String) -> Bool {
 @inlinable
 public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   guard !_isPOD(T.self) else { return false }
-
+  
   func openCollection<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
     guard C.Element.self is ObservableState.Type else { return false }
 
