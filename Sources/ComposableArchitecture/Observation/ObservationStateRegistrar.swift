@@ -6,7 +6,7 @@ public struct ObservationStateRegistrar: Sendable {
   @usableFromInline
   let registrar = PerceptionRegistrar()
   public init() {}
-  public mutating func _$willSet() { id._$willSet() }
+  public mutating func _$willSet() { self.id._$willSet() }
 }
 
 extension ObservationStateRegistrar: Equatable, Hashable, Codable {
@@ -18,12 +18,13 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
 
 #if canImport(Observation)
   @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension ObservationStateRegistrar {
-  /// Registers access to a specific property for observation.
-  ///
-  /// - Parameters:
-  ///   - subject: An instance of an observable type.
-  ///   - keyPath: The key path of an observed property.
+  extension ObservationStateRegistrar {
+    /// Registers access to a specific property for observation.
+    ///
+    /// - Parameters:
+    ///   - subject: An instance of an observable type.
+    ///   - keyPath: The key path of an observed property.
+    @inlinable
     public func access<Subject: Observable, Member>(
       _ subject: Subject, 
       keyPath: KeyPath<Subject, Member>
@@ -41,6 +42,7 @@ extension ObservationStateRegistrar {
     ///   - newValue: The new value to mutate with.
     ///   - isIdentityEqual: A comparison function that determines whether two values have the same
     ///                      identity or not.
+    @inlinable
     public func mutate<Subject: Observable, Member, Value>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>,
@@ -61,6 +63,7 @@ extension ObservationStateRegistrar {
     ///
     /// See ``willSet(_:keyPath:_:)-3ybfo`` for info on what this method does when used with
     /// observable values.
+    @inlinable
     public func willSet<Subject: Observable, Member>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>,
@@ -75,6 +78,7 @@ extension ObservationStateRegistrar {
     ///   - subject: An instance of an observable type.`
     ///   - keyPath: The key path of an observed property.
     ///   - member: The value in the subject that will be set.
+    @inlinable
     public func willSet<Subject: Observable, Member: ObservableState>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>,
@@ -84,16 +88,17 @@ extension ObservationStateRegistrar {
       return member
     }
   
-  /// A property observation called after setting the value of the subject.
-  ///
-  /// If the identity of the value changed between ``willSet(_:keyPath:_:)-3ybfo`` and
-  /// ``didSet(_:keyPath:_:_:_:)-q3nd``, 
-  /// - Parameters:
-  ///   - subject: <#subject description#>
-  ///   - keyPath: <#keyPath description#>
-  ///   - member: <#member description#>
-  ///   - oldValue: <#oldValue description#>
-  ///   - isIdentityEqual: <#isIdentityEqual description#>
+    /// A property observation called after setting the value of the subject.
+    ///
+    /// If the identity of the value changed between ``willSet(_:keyPath:_:)-3ybfo`` and
+    /// ``didSet(_:keyPath:_:_:_:)-q3nd``,
+    /// - Parameters:
+    ///   - subject: <#subject description#>
+    ///   - keyPath: <#keyPath description#>
+    ///   - member: <#member description#>
+    ///   - oldValue: <#oldValue description#>
+    ///   - isIdentityEqual: <#isIdentityEqual description#>
+    @inlinable
     public func didSet<Subject: Observable, Member>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>,

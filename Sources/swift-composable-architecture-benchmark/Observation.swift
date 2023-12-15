@@ -1,10 +1,11 @@
 import Benchmark
 import ComposableArchitecture
+import Foundation
 
 @available(macOS 14.0, *)
 let observationSuite = BenchmarkSuite(name: "Observation") {
   var stateWithObservation: StateWithObservation!
-  $0.benchmark("Increment with observation") {
+  $0.benchmark("Increment state with observation") {
     doNotOptimizeAway(stateWithObservation.count += 1)
   } setUp: {
     stateWithObservation = StateWithObservation()
@@ -13,7 +14,7 @@ let observationSuite = BenchmarkSuite(name: "Observation") {
   }
 
   var stateWithoutObservation: StateWithoutObservation!
-  $0.benchmark("Increment without observation") {
+  $0.benchmark("Increment state without observation") {
     doNotOptimizeAway(stateWithoutObservation.count += 1)
   } setUp: {
     stateWithoutObservation = StateWithoutObservation()
@@ -22,7 +23,7 @@ let observationSuite = BenchmarkSuite(name: "Observation") {
   }
 
   var objectWithObservation: ObjectWithObservation!
-  $0.benchmark("Increment without object observation") {
+  $0.benchmark("Increment object with observation") {
     doNotOptimizeAway(objectWithObservation.count += 1)
   } setUp: {
     objectWithObservation = ObjectWithObservation()
@@ -31,7 +32,7 @@ let observationSuite = BenchmarkSuite(name: "Observation") {
   }
 
   var objectWithoutObservation: ObjectWithoutObservation!
-  $0.benchmark("Increment without object observation") {
+  $0.benchmark("Increment object without observation") {
     doNotOptimizeAway(objectWithoutObservation.count += 1)
   } setUp: {
     objectWithoutObservation = ObjectWithoutObservation()
@@ -40,7 +41,6 @@ let observationSuite = BenchmarkSuite(name: "Observation") {
   }
 }
 
-import Foundation
 @ObservableState
 struct StateWithObservation {
   var count = 0

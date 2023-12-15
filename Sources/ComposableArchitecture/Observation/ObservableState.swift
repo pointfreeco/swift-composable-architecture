@@ -14,63 +14,83 @@ public protocol ObservableState: Perceptible {
 
 /// A unique identifier for a observed value.
 public struct ObservableStateID: Equatable, Hashable, Sendable {
-  var storage: Storage
-
-  private var uuid: UUID {
-    get { self.storage.uuid }
-    set { self.storage.uuid = newValue }
+  @usableFromInline
+  var location: UUID {
+    get { self.storage.location }
+    set {
+      if isKnownUniquelyReferenced(&self.storage) {
+        self.storage.location = newValue
+      } else {
+        self.storage = Storage(location: newValue, tag: self.tag)
+      }
+    }
   }
-  private var tag: Int? {
+
+  @usableFromInline
+  var tag: Int? {
     get { self.storage.tag }
-    set { self.storage.tag = newValue }
+    set {
+      if isKnownUniquelyReferenced(&self.storage) {
+        self.storage.tag = newValue
+      } else {
+        self.storage = Storage(location: self.location, tag: newValue)
+      }
+    }
   }
 
-  class Storage: @unchecked Sendable, Hashable {
-    fileprivate var uuid: UUID
-    fileprivate var tag: Int?
-    init(uuid: UUID = UUID(), tag: Int? = nil) {
-      self.uuid = uuid
-      self.tag = tag
-    }
-    static func == (lhs: Storage, rhs: Storage) -> Bool {
-      lhs.uuid == rhs.uuid && lhs.tag == rhs.tag
-    }
-    func hash(into hasher: inout Hasher) {
-      hasher.combine(self.uuid)
-      hasher.combine(self.tag)
-    }
+  private var storage: Storage
+
+  private init(location: UUID, tag: Int? = nil) {
+    self.storage = Storage(location: location, tag: tag)
   }
 
   public init() {
-    self.storage = Storage()
-    //self.uuid = UUID()
+    self.init(location: UUID())
   }
 
-  public static let _$inert = Self()
-
-  // TODO: inlinable?
-  public func _$tag(_ tag: Int?) -> Self {
-    var copy = self
-    copy.storage = Storage(uuid: copy.uuid, tag: tag)
-    return copy
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.storage === rhs.storage
+      || lhs.storage.location == rhs.storage.location
+      && lhs.storage.tag == rhs.storage.tag
   }
 
-  // TODO: inlinable?
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.location)
+    hasher.combine(self.tag)
+  }
+
+  @inlinable
   public static func _$id<T>(for value: T) -> Self {
     (value as? any ObservableState)?._$id ?? ._$inert
   }
-  // TODO: inlinable?
+
+  @inlinable
   public static func _$id(for value: some ObservableState) -> Self {
     value._$id
   }
 
+  public static let _$inert = Self()
+
+  @inlinable
+  public func _$tag(_ tag: Int?) -> Self {
+    var copy = self
+    copy.tag = tag
+    return copy
+  }
+
+  @inlinable
   public mutating func _$willSet() {
+    self.location = UUID()
+  }
 
-    if !isKnownUniquelyReferenced(&self.storage) {
-      self.storage = Storage(tag: self.tag)
+  private final class Storage: @unchecked Sendable {
+    fileprivate var location: UUID
+    fileprivate var tag: Int?
+
+    init(location: UUID = UUID(), tag: Int? = nil) {
+      self.location = location
+      self.tag = tag
     }
-
-//    self.uuid = UUID()
   }
 }
 
@@ -121,6 +141,8 @@ public func _$isIdentityEqual(_ lhs: String, _ rhs: String) -> Bool {
 
 @inlinable
 public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
+  guard !_isPOD(T.self) else { return false }
+
   func openCollection<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
     guard C.Element.self is ObservableState.Type else { return false }
 
