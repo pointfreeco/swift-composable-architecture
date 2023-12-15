@@ -11,14 +11,14 @@ struct TodosApp: App {
 //        }
 //      )
 //      ParentView()
-      CounterView(
-        store: Store2(initialState: Counter.State()) {
-          Counter()
-        }
-      )
-//      NavigationStack {
-//        ListView()
-//      }
+//      CounterView(
+//        store: Store2(initialState: Counter.State()) {
+//          Counter()
+//        }
+//      )
+      NavigationStack {
+        ListView()
+      }
     }
   }
 }
@@ -29,51 +29,62 @@ import Combine
 
 
 
+private class RootStore {
+  var state: Any
+
+  init(_ state: Any) {
+    self.state = state
+  }
+
+  subscript<Value>(cast type: Value.Type = Value.self) -> Value {
+    get { self.state as! Value }
+    set { self.state = newValue }
+  }
+}
+
 final class Store2<State, Action> {
-  var root: Any!
-  var _state: AnyKeyPath
+  private var rootStore: RootStore
+  private let stateKeyPath: AnyKeyPath
   var send: (Action) -> Void
   let didSet: PassthroughSubject<Void, Never>
 
+  private init(
+    didSet: PassthroughSubject<Void, Never>,
+    rootStore: RootStore,
+    send: @escaping (Action) -> Void,
+    stateKeyPath: AnyKeyPath
+  ) {
+    self.didSet = didSet
+    self.rootStore = rootStore
+    self.send = send
+    self.stateKeyPath = stateKeyPath
+  }
+
+
   var state: State {
-    self.root[keyPath: self._state] as! State
+    self.rootStore.state[keyPath: self.stateKeyPath] as! State
   }
 
   subscript<Member>(dynamicMember keyPath: KeyPath<State, Member>) -> Member {
-    self.state[keyPath: self._state] as! Member
+    self.state[keyPath: keyPath]
   }
 
   convenience init(
     initialState: State,
     @ReducerBuilder<State, Action> reducer: () -> some Reducer<State, Action>
   ) {
+    let rootStore = RootStore(initialState)
     let reducer = reducer()
     let didSet = PassthroughSubject<Void, Never>()
-    var state = initialState {
-      didSet {
-        didSet.send()
-      }
-    }
     self.init(
       didSet: didSet,
-      state: \Store2<State, Action>.state,
+      rootStore: rootStore,
       send: { action in
-        _ = reducer.reduce(into: &state, action: action)
-      }
+        _ = reducer.reduce(into: &rootStore[cast: State.self], action: action)
+        didSet.send()
+      },
+      stateKeyPath: \State.self
     )
-    self.root = self
-  }
-
-  private init(
-    didSet: PassthroughSubject<Void, Never>,
-    state: AnyKeyPath,
-    send: @escaping (Action) -> Void,
-    root: Any? = nil
-  ) {
-    self.didSet = didSet
-    self._state = state
-    self.send = send
-    self.root = root
   }
 
   func scope<ChildState, ChildAction>(
@@ -82,11 +93,11 @@ final class Store2<State, Action> {
   ) -> Store2<ChildState, ChildAction> {
     return Store2<ChildState, ChildAction>(
       didSet: self.didSet,
-      state: self._state.appending(path: state)!,
+      rootStore: self.rootStore,
       send: { action in
         self.send(actionCP(action))
       },
-      root: self.root
+      stateKeyPath: self.stateKeyPath.appending(path: state)!
     )
   }
 }
