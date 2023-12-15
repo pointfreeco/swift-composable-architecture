@@ -6,7 +6,7 @@ public struct ObservationStateRegistrar: Sendable {
   @usableFromInline
   let registrar = PerceptionRegistrar()
   public init() {}
-  public mutating func _$willSet() { self.id._$willSet() }
+  public mutating func _$willModify() { self.id._$willModify() }
 }
 
 extension ObservationStateRegistrar: Equatable, Hashable, Codable {
@@ -61,10 +61,10 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
   
     /// A no-op for non-observable values.
     ///
-    /// See ``willSet(_:keyPath:_:)-3ybfo`` for info on what this method does when used with
+    /// See ``willModifiy(_:keyPath:_:)-3ybfo`` for info on what this method does when used with
     /// observable values.
     @inlinable
-    public func willSet<Subject: Observable, Member>(
+    public func willModifiy<Subject: Observable, Member>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>,
       _ member: inout Member
@@ -79,27 +79,21 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
     ///   - keyPath: The key path of an observed property.
     ///   - member: The value in the subject that will be set.
     @inlinable
-    public func willSet<Subject: Observable, Member: ObservableState>(
+    public func willModifiy<Subject: Observable, Member: ObservableState>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>,
       _ member: inout Member
     ) -> Member {
-      member._$willSet()
+      member._$willModify()
       return member
     }
   
     /// A property observation called after setting the value of the subject.
     ///
-    /// If the identity of the value changed between ``willSet(_:keyPath:_:)-3ybfo`` and
-    /// ``didSet(_:keyPath:_:_:_:)-q3nd``,
-    /// - Parameters:
-    ///   - subject: <#subject description#>
-    ///   - keyPath: <#keyPath description#>
-    ///   - member: <#member description#>
-    ///   - oldValue: <#oldValue description#>
-    ///   - isIdentityEqual: <#isIdentityEqual description#>
+    /// If the identity of the value changed between ``willModify(_:keyPath:_:)-3ybfo`` and
+    /// ``didModify(_:keyPath:_:_:_:)-q3nd``, observers are notified.
     @inlinable
-    public func didSet<Subject: Observable, Member>(
+    public func didModify<Subject: Observable, Member>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>,
       _ member: inout Member,
@@ -125,7 +119,6 @@ extension ObservationStateRegistrar {
     self.registrar.access(subject, keyPath: keyPath)
   }
 
-  /// See ``mutate(_:keyPath:_:_:_:)-2w75m``
   @_disfavoredOverload
   @inlinable
   public func mutate<Subject: Perceptible, Member, Value>(
@@ -144,11 +137,9 @@ extension ObservationStateRegistrar {
     }
   }
 
-  // TODO: willModify, didModify, _$willModify
-
   @_disfavoredOverload
   @inlinable
-  public func willSet<Subject: Perceptible, Member>(
+  public func willModifiy<Subject: Perceptible, Member>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>,
     _ member: inout Member
@@ -158,18 +149,18 @@ extension ObservationStateRegistrar {
 
   @_disfavoredOverload
   @inlinable
-  public func willSet<Subject: Perceptible, Member: ObservableState>(
+  public func willModify<Subject: Perceptible, Member: ObservableState>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>,
     _ member: inout Member
   ) -> Member {
-    member._$willSet()
+    member._$willModify()
     return member
   }
 
   @_disfavoredOverload
   @inlinable
-  public func didSet<Subject: Perceptible, Member>(
+  public func didModify<Subject: Perceptible, Member>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>,
     _ member: inout Member,

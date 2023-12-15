@@ -68,8 +68,8 @@ public struct ObservableStateMacro {
   static func willSetFunction(_ access: DeclModifierListSyntax.Element?) -> DeclSyntax {
     return
       """
-      \(access)mutating func _$willSet() {
-      \(raw: registrarVariableName)._$willSet()
+      \(access)mutating func _$willModify() {
+      \(raw: registrarVariableName)._$willModify()
       }
       """
   }
@@ -262,7 +262,7 @@ extension ObservableStateMacro {
         willSetCases.append(
           """
           case var .\(enumCaseDecl.name.text)(state):
-          \(moduleName)._$willSet(&state)
+          \(moduleName)._$willModify(&state)
           self = .\(enumCaseDecl.name.text)(state)
           """
         )
@@ -291,7 +291,7 @@ extension ObservableStateMacro {
       }
       """,
       """
-      \(access)mutating func _$willSet() {
+      \(access)mutating func _$willModify() {
       switch self {
       \(raw: willSetCases.joined(separator: "\n"))
       }
@@ -467,9 +467,9 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
       """
     let modifyAccessor: AccessorDeclSyntax = """
       _modify {
-        let oldValue = _$observationRegistrar.willSet(self, keyPath: \\.\(identifier), &_\(identifier))
+        let oldValue = _$observationRegistrar.willModifiy(self, keyPath: \\.\(identifier), &_\(identifier))
         defer {
-          _$observationRegistrar.didSet(self, keyPath: \\.\(identifier), &_\(identifier), oldValue, _$isIdentityEqual)
+          _$observationRegistrar.didModify(self, keyPath: \\.\(identifier), &_\(identifier), oldValue, _$isIdentityEqual)
         }
         yield &_\(identifier)
       }

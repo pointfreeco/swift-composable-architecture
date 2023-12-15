@@ -9,7 +9,7 @@ import Perception
 /// observation support to a type.
 public protocol ObservableState: Perceptible {
   var _$id: ObservableStateID { get }
-  mutating func _$willSet()
+  mutating func _$willModify()
 }
 
 /// A unique identifier for a observed value.
@@ -79,7 +79,7 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   }
 
   @inlinable
-  public mutating func _$willSet() {
+  public mutating func _$willModify() {
     self.location = UUID()
   }
 
@@ -170,7 +170,9 @@ public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   }
 }
 
-public func _$willSet<T>(_: inout T) {}
-public func _$willSet<T: ObservableState>(_ value: inout T) {
-  value._$willSet()
+@inlinable
+public func _$willModify<T>(_: inout T) {}
+@inlinable
+public func _$willModify<T: ObservableState>(_ value: inout T) {
+  value._$willModify()
 }

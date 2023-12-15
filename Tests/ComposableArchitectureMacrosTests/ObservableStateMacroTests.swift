@@ -40,9 +40,9 @@
               _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
             }
             _modify {
-              let oldValue = _$observationRegistrar.willSet(self, keyPath: \.count, &_count)
+              let oldValue = _$observationRegistrar.willModifiy(self, keyPath: \.count, &_count)
               defer {
-                _$observationRegistrar.didSet(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
               }
               yield &_count
             }
@@ -54,8 +54,8 @@
             _$observationRegistrar.id
           }
 
-          mutating func _$willSet() {
-            _$observationRegistrar._$willSet()
+          mutating func _$willModify() {
+            _$observationRegistrar._$willModify()
           }
         }
         """#
@@ -86,9 +86,9 @@
               _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
             }
             _modify {
-              let oldValue = _$observationRegistrar.willSet(self, keyPath: \.count, &_count)
+              let oldValue = _$observationRegistrar.willModifiy(self, keyPath: \.count, &_count)
               defer {
-                _$observationRegistrar.didSet(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
               }
               yield &_count
             }
@@ -100,8 +100,8 @@
             _$observationRegistrar.id
           }
 
-          mutating func _$willSet() {
-            _$observationRegistrar._$willSet()
+          mutating func _$willModify() {
+            _$observationRegistrar._$willModify()
           }
         }
         """#
@@ -128,8 +128,8 @@
             _$observationRegistrar.id
           }
 
-          mutating func _$willSet() {
-            _$observationRegistrar._$willSet()
+          mutating func _$willModify() {
+            _$observationRegistrar._$willModify()
           }
         }
         """
@@ -160,13 +160,13 @@
             }
           }
 
-          mutating func _$willSet() {
+          mutating func _$willModify() {
             switch self {
             case var .feature1(state):
-              ComposableArchitecture._$willSet(&state)
+              ComposableArchitecture._$willModify(&state)
               self = .feature1(state)
             case var .feature2(state):
-              ComposableArchitecture._$willSet(&state)
+              ComposableArchitecture._$willModify(&state)
               self = .feature2(state)
             }
           }
@@ -199,13 +199,13 @@
             }
           }
 
-          public mutating func _$willSet() {
+          public mutating func _$willModify() {
             switch self {
             case var .feature1(state):
-              ComposableArchitecture._$willSet(&state)
+              ComposableArchitecture._$willModify(&state)
               self = .feature1(state)
             case var .feature2(state):
-              ComposableArchitecture._$willSet(&state)
+              ComposableArchitecture._$willModify(&state)
               self = .feature2(state)
             }
           }
@@ -234,10 +234,10 @@
             }
           }
 
-          public mutating func _$willSet() {
+          public mutating func _$willModify() {
             switch self {
             case var .foo(state):
-              ComposableArchitecture._$willSet(&state)
+              ComposableArchitecture._$willModify(&state)
               self = .foo(state)
             }
           }
@@ -266,7 +266,7 @@
             }
           }
 
-          public mutating func _$willSet() {
+          public mutating func _$willModify() {
             switch self {
             case .foo:
               break

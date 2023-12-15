@@ -135,8 +135,8 @@
             _$observationRegistrar.id
           }
 
-          mutating func _$willSet() {
-            _$observationRegistrar._$willSet()
+          mutating func _$willModify() {
+            _$observationRegistrar._$willModify()
           }
         }
         """
