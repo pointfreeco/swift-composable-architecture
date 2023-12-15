@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CA08B8C72B2CCD5C00534939 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = CA08B8C62B2CCD5C00534939 /* OrderedCollections */; };
 		CA93D060249BF4D000A6F65D /* Todo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05F249BF4D000A6F65D /* Todo.swift */; };
 		DC1394322469E57000EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394312469E57000EE1157 /* ComposableArchitecture */; };
 		DCBCB77624290F6C00DE1F59 /* TodosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB77524290F6C00DE1F59 /* TodosApp.swift */; };
@@ -65,6 +66,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CA08B8C72B2CCD5C00534939 /* OrderedCollections in Frameworks */,
 				DC1394322469E57000EE1157 /* ComposableArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -137,6 +139,7 @@
 			name = Todos;
 			packageProductDependencies = (
 				DC1394312469E57000EE1157 /* ComposableArchitecture */,
+				CA08B8C62B2CCD5C00534939 /* OrderedCollections */,
 			);
 			productName = Todos;
 			productReference = DCBCB77024290F6C00DE1F59 /* Todos.app */;
@@ -192,6 +195,7 @@
 			);
 			mainGroup = DCBCB76724290F6C00DE1F59;
 			packageReferences = (
+				CA08B8C52B2CCD5C00534939 /* XCRemoteSwiftPackageReference "swift-collections" */,
 			);
 			productRefGroup = DCBCB77124290F6C00DE1F59 /* Products */;
 			projectDirPath = "";
@@ -493,7 +497,23 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		CA08B8C52B2CCD5C00534939 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.5;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		CA08B8C62B2CCD5C00534939 /* OrderedCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CA08B8C52B2CCD5C00534939 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = OrderedCollections;
+		};
 		DC1394312469E57000EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
