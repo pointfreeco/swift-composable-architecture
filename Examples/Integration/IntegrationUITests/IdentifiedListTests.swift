@@ -21,17 +21,10 @@ final class IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body.ForEachStore
       IdentifiedListView.body.ForEachStore
       IdentifiedStoreOf<BasicsView.Feature>.deinit
-      IdentifiedStoreOf<BasicsView.Feature>.init
-      IdentifiedStoreOf<BasicsView.Feature>.scope
+      IdentifiedStoreOf<BasicsView.Feature>.deinit
       Store<UUID, Action>
       Store<UUID, BasicsView.Feature.Action>.deinit
-      Store<UUID, BasicsView.Feature.Action>.init
-      Store<UUID, BasicsView.Feature.Action>.init
-      Store<UUID, BasicsView.Feature.Action>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<IdentifiedListView.Feature>.scope
-      StoreOf<IdentifiedListView.Feature>.scope
+      Store<UUID, BasicsView.Feature.Action>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.init
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
@@ -66,23 +59,13 @@ final class IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body.ForEachStore
       IdentifiedListView.body.ForEachStore
       IdentifiedStoreOf<BasicsView.Feature>.deinit
-      IdentifiedStoreOf<BasicsView.Feature>.init
-      IdentifiedStoreOf<BasicsView.Feature>.scope
-      IdentifiedStoreOf<BasicsView.Feature>.scope
+      IdentifiedStoreOf<BasicsView.Feature>.deinit
       Store<UUID, Action>
       Store<UUID, Action>
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
-      Store<UUID, BasicsView.Feature.Action>.init
-      Store<UUID, BasicsView.Feature.Action>.init
-      Store<UUID, BasicsView.Feature.Action>.scope
-      Store<UUID, BasicsView.Feature.Action>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<IdentifiedListView.Feature>.scope
-      StoreOf<IdentifiedListView.Feature>.scope
+      Store<UUID, BasicsView.Feature.Action>.deinit
+      Store<UUID, BasicsView.Feature.Action>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.init
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
@@ -117,16 +100,6 @@ final class IdentifiedListTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      IdentifiedStoreOf<BasicsView.Feature>.scope
-      IdentifiedStoreOf<BasicsView.Feature>.scope
-      Store<UUID, BasicsView.Feature.Action>.scope
-      Store<UUID, BasicsView.Feature.Action>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<IdentifiedListView.Feature>.scope
-      StoreOf<IdentifiedListView.Feature>.scope
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
       ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       WithViewStoreOf<BasicsView.Feature>.body
