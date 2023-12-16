@@ -5,10 +5,7 @@ import SwiftUI
 struct CaseStudiesApp: App {
   var body: some Scene {
     WindowGroup {
-      NavigationStack {
-        NestedView()
-      }
-      //RootView()
+      RootView()
     }
   }
 }

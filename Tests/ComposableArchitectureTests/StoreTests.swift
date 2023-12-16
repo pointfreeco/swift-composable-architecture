@@ -9,11 +9,11 @@ final class StoreTests: BaseTCATestCase {
   func testCancellableIsRemovedOnImmediatelyCompletingEffect() {
     let store = Store<Void, Void>(initialState: ()) {}
 
-    XCTAssertEqual(store.effectCancellables.count, 0)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
 
     store.send(())
 
-    XCTAssertEqual(store.effectCancellables.count, 0)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
   }
 
   func testCancellableIsRemovedWhenEffectCompletes() {
@@ -34,15 +34,15 @@ final class StoreTests: BaseTCATestCase {
     })
     let store = Store(initialState: ()) { reducer }
 
-    XCTAssertEqual(store.effectCancellables.count, 0)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
 
     store.send(.start)
 
-    XCTAssertEqual(store.effectCancellables.count, 1)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 1)
 
     mainQueue.advance(by: 2)
 
-    XCTAssertEqual(store.effectCancellables.count, 0)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
   }
 
   func testScopedStoreReceivesUpdatesFromParent() {
@@ -524,8 +524,8 @@ final class StoreTests: BaseTCATestCase {
     await Task.yield()
     neverEndingTask.cancel()
     try await XCTUnwrap(sendTask).value
-    XCTAssertEqual(store.effectCancellables.count, 0)
-    XCTAssertEqual(scopedStore.effectCancellables.count, 0)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
+    XCTAssertEqual(scopedStore.rootStore.effectCancellables.count, 0)
   }
 
   @Reducer
@@ -884,7 +884,7 @@ final class StoreTests: BaseTCATestCase {
     childViewStore1.objectWillChange
       .sink { _ in viewStoreCount1 += 1 }
       .store(in: &self.cancellables)
-    childStore1.stateSubject
+    childStore1.publisher
       .sink { _ in storeStateCount1 += 1 }
       .store(in: &self.cancellables)
     let childStore2 = store.scope(
@@ -905,7 +905,7 @@ final class StoreTests: BaseTCATestCase {
     childViewStore2.objectWillChange
       .sink { _ in viewStoreCount2 += 1 }
       .store(in: &self.cancellables)
-    childStore2.stateSubject
+    childStore2.publisher
       .sink { _ in storeStateCount2 += 1 }
       .store(in: &self.cancellables)
 

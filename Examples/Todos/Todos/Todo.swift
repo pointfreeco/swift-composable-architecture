@@ -6,7 +6,7 @@ struct Todo {
   struct State: Equatable, Identifiable {
     @BindingState var description = ""
     let id: UUID
-    @BindingState var isComplete = false 
+    @BindingState var isComplete = false
   }
 
   enum Action: BindableAction, Sendable {

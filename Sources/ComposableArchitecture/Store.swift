@@ -136,7 +136,7 @@ public final class Store<State, Action> {
   fileprivate var children: [ScopeID<State, Action>: AnyObject] = [:]
   var _isInvalidated = { false }
 
-  let rootStore: RootStore
+  @_spi(Internals) public let rootStore: RootStore
   let toState: ToState<State>
   let fromAction: (Action) -> Any
 
@@ -457,7 +457,8 @@ public final class Store<State, Action> {
     )
   }
   
-  var theOneTrueState: State {
+  @_spi(Internals)
+  public var theOneTrueState: State {
     self.toState(self.rootStore.state)
   }
 

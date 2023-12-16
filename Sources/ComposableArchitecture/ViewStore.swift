@@ -197,11 +197,11 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   `viewStore.publisher.sink` closures should be completely independent of each other. Later
   ///   closures cannot assume that earlier ones have already run.
   public var publisher: StorePublisher<ViewState> {
-    fatalError("TODO")
-    //    StorePublisher(
-    //      store: self,
-    //      upstream: self._state
-    //    )
+    //fatalError("TODO")
+        StorePublisher(
+          store: self,
+          upstream: Empty()// self._state
+        )
   }
 
   /// The current state.
