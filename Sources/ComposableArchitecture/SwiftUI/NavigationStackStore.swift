@@ -68,7 +68,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       SwitchStore(
         store
           .scope(
-            state: { $0[id: component.id]! },
+            state: { $0[id: component.id] ?? component.element },
             id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
             action: { .element(id: component.id, action: $0) },
             isInvalid: { !$0.ids.contains(component.id) },
