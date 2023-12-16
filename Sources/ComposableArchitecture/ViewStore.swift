@@ -95,14 +95,14 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self._send = { store.send($0, originatingFrom: nil) }
-    self._state = CurrentValueRelay(toViewState(store.stateSubject.value))
+    self._state = CurrentValueRelay(toViewState(store.theOneTrueState))
     self._isInvalidated = store._isInvalidated
     #if DEBUG
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
-    self.viewCancellable = store.stateSubject
-      .map(toViewState)
+    self.viewCancellable = store.rootStore.didSet
+      .map { toViewState(store.theOneTrueState) }
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
         guard let objectWillChange = objectWillChange, let _state = _state else { return }
@@ -139,14 +139,14 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self._send = { store.send(fromViewAction($0), originatingFrom: nil) }
-    self._state = CurrentValueRelay(toViewState(store.stateSubject.value))
+    self._state = CurrentValueRelay(toViewState(store.theOneTrueState))
     self._isInvalidated = store._isInvalidated
     #if DEBUG
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
-    self.viewCancellable = store.stateSubject
-      .map(toViewState)
+    self.viewCancellable = store.rootStore.didSet
+      .map { toViewState(store.theOneTrueState) }
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
         guard let objectWillChange = objectWillChange, let _state = _state else { return }

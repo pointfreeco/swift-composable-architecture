@@ -14,7 +14,15 @@ private let readMe = """
 struct Nested {
   struct State: Equatable, Identifiable {
     let id: UUID
-    var name: String = ""
+    var _name: String = ""
+    var name: String {
+      get {
+        _name
+      }
+      set {
+        _name = newValue
+      }
+    }
     var rows: IdentifiedArrayOf<State> = []
   }
 

@@ -5,20 +5,20 @@ import SwiftUI
 struct TodosApp: App {
   var body: some Scene {
     WindowGroup {
-//      AppView(
-//        store: Store(initialState: Todos.State()) {
-//          Todos()._printChanges()
-//        }
-//      )
+      AppView(
+        store: Store(initialState: Todos.State()) {
+          Todos()._printChanges()
+        }
+      )
 //      ParentView()
 //      CounterView(
 //        store: Store2(initialState: Counter.State()) {
 //          Counter()
 //        }
 //      )
-      NavigationStack {
-        ListView()
-      }
+//      NavigationStack {
+//        ListView()
+//      }
     }
   }
 }
@@ -29,7 +29,11 @@ import Combine
 
 private class RootStore {
   fileprivate let didSet = PassthroughSubject<Void, Never>()
-  private(set) var state: Any
+  private(set) var state: Any {
+    didSet {
+      self.didSet.send()
+    }
+  }
   private let reducer: any Reducer
 
   init<State, Action>(
@@ -68,14 +72,14 @@ final class Store2<State, Action> {
     self.stateKeyPath = stateKeyPath
   }
 
-  var state: State {
-    self.rootStore.state[keyPath: self.stateKeyPath] as! State
-  }
-
   func send(_ action: Action) {
     self.rootStore.send(self.actionKeyPath.embed(action))
   }
 
+
+  var state: State {
+    self.rootStore.state[keyPath: self.stateKeyPath] as! State
+  }
   subscript<Member>(dynamicMember keyPath: KeyPath<State, Member>) -> Member {
     self.state[keyPath: keyPath]
   }

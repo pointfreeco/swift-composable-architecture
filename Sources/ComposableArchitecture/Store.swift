@@ -145,6 +145,10 @@ public final class Store<State, Action> {
     private let mainThreadChecksEnabled: Bool
   #endif
 
+  let rootStore: RootStore
+  let toState: ToState<State>
+  let fromAction: (Action) -> Any
+
   /// Initializes a store from an initial state and a reducer.
   ///
   /// - Parameters:
@@ -387,8 +391,8 @@ public final class Store<State, Action> {
     state: KeyPath<State, ChildState>,
     action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
-    self.scope(
-      state: { $0[keyPath: state] },
+    self.theOneTrueScope(
+      state: .keyPath(state),
       id: self.id(state: state, action: action),
       action: { action($0) },
       isInvalid: nil,
@@ -420,8 +424,9 @@ public final class Store<State, Action> {
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-    self.scope(
-      state: toChildState,
+
+    self.theOneTrueScope(
+      state: .closure({ toChildState($0 as! State) }),
       id: nil,
       action: fromChildAction,
       isInvalid: nil,
@@ -462,6 +467,47 @@ public final class Store<State, Action> {
       removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
+  
+  var theOneTrueState: State {
+    self.toState(self.rootStore.state)
+  }
+
+  func theOneTrueScope<ChildState, ChildAction>(
+    state: ToState<ChildState>,
+    id: ScopeID<State, Action>?,
+    action fromChildAction: @escaping (ChildAction) -> Action,
+    isInvalid: ((State) -> Bool)?,
+    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
+  ) -> Store<ChildState, ChildAction> {
+    if self.canCacheChildren,
+       let id = id,
+       let childStore = self.children[id] as? Store<ChildState, ChildAction>
+    {
+      return childStore
+    }
+    let isInvalid =
+    id == nil || !self.canCacheChildren
+    ? {
+      self._isInvalidated() || isInvalid?(self.theOneTrueState) == true
+    }
+    : { [weak self] in
+      guard let self = self else { return true }
+      return self._isInvalidated() || isInvalid?(self.theOneTrueState) == true
+    }
+    let childStore = Store<ChildState, ChildAction>(
+      rootStore: self.rootStore,
+      toState: self.toState.appending(state),
+      fromAction: { self.fromAction(fromChildAction($0)) }
+    )
+    childStore._isInvalidated = isInvalid
+    childStore.canCacheChildren = self.canCacheChildren && id != nil
+    if let id = id {
+      if self.canCacheChildren {
+        self.children[id] = childStore
+      }
+    }
+    return childStore
+  }
 
   @_spi(Internals) public func scope<ChildState, ChildAction>(
     state toChildState: @escaping (State) -> ChildState,
@@ -471,14 +517,23 @@ public final class Store<State, Action> {
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
     self.threadCheck(status: .scope)
-    return self.reducer.scope(
-      store: self,
-      state: toChildState,
+
+    return self.theOneTrueScope(
+      state: .closure { toChildState($0 as! State) },
       id: id,
       action: fromChildAction,
       isInvalid: isInvalid,
       removeDuplicates: isDuplicate
     )
+
+//    return self.reducer.scope(
+//      store: self,
+//      state: toChildState,
+//      id: id,
+//      action: fromChildAction,
+//      isInvalid: isInvalid,
+//      removeDuplicates: isDuplicate
+//    )
   }
 
   fileprivate func invalidate() {
@@ -498,138 +553,7 @@ public final class Store<State, Action> {
     _ action: Action,
     originatingFrom originatingAction: Action?
   ) -> Task<Void, Never>? {
-    self.threadCheck(status: .send(action, originatingAction: originatingAction))
-
-    self.bufferedActions.append(action)
-    guard !self.isSending else { return nil }
-
-    self.isSending = true
-    var currentState = self.stateSubject.value
-    let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
-    defer {
-      withExtendedLifetime(self.bufferedActions) {
-        self.bufferedActions.removeAll()
-      }
-      self.stateSubject.value = currentState
-      self.isSending = false
-      if !self.bufferedActions.isEmpty {
-        if let task = self.send(
-          self.bufferedActions.removeLast(), originatingFrom: originatingAction
-        ) {
-          tasks.wrappedValue.append(task)
-        }
-      }
-    }
-
-    var index = self.bufferedActions.startIndex
-    while index < self.bufferedActions.endIndex {
-      defer { index += 1 }
-      let action = self.bufferedActions[index]
-      let effect = self.reducer.reduce(into: &currentState, action: action)
-
-      switch effect.operation {
-      case .none:
-        break
-      case let .publisher(publisher):
-        var didComplete = false
-        let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
-        let uuid = UUID()
-        let effectCancellable = withEscapedDependencies { continuation in
-          publisher
-            .handleEvents(
-              receiveCancel: { [weak self] in
-                self?.threadCheck(status: .effectCompletion(action))
-                self?.effectCancellables[uuid] = nil
-              }
-            )
-            .sink(
-              receiveCompletion: { [weak self] _ in
-                self?.threadCheck(status: .effectCompletion(action))
-                boxedTask.wrappedValue?.cancel()
-                didComplete = true
-                self?.effectCancellables[uuid] = nil
-              },
-              receiveValue: { [weak self] effectAction in
-                guard let self = self else { return }
-                if let task = continuation.yield({
-                  self.send(effectAction, originatingFrom: action)
-                }) {
-                  tasks.wrappedValue.append(task)
-                }
-              }
-            )
-        }
-
-        if !didComplete {
-          let task = Task<Void, Never> { @MainActor in
-            for await _ in AsyncStream<Void>.never {}
-            effectCancellable.cancel()
-          }
-          boxedTask.wrappedValue = task
-          tasks.wrappedValue.append(task)
-          self.effectCancellables[uuid] = effectCancellable
-        }
-      case let .run(priority, operation):
-        withEscapedDependencies { continuation in
-          tasks.wrappedValue.append(
-            Task(priority: priority) { @MainActor in
-              #if DEBUG
-                let isCompleted = LockIsolated(false)
-                defer { isCompleted.setValue(true) }
-              #endif
-              await operation(
-                Send { effectAction in
-                  #if DEBUG
-                    if isCompleted.value {
-                      runtimeWarn(
-                        """
-                        An action was sent from a completed effect:
-
-                          Action:
-                            \(debugCaseOutput(effectAction))
-
-                          Effect returned from:
-                            \(debugCaseOutput(action))
-
-                        Avoid sending actions using the 'send' argument from 'Effect.run' after \
-                        the effect has completed. This can happen if you escape the 'send' \
-                        argument in an unstructured context.
-
-                        To fix this, make sure that your 'run' closure does not return until \
-                        you're done calling 'send'.
-                        """
-                      )
-                    }
-                  #endif
-                  if let task = continuation.yield({
-                    self.send(effectAction, originatingFrom: action)
-                  }) {
-                    tasks.wrappedValue.append(task)
-                  }
-                }
-              )
-            }
-          )
-        }
-      }
-    }
-
-    guard !tasks.wrappedValue.isEmpty else { return nil }
-    return Task { @MainActor in
-      await withTaskCancellationHandler {
-        var index = tasks.wrappedValue.startIndex
-        while index < tasks.wrappedValue.endIndex {
-          defer { index += 1 }
-          await tasks.wrappedValue[index].value
-        }
-      } onCancel: {
-        var index = tasks.wrappedValue.startIndex
-        while index < tasks.wrappedValue.endIndex {
-          defer { index += 1 }
-          tasks.wrappedValue[index].cancel()
-        }
-      }
-    }
+    self.rootStore.send(self.fromAction(action))
   }
 
   private enum ThreadCheckStatus {
@@ -719,11 +643,29 @@ public final class Store<State, Action> {
     #endif
   }
 
+  init(
+    rootStore: RootStore,
+    toState: ToState<State>,
+    fromAction: @escaping (Action) -> Any
+  ) {
+    self.rootStore = rootStore
+    self.toState = toState
+    self.fromAction = fromAction
+    self.reducer = EmptyReducer<State, Action>()
+    self.stateSubject = CurrentValueSubject(toState(rootStore.state))
+    self.mainThreadChecksEnabled = true
+  }
+
   init<R: Reducer>(
     initialState: R.State,
     reducer: R,
     mainThreadChecksEnabled: Bool
   ) where R.State == State, R.Action == Action {
+
+    self.rootStore = RootStore(initialState: initialState, reducer: reducer)
+    self.toState = .keyPath(\State.self)
+    self.fromAction = { $0 }
+
     self.stateSubject = CurrentValueSubject(initialState)
     self.reducer = reducer
     #if DEBUG
@@ -1108,3 +1050,50 @@ extension ScopedStoreReducer: AnyScopedStoreReducer {
     return childStore
   }
 }
+
+
+enum ToState<State> {
+  case closure((Any) -> State)
+  case keyPath(AnyKeyPath)
+  func callAsFunction(_ state: Any) -> State {
+    switch self {
+    case let .closure(closure):
+      return closure(state)
+    case let .keyPath(keyPath):
+      return state[keyPath: keyPath] as! State
+    }
+  }
+  func appending<ChildState>(_ state: ToState<ChildState>) -> ToState<ChildState> {
+    switch (self, state) {
+    case let (.keyPath(lhs), .keyPath(rhs)):
+      return .keyPath(lhs.appending(path: rhs)!)
+    default:
+      return .closure { state(self($0)) }
+    }
+  }
+}
+//enum FromAction<Action> {
+//  case closure((Action) -> Any)
+//  case caseKeyPath(Case<Action>)
+//  func callAsFunction(_ action: Action) -> Any {
+//    switch self {
+//    case let .closure(closure):
+//      return closure(action)
+//    case let .caseKeyPath(caseKeyPath):
+//      return caseKeyPath.embed(action)
+//    }
+//  }
+//  func appending<ChildAction>(_ action: FromAction<ChildAction>) -> FromAction<ChildAction> {
+//    switch (self, action) {
+//    case let (.caseKeyPath(lhs), .caseKeyPath(rhs)):
+//      return .caseKeyPath(
+//        Case<ChildAction>(
+//          embed: { lhs.embed(rhs.embed($0) as! Action) },
+//          extract: { _ in fatalError() }
+//        )
+//      )
+//    default:
+//      return .closure { self(action($0) as! Action) }
+//    }
+//  }
+//}
