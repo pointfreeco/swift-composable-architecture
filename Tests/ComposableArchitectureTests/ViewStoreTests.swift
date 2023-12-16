@@ -18,7 +18,9 @@ final class ViewStoreTests: BaseTCATestCase {
 
     var emissionCount = 0
     viewStore.publisher
-      .sink { _ in emissionCount += 1 }
+      .sink { _ in
+        emissionCount += 1
+      }
       .store(in: &self.cancellables)
 
     XCTAssertEqual(emissionCount, 1)

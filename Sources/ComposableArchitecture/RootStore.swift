@@ -4,7 +4,7 @@ import Foundation
 @_spi(Internals)
 public final class RootStore {
   private var bufferedActions: [Any] = []
-  let didSet = PassthroughSubject<Void, Never>()
+  let didSet = CurrentValueSubject<Void, Never>(())
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   private let reducer: any Reducer

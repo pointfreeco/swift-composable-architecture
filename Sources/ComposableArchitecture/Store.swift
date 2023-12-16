@@ -579,7 +579,7 @@ public final class Store<State, Action> {
   public var publisher: StorePublisher<State> {
     StorePublisher(
       store: self,
-      upstream: self.rootStore.didSet.map { self.theOneTrueState }.prepend(self.theOneTrueState)
+      upstream: self.rootStore.didSet.map { self.theOneTrueState }
     )
   }
 

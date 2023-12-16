@@ -67,11 +67,11 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
-  let store: Store<ViewState, ViewAction>
   private var viewCancellable: AnyCancellable?
   #if DEBUG
     private var storeTypeName: String
   #endif
+  let store: Store<ViewState, ViewAction>
 
   /// Initializes a view store from a store which observes changes to state.
   ///
@@ -97,8 +97,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
-    self.viewCancellable = store.rootStore.didSet
-      .map { toViewState(store.theOneTrueState) }
+
+    self.viewCancellable = self.store.publisher
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange] _ in
         guard let objectWillChange = objectWillChange else { return }
@@ -138,8 +138,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
-    self.viewCancellable = store.rootStore.didSet
-      .map { toViewState(store.theOneTrueState) }
+
+    self.viewCancellable = self.store.publisher
       .removeDuplicates(by: isDuplicate)
       .sink { [weak objectWillChange = self.objectWillChange] _ in
         guard let objectWillChange = objectWillChange else { return }
