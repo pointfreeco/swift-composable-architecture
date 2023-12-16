@@ -627,19 +627,15 @@ as an enum instead of multiple optionals. In order to assert on state changes wh
 state you must be able to extract the associated state from the enum, make a mutation, and then
 embed the new state back into the enum.
 
-The library provides a tool to perform these steps in a single step, and it is called `XCTModify`:
+The library provides a tool to perform these steps in a single step. It's the
+``PresentationState/subscript(case:)-7uqte`` defined on ``PresentationState`` which allows you to
+modify the data inside a case of the destination enum:
 
 ```swift
 await store.send(.destination(.presented(.counter(.incrementButtonTapped)))) {
-  XCTModify(&$0.destination, case: \.counter) { 
-    $0.count = 4
-  }
+  $0.$destination[case: \.counter]?.count = 4
 }
 ```
 
-The `XCTModify` function takes an `inout` piece of enum state as its first argument and a case
-path for its second argument, and then uses the case path to extract the payload in that case, 
-allow you to perform a mutation to it, and embed the data back into the enum. So, in the code
-above, we are wanting to mutate the `$0.destination` enum by isolating the `.counter` case, 
-and mutating the `count` to be 4 since it incremented by one. Further, if the case of 
-`$0.destination` didn't match the case path, then a test failure would be emitted.
+Further, if `destination` is not of the `.counter` case when this test runs, then it will trigger
+a test failure letting you know that you cannot modify an unrelated case.

@@ -92,7 +92,14 @@ public struct PresentationState<State> {
 
   /// Accesses the value associated with the given case for reading and writing.
   ///
-  /// > Note: Accessing the wrong case will result in a runtime warning.
+  /// You can access the projected value of ``PresentationState`` and subscript into a particular
+  /// case of the enum in order to perform a mutation or invoke a mutating method:
+  ///
+  /// ```swift
+  /// state.$destination[case: \.add]?.reset()
+  /// ```
+  ///
+  /// > Important: Accessing the wrong case will result in a runtime warning.
   public subscript<Case>(case path: CaseKeyPath<State, Case>) -> Case?
   where State: CasePathable {
     _read { yield self[case: AnyCasePath(path)] }
