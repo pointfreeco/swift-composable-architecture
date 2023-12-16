@@ -102,10 +102,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
 
-    self._state = toViewState(store.theOneTrueState)
+    self._state = toViewState(store.currentState)
     self.statePublisher = StorePublisher(
       store: store,
-      upstream: self.store.rootStore.didSet.map { toViewState(store.theOneTrueState) }
+      upstream: self.store.rootStore.didSet.map { toViewState(store.currentState) }
         .removeDuplicates(by: isDuplicate)
         .share()
     )
@@ -154,10 +154,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
 
-    self._state = toViewState(store.theOneTrueState)
+    self._state = toViewState(store.currentState)
     self.statePublisher = StorePublisher(
       store: store,
-      upstream: self.store.rootStore.didSet.map { toViewState(store.theOneTrueState) }
+      upstream: self.store.rootStore.didSet.map { toViewState(store.currentState) }
         .removeDuplicates(by: isDuplicate)
         .share()
     )

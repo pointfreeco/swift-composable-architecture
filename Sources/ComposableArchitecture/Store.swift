@@ -187,7 +187,7 @@ public final class Store<State, Action> {
   ///   you want to observe store state in a view, use a ``ViewStore`` instead.
   /// - Returns: The return value, if any, of the `body` closure.
   public func withState<R>(_ body: (_ state: State) -> R) -> R {
-    body(self.theOneTrueState)
+    body(self.currentState)
   }
 
   /// Sends an action to the store.
@@ -455,9 +455,9 @@ public final class Store<State, Action> {
       removeDuplicates: { $0.sharesStorage(with: $1) }
     )
   }
-  
+
   @_spi(Internals)
-  public var theOneTrueState: State {
+  public var currentState: State {
     self.toState(self.rootStore.state)
   }
 
@@ -469,22 +469,22 @@ public final class Store<State, Action> {
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
     threadCheck(status: .scope)
-    
+
     if self.canCacheChildren,
-       let id = id,
-       let childStore = self.children[id] as? Store<ChildState, ChildAction>
+      let id = id,
+      let childStore = self.children[id] as? Store<ChildState, ChildAction>
     {
       return childStore
     }
     let isInvalid =
-    id == nil || !self.canCacheChildren
-    ? {
-      self._isInvalidated() || isInvalid?(self.theOneTrueState) == true
-    }
-    : { [weak self] in
-      guard let self = self else { return true }
-      return self._isInvalidated() || isInvalid?(self.theOneTrueState) == true
-    }
+      id == nil || !self.canCacheChildren
+      ? {
+        self._isInvalidated() || isInvalid?(self.currentState) == true
+      }
+      : { [weak self] in
+        guard let self = self else { return true }
+        return self._isInvalidated() || isInvalid?(self.currentState) == true
+      }
     let childStore = Store<ChildState, ChildAction>(
       rootStore: self.rootStore,
       toState: self.toState.appending(state),
@@ -574,7 +574,7 @@ public final class Store<State, Action> {
   public var publisher: StorePublisher<State> {
     StorePublisher(
       store: self,
-      upstream: self.rootStore.didSet.map { self.theOneTrueState }
+      upstream: self.rootStore.didSet.map { self.currentState }
     )
   }
 

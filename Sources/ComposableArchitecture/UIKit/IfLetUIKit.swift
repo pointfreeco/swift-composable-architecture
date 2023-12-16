@@ -50,7 +50,7 @@ extension Store {
     else: @escaping () -> Void = {}
   ) -> Cancellable where State == Wrapped? {
     self.rootStore.didSet
-      .map { self.theOneTrueState }
+      .map { self.currentState }
       .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
       .sink { state in
         if state != nil {

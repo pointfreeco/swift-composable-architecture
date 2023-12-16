@@ -15,7 +15,7 @@ class ScopeCacheTests: XCTestCase {
       removeDuplicates: nil
     )
     unwrappedChildStore.send(.dismiss)
-    XCTAssertEqual(store.theOneTrueState.child, nil)
+    XCTAssertEqual(store.currentState.child, nil)
   }
 }
 
