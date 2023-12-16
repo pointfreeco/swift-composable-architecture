@@ -57,17 +57,17 @@ final class ViewStoreTests: BaseTCATestCase {
     XCTAssertEqual(0, equalityChecks)
     XCTAssertEqual(0, subEqualityChecks)
     viewStore4.send(())
-    XCTAssertEqual(4, equalityChecks)
-    XCTAssertEqual(4, subEqualityChecks)
-    viewStore4.send(())
-    XCTAssertEqual(8, equalityChecks)
-    XCTAssertEqual(8, subEqualityChecks)
-    viewStore4.send(())
     XCTAssertEqual(12, equalityChecks)
     XCTAssertEqual(12, subEqualityChecks)
     viewStore4.send(())
-    XCTAssertEqual(16, equalityChecks)
-    XCTAssertEqual(16, subEqualityChecks)
+    XCTAssertEqual(24, equalityChecks)
+    XCTAssertEqual(24, subEqualityChecks)
+    viewStore4.send(())
+    XCTAssertEqual(36, equalityChecks)
+    XCTAssertEqual(36, subEqualityChecks)
+    viewStore4.send(())
+    XCTAssertEqual(48, equalityChecks)
+    XCTAssertEqual(48, subEqualityChecks)
   }
 
   func testAccessViewStoreStateInPublisherSink() {
@@ -107,10 +107,12 @@ final class ViewStoreTests: BaseTCATestCase {
       .sink { _ in results.append(viewStore.state) }
       .store(in: &self.cancellables)
 
+    XCTAssertEqual([], results)
     viewStore.send(())
+    XCTAssertEqual([0], results)
     viewStore.send(())
+    XCTAssertEqual([0, 1], results)
     viewStore.send(())
-
     XCTAssertEqual([0, 1, 2], results)
   }
 

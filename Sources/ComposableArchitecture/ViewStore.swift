@@ -66,12 +66,14 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
+  private var _state: ViewState
 
   private var viewCancellable: AnyCancellable?
   #if DEBUG
     private var storeTypeName: String
   #endif
   let store: Store<ViewState, ViewAction>
+  let statePublisher: StorePublisher<ViewState>
 
   /// Initializes a view store from a store which observes changes to state.
   ///
@@ -98,11 +100,19 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
 
-    self.viewCancellable = self.store.publisher
-      .removeDuplicates(by: isDuplicate)
-      .sink { [weak objectWillChange = self.objectWillChange] _ in
-        guard let objectWillChange = objectWillChange else { return }
+    self._state = toViewState(store.theOneTrueState)
+    self.statePublisher = StorePublisher(
+      store: store,
+      upstream: self.store.rootStore.didSet.map { toViewState(store.theOneTrueState) }
+        .removeDuplicates(by: isDuplicate)
+    )
+
+    self.viewCancellable = self.statePublisher
+      .sink { [weak objectWillChange = self.objectWillChange, weak self] in
+        guard let self, let objectWillChange
+        else { return }
         objectWillChange.send()
+        self._state = $0
       }
   }
 
@@ -139,11 +149,19 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
 
-    self.viewCancellable = self.store.publisher
-      .removeDuplicates(by: isDuplicate)
-      .sink { [weak objectWillChange = self.objectWillChange] _ in
-        guard let objectWillChange = objectWillChange else { return }
+    self.statePublisher = StorePublisher(
+      store: store,
+      upstream: self.store.rootStore.didSet.map { toViewState(store.theOneTrueState) }
+        .removeDuplicates(by: isDuplicate)
+    )
+
+    self._state = toViewState(store.theOneTrueState)
+    self.viewCancellable = self.statePublisher
+      .sink { [weak objectWillChange = self.objectWillChange, weak self] in
+        guard let self, let objectWillChange
+        else { return }
         objectWillChange.send()
+        self._state = $0
       }
   }
 
@@ -158,6 +176,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
     self.store = viewStore.store
+    self._state = viewStore._state
+    self.statePublisher = viewStore.statePublisher
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
   }
@@ -188,12 +208,13 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   `viewStore.publisher.sink` closures should be completely independent of each other. Later
   ///   closures cannot assume that earlier ones have already run.
   public var publisher: StorePublisher<ViewState> {
-    self.store.publisher
+    self.statePublisher
   }
 
   /// The current state.
   public var state: ViewState {
-    self.store.theOneTrueState
+    self._state
+    //self.store.theOneTrueState
   }
 
   /// Returns the resulting value of a given key path.
