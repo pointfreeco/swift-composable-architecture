@@ -14,22 +14,8 @@ private let readMe = """
 struct Nested {
   struct State: Equatable, Identifiable {
     let id: UUID
-    var _name: String = ""
-    var name: String {
-      get {
-        _name
-      }
-      set {
-        _name = newValue
-      }
-    }
+    var name: String = ""
     var rows: IdentifiedArrayOf<State> = []
-
-    init(id: UUID, name: String = "", rows: IdentifiedArrayOf<State> = []) {
-      self.id = id
-      self._name = name
-      self.rows = rows
-    }
   }
 
   enum Action {
@@ -74,7 +60,7 @@ struct NestedView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    WithViewStore(self.store, observe: \.name) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)
@@ -99,7 +85,7 @@ struct NestedView: View {
         }
         .onDelete { viewStore.send(.onDelete($0)) }
       }
-      .navigationTitle(viewStore.name.isEmpty ? "Untitled" : viewStore.name)
+      .navigationTitle(viewStore.state.isEmpty ? "Untitled" : viewStore.state)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
           Button("Add row") { viewStore.send(.addRowButtonTapped) }
