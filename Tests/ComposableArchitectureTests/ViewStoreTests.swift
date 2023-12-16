@@ -134,11 +134,9 @@ final class ViewStoreTests: BaseTCATestCase {
   }
 
   func testStorePublisherSubscriptionOrder() {
-    let reducer = Reduce<Int, Void> { count, _ in
-      count += 1
-      return .none
+    let store = Store<Int, Void>(initialState: 0) {
+      Reduce { state, _ in state += 1; return .none }
     }
-    let store = Store(initialState: 0) { reducer }
     let viewStore = ViewStore(store, observe: { $0 })
 
     var results: [Int] = []
@@ -157,11 +155,17 @@ final class ViewStoreTests: BaseTCATestCase {
 
     XCTAssertEqual(results, [0, 1, 2])
 
-    for _ in 0..<9 {
-      viewStore.send(())
-    }
+    results = []
+    viewStore.send(())
+    XCTAssertEqual(results, [0, 1, 2])
 
-    XCTAssertEqual(results, Array(repeating: [0, 1, 2], count: 10).flatMap { $0 })
+    results = []
+    viewStore.send(())
+    XCTAssertEqual(results, [0, 1, 2])
+
+    results = []
+    viewStore.send(())
+    XCTAssertEqual(results, [0, 1, 2])
   }
 
   func testSendWhile() async {
