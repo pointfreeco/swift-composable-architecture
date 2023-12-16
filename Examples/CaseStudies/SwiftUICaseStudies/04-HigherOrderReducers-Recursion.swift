@@ -24,6 +24,12 @@ struct Nested {
       }
     }
     var rows: IdentifiedArrayOf<State> = []
+
+    init(id: UUID, name: String = "", rows: IdentifiedArrayOf<State> = []) {
+      self.id = id
+      self._name = name
+      self.rows = rows
+    }
   }
 
   enum Action {
@@ -68,7 +74,7 @@ struct NestedView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: \.name) { viewStore in
+    WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
         Section {
           AboutView(readMe: readMe)
@@ -93,7 +99,7 @@ struct NestedView: View {
         }
         .onDelete { viewStore.send(.onDelete($0)) }
       }
-      .navigationTitle(viewStore.state.isEmpty ? "Untitled" : viewStore.state)
+      .navigationTitle(viewStore.name.isEmpty ? "Untitled" : viewStore.name)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
           Button("Add row") { viewStore.send(.addRowButtonTapped) }

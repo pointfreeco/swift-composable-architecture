@@ -69,7 +69,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   let _isInvalidated: () -> Bool
   private let _send: (ViewAction) -> Task<Void, Never>?
-  fileprivate let _state: CurrentValueRelay<ViewState>
+  private let _state: () -> ViewState
+  //  fileprivate let _state: CurrentValueRelay<ViewState>
   private var viewCancellable: AnyCancellable?
   #if DEBUG
     private var storeTypeName: String
@@ -95,7 +96,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self._send = { store.send($0, originatingFrom: nil) }
-    self._state = CurrentValueRelay(toViewState(store.theOneTrueState))
+    self._state = { toViewState(store.theOneTrueState) }
     self._isInvalidated = store._isInvalidated
     #if DEBUG
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
@@ -104,10 +105,9 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     self.viewCancellable = store.rootStore.didSet
       .map { toViewState(store.theOneTrueState) }
       .removeDuplicates(by: isDuplicate)
-      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
-        guard let objectWillChange = objectWillChange, let _state = _state else { return }
+      .sink { [weak objectWillChange = self.objectWillChange] _ in
+        guard let objectWillChange = objectWillChange else { return }
         objectWillChange.send()
-        _state.value = $0
       }
   }
 
@@ -139,7 +139,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self._send = { store.send(fromViewAction($0), originatingFrom: nil) }
-    self._state = CurrentValueRelay(toViewState(store.theOneTrueState))
+    self._state = { toViewState(store.theOneTrueState) }
     self._isInvalidated = store._isInvalidated
     #if DEBUG
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
@@ -148,10 +148,9 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     self.viewCancellable = store.rootStore.didSet
       .map { toViewState(store.theOneTrueState) }
       .removeDuplicates(by: isDuplicate)
-      .sink { [weak objectWillChange = self.objectWillChange, weak _state = self._state] in
-        guard let objectWillChange = objectWillChange, let _state = _state else { return }
+      .sink { [weak objectWillChange = self.objectWillChange] _ in
+        guard let objectWillChange = objectWillChange else { return }
         objectWillChange.send()
-        _state.value = $0
       }
   }
 
@@ -198,17 +197,21 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   `viewStore.publisher.sink` closures should be completely independent of each other. Later
   ///   closures cannot assume that earlier ones have already run.
   public var publisher: StorePublisher<ViewState> {
-    StorePublisher(store: self, upstream: self._state)
+    fatalError("TODO")
+    //    StorePublisher(
+    //      store: self,
+    //      upstream: self._state
+    //    )
   }
 
   /// The current state.
   public var state: ViewState {
-    self._state.value
+    self._state()
   }
 
   /// Returns the resulting value of a given key path.
   public subscript<Value>(dynamicMember keyPath: KeyPath<ViewState, Value>) -> Value {
-    self._state.value[keyPath: keyPath]
+    self._state()[keyPath: keyPath]
   }
 
   /// Sends an action to the store.

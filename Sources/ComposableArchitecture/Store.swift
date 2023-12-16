@@ -132,18 +132,9 @@ import SwiftUI
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-90255``)
 /// of the store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
-  private var bufferedActions: [Action] = []
   fileprivate var canCacheChildren = true
   fileprivate var children: [ScopeID<State, Action>: AnyObject] = [:]
-  @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   var _isInvalidated = { false }
-  private var isSending = false
-  var parentCancellable: AnyCancellable?
-  private let reducer: any Reducer<State, Action>
-  @_spi(Internals) public var stateSubject: CurrentValueSubject<State, Never>
-  #if DEBUG
-    private let mainThreadChecksEnabled: Bool
-  #endif
 
   let rootStore: RootStore
   let toState: ToState<State>
@@ -168,14 +159,12 @@ public final class Store<State, Action> {
       }
       self.init(
         initialState: initialState,
-        reducer: reducer.transformDependency(\.self, transform: prepareDependencies),
-        mainThreadChecksEnabled: true
+        reducer: reducer.transformDependency(\.self, transform: prepareDependencies)
       )
     } else {
       self.init(
         initialState: initialState(),
-        reducer: reducer(),
-        mainThreadChecksEnabled: true
+        reducer: reducer()
       )
     }
   }
@@ -198,7 +187,7 @@ public final class Store<State, Action> {
   ///   you want to observe store state in a view, use a ``ViewStore`` instead.
   /// - Returns: The return value, if any, of the `body` closure.
   public func withState<R>(_ body: (_ state: State) -> R) -> R {
-    body(self.stateSubject.value)
+    body(self.theOneTrueState)
   }
 
   /// Sends an action to the store.
@@ -516,8 +505,6 @@ public final class Store<State, Action> {
     isInvalid: ((State) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
-    self.threadCheck(status: .scope)
-
     return self.theOneTrueScope(
       state: .closure { toChildState($0 as! State) },
       id: id,
@@ -556,93 +543,6 @@ public final class Store<State, Action> {
     self.rootStore.send(self.fromAction(action))
   }
 
-  private enum ThreadCheckStatus {
-    case effectCompletion(Action)
-    case `init`
-    case scope
-    case send(Action, originatingAction: Action?)
-  }
-
-  @inline(__always)
-  private func threadCheck(status: ThreadCheckStatus) {
-    #if DEBUG
-      guard self.mainThreadChecksEnabled && !Thread.isMainThread
-      else { return }
-
-      switch status {
-      case let .effectCompletion(action):
-        runtimeWarn(
-          """
-          An effect completed on a non-main thread. …
-
-            Effect returned from:
-              \(debugCaseOutput(action))
-
-          Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread.
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the main \
-          thread.
-          """
-        )
-
-      case .`init`:
-        runtimeWarn(
-          """
-          A store initialized on a non-main thread. …
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the main \
-          thread.
-          """
-        )
-
-      case .scope:
-        runtimeWarn(
-          """
-          "Store.scope" was called on a non-main thread. …
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the main \
-          thread.
-          """
-        )
-
-      case let .send(action, originatingAction: nil):
-        runtimeWarn(
-          """
-          "ViewStore.send" was called on a non-main thread with: \(debugCaseOutput(action)) …
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the main \
-          thread.
-          """
-        )
-
-      case let .send(action, originatingAction: .some(originatingAction)):
-        runtimeWarn(
-          """
-          An effect published an action on a non-main thread. …
-
-            Effect published:
-              \(debugCaseOutput(action))
-
-            Effect returned from:
-              \(debugCaseOutput(originatingAction))
-
-          Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread.
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the main \
-          thread.
-          """
-        )
-      }
-    #endif
-  }
-
   init(
     rootStore: RootStore,
     toState: ToState<State>,
@@ -651,27 +551,19 @@ public final class Store<State, Action> {
     self.rootStore = rootStore
     self.toState = toState
     self.fromAction = fromAction
-    self.reducer = EmptyReducer<State, Action>()
-    self.stateSubject = CurrentValueSubject(toState(rootStore.state))
-    self.mainThreadChecksEnabled = true
   }
 
   init<R: Reducer>(
     initialState: R.State,
-    reducer: R,
-    mainThreadChecksEnabled: Bool
-  ) where R.State == State, R.Action == Action {
-
+    reducer: R
+  )
+  where
+    R.State == State,
+    R.Action == Action
+  {
     self.rootStore = RootStore(initialState: initialState, reducer: reducer)
     self.toState = .keyPath(\State.self)
     self.fromAction = { $0 }
-
-    self.stateSubject = CurrentValueSubject(initialState)
-    self.reducer = reducer
-    #if DEBUG
-      self.mainThreadChecksEnabled = mainThreadChecksEnabled
-    #endif
-    self.threadCheck(status: .`init`)
   }
 
   /// A publisher that emits when state changes.
@@ -684,7 +576,12 @@ public final class Store<State, Action> {
   ///   .sink { ... }
   /// ```
   public var publisher: StorePublisher<State> {
-    StorePublisher(store: self, upstream: self.stateSubject)
+    StorePublisher(
+      store: self,
+      upstream: self.rootStore.didSet.map {
+        self.theOneTrueState
+      }
+    )
   }
 
   @_spi(Internals) public func id<ChildState, ChildAction>(
@@ -890,168 +787,6 @@ func typeName(
   return name
 }
 
-extension Reducer {
-  fileprivate func scope<ChildState, ChildAction>(
-    store: Store<State, Action>,
-    state toChildState: @escaping (State) -> ChildState,
-    id: ScopeID<State, Action>?,
-    action fromChildAction: @escaping (ChildAction) -> Action,
-    isInvalid: ((State) -> Bool)?,
-    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
-  ) -> Store<ChildState, ChildAction> {
-    (self as? any AnyScopedStoreReducer ?? ScopedStoreReducer(rootStore: store)).scope(
-      store: store,
-      state: toChildState,
-      id: id,
-      action: fromChildAction,
-      isInvalid: isInvalid,
-      removeDuplicates: isDuplicate
-    )
-  }
-}
-
-private final class ScopedStoreReducer<RootState, RootAction, State, Action>: Reducer {
-  private let rootStore: Store<RootState, RootAction>
-  private let toState: (RootState) -> State
-  private let fromAction: (Action) -> RootAction
-  private let isInvalid: () -> Bool
-  private let onInvalidate: () -> Void
-  private(set) var isSending = false
-
-  @inlinable
-  init(
-    rootStore: Store<RootState, RootAction>,
-    state toState: @escaping (RootState) -> State,
-    action fromAction: @escaping (Action) -> RootAction,
-    isInvalid: @escaping () -> Bool,
-    onInvalidate: @escaping () -> Void
-  ) {
-    self.rootStore = rootStore
-    self.toState = toState
-    self.fromAction = fromAction
-    self.isInvalid = isInvalid
-    self.onInvalidate = onInvalidate
-  }
-
-  @inlinable
-  init(rootStore: Store<RootState, RootAction>)
-  where RootState == State, RootAction == Action {
-    self.rootStore = rootStore
-    self.toState = { $0 }
-    self.fromAction = { $0 }
-    self.isInvalid = { false }
-    self.onInvalidate = {}
-  }
-
-  @inlinable
-  func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    self.isSending = true
-    defer {
-      let isInvalid = self.isInvalid()
-      if isInvalid {
-        self.onInvalidate()
-      }
-      if !isInvalid || state is _OptionalProtocol {
-        state = self.toState(self.rootStore.stateSubject.value)
-      }
-      self.isSending = false
-    }
-    if BindingLocal.isActive && isInvalid() { return .none }
-    if let task = self.rootStore.send(self.fromAction(action), originatingFrom: nil) {
-      return .run { _ in await task.cancellableValue }
-    } else {
-      return .none
-    }
-  }
-}
-
-private protocol AnyScopedStoreReducer {
-  func scope<S, A, ChildState, ChildAction>(
-    store: Store<S, A>,
-    state toChildState: @escaping (S) -> ChildState,
-    id: ScopeID<S, A>?,
-    action fromChildAction: @escaping (ChildAction) -> A,
-    isInvalid: ((S) -> Bool)?,
-    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
-  ) -> Store<ChildState, ChildAction>
-}
-
-extension ScopedStoreReducer: AnyScopedStoreReducer {
-  func scope<S, A, ChildState, ChildAction>(
-    store: Store<S, A>,
-    state toChildState: @escaping (S) -> ChildState,
-    id: ScopeID<S, A>?,
-    action fromChildAction: @escaping (ChildAction) -> A,
-    isInvalid: ((S) -> Bool)?,
-    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
-  ) -> Store<ChildState, ChildAction> {
-    if store.canCacheChildren,
-      let id = id,
-      let childStore = store.children[id] as? Store<ChildState, ChildAction>
-    {
-      return childStore
-    }
-    let fromAction = self.fromAction as! (A) -> RootAction
-    let isInvalid =
-      id == nil || !store.canCacheChildren
-      ? {
-        store._isInvalidated() || isInvalid?(store.stateSubject.value) == true
-      }
-      : { [weak store] in
-        guard let store = store else { return true }
-        return store._isInvalidated() || isInvalid?(store.stateSubject.value) == true
-      }
-    let reducer = ScopedStoreReducer<RootState, RootAction, ChildState, ChildAction>(
-      rootStore: self.rootStore,
-      state: { [stateSubject = store.stateSubject] _ in toChildState(stateSubject.value) },
-      action: { fromAction(fromChildAction($0)) },
-      isInvalid: isInvalid,
-      onInvalidate: { [weak store] in
-        guard let id = id else { return }
-        store?.invalidateChild(id: id)
-      }
-    )
-    let childStore = Store<ChildState, ChildAction>(
-      initialState: toChildState(store.stateSubject.value)
-    ) {
-      reducer
-    }
-    childStore._isInvalidated = isInvalid
-    childStore.canCacheChildren = store.canCacheChildren && id != nil
-    childStore.parentCancellable = store.stateSubject
-      .dropFirst()
-      .sink { [weak store, weak childStore] state in
-        guard
-          !reducer.isSending,
-          let store = store,
-          let childStore = childStore
-        else {
-          return
-        }
-        if childStore._isInvalidated(), let id = id {
-          store.invalidateChild(id: id)
-          guard ChildState.self is _OptionalProtocol.Type
-          else {
-            return
-          }
-        }
-        let childState = toChildState(state)
-        guard isDuplicate.map({ !$0(childStore.stateSubject.value, childState) }) ?? true else {
-          return
-        }
-        childStore.stateSubject.value = childState
-        Logger.shared.log("\(storeTypeName(of: store)).scope")
-      }
-    if let id = id {
-      if store.canCacheChildren {
-        store.children[id] = childStore
-      }
-    }
-    return childStore
-  }
-}
-
-
 enum ToState<State> {
   case closure((Any) -> State)
   case keyPath(AnyKeyPath)
@@ -1072,28 +807,3 @@ enum ToState<State> {
     }
   }
 }
-//enum FromAction<Action> {
-//  case closure((Action) -> Any)
-//  case caseKeyPath(Case<Action>)
-//  func callAsFunction(_ action: Action) -> Any {
-//    switch self {
-//    case let .closure(closure):
-//      return closure(action)
-//    case let .caseKeyPath(caseKeyPath):
-//      return caseKeyPath.embed(action)
-//    }
-//  }
-//  func appending<ChildAction>(_ action: FromAction<ChildAction>) -> FromAction<ChildAction> {
-//    switch (self, action) {
-//    case let (.caseKeyPath(lhs), .caseKeyPath(rhs)):
-//      return .caseKeyPath(
-//        Case<ChildAction>(
-//          embed: { lhs.embed(rhs.embed($0) as! Action) },
-//          extract: { _ in fatalError() }
-//        )
-//      )
-//    default:
-//      return .closure { self(action($0) as! Action) }
-//    }
-//  }
-//}
