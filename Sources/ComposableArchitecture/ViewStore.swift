@@ -74,6 +74,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   #endif
   let store: Store<ViewState, ViewAction>
   let statePublisher: StorePublisher<ViewState>
+  private let isDuplicate: (_ lhs: ViewState, _ rhs: ViewState) -> Bool
 
   /// Initializes a view store from a store which observes changes to state.
   ///
@@ -94,6 +95,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     observe toViewState: @escaping (_ state: State) -> ViewState,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
+    self.isDuplicate = isDuplicate
     self.store = store.scope(state: toViewState, action: { $0 })
     #if DEBUG
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
@@ -105,6 +107,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       store: store,
       upstream: self.store.rootStore.didSet.map { toViewState(store.theOneTrueState) }
         .removeDuplicates(by: isDuplicate)
+        .share()
     )
 
     self.viewCancellable = self.statePublisher
@@ -144,6 +147,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
+    self.isDuplicate = isDuplicate
     self.store = store.scope(state: toViewState, action: fromViewAction)
     #if DEBUG
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
@@ -155,6 +159,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       store: store,
       upstream: self.store.rootStore.didSet.map { toViewState(store.theOneTrueState) }
         .removeDuplicates(by: isDuplicate)
+        .share()
     )
 
     self.viewCancellable = self.statePublisher
@@ -179,6 +184,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     #endif
     self.store = viewStore.store
     self._state = viewStore._state
+    self.isDuplicate = viewStore.isDuplicate
     self.statePublisher = viewStore.statePublisher
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
@@ -210,7 +216,12 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   `viewStore.publisher.sink` closures should be completely independent of each other. Later
   ///   closures cannot assume that earlier ones have already run.
   public var publisher: StorePublisher<ViewState> {
-    self.statePublisher
+    StorePublisher(
+      store: self.store,
+      upstream: self.statePublisher
+        .prepend(self._state)
+        .removeDuplicates(by: self.isDuplicate)
+    )
   }
 
   /// The current state.
