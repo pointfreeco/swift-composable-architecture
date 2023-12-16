@@ -108,6 +108,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     )
 
     self.viewCancellable = self.statePublisher
+      .dropFirst()
       .sink { [weak objectWillChange = self.objectWillChange, weak self] in
         guard let self, let objectWillChange
         else { return }
@@ -149,14 +150,15 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
 
+    self._state = toViewState(store.theOneTrueState)
     self.statePublisher = StorePublisher(
       store: store,
       upstream: self.store.rootStore.didSet.map { toViewState(store.theOneTrueState) }
         .removeDuplicates(by: isDuplicate)
     )
 
-    self._state = toViewState(store.theOneTrueState)
     self.viewCancellable = self.statePublisher
+      .dropFirst()
       .sink { [weak objectWillChange = self.objectWillChange, weak self] in
         guard let self, let objectWillChange
         else { return }

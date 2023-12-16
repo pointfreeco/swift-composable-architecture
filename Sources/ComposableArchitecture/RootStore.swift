@@ -10,7 +10,7 @@ public final class RootStore {
   private let reducer: any Reducer
   private(set) var state: Any {
     didSet {
-      didSet.send()
+      didSet.send(())
     }
   }
 
