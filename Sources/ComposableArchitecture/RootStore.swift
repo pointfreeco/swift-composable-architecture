@@ -20,6 +20,7 @@ public final class RootStore {
   ) {
     self.state = initialState
     self.reducer = reducer
+    self.threadCheck(status: .`init`)
   }
 
   func send(_ action: Any, originatingFrom originatingAction: Any? = nil) -> Task<Void, Never>? {
