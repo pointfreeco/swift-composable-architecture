@@ -156,7 +156,8 @@ public struct PresentationState<State> {
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.wrappedValue == rhs.wrappedValue
+    lhs.sharesStorage(with: rhs)
+     || lhs.wrappedValue == rhs.wrappedValue
   }
 }
 
