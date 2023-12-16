@@ -20,12 +20,12 @@ public final class RootStore {
   ) {
     self.state = initialState
     self.reducer = reducer
-    self.threadCheck(status: .`init`)
+    threadCheck(status: .`init`)
   }
 
   func send(_ action: Any, originatingFrom originatingAction: Any? = nil) -> Task<Void, Never>? {
     func open<State, Action>(reducer: some Reducer<State, Action>) -> Task<Void, Never>? {
-      self.threadCheck(status: .send(action, originatingAction: originatingAction))
+      threadCheck(status: .send(action, originatingAction: originatingAction))
 
       self.bufferedActions.append(action)
       guard !self.isSending else { return nil }
@@ -43,8 +43,7 @@ public final class RootStore {
           if let task = self.send(
             self.bufferedActions.removeLast(),
             originatingFrom: originatingAction
-          )
-          {
+          ) {
             tasks.wrappedValue.append(task)
           }
         }
@@ -67,13 +66,13 @@ public final class RootStore {
             publisher
               .handleEvents(
                 receiveCancel: { [weak self] in
-                  self?.threadCheck(status: .effectCompletion(action))
+                  threadCheck(status: .effectCompletion(action))
                   self?.effectCancellables[uuid] = nil
                 }
               )
               .sink(
                 receiveCompletion: { [weak self] _ in
-                  self?.threadCheck(status: .effectCompletion(action))
+                  threadCheck(status: .effectCompletion(action))
                   boxedTask.wrappedValue?.cancel()
                   didComplete = true
                   self?.effectCancellables[uuid] = nil
@@ -165,81 +164,95 @@ public final class RootStore {
     }
     return open(reducer: self.reducer)
   }
+}
 
-  private enum ThreadCheckStatus {
-    case effectCompletion(Any)
-    case `init`
-    case scope
-    case send(Any, originatingAction: Any?)
-  }
-
+#if DEBUG
   @inline(__always)
-  private func threadCheck(status: ThreadCheckStatus) {
-    #if DEBUG
-      guard !Thread.isMainThread
-      else { return }
+  func threadCheck(status: ThreadCheckStatus) {
+    guard !Thread.isMainThread
+    else { return }
 
-      switch status {
-      case let .effectCompletion(action):
-        runtimeWarn(
-          """
-          An effect completed on a non-main thread. …
-            Effect returned from:
-              \(debugCaseOutput(action))
-          Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread.
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the main \
-          thread.
-          """
-        )
+    switch status {
+    case let .effectCompletion(action):
+      runtimeWarn(
+        """
+        An effect completed on a non-main thread. …
 
-      case .`init`:
-        runtimeWarn(
-          """
-          A store initialized on a non-main thread. …
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the main \
-          thread.
-          """
-        )
+          Effect returned from:
+            \(debugCaseOutput(action))
 
-      case .scope:
-        runtimeWarn(
-          """
-          "Store.scope" was called on a non-main thread. …
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the main \
-          thread.
-          """
-        )
+        Make sure to use ".receive(on:)" on any effects that execute on background threads to \
+        receive their output on the main thread.
 
-      case let .send(action, originatingAction: nil):
-        runtimeWarn(
-          """
-          "ViewStore.send" was called on a non-main thread with: \(debugCaseOutput(action)) …
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the main \
-          thread.
-          """
-        )
+        The "Store" class is not thread-safe, and so all interactions with an instance of \
+        "Store" (including all of its scopes and derived view stores) must be done on the main \
+        thread.
+        """
+      )
 
-      case let .send(action, originatingAction: .some(originatingAction)):
-        runtimeWarn(
-          """
-          An effect published an action on a non-main thread. …
-            Effect published:
-              \(debugCaseOutput(action))
-            Effect returned from:
-              \(debugCaseOutput(originatingAction))
-          Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread.
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the main \
-          thread.
-          """
-        )
-      }
-    #endif
+    case .`init`:
+      runtimeWarn(
+        """
+        A store initialized on a non-main thread. …
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of \
+        "Store" (including all of its scopes and derived view stores) must be done on the main \
+        thread.
+        """
+      )
+
+    case .scope:
+      runtimeWarn(
+        """
+        "Store.scope" was called on a non-main thread. …
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of \
+        "Store" (including all of its scopes and derived view stores) must be done on the main \
+        thread.
+        """
+      )
+
+    case let .send(action, originatingAction: nil):
+      runtimeWarn(
+        """
+        "ViewStore.send" was called on a non-main thread with: \(debugCaseOutput(action)) …
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of \
+        "Store" (including all of its scopes and derived view stores) must be done on the main \
+        thread.
+        """
+      )
+
+    case let .send(action, originatingAction: .some(originatingAction)):
+      runtimeWarn(
+        """
+        An effect published an action on a non-main thread. …
+
+          Effect published:
+            \(debugCaseOutput(action))
+
+          Effect returned from:
+            \(debugCaseOutput(originatingAction))
+
+        Make sure to use ".receive(on:)" on any effects that execute on background threads to \
+        receive their output on the main thread.
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of \
+        "Store" (including all of its scopes and derived view stores) must be done on the main \
+        thread.
+        """
+      )
+    }
   }
+#else
+  @_transparent
+  func threadCheck(status: ThreadCheckStatus) {
+  }
+#endif
+
+enum ThreadCheckStatus {
+  case effectCompletion(Any)
+  case `init`
+  case scope
+  case send(Any, originatingAction: Any?)
 }

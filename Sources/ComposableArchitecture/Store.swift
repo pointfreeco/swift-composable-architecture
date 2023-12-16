@@ -413,7 +413,6 @@ public final class Store<State, Action> {
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-
     self.theOneTrueScope(
       state: .closure({ toChildState($0 as! State) }),
       id: nil,
@@ -469,6 +468,8 @@ public final class Store<State, Action> {
     isInvalid: ((State) -> Bool)?,
     removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
   ) -> Store<ChildState, ChildAction> {
+    threadCheck(status: .scope)
+    
     if self.canCacheChildren,
        let id = id,
        let childStore = self.children[id] as? Store<ChildState, ChildAction>
@@ -513,15 +514,6 @@ public final class Store<State, Action> {
       isInvalid: isInvalid,
       removeDuplicates: isDuplicate
     )
-
-//    return self.reducer.scope(
-//      store: self,
-//      state: toChildState,
-//      id: id,
-//      action: fromChildAction,
-//      isInvalid: isInvalid,
-//      removeDuplicates: isDuplicate
-//    )
   }
 
   fileprivate func invalidate() {
