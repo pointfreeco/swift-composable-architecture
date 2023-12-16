@@ -174,12 +174,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   init(_ viewStore: ViewStore<ViewState, ViewAction>) {
     #if DEBUG
-      self.storeTypeName = """
-        Store<\
-        \(typeName(ViewState.self, genericsAbbreviated: false)), \
-        \(typeName(ViewAction.self, genericsAbbreviated: false))\
-        >
-        """
+      self.storeTypeName = viewStore.storeTypeName
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
     self.store = viewStore.store
