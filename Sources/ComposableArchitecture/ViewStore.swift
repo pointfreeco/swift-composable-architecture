@@ -67,10 +67,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
 
-  let _isInvalidated: () -> Bool
-  private let _send: (ViewAction) -> Task<Void, Never>?
-  private let _state: () -> ViewState
-  //  fileprivate let _state: CurrentValueRelay<ViewState>
+  let store: Store<ViewState, ViewAction>
   private var viewCancellable: AnyCancellable?
   #if DEBUG
     private var storeTypeName: String
@@ -95,9 +92,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     observe toViewState: @escaping (_ state: State) -> ViewState,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
-    self._send = { store.send($0, originatingFrom: nil) }
-    self._state = { toViewState(store.theOneTrueState) }
-    self._isInvalidated = store._isInvalidated
+    self.store = store.scope(state: toViewState, action: { $0 })
     #if DEBUG
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
       Logger.shared.log("View\(self.storeTypeName).init")
@@ -138,9 +133,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
-    self._send = { store.send(fromViewAction($0), originatingFrom: nil) }
-    self._state = { toViewState(store.theOneTrueState) }
-    self._isInvalidated = store._isInvalidated
+    self.store = store.scope(state: toViewState, action: fromViewAction)
     #if DEBUG
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
       Logger.shared.log("View\(self.storeTypeName).init")
@@ -164,9 +157,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
         """
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
-    self._send = viewStore._send
-    self._state = viewStore._state
-    self._isInvalidated = viewStore._isInvalidated
+    self.store = viewStore.store
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
   }
@@ -197,21 +188,17 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   `viewStore.publisher.sink` closures should be completely independent of each other. Later
   ///   closures cannot assume that earlier ones have already run.
   public var publisher: StorePublisher<ViewState> {
-    //fatalError("TODO")
-        StorePublisher(
-          store: self,
-          upstream: Empty()// self._state
-        )
+    self.store.publisher
   }
 
   /// The current state.
   public var state: ViewState {
-    self._state()
+    self.store.theOneTrueState
   }
 
   /// Returns the resulting value of a given key path.
   public subscript<Value>(dynamicMember keyPath: KeyPath<ViewState, Value>) -> Value {
-    self._state()[keyPath: keyPath]
+    self.state[keyPath: keyPath]
   }
 
   /// Sends an action to the store.
@@ -235,7 +222,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   sending the action.
   @discardableResult
   public func send(_ action: ViewAction) -> StoreTask {
-    .init(rawValue: self._send(action))
+    self.store.send(action)
   }
 
   /// Sends an action to the store with a given animation.
