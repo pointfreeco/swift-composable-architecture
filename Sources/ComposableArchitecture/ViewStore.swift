@@ -66,14 +66,13 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
   public private(set) lazy var objectWillChange = ObservableObjectPublisher()
-  private var _state: ViewState
+  private let _state: CurrentValueRelay<ViewState>
 
   private var viewCancellable: AnyCancellable?
   #if DEBUG
     private var storeTypeName: String
   #endif
   let store: Store<ViewState, ViewAction>
-  let statePublisher: StorePublisher<ViewState>
   private let isDuplicate: (_ lhs: ViewState, _ rhs: ViewState) -> Bool
 
   /// Initializes a view store from a store which observes changes to state.
@@ -90,41 +89,18 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   changes.
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///   equal, repeat view computations are removed.
-  public init<State>(
+  public convenience init<State>(
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (_ state: State) -> ViewState,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
-    self.isDuplicate = isDuplicate
-    self.store = store.scope(state: toViewState, action: { $0 })
-    #if DEBUG
-      self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
-      Logger.shared.log("View\(self.storeTypeName).init")
-    #endif
-
-    self._state = toViewState(store.currentState)
-    self.statePublisher = StorePublisher(
-      store: store,
-      upstream: self.store.rootStore.didSet.map { toViewState(store.currentState) }
-        .removeDuplicates(by: isDuplicate)
-        .share()
+    self.init(
+      store,
+      observe: toViewState,
+      send: { $0 },
+      removeDuplicates: isDuplicate
     )
-
-    self.viewCancellable = self.statePublisher
-      .dropFirst()
-      .sink { [weak objectWillChange = self.objectWillChange, weak self] in
-        guard let self, let objectWillChange
-        else { return }
-        objectWillChange.send()
-        self._state = $0
-      }
   }
-
-  #if DEBUG
-    deinit {
-      Logger.shared.log("View\(self.storeTypeName).deinit")
-    }
-  #endif
 
   /// Initializes a view store from a store which observes changes to state.
   ///
@@ -147,28 +123,22 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
-    self.isDuplicate = isDuplicate
-    self.store = store.scope(state: toViewState, action: fromViewAction)
     #if DEBUG
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
 
-    self._state = toViewState(store.currentState)
-    self.statePublisher = StorePublisher(
-      store: store,
-      upstream: self.store.rootStore.didSet.map { toViewState(store.currentState) }
-        .removeDuplicates(by: isDuplicate)
-        .share()
-    )
-
-    self.viewCancellable = self.statePublisher
-      .dropFirst()
-      .sink { [weak objectWillChange = self.objectWillChange, weak self] in
-        guard let self, let objectWillChange
-        else { return }
-        objectWillChange.send()
-        self._state = $0
+    self.isDuplicate = isDuplicate
+    self.store = store.scope(state: toViewState, action: fromViewAction)
+    self._state = CurrentValueRelay(self.store.currentState)
+    self.viewCancellable = self.store.rootStore.didSet
+      .compactMap { [weak self] in self?.store.currentState }
+      .removeDuplicates(by: {
+        isDuplicate($0, $1)
+      })
+      .sink { [weak self] in
+        self?.objectWillChange.send()
+        self?._state.value = $0
       }
   }
 
@@ -180,10 +150,15 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     self.store = viewStore.store
     self._state = viewStore._state
     self.isDuplicate = viewStore.isDuplicate
-    self.statePublisher = viewStore.statePublisher
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
   }
+
+  #if DEBUG
+    deinit {
+      Logger.shared.log("View\(self.storeTypeName).deinit")
+    }
+  #endif
 
   /// A publisher that emits when state changes.
   ///
@@ -213,16 +188,16 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   public var publisher: StorePublisher<ViewState> {
     StorePublisher(
       store: self.store,
-      upstream: self.statePublisher
-        .prepend(self._state)
-        .removeDuplicates(by: self.isDuplicate)
+      upstream: self.store.rootStore.didSet
+        .map { [store] in store.currentState }
+        .removeDuplicates(by: { [isDuplicate] in isDuplicate($0, $1) })
     )
+    // StorePublisher(store: self.store, upstream: self._state)
   }
 
   /// The current state.
   public var state: ViewState {
-    self._state
-    //self.store.theOneTrueState
+    self._state.value
   }
 
   /// Returns the resulting value of a given key path.
@@ -263,7 +238,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - animation: An animation.
   @discardableResult
   public func send(_ action: ViewAction, animation: Animation?) -> StoreTask {
-    send(action, transaction: Transaction(animation: animation))
+    self.send(action, transaction: Transaction(animation: animation))
   }
 
   /// Sends an action to the store with a given transaction.
