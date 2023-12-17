@@ -137,7 +137,7 @@ public final class Store<State, Action> {
   var _isInvalidated = { false }
 
   @_spi(Internals) public let rootStore: RootStore
-  let toState: ToState<State>
+  let toState: PartialToState<State>
   let fromAction: (Action) -> Any
 
   /// Initializes a store from an initial state and a reducer.
@@ -380,8 +380,8 @@ public final class Store<State, Action> {
     state: KeyPath<State, ChildState>,
     action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
-    self.theOneTrueScope(
-      state: .keyPath(state),
+    self.scope(
+      state: ToState(state),
       id: self.id(state: state, action: action),
       action: { action($0) },
       isInvalid: nil,
@@ -413,8 +413,8 @@ public final class Store<State, Action> {
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-    self.theOneTrueScope(
-      state: .closure({ toChildState($0 as! State) }),
+    self.scope(
+      state: ToState(toChildState),
       id: nil,
       action: fromChildAction,
       isInvalid: nil,
@@ -448,7 +448,7 @@ public final class Store<State, Action> {
       Action
   ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
     self.scope(
-      state: toChildState,
+      state: ToState(toChildState),
       id: nil,
       action: fromChildAction,
       isInvalid: nil,
@@ -461,8 +461,9 @@ public final class Store<State, Action> {
     self.toState(self.rootStore.state)
   }
 
-  func theOneTrueScope<ChildState, ChildAction>(
-    state: ToState<ChildState>,
+  @_spi(Internals) public
+  func scope<ChildState, ChildAction>(
+    state: ToState<State, ChildState>,
     id: ScopeID<State, Action>?,
     action fromChildAction: @escaping (ChildAction) -> Action,
     isInvalid: ((State) -> Bool)?,
@@ -487,7 +488,7 @@ public final class Store<State, Action> {
       }
     let childStore = Store<ChildState, ChildAction>(
       rootStore: self.rootStore,
-      toState: self.toState.appending(state),
+      toState: self.toState.appending(state.base),
       fromAction: { self.fromAction(fromChildAction($0)) }
     )
     childStore._isInvalidated = isInvalid
@@ -498,22 +499,6 @@ public final class Store<State, Action> {
       }
     }
     return childStore
-  }
-
-  @_spi(Internals) public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (State) -> ChildState,
-    id: ScopeID<State, Action>?,
-    action fromChildAction: @escaping (ChildAction) -> Action,
-    isInvalid: ((State) -> Bool)?,
-    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
-  ) -> Store<ChildState, ChildAction> {
-    return self.theOneTrueScope(
-      state: .closure { toChildState($0 as! State) },
-      id: id,
-      action: fromChildAction,
-      isInvalid: isInvalid,
-      removeDuplicates: isDuplicate
-    )
   }
 
   fileprivate func invalidate() {
@@ -541,7 +526,7 @@ public final class Store<State, Action> {
 
   init(
     rootStore: RootStore,
-    toState: ToState<State>,
+    toState: PartialToState<State>,
     fromAction: @escaping (Action) -> Any
   ) {
     self.rootStore = rootStore
@@ -558,7 +543,7 @@ public final class Store<State, Action> {
     R.Action == Action
   {
     self.rootStore = RootStore(initialState: initialState, reducer: reducer)
-    self.toState = .keyPath(\State.self)
+    self.toState = PartialToState.keyPath(\State.self)
     self.fromAction = { $0 }
   }
 
@@ -781,7 +766,20 @@ func typeName(
   return name
 }
 
-enum ToState<State> {
+@_spi(Internals)
+public struct ToState<State, ChildState> {
+  let base: PartialToState<ChildState>
+  @_spi(Internals)
+  public init(_ closure: @escaping (State) -> ChildState) {
+    self.base = .closure { closure($0 as! State) }
+  }
+  @_spi(Internals)
+  public init(_ keyPath: KeyPath<State, ChildState>) {
+    self.base = .keyPath(keyPath)
+  }
+}
+
+enum PartialToState<State> {
   case closure((Any) -> State)
   case keyPath(AnyKeyPath)
   case appended((Any) -> Any, AnyKeyPath)
@@ -795,7 +793,7 @@ enum ToState<State> {
       return closure(state)[keyPath: keyPath] as! State
     }
   }
-  func appending<ChildState>(_ state: ToState<ChildState>) -> ToState<ChildState> {
+  func appending<ChildState>(_ state: PartialToState<ChildState>) -> PartialToState<ChildState> {
     switch (self, state) {
     case let (.keyPath(lhs), .keyPath(rhs)):
       return .keyPath(lhs.appending(path: rhs)!)

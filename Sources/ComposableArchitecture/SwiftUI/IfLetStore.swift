@@ -35,7 +35,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @ViewBuilder else elseContent: () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     let store = store.scope(
-      state: { $0 },
+      state: ToState(\.self),
       id: store.id(state: \.self, action: \.self),
       action: { $0 },
       isInvalid: { $0 == nil },
@@ -48,7 +48,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
         return ViewBuilder.buildEither(
           first: ifContent(
             store.scope(
-              state: { $0 ?? state },
+              state: ToState { $0 ?? state },
               id: store.id(state: \.!, action: \.self),
               action: { $0 },
               isInvalid: { $0 == nil },
@@ -74,7 +74,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
     let store = store.scope(
-      state: { $0 },
+      state: ToState(\.self),
       id: store.id(state: \.self, action: \.self),
       action: { $0 },
       isInvalid: { $0 == nil },
@@ -85,7 +85,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
       if let state = viewStore.state {
         return ifContent(
           store.scope(
-            state: { $0 ?? state },
+            state: ToState { $0 ?? state },
             id: store.id(state: \.!, action: \.self),
             action: { $0 },
             isInvalid: { $0 == nil },

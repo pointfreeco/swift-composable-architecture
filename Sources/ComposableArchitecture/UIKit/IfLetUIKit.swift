@@ -56,7 +56,7 @@ extension Store {
         if state != nil {
           unwrap(
             self.scope(
-              state: { $0! },
+              state: ToState(\.!),
               id: self.id(state: \.!, action: \.self),
               action: { $0 },
               isInvalid: { $0 == nil },
