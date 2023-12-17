@@ -526,7 +526,7 @@ public final class Store<State, Action> {
     return self.rootStore.send(self.fromAction(action))
   }
 
-  fileprivate init(
+  private init(
     rootStore: RootStore,
     toState: PartialToState<State>,
     fromAction: @escaping (Action) -> Any
