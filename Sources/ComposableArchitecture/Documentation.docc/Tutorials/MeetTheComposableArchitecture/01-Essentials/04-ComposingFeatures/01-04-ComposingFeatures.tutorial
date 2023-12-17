@@ -1,0 +1,60 @@
+@Tutorial(time: 30) {
+  @Intro(title: "Composing features") {
+    Learn what makes the Composable Architecture… well… "composable". We will create a parent 
+    feature that contains the `CounterFeature` we have been building thus far.
+  }
+  
+  @Section(title: "Adding a tab view") {
+    @ContentAndMedia {
+      We will explore composing features together by adding a `TabView` feature with two tabs,
+      each housing a `CounterFeature`. This will give us the opportunity to explore the `Scope`
+      reducer and the `scope` operator on stores.
+    }
+    
+    @Steps {
+      @Step {
+        Create a new file, AppFeature.swift, and put in the basic scaffolding of a new Composable
+        Architecture feature.
+        
+        @Code(name: "AppFeature.swift", file: 01-04-01-code-0001.swift)
+      }
+      
+      @Step {
+        Add a `State` struct and `Action` enum to the reducer. These data types will hold 
+        
+        @Code(name: "AppFeature.swift", file: 01-04-01-code-0002.swift)
+      }
+    }
+  }
+}
+    
+<!--    -->
+<!--    @Tutorial(time: <#number#>) {-->
+<!--    @Intro(title: "<#text#>") {-->
+<!--        <#text#>-->
+<!--        -->
+<!--        @Image(source: <#file#>, alt: "<#accessible description#>")-->
+<!--    }-->
+<!--    -->
+<!--    @Section(title: "<#text#>") {-->
+<!--        @ContentAndMedia {-->
+<!--            <#text#>-->
+<!--            -->
+<!--            @Image(source: <#file#>, alt: "<#accessible description#>")-->
+<!--        }-->
+<!--        -->
+<!--        @Steps {-->
+<!--            @Step {-->
+<!--                <#text#>-->
+<!--                -->
+<!--                @Image(source: <#file#>, alt: "<#accessible description#>")-->
+<!--            }-->
+<!--            -->
+<!--            @Step {-->
+<!--                <#text#>-->
+<!--                -->
+<!--                @Code(name: "<#display name#>", file: <#filename.swift#>)-->
+<!--            }-->
+<!--        }-->
+<!--    }-->
+<!--}-->
