@@ -172,7 +172,7 @@ public struct ForEachStore<
         let id = element[keyPath: viewStore.state.id]
         content(
           store.scope(
-            state: ToState { $0[id: id]! },
+            state: ToState { $0[id: id] ?? element },
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
             action: { (id, $0) },
             isInvalid: { !$0.ids.contains(id) },
