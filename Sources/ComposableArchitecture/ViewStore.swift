@@ -133,9 +133,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     self._state = CurrentValueRelay(self.store.currentState)
     self.viewCancellable = self.store.rootStore.didSet
       .compactMap { [weak self] in self?.store.currentState }
-      .removeDuplicates(by: {
-        isDuplicate($0, $1)
-      })
+      .removeDuplicates(by: isDuplicate)
       .sink { [weak self] in
         self?.objectWillChange.send()
         self?._state.value = $0
@@ -186,13 +184,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   `viewStore.publisher.sink` closures should be completely independent of each other. Later
   ///   closures cannot assume that earlier ones have already run.
   public var publisher: StorePublisher<ViewState> {
-    StorePublisher(
-      store: self.store,
-      upstream: self.store.rootStore.didSet
-        .map { [store] in store.currentState }
-        .removeDuplicates(by: { [isDuplicate] in isDuplicate($0, $1) })
-    )
-    // StorePublisher(store: self.store, upstream: self._state)
+    StorePublisher(store: self, upstream: self._state)
   }
 
   /// The current state.
