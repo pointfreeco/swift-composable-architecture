@@ -1,6 +1,9 @@
-import ComposableArchitecture
+import SwiftUI
 
-@Reducer
-struct AppFeature {
-  
+struct AppView: View {
+  var body: some View {
+    TabView {
+    
+    }
+  }
 }
