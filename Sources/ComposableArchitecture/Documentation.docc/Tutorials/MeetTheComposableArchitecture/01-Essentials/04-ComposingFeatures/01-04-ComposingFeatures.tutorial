@@ -44,7 +44,7 @@
         @Code(name: "AppFeature.swift", file: 01-04-01-code-0003.swift)
       }
       
-      However, this is not idea. We now have two completely isolated stores that are not capable
+      However, this is not ideal. We now have two completely isolated stores that are not capable
       of communicating with each other. In the future there may be events that happen in one
       tab that can affect the other tab.
       
@@ -106,9 +106,11 @@
         twice. First we single out the `tab1` state and actions in order to run the `CounterFeature`
         reducer, and then we do it again for the `tab2` state and actions.
         
-        > Note: This composition tool is using result builders, which is what SwiftUI uses to
-        compose view hierarchies. It allows you to list any number of reducers in the `body` as 
-        long as the types match up.
+        > Note: The `body` computed property is using result builders behind the scenes. It allows
+        us to list any number of reducers in the `body` as  long as the types match up. When an
+        action comes into the system each reducer will run on the feature's state from 
+        top-to-bottom. Result builders is also what what SwiftUI uses to compose view hierarchies
+        in a view `body`.
         
         
         @Code(name: "AppFeature.swift", file: 01-04-02-code-0004.swift)
