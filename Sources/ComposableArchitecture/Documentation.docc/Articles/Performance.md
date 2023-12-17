@@ -508,6 +508,28 @@ case .startButtonTapped:
 This greatly reduces the bandwidth of actions being sent into the system so that you are not 
 incurring unnecessary costs for sending actions.
 
+Another example that comes up often is sliders. If done in the most direct way, by deriving a 
+binding from the view store to hand to a `Slider`:
+
+```swift
+Slider(value: viewStore.$opacity, in: 0...1)
+```
+
+This will send an action into the system for every little change to the slider, which can be dozens
+or hundreds of actions as the user is dragging the slider. If this turns out to be problematic then
+you can consider alternatives.
+
+For example, you can hold onto some local `@State` in the view for using with the `Slider`, and
+then you can use the trailing `onEditingChanged` closure to send an action to the store:
+
+```swift
+Slider(value: self.$opacity, in: 0...1) {
+  self.store.send(.setOpacity(self.opacity))
+}
+```
+
+This way an action is only sent once the user stops moving the slider.
+
 ### Compiler performance
 
 In very large SwiftUI applications you may experience degraded compiler performance causing long
