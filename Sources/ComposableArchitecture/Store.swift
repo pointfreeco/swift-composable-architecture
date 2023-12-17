@@ -132,13 +132,13 @@ import SwiftUI
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-90255``)
 /// of the store are also checked to make sure that work is performed on the main thread.
 public final class Store<State, Action> {
-  fileprivate var canCacheChildren = true
-  fileprivate var children: [ScopeID<State, Action>: AnyObject] = [:]
+  private var canCacheChildren = true
+  private var children: [ScopeID<State, Action>: AnyObject] = [:]
   var _isInvalidated = { false }
 
   @_spi(Internals) public let rootStore: RootStore
-  let toState: PartialToState<State>
-  let fromAction: (Action) -> Any
+  private let toState: PartialToState<State>
+  private let fromAction: (Action) -> Any
 
   /// Initializes a store from an initial state and a reducer.
   ///
@@ -461,14 +461,16 @@ public final class Store<State, Action> {
     self.toState(self.rootStore.state)
   }
 
-  @_spi(Internals) public
-  func scope<ChildState, ChildAction>(
-    state: ToState<State, ChildState>,
-    id: ScopeID<State, Action>?,
-    action fromChildAction: @escaping (ChildAction) -> Action,
-    isInvalid: ((State) -> Bool)?,
-    removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
-  ) -> Store<ChildState, ChildAction> {
+  @_spi(Internals)
+  public
+    func scope<ChildState, ChildAction>(
+      state: ToState<State, ChildState>,
+      id: ScopeID<State, Action>?,
+      action fromChildAction: @escaping (ChildAction) -> Action,
+      isInvalid: ((State) -> Bool)?,
+      removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
+    ) -> Store<ChildState, ChildAction>
+  {
     threadCheck(status: .scope)
 
     if self.canCacheChildren,
@@ -524,7 +526,7 @@ public final class Store<State, Action> {
     return self.rootStore.send(self.fromAction(action))
   }
 
-  init(
+  fileprivate init(
     rootStore: RootStore,
     toState: PartialToState<State>,
     fromAction: @escaping (Action) -> Any
@@ -768,7 +770,7 @@ func typeName(
 
 @_spi(Internals)
 public struct ToState<State, ChildState> {
-  let base: PartialToState<ChildState>
+  fileprivate let base: PartialToState<ChildState>
   @_spi(Internals)
   public init(_ closure: @escaping (State) -> ChildState) {
     self.base = .closure { closure($0 as! State) }
@@ -779,7 +781,7 @@ public struct ToState<State, ChildState> {
   }
 }
 
-enum PartialToState<State> {
+private enum PartialToState<State> {
   case closure((Any) -> State)
   case keyPath(AnyKeyPath)
   case appended((Any) -> Any, AnyKeyPath)
