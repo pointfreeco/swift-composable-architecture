@@ -784,18 +784,25 @@ func typeName(
 enum ToState<State> {
   case closure((Any) -> State)
   case keyPath(AnyKeyPath)
+  case appended((Any) -> Any, AnyKeyPath)
   func callAsFunction(_ state: Any) -> State {
     switch self {
     case let .closure(closure):
       return closure(state)
     case let .keyPath(keyPath):
       return state[keyPath: keyPath] as! State
+    case let .appended(closure, keyPath):
+      return closure(state)[keyPath: keyPath] as! State
     }
   }
   func appending<ChildState>(_ state: ToState<ChildState>) -> ToState<ChildState> {
     switch (self, state) {
     case let (.keyPath(lhs), .keyPath(rhs)):
       return .keyPath(lhs.appending(path: rhs)!)
+    case let (.closure(lhs), .keyPath(rhs)):
+      return .appended(lhs, rhs)
+    case let (.appended(lhsClosure, lhsKeyPath), .keyPath(rhs)):
+      return .appended(lhsClosure, lhsKeyPath.appending(path: rhs)!)
     default:
       return .closure { state(self($0)) }
     }
