@@ -7,6 +7,10 @@ import SwiftUI
 /// This helper is an alternative to observing the view store manually on your view, which requires
 /// the boilerplate of a custom initializer.
 ///
+/// > Important: It is important to properly leverage the `observe` argument in order to observe
+/// only the state that your view needs to do its job. See the <doc:Performance#View-stores>
+/// article for more information.
+///
 /// For example, the following view, which manually observes the store it is handed by constructing
 /// a view store in its initializer:
 ///
@@ -102,11 +106,11 @@ import SwiftUI
 ///
 /// If your view does not need access to any state in the store and only needs to be able to send
 /// actions, then you should consider not using ``WithViewStore`` at all. Instead, you can send
-/// actions to a ``Store`` in a lightweight way like so:
+/// actions directly to a ``Store`` like so:
 ///
 /// ```swift
 /// Button("Tap me") {
-///   ViewStore(self.store).send(.buttonTapped)
+///   self.store.send(.buttonTapped)
 /// }
 /// ```
 public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
