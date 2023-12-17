@@ -1,8 +1,9 @@
+import ComposableArchitecture
 import SwiftUI
 
 struct AppView: View {
-  let store1: StoreOf<CounterFeature>
-  let store2: StoreOf<CounterFeature>
+  // let store1: StoreOf<CounterFeature>
+  // let store2: StoreOf<CounterFeature>
 
   var body: some View {
     TabView {
