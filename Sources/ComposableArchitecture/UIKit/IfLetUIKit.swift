@@ -53,10 +53,13 @@ extension Store {
       .map { self.currentState }
       .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
       .sink { state in
-        if let state = state {
+        if var state = state {
           unwrap(
             self.scope(
-              state: ToState { $0 ?? state },
+              state: ToState {
+                state = $0 ?? state
+                return state
+              },
               id: self.id(state: \.!, action: \.self),
               action: { $0 },
               isInvalid: { $0 == nil },

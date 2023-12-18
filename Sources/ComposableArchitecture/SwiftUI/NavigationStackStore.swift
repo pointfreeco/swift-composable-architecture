@@ -29,10 +29,14 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ) {
     self.root = root()
     self.destination = { component in
+      var element = component.element
       destination(
         store
           .scope(
-            state: ToState { $0[id: component.id] ?? component.element },
+            state: ToState {
+              element = $0[id: component.id] ?? element
+              return element
+            },
             id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
             action: { .element(id: component.id, action: $0) },
             isInvalid: { !$0.ids.contains(component.id) },
@@ -65,10 +69,14 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ) where Destination == SwitchStore<State, Action, D> {
     self.root = root()
     self.destination = { component in
+      var element = component.element
       SwitchStore(
         store
           .scope(
-            state: ToState { $0[id: component.id] ?? component.element },
+            state: ToState {
+              element = $0[id: component.id] ?? component.element
+              return element
+            },
             id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
             action: { .element(id: component.id, action: $0) },
             isInvalid: { !$0.ids.contains(component.id) },
