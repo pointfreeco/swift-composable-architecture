@@ -214,15 +214,15 @@ public struct PresentationStore<
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
+    let store = store.scope(
+      state: ToState(\.self),
+      id: nil,
+      action: { $0 },
+      isInvalid: { $0.wrappedValue == nil },
+      removeDuplicates: { $0.sharesStorage(with: $1) }
+    )
     let viewStore = ViewStore(
-      store.scope(
-        state: ToState(\.self),
-        // NB: Introducing a `\.self` cache key here prevents dismissal from working.
-        id: nil,
-        action: { $0 },
-        isInvalid: { $0.wrappedValue == nil },
-        removeDuplicates: { $0.sharesStorage(with: $1) }
-      ),
+      store,
       observe: { $0 },
       removeDuplicates: { toID($0) == toID($1) }
     )
@@ -235,7 +235,7 @@ public struct PresentationStore<
       state: ToState(\.wrappedValue),
       id: store.id(state: \.wrappedValue, action: \.presented),
       action: { .presented($0) },
-      isInvalid: { $0.wrappedValue == nil },
+      isInvalid: nil,
       removeDuplicates: nil
     )
     self.content = content
