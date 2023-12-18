@@ -17,8 +17,8 @@ final class NavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
@@ -27,8 +27,8 @@ final class NavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -45,8 +45,8 @@ final class NavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }

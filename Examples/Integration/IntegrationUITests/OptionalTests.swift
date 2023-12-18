@@ -18,13 +18,13 @@ final class OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.deinit
+      ViewStoreOf<BasicsView.Feature?>.init
       WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature?>.body
@@ -34,8 +34,8 @@ final class OptionalTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -60,10 +60,10 @@ final class OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
       WithViewStoreOf<BasicsView.Feature>.body
       """

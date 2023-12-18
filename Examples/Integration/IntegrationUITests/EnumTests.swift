@@ -19,19 +19,19 @@ final class EnumTests: BaseIntegrationTests {
       """
       BasicsView.body
       EnumView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
-      ViewStore<EnumView.Feature.Destination.State, EnumView.Feature.Destination.Action>.deinit
-      ViewStore<EnumView.Feature.Destination.State, EnumView.Feature.Destination.Action>.init
-      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.deinit
-      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.init
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.deinit
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.init
+      ViewStoreOf<BasicsView.Feature?>.init
+      ViewStoreOf<EnumView.Feature.Destination>.deinit
       ViewStoreOf<EnumView.Feature.Destination>.init
+      ViewStoreOf<EnumView.Feature.Destination>.init
+      ViewStoreOf<EnumView.Feature.Destination?>.deinit
+      ViewStoreOf<EnumView.Feature.Destination?>.init
       WithViewStore<EnumView.ViewState, EnumView.Feature.Action>.body
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature?>.body
@@ -44,8 +44,8 @@ final class EnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -60,10 +60,10 @@ final class EnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       EnumView.body
-      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.deinit
-      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.init
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.deinit
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.init
+      ViewStoreOf<EnumView.Feature.Destination?>.deinit
+      ViewStoreOf<EnumView.Feature.Destination?>.init
       WithViewStore<EnumView.ViewState, EnumView.Feature.Action>.body
       WithViewStoreOf<EnumView.Feature.Destination?>.body
       """
@@ -82,20 +82,20 @@ final class EnumTests: BaseIntegrationTests {
       EnumView.body
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
-      ViewStore<EnumView.Feature.Destination.State, EnumView.Feature.Destination.Action>.deinit
-      ViewStore<EnumView.Feature.Destination.State, EnumView.Feature.Destination.Action>.init
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.deinit
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.deinit
+      ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.init
       ViewStoreOf<BasicsView.Feature?>.init
+      ViewStoreOf<BasicsView.Feature?>.init
+      ViewStoreOf<BasicsView.Feature?>.init
+      ViewStoreOf<EnumView.Feature.Destination>.deinit
+      ViewStoreOf<EnumView.Feature.Destination>.init
       WithViewStore<EnumView.ViewState, EnumView.Feature.Action>.body
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature?>.body
@@ -120,12 +120,12 @@ final class EnumTests: BaseIntegrationTests {
       """
       BasicsView.body
       EnumView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.deinit
-      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.init
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.deinit
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<EnumView.Feature.Destination?>.deinit
+      ViewStoreOf<EnumView.Feature.Destination?>.init
       WithViewStore<EnumView.ViewState, EnumView.Feature.Action>.body
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<EnumView.Feature.Destination?>.body
@@ -142,10 +142,10 @@ final class EnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       EnumView.body
-      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.deinit
-      ViewStore<EnumView.Feature.Destination.State?, EnumView.Feature.Destination.Action>.init
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.deinit
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.init
+      ViewStoreOf<EnumView.Feature.Destination?>.deinit
+      ViewStoreOf<EnumView.Feature.Destination?>.init
       WithViewStore<EnumView.ViewState, EnumView.Feature.Action>.body
       WithViewStoreOf<EnumView.Feature.Destination?>.body
       """

@@ -18,8 +18,8 @@ final class SiblingsTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -35,10 +35,10 @@ final class SiblingsTests: BaseIntegrationTests {
       """
       BasicsView.body
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature>.body
       """
@@ -55,10 +55,10 @@ final class SiblingsTests: BaseIntegrationTests {
       """
       BasicsView.body
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature>.body
       """
@@ -75,10 +75,10 @@ final class SiblingsTests: BaseIntegrationTests {
       """
       BasicsView.body
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature>.body
       """

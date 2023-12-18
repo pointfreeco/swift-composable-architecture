@@ -26,17 +26,17 @@ final class IdentifiedListTests: BaseIntegrationTests {
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
+      ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.init
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<IdentifiedArray<UUID, BasicsView.Feature.State>, IdentifiedAction<UUID, BasicsView.Feature.Action>>.deinit
-      ViewStore<IdentifiedArray<UUID, BasicsView.Feature.State>, IdentifiedAction<UUID, BasicsView.Feature.Action>>.init
+      ViewIdentifiedStoreOf<BasicsView.Feature>.init
       ViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.deinit
       ViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.init
       ViewStore<UUID, BasicsView.Feature.Action>.deinit
       ViewStore<UUID, BasicsView.Feature.Action>.init
       ViewStore<UUID, BasicsView.Feature.Action>.init
       ViewStore<UUID, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       WithViewIdentifiedStoreOf<BasicsView.Feature>.body
       WithViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.body
@@ -67,11 +67,9 @@ final class IdentifiedListTests: BaseIntegrationTests {
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
+      ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.init
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<IdentifiedArray<UUID, BasicsView.Feature.State>, IdentifiedAction<UUID, BasicsView.Feature.Action>>.deinit
-      ViewStore<IdentifiedArray<UUID, BasicsView.Feature.State>, IdentifiedAction<UUID, BasicsView.Feature.Action>>.init
+      ViewIdentifiedStoreOf<BasicsView.Feature>.init
       ViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.deinit
       ViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.init
       ViewStore<UUID, BasicsView.Feature.Action>.deinit
@@ -82,6 +80,8 @@ final class IdentifiedListTests: BaseIntegrationTests {
       ViewStore<UUID, BasicsView.Feature.Action>.init
       ViewStore<UUID, BasicsView.Feature.Action>.init
       ViewStore<UUID, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewIdentifiedStoreOf<BasicsView.Feature>.body
       WithViewStore<IdentifiedListView.ViewState, IdentifiedListView.Feature.Action>.body
       WithViewStore<UUID, BasicsView.Feature.Action>.body
@@ -100,8 +100,8 @@ final class IdentifiedListTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }

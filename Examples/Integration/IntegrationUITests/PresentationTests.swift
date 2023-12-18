@@ -19,11 +19,11 @@ final class PresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.deinit
+      ViewStoreOf<BasicsView.Feature?>.init
       ViewStoreOf<BasicsView.Feature?>.init
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature?>.body
@@ -33,8 +33,8 @@ final class PresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -56,11 +56,11 @@ final class PresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.deinit
+      ViewStoreOf<BasicsView.Feature?>.init
       ViewStoreOf<BasicsView.Feature?>.init
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature?>.body
@@ -80,10 +80,10 @@ final class PresentationTests: BaseIntegrationTests {
       """
       BasicsView.body
       PresentationView.body
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.deinit
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.body
       WithViewStoreOf<BasicsView.Feature>.body
       """
