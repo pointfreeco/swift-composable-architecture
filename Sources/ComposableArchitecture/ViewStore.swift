@@ -144,8 +144,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     #endif
     self.store = viewStore.store
     self._state = viewStore._state
-    self.objectWillChange = viewStore.objectWillChange
-    self.viewCancellable = viewStore.viewCancellable
+    self.viewCancellable = viewStore.objectWillChange.sink { [weak self] in
+      self?.objectWillChange.send()
+      self?._state.value = viewStore.state
+    }
   }
 
   #if DEBUG
