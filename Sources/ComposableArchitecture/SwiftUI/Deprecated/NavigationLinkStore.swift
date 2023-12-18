@@ -76,7 +76,7 @@ public struct NavigationLinkStore<
       id: nil,
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
-      removeDuplicates: nil
+      removeDuplicates: { $0.sharesStorage(with: $1) }
     )
     self.store = store
     self.viewStore = ViewStore(
@@ -126,7 +126,7 @@ public struct NavigationLinkStore<
       id: nil,
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id },
-      removeDuplicates: nil
+      removeDuplicates: { $0.sharesStorage(with: $1) }
     )
     self.store = store
     self.viewStore = ViewStore(

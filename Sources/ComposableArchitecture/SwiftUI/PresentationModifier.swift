@@ -221,7 +221,7 @@ public struct PresentationStore<
         id: nil,
         action: { $0 },
         isInvalid: { $0.wrappedValue == nil },
-        removeDuplicates: nil
+        removeDuplicates: { $0.sharesStorage(with: $1) }
       ),
       observe: { $0 },
       removeDuplicates: { toID($0) == toID($1) }
@@ -257,7 +257,7 @@ public struct PresentationStore<
       id: nil,
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
-      removeDuplicates: nil
+      removeDuplicates: { $0.sharesStorage(with: $1) }
     )
     let viewStore = ViewStore(
       store,
