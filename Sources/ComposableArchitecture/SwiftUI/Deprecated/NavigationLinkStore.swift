@@ -75,8 +75,7 @@ public struct NavigationLinkStore<
       state: ToState(\.self),
       id: nil,
       action: { $0 },
-      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
-      removeDuplicates: { $0.sharesStorage(with: $1) }
+      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
     )
     self.store = store
     self.viewStore = ViewStore(
@@ -125,8 +124,7 @@ public struct NavigationLinkStore<
       state: ToState(\.self),
       id: nil,
       action: { $0 },
-      isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id },
-      removeDuplicates: { $0.sharesStorage(with: $1) }
+      isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id }
     )
     self.store = store
     self.viewStore = ViewStore(

@@ -123,8 +123,7 @@ public struct ForEachStore<
             },
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
             action: { .element(id: id, action: $0) },
-            isInvalid: { !$0.ids.contains(id) },
-            removeDuplicates: nil
+            isInvalid: { !$0.ids.contains(id) }
           )
         )
       }
@@ -183,8 +182,7 @@ public struct ForEachStore<
             },
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
             action: { (id, $0) },
-            isInvalid: { !$0.ids.contains(id) },
-            removeDuplicates: nil
+            isInvalid: { !$0.ids.contains(id) }
           )
         )
       }

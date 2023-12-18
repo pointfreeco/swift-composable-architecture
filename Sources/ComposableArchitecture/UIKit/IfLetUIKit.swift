@@ -62,8 +62,7 @@ extension Store {
               },
               id: self.id(state: \.!, action: \.self),
               action: { $0 },
-              isInvalid: { $0 == nil },
-              removeDuplicates: nil
+              isInvalid: { $0 == nil }
             )
           )
         } else {

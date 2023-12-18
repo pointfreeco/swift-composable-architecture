@@ -38,8 +38,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
       state: ToState(\.self),
       id: store.id(state: \.self, action: \.self),
       action: { $0 },
-      isInvalid: { $0 == nil },
-      removeDuplicates: nil
+      isInvalid: { $0 == nil }
     )
     self.store = store
     let elseContent = elseContent()
@@ -54,8 +53,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
               },
               id: store.id(state: \.!, action: \.self),
               action: { $0 },
-              isInvalid: { $0 == nil },
-              removeDuplicates: nil
+              isInvalid: { $0 == nil }
             )
           )
         )
@@ -80,8 +78,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
       state: ToState(\.self),
       id: store.id(state: \.self, action: \.self),
       action: { $0 },
-      isInvalid: { $0 == nil },
-      removeDuplicates: nil
+      isInvalid: { $0 == nil }
     )
     self.store = store
     self.content = { viewStore in
@@ -94,8 +91,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
             },
             id: store.id(state: \.!, action: \.self),
             action: { $0 },
-            isInvalid: { $0 == nil },
-            removeDuplicates: nil
+            isInvalid: { $0 == nil }
           )
         )
       } else {

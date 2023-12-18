@@ -218,8 +218,7 @@ public struct PresentationStore<
       state: ToState(\.self),
       id: nil,
       action: { $0 },
-      isInvalid: { $0.wrappedValue == nil },
-      removeDuplicates: { $0.sharesStorage(with: $1) }
+      isInvalid: { $0.wrappedValue == nil }
     )
     let viewStore = ViewStore(
       store,
@@ -235,8 +234,7 @@ public struct PresentationStore<
       state: ToState(\.wrappedValue),
       id: store.id(state: \.wrappedValue, action: \.presented),
       action: { .presented($0) },
-      isInvalid: nil,
-      removeDuplicates: nil
+      isInvalid: nil
     )
     self.content = content
     self.viewStore = viewStore
@@ -256,8 +254,7 @@ public struct PresentationStore<
       state: ToState(\.self),
       id: nil,
       action: { $0 },
-      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
-      removeDuplicates: { $0.sharesStorage(with: $1) }
+      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
     )
     let viewStore = ViewStore(
       store,
@@ -323,8 +320,7 @@ public struct DestinationContent<State, Action> {
         state: ToState(returningLastNonNilValue { $0 }),
         id: self.store.id(state: \.self, action: \.self),
         action: { $0 },
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       ),
       then: body
     )

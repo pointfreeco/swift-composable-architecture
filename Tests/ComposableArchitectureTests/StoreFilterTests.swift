@@ -12,8 +12,7 @@ final class StoreInvalidationTests: BaseTCATestCase {
         state: ToState { $0 },
         id: nil,
         action: { $0 },
-        isInvalid: { $0 != nil },
-        removeDuplicates: nil
+        isInvalid: { $0 != nil }
       )
     let viewStore = ViewStore(store, observe: { $0 })
     var count = 0

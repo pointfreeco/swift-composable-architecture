@@ -11,8 +11,7 @@ class ScopeCacheTests: XCTestCase {
       state: ToState { $0! },
       id: childStore.id(state: \.!, action: \.self),
       action: { $0 },
-      isInvalid: { $0 == nil },
-      removeDuplicates: nil
+      isInvalid: { $0 == nil }
     )
     unwrappedChildStore.send(.dismiss)
     XCTAssertEqual(store.currentState.child, nil)

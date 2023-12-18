@@ -384,8 +384,7 @@ public final class Store<State, Action> {
       state: ToState(state),
       id: self.id(state: state, action: action),
       action: { action($0) },
-      isInvalid: nil,
-      removeDuplicates: nil
+      isInvalid: nil
     )
   }
 
@@ -417,42 +416,7 @@ public final class Store<State, Action> {
       state: ToState(toChildState),
       id: nil,
       action: fromChildAction,
-      isInvalid: nil,
-      removeDuplicates: nil
-    )
-  }
-
-  @available(
-    iOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    macOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    tvOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    watchOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (_ state: State) -> PresentationState<ChildState>,
-    action fromChildAction: @escaping (_ presentationAction: PresentationAction<ChildAction>) ->
-      Action
-  ) -> Store<PresentationState<ChildState>, PresentationAction<ChildAction>> {
-    self.scope(
-      state: ToState(toChildState),
-      id: nil,
-      action: fromChildAction,
-      isInvalid: nil,
-      removeDuplicates: { $0.sharesStorage(with: $1) }
+      isInvalid: nil
     )
   }
 
@@ -467,8 +431,7 @@ public final class Store<State, Action> {
       state: ToState<State, ChildState>,
       id: ScopeID<State, Action>?,
       action fromChildAction: @escaping (ChildAction) -> Action,
-      isInvalid: ((State) -> Bool)?,
-      removeDuplicates isDuplicate: ((ChildState, ChildState) -> Bool)?
+      isInvalid: ((State) -> Bool)?
     ) -> Store<ChildState, ChildAction>
   {
     threadCheck(status: .scope)
