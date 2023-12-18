@@ -30,7 +30,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     self.root = root()
     self.destination = { component in
       var element = component.element
-      destination(
+      return destination(
         store
           .scope(
             state: ToState {
@@ -70,7 +70,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     self.root = root()
     self.destination = { component in
       var element = component.element
-      SwitchStore(
+      return SwitchStore(
         store
           .scope(
             state: ToState {
