@@ -18,9 +18,7 @@ final class ViewStoreTests: BaseTCATestCase {
 
     var emissionCount = 0
     viewStore.publisher
-      .sink { _ in
-        emissionCount += 1
-      }
+      .sink { _ in emissionCount += 1 }
       .store(in: &self.cancellables)
 
     XCTAssertEqual(emissionCount, 1)
@@ -135,7 +133,10 @@ final class ViewStoreTests: BaseTCATestCase {
 
   func testStorePublisherSubscriptionOrder() {
     let store = Store<Int, Void>(initialState: 0) {
-      Reduce { state, _ in state += 1; return .none }
+      Reduce { state, _ in
+        state += 1
+        return .none
+      }
     }
     let viewStore = ViewStore(store, observe: { $0 })
 
@@ -166,6 +167,12 @@ final class ViewStoreTests: BaseTCATestCase {
     results = []
     viewStore.send(())
     XCTAssertEqual(results, [0, 1, 2])
+
+    results = []
+    for _ in 1...10 {
+      viewStore.send(())
+    }
+    XCTAssertEqual(results, Array(repeating: [0, 1, 2], count: 10).flatMap { $0 })
   }
 
   func testSendWhile() async {
