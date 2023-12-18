@@ -73,7 +73,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     private var storeTypeName: String
   #endif
   let store: Store<ViewState, ViewAction>
-  private let isDuplicate: (_ lhs: ViewState, _ rhs: ViewState) -> Bool
 
   /// Initializes a view store from a store which observes changes to state.
   ///
@@ -127,8 +126,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
-
-    self.isDuplicate = isDuplicate
     self.store = store.scope(state: toViewState, action: fromViewAction)
     self._state = CurrentValueRelay(self.store.currentState)
     self.viewCancellable = self.store.rootStore.didSet
@@ -147,7 +144,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     #endif
     self.store = viewStore.store
     self._state = viewStore._state
-    self.isDuplicate = viewStore.isDuplicate
     self.objectWillChange = viewStore.objectWillChange
     self.viewCancellable = viewStore.viewCancellable
   }
