@@ -715,7 +715,6 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     }
 
     deinit {
-      guard !self.isInvalidated() else { return }
       guard self.wasCalled else {
         var value = ""
         customDump(self.value, to: &value, maxDepth: 0)
