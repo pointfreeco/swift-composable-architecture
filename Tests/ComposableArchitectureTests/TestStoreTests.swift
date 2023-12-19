@@ -530,6 +530,22 @@ final class TestStoreTests: BaseTCATestCase {
     XCTAssertTrue(uncheckedUseMainSerialExecutor)
     _ = store
   }
+
+  func testReceiveCaseKeyPathWithValue() async {
+    let store = TestStore<Int, Action>(initialState: 0) {
+      Reduce { state, action in
+        switch action {
+        case .tap:
+          return .send(.delegate(.success(42)))
+        case .delegate:
+          return .none
+        }
+      }
+    }
+
+    await store.send(.tap)
+    await store.receive(\.delegate.success, 42)
+  }
 }
 
 private struct Client: DependencyKey {
@@ -540,5 +556,15 @@ extension DependencyValues {
   fileprivate var client: Client {
     get { self[Client.self] }
     set { self[Client.self] = newValue }
+  }
+}
+
+@CasePathable
+private enum Action {
+  case tap
+  case delegate(Delegate)
+  @CasePathable
+  enum Delegate {
+    case success(Int)
   }
 }
