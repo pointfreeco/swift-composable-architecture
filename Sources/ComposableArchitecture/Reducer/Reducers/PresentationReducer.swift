@@ -92,14 +92,26 @@ public struct PresentationState<State> {
 
   /// Accesses the value associated with the given case for reading and writing.
   ///
-  /// You can access the projected value of ``PresentationState`` and subscript into a particular
-  /// case of the enum in order to perform a mutation or invoke a mutating method:
+  /// If you use the techniques of tree-based navigation (see <doc:TreeBasedNavigation>), then
+  /// you will have a single enum that determines the destinations your feature can navigate to,
+  /// and you will hold onto that state using the ``PresentationState`` property wrapper:
   ///
   /// ```swift
-  /// state.$destination[case: \.add]?.reset()
+  /// struct State {
+  ///   @PresentationState var destination: Destination.State
+  /// }
   /// ```
   ///
-  /// > Important: Accessing the wrong case will result in a runtime warning.
+  /// Using the projected value of the ``PresentationState`` property wrapper you can get a
+  /// succinct syntax for modify the data in a particular case of the `Destination` enum, like so:
+  ///
+  /// ```swift
+  /// state.$destination[case: \.detail]?.alert = AlertState {
+  ///   Text("Delete?")
+  /// }
+  /// ```
+  ///
+  /// > Important: Accessing the wrong case will result in a runtime warning and test failure.
   public subscript<Case>(case path: CaseKeyPath<State, Case>) -> Case?
   where State: CasePathable {
     _read { yield self[case: AnyCasePath(path)] }
