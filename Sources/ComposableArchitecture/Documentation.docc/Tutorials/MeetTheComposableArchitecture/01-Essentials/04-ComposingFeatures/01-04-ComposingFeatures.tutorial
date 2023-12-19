@@ -116,9 +116,9 @@
         @Code(name: "AppFeature.swift", file: 01-04-02-code-0004.swift)
       }
       
-      The `AppFeature` is now a fully composed feature comprising of 3 completely independent 
-      features: there's the core app feature logic, the counter feature running in the first tab,
-      and the counter feature running in the second tab.
+      The `AppFeature` is now a fully composed feature comprising 3 completely independent features:
+      there's the core app feature logic, the counter feature running in the first tab, and the
+      counter feature running in the second tab.
       
       We can even write a test for this integration of features before even getting the view 
       properly working.
