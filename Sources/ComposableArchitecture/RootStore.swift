@@ -242,6 +242,17 @@ public final class RootStore {
         thread.
         """
       )
+
+    case .state:
+      runtimeWarn(
+        """
+        Store state was accessed on a non-main thread. …
+
+        The "Store" class is not thread-safe, and so all interactions with an instance of \
+        "Store" (including all of its scopes and derived view stores) must be done on the main \
+        thread.
+        """
+      )
     }
   }
 #else
@@ -255,4 +266,5 @@ enum ThreadCheckStatus {
   case `init`
   case scope
   case send(Any, originatingAction: Any?)
+  case state
 }

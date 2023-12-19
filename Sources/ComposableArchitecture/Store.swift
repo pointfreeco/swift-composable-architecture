@@ -422,7 +422,8 @@ public final class Store<State, Action> {
 
   @_spi(Internals)
   public var currentState: State {
-    self.toState(self.rootStore.state)
+    threadCheck(status: .state)
+    return self.toState(self.rootStore.state)
   }
 
   @_spi(Internals)
