@@ -143,7 +143,7 @@ store.receive(\.child.presented.response.success)
 > ```swift
 > @CasePathable
 > enum DelegateAction {
->   didFinish(success: Bool)
+>   case didFinish(success: Bool)
 > }
 > ```
 
