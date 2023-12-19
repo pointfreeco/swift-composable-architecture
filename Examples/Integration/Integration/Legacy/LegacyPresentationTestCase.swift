@@ -324,6 +324,7 @@ struct PresentationTestCaseView: View {
           .binding(get: \.destination, send: .destination(.dismiss))
           .customAlert
           .isPresent()
+          .removeDuplicates()  // NB: 17.2 sends dismissal twice
       ) {
         TextField("Message", text: self.$alertMessage)
         Button("Submit") {}
