@@ -156,7 +156,7 @@ struct Episodes {
 }
 
 struct EpisodesView: View {
-  @State var store = Store(initialState: Episodes.State()) {
+  @State var store = Store(initialState: Episodes.State(episodes: .mocks)) {
     Episodes(favorite: favorite(id:isFavorite:))
   }
 
