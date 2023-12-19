@@ -1,0 +1,29 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Lists of sync ups") {
+    We will begin building the SyncUps app from scratch by implementing the feature that powers
+    the list of sync ups. It starts out as a simple feature, but it will become increasingly complex
+    as the app evolves.
+  }
+  
+  @Section(title: "Domain models") {
+    @ContentAndMedia {
+      <#text#>
+      
+      @Image(source: <#file#>, alt: "<#accessible description#>")
+    }
+    
+    @Steps {
+      @Step {
+        <#text#>
+        
+        @Image(source: <#file#>, alt: "<#accessible description#>")
+      }
+      
+      @Step {
+        <#text#>
+        
+        @Code(name: "<#display name#>", file: <#filename.swift#>)
+      }
+    }
+  }
+}

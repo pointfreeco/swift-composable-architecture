@@ -1,29 +1,25 @@
 @Tutorial(time: 10) {
-    @Intro(title: "What is SyncUps?") {
-        Let's start
-        
-        @Image(source: <#file#>, alt: "<#accessible description#>")
+  @Intro(title: "What is SyncUps?") {
+    Let's start with a tour of the application we will be building. It's called SyncUps, and it's
+    a recreation of the Apple's Scrumdinger demo application. 
+    
+    It features multiple different navigation patterns, has interesting side effects such as a 
+    timer and speech recognizer, and it's complex enough that it warrants a test suite to be
+    confident it works the way we expect.
+  }
+  
+  @Section(title: "A tour of SyncUps") {
+    @ContentAndMedia {
+      This very repo contains 
     }
     
-    @Section(title: "<#text#>") {
-        @ContentAndMedia {
-            <#text#>
-            
-            @Image(source: <#file#>, alt: "<#accessible description#>")
-        }
-        
-        @Steps {
-            @Step {
-                <#text#>
-                
-                @Image(source: <#file#>, alt: "<#accessible description#>")
-            }
-            
-            @Step {
-                <#text#>
-                
-                @Code(name: "<#display name#>", file: <#filename.swift#>)
-            }
-        }
+    @Steps {
+      @Step {
+        Hello 
+      }
     }
+  }
 }
+<!--
+https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SyncUps  
+-->

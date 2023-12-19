@@ -4,15 +4,26 @@
     the Scrumdinger. We recreate it from scratch using the Composable Architecture, with a focus
     on domain modeling, controlling dependencies, and testability.
     
-    @Image(source: <#file#>, alt: "<#accessible description#>")
+<!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->
   }
   
   @Chapter(name: "What is SyncUps?") {
-    Let's start 
+    Let's start with a tour of the application we will be building. It's called SyncUps, and it's
+    a recreation of the Apple's Scrumdinger demo application. 
     
-    @Image(source: <#file#>, alt: "<#accessible description#>")
+    It features multiple different navigation patterns, has interesting side effects such as a 
+    timer and speech recognizer, and it's complex enough that it warrants a test suite to be
+    confident it works the way we expect.
     
-    @TutorialReference(tutorial: "doc:<#tutorial name#>")
+    @TutorialReference(tutorial: "doc:01-WhatIsSyncUps")
+  }
+  
+  @Chapter(name: "Lists of sync ups") {
+    We will begin building the SyncUps app from scratch by implementing the feature that powers
+    the list of sync ups. It starts out as a simple feature, but it will become increasingly complex
+    as the app evolves.
+    
+    @TutorialReference(tutorial: "doc:02-ListsOfSyncUps")
   }
 }
 
