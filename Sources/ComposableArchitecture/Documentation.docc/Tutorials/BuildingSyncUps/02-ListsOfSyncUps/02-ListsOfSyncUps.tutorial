@@ -7,22 +7,100 @@
   
   @Section(title: "Domain models") {
     @ContentAndMedia {
-      <#text#>
-      
-      @Image(source: <#file#>, alt: "<#accessible description#>")
+      In order to build a view that shows a list of sync ups we need to first have some data models
+      that represent a `SyncUp`. So, let's get some models into place.
     }
     
     @Steps {
       @Step {
-        <#text#>
+        Create a Models.swift file where we will house all of the models the app needs to do its
+        job.
         
-        @Image(source: <#file#>, alt: "<#accessible description#>")
+        @Code(name: "Models.swift", file: 02-01-code-0001.swift)
       }
       
       @Step {
-        <#text#>
+        Copy and paste the following models into Models.swift. This code comes mostly verbatim
+        from Apple's Scrumdinger project.
         
-        @Code(name: "<#display name#>", file: <#filename.swift#>)
+        @Code(name: "Models.swift", file: 02-01-code-0002.swift)
+      }
+      
+      While these models would work well enough in our SyncUps application, we can do better. First
+      it is not ideal to hold onto plain arrays in our domain. This leads us to a situation of 
+      referring to attendees and meetings by their positional index in the array, rather than
+      their inherit ID, as given by the `Identifiable` protocol. This becomes especially problematic
+      when performing asynchronous effects in which the position of a value can change while the
+      effect is being performed, making it possible to refer to the wrong value, leading to bugs,
+      or a non-existent value, leading to crashes.
+      
+      For this reason we recommend using our [`IdentifiedArray`][identified-array-gh] type, which
+      behaves like an array, but allows you to refer to elements by their ID rather than their
+      positional index in the collection.
+      
+      [identified-array-gh]: http://github.com/pointfreeco/swift-identified-array
+      
+      @Step {
+        Import the `IdentifiedCollections` library, which comes automatically with the Composable
+        Architecture, and replace all plain arrays with an `IdentifiedArray`.
+        
+        @Code(name: "Models.swift", file: 02-01-code-0003.swift)
+      }
+      
+      There's another improvement that can be made to our domain models, but this one is completely
+      optional.
+      
+      Right now all of the IDs of our models are `UUID`. This means it is technically possible to
+      do something non-sensical like check if a `syncUp.id` is equal to an `attendee.id`. That is
+      never a valid thing to do, and so it would be ideal if we could detect that at _compile time_,
+      rather than runtime.
+      
+      We can do this by leveraging one of our other libraries, [Tagged][tagged-gh]. This library
+      does not automatically come with the Composable Architecture, and so you will need to add it,
+      and these next steps are completely optional for the purpose of this tutorial.
+      
+      [tagged-gh]: http://github.com/pointfreeco/swift-tagged
+      
+      @Step {
+        Add the `Tagged` library to your project by navigating to the build settings, and then to
+        the package dependencies tab.
+        
+        @Image(source: syncups-02-package-dependencies-tagged.png)
+      }
+      
+      @Step {
+        Go back to Models.swift, and import the `Tagged` library, and upgrade all usages of a plain
+        `UUID` to be a tagged `UUID`.
+        
+        > Note: The tag can even just be `Self`, but you can also have multiple tagged values in
+        a model by created dedicated tagged types. See the [Tagged repo][tag-collisions-gh] for more
+        information.
+        
+        [tag-collisions-gh]: https://github.com/pointfreeco/swift-tagged#handling-tag-collisions
+        
+        @Code(name: "Models.swift", file: 02-01-code-0004.swift)
+      }
+    }
+  }
+    
+  @Section(title: "SyncUpsList feature") {
+    @ContentAndMedia {
+      Now that the core domain types are added to the project we can start building out our first
+      feature: the SyncUps list. This is the feature that displays a list of all the sync ups, 
+      and eventually it will contain quite a bit of functionality, such as creating new sync ups
+      and drilling down to existing sync ups.
+      
+      But for now we will concentrate on just two very basic forms of functionality: displaying
+      the list, and allowing the user to swipe to delete a sync up.
+    }
+    
+    @Steps {
+      @Step {
+        Create a new file for the feature called SyncUpsList.swift. We will also pre-emptively 
+        import the Composable Architecture and SwiftUI since we know we will need access to those
+        libraries.
+        
+        @Code(name: "SyncUpsList.swift", file: 02-02-code-0001.swift)
       }
     }
   }

@@ -19,6 +19,10 @@
       }
     }
   }
+  
+  @Section(title: "Create the SyncUps project") {
+<!--  TODO: turn on full concurrency warnings  -->
+  }
 }
 <!--
 https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SyncUps  
