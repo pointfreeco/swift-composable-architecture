@@ -715,6 +715,12 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     }
 
     deinit {
+      // NB: `isInvalidated()` can access store state, which must happen on the main thread.
+      let isInvalidated = Thread.isMainThread
+        ? self.isInvalidated()
+        : DispatchQueue.main.sync(execute: self.isInvalidated)
+
+      guard !isInvalidated else { return }
       guard self.wasCalled else {
         var value = ""
         customDump(self.value, to: &value, maxDepth: 0)
