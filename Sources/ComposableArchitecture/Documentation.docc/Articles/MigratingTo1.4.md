@@ -110,7 +110,7 @@ To form a case key path for any other enum, you must apply the `@CasePathable` m
 ```swift
 @CasePathable
 enum DelegateAction {
-  didFinish(success: Bool)
+  case didFinish(success: Bool)
 }
 ```
 
