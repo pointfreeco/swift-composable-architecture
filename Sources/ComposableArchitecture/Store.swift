@@ -152,7 +152,6 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
-    defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
         (initialState(), reducer())
@@ -495,12 +494,13 @@ public final class Store<State, Action> {
     toState: PartialToState<State>,
     fromAction: @escaping (Action) -> Any
   ) {
+    defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     self.rootStore = rootStore
     self.toState = toState
     self.fromAction = fromAction
   }
 
-  init<R: Reducer>(
+  convenience init<R: Reducer>(
     initialState: R.State,
     reducer: R
   )
@@ -508,9 +508,11 @@ public final class Store<State, Action> {
     R.State == State,
     R.Action == Action
   {
-    self.rootStore = RootStore(initialState: initialState, reducer: reducer)
-    self.toState = PartialToState.keyPath(\State.self)
-    self.fromAction = { $0 }
+    self.init(
+      rootStore: RootStore(initialState: initialState, reducer: reducer),
+      toState: .keyPath(\State.self),
+      fromAction: { $0 }
+    )
   }
 
   /// A publisher that emits when state changes.
