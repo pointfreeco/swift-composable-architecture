@@ -170,7 +170,6 @@ public final class Store<State, Action> {
   }
 
   deinit {
-    self.invalidate()
     Logger.shared.log("\(storeTypeName(of: self)).deinit")
   }
 
@@ -473,15 +472,9 @@ public final class Store<State, Action> {
     return childStore
   }
 
-  fileprivate func invalidate() {
-    for id in self.children.keys {
-      self.invalidateChild(id: id)
-    }
-  }
-
   fileprivate func invalidateChild(id: ScopeID<State, Action>) {
-    guard self.children.keys.contains(id) else { return }
-    (self.children[id] as? any AnyStore)?.invalidate()
+    guard self.children.keys.contains(id)
+    else { return }
     self.children[id] = nil
   }
 
@@ -650,10 +643,6 @@ public struct StoreTask: Hashable, Sendable {
   public var isCancelled: Bool {
     self.rawValue?.isCancelled ?? true
   }
-}
-
-private protocol AnyStore {
-  func invalidate()
 }
 
 private protocol _OptionalProtocol {}
