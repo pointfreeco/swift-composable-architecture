@@ -35,7 +35,10 @@ import SwiftUI
 extension Store where State: ObservableState {
   /// Direct access to state in the store when `State` conforms to ``ObservableState``.
   public var state: State {
-    self.currentState
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
+      self._$observationRegistrar.access(self, keyPath: \.currentState)
+    }
+    return self.currentState
   }
 
   public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {

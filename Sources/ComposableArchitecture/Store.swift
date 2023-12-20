@@ -141,6 +141,7 @@ public final class Store<State, Action> {
   private let toState: PartialToState<State>
   private let fromAction: (Action) -> Any
   let _$observationRegistrar = PerceptionRegistrar()
+  private var parentCancellable: AnyCancellable?
 
   /// Initializes a store from an initial state and a reducer.
   ///
@@ -383,9 +384,28 @@ public final class Store<State, Action> {
     self.rootStore = rootStore
     self.toState = toState
     self.fromAction = fromAction
+
+    // TODO: Optimize?
+    if State.self is ObservableState.Type {
+      self.parentCancellable = rootStore.didSet
+        .compactMap { [weak rootStore] in
+          rootStore.flatMap { (toState($0.state) as? ObservableState)?._$id }
+        }
+        .removeDuplicates()
+        .dropFirst()
+        .sink { [weak self] _ in self?.ping() }
+    }
   }
 
-  init<R: Reducer>(
+  func ping() {
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
+      self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+    } else {
+      // Fallback on earlier versions
+    }
+  }
+
+  convenience init<R: Reducer>(
     initialState: R.State,
     reducer: R
   )
@@ -393,9 +413,11 @@ public final class Store<State, Action> {
     R.State == State,
     R.Action == Action
   {
-    self.rootStore = RootStore(initialState: initialState, reducer: reducer)
-    self.toState = PartialToState.keyPath(\State.self)
-    self.fromAction = { $0 }
+    self.init(
+      rootStore: RootStore(initialState: initialState, reducer: reducer),
+      toState: PartialToState.keyPath(\State.self),
+      fromAction: { $0 }
+    )
   }
 
   /// A publisher that emits when state changes.
