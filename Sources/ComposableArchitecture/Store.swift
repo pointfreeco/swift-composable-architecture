@@ -445,11 +445,11 @@ public final class Store<State, Action> {
     let isInvalid =
       id == nil || !self.canCacheChildren
       ? {
-        self._isInvalidated() || isInvalid?(self.currentState) == true
+        isInvalid?(self.currentState) == true || self._isInvalidated()
       }
       : { [weak self] in
         guard let self = self else { return true }
-        return self._isInvalidated() || isInvalid?(self.currentState) == true
+        return isInvalid?(self.currentState) == true || self._isInvalidated()
       }
     let childStore = Store<ChildState, ChildAction>(
       rootStore: self.rootStore,
