@@ -152,11 +152,10 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
   public var body: some View {
     IfLetStore(
       self.store.wrappedValue.scope(
-        state: self.toCaseState,
+        state: ToState(self.toCaseState),
         id: nil,
         action: self.fromCaseAction,
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       ),
       then: self.content,
       else: {

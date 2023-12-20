@@ -72,20 +72,18 @@ public struct NavigationLinkStore<
     @ViewBuilder label: () -> Label
   ) {
     let store = store.scope(
-      state: { $0 },
+      state: ToState(\.self),
       id: nil,
       action: { $0 },
-      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
-      removeDuplicates: nil
+      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
     )
     self.store = store
     self.viewStore = ViewStore(
       store.scope(
-        state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+        state: ToState { $0.wrappedValue.flatMap(toDestinationState) != nil },
         id: nil,
         action: { $0 },
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       ),
       observe: { $0 }
     )
@@ -125,20 +123,18 @@ public struct NavigationLinkStore<
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
     let store = store.scope(
-      state: { $0 },
+      state: ToState(\.self),
       id: nil,
       action: { $0 },
-      isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id },
-      removeDuplicates: nil
+      isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id }
     )
     self.store = store
     self.viewStore = ViewStore(
       store.scope(
-        state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
+        state: ToState { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
         id: nil,
         action: { $0 },
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       ),
       observe: { $0 }
     )
@@ -164,11 +160,12 @@ public struct NavigationLinkStore<
     ) {
       IfLetStore(
         self.store.scope(
-          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
+          state: ToState(
+            returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) }
+          ),
           id: nil,
           action: { .presented(self.fromDestinationAction($0)) },
-          isInvalid: nil,
-          removeDuplicates: nil
+          isInvalid: nil
         ),
         then: self.destination
       )

@@ -103,7 +103,7 @@ where
 {
   @_disfavoredOverload
   public var state: State {
-    get { self.observableState }
+    get { self.currentState }
     set { self.send(.binding(.set(\.self, newValue))) }
   }
 }
@@ -134,7 +134,7 @@ where
 {
   @_disfavoredOverload
   public var state: State {
-    get { self.observableState }
+    get { self.currentState }
     set { self.send(.view(.binding(.set(\.self, newValue)))) }
   }
 }

@@ -2,9 +2,9 @@
   import ComposableArchitecture
   import SwiftUI
 
-  private enum TestViewAction {
+  fileprivate enum TestViewAction {
     @Reducer
-    private struct Feature {
+    fileprivate struct Feature {
       struct State {}
       enum Action: ViewAction {
         case view(View)
@@ -13,7 +13,7 @@
       var body: some ReducerOf<Self> { EmptyReducer() }
     }
     @ViewAction(for: Feature.self)
-    private struct FeatureView: View {
+    fileprivate struct FeatureView: View {
       let store: StoreOf<Feature>
       var body: some View {
         Button("Tap") { send(.tap) }
@@ -23,9 +23,9 @@
     }
   }
 
-  private enum TestObservableEnum_NonObservableCase {
+  fileprivate enum TestObservableEnum_NonObservableCase {
     @Reducer
-    private struct Feature {
+    fileprivate struct Feature {
       enum State {
         case inert(Int)
       }
