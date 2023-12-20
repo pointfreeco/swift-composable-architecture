@@ -227,3 +227,16 @@ struct SyncUpsList_Previews: PreviewProvider {
     .previewDisplayName("Load data failure")
   }
 }
+
+#Preview {
+  CardView(
+    syncUp: SyncUp(
+      id: SyncUp.ID(),
+      attendees: [],
+      duration: .seconds(60),
+      meetings: [],
+      theme: .bubblegum,
+      title: "Point-Free Morning Sync"
+    )
+  )
+}
