@@ -716,7 +716,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
 
     deinit {
       // NB: `isInvalidated()` can access store state, which must happen on the main thread.
-      let isInvalidated = Thread.isMainThread
+      let isInvalidated =
+        Thread.isMainThread
         ? self.isInvalidated()
         : DispatchQueue.main.sync(execute: self.isInvalidated)
 
