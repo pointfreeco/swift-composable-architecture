@@ -443,26 +443,32 @@ public final class Store<State, Action> {
     {
       return childStore
     }
-    let isInvalid =
-      id == nil || !self.canCacheChildren
-    ? { isInvalid?(self.currentState) == true || self._isInvalidated() }
-      : { [weak self] in
-        guard let self = self else { return true }
-        return isInvalid?(self.currentState) == true || self._isInvalidated()
-      }
     let childStore = Store<ChildState, ChildAction>(
       rootStore: self.rootStore,
       toState: self.toState.appending(state.base),
       fromAction: { [fromAction] in fromAction(fromChildAction($0)) }
     )
-    childStore._isInvalidated = isInvalid
+    childStore._isInvalidated =
+      id == nil || !self.canCacheChildren
+      ? {
+        isInvalid?(self.currentState) == true || self._isInvalidated()
+      }
+      : { [weak self] in
+        guard let self = self else { return true }
+        return isInvalid?(self.currentState) == true || self._isInvalidated()
+      }
     childStore.canCacheChildren = self.canCacheChildren && id != nil
     if let id = id, self.canCacheChildren {
       self.children[id] = childStore
-      childStore.parentCancellable = self.rootStore.didSet
-        .filter { isInvalid() }
-        .prefix(1)
-        .sink { [weak self] in self?.invalidateChild(id: id) }
+      if let isInvalid = isInvalid {
+        childStore.parentCancellable = self.rootStore.didSet
+          .filter { [weak self] in
+            guard let self else { return true }
+            return isInvalid(self.currentState)
+          }
+          .prefix(1)
+          .sink { [weak self] in self?.invalidateChild(id: id) }
+      }
     }
     return childStore
   }
@@ -484,9 +490,11 @@ public final class Store<State, Action> {
     _ action: Action,
     originatingFrom originatingAction: Action?
   ) -> Task<Void, Never>? {
-    if BindingLocal.isActive && self._isInvalidated() {
-      return .none
-    }
+    #if DEBUG
+      if BindingLocal.isActive && self._isInvalidated() {
+        return .none
+      }
+    #endif
     return self.rootStore.send(self.fromAction(action))
   }
 
