@@ -385,23 +385,22 @@ public final class Store<State, Action> {
     self.toState = toState
     self.fromAction = fromAction
 
-    // TODO: Optimize?
-    if State.self is ObservableState.Type {
-      self.parentCancellable = rootStore.didSet
+    func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
+      let toState = toState as! PartialToState<T>
+      return rootStore.didSet
         .compactMap { [weak rootStore] in
-          rootStore.flatMap { (toState($0.state) as? ObservableState)?._$id }
+          rootStore.flatMap { toState($0.state)._$id }
         }
         .removeDuplicates()
         .dropFirst()
-        .sink { [weak self] _ in self?.ping() }
+        .sink { [weak self] _ in
+          guard let self else { return }
+          self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+        }
     }
-  }
 
-  func ping() {
-    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
-      self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
-    } else {
-      // Fallback on earlier versions
+    if let stateType = State.self as? ObservableState.Type {
+      self.parentCancellable = subscribeToDidSet(stateType)
     }
   }
 
@@ -415,7 +414,7 @@ public final class Store<State, Action> {
   {
     self.init(
       rootStore: RootStore(initialState: initialState, reducer: reducer),
-      toState: PartialToState.keyPath(\State.self),
+      toState: .keyPath(\State.self),
       fromAction: { $0 }
     )
   }

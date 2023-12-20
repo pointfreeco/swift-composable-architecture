@@ -18,8 +18,6 @@ final class iOS16_17_OldContainsNewTests: BaseIntegrationTests {
     self.assertLogs {
       """
       OldContainsNewTestCase.body
-      StoreOf<OldContainsNewTestCase.Feature>.scope
-      StoreOf<OldContainsNewTestCase.Feature>.scope
       ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
       ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.init
       WithViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.body
@@ -34,8 +32,7 @@ final class iOS16_17_OldContainsNewTests: BaseIntegrationTests {
       OldContainsNewTestCase.body
       OldContainsNewTestCase.body
       Store<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
-      Store<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.init
-      StoreOf<OldContainsNewTestCase.Feature>.scope
+      Store<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
       ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
       ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
       ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
@@ -49,40 +46,53 @@ final class iOS16_17_OldContainsNewTests: BaseIntegrationTests {
   }
 
   func testObserveChildCount() {
-    self.app.buttons["Toggle observe child count"].tap()
+    self.app.buttons["Toggle observing child count"].tap()
     XCTAssertEqual(self.app.staticTexts["Child count: 0"].exists, true)
     self.assertLogs {
       """
-      NewContainsOldTestCase.body
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<NewContainsOldTestCase.Feature>.scope
+      OldContainsNewTestCase.body
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.init
+      WithViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.body
       """
     }
   }
 
   func testIncrementChild_ObservingChildCount() {
-    self.app.buttons["Toggle observe child count"].tap()
+    self.app.buttons["Toggle observing child count"].tap()
     self.clearLogs()
     self.app.buttons.matching(identifier: "Increment").element(boundBy: 1).tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     XCTAssertEqual(self.app.staticTexts["Child count: 1"].exists, true)
     self.assertLogs {
       """
-      BasicsView.body
-      NewContainsOldTestCase.body
-      StoreOf<BasicsView.Feature>.scope
+      ObservableBasicsView.body
+      OldContainsNewTestCase.body
+      OldContainsNewTestCase.body
+      Store<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      Store<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.init
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.init
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.init
+      WithViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.body
+      WithViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.body
       """
     }
   }
 
   func testDeinit() {
-    self.app.buttons["Toggle observe child count"].tap()
+    self.app.buttons["Toggle observing child count"].tap()
     self.app.buttons.matching(identifier: "Increment").element(boundBy: 1).tap()
     self.clearLogs()
     self.app.buttons["iOS 16 + 17"].tap()
     self.assertLogs {
       """
-      StoreOf<BasicsView.Feature>.deinit
+      Store<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      Store<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
+      ViewStore<OldContainsNewTestCase.ViewState, OldContainsNewTestCase.Feature.Action>.deinit
       """
     }
   }

@@ -5,6 +5,9 @@ import SwiftUI
   import Observation
 #endif
 
+extension Store: Perceptible {
+}
+
 //extension Store: Perceptible {
 //  var observableState: State {
 //    get {
