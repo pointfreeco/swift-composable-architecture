@@ -92,7 +92,7 @@ public struct PresentationState<State> {
 
   /// Accesses the value associated with the given case for reading and writing.
   ///
-  /// If you using the techniques of tree-based navigation (see <doc:TreeBasedNavigation>), then
+  /// If you use the techniques of tree-based navigation (see <doc:TreeBasedNavigation>), then
   /// you will have a single enum that determines the destinations your feature can navigate to,
   /// and you will hold onto that state using the ``PresentationState`` property wrapper:
   ///
@@ -175,7 +175,8 @@ public struct PresentationState<State> {
 
 extension PresentationState: Equatable where State: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.wrappedValue == rhs.wrappedValue
+    lhs.sharesStorage(with: rhs)
+     || lhs.wrappedValue == rhs.wrappedValue
   }
 }
 

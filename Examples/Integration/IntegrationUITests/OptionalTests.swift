@@ -18,20 +18,13 @@ final class OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      PresentationStoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<OptionalView.Feature>.scope
-      StoreOf<OptionalView.Feature>.scope
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State?, BasicsView.Feature.Action>.init
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.deinit
+      ViewStoreOf<BasicsView.Feature?>.init
       WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature?>.body
@@ -41,14 +34,8 @@ final class OptionalTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      PresentationStoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<OptionalView.Feature>.scope
-      StoreOf<OptionalView.Feature>.scope
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -63,13 +50,6 @@ final class OptionalTests: BaseIntegrationTests {
     self.assertLogs {
       """
       OptionalView.body
-      PresentationStoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<OptionalView.Feature>.scope
-      StoreOf<OptionalView.Feature>.scope
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
       WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
@@ -80,16 +60,10 @@ final class OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
-      PresentationStoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<OptionalView.Feature>.scope
-      StoreOf<OptionalView.Feature>.scope
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.body
       WithViewStoreOf<BasicsView.Feature>.body
       """
