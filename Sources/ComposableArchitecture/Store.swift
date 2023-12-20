@@ -155,7 +155,6 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
-    defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
         (initialState(), reducer())
@@ -381,6 +380,8 @@ public final class Store<State, Action> {
     toState: PartialToState<State>,
     fromAction: @escaping (Action) -> Any
   ) {
+    defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
+
     self.rootStore = rootStore
     self.toState = toState
     self.fromAction = fromAction

@@ -1,11 +1,11 @@
-import ComposableArchitecture
+@_spi(Logging) import ComposableArchitecture
 import SwiftUI
 
 @main
 struct SyncUpsApp: App {
   let store = Store(initialState: AppFeature.State()) {
     AppFeature()
-      ._printChanges()
+      //._printChanges()
   } withDependencies: {
     if ProcessInfo.processInfo.environment["UITesting"] == "true" {
       $0.dataManager = .mock()
@@ -13,6 +13,7 @@ struct SyncUpsApp: App {
   }
 
   var body: some Scene {
+    let _ = Logger.shared.isEnabled = true
     WindowGroup {
       // NB: This conditional is here only to facilitate UI testing so that we can mock out certain
       //     dependencies for the duration of the test (e.g. the data manager). We do not really
