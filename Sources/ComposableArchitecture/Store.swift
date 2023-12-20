@@ -454,7 +454,7 @@ public final class Store<State, Action> {
     let childStore = Store<ChildState, ChildAction>(
       rootStore: self.rootStore,
       toState: self.toState.appending(state.base),
-      fromAction: { self.fromAction(fromChildAction($0)) }
+      fromAction: { [fromAction] in fromAction(fromChildAction($0)) }
     )
     childStore._isInvalidated = isInvalid
     childStore.canCacheChildren = self.canCacheChildren && id != nil
