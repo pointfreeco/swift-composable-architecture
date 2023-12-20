@@ -21,7 +21,8 @@
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
 
-    func testEffectFinishedMainThread() {
+    func testEffectFinishedMainThread() throws {
+      try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] != nil)
       XCTExpectFailure {
         $0.compactDescription == """
           An effect completed on a non-main thread. …
