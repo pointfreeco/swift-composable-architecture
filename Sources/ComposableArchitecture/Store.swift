@@ -134,7 +134,7 @@ import SwiftUI
 @dynamicMemberLookup
 public final class Store<State, Action> {
   var canCacheChildren = true
-  private var children: [ScopeID<State, Action>: AnyObject] = [:]
+  private var children: [AnyHashable: AnyObject] = [:]
   var _isInvalidated = { false }
 
   @_spi(Internals) public let rootStore: RootStore
@@ -172,8 +172,10 @@ public final class Store<State, Action> {
   }
 
   init() {
+    self.scopeID = ScopeID<State, Action>(state: \.self, action: \.self)
     self._isInvalidated = { true }
     self.rootStore = RootStore(initialState: (), reducer: EmptyReducer<(), Action>())
+    self.parent = nil
     self.toState = .keyPath(\State.self)
     self.fromAction = { $0 }
   }
@@ -331,16 +333,19 @@ public final class Store<State, Action> {
     let isInvalid =
       id == nil || !self.canCacheChildren
       ? {
-        self._isInvalidated() || isInvalid?(self.currentState) == true
+        isInvalid?(self.currentState) == true || self._isInvalidated()
       }
-      : { [weak self] in
+      : 
+    { [weak self] in
         guard let self = self else { return true }
-        return self._isInvalidated() || isInvalid?(self.currentState) == true
+        return isInvalid?(self.currentState) == true || self._isInvalidated()
       }
     let childStore = Store<ChildState, ChildAction>(
+      id: id!,
       rootStore: self.rootStore,
+      parent: self,
       toState: self.toState.appending(state.base),
-      fromAction: { self.fromAction(fromChildAction($0)) }
+      fromAction: { [fromAction] in fromAction(fromChildAction($0)) }
     )
     childStore._isInvalidated = isInvalid
     childStore.canCacheChildren = self.canCacheChildren && id != nil
@@ -358,11 +363,14 @@ public final class Store<State, Action> {
     }
   }
 
-  fileprivate func invalidateChild(id: ScopeID<State, Action>) {
+  private let scopeID: AnyHashable
+
+  fileprivate func invalidateChild(id: AnyHashable) {
     guard self.children.keys.contains(id) else { return }
     (self.children[id] as? any AnyStore)?.invalidate()
     self.children[id] = nil
   }
+
 
   @_spi(Internals)
   public func send(
@@ -375,22 +383,37 @@ public final class Store<State, Action> {
     return self.rootStore.send(self.fromAction(action))
   }
 
+  private weak var parent: AnyStore?
   private init(
+    id: AnyHashable, // = ScopeID<State, Action>.init(state: \.self, action: \.self),
     rootStore: RootStore,
+    parent: AnyStore?,
     toState: PartialToState<State>,
     fromAction: @escaping (Action) -> Any
   ) {
     defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
 
+    self.scopeID = id
     self.rootStore = rootStore
+    self.parent = parent
     self.toState = toState
     self.fromAction = fromAction
 
     func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
       let toState = toState as! PartialToState<T>
       return rootStore.didSet
-        .compactMap { [weak rootStore] in
-          rootStore.flatMap { toState($0.state)._$id }
+        .compactMap { [weak self, weak rootStore] () -> ObservableStateID? in
+          guard
+            let self,
+            let rootStore
+          else { return nil }
+
+          if self._isInvalidated() {
+            self.parent?.invalidateChild(id: self.scopeID)
+            // TODO: Terminate the publish
+          }
+
+          return toState(rootStore.state)._$id
         }
         .removeDuplicates()
         .dropFirst()
@@ -414,7 +437,9 @@ public final class Store<State, Action> {
     R.Action == Action
   {
     self.init(
+      id: ScopeID<State, Action>(state: \.self, action: \.self),
       rootStore: RootStore(initialState: initialState, reducer: reducer),
+      parent: nil,
       toState: .keyPath(\State.self),
       fromAction: { $0 }
     )
@@ -443,6 +468,8 @@ public final class Store<State, Action> {
     ScopeID(state: state, action: action)
   }
 }
+
+extension Store: AnyStore {}
 
 @_spi(Internals) public struct ScopeID<State, Action>: Hashable {
   let state: PartialKeyPath<State>
@@ -548,8 +575,9 @@ public struct StoreTask: Hashable, Sendable {
   }
 }
 
-private protocol AnyStore {
+private protocol AnyStore: AnyObject {
   func invalidate()
+  func invalidateChild(id: AnyHashable)
 }
 
 private protocol _OptionalProtocol {}
