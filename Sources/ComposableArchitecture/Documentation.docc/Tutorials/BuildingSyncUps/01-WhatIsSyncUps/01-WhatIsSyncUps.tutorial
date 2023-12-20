@@ -25,5 +25,7 @@
   }
 }
 <!--
-https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SyncUps  
+https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SyncUps
+
+TODO: explain why we call it SyncUps
 -->
