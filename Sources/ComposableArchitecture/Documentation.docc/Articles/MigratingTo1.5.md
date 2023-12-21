@@ -171,7 +171,38 @@ you have any problems feel free to open a
 
 ## Scoping performance
 
-Test <doc:Performance#Store-scoping> foo
+The performance characteristics for store scoping have changed in this release. The primary (and
+intended) way of scoping is along _stored_ properties of child features. A very basic example of this
+is the following:
+
+```swift
+ChildView(
+  store: store.scope(state: \.child, action: \.child)
+)
+```
+
+A less common (and less supported) form of scoping is along _computed_ properties, for example like
+this:
+
+```swift
+extension ParentFeature.State {
+  var computedChild: ChildFeature.State {
+    ChildFeature.State(
+      // Heavy computation here...
+    )
+  }
+}
+
+ChildView(
+  store: store.scope(state: \.computed, action: \.child)
+)
+```
+
+This style of scoping will incur a bit of a performance cost in 1.5 and moving forward. The cost
+is greater the closer your scoping is to the root of your application. Leaf node features will not
+incur much of a cost.
+
+See the dedicated article <doc:Performance#Store-scoping> for more information.
 
 ## Enum-driven navigation APIs
 
