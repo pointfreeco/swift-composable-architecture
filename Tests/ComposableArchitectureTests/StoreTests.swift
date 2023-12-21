@@ -9,11 +9,11 @@ final class StoreTests: BaseTCATestCase {
   func testCancellableIsRemovedOnImmediatelyCompletingEffect() {
     let store = Store<Void, Void>(initialState: ()) {}
 
-    XCTAssertEqual(store.effectCancellables.count, 0)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
 
     store.send(())
 
-    XCTAssertEqual(store.effectCancellables.count, 0)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
   }
 
   func testCancellableIsRemovedWhenEffectCompletes() {
@@ -34,15 +34,15 @@ final class StoreTests: BaseTCATestCase {
     })
     let store = Store(initialState: ()) { reducer }
 
-    XCTAssertEqual(store.effectCancellables.count, 0)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
 
     store.send(.start)
 
-    XCTAssertEqual(store.effectCancellables.count, 1)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 1)
 
     mainQueue.advance(by: 2)
 
-    XCTAssertEqual(store.effectCancellables.count, 0)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
   }
 
   func testScopedStoreReceivesUpdatesFromParent() {
@@ -91,14 +91,9 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(values, [0, 1])
   }
 
-  func testScopeCallCount() {
-    let counterReducer = Reduce<Int, Void>({ state, _ in
-      state += 1
-      return .none
-    })
-
+  func testScopeCallCount_OneLevel_NoSubscription() {
     var numCalls1 = 0
-    _ = Store(initialState: 0) { counterReducer }
+    let store = Store<Int, Void>(initialState: 0) {}
       .scope(
         state: { (count: Int) -> Int in
           numCalls1 += 1
@@ -107,20 +102,61 @@ final class StoreTests: BaseTCATestCase {
         action: { $0 }
       )
 
+    XCTAssertEqual(numCalls1, 0)
+    store.send(())
+    XCTAssertEqual(numCalls1, 0)
+  }
+
+  func testScopeCallCount_OneLevel_Subscribing() {
+    var numCalls1 = 0
+    let store = Store<Int, Void>(initialState: 0) {}
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls1 += 1
+          return count
+        },
+        action: { $0 }
+      )
+    let _ = store.publisher.sink { _ in }
+
+    XCTAssertEqual(numCalls1, 1)
+    store.send(())
     XCTAssertEqual(numCalls1, 1)
   }
 
-  func testScopeCallCount2() {
-    let counterReducer = Reduce<Int, Void>({ state, _ in
-      state += 1
-      return .none
-    })
+  func testScopeCallCount_TwoLevels_Subscribing() {
+    var numCalls1 = 0
+    var numCalls2 = 0
+    let store = Store<Int, Void>(initialState: 0) {}
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls1 += 1
+          return count
+        },
+        action: { $0 }
+      )
+      .scope(
+        state: { (count: Int) -> Int in
+          numCalls2 += 1
+          return count
+        },
+        action: { $0 }
+      )
+    let _ = store.publisher.sink { _ in }
 
+    XCTAssertEqual(numCalls1, 1)
+    XCTAssertEqual(numCalls2, 1)
+    store.send(())
+    XCTAssertEqual(numCalls1, 1)
+    XCTAssertEqual(numCalls2, 1)
+  }
+
+  func testScopeCallCount_ThreeLevels_ViewStoreSubscribing() {
     var numCalls1 = 0
     var numCalls2 = 0
     var numCalls3 = 0
 
-    let store1 = Store(initialState: 0) { counterReducer }
+    let store1 = Store<Int, Void>(initialState: 0) {}
     let store2 =
       store1
       .scope(
@@ -153,38 +189,40 @@ final class StoreTests: BaseTCATestCase {
     let viewStore2 = ViewStore(store2, observe: { $0 })
     let viewStore3 = ViewStore(store3, observe: { $0 })
     let viewStore4 = ViewStore(store4, observe: { $0 })
+    defer {
+      _ = viewStore1
+      _ = viewStore2
+      _ = viewStore3
+      _ = viewStore4
+    }
 
-    XCTAssertEqual(numCalls1, 1)
-    XCTAssertEqual(numCalls2, 1)
-    XCTAssertEqual(numCalls3, 1)
-
-    viewStore4.send(())
-
-    XCTAssertEqual(numCalls1, 2)
-    XCTAssertEqual(numCalls2, 2)
+    XCTAssertEqual(numCalls1, 6)
+    XCTAssertEqual(numCalls2, 4)
     XCTAssertEqual(numCalls3, 2)
 
     viewStore4.send(())
 
-    XCTAssertEqual(numCalls1, 3)
-    XCTAssertEqual(numCalls2, 3)
+    XCTAssertEqual(numCalls1, 9)
+    XCTAssertEqual(numCalls2, 6)
     XCTAssertEqual(numCalls3, 3)
 
     viewStore4.send(())
 
-    XCTAssertEqual(numCalls1, 4)
-    XCTAssertEqual(numCalls2, 4)
+    XCTAssertEqual(numCalls1, 12)
+    XCTAssertEqual(numCalls2, 8)
     XCTAssertEqual(numCalls3, 4)
 
     viewStore4.send(())
 
-    XCTAssertEqual(numCalls1, 5)
-    XCTAssertEqual(numCalls2, 5)
+    XCTAssertEqual(numCalls1, 15)
+    XCTAssertEqual(numCalls2, 10)
     XCTAssertEqual(numCalls3, 5)
 
-    _ = viewStore1
-    _ = viewStore2
-    _ = viewStore3
+    viewStore4.send(())
+
+    XCTAssertEqual(numCalls1, 18)
+    XCTAssertEqual(numCalls2, 12)
+    XCTAssertEqual(numCalls3, 6)
   }
 
   func testSynchronousEffectsSentAfterSinking() {
@@ -524,8 +562,8 @@ final class StoreTests: BaseTCATestCase {
     await Task.yield()
     neverEndingTask.cancel()
     try await XCTUnwrap(sendTask).value
-    XCTAssertEqual(store.effectCancellables.count, 0)
-    XCTAssertEqual(scopedStore.effectCancellables.count, 0)
+    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
+    XCTAssertEqual(scopedStore.rootStore.effectCancellables.count, 0)
   }
 
   @Reducer
@@ -884,7 +922,7 @@ final class StoreTests: BaseTCATestCase {
     childViewStore1.objectWillChange
       .sink { _ in viewStoreCount1 += 1 }
       .store(in: &self.cancellables)
-    childStore1.stateSubject
+    childStore1.publisher
       .sink { _ in storeStateCount1 += 1 }
       .store(in: &self.cancellables)
     let childStore2 = store.scope(
@@ -905,28 +943,28 @@ final class StoreTests: BaseTCATestCase {
     childViewStore2.objectWillChange
       .sink { _ in viewStoreCount2 += 1 }
       .store(in: &self.cancellables)
-    childStore2.stateSubject
+    childStore2.publisher
       .sink { _ in storeStateCount2 += 1 }
       .store(in: &self.cancellables)
 
     store.send(.tap)
-    XCTAssertEqual(removeDuplicatesCount1, 0)
-    XCTAssertEqual(stateScopeCount1, 2)
+    XCTAssertEqual(removeDuplicatesCount1, 1)
+    XCTAssertEqual(stateScopeCount1, 5)
     XCTAssertEqual(viewStoreCount1, 0)
-    XCTAssertEqual(storeStateCount1, 1)
-    XCTAssertEqual(removeDuplicatesCount2, 0)
-    XCTAssertEqual(stateScopeCount2, 2)
+    XCTAssertEqual(storeStateCount1, 2)
+    XCTAssertEqual(removeDuplicatesCount2, 1)
+    XCTAssertEqual(stateScopeCount2, 5)
     XCTAssertEqual(viewStoreCount2, 0)
-    XCTAssertEqual(storeStateCount2, 1)
+    XCTAssertEqual(storeStateCount2, 2)
     store.send(.tap)
-    XCTAssertEqual(removeDuplicatesCount1, 0)
-    XCTAssertEqual(stateScopeCount1, 3)
+    XCTAssertEqual(removeDuplicatesCount1, 2)
+    XCTAssertEqual(stateScopeCount1, 7)
     XCTAssertEqual(viewStoreCount1, 0)
-    XCTAssertEqual(storeStateCount1, 1)
-    XCTAssertEqual(removeDuplicatesCount2, 0)
-    XCTAssertEqual(stateScopeCount2, 3)
+    XCTAssertEqual(storeStateCount1, 3)
+    XCTAssertEqual(removeDuplicatesCount2, 2)
+    XCTAssertEqual(stateScopeCount2, 7)
     XCTAssertEqual(viewStoreCount2, 0)
-    XCTAssertEqual(storeStateCount2, 1)
+    XCTAssertEqual(storeStateCount2, 3)
 
     store.send(.child(.dismiss))
     _ = (childViewStore1, childViewStore2, childStore1, childStore2)

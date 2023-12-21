@@ -21,7 +21,7 @@
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
 
-    func testEffectFinishedMainThread() {
+    func testEffectFinishedMainThread() throws {
       XCTExpectFailure {
         $0.compactDescription == """
           An effect completed on a non-main thread. …
@@ -52,7 +52,7 @@
         }
       }
       store.send(.tap)
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
+      _ = XCTWaiter.wait(for: [.init()], timeout: 5)
     }
 
     func testStoreScopeMainThread() {

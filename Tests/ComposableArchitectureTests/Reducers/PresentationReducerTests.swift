@@ -2592,4 +2592,18 @@ final class PresentationReducerTests: BaseTCATestCase {
       await store.send(.destination(.presented(.child(.decrementButtonTapped))))
     }
   }
+
+  func testFastPastEquality() {
+    struct State: Equatable {
+      static func == (lhs: Self, rhs: Self) -> Bool {
+        Thread.sleep(forTimeInterval: 1)
+        return true
+      }
+    }
+
+    @PresentationState var state = State()
+    let start = Date()
+    XCTAssertEqual($state, $state)
+    XCTAssertLessThan(Date().timeIntervalSince(start), 0.1)
+  }
 }

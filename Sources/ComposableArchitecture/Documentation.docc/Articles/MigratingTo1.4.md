@@ -52,13 +52,13 @@ See the documentation of <doc:Reducer()#Gotchas> for more gotchas on using the `
 In version 1.4 we soft-deprecated many APIs that take the `CasePath` type in favor of APIs that take
 what is known as a `CaseKeyPath`. Both of these types come from our [CasePaths][swift-case-paths]
 library and aim to allow one to abstract over the shape of enums just as key paths allow one to do
-with structs.
+so with structs.
 
 However, in conjunction with version 1.4 of this library we also released an update to CasePaths
-that massively improved ergonomics of using case paths. We introduced the `@CasePathable` macro for
-automatically deriving case paths so that we could stop using runtime reflection, and we introduced
-a way of using key paths to describe case paths. And so the old `CasePath` type has been deprecated,
-and the new `CaseKeyPath` type has taken its place.
+that massively improved the ergonomics of using case paths. We introduced the `@CasePathable` macro
+for automatically deriving case paths so that we could stop using runtime reflection, and we
+introduced a way of using key paths to describe case paths. And so the old `CasePath` type has been
+deprecated, and the new `CaseKeyPath` type has taken its place.
 
 This means that previously when you would use APIs involving case paths you would have to use the
 `/` prefix operator to derive the case path. For example:
@@ -83,20 +83,42 @@ Reduce { state, action in
 }
 ```
 
-To be able to take advantage of this syntax you must annotate your ``Reducer`` conformances with the
-``Reducer()`` macro:
+To be able to take advantage of this syntax with your feature's actions, you must annotate your
+``Reducer`` conformances with the ``Reducer()`` macro:
 
 ```swift
 @Reducer
-struct Feature: Reducer {
+struct Feature {
   // ...
 }
 ```
 
-Anywhere you previously used the `/` prefix operator for case paths you should now be able to use
-key path syntax. If you encounter any problems, create a [discussion][tca-discussions] on the 
-Composable Architecture repo.
+Which automatically applies the `@CasePathable` macro to the feature's `Action` enum among other
+things:
 
+```diff
++@CasePathable
+ enum Action {
+   // ...
+ }
+```
+
+Further, if the feature's `State` is an enum, `@CasePathable` will also be applied.
+
+To form a case key path for any other enum, you must apply the `@CasePathable` macro explicitly:
+
+```swift
+@CasePathable
+enum DelegateAction {
+  case didFinish(success: Bool)
+}
+```
+
+Anywhere you previously used the `/` prefix operator for case paths you should now be able to use
+key path syntax, so long as all of the enums involved are `@CasePathable`.
+
+If you encounter any problems, create a [discussion][tca-discussions] on the
+Composable Architecture repo.
 
 ### Receiving test store actions
 
@@ -113,6 +135,17 @@ store.receive(.child(.presented(.response(.success("Hello!")))))
 ```swift
 store.receive(\.child.presented.response.success)
 ```
+
+> Note: Case key path syntax requires that every nested action is `@CasePathable`. Reducer actions
+> are typically `@CasePathable` automatically via the ``Reducer()`` macro, but other enums must be
+> explicitly annotated:
+>
+> ```swift
+> @CasePathable
+> enum DelegateAction {
+>   case didFinish(success: Bool)
+> }
+> ```
 
 And in the case of ``PresentationAction`` you can even omit the ``presented`` path component:
 

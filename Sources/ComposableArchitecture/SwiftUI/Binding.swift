@@ -291,7 +291,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             value: value,
             bindableActionType: ViewAction.self,
             context: .bindingState,
-            isInvalidated: self._isInvalidated,
+            isInvalidated: self.store._isInvalidated,
             fileID: bindingState.fileID,
             line: bindingState.line
           )
@@ -715,7 +715,13 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     }
 
     deinit {
-      guard !self.isInvalidated() else { return }
+      // NB: `isInvalidated()` can access store state, which must happen on the main thread.
+      let isInvalidated =
+        Thread.isMainThread
+        ? self.isInvalidated()
+        : DispatchQueue.main.sync(execute: self.isInvalidated)
+
+      guard !isInvalidated else { return }
       guard self.wasCalled else {
         var value = ""
         customDump(self.value, to: &value, maxDepth: 0)
