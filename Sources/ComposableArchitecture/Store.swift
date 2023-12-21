@@ -135,7 +135,6 @@ public final class Store<State, Action> {
   private var canCacheChildren = true
   private var children: [ScopeID<State, Action>: AnyObject] = [:]
   var _isInvalidated = { false }
-  private var parentCancellable: AnyCancellable?
 
   @_spi(Internals) public let rootStore: RootStore
   private let toState: PartialToState<State>
@@ -459,15 +458,6 @@ public final class Store<State, Action> {
     childStore.canCacheChildren = self.canCacheChildren && id != nil
     if let id = id, self.canCacheChildren {
       self.children[id] = childStore
-      if let isInvalid = isInvalid {
-        childStore.parentCancellable = self.rootStore.didSet
-          .filter { [weak self] in
-            guard let self else { return true }
-            return isInvalid(self.currentState)
-          }
-          .prefix(1)
-          .sink { [weak self] in self?.invalidateChild(id: id) }
-      }
     }
     return childStore
   }
