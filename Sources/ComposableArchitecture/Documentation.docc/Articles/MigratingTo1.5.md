@@ -194,7 +194,7 @@ extension ParentFeature.State {
 }
 
 ChildView(
-  store: store.scope(state: \.computed, action: \.child)
+  store: store.scope(state: \.computedChild, action: \.child)
 )
 ```
 
