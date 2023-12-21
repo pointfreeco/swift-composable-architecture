@@ -19,6 +19,13 @@ final class PresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
       ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
@@ -59,6 +66,13 @@ final class PresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
       ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init

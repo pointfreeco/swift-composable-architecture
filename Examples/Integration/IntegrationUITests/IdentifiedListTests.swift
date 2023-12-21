@@ -22,9 +22,19 @@ final class IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body.ForEachStore
       IdentifiedStoreOf<BasicsView.Feature>.deinit
       IdentifiedStoreOf<BasicsView.Feature>.deinit
+      IdentifiedStoreOf<BasicsView.Feature>.init
+      IdentifiedStoreOf<BasicsView.Feature>.init
       Store<UUID, Action>
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
       ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.init
@@ -60,12 +70,18 @@ final class IdentifiedListTests: BaseIntegrationTests {
       IdentifiedListView.body.ForEachStore
       IdentifiedStoreOf<BasicsView.Feature>.deinit
       IdentifiedStoreOf<BasicsView.Feature>.deinit
+      IdentifiedStoreOf<BasicsView.Feature>.init
+      IdentifiedStoreOf<BasicsView.Feature>.init
       Store<UUID, Action>
       Store<UUID, Action>
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
       Store<UUID, BasicsView.Feature.Action>.deinit
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
+      Store<UUID, BasicsView.Feature.Action>.init
       ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.deinit
       ViewIdentifiedStoreOf<BasicsView.Feature>.init
