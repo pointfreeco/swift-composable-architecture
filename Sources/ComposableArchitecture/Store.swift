@@ -462,10 +462,6 @@ public final class Store<State, Action> {
     return childStore
   }
 
-  fileprivate func invalidateChild(id: ScopeID<State, Action>) {
-    self.children[id] = nil
-  }
-
   @_spi(Internals)
   public func send(
     _ action: Action,
