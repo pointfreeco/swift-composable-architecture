@@ -11,6 +11,7 @@ them.
 * [Sharing logic with actions](#Sharing-logic-with-actions)
 * [CPU-intensive calculations](#CPU-intensive-calculations)
 * [High-frequency actions](#High-frequency-actions)
+* [Store scoping](#Store-scoping)
 * [Compiler performance](#Compiler-performance)
 
 ### View stores
@@ -529,6 +530,89 @@ Slider(value: self.$opacity, in: 0...1) {
 ```
 
 This way an action is only sent once the user stops moving the slider.
+
+### Store scoping
+
+In the 1.5.6 release of the library a change was made to ``Store/scope(state:action:)-90255`` that
+made it more sensitive to performance considerations.
+
+The most common form of scoping, that of scoping directly along boundaries of child features, is
+the most performant form of scoping and is the intended use of scoping. The library is slowly 
+evolving to a state where that is the _only_ kind of scoping one can do on a store.
+
+The simplest example of this directly scoping to some child state and actions for handing to a 
+child view:
+
+```swift
+ChildView(
+  store: store.scope(state: \.child, action: \.child)
+)
+```
+
+Another example is scoping to some collection of a child domain in order to use with 
+``ForEachStore``:
+
+```swift
+ForEachStore(store.scope(state: \.rows, action: \.rows) { store in
+  RowView(store: store)
+}
+```
+
+And similarly for ``IfLetStore`` and ``SwitchStore``. And finally, scoping to a child domain to be
+used with one of the libraries navigation view modifiers, such as 
+``SwiftUI/View/sheet(store:onDismiss:content:)``, also falls under the intended use of scope:
+
+```swift
+.sheet(store: store.scope(state: \.child, action: \.child)) { store in
+  ChildView(store: store)
+}
+```
+
+All of these examples are how ``Store/scope(state:action:)-90255`` is intended to be used, and you
+can continue using it in this way with no performance concerns.
+
+Where performance can become a concern is when using `scope` on _computed_ properties rather than
+simple stored fields. For example, say you had a computed property in the parent feature's state
+for deriving the child state:
+
+```swift
+extension ParentFeature.State {
+  var computedChild: ChildFeature.State {
+    ChildFeature.State(
+      // Heavy computation here...
+    )
+  }
+}
+```
+
+And then in the view, say you scoped along that computed property: 
+
+```swift
+ChildView(
+  store: store.scope(state: \.computed, action: \.child)
+)
+```
+
+If the computation in that property is heavy, it is going to become exacerbated by the changes
+made in 1.5, and the problem worsens the closer the scoping is to the root of the application.
+
+The problem is that in version 1.5 scoped stores stopped directly holding onto their local state,
+and instead hold onto a reference to the store at the root of the application. And when you access
+state from the scoped store, it transforms the root state to the child state on the fly.
+
+This transformation will include the heavy computed property, and potentially compute it many times
+if you need to access multiple pieces of state from the store. If you are noticing a performance
+problem while depending on 1.5+ of the library, look through your code base for any place you are
+using computed properties in scopes. You can even put a `print` statement in the computed property
+so that you can see first hand just how many times it is being invoked while running your 
+application.
+
+To fix the problem we recommend using ``Store/scope(state:action:)-90255`` only along stored 
+properties of child features. Such key paths are simple getters, and so not have a problem with
+performance. If you are using a computed property in a scope, then reconsider if that could instead
+be done along a plain, stored property and moving the computed logic into the child view. The 
+further you push the computation towards the leaf nodes of your application, the less performance
+problems you will see.
 
 ### Compiler performance
 
