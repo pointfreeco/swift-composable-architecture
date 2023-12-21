@@ -14,7 +14,7 @@ APIs, and this article contains some tips for doing so.
 
 In version 1.4 of the library we provided a new a new assertion method on ``TestStore`` for 
 asserting on actions received without asserting on the payload in the action (see
-<doc:MigratingTo1.4#Receiving-test-store-actions>) for more information. However, sometimes it is
+<doc:MigratingTo1.4#Receiving-test-store-actions> for more information). However, sometimes it is
 important to assert on the payload, especially when testing delegate actions from child features,
 and so that is why 1.6 introduces ``TestStore/receive(_:_:timeout:assert:file:line:)-dkei``.
 
