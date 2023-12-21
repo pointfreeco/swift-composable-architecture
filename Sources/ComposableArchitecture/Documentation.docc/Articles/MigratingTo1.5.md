@@ -200,7 +200,7 @@ ChildView(
 
 This style of scoping will incur a bit of a performance cost in 1.5 and moving forward. The cost
 is greater the closer your scoping is to the root of your application. Leaf node features will not
-incur much of a cost.
+incur as much of a cost.
 
 See the dedicated article <doc:Performance#Store-scoping> for more information.
 
