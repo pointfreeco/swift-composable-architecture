@@ -463,8 +463,6 @@ public final class Store<State, Action> {
   }
 
   fileprivate func invalidateChild(id: ScopeID<State, Action>) {
-    guard self.children.keys.contains(id)
-    else { return }
     self.children[id] = nil
   }
 
