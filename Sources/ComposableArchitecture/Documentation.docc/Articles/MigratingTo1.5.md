@@ -15,6 +15,7 @@ a future minor release. We highly recommend updating your use of deprecated APIs
 version as quickly as possible.
 
 * [Store scoping with key paths](#Store-scoping-with-key-paths)
+* [Scoping performance](#Scoping-performance)
 * [Enum-driven navigation APIs](#Enum-driven-navigation-APIs)
 
 ### Store scoping with key paths
@@ -167,6 +168,10 @@ store.scope(
 These tricks should be enough for you to rewrite all of your store scopes using key paths, but if
 you have any problems feel free to open a
 [discussion](http://github.com/pointfreeco/swift-composable-architecture/discussions) on the repo.
+
+## Scoping performance
+
+Test <doc:Performance#Store-scoping> foo
 
 ## Enum-driven navigation APIs
 
