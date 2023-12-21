@@ -1465,7 +1465,8 @@ extension TestStore where State: Equatable {
     )
   }
 
-  /// Asserts an action was received matching a case path and asserts how the state changes.
+  /// Asserts an action was received matching a case path with a specific payload, and asserts
+  /// how the state changes.
   ///
   /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows
   /// you to assert on the value inside the action too.
@@ -1619,7 +1620,8 @@ extension TestStore where State: Equatable {
       )
     }
 
-    /// Asserts an action was received matching a case path and asserts how the state changes.
+    /// Asserts an action was received matching a case path with a specific payload, and asserts
+    /// how the state changes.
     ///
     /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows
     /// you to assert on the value inside the action too.

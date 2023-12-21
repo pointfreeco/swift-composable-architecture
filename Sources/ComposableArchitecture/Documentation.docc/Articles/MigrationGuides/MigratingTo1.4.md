@@ -147,7 +147,8 @@ store.receive(\.child.presented.response.success)
 > }
 > ```
 
-And in the case of ``PresentationAction`` you can even omit the ``presented`` path component:
+And in the case of ``PresentationAction`` you can even omit the ``PresentationAction/presented(_:)`` 
+path component:
 
 ```swift
 store.receive(\.child.response.success)
@@ -244,7 +245,7 @@ enum Action {
 }
 ```
 
-And in the reducer, instead of invoking ``Reducer/forEach(_:action:element:fileID:line:)-7ecbl``
+And in the reducer, instead of invoking ``Reducer/forEach(_:action:element:fileID:line:)-65nr1``
 with a case path using the `/` prefix operator:
 
 ```swift
