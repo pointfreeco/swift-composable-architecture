@@ -545,6 +545,18 @@ final class TestStoreTests: BaseTCATestCase {
 
     await store.send(.tap)
     await store.receive(\.delegate.success, 42)
+
+    XCTExpectFailure {
+      $0.compactDescription == """
+        Received unexpected action: …
+
+          Action.delegate(
+            .success(42)
+          )
+        """
+    }
+    await store.send(.tap)
+    await store.receive(\.delegate.success, 43)
   }
 }
 
