@@ -425,11 +425,10 @@ public struct BindingViewStore<State> {
     line: UInt = #line
   ) where Action.State == State {
     self.store = store.scope(
-      state: { $0 },
+      state: ToState(\.self),
       id: nil,
       action: Action.binding,
-      isInvalid: nil,
-      removeDuplicates: nil
+      isInvalid: nil
     )
     #if DEBUG
       self.bindableActionType = type(of: Action.self)
@@ -512,11 +511,10 @@ extension ViewStore {
         toViewState(
           BindingViewStore(
             store: store.scope(
-              state: { $0 },
+              state: ToState(\.self),
               id: nil,
               action: fromViewAction,
-              isInvalid: nil,
-              removeDuplicates: nil
+              isInvalid: nil
             )
           )
         )
@@ -630,11 +628,10 @@ extension WithViewStore where Content: View {
         toViewState(
           BindingViewStore(
             store: store.scope(
-              state: { $0 },
+              state: ToState(\.self),
               id: nil,
               action: fromViewAction,
-              isInvalid: nil,
-              removeDuplicates: nil
+              isInvalid: nil
             )
           )
         )

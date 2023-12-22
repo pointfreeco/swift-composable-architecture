@@ -2020,11 +2020,10 @@ extension TestStore {
         BindingReducer(action: toViewAction.extract(from:))
       }
       .scope(
-        state: { $0 },
+        state: ToState(\.self),
         id: nil,
         action: toViewAction.embed,
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       )
     )
   }

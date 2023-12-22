@@ -502,11 +502,10 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ) {
     self.init(
       store: store.scope(
-        state: toViewState,
+        state: ToState(toViewState),
         id: nil,
         action: fromViewAction,
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       ),
       removeDuplicates: isDuplicate,
       content: content,
@@ -597,11 +596,10 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ) {
     self.init(
       store: store.scope(
-        state: toViewState,
+        state: ToState(toViewState),
         id: nil,
         action: { $0 },
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       ),
       removeDuplicates: isDuplicate,
       content: content,
@@ -693,11 +691,10 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ) {
     self.init(
       store: store.scope(
-        state: toViewState,
+        state: ToState(toViewState),
         id: nil,
         action: fromViewAction,
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       ),
       removeDuplicates: ==,
       content: content,
@@ -785,11 +782,10 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ) {
     self.init(
       store: store.scope(
-        state: toViewState,
+        state: ToState(toViewState),
         id: nil,
         action: { $0 },
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       ),
       removeDuplicates: ==,
       content: content,

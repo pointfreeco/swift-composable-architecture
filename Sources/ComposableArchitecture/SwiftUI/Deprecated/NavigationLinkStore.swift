@@ -80,11 +80,10 @@ public struct NavigationLinkStore<
     self.store = store
     self.viewStore = ViewStore(
       store.scope(
-        state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+        state: ToState { $0.wrappedValue.flatMap(toDestinationState) != nil },
         id: nil,
         action: { $0 },
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       ),
       observe: { $0 }
     )
@@ -132,11 +131,10 @@ public struct NavigationLinkStore<
     self.store = store
     self.viewStore = ViewStore(
       store.scope(
-        state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
+        state: ToState { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
         id: nil,
         action: { $0 },
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       ),
       observe: { $0 }
     )
@@ -162,11 +160,12 @@ public struct NavigationLinkStore<
     ) {
       IfLetStore(
         self.store.scope(
-          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
+          state: ToState(
+            returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) }
+          ),
           id: nil,
           action: { .presented(self.fromDestinationAction($0)) },
-          isInvalid: nil,
-          removeDuplicates: nil
+          isInvalid: nil
         ),
         then: self.destination
       )

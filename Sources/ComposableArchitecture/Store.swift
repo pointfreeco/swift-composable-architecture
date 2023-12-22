@@ -172,10 +172,9 @@ public final class Store<State, Action> {
 
   init() {
     self._isInvalidated = { true }
-    self.reducer = EmptyReducer()
-    #if DEBUG
-      self.mainThreadChecksEnabled = true
-    #endif
+    self.rootStore = RootStore(initialState: (), reducer: EmptyReducer<Void, Never>())
+    self.toState = .keyPath(\State.self)
+    self.fromAction = { $0 }
   }
 
   deinit {

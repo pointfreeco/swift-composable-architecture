@@ -263,11 +263,10 @@ public struct PresentationStore<
     self.toID = toID
     self.fromDestinationAction = fromDestinationAction
     self.destinationStore = store.scope(
-      state: { $0.wrappedValue.flatMap(toDestinationState) },
+      state: ToState { $0.wrappedValue.flatMap(toDestinationState) },
       id: nil,
       action: { .presented(fromDestinationAction($0)) },
-      isInvalid: nil,
-      removeDuplicates: nil
+      isInvalid: nil
     )
     self.content = content
     self.viewStore = viewStore
