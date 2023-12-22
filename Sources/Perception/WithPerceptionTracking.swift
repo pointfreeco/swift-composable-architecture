@@ -6,7 +6,7 @@ import SwiftUI
 @available(watchOS, deprecated: 10, message: "TODO")
 public enum PerceptionLocals {
   @TaskLocal public static var isInPerceptionTracking = false
-  @TaskLocal public static var isInWithoutPerceptionChecking = false
+  @TaskLocal public static var skipPerceptionChecking = false
 }
 
 @available(iOS, deprecated: 17, message: "TODO")
