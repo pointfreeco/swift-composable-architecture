@@ -21,9 +21,8 @@ final class iOS16_BasicsTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      StoreOf<BasicsView.Feature>.scope
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -33,9 +32,8 @@ final class iOS16_BasicsTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      StoreOf<BasicsView.Feature>.scope
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }

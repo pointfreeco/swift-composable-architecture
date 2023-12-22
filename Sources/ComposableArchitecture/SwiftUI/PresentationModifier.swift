@@ -214,15 +214,14 @@ public struct PresentationStore<
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
+    let store = store.scope(
+      state: ToState(\.self),
+      id: nil,
+      action: { $0 },
+      isInvalid: { $0.wrappedValue == nil }
+    )
     let viewStore = ViewStore(
-      store.scope(
-        state: { $0 },
-        // NB: Introducing a `\.self` cache key here prevents dismissal from working.
-        id: nil,
-        action: { $0 },
-        isInvalid: { $0.wrappedValue == nil },
-        removeDuplicates: nil
-      ),
+      store,
       observe: { $0 },
       removeDuplicates: { toID($0) == toID($1) }
     )
@@ -232,11 +231,10 @@ public struct PresentationStore<
     self.toID = toID
     self.fromDestinationAction = { $0 }
     self.destinationStore = store.scope(
-      state: { $0.wrappedValue },
+      state: ToState(\.wrappedValue),
       id: store.id(state: \.wrappedValue, action: \.presented),
       action: { .presented($0) },
-      isInvalid: { $0.wrappedValue == nil },
-      removeDuplicates: nil
+      isInvalid: nil
     )
     self.content = content
     self.viewStore = viewStore
@@ -253,11 +251,10 @@ public struct PresentationStore<
     ) -> Content
   ) {
     let store = store.scope(
-      state: { $0 },
+      state: ToState(\.self),
       id: nil,
       action: { $0 },
-      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil },
-      removeDuplicates: nil
+      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
     )
     let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
 
@@ -317,11 +314,10 @@ public struct DestinationContent<State, Action> {
   ) -> some View {
     IfLetStore(
       self.store.scope(
-        state: returningLastNonNilValue { $0 },
+        state: ToState(returningLastNonNilValue { $0 }),
         id: self.store.id(state: \.self, action: \.self),
         action: { $0 },
-        isInvalid: nil,
-        removeDuplicates: nil
+        isInvalid: nil
       ),
       then: body
     )

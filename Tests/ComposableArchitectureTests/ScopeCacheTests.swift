@@ -125,14 +125,13 @@ final class ScopeCacheTests: BaseTCATestCase {
     }
     let childStore: Store = store.scope(state: \.child, action: \.child)
     let unwrappedChildStore = childStore.scope(
-      state: { $0! },
+      state: ToState { $0! },
       id: childStore.id(state: \.!, action: \.self),
       action: { $0 },
-      isInvalid: { $0 == nil },
-      removeDuplicates: nil
+      isInvalid: { $0 == nil }
     )
     unwrappedChildStore.send(.dismiss)
-    XCTAssertEqual(store.stateSubject.value.child, nil)
+    XCTAssertEqual(store.currentState.child, nil)
   }
 }
 

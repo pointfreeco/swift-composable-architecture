@@ -14,6 +14,7 @@
     @TutorialReference(tutorial: "doc:01-01-YourFirstFeature")
     @TutorialReference(tutorial: "doc:01-02-AddingSideEffects")
     @TutorialReference(tutorial: "doc:01-03-TestingYourFeature")
+    @TutorialReference(tutorial: "doc:01-04-ComposingFeatures")
   }
   
   @Chapter(name: "Navigation") {

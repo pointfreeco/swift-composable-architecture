@@ -3,11 +3,15 @@ builder:
   configs:
   - platform: ios
     scheme: ComposableArchitecture
+    swift_version: 5.9
   - platform: macos-xcodebuild
     scheme: ComposableArchitecture
+    swift_version: 5.9
   - platform: tvos
     scheme: ComposableArchitecture
+    swift_version: 5.9
   - platform: watchos
     scheme: ComposableArchitecture
+    swift_version: 5.9
   - documentation_targets: [ComposableArchitecture]
     swift_version: 5.9

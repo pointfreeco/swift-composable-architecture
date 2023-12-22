@@ -1,0 +1,240 @@
+@Tutorial(time: 30) {
+  @Intro(title: "Composing features") {
+    Learn what makes the Composable Architecture… well… "composable". We will create a parent 
+    feature that contains the `CounterFeature` we have been building thus far.
+  }
+  
+  @Section(title: "Adding a tab view") {
+    @ContentAndMedia {
+      We will explore composing features together by adding a `TabView` feature with two tabs,
+      each housing a `CounterFeature`. This will give us the opportunity to explore the `Scope`
+      reducer and the `scope` operator on stores.
+    }
+    
+    
+    @Steps {
+      Let's approach this in a naive way first by trying to create a root level view that uses
+      a `TabView`. To keep things simple we will just have two tabs, and each will contain their
+      own isolated `CounterView`, which was built previously in the tutorial.
+      
+      @Step {
+        Create a new file called AppFeature.swift with some basic scaffolding in place already
+        for a tab-based view.
+        
+        @Code(name: "AppFeature.swift", file: 01-04-01-code-0001.swift)
+      }
+      
+      @Step {
+        In the tab view we want to create two `CounterView`s, one for each tab, but in order to do
+        so we need to supply two stores.
+        
+        @Code(name: "AppFeature.swift", file: 01-04-01-code-0002.swift)
+      }
+      
+      Where do we get these stores from? Previously when building the `CounterView` the store was
+      defined as a simple `let` property and then whoever constructed the `CounterView` (e.g. 
+      the SwiftUI preview and app entry point) was responsibile for constructing the store and 
+      passing it along.
+      
+      We could try that same strategy here.
+      
+      @Step {
+        Add two new variables to `AppView` that hold stores to be provided to each `CounterView`.
+        
+        @Code(name: "AppFeature.swift", file: 01-04-01-code-0003.swift)
+      }
+      
+      However, this is not ideal. We now have two completely isolated stores that are not capable
+      of communicating with each other. In the future there may be events that happen in one
+      tab that can affect the other tab.
+      
+      This is why in the Composable Architecture we prefer to compose features together and have
+      our views powered by a single ``ComposableArchitecture/Store``, rather than have multiple
+      isolated stores. This makes it extremely easy for features to communicate with each other,
+      and we can even write tests that the communication is working properly.
+      
+      So, let's put the view aside for a moment and focus first on composing our features' reducers
+      together into a single package, and then we will come back to the view and see how to 
+      properly create this tab view.
+    }
+  }
+    
+  @Section(title: "Composing reducers") {
+    @ContentAndMedia {
+      We've now seen that by approaching the problem of composing features naively we run into a 
+      weird situation of having multiple isolated stores. We can fix this problem by first composing
+      the features together at the reducer level, and then showing how we can have a single store
+      power our tab-based application.
+    }
+    
+    @Steps {
+      We are going to create a new app-level reducer to power the logic and behavior of the
+      `AppView` we created above. We will also be putting the reducer in the same file as the view,
+      just as we did for `CounterFeature` and `CounterView`. We personally prefer to do this until
+      our features get too big, and then we will split the reducer and view into their own files.
+      
+      @Step {
+        Create a new `AppFeature` struct and apply the ``ComposableArchitecture/Reducer()``
+        macro.
+        
+        @Code(name: "AppFeature.swift", file: 01-04-02-code-0001.swift)
+      }
+      
+      @Step {
+        Add a `State` struct and `Action` enum to the reducer. These data types will hold the state
+        and actions for each tab, each of which are just the `CounterFeature`.
+        
+        @Code(name: "AppFeature.swift", file: 01-04-02-code-0002.swift)
+      }
+      
+      @Step {
+        Next we need to implement the ``ComposableArchitecture/Reducer/body-8lumc`` of the reducer.
+        Previously we did this by using the ``ComposableArchitecture/Reduce`` type to open a closure
+        and perform any state mutations necessary based on the action passed in. 
+        
+        We still want to do that for the core logic of the app feature, but we also want compose in
+        the  `CounterFeature` reducer so that it's logic can execute on the `tab1` and `tab2` state
+        without the `AppFeature` having to recreate it.
+        
+        @Code(name: "AppFeature.swift", file: 01-04-02-code-0003.swift)
+      }
+      
+      @Step {
+        To compose the `CounterFeature` into the `AppFeature` we can use the 
+        ``ComposableArchitecture/Scope`` reducer. It allows you to focus in on a sub-domain of the
+        parent feature, and run a child reducer on that sub-domain. In this case we want to do that
+        twice. First we single out the `tab1` state and actions in order to run the `CounterFeature`
+        reducer, and then we do it again for the `tab2` state and actions.
+        
+        > Note: The `body` computed property is using result builders behind the scenes. It allows
+        us to list any number of reducers in the `body` as  long as the types match up. When an
+        action comes into the system each reducer will run on the feature's state from 
+        top-to-bottom. Result builders is also what what SwiftUI uses to compose view hierarchies
+        in a view `body`.
+        
+        
+        @Code(name: "AppFeature.swift", file: 01-04-02-code-0004.swift)
+      }
+      
+      The `AppFeature` is now a fully composed feature comprising 3 completely independent features:
+      there's the core app feature logic, the counter feature running in the first tab, and the
+      counter feature running in the second tab.
+      
+      We can even write a test for this integration of features before even getting the view 
+      properly working.
+      
+      @Step {
+        Create a new file in your test target called AppFeatureTests.swift and paste in the 
+        following basic scaffolding.
+        
+        We are going to start by showing that when the increment button is tapped in the first tab,
+        the count goes up in the `tab1` state.
+        
+        @Code(name: "AppFeatureTests.swift", file: 01-04-02-code-0005.swift)
+      }
+      
+      @Step {
+        Create a ``ComposableArchitecture/TestStore`` that holds onto the `AppFeature` domain.
+        This is done by providing the initial state of the feature and specifying
+        the reducer that powers the feature.
+        
+        > Note: Remember that the `TestStore` is the testable runtime of a feature that allows you 
+        to send actions and assert on how state changes. It also forces you to assert on how effects
+        emit data back into the system.
+        
+        @Code(name: "AppFeatureTests.swift", file: 01-04-02-code-0006.swift)
+      }
+      
+      @Step {
+        Send an action into the test store to emulate the user tapping on the increment button
+        in the first tab. 
+        
+        > Note: The nesting of the action enums of the features gives us a natural way to 
+        distinguish between actions in different tabs. Sending `.tab1(.incrementButtonTapped)` is 
+        very different from sending  `.tab2(.incrementButtonTapped)`.
+        
+        @Code(name: "AppFeatureTests.swift", file: 01-04-02-code-0007.swift)
+      }
+      
+      If we were to run this test it would of course fail because we have not asserted on how state
+      changes after sending this action, and by default the ``ComposableArchitecture/TestStore``
+      requires that you exhaustively assert on everything happening in the feature.
+      
+      @Step {
+        To get the test to pass we have to open up a trailing closure on `store.send` and mutate
+        the previous version of the feature state so that it matches the state after the action
+        is sent.
+        
+        @Code(name: "AppFeatureTests.swift", file: 01-04-02-code-0008.swift)
+      }
+      
+      And now this test passes!
+    }
+  }
+  
+   @Section(title: "Deriving child stores") {
+    @ContentAndMedia {
+      Now that we have a single composed `AppFeature` that encpasulates all of the logic and 
+      behavior of the root app and its tabs, we can properly implement the view layer of the 
+      application.
+    }
+    
+    @Steps {
+      Rather than holding onto individual stores for each tab in the `AppView`, we can now hold 
+      onto a single store of the composed `AppFeature` domain, and derive child stores for each
+      tab that can be handed to the `CounterView`s.
+      
+      @Step {
+        Replace the two individual store properties with a single store of the `AppFeature` domain.
+        
+        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0001.swift, previousFile: 01-04-03-code-0001-previous.swift)
+      }
+      
+      @Step {
+        Use the ``ComposableArchitecture/Store/scope(state:action:)-90255`` method on 
+        ``ComposableArchitecture/Store`` to derive a child store focused in on just the `tab1`
+        domain. This is done by using key path syntax to single out the field of the state and
+        the case of the action enum.
+        
+        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0002.swift)
+      }
+      
+      @Step {
+        And do the same for the second tab.
+        
+        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0003.swift)
+      }
+      
+      That is all it takes. We now have a single ``ComposableArchitecture/Store`` powering this 
+      entire view, and the logic and behavior of both tabs have been composed into a single reducer.
+      We can give the feature a spin by creating a preview in AppFeature.swift.
+      
+      @Step {
+        Create a preview for `AppView` by initializing a store with the `AppFeature` domain.
+        
+        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0004.swift)
+      }
+      
+      We can also run the feature in the simulator by updating the entry point of the app to be
+      powered by the `AppView`.
+      
+      @Step {
+        Open App.swift and update the entry point to use `AppView` and `AppFeature`.
+        
+        @Code(name: "App.swift", file: 01-04-03-code-0005.swift, previousFile: 01-04-03-code-0005-previous.swift)
+      }
+      
+      That's the basics of composing features together in the Composable Architecture. In its 
+      simplest form it starts by composing the reducers together in the `body` of a parent reducer
+      and using the ``ComposableArchitecture/Scope`` reducer to focus in on a sub-domain of 
+      the parent to run a child reducer. Then in the view you derive child stores from the parent
+      using the ``ComposableArchitecture/Store/scope(state:action:)-90255`` and hand those child
+      stores to the child views.
+      
+      There are more advanced ways of composing features, especially when it comes to navigation. 
+      See the article <doc:Navigation> for more information on the navigation tools in the library,
+      as well as the second tutorial in <doc:MeetComposableArchitecture>.
+    }
+  }
+}
+ 
