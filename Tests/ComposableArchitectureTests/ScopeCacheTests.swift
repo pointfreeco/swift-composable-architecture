@@ -118,21 +118,6 @@ final class ScopeCacheTests: BaseTCATestCase {
       }
     #endif
   }
-
-  func testBasics() {
-    let store = Store(initialState: Feature.State(child: Feature.State())) {
-      Feature()
-    }
-    let childStore: Store = store.scope(state: \.child, action: \.child)
-    let unwrappedChildStore = childStore.scope(
-      state: ToState { $0! },
-      id: childStore.id(state: \.!, action: \.self),
-      action: { $0 },
-      isInvalid: { $0 == nil }
-    )
-    unwrappedChildStore.send(.dismiss)
-    XCTAssertEqual(store.currentState.child, nil)
-  }
 }
 
 @Reducer
