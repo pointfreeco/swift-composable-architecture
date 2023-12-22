@@ -5,26 +5,59 @@ import XCTest
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 @MainActor
 final class StorePerceptionTests: BaseTCATestCase {
-  func testPerceptionCheck_SkipWhenNonInViewBody() {
+  func testPerceptionCheck_SkipWhenOutsideView() {
     let store = Store(initialState: Feature.State()) {
       Feature()
     }
-
     store.send(.tap)
   }
 
-//  func testPerceptionCheck_SkipWhenNonInView() {
-//    struct FeatureView: View {
-//      let store = Store(initialState: Feature.State()) {
-//        Feature()
-//      }
-//      var body: some View {
-//        Text("Hi")
-//          .onAppear { store.send(.tap) }
-//      }
-//    }
-//    render(FeatureView())
-//  }
+  func testPerceptionCheck_SkipWhenActionClosureOfView() {
+    struct FeatureView: View {
+      let store = Store(initialState: Feature.State()) {
+        Feature()
+      }
+      var body: some View {
+        Text("Hi")
+          .onAppear { store.send(.tap) }
+      }
+    }
+    render(FeatureView())
+  }
+
+  func testPerceptionCheck_AccessStateWithoutTracking() {
+    struct FeatureView: View {
+      let store = Store(initialState: Feature.State()) {
+        Feature()
+      }
+      var body: some View {
+        Text(store.count.description)
+      }
+    }
+    XCTExpectFailure {
+      render(FeatureView())
+    } issueMatcher: {
+      $0.compactDescription == """
+        Perceptible state was accessed but is not being tracked. Track changes to state by \
+        wrapping your view in a 'WithPerceptionTracking' view.
+        """
+    }
+  }
+
+
+  func testPerceptionCheck_AccessStateWithTracking() {
+    struct FeatureView: View {
+      let store = Store(initialState: Feature.State()) {
+        Feature()
+      }
+      var body: some View {
+        WithPerceptionTracking {
+          Text(store.count.description)
+        }
+      }
+    }
+    render(FeatureView())
+  }
 
   private func render(_ view: some View) {
     let image = ImageRenderer(content: view).cgImage
