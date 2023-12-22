@@ -82,14 +82,22 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 }
 
 #Preview {
-  CardView(
-    syncUp: SyncUp(
-      id: SyncUp.ID(),
-      attendees: [],
-      duration: .seconds(60),
-      meetings: [],
-      theme: .bubblegum,
-      title: "Point-Free Morning Sync"
-    )
+  SyncUpsListView(
+    store: Store(
+      initialState: SyncupsList.State(
+        syncUps: [
+          SyncUp(
+            id: SyncUp.ID(),
+            attendees: [],
+            duration: .seconds(60),
+            meetings: [],
+            theme: .bubblegum,
+            title: "Point-Free Morning Sync"
+          )
+        ]
+      )
+    ) {
+      SyncUpsList()
+    }
   )
 }

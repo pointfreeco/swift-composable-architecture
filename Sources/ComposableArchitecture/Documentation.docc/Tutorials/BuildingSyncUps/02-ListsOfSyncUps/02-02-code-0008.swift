@@ -13,7 +13,7 @@ struct SyncUpsListView: View {
     List {
       ForEach(store.syncUps) { syncUp in
         Button {
-          
+
         } label: {
           CardView(syncUp: syncUp)
         }

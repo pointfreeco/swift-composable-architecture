@@ -155,8 +155,8 @@
       @Step {
         Add a `CardView` that represents a single row in the list of sync ups.  
         
-        > Note: We are omitting the implementation of `SyncUpsList` to keep the code snippet
-        short.
+        > Note: We are omitting the implementation of the `SyncUpsList` reducer to keep the code
+        snippet short.
         
         @Code(name: "SyncUpsList.swift", file: 02-02-code-0006.swift, previousFile: 02-02-code-0006-previous.swift)
       }
@@ -171,10 +171,9 @@
       @Step {
         Implement the `body` of the view as `List` with a `ForEach` that iterates over the
         collection of sync ups. We will also add a button to the tool bar that will eventually
-        present a sheet for adding a new sync up.
-        
-        Since we marked the `State` type with the ``ComposableArchitecture/ObservableState``
-        macro we can access state directly in the `store` and send actions to it.
+        present a sheet for adding a new sync up. Since we marked the `State` type with the
+        ``ComposableArchitecture/ObservableState`` macro we can access state directly in the
+        `store` and send actions to it.
         
         > Note: In order to get the colors for each `Theme` value you will need to copy the 
         [Assets.xcassets][assets] directory into your project.
