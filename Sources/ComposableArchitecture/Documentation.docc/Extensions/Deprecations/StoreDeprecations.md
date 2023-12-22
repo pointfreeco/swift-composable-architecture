@@ -12,4 +12,3 @@ instead.
 ### Scoping stores
 
 - ``Store/scope(state:action:)-9iai9``
-- ``Store/scope(state:action:)-hei8``

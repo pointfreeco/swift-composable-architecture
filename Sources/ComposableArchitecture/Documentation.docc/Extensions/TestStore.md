@@ -17,6 +17,7 @@
 
 - ``send(_:assert:file:line:)``
 - ``receive(_:timeout:assert:file:line:)-6325h``
+- ``receive(_:_:timeout:assert:file:line:)-dkei``
 - ``receive(_:timeout:assert:file:line:)-5awso``
 - ``receive(_:timeout:assert:file:line:)-7md3m``
 - ``assert(_:file:line:)``
