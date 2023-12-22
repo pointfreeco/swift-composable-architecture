@@ -3,8 +3,9 @@
   import ComposableArchitecture
   import XCTest
 
+  @MainActor
   final class RuntimeWarningTests: BaseTCATestCase {
-    func testStoreCreationMainThread() {
+    func testStoreCreationMainThread() async {
       uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
         $0.compactDescription == """
@@ -15,13 +16,13 @@
           """
       }
 
-      Task {
+      _ = await Task.detached {
         _ = Store<Int, Void>(initialState: 0) {}
       }
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
+      .value
     }
 
-    func testEffectFinishedMainThread() throws {
+    func testEffectFinishedMainThread() async throws {
       XCTExpectFailure {
         $0.compactDescription == """
           An effect completed on a non-main thread. …
@@ -51,11 +52,11 @@
           }
         }
       }
-      store.send(.tap)
-      _ = XCTWaiter.wait(for: [.init()], timeout: 5)
+      await store.send(.tap).finish()
     }
 
-    func testStoreScopeMainThread() {
+    @MainActor
+    func testStoreScopeMainThread() async {
       uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
         [
@@ -76,13 +77,14 @@
       }
 
       let store = Store<Int, Void>(initialState: 0) {}
-      Task {
+      await Task.detached {
         _ = store.scope(state: { $0 }, action: { $0 })
       }
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
+      .value
     }
 
-    func testViewStoreSendMainThread() {
+    @MainActor
+    func testViewStoreSendMainThread() async {
       uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
         [
@@ -93,30 +95,17 @@
           "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """,
-          """
-          An effect completed on a non-main thread. …
-
-            Effect returned from:
-              ()
-
-          Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread.
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
-          (including all of its scopes and derived view stores) must be done on the main thread.
-          """,
         ].contains($0.compactDescription)
       }
 
       let store = Store<Int, Void>(initialState: 0) {}
-      Task {
-        store.send(())
+      await Task.detached {
+        _ = store.send(())
       }
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
+      .value
     }
 
     #if os(macOS)
-      @MainActor
       func testEffectEmitMainThread() async throws {
         try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] != nil)
         XCTExpectFailure {
@@ -189,7 +178,6 @@
       }
     #endif
 
-    @MainActor
     func testBindingUnhandledAction() {
       let line = #line + 2
       struct State: Equatable {
@@ -215,7 +203,6 @@
       }
     }
 
-    @MainActor
     func testBindingUnhandledAction_BindingState() {
       struct State: Equatable {
         @BindingState var value = 0

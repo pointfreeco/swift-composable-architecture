@@ -72,8 +72,8 @@ public struct NavigationLinkStore<
     @ViewBuilder label: () -> Label
   ) {
     let store = store.scope(
-      state: ToState(\.self),
       id: nil,
+      state: ToState(\.self),
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
     )
@@ -121,8 +121,8 @@ public struct NavigationLinkStore<
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
     let store = store.scope(
-      state: ToState(\.self),
       id: nil,
+      state: ToState(\.self),
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id }
     )
