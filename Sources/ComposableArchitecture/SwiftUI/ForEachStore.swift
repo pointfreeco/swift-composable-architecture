@@ -134,14 +134,10 @@ public struct ForEachStore<
     ) { viewStore in
       ForEach(viewStore.state, id: viewStore.state.id) { element in
         let id = element[keyPath: viewStore.state.id]
-        var element = element
         content(
           store.scope(
-            state: ToState {
-              element = $0[id: id] ?? element
-              return element
-            },
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
+            state: ToState(\.[id: id, default: SubscriptDefault(element)]),
             action: { .element(id: id, action: $0) },
             isInvalid: { !$0.ids.contains(id) }
           )
@@ -193,14 +189,10 @@ public struct ForEachStore<
     ) { viewStore in
       ForEach(viewStore.state, id: viewStore.state.id) { element in
         let id = element[keyPath: viewStore.state.id]
-        var element = element
         content(
           store.scope(
-            state: ToState {
-              element = $0[id: id] ?? element
-              return element
-            },
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
+            state: ToState(\.[id: id, default: SubscriptDefault(element)]),
             action: { (id, $0) },
             isInvalid: { !$0.ids.contains(id) }
           )

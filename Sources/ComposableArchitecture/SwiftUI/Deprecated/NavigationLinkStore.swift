@@ -72,16 +72,16 @@ public struct NavigationLinkStore<
     @ViewBuilder label: () -> Label
   ) {
     let store = store.scope(
-      state: ToState(\.self),
       id: nil,
+      state: ToState(\.self),
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
     )
     self.store = store
     self.viewStore = ViewStore(
       store.scope(
-        state: ToState { $0.wrappedValue.flatMap(toDestinationState) != nil },
         id: nil,
+        state: ToState { $0.wrappedValue.flatMap(toDestinationState) != nil },
         action: { $0 },
         isInvalid: nil
       ),
@@ -123,16 +123,16 @@ public struct NavigationLinkStore<
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
     let store = store.scope(
-      state: ToState(\.self),
       id: nil,
+      state: ToState(\.self),
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id }
     )
     self.store = store
     self.viewStore = ViewStore(
       store.scope(
-        state: ToState { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
         id: nil,
+        state: ToState { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
         action: { $0 },
         isInvalid: nil
       ),
@@ -160,10 +160,10 @@ public struct NavigationLinkStore<
     ) {
       IfLetStore(
         self.store.scope(
+          id: nil,
           state: ToState(
             returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) }
           ),
-          id: nil,
           action: { .presented(self.fromDestinationAction($0)) },
           isInvalid: nil
         ),

@@ -151,8 +151,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
     self.store = store.scope(
-      state: ToState(toViewState),
       id: nil,
+      state: ToState(toViewState),
       action: fromViewAction,
       isInvalid: nil
     )

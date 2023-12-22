@@ -86,13 +86,9 @@ public struct _StoreCollection<ID: Hashable, State, Action>: RandomAccessCollect
       return Store()
     }
     let id = self.data.ids[position]
-    var element = self.data[id: id]!
     return self.store.scope(
-      state: ToState {
-        element = $0[id: id] ?? element
-        return element
-      },
       id: self.store.id(state: \.[id: id]!, action: \.[id: id]),
+      state: ToState(\.[id: id, default: SubscriptDefault(self.data[id: id]!)]),
       action: { .element(id: id, action: $0) },
       isInvalid: { !$0.ids.contains(id) }
     )

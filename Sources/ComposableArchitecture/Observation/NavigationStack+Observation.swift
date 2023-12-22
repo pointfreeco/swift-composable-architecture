@@ -159,15 +159,11 @@ public struct _NavigationDestinationViewModifier<
     content
       .environment(\.navigationDestinationType, State.self)
       .navigationDestination(for: StackState<State>.Component.self) { component in
-        var element = component.element
         self
           .destination(
             self.store.scope(
-              state: ToState {
-                element = $0[id: component.id] ?? element
-                return element
-              },
               id: self.store.id(state: \.[id: component.id], action: \.[id: component.id]),
+              state: ToState(\.[id: component.id, default: SubscriptDefault(component.element)]),
               action: { .element(id: component.id, action: $0) },
               isInvalid: { !$0.ids.contains(component.id) }
             )
