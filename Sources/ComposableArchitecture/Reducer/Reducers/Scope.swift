@@ -313,56 +313,70 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     )
   }
 
-  @inlinable
-  public func reduce(
-    into state: inout ParentState, action: ParentAction
-  ) -> Effect<ParentAction> {
+  public func _reduce(into state: inout ParentState, action: ParentAction, store: Store<ParentState, ParentAction>) {
     guard let childAction = self.toChildAction.extract(from: action)
-    else { return .none }
+    else { return }
+
     switch self.toChildState {
-    case let .casePath(toChildState, fileID, line):
-      guard var childState = toChildState.extract(from: state) else {
-        runtimeWarn(
-          """
-          A "Scope" at "\(fileID):\(line)" received a child action when child state was set to a \
-          different case. …
+    case .casePath:
+      fatalError()
 
-            Action:
-              \(debugCaseOutput(action))
-            State:
-              \(debugCaseOutput(state))
-
-          This is generally considered an application logic error, and can happen for a few \
-          reasons:
-
-          • A parent reducer set "\(typeName(ParentState.self))" to a different case before the \
-          scoped reducer ran. Child reducers must run before any parent reducer sets child state \
-          to a different case. This ensures that child reducers can handle their actions while \
-          their state is still available. Consider using "Reducer.ifCaseLet" to embed this \
-          child reducer in the parent reducer that change its state to ensure the child reducer \
-          runs first.
-
-          • An in-flight effect emitted this action when child state was unavailable. While it may \
-          be perfectly reasonable to ignore this action, consider canceling the associated effect \
-          before child state changes to another case, especially if it is a long-living effect.
-
-          • This action was sent to the store while state was another case. Make sure that actions \
-          for this reducer can only be sent from a view store when state is set to the appropriate \
-          case. In SwiftUI applications, use "SwitchStore".
-          """
-        )
-        return .none
-      }
-      defer { state = toChildState.embed(childState) }
-
-      return self.child
-        .reduce(into: &childState, action: childAction)
-        .map { self.toChildAction.embed($0) }
-
-    case let .keyPath(toChildState):
-      return self.child
-        .reduce(into: &state[keyPath: toChildState], action: childAction)
-        .map { self.toChildAction.embed($0) }
+    case let .keyPath(stateKeyPath):
+      let childStore = store.scope(state: { $0[keyPath: stateKeyPath] }, action: { self.toChildAction.embed($0) })
+      self.child._reduce(into: &state[keyPath: stateKeyPath], action: childAction, store: childStore)
     }
   }
+
+//  @inlinable
+//  public func reduce(
+//    into state: inout ParentState, action: ParentAction
+//  ) -> Effect<ParentAction> {
+//    guard let childAction = self.toChildAction.extract(from: action)
+//    else { return .none }
+//    switch self.toChildState {
+//    case let .casePath(toChildState, fileID, line):
+//      guard var childState = toChildState.extract(from: state) else {
+//        runtimeWarn(
+//          """
+//          A "Scope" at "\(fileID):\(line)" received a child action when child state was set to a \
+//          different case. …
+//
+//            Action:
+//              \(debugCaseOutput(action))
+//            State:
+//              \(debugCaseOutput(state))
+//
+//          This is generally considered an application logic error, and can happen for a few \
+//          reasons:
+//
+//          • A parent reducer set "\(typeName(ParentState.self))" to a different case before the \
+//          scoped reducer ran. Child reducers must run before any parent reducer sets child state \
+//          to a different case. This ensures that child reducers can handle their actions while \
+//          their state is still available. Consider using "Reducer.ifCaseLet" to embed this \
+//          child reducer in the parent reducer that change its state to ensure the child reducer \
+//          runs first.
+//
+//          • An in-flight effect emitted this action when child state was unavailable. While it may \
+//          be perfectly reasonable to ignore this action, consider canceling the associated effect \
+//          before child state changes to another case, especially if it is a long-living effect.
+//
+//          • This action was sent to the store while state was another case. Make sure that actions \
+//          for this reducer can only be sent from a view store when state is set to the appropriate \
+//          case. In SwiftUI applications, use "SwitchStore".
+//          """
+//        )
+//        return .none
+//      }
+//      defer { state = toChildState.embed(childState) }
+//
+//      return self.child
+//        .reduce(into: &childState, action: childAction)
+//        .map { self.toChildAction.embed($0) }
+//
+//    case let .keyPath(toChildState):
+//      return self.child
+//        .reduce(into: &state[keyPath: toChildState], action: childAction)
+//        .map { self.toChildAction.embed($0) }
+//    }
+//  }
 }

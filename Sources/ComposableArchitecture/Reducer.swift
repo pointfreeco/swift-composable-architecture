@@ -215,6 +215,8 @@ public protocol Reducer<State, Action> {
   ///   the system.
   func reduce(into state: inout State, action: Action) -> Effect<Action>
 
+  func _reduce(into state: inout State, action: Action, store: Store<State, Action>) 
+
   /// The content and behavior of a reducer that is composed from other reducers.
   ///
   /// Implement this requirement when you want to incorporate the behavior of other reducers
@@ -229,6 +231,19 @@ public protocol Reducer<State, Action> {
   /// > instead, either with ``Reduce``, or with a separate, dedicated conformance.
   @ReducerBuilder<State, Action>
   var body: Body { get }
+}
+
+extension Reducer {
+  // TODO: Hopefully we can drop the `inout State` at some point
+  public func _reduce(into state: inout State, action: Action, store: Store<State, Action>) {
+    let effects = self.reduce(into: &state, action: action)
+    _ = effects  // TODO
+  }
+}
+extension Reducer {
+  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    fatalError()
+  }
 }
 
 extension Reducer where Body == Never {
@@ -251,10 +266,12 @@ extension Reducer where Body == Never {
 extension Reducer where Body: Reducer, Body.State == State, Body.Action == Action {
   /// Invokes the ``Body-40qdd``'s implementation of ``reduce(into:action:)-1t2ri``.
   @inlinable
-  public func reduce(
-    into state: inout Body.State, action: Body.Action
-  ) -> Effect<Body.Action> {
-    self.body.reduce(into: &state, action: action)
+  public func _reduce(
+    into state: inout Body.State,
+    action: Body.Action,
+    store: StoreOf<Body>
+  ) {
+    self.body._reduce(into: &state, action: action, store: store)
   }
 }
 

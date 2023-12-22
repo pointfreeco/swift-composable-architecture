@@ -126,11 +126,16 @@ public enum ReducerBuilder<State, Action> {
       self.r1 = r1
     }
 
-    @inlinable
-    public func reduce(into state: inout R0.State, action: R0.Action) -> Effect<R0.Action> {
-      self.r0.reduce(into: &state, action: action)
-        .merge(with: self.r1.reduce(into: &state, action: action))
+    public func _reduce(into state: inout R0.State, action: R0.Action, store: StoreOf<R0>) {
+      self.r0._reduce(into: &state, action: action, store: store)
+      self.r1._reduce(into: &state, action: action, store: store)
     }
+
+//    @inlinable
+//    public func reduce(into state: inout R0.State, action: R0.Action) -> Effect<R0.Action> {
+//      self.r0.reduce(into: &state, action: action)
+//        .merge(with: self.r1.reduce(into: &state, action: action))
+//    }
   }
 
   public struct _SequenceMany<Element: Reducer>: Reducer {

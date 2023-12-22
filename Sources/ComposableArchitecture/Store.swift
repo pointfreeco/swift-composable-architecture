@@ -177,6 +177,7 @@ public final class Store<State, Action> {
     self.rootStore = RootStore(initialState: (), reducer: EmptyReducer<Void, Never>())
     self.toState = .keyPath(\State.self)
     self.fromAction = { $0 }
+    self.rootStore.store = self
   }
 
   deinit {
@@ -406,6 +407,7 @@ public final class Store<State, Action> {
       toState: .keyPath(\State.self),
       fromAction: { $0 }
     )
+    self.rootStore.store = self
   }
 
   /// A publisher that emits when state changes.
