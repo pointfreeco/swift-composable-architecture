@@ -82,37 +82,23 @@
       _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
     }
 
-    func testViewStoreSendMainThread() {
+    @MainActor
+    func testViewStoreSendMainThread() async throws {
       uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
-        [
+        $0.compactDescription ==
           """
-          "Store.send" was called on a non-main thread with: () …
+          "ViewStore.send" was called on a non-main thread with: () …
 
-          The "Store" class is not thread-safe, and so all interactions with an instance of \
-          "Store" (including all of its scopes and derived view stores) must be done on the main \
-          thread.
-          """,
+          The "Store" class is not thread-safe, and so all interactions with an instance of "Store" (including all of its scopes and derived view stores) must be done on the main thread.
           """
-          An effect completed on a non-main thread. …
-
-            Effect returned from:
-              ()
-
-          Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-          receive their output on the main thread.
-
-          The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
-          (including all of its scopes and derived view stores) must be done on the main thread.
-          """,
-        ].contains($0.compactDescription)
       }
 
       let store = Store<Int, Void>(initialState: 0) {}
-      Task {
-        store.send(())
+      await Task.detached {
+        await store.send(()).finish()
       }
-      _ = XCTWaiter.wait(for: [.init()], timeout: 0.5)
+      .value
     }
 
     #if os(macOS)
