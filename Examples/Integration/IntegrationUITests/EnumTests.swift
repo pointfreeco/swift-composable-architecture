@@ -19,6 +19,16 @@ final class EnumTests: BaseIntegrationTests {
       """
       BasicsView.body
       EnumView.body
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<EnumView.Feature.Destination>.init
+      StoreOf<EnumView.Feature.Destination>.init
+      StoreOf<EnumView.Feature.Destination>.init
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.deinit
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.deinit
@@ -80,8 +90,19 @@ final class EnumTests: BaseIntegrationTests {
       """
       BasicsView.body
       EnumView.body
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
+      StoreOf<BasicsView.Feature?>.init
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.deinit
       ViewStore<EnumView.ViewState, EnumView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.deinit

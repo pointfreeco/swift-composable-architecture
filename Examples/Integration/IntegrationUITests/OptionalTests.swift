@@ -18,6 +18,9 @@ final class OptionalTests: BaseIntegrationTests {
       """
       BasicsView.body
       OptionalView.body
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.deinit
       ViewStore<OptionalView.ViewState, OptionalView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.deinit

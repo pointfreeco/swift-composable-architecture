@@ -152,7 +152,6 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
-    defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     if let prepareDependencies = prepareDependencies {
       let (initialState, reducer) = withDependencies(prepareDependencies) {
         (initialState(), reducer())
@@ -170,7 +169,6 @@ public final class Store<State, Action> {
   }
 
   deinit {
-    self.invalidate()
     Logger.shared.log("\(storeTypeName(of: self)).deinit")
   }
 
@@ -443,40 +441,25 @@ public final class Store<State, Action> {
     {
       return childStore
     }
-    let isInvalid =
-      id == nil || !self.canCacheChildren
-      ? {
-        self._isInvalidated() || isInvalid?(self.currentState) == true
-      }
-      : { [weak self] in
-        guard let self = self else { return true }
-        return self._isInvalidated() || isInvalid?(self.currentState) == true
-      }
     let childStore = Store<ChildState, ChildAction>(
       rootStore: self.rootStore,
       toState: self.toState.appending(state.base),
-      fromAction: { self.fromAction(fromChildAction($0)) }
+      fromAction: { [fromAction] in fromAction(fromChildAction($0)) }
     )
-    childStore._isInvalidated = isInvalid
-    childStore.canCacheChildren = self.canCacheChildren && id != nil
-    if let id = id {
-      if self.canCacheChildren {
-        self.children[id] = childStore
+    childStore._isInvalidated =
+      id == nil || !self.canCacheChildren
+      ? {
+        isInvalid?(self.currentState) == true || self._isInvalidated()
       }
+      : { [weak self] in
+        guard let self = self else { return true }
+        return isInvalid?(self.currentState) == true || self._isInvalidated()
+      }
+    childStore.canCacheChildren = self.canCacheChildren && id != nil
+    if let id = id, self.canCacheChildren {
+      self.children[id] = childStore
     }
     return childStore
-  }
-
-  fileprivate func invalidate() {
-    for id in self.children.keys {
-      self.invalidateChild(id: id)
-    }
-  }
-
-  fileprivate func invalidateChild(id: ScopeID<State, Action>) {
-    guard self.children.keys.contains(id) else { return }
-    (self.children[id] as? any AnyStore)?.invalidate()
-    self.children[id] = nil
   }
 
   @_spi(Internals)
@@ -484,9 +467,11 @@ public final class Store<State, Action> {
     _ action: Action,
     originatingFrom originatingAction: Action?
   ) -> Task<Void, Never>? {
-    if BindingLocal.isActive && self._isInvalidated() {
-      return .none
-    }
+    #if DEBUG
+      if BindingLocal.isActive && self._isInvalidated() {
+        return .none
+      }
+    #endif
     return self.rootStore.send(self.fromAction(action))
   }
 
@@ -495,12 +480,13 @@ public final class Store<State, Action> {
     toState: PartialToState<State>,
     fromAction: @escaping (Action) -> Any
   ) {
+    defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     self.rootStore = rootStore
     self.toState = toState
     self.fromAction = fromAction
   }
 
-  init<R: Reducer>(
+  convenience init<R: Reducer>(
     initialState: R.State,
     reducer: R
   )
@@ -508,9 +494,11 @@ public final class Store<State, Action> {
     R.State == State,
     R.Action == Action
   {
-    self.rootStore = RootStore(initialState: initialState, reducer: reducer)
-    self.toState = PartialToState.keyPath(\State.self)
-    self.fromAction = { $0 }
+    self.init(
+      rootStore: RootStore(initialState: initialState, reducer: reducer),
+      toState: .keyPath(\State.self),
+      fromAction: { $0 }
+    )
   }
 
   /// A publisher that emits when state changes.
@@ -639,10 +627,6 @@ public struct StoreTask: Hashable, Sendable {
   public var isCancelled: Bool {
     self.rawValue?.isCancelled ?? true
   }
-}
-
-private protocol AnyStore {
-  func invalidate()
 }
 
 private protocol _OptionalProtocol {}
