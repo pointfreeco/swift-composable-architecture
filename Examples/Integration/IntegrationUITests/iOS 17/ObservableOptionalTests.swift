@@ -42,7 +42,6 @@ final class iOS17_ObservableOptionalTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableOptionalView.body
-      StoreOf<ObservableOptionalView.Feature>.scope
       """
     }
     self.app.buttons["Increment"].tap()

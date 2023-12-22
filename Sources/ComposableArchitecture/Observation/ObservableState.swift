@@ -94,12 +94,19 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   }
 }
 
+// TODO: Do we need this? check again with modify PR is merged
+//public func _$isIdentityEqual<T: ObservableState>(
+//  _ lhs: T, _ rhs: T
+//) -> Bool {
+//  return lhs._$id == rhs._$id
+//}
+
 @inlinable
 public func _$isIdentityEqual<ID: Hashable, T: ObservableState>(
   _ lhs: IdentifiedArray<ID, T>, 
   _ rhs: IdentifiedArray<ID, T>
 ) -> Bool {
-  areOrderedSetsDuplicates(lhs.ids, rhs.ids)
+  return areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
 @inlinable
@@ -107,7 +114,7 @@ public func _$isIdentityEqual<T: ObservableState>(
   _ lhs: PresentationState<T>, 
   _ rhs: PresentationState<T>
 ) -> Bool {
-  lhs.wrappedValue?._$id == rhs.wrappedValue?._$id
+  return lhs.wrappedValue?._$id == rhs.wrappedValue?._$id
 }
 
 @inlinable
@@ -115,7 +122,7 @@ public func _$isIdentityEqual<T: ObservableState>(
   _ lhs: StackState<T>, 
   _ rhs: StackState<T>
 ) -> Bool {
-  areOrderedSetsDuplicates(lhs.ids, rhs.ids)
+  return areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
 @inlinable
@@ -131,7 +138,7 @@ where C.Element: ObservableState
 // NB: This is a fast path so that String is not checked as a collection.
 @inlinable
 public func _$isIdentityEqual(_ lhs: String, _ rhs: String) -> Bool {
-  false
+  return false
 }
 
 @inlinable
@@ -139,13 +146,17 @@ public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   guard !_isPOD(T.self) else { return false }
   
   func openCollection<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
-    guard C.Element.self is ObservableState.Type else { return false }
+    guard C.Element.self is ObservableState.Type else {
+      return false
+    }
 
     func openIdentifiable<Element: Identifiable>(_: Element.Type) -> Bool? {
       guard
         let lhs = lhs as? IdentifiedArrayOf<Element>,
         let rhs = rhs as? IdentifiedArrayOf<Element>
-      else { return nil }
+      else {
+        return nil
+      }
       return areOrderedSetsDuplicates(lhs.ids, rhs.ids)
     }
 

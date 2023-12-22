@@ -5,27 +5,7 @@ import SwiftUI
   import Observation
 #endif
 
-extension Store: Perceptible {
-  var observableState: State {
-    get {
-      if State.self is ObservableState.Type {
-        self._$observationRegistrar.access(self, keyPath: \.observableState)
-      }
-      return self.stateSubject.value
-    }
-    set {
-      if State.self is ObservableState.Type,
-        !_$isIdentityEqual(self.stateSubject.value, newValue)
-      {
-        self._$observationRegistrar.withMutation(of: self, keyPath: \.observableState) {
-          self.stateSubject.value = newValue
-        }
-      } else {
-        self.stateSubject.value = newValue
-      }
-    }
-  }
-}
+extension Store: Perceptible {}
 
 #if canImport(Observation)
   @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
@@ -34,9 +14,9 @@ extension Store: Perceptible {
 
 extension Store where State: ObservableState {
   /// Direct access to state in the store when `State` conforms to ``ObservableState``.
-  private(set) public var state: State {
-    get { self.observableState }
-    set { self.observableState = newValue }
+  public var state: State {
+    self._$observationRegistrar.access(self, keyPath: \.currentState)
+    return self.currentState
   }
 
   public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
@@ -110,14 +90,16 @@ extension Store where State: ObservableState {
         )
       }
     #endif
-    guard self.observableState[keyPath: state] != nil
+    guard var childState = self.state[keyPath: state]
     else { return nil }
     return self.scope(
-      state: { $0[keyPath: state]! },
+      state: ToState {
+        childState = $0[keyPath: state] ?? childState
+        return childState
+      },
       id: self.id(state: state.appending(path: \.!), action: action),
       action: { action($0) },
-      isInvalid: { $0[keyPath: state] == nil },
-      removeDuplicates: nil
+      isInvalid: { $0[keyPath: state] == nil }
     )
   }
 }
@@ -183,7 +165,7 @@ extension Binding {
         }
       },
       set: {
-        if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: state] != nil {
+        if $0 == nil, self.wrappedValue.state[keyPath: state] != nil {
           self.wrappedValue.send(action(.dismiss), transaction: $1)
         }
       }
@@ -247,7 +229,7 @@ extension Bindable {
     Binding<Store<ChildState, ChildAction>?>(
       get: { self.wrappedValue.scope(state: state, action: action.appending(path: \.presented)) },
       set: {
-        if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: state] != nil {
+        if $0 == nil, self.wrappedValue.currentState[keyPath: state] != nil {
           self.wrappedValue.send(action(.dismiss))
         }
       }
@@ -309,7 +291,7 @@ extension BindableStore {
     Binding<Store<ChildState, ChildAction>?>(
       get: { self.wrappedValue.scope(state: state, action: action.appending(path: \.presented)) },
       set: {
-        if $0 == nil, self.wrappedValue.stateSubject.value[keyPath: state] != nil {
+        if $0 == nil, self.wrappedValue.currentState[keyPath: state] != nil {
           self.wrappedValue.send(action(.dismiss))
         }
       }

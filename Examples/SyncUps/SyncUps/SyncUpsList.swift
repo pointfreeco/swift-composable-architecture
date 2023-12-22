@@ -207,7 +207,7 @@ struct SyncUpsList_Previews: PreviewProvider {
       store: Store(initialState: SyncUpsList.State()) {
         SyncUpsList()
       } withDependencies: {
-        $0.dataManager.load = { _ in
+        $0.dataManager.load = { @Sendable _ in
           try JSONEncoder().encode([
             SyncUp.mock,
             .designMock,
@@ -226,4 +226,17 @@ struct SyncUpsList_Previews: PreviewProvider {
     )
     .previewDisplayName("Load data failure")
   }
+}
+
+#Preview {
+  CardView(
+    syncUp: SyncUp(
+      id: SyncUp.ID(),
+      attendees: [],
+      duration: .seconds(60),
+      meetings: [],
+      theme: .bubblegum,
+      title: "Point-Free Morning Sync"
+    )
+  )
 }

@@ -28,7 +28,6 @@ final class iOS17_ObservableEnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      StoreOf<ObservableEnumView.Feature>.scope
       """
     }
   }
@@ -41,9 +40,8 @@ final class iOS17_ObservableEnumTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, false)
     self.assertLogs {
       """
+      ObservableBasicsView.body
       ObservableEnumView.body
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableEnumView.Feature.Destination>.deinit
       """
     }
   }
@@ -57,10 +55,9 @@ final class iOS17_ObservableEnumTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
+      ObservableBasicsView.body
       ObservableEnumView.body
-      StoreOf<ObservableBasicsView.Feature>.deinit
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableEnumView.Feature>.scope
       """
     }
   }
@@ -73,10 +70,8 @@ final class iOS17_ObservableEnumTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, false)
     self.assertLogs {
       """
+      ObservableBasicsView.body
       ObservableEnumView.body
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableEnumView.Feature.Destination>.deinit
-      StoreOf<ObservableEnumView.Feature>.scope
       """
     }
   }

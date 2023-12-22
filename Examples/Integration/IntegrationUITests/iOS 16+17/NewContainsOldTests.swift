@@ -18,8 +18,6 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     self.assertLogs {
       """
       NewContainsOldTestCase.body
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<NewContainsOldTestCase.Feature>.scope
       """
     }
 
@@ -28,10 +26,14 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      NewContainsOldTestCase.body
-      StoreOf<BasicsView.Feature>.scope
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -43,8 +45,6 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     self.assertLogs {
       """
       NewContainsOldTestCase.body
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<NewContainsOldTestCase.Feature>.scope
       """
     }
   }
@@ -58,10 +58,19 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
+      BasicsView.body
       NewContainsOldTestCase.body
-      StoreOf<BasicsView.Feature>.scope
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature>.init
+      WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -74,6 +83,7 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     self.app.buttons["iOS 16 + 17"].tap()
     self.assertLogs {
       """
+      StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.deinit
       """

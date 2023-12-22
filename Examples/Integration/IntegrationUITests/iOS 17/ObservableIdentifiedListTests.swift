@@ -21,7 +21,6 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
       ObservableIdentifiedListView.body.ForEach
       ObservableIdentifiedListView.body.ForEach
       StoreOf<ObservableBasicsView.Feature>.init
-      StoreOf<ObservableIdentifiedListView.Feature>.scope
       """
     }
   }
@@ -34,12 +33,10 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
     self.assertLogs {
       """
-      IdentifiedStoreOf<ObservableBasicsView.Feature>.scope
       ObservableBasicsView.body
       ObservableIdentifiedListView.body
       ObservableIdentifiedListView.body.ForEach
       ObservableIdentifiedListView.body.ForEach
-      StoreOf<ObservableIdentifiedListView.Feature>.scope
       """
     }
   }
@@ -52,9 +49,7 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
     self.assertLogs {
       """
-      IdentifiedStoreOf<ObservableBasicsView.Feature>.scope
       ObservableBasicsView.body
-      StoreOf<ObservableIdentifiedListView.Feature>.scope
       """
     }
   }

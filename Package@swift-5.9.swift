@@ -81,6 +81,7 @@ let package = Package(
       name: "Perception",
       dependencies: [
         "PerceptionMacros",
+        .product(name: "OrderedCollections", package: "swift-collections"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
     ),

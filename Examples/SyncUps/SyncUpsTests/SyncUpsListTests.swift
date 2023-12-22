@@ -102,7 +102,7 @@ final class SyncUpsListTests: XCTestCase {
       SyncUpsList()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
-      $0.dataManager.load = { _ in
+      $0.dataManager.load = { @Sendable _ in
         struct FileNotFound: Error {}
         throw FileNotFound()
       }

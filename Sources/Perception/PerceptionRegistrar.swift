@@ -191,10 +191,11 @@ extension PerceptionRegistrar: Hashable {
 
 #if DEBUG
   private func perceptionCheck() {
-    if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
+    if
+      #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
       !PerceptionLocals.isInPerceptionTracking,
       !PerceptionLocals.isInWithoutPerceptionChecking,
-      isInSwiftUIBody
+      isInSwiftUIBody()
     {
       runtimeWarn(
         """
@@ -205,7 +206,7 @@ extension PerceptionRegistrar: Hashable {
     }
   }
 
-  var isInSwiftUIBody: Bool {
+  private let isInSwiftUIBody: () -> Bool = memoize {
     for callStackSymbol in Thread.callStackSymbols {
       let mangledSymbol = callStackSymbol.utf8
         .drop(while: { $0 != .init(ascii: "$") })

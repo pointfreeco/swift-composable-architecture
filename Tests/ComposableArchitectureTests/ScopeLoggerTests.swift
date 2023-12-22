@@ -20,9 +20,8 @@ class ScopeLoggerTests: XCTestCase {
       let elementStore = pathStore.scope(state: \.[id:0]!, action: \.[id:0])
       Logger.shared.clear()
       elementStore.send(.incrementButtonTapped)
-      // TODO: This extra scope should go away once we get rid of store/reducer rescoping
       XCTAssertEqual(
-        ["StoreOf<NavigationTestCaseView.Feature>.scope"],
+        [],
         Logger.shared.logs
       )
       let _ = viewStore

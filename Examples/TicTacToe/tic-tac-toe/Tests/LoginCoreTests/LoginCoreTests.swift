@@ -10,10 +10,10 @@ final class LoginCoreTests: XCTestCase {
     let store = TestStore(initialState: Login.State()) {
       Login()
     } withDependencies: {
-      $0.authenticationClient.login = { _ in
+      $0.authenticationClient.login = { @Sendable _, _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
       }
-      $0.authenticationClient.twoFactor = { _ in
+      $0.authenticationClient.twoFactor = { @Sendable _, _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
       }
     }
@@ -49,10 +49,10 @@ final class LoginCoreTests: XCTestCase {
     let store = TestStore(initialState: Login.State()) {
       Login()
     } withDependencies: {
-      $0.authenticationClient.login = { _ in
+      $0.authenticationClient.login = { @Sendable _, _ in
         AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: true)
       }
-      $0.authenticationClient.twoFactor = { _ in
+      $0.authenticationClient.twoFactor = { @Sendable _, _ in
         try await Task.sleep(for: .seconds(1))
         return AuthenticationResponse(token: "deadbeefdeadbeef", twoFactorRequired: false)
       }

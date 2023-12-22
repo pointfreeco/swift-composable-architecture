@@ -55,7 +55,26 @@ public struct StackState<Element> {
 
   /// Accesses the value associated with the given id and case for reading and writing.
   ///
-  /// > Note: Accessing the wrong case will result in a runtime warning.
+  /// When using stack-based navigation (see <doc:StackBasedNavigation>) you will typically have a
+  /// single enum that represents all of the destinations that can be pushed onto the stack, and you
+  /// will hold that state in ``StackState``:
+  ///
+  /// ```swift
+  /// struct State {
+  ///   var path = StackState<Path.State>()
+  /// }
+  /// ```
+  ///
+  /// You can use this subscript for a succinct syntax to modify the data in a particular case of
+  /// the `Path.State` enum, like so:
+  ///
+  /// ```swift
+  /// state.path[id: 0, case: \.edit]?.alert = AlertState {
+  ///   Text("Delete?")
+  /// }
+  /// ```
+  ///
+  /// > Important: Accessing the wrong case will result in a runtime warning and test failure.
   public subscript<Case>(id id: StackElementID, case path: CaseKeyPath<Element, Case>) -> Case?
   where Element: CasePathable {
     _read { yield self[id: id, case: AnyCasePath(path)] }

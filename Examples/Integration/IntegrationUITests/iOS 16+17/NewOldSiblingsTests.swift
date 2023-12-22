@@ -18,10 +18,8 @@ final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<NewOldSiblingsView.Feature>.scope
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -31,8 +29,6 @@ final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<NewOldSiblingsView.Feature>.scope
       """
     }
   }
@@ -51,11 +47,8 @@ final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
       """
       BasicsView.body
       ObservableBasicsView.body
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<NewOldSiblingsView.Feature>.scope
-      StoreOf<NewOldSiblingsView.Feature>.scope
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }
@@ -75,11 +68,8 @@ final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
       """
       BasicsView.body
       ObservableBasicsView.body
-      StoreOf<BasicsView.Feature>.scope
-      StoreOf<NewOldSiblingsView.Feature>.scope
-      StoreOf<NewOldSiblingsView.Feature>.scope
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.deinit
-      ViewStore<BasicsView.Feature.State, BasicsView.Feature.Action>.init
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
     }

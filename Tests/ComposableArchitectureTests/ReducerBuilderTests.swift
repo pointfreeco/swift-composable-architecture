@@ -13,6 +13,10 @@ private struct Test {
   }
 
   @available(iOS, introduced: 9999)
+  @available(macOS, introduced: 9999)
+  @available(tvOS, introduced: 9999)
+  @available(visionOS, introduced: 9999)
+  @available(watchOS, introduced: 9999)
   @Reducer
   struct Unavailable {
     var body: some Reducer<State, Action> {
@@ -31,9 +35,9 @@ func testExistentialReducers() {
 func testLimitedAvailability() {
   _ = CombineReducers {
     Test()
-    if #available(iOS 9999, *) {
+    if #available(iOS 9999, macOS 9999, tvOS 9999, visionOS 9999, watchOS 9999, *) {
       Test.Unavailable()
-    } else if #available(iOS 8888, *) {
+    } else if #available(iOS 8888, macOS 8888, tvOS 8888, visionOS 8888, watchOS 8888, *) {
       EmptyReducer()
     }
   }
@@ -56,6 +60,10 @@ private struct Root {
   }
 
   @available(iOS, introduced: 9999)
+  @available(macOS, introduced: 9999)
+  @available(tvOS, introduced: 9999)
+  @available(visionOS, introduced: 9999)
+  @available(watchOS, introduced: 9999)
   @Reducer
   struct Unavailable {
     let body = EmptyReducer<State, Action>()
@@ -111,7 +119,7 @@ private struct Root {
       Self()
     }
 
-    if #available(iOS 9999, *) {
+    if #available(iOS 9999, macOS 9999, tvOS 9999, visionOS 9999, watchOS 9999, *) {
       Unavailable()
     }
   }

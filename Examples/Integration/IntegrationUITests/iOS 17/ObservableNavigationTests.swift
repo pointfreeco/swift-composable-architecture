@@ -24,7 +24,6 @@ final class iOS17_ObservableNavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      StoreOf<ObservableNavigationTestCaseView.Feature>.scope
       """
     }
   }
@@ -40,11 +39,6 @@ final class iOS17_ObservableNavigationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableBasicsView.body
-      StackStoreOf<ObservableBasicsView.Feature>.scope
-      StackStoreOf<ObservableBasicsView.Feature>.scope
-      StackStoreOf<ObservableBasicsView.Feature>.scope
-      StackStoreOf<ObservableBasicsView.Feature>.scope
-      StoreOf<ObservableNavigationTestCaseView.Feature>.scope
       """
     }
   }
