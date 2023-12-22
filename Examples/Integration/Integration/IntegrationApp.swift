@@ -276,7 +276,7 @@ struct RuntimeWarnings: View {
         .transition(.opacity.animation(.default))
       }
     }
-    .onReceive(NotificationCenter.default.publisher(for: .runtimeWarning)) { notification in
+    .onReceive(NotificationCenter.default.publisher(for: ._runtimeWarning)) { notification in
       if let message = notification.userInfo?["message"] as? String {
         self.runtimeWarnings.append(message)
       }
