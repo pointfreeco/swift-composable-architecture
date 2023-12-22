@@ -94,9 +94,12 @@ extension Store where State: ObservableState {
     else { return nil }
     return self.scope(
       id: self.id(state: state.appending(path: \.!), action: action),
-      state: ToState { $0[keyPath: state] ?? childState },
-      // TODO: This causes enum navigation to crash
+      // NB: Appending the `\.[default:]` subscript can crash with enum presentation.
+      //
+      //     https://github.com/apple/swift/issues/70611
+      //
       // state: ToState(state.appending(path: \.[default: SubscriptDefault(childState)])),
+      state: ToState { $0[keyPath: state] ?? childState },
       action: { action($0) },
       isInvalid: { $0[keyPath: state] == nil }
     )
