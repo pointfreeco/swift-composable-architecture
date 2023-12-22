@@ -116,6 +116,7 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.deinit
       ViewStore<PresentationView.ViewState, PresentationView.Feature.Action>.init
       ViewStoreOf<BasicsView.Feature>.deinit

@@ -622,7 +622,7 @@ extension ViewStore where ViewState: Equatable {
   }
 }
 
-struct HashableWrapper<Value>: Hashable {
+private struct HashableWrapper<Value>: Hashable {
   let rawValue: Value
   static func == (lhs: Self, rhs: Self) -> Bool { false }
   func hash(into hasher: inout Hasher) {}

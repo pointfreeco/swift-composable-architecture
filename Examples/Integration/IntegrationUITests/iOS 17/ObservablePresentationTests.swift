@@ -30,6 +30,7 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].firstMatch.tap()
     self.assertLogs {
       """
+      ObservableBasicsView.body
       ObservablePresentationView.body
       """
     }
@@ -48,7 +49,6 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservablePresentationView.body
-      StoreOf<ObservablePresentationView.Feature>.scope
       """
     }
     self.app.buttons["Increment"].tap()
@@ -62,6 +62,7 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].firstMatch.tap()
     self.assertLogs {
       """
+      ObservableBasicsView.body
       ObservablePresentationView.body
       """
     }
