@@ -40,7 +40,7 @@
               _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
             }
             _modify {
-              let oldValue = _$observationRegistrar.willModifiy(self, keyPath: \.count, &_count)
+              let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
               defer {
                 _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
               }
@@ -86,7 +86,7 @@
               _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
             }
             _modify {
-              let oldValue = _$observationRegistrar.willModifiy(self, keyPath: \.count, &_count)
+              let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
               defer {
                 _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
               }

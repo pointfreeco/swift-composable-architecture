@@ -26,21 +26,23 @@ final class StorePerceptionTests: BaseTCATestCase {
   }
 
   func testPerceptionCheck_AccessStateWithoutTracking() {
-    struct FeatureView: View {
-      let store = Store(initialState: Feature.State()) {
-        Feature()
+    if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10) {
+      struct FeatureView: View {
+        let store = Store(initialState: Feature.State()) {
+          Feature()
+        }
+        var body: some View {
+          Text(store.count.description)
+        }
       }
-      var body: some View {
-        Text(store.count.description)
-      }
-    }
-    XCTExpectFailure {
-      render(FeatureView())
-    } issueMatcher: {
-      $0.compactDescription == """
+      XCTExpectFailure {
+        render(FeatureView())
+      } issueMatcher: {
+        $0.compactDescription == """
         Perceptible state was accessed but is not being tracked. Track changes to state by \
         wrapping your view in a 'WithPerceptionTracking' view.
         """
+      }
     }
   }
 

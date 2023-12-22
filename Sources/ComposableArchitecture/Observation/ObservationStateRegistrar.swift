@@ -61,10 +61,10 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
   
     /// A no-op for non-observable values.
     ///
-    /// See ``willModifiy(_:keyPath:_:)-3ybfo`` for info on what this method does when used with
+    /// See ``willModify(_:keyPath:_:)-3ybfo`` for info on what this method does when used with
     /// observable values.
     @inlinable
-    public func willModifiy<Subject: Observable, Member>(
+    public func willModify<Subject: Observable, Member>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>,
       _ member: inout Member
@@ -79,7 +79,7 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
     ///   - keyPath: The key path of an observed property.
     ///   - member: The value in the subject that will be set.
     @inlinable
-    public func willModifiy<Subject: Observable, Member: ObservableState>(
+    public func willModify<Subject: Observable, Member: ObservableState>(
       _ subject: Subject,
       keyPath: KeyPath<Subject, Member>,
       _ member: inout Member
@@ -139,7 +139,7 @@ extension ObservationStateRegistrar {
 
   @_disfavoredOverload
   @inlinable
-  public func willModifiy<Subject: Perceptible, Member>(
+  public func willModify<Subject: Perceptible, Member>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>,
     _ member: inout Member

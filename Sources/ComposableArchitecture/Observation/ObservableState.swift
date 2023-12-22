@@ -16,10 +16,10 @@ public protocol ObservableState: Perceptible {
 public struct ObservableStateID: Equatable, Hashable, Sendable {
   @usableFromInline
   var location: UUID {
-    get { self.storage.location }
+    get { self.storage.location.value }
     set {
       if isKnownUniquelyReferenced(&self.storage) {
-        self.storage.location = newValue
+        self.storage.location.setValue(newValue)
       } else {
         self.storage = Storage(location: newValue, tag: self.tag)
       }
@@ -28,19 +28,13 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
 
   @usableFromInline
   var tag: Int? {
-    get { self.storage.tag }
-    set {
-      if isKnownUniquelyReferenced(&self.storage) {
-        self.storage.tag = newValue
-      } else {
-        self.storage = Storage(location: self.location, tag: newValue)
-      }
-    }
+    self.storage.tag
   }
 
   private var storage: Storage
 
-  private init(location: UUID, tag: Int? = nil) {
+  @usableFromInline
+  init(location: UUID, tag: Int? = nil) {
     self.storage = Storage(location: location, tag: tag)
   }
 
@@ -50,7 +44,7 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.storage === rhs.storage
-      || lhs.storage.location == rhs.storage.location
+      || lhs.storage.location.value == rhs.storage.location.value
       && lhs.storage.tag == rhs.storage.tag
   }
 
@@ -73,9 +67,7 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
 
   @inlinable
   public func _$tag(_ tag: Int?) -> Self {
-    var copy = self
-    copy.tag = tag
-    return copy
+    Self(location: self.location, tag: tag)
   }
 
   @inlinable
@@ -83,12 +75,12 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
     self.location = UUID()
   }
 
-  private final class Storage: @unchecked Sendable {
-    fileprivate var location: UUID
-    fileprivate var tag: Int?
+  private final class Storage: Sendable {
+    fileprivate let location: LockIsolated<UUID>
+    fileprivate let tag: Int?
 
     init(location: UUID = UUID(), tag: Int? = nil) {
-      self.location = location
+      self.location = LockIsolated(location)
       self.tag = tag
     }
   }

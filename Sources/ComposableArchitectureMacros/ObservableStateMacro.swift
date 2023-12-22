@@ -467,7 +467,7 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
       """
     let modifyAccessor: AccessorDeclSyntax = """
       _modify {
-        let oldValue = _$observationRegistrar.willModifiy(self, keyPath: \\.\(identifier), &_\(identifier))
+        let oldValue = _$observationRegistrar.willModify(self, keyPath: \\.\(identifier), &_\(identifier))
         defer {
           _$observationRegistrar.didModify(self, keyPath: \\.\(identifier), &_\(identifier), oldValue, _$isIdentityEqual)
         }
