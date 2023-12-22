@@ -194,7 +194,7 @@ extension PerceptionRegistrar: Hashable {
     if
       #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
       !PerceptionLocals.isInPerceptionTracking,
-      !PerceptionLocals.isInWithoutPerceptionChecking,
+      !PerceptionLocals.skipPerceptionChecking,
       isInSwiftUIBody()
     {
       runtimeWarn(
@@ -272,7 +272,7 @@ extension PerceptionRegistrar: Hashable {
 public func withoutPerceptionChecking<T>(
   _ apply: () -> T
 ) -> T {
-    return PerceptionLocals.$isInWithoutPerceptionChecking.withValue(true) {
+    return PerceptionLocals.$skipPerceptionChecking.withValue(true) {
       apply()
     }
 }

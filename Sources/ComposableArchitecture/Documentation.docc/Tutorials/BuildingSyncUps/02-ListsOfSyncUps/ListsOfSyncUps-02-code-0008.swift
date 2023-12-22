@@ -80,16 +80,3 @@ struct TrailingIconLabelStyle: LabelStyle {
 extension LabelStyle where Self == TrailingIconLabelStyle {
   static var trailingIcon: Self { Self() }
 }
-
-#Preview {
-  CardView(
-    syncUp: SyncUp(
-      id: SyncUp.ID(),
-      attendees: [],
-      duration: .seconds(60),
-      meetings: [],
-      theme: .bubblegum,
-      title: "Point-Free Morning Sync"
-    )
-  )
-}

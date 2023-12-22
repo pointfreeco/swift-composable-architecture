@@ -90,14 +90,16 @@ extension Store where State: ObservableState {
         )
       }
     #endif
-    guard var childState = self.state[keyPath: state]
+    guard let childState = self.state[keyPath: state]
     else { return nil }
     return self.scope(
-      state: ToState {
-        childState = $0[keyPath: state] ?? childState
-        return childState
-      },
       id: self.id(state: state.appending(path: \.!), action: action),
+      // NB: Appending the `\.[default:]` subscript can crash with enum presentation.
+      //
+      //     https://github.com/apple/swift/issues/70611
+      //
+      // state: ToState(state.appending(path: \.[default: SubscriptDefault(childState)])),
+      state: ToState { $0[keyPath: state] ?? childState },
       action: { action($0) },
       isInvalid: { $0[keyPath: state] == nil }
     )

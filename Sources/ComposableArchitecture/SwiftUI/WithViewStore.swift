@@ -502,8 +502,8 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ) {
     self.init(
       store: store.scope(
-        state: ToState(toViewState),
         id: nil,
+        state: ToState(toViewState),
         action: fromViewAction,
         isInvalid: nil
       ),
@@ -596,8 +596,8 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ) {
     self.init(
       store: store.scope(
-        state: ToState(toViewState),
         id: nil,
+        state: ToState(toViewState),
         action: { $0 },
         isInvalid: nil
       ),
@@ -691,8 +691,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ) {
     self.init(
       store: store.scope(
-        state: ToState(toViewState),
         id: nil,
+        state: ToState(toViewState),
         action: fromViewAction,
         isInvalid: nil
       ),
@@ -782,8 +782,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ) {
     self.init(
       store: store.scope(
-        state: ToState(toViewState),
         id: nil,
+        state: ToState(toViewState),
         action: { $0 },
         isInvalid: nil
       ),

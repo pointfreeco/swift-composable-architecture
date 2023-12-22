@@ -9,8 +9,8 @@ final class StoreInvalidationTests: BaseTCATestCase {
   func testInvalidation() {
     let store = Store<Int?, Void>(initialState: nil) {}
       .scope(
-        state: ToState { $0 },
         id: nil,
+        state: ToState { $0 },
         action: { $0 },
         isInvalid: { $0 != nil }
       )

@@ -28,6 +28,7 @@ struct SyncUpsList {
     case confirmAddSyncUpButtonTapped
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
+    case onDelete(IndexSet)
   }
 
   @Reducer
@@ -95,6 +96,10 @@ struct SyncUpsList {
       case .dismissAddSyncUpButtonTapped:
         state.destination = nil
         return .none
+
+      case let .onDelete(indexSet):
+        state.syncUps.remove(atOffsets: indexSet)
+        return .none
       }
     }
     .ifLet(\.$destination, action: \.destination) {
@@ -115,6 +120,9 @@ struct SyncUpsListView: View {
           CardView(syncUp: syncUp)
         }
         .listRowBackground(syncUp.theme.mainColor)
+      }
+      .onDelete { indexSet in
+        store.send(.onDelete(indexSet))
       }
     }
     .toolbar {

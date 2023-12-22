@@ -4,6 +4,7 @@ import XCTest
 
 @MainActor
 final class StoreLifetimeTests: BaseTCATestCase {
+  @available(*, deprecated)
   func testStoreCaching() {
     let grandparentStore = Store(initialState: Grandparent.State()) {
       Grandparent()
@@ -20,6 +21,7 @@ final class StoreLifetimeTests: BaseTCATestCase {
     )
   }
 
+  @available(*, deprecated)
   func testStoreInvalidation() {
     let grandparentStore = Store(initialState: Grandparent.State()) {
       Grandparent()

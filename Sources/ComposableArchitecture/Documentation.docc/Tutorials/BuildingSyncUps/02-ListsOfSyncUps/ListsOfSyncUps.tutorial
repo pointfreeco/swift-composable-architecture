@@ -16,14 +16,14 @@
         Create a Models.swift file where we will house all of the models the app needs to do its
         job.
         
-        @Code(name: "Models.swift", file: 02-01-code-0001.swift)
+        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0001.swift)
       }
       
       @Step {
         Copy and paste the following models into Models.swift. This code comes mostly verbatim
         from Apple's Scrumdinger project.
         
-        @Code(name: "Models.swift", file: 02-01-code-0002.swift)
+        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0002.swift)
       }
       
       While these models would work well enough in our SyncUps application, we can do better. First
@@ -44,7 +44,7 @@
         Import the `IdentifiedCollections` library, which comes automatically with the Composable
         Architecture, and replace all plain arrays with an `IdentifiedArray`.
         
-        @Code(name: "Models.swift", file: 02-01-code-0003.swift)
+        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0003.swift)
       }
       
       There's another improvement that can be made to our domain models, but this one is completely
@@ -78,7 +78,7 @@
         
         [tag-collisions-gh]: https://github.com/pointfreeco/swift-tagged#handling-tag-collisions
         
-        @Code(name: "Models.swift", file: 02-01-code-0004.swift)
+        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0004.swift)
       }
     }
   }
@@ -100,7 +100,7 @@
         import the Composable Architecture and SwiftUI since we know we will need access to those
         libraries.
         
-        @Code(name: "SyncUpsList.swift", file: 02-02-code-0001.swift)
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0001.swift)
       }
       
       We will start with implementing the reducer for the feature. This isn't always necessary or
@@ -112,7 +112,7 @@
         ``ComposableArchitecture/Reducer()`` macro. This type will encapsulate the domain of the 
         feature and implement its logic and behavior.
         
-        @Code(name: "SyncUpsList.swift", file: 02-02-code-0002.swift)
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0002.swift)
       }
       
       @Step {
@@ -121,7 +121,7 @@
         type with the ``ComposableArchitecture/ObservableState`` macro so that the view can 
         automatically observe changes to state.
         
-        @Code(name: "SyncUpsList.swift", file: 02-02-code-0003.swift)
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0003.swift)
       }
       
       @Step {
@@ -133,7 +133,7 @@
         after exactly what happens in the view rather than what logic we want to execute. So we
         prefer `addButtonTapped` over something like `showAddSheet`.
         
-        @Code(name: "SyncUpsList.swift", file: 02-02-code-0004.swift)
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0004.swift)
       }
       
       @Step {
@@ -142,7 +142,7 @@
         `addButtonTapped` action unimplemented for now since it requires more work to present a 
         sheet.
         
-        @Code(name: "SyncUpsList.swift", file: 02-02-code-0005.swift)
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0005.swift)
       }
       
       That is all that is necessary for the `SyncUpsList` reducer for now. Later we will compose
@@ -155,45 +155,49 @@
       @Step {
         Add a `CardView` that represents a single row in the list of sync ups.  
         
-        > Note: We are omitting the implementation of `SyncUpsList` to keep the code snippet
-        short.
+        > Note: We are omitting the implementation of the `SyncUpsList` reducer to keep the code
+        snippet short.
         
-        @Code(name: "SyncUpsList.swift", file: 02-02-code-0006.swift, previousFile: 02-02-code-0006-previous.swift)
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0006.swift, previousFile: 02-02-code-0006-previous.swift)
       }
       
       @Step {
         Add a `SyncUpsListView` that holds onto a ``ComposableArchitecture/Store`` of the 
         `SyncUpsList` domain.
         
-        @Code(name: "SyncUpsList.swift", file: 02-02-code-0007.swift)
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0007.swift)
       }
       
       @Step {
         Implement the `body` of the view as `List` with a `ForEach` that iterates over the
         collection of sync ups. We will also add a button to the tool bar that will eventually
-        present a sheet for adding a new sync up.
-        
-        Since we marked the `State` type with the ``ComposableArchitecture/ObservableState``
-        macro we can access state directly in the `store` and send actions to it.
+        present a sheet for adding a new sync up. Since we marked the `State` type with the
+        ``ComposableArchitecture/ObservableState`` macro we can access state directly in the
+        `store` and send actions to it.
         
         > Note: In order to get the colors for each `Theme` value you will need to copy the 
         [Assets.xcassets][assets] directory into your project.
         
         [assets]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SyncUps/SyncUps
         
-        @Code(name: "SyncUpsList.swift", file: 02-02-code-0008.swift)
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0008.swift)
       }
       
       @Step {
-        That 
+        With that done we can set up a preview. Add a `#Preview` down at the bottom of the file.
+        To construct a `SyncupsListView` you need to construct a ``ComposableArchitecture/Store`` 
+        of the `SyncupsList` feature. This is done by providing the initial state of the feature,
+        and we can even pre-populate it with a `SyncUp` in the array, as well as specifying the 
+        reducer that will power the feature.
         
-        @Code(name: "SyncUpsList.swift", file: 02-02-code-0009.swift)
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0009.swift)
       }
       
       @Step {
-        Hello
+        Run the preview to see that the list of sync ups shows with one single sync up already 
+        populated in the list. You can also swipe on the row to delete it.
         
-        @Code(name: "SyncUpsList.swift", file: 02-02-code-0010.swift)
+        @Video(source: 02-02-code-0010.mp4)
       }
     }
   }
