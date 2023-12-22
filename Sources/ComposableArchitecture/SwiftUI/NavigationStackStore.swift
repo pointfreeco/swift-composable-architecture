@@ -33,7 +33,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
         store
           .scope(
             id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
-            state: ToState(\.[id: component.id, default: SubscriptDefault(component.element)]),
+            state: ToState(\.[id:component.id,default:SubscriptDefault(component.element)]),
             action: { .element(id: component.id, action: $0) },
             isInvalid: { !$0.ids.contains(component.id) }
           )
@@ -68,7 +68,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
         store
           .scope(
             id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
-            state: ToState(\.[id: component.id, default: SubscriptDefault(component.element)]),
+            state: ToState(\.[id:component.id,default:SubscriptDefault(component.element)]),
             action: { .element(id: component.id, action: $0) },
             isInvalid: { !$0.ids.contains(component.id) }
           )

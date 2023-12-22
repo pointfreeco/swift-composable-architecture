@@ -117,7 +117,7 @@ public struct ForEachStore<
         content(
           store.scope(
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
-            state: ToState(\.[id: id, default: SubscriptDefault(element)]),
+            state: ToState(\.[id:id,default:SubscriptDefault(element)]),
             action: { .element(id: id, action: $0) },
             isInvalid: { !$0.ids.contains(id) }
           )
@@ -172,7 +172,7 @@ public struct ForEachStore<
         content(
           store.scope(
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
-            state: ToState(\.[id: id, default: SubscriptDefault(element)]),
+            state: ToState(\.[id:id,default:SubscriptDefault(element)]),
             action: { (id, $0) },
             isInvalid: { !$0.ids.contains(id) }
           )
