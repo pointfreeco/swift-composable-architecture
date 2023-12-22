@@ -200,7 +200,7 @@ Instead, we recommend invoking the child reducer directly:
 ```swift
 case .buttonTapped:
   return Child().reduce(into: &state.child, action: .refresh)
-    .map(Action.child))
+    .map(Action.child)
 ```
 
 ### CPU intensive calculations
