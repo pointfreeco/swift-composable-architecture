@@ -150,7 +150,12 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
-    self.store = store.scope(state: toViewState, action: fromViewAction)
+    self.store = store.scope(
+      state: ToState(toViewState),
+      id: nil,
+      action: fromViewAction,
+      isInvalid: nil
+    )
     self._state = CurrentValueRelay(self.store.currentState)
     self.viewCancellable = self.store.rootStore.didSet
       .compactMap { [weak self] in self?.store.currentState }
