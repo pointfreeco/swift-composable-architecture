@@ -140,7 +140,9 @@ public final class Store<State, Action> {
   @_spi(Internals) public let rootStore: RootStore
   private let toState: PartialToState<State>
   private let fromAction: (Action) -> Any
+
   let _$observationRegistrar = PerceptionRegistrar()
+  private var parentCancellable: AnyCancellable?
 
   /// Initializes a store from an initial state and a reducer.
   ///
@@ -369,6 +371,24 @@ public final class Store<State, Action> {
     self.rootStore = rootStore
     self.toState = toState
     self.fromAction = fromAction
+
+    func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
+      let toState = toState as! PartialToState<T>
+      return rootStore.didSet
+        .compactMap { [weak rootStore] in
+          rootStore.map { toState($0.state) }?._$id
+        }
+        .removeDuplicates()
+        .dropFirst()
+        .sink { [weak self] _ in
+          guard let self else { return }
+          self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+        }
+    }
+
+    if let stateType = State.self as? ObservableState.Type {
+      self.parentCancellable = subscribeToDidSet(stateType)
+    }
   }
 
   convenience init<R: Reducer>(

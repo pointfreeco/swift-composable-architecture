@@ -122,7 +122,7 @@ extension NavigationStack {
   {
     self.init(
       path: Binding(
-        get: { path.wrappedValue.observableState.path },
+        get: { path.wrappedValue.currentState.path },
         set: { pathView, transaction in
           if pathView.count > path.wrappedValue.withState({ $0 }).count,
             let component = pathView.last
