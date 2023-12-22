@@ -194,7 +194,7 @@
       }
       
       @Step {
-        Run the preview to see that the list of syncups shows with one single syncup already 
+        Run the preview to see that the list of sync ups shows with one single sync up already 
         populated in the list. You can also swipe on the row to delete it.
         
         @Video(source: 02-02-code-0010.mp4)

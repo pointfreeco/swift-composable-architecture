@@ -1,0 +1,40 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Sync up form") {
+    We will create a new feature with the Composable Architecture that is capable of editing the
+    details of a new sync up. We will also add some nuanced logic around how focus moves through
+    the feature to make things a little more interesting.
+  }
+  
+  @Section(title: "Sync up form basics") {
+    @ContentAndMedia {
+      Let's start by getting the basics of the new sync up form feature into place. It will be a
+      pretty simple feature to start, but we will layer on some more interesting functionality
+      later on.
+    }
+    
+    @Steps {
+      @Step {
+        Create a new file named SyncUpForm.swift to hold the feature that will allow entering the
+        details of a sync up. Let's also go ahead and create a stub of a new reducer.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0001.swift)
+      }
+      
+      @Step {
+        Hello
+      }
+    }
+  }
+  
+  @Section(title: "Form focus") {
+    @ContentAndMedia {
+      Hello
+    }
+    
+    @Steps {
+      @Step {
+        Hello
+      }
+    }
+  }
+}

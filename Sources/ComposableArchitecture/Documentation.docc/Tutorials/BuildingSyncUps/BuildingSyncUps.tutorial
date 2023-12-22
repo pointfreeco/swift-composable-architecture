@@ -25,4 +25,12 @@
     @TutorialReference(tutorial: "doc:ListsOfSyncUps")
     @TutorialReference(tutorial: "doc:TestingListOfSyncUps")
   }
+  
+  @Chapter(name: "Create a new sync up") {
+    Let's build a new feature for adding a new sync up to the app. This will entail creating a new
+    feature with the Composable Architecture, and integrating two features together using the 
+    library's navigation tools.
+    
+    @TutorialReference(tutorial: "doc:SyncUpForm")
+  }
 }
