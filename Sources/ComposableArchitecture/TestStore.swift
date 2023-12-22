@@ -1499,8 +1499,7 @@ extension TestStore where State: Equatable {
     file: StaticString = #file,
     line: UInt = #line
   ) async
-  where Action: CasePathable
-  {
+  where Action: CasePathable {
     await self.receive(
       AnyCasePath(
         embed: { actionCase($0) },
@@ -1655,8 +1654,7 @@ extension TestStore where State: Equatable {
       file: StaticString = #file,
       line: UInt = #line
     ) async
-    where Action: CasePathable
-    {
+    where Action: CasePathable {
       await self.receive(
         AnyCasePath(
           embed: { actionCase($0) },
