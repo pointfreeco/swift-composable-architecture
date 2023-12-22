@@ -531,33 +531,35 @@ final class TestStoreTests: BaseTCATestCase {
     _ = store
   }
 
-  func testReceiveCaseKeyPathWithValue() async {
-    let store = TestStore<Int, Action>(initialState: 0) {
-      Reduce { state, action in
-        switch action {
-        case .tap:
-          return .send(.delegate(.success(42)))
-        case .delegate:
-          return .none
+  #if DEBUG
+    func testReceiveCaseKeyPathWithValue() async {
+      let store = TestStore<Int, Action>(initialState: 0) {
+        Reduce { state, action in
+          switch action {
+          case .tap:
+            return .send(.delegate(.success(42)))
+          case .delegate:
+            return .none
+          }
         }
       }
+
+      await store.send(.tap)
+      await store.receive(\.delegate.success, 42)
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          Received unexpected action: …
+
+            Action.delegate(
+              .success(42)
+            )
+          """
+      }
+      await store.send(.tap)
+      await store.receive(\.delegate.success, 43)
     }
-
-    await store.send(.tap)
-    await store.receive(\.delegate.success, 42)
-
-    XCTExpectFailure {
-      $0.compactDescription == """
-        Received unexpected action: …
-
-          Action.delegate(
-            .success(42)
-          )
-        """
-    }
-    await store.send(.tap)
-    await store.receive(\.delegate.success, 43)
-  }
+  #endif
 }
 
 private struct Client: DependencyKey {
