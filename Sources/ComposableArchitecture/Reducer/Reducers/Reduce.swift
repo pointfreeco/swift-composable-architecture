@@ -30,8 +30,13 @@ public struct Reduce<State, Action>: Reducer {
     self.init(internal: reducer.reduce)
   }
 
-  @inlinable
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    self.reduce(&state, action)
+  public func _reduce(into store: Store<State, Action>, action: Action) {
+    let effects = self.reduce(&store.currentState, action)
+    _ = effects  // TODO: handle effects
   }
+
+//  @inlinable
+//  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
+//    self.reduce(&state, action)
+//  }
 }

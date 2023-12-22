@@ -98,11 +98,11 @@
 ///
 /// For an alternative to using ``Scope`` with state case paths that enforces the order, check out
 /// the ``ifCaseLet(_:action:then:fileID:line:)-7zcm0`` operator.
-public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
+public struct Scope<ParentState, ParentAction: CasePathable, Child: Reducer>: Reducer {
   @usableFromInline
   enum StatePath {
     case casePath(
-      AnyCasePath<ParentState, Child.State>,
+      CaseKeyPath<ParentState, Child.State>,
       fileID: StaticString,
       line: UInt
     )
@@ -113,7 +113,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   let toChildState: StatePath
 
   @usableFromInline
-  let toChildAction: AnyCasePath<ParentAction, Child.Action>
+  let toChildAction: CaseKeyPath<ParentAction, Child.Action>
 
   @usableFromInline
   let child: Child
@@ -121,7 +121,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   @usableFromInline
   init(
     toChildState: StatePath,
-    toChildAction: AnyCasePath<ParentAction, Child.Action>,
+    toChildAction: CaseKeyPath<ParentAction, Child.Action>,
     child: Child
   ) {
     self.toChildState = toChildState
@@ -158,7 +158,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   ) where ChildState == Child.State, ChildAction == Child.Action {
     self.init(
       toChildState: .keyPath(toChildState),
-      toChildAction: AnyCasePath(toChildAction),
+      toChildAction: toChildAction,
       child: child()
     )
   }
@@ -231,90 +231,14 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     line: UInt = #line
   ) where ChildState == Child.State, ChildAction == Child.Action {
     self.init(
-      toChildState: .casePath(AnyCasePath(toChildState), fileID: fileID, line: line),
-      toChildAction: AnyCasePath(toChildAction),
-      child: child()
-    )
-  }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @inlinable
-  public init<ChildState, ChildAction>(
-    state toChildState: WritableKeyPath<ParentState, ChildState>,
-    action toChildAction: AnyCasePath<ParentAction, ChildAction>,
-    @ReducerBuilder<ChildState, ChildAction> child: () -> Child
-  ) where ChildState == Child.State, ChildAction == Child.Action {
-    self.init(
-      toChildState: .keyPath(toChildState),
-      toChildAction: toChildAction,
-      child: child()
-    )
-  }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @inlinable
-  public init<ChildState, ChildAction>(
-    state toChildState: AnyCasePath<ParentState, ChildState>,
-    action toChildAction: AnyCasePath<ParentAction, ChildAction>,
-    @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) where ChildState == Child.State, ChildAction == Child.Action {
-    self.init(
       toChildState: .casePath(toChildState, fileID: fileID, line: line),
       toChildAction: toChildAction,
       child: child()
     )
   }
 
-  public func _reduce(into state: inout ParentState, action: ParentAction, store: Store<ParentState, ParentAction>) {
-    guard let childAction = self.toChildAction.extract(from: action)
+  public func _reduce(into store: Store<ParentState, ParentAction>, action: ParentAction) {
+    guard let childAction = action[case: self.toChildAction]
     else { return }
 
     switch self.toChildState {
@@ -322,8 +246,11 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
       fatalError()
 
     case let .keyPath(stateKeyPath):
-      let childStore = store.scope(state: { $0[keyPath: stateKeyPath] }, action: { self.toChildAction.embed($0) })
-      self.child._reduce(into: &state[keyPath: stateKeyPath], action: childAction, store: childStore)
+      let childStore = store.scope(
+        state: stateKeyPath,
+        action: self.toChildAction
+      )
+      self.child._reduce(into: childStore, action: childAction)
     }
   }
 

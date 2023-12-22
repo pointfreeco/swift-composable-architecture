@@ -126,9 +126,9 @@ public enum ReducerBuilder<State, Action> {
       self.r1 = r1
     }
 
-    public func _reduce(into state: inout R0.State, action: R0.Action, store: StoreOf<R0>) {
-      self.r0._reduce(into: &state, action: action, store: store)
-      self.r1._reduce(into: &state, action: action, store: store)
+    public func _reduce(into store: StoreOf<R0>, action: R0.Action) {
+      self.r0._reduce(into: store, action: action)
+      self.r1._reduce(into: store, action: action)
     }
 
 //    @inlinable

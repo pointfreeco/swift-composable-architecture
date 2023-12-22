@@ -308,8 +308,19 @@ public final class Store<State, Action> {
 
   @_spi(Internals)
   public var currentState: State {
-    threadCheck(status: .state)
-    return self.toState(self.rootStore.state)
+    get {
+      threadCheck(status: .state)
+      return self.toState(self.rootStore.state)
+    }
+    set {
+      if _$isIdentityEqual(self.toState(self.rootStore.state), newValue) {
+        self.toState(&self.rootStore.state, to: newValue)
+      } else {
+        self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {
+          self.toState(&self.rootStore.state, to: newValue)
+        }
+      }
+    }
   }
 
   @_spi(Internals)
@@ -390,7 +401,7 @@ public final class Store<State, Action> {
     }
 
     if let stateType = State.self as? ObservableState.Type {
-      self.parentCancellable = subscribeToDidSet(stateType)
+      //self.parentCancellable = subscribeToDidSet(stateType)
     }
   }
 
@@ -652,6 +663,29 @@ private enum PartialToState<State> {
       return closure(state)[keyPath: keyPath] as! State
     }
   }
+
+  func callAsFunction(_ state: inout Any, to newValue: State) {
+
+    switch self {
+    case .closure(_):
+      fatalError()
+
+    case let .keyPath(keyPath):
+      func open<Root>(_ rootType: Root.Type) {
+        let keyPath = keyPath as! WritableKeyPath<Root, State>
+        var root = state as! Root
+        defer {
+          state = root
+        }
+        root[keyPath: keyPath] = newValue
+      }
+      _openExistential(type(of: keyPath).rootType, do: open)
+
+    case .appended(_, _):
+      fatalError()
+    }
+  }
+
   func appending<ChildState>(_ state: PartialToState<ChildState>) -> PartialToState<ChildState> {
     switch (self, state) {
     case let (.keyPath(lhs), .keyPath(rhs)):

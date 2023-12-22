@@ -3,18 +3,13 @@ import Foundation
 
 @_spi(Internals)
 public final class RootStore {
-  weak var store: AnyObject? {
-    didSet {
-      print("!!!", self.store)
-      print("!!!")
-    }
-  }
+  weak var store: AnyObject?
   private var bufferedActions: [Any] = []
   let didSet = CurrentValueRelay(())
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   private let reducer: any Reducer
-  private(set) var state: Any {
+  var state: Any {
     didSet {
       didSet.send(())
     }
@@ -38,13 +33,13 @@ public final class RootStore {
       guard !self.isSending else { return nil }
 
       self.isSending = true
-      var currentState = self.state as! State
+      //var currentState = self.state as! State
       let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
       defer {
         withExtendedLifetime(self.bufferedActions) {
           self.bufferedActions.removeAll()
         }
-        self.state = currentState
+        //self.state = currentState
         self.isSending = false
         if !self.bufferedActions.isEmpty {
           if let task = self.send(
@@ -62,7 +57,7 @@ public final class RootStore {
         let action = self.bufferedActions[index] as! Action
         //let effect = reducer.reduce(into: &currentState, action: action)
 
-        reducer._reduce(into: &currentState, action: action, store: store)
+        reducer._reduce(into: store, action: action)
 
 //        switch effect.operation {
 //        case .none:
