@@ -88,7 +88,11 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
         syncUps: [
           SyncUp(
             id: SyncUp.ID(),
-            attendees: [],
+            attendees: [
+              Attendee(id: Attendee.ID(), name: "Blob"),
+              Attendee(id: Attendee.ID(), name: "Blob Jr."),
+              Attendee(id: Attendee.ID(), name: "Blob Sr."),
+            ],
             duration: .seconds(60),
             meetings: [],
             theme: .bubblegum,

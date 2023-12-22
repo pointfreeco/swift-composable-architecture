@@ -1,0 +1,51 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Testing the list of syncups") {
+    The SyncUpsList feature we have built so far isn't very complex. In fact, it only has one
+    primary action, that of deleting syncups from its collection. However, it can be good practice
+    to test new features as you add them, and in the future we will have much more complicated
+    behavior to test.
+  }
+  
+  @Section(title: "Writing your first test") {
+    @ContentAndMedia {
+      Let's write a test to verify that when the `onDelete` action is sent that the corresponding
+      syncups are indeed deleted. This will require us to become familiar with the testing tools
+      in the library, primarily `TestStore`.
+      
+      @Image(source: <#file#>, alt: "<#accessible description#>")
+    }
+    
+    @Steps {
+      @Step {
+        Start by creating a new file in your test target called SyncUpsListTests.swift, and paste
+        in some basic scaffolding for a new test.
+        
+        @Code(name: "SyncUpsListTests.swift", file: 03-01-code-0001.swift)
+      }
+      
+      @Step {
+        <#text#>
+        
+        
+      }
+    }
+  }
+}
+
+<!--
+@Tutorial(time: 10) {
+  @Intro(title: "Lists of sync ups") {
+    We will begin building the SyncUps app from scratch by implementing the feature that powers
+    the list of sync ups. It starts out as a simple feature, but it will become increasingly complex
+    as the app evolves.
+    }
+    
+    @Section(title: "Domain models") {
+      @ContentAndMedia {
+        In order to build a view that shows a list of sync ups we need to first have some data models
+        that represent a `SyncUp`. So, let's get some models into place.
+        }
+        
+        @Steps {
+          @Step {
+-->
