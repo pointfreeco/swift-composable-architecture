@@ -48,7 +48,10 @@ public struct IfLetStore<State, Action, Content: View>: View {
           first: ifContent(
             store.scope(
               id: store.id(state: \.!, action: \.self),
-              state: ToState(\.[default:SubscriptDefault(state)]),
+              // NB: This causes a crash due to a Swift compiler bug.
+              //     https://github.com/apple/swift/issues/70611
+              //state: ToState(\.[default:SubscriptDefault(state)]),
+              state: ToState(coalesceToLastValue({ $0 }, initialValue: state)),
               action: { $0 },
               isInvalid: { $0 == nil }
             )
@@ -83,7 +86,10 @@ public struct IfLetStore<State, Action, Content: View>: View {
         return ifContent(
           store.scope(
             id: store.id(state: \.!, action: \.self),
-            state: ToState(\.[default:SubscriptDefault(state)]),
+            // NB: This causes a crash due to a Swift compiler bug.
+            //     https://github.com/apple/swift/issues/70611
+            //state: ToState(\.[default:SubscriptDefault(state)]),
+            state: ToState(coalesceToLastValue({ $0 }, initialValue: state)),
             action: { $0 },
             isInvalid: { $0 == nil }
           )
