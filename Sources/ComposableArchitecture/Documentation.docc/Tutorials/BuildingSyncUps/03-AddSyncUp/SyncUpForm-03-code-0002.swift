@@ -1,10 +1,17 @@
 import ComposableArchitecture
+import SwiftUI
 
 @Reducer
 struct SyncUpForm {
   @ObservableState
   struct State {
+    var focus: Field? = .title
     var syncUp: SyncUp
+
+    enum Field: Hashable {
+      case attendee(Attendee.ID)
+      case title
+    }
   }
 
   enum Action: BindableAction {
@@ -15,13 +22,13 @@ struct SyncUpForm {
 
   var body: some ReducerOf<Self> {
     BindingReducer()
-    
+
     Reduce { state, action in
       switch action {
       case .addAttendeeButtonTapped:
-        state.syncUp.attendees.append(
-          Attendee(id: Attendee.ID())
-        )
+        let attendee = Attendee(id: Attendee.ID())
+        state.syncUp.attendees.append(attendee)
+        state.focus = .attendee(attendee.id)
         return .none
 
       case .binding:
@@ -38,4 +45,8 @@ struct SyncUpForm {
       }
     }
   }
+}
+
+struct SyncUpFormView: View {
+  // ...
 }

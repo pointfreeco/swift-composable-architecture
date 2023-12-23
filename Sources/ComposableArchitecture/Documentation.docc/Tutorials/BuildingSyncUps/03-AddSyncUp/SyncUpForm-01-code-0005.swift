@@ -22,6 +22,11 @@ struct SyncUpForm {
 
       case let .onDeleteAttendees(indexSet):
         state.attendees.remove(atOffsets: indexSet)
+        if state.attendees.isEmpty {
+          state.attendees.insert(
+            Attendee(id: Attendee.ID())
+          )
+        }
         return .none
       }
     }

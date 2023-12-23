@@ -8,11 +8,18 @@ struct SyncUpForm {
 
 struct SyncUpFormView: View {
   @Bindable var store: StoreOf<SyncUpForm>
-  
+  @FocusState var focus: Field?
+
+  enum Field: Hashable {
+    case attendee(Attendee.ID)
+    case title
+  }
+
   var body: some View {
     Form {
       Section {
         TextField("Title", text: $store.syncUp.title)
+          .focused($focus, equals: .title)
         HStack {
           Slider(value: $store.syncUp.duration.minutes, in: 5...30, step: 1) {
             Text("Length")
@@ -27,6 +34,7 @@ struct SyncUpFormView: View {
       Section {
         ForEach($store.syncUp.attendees) { $attendee in
           TextField("Name", text: $attendee.name)
+            .focused($focus, equals: .attendee(attendee.id))
         }
         .onDelete { indices in
           store.send(.onDeleteAttendees(indices))

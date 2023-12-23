@@ -8,11 +8,13 @@ struct SyncUpForm {
 
 struct SyncUpFormView: View {
   @Bindable var store: StoreOf<SyncUpForm>
-  
+  @FocusState var focus: SyncUpForm.State.Field?
+
   var body: some View {
     Form {
       Section {
         TextField("Title", text: $store.syncUp.title)
+          .focused($focus, equals: .title)
         HStack {
           Slider(value: $store.syncUp.duration.minutes, in: 5...30, step: 1) {
             Text("Length")
@@ -27,6 +29,7 @@ struct SyncUpFormView: View {
       Section {
         ForEach($store.syncUp.attendees) { $attendee in
           TextField("Name", text: $attendee.name)
+            .focused($focus, equals: .attendee(attendee.id))
         }
         .onDelete { indices in
           store.send(.onDeleteAttendees(indices))
@@ -39,6 +42,7 @@ struct SyncUpFormView: View {
         Text("Attendees")
       }
     }
+    .bind($store.focus, to: $focus)
   }
 }
 
@@ -67,4 +71,24 @@ extension Duration {
     get { Double(self.components.seconds / 60) }
     set { self = .seconds(newValue * 60) }
   }
+}
+
+#Preview {
+  SyncUpFormView(
+    store: Store(
+      initialState: SyncUpForm.State(
+        syncUp: SyncUp(
+          id: SyncUp.ID(),
+          attendees: [
+            Attendee(id: Attendee.ID(), name: "Blob"),
+            Attendee(id: Attendee.ID(), name: "Blob Jr."),
+            Attendee(id: Attendee.ID(), name: "Blob Sr."),
+          ],
+          title: "Point-Free Morning Sync"
+        )
+      )
+    ) {
+      SyncUpForm()
+    }
+  )
 }

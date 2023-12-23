@@ -11,6 +11,9 @@ struct SyncUpsApp: App {
       $0.dataManager = .mock()
     }
   }
+  let otherStore = Store(initialState: SyncUpForm.State(syncUp: .mock)) {
+    SyncUpForm()
+  }
 
   var body: some Scene {
     WindowGroup {
@@ -22,7 +25,12 @@ struct SyncUpsApp: App {
         // NB: Don't run application when testing so that it doesn't interfere with tests.
         EmptyView()
       } else {
-        AppView(store: store)
+        //AppView(store: store)
+        NavigationStack {
+          SyncUpFormView(
+            store: otherStore
+          )
+        }
       }
     }
   }

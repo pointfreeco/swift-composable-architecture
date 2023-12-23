@@ -8,7 +8,13 @@ struct SyncUpForm {
 
 struct SyncUpFormView: View {
   @Bindable var store: StoreOf<SyncUpForm>
-  
+  @FocusState var focus: Field?
+
+  enum Field: Hashable {
+    case attendee(Attendee.ID)
+    case title
+  }
+
   var body: some View {
     Form {
       Section {

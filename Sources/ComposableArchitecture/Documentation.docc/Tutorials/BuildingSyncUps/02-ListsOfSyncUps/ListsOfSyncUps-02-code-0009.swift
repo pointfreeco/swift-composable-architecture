@@ -93,9 +93,6 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
               Attendee(id: Attendee.ID(), name: "Blob Jr."),
               Attendee(id: Attendee.ID(), name: "Blob Sr."),
             ],
-            duration: .seconds(60),
-            meetings: [],
-            theme: .bubblegum,
             title: "Point-Free Morning Sync"
           )
         ]

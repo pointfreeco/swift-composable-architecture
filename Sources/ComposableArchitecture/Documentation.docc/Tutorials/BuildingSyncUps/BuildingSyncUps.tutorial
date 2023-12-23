@@ -26,11 +26,12 @@
     @TutorialReference(tutorial: "doc:TestingListOfSyncUps")
   }
   
-  @Chapter(name: "Create a new sync up") {
-    Let's build a new feature for adding a new sync up to the app. This will entail creating a new
-    feature with the Composable Architecture, and integrating two features together using the 
-    library's navigation tools.
+  @Chapter(name: "New sync up form") {
+    Let's build a new feature for editing the details of a sync up in a form. This will allow us
+    to explore the binding tools the library provides, and we will add some complex logic around
+    focus in the form, and show how it is 100% testable.
     
     @TutorialReference(tutorial: "doc:SyncUpForm")
+    @TutorialReference(tutorial: "doc:TestingSyncUpForm")
   }
 }

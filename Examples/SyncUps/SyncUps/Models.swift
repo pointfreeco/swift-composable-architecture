@@ -68,9 +68,9 @@ extension SyncUp {
       Attendee(id: Attendee.ID(), name: "Blob"),
       Attendee(id: Attendee.ID(), name: "Blob Jr"),
       Attendee(id: Attendee.ID(), name: "Blob Sr"),
-      Attendee(id: Attendee.ID(), name: "Blob Esq"),
-      Attendee(id: Attendee.ID(), name: "Blob III"),
-      Attendee(id: Attendee.ID(), name: "Blob I"),
+//      Attendee(id: Attendee.ID(), name: "Blob Esq"),
+//      Attendee(id: Attendee.ID(), name: "Blob III"),
+//      Attendee(id: Attendee.ID(), name: "Blob I"),
     ],
     duration: .seconds(60),
     meetings: [
@@ -87,8 +87,8 @@ extension SyncUp {
           """
       )
     ],
-    theme: .orange,
-    title: "Design"
+//    theme: .orange,
+    title: "Point-Free morning sync"
   )
 
   static let engineeringMock = Self(

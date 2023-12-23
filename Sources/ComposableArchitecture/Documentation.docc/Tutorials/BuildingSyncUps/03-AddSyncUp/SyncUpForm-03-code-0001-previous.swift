@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftUI
 
 @Reducer
 struct SyncUpForm {
@@ -15,7 +16,7 @@ struct SyncUpForm {
 
   var body: some ReducerOf<Self> {
     BindingReducer()
-    
+
     Reduce { state, action in
       switch action {
       case .addAttendeeButtonTapped:
@@ -38,4 +39,8 @@ struct SyncUpForm {
       }
     }
   }
+}
+
+struct SyncUpFormView: View {
+  // ...
 }
