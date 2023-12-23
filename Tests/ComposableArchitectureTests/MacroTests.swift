@@ -1,4 +1,4 @@
-#if canImport(ComposableArchitectureMacros)
+#if swift(>=5.9)
   import ComposableArchitecture
   import SwiftUI
 
