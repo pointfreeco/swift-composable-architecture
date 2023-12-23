@@ -38,7 +38,7 @@ struct ObservableOptionalView: View {
   struct Feature {
     @ObservableState
     struct State: Equatable {
-      @Presents var child: ObservableBasicsView.Feature.State?
+      var child: ObservableBasicsView.Feature.State?
       var isObservingCount = false
     }
     enum Action {
@@ -59,7 +59,7 @@ struct ObservableOptionalView: View {
           return .none
         }
       }
-      .ifLet(\.$child, action: \.child) {
+      .ifLet2(\.child, action: \.child) {
         ObservableBasicsView.Feature()
       }
     }
