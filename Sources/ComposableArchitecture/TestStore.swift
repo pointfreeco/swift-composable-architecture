@@ -1887,6 +1887,84 @@ extension TestStore where State: Equatable {
   }
 }
 
+extension TestStore where State: Equatable {
+  /// Sends an action to the store and asserts when state changes.
+  ///
+  /// This method is similar to ``send(_:assert:file:line:)-2co21``, except it allows
+  /// you to specify a `CaseKeyPath` of an action with no associated value to be sent to the store.
+  ///
+  /// It can be useful when sending nested action.  For example::
+  ///
+  /// ```swift
+  /// await store.send(.view(.tap))
+  /// ```
+  ///
+  /// Can be simplified to:
+  ///
+  /// ```swift
+  ///  await store.send(\.view.tap)
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - action: A `CaseKeyPath` to an action.
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
+  ///     expected.
+  /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
+  ///   sending the action.
+  @MainActor
+  @discardableResult
+  @_disfavoredOverload
+  public func send(
+    _ action: CaseKeyPath<Action, Void>,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async -> TestStoreTask {
+      await self.send(action(), assert: updateStateToExpectedResult, file: file, line: line)
+  }
+
+  /// Sends an action to the store and asserts when state changes.
+  ///
+  /// This method is similar to ``send(_:assert:file:line:)-1oopl``, except it allows
+  /// you to specify a value for the associated value of the action.
+  ///
+  /// It can be useful when sending nested action.  For example::
+  ///
+  /// ```swift
+  /// await store.send(.view(.delete([19, 23]))
+  /// ```
+  ///
+  /// Can be simplified to:
+  ///
+  /// ```swift
+  ///  await store.send(\.view.delete, [19, 23])
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - action: A `CaseKeyPath` to an action with an associated value.
+  ///   - value: A value for the associated value specified in `action`.
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
+  ///     expected.
+  /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
+  ///   sending the action.
+  @MainActor
+  @discardableResult
+  @_disfavoredOverload
+  public func send<Value>(
+    _ action: CaseKeyPath<Action, Value>,
+    _ value: Value,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) async -> TestStoreTask {
+      await self.send(action(value), assert: updateStateToExpectedResult, file: file, line: line)
+  }
+}
+
 extension TestStore {
   /// Clears the queue of received actions from effects.
   ///
