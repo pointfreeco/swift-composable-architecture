@@ -374,27 +374,8 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       """
       PresentationStoreOf<BasicsView.Feature>.deinit
       PresentationStoreOf<BasicsView.Feature>.deinit
-      PresentationStoreOf<BasicsView.Feature>.deinit
-      PresentationStoreOf<BasicsView.Feature>.deinit
-      PresentationStoreOf<BasicsView.Feature>.deinit
-      PresentationStoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       ViewPresentationStoreOf<BasicsView.Feature>.deinit
-      ViewPresentationStoreOf<BasicsView.Feature>.deinit
-      ViewPresentationStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
       """
     }
   }
