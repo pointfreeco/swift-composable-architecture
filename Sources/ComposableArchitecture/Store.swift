@@ -134,7 +134,7 @@ import SwiftUI
 @dynamicMemberLookup
 public final class Store<State, Action> {
   var canCacheChildren = true
-  private var children: [ScopeID<State, Action>: AnyObject] = [:]
+  var children: [ScopeID<State, Action>: AnyObject] = [:]
   var _isInvalidated = { false }
 
   @_spi(Internals) public let rootStore: RootStore
@@ -310,6 +310,7 @@ public final class Store<State, Action> {
   public var currentState: State {
     get {
       threadCheck(status: .state)
+      self._$observationRegistrar.access(self, keyPath: \.currentState)
       return self.toState(self.rootStore.state)
     }
     set {

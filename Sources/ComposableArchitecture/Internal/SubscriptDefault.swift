@@ -16,15 +16,27 @@ extension SubscriptDefault: Hashable {
 
 extension IdentifiedArray {
   subscript(id id: ID, default default: SubscriptDefault<Element>) -> Element {
-    `default`.wrappedValue = self[id: id] ?? `default`.wrappedValue
-    return `default`.wrappedValue
+    get {
+      `default`.wrappedValue = self[id: id] ?? `default`.wrappedValue
+      return `default`.wrappedValue
+    }
+    set {
+      // TODO: write to the default too?
+      self[id: id] = newValue
+    }
   }
 }
 
 extension Optional {
   subscript(default default: SubscriptDefault<Wrapped>) -> Wrapped {
-    `default`.wrappedValue = self ?? `default`.wrappedValue
-    return `default`.wrappedValue
+    get {
+      `default`.wrappedValue = self ?? `default`.wrappedValue
+      return `default`.wrappedValue
+    }
+    set {
+      // TODO: write to the default too?
+      self = newValue
+    }
   }
 }
 

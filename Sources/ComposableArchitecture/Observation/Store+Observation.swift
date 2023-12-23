@@ -38,7 +38,7 @@ extension Store: Hashable {
 
 extension Store: Identifiable {}
 
-extension Store where State: ObservableState {
+extension Store /*where State: ObservableState*/ {
   /// Scopes the store to optional child state and actions.
   ///
   /// If your feature holds onto a child feature as an optional:
@@ -90,7 +90,7 @@ extension Store where State: ObservableState {
         )
       }
     #endif
-    guard let childState = self.state[keyPath: state]
+    guard let childState = self.currentState[keyPath: state]
     else { return nil }
     return self.scope(
       id: self.id(state: state.appending(path: \.!), action: action),
@@ -98,8 +98,8 @@ extension Store where State: ObservableState {
       //
       //     https://github.com/apple/swift/issues/70611
       //
-      // state: ToState(state.appending(path: \.[default: SubscriptDefault(childState)])),
-      state: ToState { $0[keyPath: state] ?? childState },
+       state: ToState(state.appending(path: \.[default: SubscriptDefault(childState)])),
+//      state: ToState { $0[keyPath: state] ?? childState },
       action: { action($0) },
       isInvalid: { $0[keyPath: state] == nil }
     )
