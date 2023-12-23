@@ -57,7 +57,7 @@ extension Store {
           unwrap(
             self.scope(
               id: self.id(state: \.!, action: \.self),
-              state: ToState(\.[default: SubscriptDefault(state)]),
+              state: ToState(\.[default:SubscriptDefault(state)]),
               action: { $0 },
               isInvalid: { $0 == nil }
             )

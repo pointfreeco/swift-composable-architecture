@@ -68,7 +68,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
           first: ifContent(
             store.scope(
               id: store.id(state: \.!, action: \.self),
-              state: ToState(\.[default: SubscriptDefault(state)]),
+              state: ToState(\.[default:SubscriptDefault(state)]),
               action: { $0 },
               isInvalid: { $0 == nil }
             )
@@ -103,7 +103,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
         return ifContent(
           store.scope(
             id: store.id(state: \.!, action: \.self),
-            state: ToState(\.[default: SubscriptDefault(state)]),
+            state: ToState(\.[default:SubscriptDefault(state)]),
             action: { $0 },
             isInvalid: { $0 == nil }
           )
