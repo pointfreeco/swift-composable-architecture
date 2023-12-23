@@ -7,9 +7,11 @@
   
   @Section(title: "Sync up form basics") {
     @ContentAndMedia {
-      Let's start by getting the basics of the new sync up form feature into place. It will be a
-      pretty simple feature to start, but we will layer on some more interesting functionality
-      later on.
+      Let's start by getting the basics of the new sync up form feature into place. It will allow
+      you to edit all the various parts of a sync up, and it will be a pretty simple feature to
+      start, but we will layer on some more interesting functionality later on.
+      
+      @Image(source: "SyncUpFormBasics-01-0000.png")
     }
     
     @Steps {
@@ -21,7 +23,93 @@
       }
       
       @Step {
-        Hello
+        We can start with the domain modeling. In the state we only need a single, mutable `SyncUp`
+        value.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0002.swift)
+      }
+      
+      For the actions we technically need one action for every UI control in the form. That means
+      one action for the title text field, duration slider, theme picker, and attendee name text
+      field. That can be extremely verbose, and so the library comes with a tool to help streamline
+      this. We also have a dedicated article on the topic, <doc:Bindings>, for more detailed
+      information.
+      
+      To use the tools we must complete two steps.
+      
+      @Step {
+        First, rather than creating an action for every single UI control in the form, we will 
+        create one single action that is capable of deriving bindings for any data in the feature.
+        This is done by conforming the action to ``ComposableArchitecture/BindableAction`` and
+        providing a single case that holds a ``ComposableArchitecture/BindingAction``.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0003.swift)
+      }
+      
+      @Step {
+        And second, compose the ``ComposableArchitecture/BindingReducer`` into your feature's 
+        ``ComposableArchitecture/Reducer/body-8lumc``. This is our first time encountering reducer
+        composition in this tutorial, and it is done by simply listing all the reducers you want
+        to compose in the `body`. 
+        
+        > Note: In order for this composition to work all reducers must operate on the same state
+        and actions. There are operators in the library that help you transform existing reducers
+        into the right shape so that they can be composed with others.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0004.swift)
+      }
+      
+      There are a few other actions we need to represent in this view. We are going to alllow
+      deleting attendees by swiping on their row, and we need a button for adding attendees.
+      
+      @Step {
+        Add an `onDeleteAttendees` action that we can send from the `onDelete` closure in the 
+        view. This is similar to what we did in the `SyncUpsList` reducer, but we have decided to
+        name it more explicitly as `onDeleteAttendees` since the "attendee" is not the core focus
+        of this feature.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0005.swift)
+      }
+      
+      @Step {
+        Add an `addAttendeeButtonTapped` action that inserts a new element to the end of the 
+        `syncUp.attendees` collection.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0006.swift)
+      }
+      
+      That is all it takes to implement the basic functionality of the sync up form. There will
+      be more to do in here too, but we can now move onto the view.
+      
+      @Step {
+        In the same file as the `SyncUpForm` reducer create a basic stub of a view that will hold
+        the UI for the form.
+        
+        > Note: We are collapsing the code in the `SyncUpForm` reducer to make it easier to read
+        the view code.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0007.swift)
+      }
+      
+      @Step {
+        Add a `store` property to the view, just as we did in the `SyncUpsListView`, but this time
+        we have annotated the variable with the SwiftUI `@Bindable` property wrapper. That will
+        allow us to derive bindings from the store.
+        
+        > Note: The `@Bindable` property wrapper is iOS 17+, and so if you are supporting older
+        platforms you can use the ``ComposableArchitecture/BindableStore`` property wrapper
+        that comes with the library.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0008.swift)
+      }
+      
+      @Step {
+        Implement the rest of the form view by deriving bindings from the store to hand to the 
+        various UI controls. This can be done by first getting a binding to the store via the 
+        `$store` syntax, and then dot-chaining onto that to derive bindings to any data inside
+        the store.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0009.swift)
       }
     }
   }
