@@ -34,4 +34,13 @@
     @TutorialReference(tutorial: "doc:SyncUpForm")
     @TutorialReference(tutorial: "doc:TestingSyncUpForm")
   }
+  
+  @Chapter(name: "Presenting the sync up form") {
+    We now have two features built, the sync ups list and the sync up form. These features do not
+    exist in isolation, but rather are meant to be integrated in a deep way. One should be able
+    to navigate to the sync up form from the list view, enter the details of a new sync up,
+    and then add that sync up to the root list.
+    
+    @TutorialReference(tutorial: "doc:PresentingSyncUpForm")
+  }
 }
