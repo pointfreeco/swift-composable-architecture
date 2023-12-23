@@ -32,7 +32,6 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       ObservablePresentationView.body
-      StoreOf<ObservableBasicsView.Feature>.deinit
       """
     }
   }
@@ -65,7 +64,6 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
       """
       ObservableBasicsView.body
       ObservablePresentationView.body
-      StoreOf<ObservableBasicsView.Feature>.deinit
       """
     }
   }

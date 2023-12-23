@@ -197,8 +197,6 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.scope
-      StoreOf<NewPresentsOldTestCase.Feature>.scope
       ViewPresentationStoreOf<BasicsView.Feature>.deinit
       ViewPresentationStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.deinit
