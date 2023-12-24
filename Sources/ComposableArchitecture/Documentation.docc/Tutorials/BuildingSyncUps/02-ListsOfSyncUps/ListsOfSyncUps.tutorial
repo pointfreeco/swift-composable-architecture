@@ -144,6 +144,10 @@
         `addButtonTapped` action unimplemented for now since it requires more work to present a 
         sheet.
         
+        > Note: Due to a bug in the Swift compiler it can often happen that you lose type inference
+        inside `Reduce`. If that happens you can specify the generics to restore inference and
+        autocomplete: `Reduce<State, Action>`.
+        
         @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0005.swift)
       }
       
