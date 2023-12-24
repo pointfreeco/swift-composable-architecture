@@ -96,7 +96,7 @@ struct Todos {
         return .none
       }
     }
-    .forEach(\.todos, action: \.todos) {
+    .forEach2(\.todos, action: \.todos) {
       Todo()
     }
   }
