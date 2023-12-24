@@ -5,7 +5,7 @@ as well as the caveats of using the backported tools.
 
 ## Overview
 
-With version 1.6<!--TODO:Update version--> of the Composable Architecture we have introduced 
+With version 1.7 of the Composable Architecture we have introduced 
 support for Swift 5.9's observation tools, _and_ we have backported those tools to work in iOS 13
 and later. Using the observation tools in pre-iOS 17 does require a few additional steps and there
 are some gotchas to be aware of.
@@ -100,4 +100,4 @@ Some problems can arise when mixing together features built in the "legacy" styl
 more often than necessary, but that can also put strain on SwiftUI's ability to figure out what
 state changed, and can cause glitchiness or exacerbate navigation bugs.
 
-See <doc:MigratingTo1.6#Incrementally-migrating> for more information about this.
+See <doc:MigratingTo1.7#Incrementally-migrating> for more information about this.

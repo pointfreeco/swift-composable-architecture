@@ -1,4 +1,4 @@
-# Migrating to 1.6
+# Migrating to 1.7
 
 Update your code to make use of the new observation tools in the library and get rid of legacy
 APIs such as ``WithViewStore``, ``IfLetStore``, ``ForEachStore``, and more.
@@ -36,7 +36,7 @@ you are targeting older platforms.
 
 There are two ways to update existing code to use the new ``ObservableState()`` macro depending on
 your minimum deployment target. Take, for example, the following scaffolding of a typical feature 
-built with the Composable Architecture prior to version 1.6 and the new observation tools:
+built with the Composable Architecture prior to version 1.7 and the new observation tools:
 
 ```swift
 @Reducer
@@ -727,7 +727,7 @@ struct ViewState: Equatable {
 }
 ```
 
-In version 1.6 of the library the `ViewState` struct goes away, and so you can move these kinds of 
+In version 1.7 of the library the `ViewState` struct goes away, and so you can move these kinds of 
 computations to be directly on your feature's state:
 
 ```swift
@@ -792,7 +792,7 @@ viewStore.send(.loginResponse(false))
 // 🛑 Type 'Feature.Action.View' has no member 'loginResponse'
 ```
 
-This pattern is still possible with version 1.6 of the library, but requires a few small changes.
+This pattern is still possible with version 1.7 of the library, but requires a few small changes.
 First, you must make your `View` action enum conform to the ``ViewAction`` protocol:
 
 ```swift
