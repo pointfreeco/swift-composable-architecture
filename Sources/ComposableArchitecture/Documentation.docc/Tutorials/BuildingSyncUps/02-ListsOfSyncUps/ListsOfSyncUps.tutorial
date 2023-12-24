@@ -97,7 +97,7 @@
       But for now we will concentrate on just two very basic forms of functionality: displaying
       the list, and allowing the user to swipe to delete a sync up.
       
-      @Image(source: "ListsOfSyncUps-02-0000.png")
+      @Image(source: "ListsOfSyncUps-cover.png")
     }
     
     @Steps {
@@ -130,10 +130,12 @@
         @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0003.swift)
       }
       
+      Next we add an `Action` enum to represent all of the actions the user can perform in the UI.
+      Right now there only 3 actions: they can tapp the "+" button in the top-right of the nav 
+      toolbar, they can tap a sync up in the list, or they can swipe-to-delete on a row.
+      
       @Step {
-        Add an inner `Action` type to represent the actions that can happen in the UI. Right now
-        that is only tapping the "Add" button for bringing up a sheet, as well as when swiping
-        to delete on a list, which invokes the `onDelete` view modifier in SwiftUI.
+        Add an `Action` enum with a case for each action the user can perform in the UI.
         
         > Important: As we saw in <doc:MeetComposableArchitecture>, we prefer to name our actions
         after exactly what happens in the view rather than what logic we want to execute. So we
@@ -145,8 +147,8 @@
       @Step {
         Implement the ``ComposableArchitecture/Reducer/body-8lumc`` of the reducer by using the 
         ``ComposableArchitecture/Reduce`` type to implement each action. We will leave the 
-        `addButtonTapped` action unimplemented for now since it requires more work to present a 
-        sheet.
+        `addButtonTapped` and `syncUpTapped` actions unimplemented for now since it requires more
+        work to present a sheet and drill down to a sync up.
         
         > Note: Due to a bug in the Swift compiler it can often happen that you lose type inference
         inside `Reduce`. If that happens you can specify the generics to restore inference and

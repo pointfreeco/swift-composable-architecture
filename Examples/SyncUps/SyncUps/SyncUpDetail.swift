@@ -146,7 +146,7 @@ struct SyncUpDetailView: View {
   @Bindable var store: StoreOf<SyncUpDetail>
 
   var body: some View {
-    List {
+    Form {
       Section {
         Button {
           store.send(.startMeetingButtonTapped)
@@ -211,12 +211,12 @@ struct SyncUpDetailView: View {
         .frame(maxWidth: .infinity)
       }
     }
-    .navigationTitle(store.syncUp.title)
     .toolbar {
       Button("Edit") {
         store.send(.editButtonTapped)
       }
     }
+    .navigationTitle(store.syncUp.title)
     .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
     .sheet(item: $store.scope(state: \.destination?.edit, action: \.destination.edit)) { store in
       NavigationStack {

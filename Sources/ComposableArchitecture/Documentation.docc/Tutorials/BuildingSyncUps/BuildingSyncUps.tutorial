@@ -46,19 +46,20 @@
   }
   
   @Chapter(name: "Sync up detail") {
-    
-    @Image(source: "SyncUpDetail-cover.png")
-
+    The next feature to build is the "detail" screen for a sync up. This feature allows the user to
+    edit a sync up, record a new meeting, see past recorded meetings, and even delete the 
+    sync up.
+  
     @TutorialReference(tutorial: "doc:SyncUpDetail")
-    @TutorialReference(tutorial: "doc:EditingSyncUp")
-    @TutorialReference(tutorial: "doc:DeletingSyncUpFromDetail")
+    @TutorialReference(tutorial: "doc:EditingAndDeletingSyncUp")
     @TutorialReference(tutorial: "doc:TestingSyncUpDetail")
   }
   
   @Chapter(name: "Navigating to sync up detail") {
-
+    We now have a sync up detail screen, but still no way to navigate to it from the rest of the
+    app. We want to be able to drill-down to the detail screen from the list screen.
     
-    @TutorialReference(tutorial: "doc:SyncUpDetailNavigationStack")
+    @TutorialReference(tutorial: "doc:SyncUpDetailNavigation")
     @TutorialReference(tutorial: "doc:IntegratingSyncUpDetailAndList")
     @TutorialReference(tutorial: "doc:MeetingNavigation")
     @TutorialReference(tutorial: "doc:TestingNavigation")

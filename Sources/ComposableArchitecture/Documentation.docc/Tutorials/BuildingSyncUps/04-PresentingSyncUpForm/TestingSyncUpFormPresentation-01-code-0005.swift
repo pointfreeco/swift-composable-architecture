@@ -14,6 +14,7 @@ struct SyncUpsList {
     case confirmAddButtonTapped
     case discardButtonTapped
     case onDelete(IndexSet)
+    case syncUpTapped(id: SyncUp.ID)
   }
 
   @Dependency(\.uuid) var uuid
@@ -43,6 +44,9 @@ struct SyncUpsList {
 
       case let .onDelete(indexSet):
         state.syncUps.remove(atOffsets: indexSet)
+        return .none
+
+      case .syncUpTapped:
         return .none
       }
     }

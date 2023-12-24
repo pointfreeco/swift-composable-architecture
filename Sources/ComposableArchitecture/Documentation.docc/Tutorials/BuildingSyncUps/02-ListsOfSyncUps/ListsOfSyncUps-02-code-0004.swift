@@ -10,5 +10,6 @@ struct SyncUpsList {
   enum Action {
     case addButtonTapped
     case onDelete(IndexSet)
+    case syncUpTapped(id: SyncUp.ID)
   }
 }
