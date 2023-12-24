@@ -8,12 +8,12 @@ struct TodosApp: App {
       AppView(
         store: Store(
           initialState: Todos.State(
-            todos: IdentifiedArray(
-              // TODO: revert this
-              uncheckedUniqueElements: (1...10_000).map { index in
-                Todo.State(description: "\(index)", id: UUID())
-              }
-            )
+//            todos: IdentifiedArray(
+//              // TODO: revert this
+//              uncheckedUniqueElements: (1...10_000).map { index in
+//                Todo.State(description: "\(index)", id: UUID())
+//              }
+//            )
           )
         ) {
           Todos()
