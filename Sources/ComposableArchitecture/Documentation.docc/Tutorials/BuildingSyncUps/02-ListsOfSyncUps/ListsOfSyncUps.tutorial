@@ -23,6 +23,10 @@
         Copy and paste the following models into Models.swift. This code comes mostly verbatim
         from Apple's Scrumdinger project.
         
+        The `SyncUp` type represents a recurring meeting for a set of attendees. The `Meeting` type
+        represents a past recorded meeting, and includes a transcript if we were able to transcribe
+        the meeting.
+        
         @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0002.swift)
       }
       

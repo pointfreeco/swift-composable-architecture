@@ -12,7 +12,7 @@ final class SearchTests: XCTestCase {
       $0.weatherClient.search = { @Sendable _ in .mock }
     }
 
-    await store.send(.binding(.set(\.searchQuery, "S"))) {
+    await store.send(.set(\.searchQuery, "S")) {
       $0.searchQuery = "S"
     }
     await store.send(.searchQueryChangeDebounced)

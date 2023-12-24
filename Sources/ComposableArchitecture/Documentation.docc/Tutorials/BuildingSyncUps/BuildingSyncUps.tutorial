@@ -44,4 +44,36 @@
     @TutorialReference(tutorial: "doc:PresentingSyncUpForm")
     @TutorialReference(tutorial: "doc:TestingSyncUpFormPresentation")
   }
+  
+  @Chapter(name: "Sync up detail") {
+    
+    @Image(source: "SyncUpDetail-cover.png")
+
+    @TutorialReference(tutorial: "doc:SyncUpDetail")
+    @TutorialReference(tutorial: "doc:EditingSyncUp")
+    @TutorialReference(tutorial: "doc:DeletingSyncUpFromDetail")
+    @TutorialReference(tutorial: "doc:TestingSyncUpDetail")
+  }
+  
+  @Chapter(name: "Navigating to sync up detail") {
+
+    
+    @TutorialReference(tutorial: "doc:SyncUpDetailNavigationStack")
+    @TutorialReference(tutorial: "doc:IntegratingSyncUpDetailAndList")
+    @TutorialReference(tutorial: "doc:MeetingNavigation")
+    @TutorialReference(tutorial: "doc:TestingNavigation")
+  }
+  
+  @Chapter(name: "Record meeting") {
+   
+   @TutorialReference(tutorial: "doc:RecordMeeting")
+  }
 }
+
+<!--
+
+TODO: other things to consider
+* analytics
+* 
+
+-->

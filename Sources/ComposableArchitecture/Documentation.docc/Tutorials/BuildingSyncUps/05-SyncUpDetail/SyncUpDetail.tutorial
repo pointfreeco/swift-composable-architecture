@@ -1,0 +1,29 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Sync up detail") {
+    The "sync up detail" screen shows all the information of a sync up
+  }
+  
+  @Section(title: "Create the sync up detail") {
+    @ContentAndMedia {
+      Let's get the basics of a sync up detail screen into place. It won't have much functionality
+      from the beginning, but we will slowly layer on the feature's full logic and behavior.
+      
+      @Image(source: "SyncUpDetail-cover.png")
+    }
+    
+    @Steps {
+      @Step {
+        Create a new file called SyncUpDetail.swift that will hold the reducer and view for the
+        feature. Paste in the basic scaffold
+        
+        @Image(source: <#file#>, alt: "<#accessible description#>")
+      }
+      
+      @Step {
+        <#text#>
+        
+        @Code(name: "<#display name#>", file: <#filename.swift#>)
+      }
+    }
+  }
+}
