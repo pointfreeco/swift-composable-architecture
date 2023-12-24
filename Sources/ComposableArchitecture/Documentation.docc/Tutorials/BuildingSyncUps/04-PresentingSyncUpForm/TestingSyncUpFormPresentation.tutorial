@@ -1,0 +1,34 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Testing the add sync up flow") {
+    We have now integrated two moderately complex features, the `SyncUpsList` and `SyncUpForm`,
+    and so its time to write some tests. This will give us the opportunity to prove that the
+    features work in tandem as we expect, and we will explore "non-exhaustive" testing to make
+    our tests less fragile.
+  }
+  
+  @Section(title: "Adding a sync up") {
+    @ContentAndMedia {
+      TODO
+    }
+    
+    @Steps {
+      @Step {
+        TODO
+        @Code(name: "<#display name#>", file: <#filename.swift#>)
+      }
+    }
+  }
+  
+  @Section(title: "Non-exhaustive testing") {
+    @ContentAndMedia {
+      TODO
+    }
+    
+    @Steps {
+      @Step {
+        TODO
+        @Code(name: "<#display name#>", file: <#filename.swift#>)
+      }
+    }
+  }
+}

@@ -42,5 +42,6 @@
     and then add that sync up to the root list.
     
     @TutorialReference(tutorial: "doc:PresentingSyncUpForm")
+    @TutorialReference(tutorial: "doc:TestingSyncUpFormPresentation")
   }
 }
