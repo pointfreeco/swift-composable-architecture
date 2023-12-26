@@ -99,7 +99,7 @@ extension Store where State: ObservableState {
       //     https://github.com/apple/swift/issues/70611
       //
       // state: ToState(state.appending(path: \.[default: SubscriptDefault(childState)])),
-      state: ToState { $0[keyPath: state] ?? childState },
+      state: ToState(coalesceToLastValue({ $0[keyPath: state] }, initialValue: childState)),
       action: { action($0) },
       isInvalid: { $0[keyPath: state] == nil }
     )
