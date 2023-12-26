@@ -18,7 +18,7 @@ public struct PerceptionRegistrar: Sendable {
   /// Creates an instance of the observation registrar.
   ///
   /// You don't need to create an instance of
-  /// ``Perception/PerceptionRegistrar`` when using the
+  /// ``PerceptionRegistrar`` when using the
   /// ``Perception/Perceptible()`` macro to indicate observably
   /// of a type.
   public init() {

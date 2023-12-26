@@ -600,7 +600,7 @@ var body: some View {
 ```
 
 Most of this goes away when using the ``ObservableState()`` macro. You can start by annotating
-your feature's state with ``ObservableState()`` and removing all instances of ``BindingState``:
+your feature's state with ``ObservableState()`` and removing all instances of <doc:BindingState>:
 
 ```diff
 +@ObservableState

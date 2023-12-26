@@ -8,8 +8,8 @@ import SwiftUI
 /// the boilerplate of a custom initializer.
 ///
 /// > Important: It is important to properly leverage the `observe` argument in order to observe
-/// only the state that your view needs to do its job. See the <doc:Performance#View-stores>
-/// article for more information.
+/// only the state that your view needs to do its job. See the "Performance" section below for more
+/// information.
 ///
 /// For example, the following view, which manually observes the store it is handed by constructing
 /// a view store in its initializer:
