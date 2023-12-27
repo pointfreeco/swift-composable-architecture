@@ -67,7 +67,7 @@
   
   @Chapter(name: "Record meeting") {
    
-   @TutorialReference(tutorial: "doc:RecordMeeting")
+    @TutorialReference(tutorial: "doc:RecordMeeting")
   }
 }
 
