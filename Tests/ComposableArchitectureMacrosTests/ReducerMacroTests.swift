@@ -119,6 +119,49 @@
       }
     }
 
+    func testExistingCasePathableConformance() {
+      assertMacro {
+        """
+        @Reducer
+        struct Feature {
+          enum State: CasePathable {
+            struct AllCasePaths {}
+            static var allCasePaths: AllCasePaths { AllCasePaths() }
+          }
+          enum Action: CasePathable {
+            struct AllCasePaths {}
+            static var allCasePaths: AllCasePaths { AllCasePaths() }
+          }
+          @ReducerBuilder<State, Action>
+          var body: some ReducerOf<Self> {
+            EmptyReducer()
+          }
+        }
+        """
+      } expansion: {
+        """
+        struct Feature {
+          @dynamicMemberLookup
+          enum State: CasePathable {
+            struct AllCasePaths {}
+            static var allCasePaths: AllCasePaths { AllCasePaths() }
+          }
+          enum Action: CasePathable {
+            struct AllCasePaths {}
+            static var allCasePaths: AllCasePaths { AllCasePaths() }
+          }
+          @ReducerBuilder<State, Action>
+          var body: some ReducerOf<Self> {
+            EmptyReducer()
+          }
+        }
+
+        extension Feature: ComposableArchitecture.Reducer {
+        }
+        """
+      }
+    }
+
     func testReduceMethodDiagnostic() {
       assertMacro {
         """
