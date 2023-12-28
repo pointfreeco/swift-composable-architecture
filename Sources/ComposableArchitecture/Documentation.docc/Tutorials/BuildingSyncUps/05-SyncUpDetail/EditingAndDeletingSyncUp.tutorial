@@ -268,7 +268,6 @@
         the first time in <doc:BuildingSyncUps> to send a delegate action by using the 
         ``ComposableArchitecture/Effect/send(_:)`` effect.
         
-        
         > Note: Generally speaking, effects in the Composable architecture are operations that
         are executed and feed actions back into the system. They are typically asynchronous and 
         typically interact with outside systems, such as networks, databases.
@@ -316,6 +315,17 @@
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0014.swift)
       }
       
+      Next we need to integrate the alert into the view layer so that an alert actually shows
+      when the `alert` state becomes non-`nil`.
+      
+      @Step {
+        In the `SyncUpDetailView`, go to the bottom and use the ``SwiftUI/View/alert(_:)`` view 
+        modifier that comes with the library. This will cause an alert to be presented when the
+        `alert` state is populated.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0015.swift, previousFile: EditingAndDeletingSyncUp-02-code-0015-previous.swift)
+      }
+      
       We have now finished the sync up deletion functionality in the detail screen. At least, as 
       much as we can implement right now. The actual deletion logic will happen in a parent
       feature once we actually integrate all of the features together and can navigate between 
@@ -329,12 +339,141 @@
   @Section(title: "More concise domain modeling") {
     @ContentAndMedia {
       The `SyncUpDetail` works well enough right now, but there is something not ideal about how its
-      domain is modeled.
+      domain is modeled. We are representing the alert and edit sheet using two independent optional
+      values, which allows for invalid states. We only expect that either the alert _or_ sheet is
+      shown at one time, but it is possible for both optionals to be non-`nil` at the same time.
+      
+      And this problem gets bigger with the most destinations you can navigate to from a feature.
+      For example, if there are 4 possible destinations one can navigate to, then modeling that 
+      with optionals leads to 2^4 = 16 possible states, only 5 of which are valid. Either all
+      optionals should be `nil` or exactly one should be non-`nil`.
+      
+      This kind of inconcise domain modeling can leak complexity into your features, and luckily
+      there is a better way.
     }
     
     @Steps {
       @Step {
+        Create a whole new reducer nested inside the `SyncUpDetail` called `Destination`. This
+        reducer will represent all of the places one can navigate to from the detail screen,
+        and that will give us a single piece of state to drive navigation rather than having 
+        
+        > Note: We have collapsed the implementation of `SyncUpDetail` and `SyncUpDetailView` in
+        this code snippet.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0001.swift, previousFile: EditingAndDeletingSyncUp-03-code-0001-previous.swift)
+      }
+      
+      @Step {
+        The `State` of this reducer is going to be an enum rather than a struct, so that we can
+        represent all of the destinations as a mutually exclusive selection.
+        
+        > Note: We still have to annotate `State` with the 
+        ``ComposableArchitecture/ObservableState()`` macro for observation to work, even though
+        `State` is an enum.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0002.swift)
+      }
+      
+      @Step {
+        Add a case to the `State` enum for each destination that can be navigated to. The cases
+        will hold onto the state for the feature that can be presented.
+        
+        > Note: The `Alert.Action` will not compile right now, but we will fix that soon.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0003.swift)
+      }
+      
+      @Step {
+        Add an `Action` enum that has a case for each destination that can be navigated to. The
+        cases will hold onto the actions for the feature that can be presented.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0004.swift)
+      }
+      
+      @Step {
+        Implement the ``ComposableArchitecture/Reducer/body-8lumc`` of the `Destination` reducer
+        by composing each destination's reducer using the ``Scope`` reducer.
+        
+        > Note: There is nothing to compose for the alert because it has no internal logic of
+        its own. This is why we did not need to specify a reducer for alerts when using the 
+        ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator too.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0005.swift)
+      }
+      
+      That is all it takes to define a dedicated `Destination` reducer that encapsulates all of the
+      logic and behavior of the features that can be navigated to. Next we need to integrate the
+      `Destination` reducer into the main `SyncUpDetail` reducer.
+      
+      @Step {
+        Replace the two independent pieces of optional state in `SyncUpDetail.State` for a single
+        piece of optional `Destination.State`.
+        
+        We now have just one single piece of optional state that determines if navigation is active
+        and where we are being navigated to.
+        
+        > Note: There will be compiler errors after completing this step, but we will fix them
+        in upcoming steps.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0006.swift, previousFile: EditingAndDeletingSyncUp-03-code-0006-previous.swift)
+      }
+      
+      @Step {
+        Replace the two action cases for the alert and edit sheet with a single case that holds
+        onto a ``ComposableArchitecture/PresentationAction`` of `Destination.Action`.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0007.swift)
+      }
+      
+      @Step {
+        Replace the two `ifLet` operators at the bottom of `SyncUpDetail` with a single one that
+        composes the `Destination` reducer.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0008.swift)
+      }
+      
+      That is all it takes to integrate the `Destination` reducer into the `SyncUpDetail` reducer.
+      Next we have to update the core `Reduce` to handle the new destination state and actions
+      properly.
+      
+      @Step {
+        Update the pattern matching for the alert to go through the `.destination(.presented)` 
+        case.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0009.swift)
+      }
+      
+      @Step {
+        Do the same for the dismiss action.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0010.swift)
+      }
+      
+      @Step {
+        Update where we `nil` out `editSyncUp` state to instead `nil` out the `destination` state.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0011.swift)
+      }
+      
+      @Step {
+        Update where we pattern match on `editSyncUp` to instead pattern match on the `.edit` case
+        of the `destination` state.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0012.swift)
+      }
+      
+      @Step {
+        Update where we previously populated the `editSyncUp` state to instead point the 
+        `destination` enum to the `.edit` case with some `SyncUpForm` state.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0013.swift)
+      }
+      
+      @Step {
         TODO
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0014.swift, previousFile: EditingAndDeletingSyncUp-03-code-0014-previous.swift)
       }
     }
   }
