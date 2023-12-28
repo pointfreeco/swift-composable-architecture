@@ -187,6 +187,8 @@
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0004.swift)
       }
       
+<!--  TODO: populate AlertState somewhere!    -->
+      
       Integrating the logic of an alert into a feature is a bit different from integrating the 
       logic of a fully fledged feature. This is because alerts are immediately dismissed when a 
       button is tapped and has no internal logic or behavior of its own. For this reason there is
@@ -470,11 +472,20 @@
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0013.swift)
       }
       
+      That's all it takes to fully integrate the `Destination` reducer into the `SyncUpDetail`
+      reducer. Next we have to update the view so that we can drive the presentation of the alert
+      and sheet from the destination enum.
+      
       @Step {
-        TODO
+        Update the ``SwiftUI/View/alert(_:)`` and `.sheet(item:)` modifiers at the bottom of the
+        view so that the `$store.scope` further singles out the case for driving navigation.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0014.swift, previousFile: EditingAndDeletingSyncUp-03-code-0014-previous.swift)
       }
+      
+      That is all it takes to finish the refactor to use an enum to drive navigation rather than
+      multiple optionals. Our domain is more concisely modeled, and we can know precisely when
+      something is being presented. We merely have to check if `destination != nil`.
     }
   }
 }
