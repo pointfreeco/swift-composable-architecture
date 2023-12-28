@@ -21,9 +21,6 @@ struct SyncUpDetail {
     enum Alert {
       case confirmButtonTapped
     }
-    enum Delegate {
-      
-    }
   }
 
   var body: some ReducerOf<Self> {
@@ -32,13 +29,13 @@ struct SyncUpDetail {
       case .alert(.presented(.confirmButtonTapped)):
         
       case .alert(.dismiss):
-        return .none
 
       case .cancelEditButtonTapped:
         state.editSyncUp = nil
         return .none
 
       case .deleteButtonTapped:
+        state.alert = .deleteSyncUp
         return .none
 
       case .doneEditingButtonTapped:
@@ -62,6 +59,21 @@ struct SyncUpDetail {
       SyncUpForm()
     }
     .ifLet(\.$alert, action: \.alert) 
+  }
+}
+
+extension AlertState where Action == SyncUpDetail.Action.Alert {
+  static let deleteSyncUp = Self {
+    TextState("Delete?")
+  } actions: {
+    ButtonState(role: .destructive, action: .confirmButtonTapped) {
+      TextState("Yes")
+    }
+    ButtonState(role: .cancel) {
+      TextState("Nevermind")
+    }
+  } message: {
+    TextState("Are you sure you want to delete this meeting?")
   }
 }
 

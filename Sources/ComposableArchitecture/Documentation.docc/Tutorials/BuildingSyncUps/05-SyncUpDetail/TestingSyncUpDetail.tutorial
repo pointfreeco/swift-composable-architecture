@@ -74,11 +74,16 @@
   
   @Section(title: "Testing the delete flow") {
     @ContentAndMedia {
-      Next we will test the flow of the user deleting the sync up. 
+      Next we will test the flow of the user deleting the sync up. This involves asserting that the
+      confirmation alert shows, and emulating the user interacting with the alert.
     }
       
     @Steps {
       @Step {
+        Create a new test method for testing the delete user flow. Also create a 
+        ``ComposableArchitecture/TestStore`` for the `SyncUpDetail` feature.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0001.swift, previousFile: TestingSyncUpDetail-02-code-0001-previous.swift)
       }
     }
   }

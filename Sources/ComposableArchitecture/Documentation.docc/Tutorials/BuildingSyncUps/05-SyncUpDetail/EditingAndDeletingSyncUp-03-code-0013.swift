@@ -48,17 +48,20 @@ struct SyncUpDetail {
         return .none
 
       case .deleteButtonTapped:
+        state.destination = .alert(.deleteSyncUp)
         return .none
 
       case .doneEditingButtonTapped:
+        // guard let editedSyncUp = state.editSyncUp?.syncUp
+        // else { return .none }
+        // state.syncUp = editedSyncUp
         guard case let .edit(syncUpForm) = state.destination
         else { return .none }
         state.syncUp = syncUpForm.syncUp
         return .none
 
       case .editButtonTapped:
-        // state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
-        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp))
+        state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
         return .none
 
       case .startMeetingButtonTapped:
@@ -71,6 +74,21 @@ struct SyncUpDetail {
     .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
+  }
+}
+
+extension AlertState where Action == SyncUpDetail.Action.Alert {
+  static let deleteSyncUp = Self {
+    TextState("Delete?")
+  } actions: {
+    ButtonState(role: .destructive, action: .confirmButtonTapped) {
+      TextState("Yes")
+    }
+    ButtonState(role: .cancel) {
+      TextState("Nevermind")
+    }
+  } message: {
+    TextState("Are you sure you want to delete this meeting?")
   }
 }
 

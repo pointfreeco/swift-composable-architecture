@@ -26,15 +26,23 @@ struct SyncUpDetail {
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      case .alert(.presented(.confirmButtonTapped)):
-        
-      case .alert(.dismiss):
-
       case .cancelEditButtonTapped:
         state.editSyncUp = nil
         return .none
 
       case .deleteButtonTapped:
+        state.alert = AlertState {
+          TextState("Delete?")
+        } actions: {
+          ButtonState(role: .destructive, action: .confirmButtonTapped) {
+            TextState("Yes")
+          }
+          ButtonState(role: .cancel) {
+            TextState("Nevermind")
+          }
+        } message: {
+          TextState("Are you sure you want to delete this meeting?")
+        }
         return .none
 
       case .doneEditingButtonTapped:

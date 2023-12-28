@@ -12,6 +12,7 @@ struct SyncUpDetail {
   enum Action {
     case alert(PresentationAction<Alert>)
     case cancelEditButtonTapped
+    case delegate(Delegate)
     case deleteButtonTapped
     case doneEditingButtonTapped
     case editButtonTapped
@@ -22,20 +23,29 @@ struct SyncUpDetail {
       case confirmButtonTapped
     }
     enum Delegate {
-      
+      case deleteSyncUp(id: SyncUp.ID)
     }
   }
+
+  @Dependency(\.dismiss) var dismiss
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .alert(.presented(.confirmButtonTapped)):
-        
+        return .run { send in
+          await send(.delegate(.deleteSyncUp(id: state.syncUp.id)))
+          await dismiss()
+        }
+
       case .alert(.dismiss):
         return .none
 
       case .cancelEditButtonTapped:
         state.editSyncUp = nil
+        return .none
+
+      case .delegate:
         return .none
 
       case .deleteButtonTapped:

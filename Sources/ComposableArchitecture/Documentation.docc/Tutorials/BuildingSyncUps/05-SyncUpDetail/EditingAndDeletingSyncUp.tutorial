@@ -187,8 +187,6 @@
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0004.swift)
       }
       
-<!--  TODO: populate AlertState somewhere!    -->
-      
       Integrating the logic of an alert into a feature is a bit different from integrating the 
       logic of a fully fledged feature. This is because alerts are immediately dismissed when a 
       button is tapped and has no internal logic or behavior of its own. For this reason there is
@@ -201,20 +199,45 @@
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0005.swift)
       }
       
-      We now have the alert integrated into the `SyncUpDetail`, but we aren't yet handling the
-      new actions for the alert.
+      We now have the alert integrated into the `SyncUpDetail`, but we aren't yet populating the
+      `alert` state to actually present the alert. This is done by constructing a value of 
+      `AlertState`, which is a data type that represents all of the properties of an alert, such
+      as its title, message and buttons. It's primary purpose is to be `Equatable`-friendly so that
+      alerts can be tested.
+      
+      @Step {
+        Populate the `alert` property by constructing `AlertState`. This is done by providing three
+        trailing closures: one for the title, one for the buttons to show in the alert, and another
+        for the message in the alert.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0006.swift)
+      }
+      
+      That's all it takes to create `AlertState`. It contains all of the information for the view
+      to display the alert, which we will do in a moment.
+      
+      However, constructing `AlertState` values can be quite long, and so sometimes you may want
+      to extract their creation to an extension on `AlertState`.
+      
+      @Step {
+        Extract the alert state to an extension on `AlertState`. 
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0007.swift)
+      }
+      
+      Next we need to handle the new alert actions in the reducer.
       
       @Step {
         Destructure the new `.alert` actions in the `switch` statement of the core `Reduce`.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0006.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0008.swift)
       }
       
       @Step {
         There is nothing to do in the `.alert(.dimiss)` case because the `ifLet` operator will 
         automatically clean up the state for you.
       
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0007.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0009.swift)
       }
       
       The `.alert(.presented)` case is more subtle, though. This action is sent when the user 
@@ -236,7 +259,7 @@
         Add another nested enum, this time for delegate actions that the `SyncUpDetail` wants to
         communicate to a parent feature.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0008.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0010.swift)
       }
       
       @Step {
@@ -244,13 +267,13 @@
         delete a particular sync up. We only need to supply the ID of the sync up, and the parent
         feature should be able to delete it from that information alone.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0009.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0011.swift)
       }
       
       @Step {
         Add a case for delegate actions to the the `Action` enum.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0010.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0012.swift)
       }
       
       @Step {
@@ -262,7 +285,7 @@
         If you have logic you want to execute when delegate actions are sent, then move that logic
         to the place where you send the actions.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0011.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0013.swift)
       }
       
       @Step {
@@ -274,7 +297,7 @@
         are executed and feed actions back into the system. They are typically asynchronous and 
         typically interact with outside systems, such as networks, databases.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0012.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0014.swift)
       }
       
       > Important: Here we are using effects as a lightweight way to send a new action into the
@@ -299,7 +322,7 @@
         Add a dependency on ``ComposableArchitecture/DismissEffect`` to the `SyncUpDetail` feature
         by using the `@Dependency` property wrapper.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0013.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0015.swift)
       }
       
       To dismiss a child feature with the ``ComposableArchitecture/DismissEffect`` dependency you
@@ -314,7 +337,7 @@
         Return a `.run` effect to send the delegate action and invoke `dismiss` in one single
         effect.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0014.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0016.swift)
       }
       
       Next we need to integrate the alert into the view layer so that an alert actually shows
@@ -325,7 +348,7 @@
         modifier that comes with the library. This will cause an alert to be presented when the
         `alert` state is populated.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0015.swift, previousFile: EditingAndDeletingSyncUp-02-code-0015-previous.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0017.swift, previousFile: EditingAndDeletingSyncUp-02-code-0017-previous.swift)
       }
       
       We have now finished the sync up deletion functionality in the detail screen. At least, as 
@@ -459,17 +482,30 @@
       }
       
       @Step {
+        Update where we populate the `alert` state to instead point the `destination` state to
+        the `.alert` case.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0012.swift)
+      }
+      
+      @Step {
         Update where we pattern match on `editSyncUp` to instead pattern match on the `.edit` case
         of the `destination` state.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0012.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0013.swift)
       }
       
       @Step {
         Update where we previously populated the `editSyncUp` state to instead point the 
         `destination` enum to the `.edit` case with some `SyncUpForm` state.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0013.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0014.swift)
+      }
+      
+      @Step {
+        Update the extension on `AlertState` to point to the `Destination`'s alert action.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0015.swift)
       }
       
       That's all it takes to fully integrate the `Destination` reducer into the `SyncUpDetail`
@@ -480,7 +516,7 @@
         Update the ``SwiftUI/View/alert(_:)`` and `.sheet(item:)` modifiers at the bottom of the
         view so that the `$store.scope` further singles out the case for driving navigation.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0014.swift, previousFile: EditingAndDeletingSyncUp-03-code-0014-previous.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0016.swift, previousFile: EditingAndDeletingSyncUp-03-code-0016-previous.swift)
       }
       
       That is all it takes to finish the refactor to use an enum to drive navigation rather than
