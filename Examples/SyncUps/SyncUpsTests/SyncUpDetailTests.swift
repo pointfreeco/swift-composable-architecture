@@ -107,4 +107,26 @@ final class SyncUpDetailTests: XCTestCase {
 
     await store.receive(\.delegate.syncUpUpdated)
   }
+
+  func testDelete() async {
+    let didDismiss = LockIsolated(false)
+    defer { XCTAssertEqual(didDismiss.value, true) }
+
+    let syncUp = SyncUp.mock
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: syncUp)) {
+      SyncUpDetail()
+    } withDependencies: {
+      $0.dismiss = DismissEffect {
+        didDismiss.setValue(true)
+      }
+    }
+
+    await store.send(.deleteButtonTapped) {
+      $0.destination = .alert(.deleteSyncUp)
+    }
+    await store.send(.destination(.presented(.alert(.confirmDeletion)))) {
+      $0.destination = nil
+    }
+    await store.receive(\.delegate.deleteSyncUp)
+  }
 }
