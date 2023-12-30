@@ -13,13 +13,13 @@
       sync up form.
     }
     
-    Go to the SyncUpsList.swift file, where the `SyncUpLists` reducer is. We are going to update
-    the `State` struct so that it holds onto the state of the child feature to be presented, 
-    which is `SyncUpForm.State`. We will do this by holding onto an optional of the child state,
-    where `nil` represents that the feature is not presented, and non-`nil` represents the feature 
-    is presented
-    
     @Steps {
+      Go to the SyncUpsList.swift file, where the `SyncUpLists` reducer is. We are going to update
+      the `State` struct so that it holds onto the state of the child feature to be presented, 
+      which is `SyncUpForm.State`. We will do this by holding onto an optional of the child state,
+      where `nil` represents that the feature is not presented, and non-`nil` represents the feature 
+      is presented
+      
       @Step {
         Add a field to the `State` struct to hold onto `SyncUpForm.State` as an optional. We will
         also need to use the ``ComposableArchitecture/Presents()`` macro so that the navigation
@@ -133,7 +133,7 @@
         button to see that a sheet with the form comes up. And you can swipe down on the sheet
         to dismiss it.
         
-        @Video(source: PresentingSyncUpForm-02-video-0004.mp4)
+        @Video(source: PresentingSyncUpForm-02-video-0004.mov)
       }
       
       We can also replace `sheet(item:)` with `popover(item:)`, `fullScreenCover(item:)`, and
@@ -169,14 +169,26 @@
       need extra logic in the child view to separately handle adding versus editing a sync up.
       By moving it to the parent we can simplify things.
       
-      Right now the toolbar buttons don't do anything when tapped, so let's add actions to the 
-      feature for those new UI actions.
+      Right now the toolbar buttons don't do anything when tapped, so let's send actions to the
+      store.
+      
+      @Step {
+        Send an action to the store in each button of the toolbar.
+        
+        > Note: These actions are not added to the domain yet and will cause a compiler error.
+        We will fix that next.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0002.swift)
+      }
+      
+      We are now sending new actions to the store, and so we have to add those actions to our
+      feature and implement their logic.
       
       @Step {
         Add two cases to the `Action` enum of the `SyncUpsList` reducer that represents confirming
         the addition of the new sync up or discarding it.
         
-        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0002.swift, previousFile: PresentingSyncUpForm-03-code-0002-previous.swift)
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0003.swift, previousFile: PresentingSyncUpForm-03-code-0003-previous.swift)
       }
       
       @Step {
@@ -184,21 +196,22 @@
         optional state, and append its sync up data to the `syncUps` array. We also need to `nil`
         out the `addSyncUp` state in order to dismiss the sheet.
         
-        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0003.swift)
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0004.swift)
       }
       
       @Step {
         Implement the logic for the `discardButtonTapped` action by simply `nil`'ing out the 
         `addSyncUp` state to dismiss the sheet. Nothing else needs to be done.
         
-        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0004.swift)
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0005.swift)
+      }
+      
+      @Step {
+        Run the feature in the preview to show that it is possible to complete the full flow of
+        bringing up the "Add sync-up" sheet and adding a sync up to the root list.
+        
+        @Video(source: "PresentingSyncUpForm-03-code-0006.mov")
       }
     }
   }
 }
-
-<!--
-
-TODO: finish, but there's a crashing but right now in the sync up form
-
--->

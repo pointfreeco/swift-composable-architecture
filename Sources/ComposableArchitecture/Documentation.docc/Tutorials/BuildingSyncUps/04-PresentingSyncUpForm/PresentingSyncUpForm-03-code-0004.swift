@@ -33,10 +33,6 @@ struct SyncUpsList {
         state.syncUps.append(newSyncUp)
         return .none
 
-      case .discardButtonTapped:
-        state.addSyncUp = nil
-        return .none
-
       case let .onDelete(indexSet):
         state.syncUps.remove(atOffsets: indexSet)
         return .none
@@ -50,4 +46,3 @@ struct SyncUpsList {
     }
   }
 }
-

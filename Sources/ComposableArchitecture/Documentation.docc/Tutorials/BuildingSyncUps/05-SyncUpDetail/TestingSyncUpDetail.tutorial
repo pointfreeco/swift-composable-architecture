@@ -176,7 +176,7 @@
       Now that this test passes we have definitively proven that the `dismiss` effect is invoked
       and the `.deleteSyncUp` delegate action is sent when the user confirms deletion of the sync
       up. That will communicate to the parent that it should finish deleting the sync up _and_ it
-      should dismiss the presented sheet.c
+      should dismiss the presented sheet.
     }
   }
 }

@@ -22,7 +22,7 @@ extension IdentifiedArray {
 }
 
 extension Optional {
-  subscript(default default: SubscriptDefault<Wrapped>) -> Wrapped {
+  subscript(default default: SubscriptDefault<Wrapped>) -> Wrapped! {
     `default`.wrappedValue = self ?? `default`.wrappedValue
     return `default`.wrappedValue
   }

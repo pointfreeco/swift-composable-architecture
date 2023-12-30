@@ -26,13 +26,6 @@ struct SyncUpsList {
       case .addSyncUp:
         return .none
 
-      case .confirmAddButtonTapped:
-        guard let newSyncUp = state.addSyncUp?.syncUp
-        else { return .none }
-        state.addSyncUp = nil
-        state.syncUps.append(newSyncUp)
-        return .none
-
       case let .onDelete(indexSet):
         state.syncUps.remove(atOffsets: indexSet)
         return .none
