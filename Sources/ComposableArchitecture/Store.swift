@@ -543,7 +543,6 @@ extension PresentationState: _OptionalProtocol {}
 func storeTypeName<State, Action>(of store: Store<State, Action>) -> String {
   let stateType = typeName(State.self, genericsAbbreviated: false)
   let actionType = typeName(Action.self, genericsAbbreviated: false)
-  // TODO: `PresentationStoreOf`, `StackStoreOf`, `IdentifiedStoreOf`?
   if stateType.hasSuffix(".State"),
     actionType.hasSuffix(".Action"),
     stateType.dropLast(6) == actionType.dropLast(7)
