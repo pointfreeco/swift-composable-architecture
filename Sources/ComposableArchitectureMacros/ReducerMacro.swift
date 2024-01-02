@@ -55,7 +55,8 @@ extension ReducerMacro: MemberAttributeMacro {
           where: {
             ["CasePathable"].withCasePathsQualified.contains($0.type.trimmedDescription)
           }
-        ) {
+        )
+      {
         attributes.removeAll(where: { $0 == "CasePathable" })
       }
       for attribute in enumDecl.attributes {
