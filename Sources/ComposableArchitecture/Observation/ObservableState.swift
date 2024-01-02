@@ -16,10 +16,10 @@ public protocol ObservableState: Perceptible {
 public struct ObservableStateID: Equatable, Hashable, Sendable {
   @usableFromInline
   var location: UUID {
-    get { self.storage.location.value }
+    get { self.storage.location }
     set {
       if isKnownUniquelyReferenced(&self.storage) {
-        self.storage.location.setValue(newValue)
+        self.storage.location = newValue
       } else {
         self.storage = Storage(location: newValue, tag: self.tag)
       }
@@ -44,7 +44,7 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
 
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.storage === rhs.storage
-      || lhs.storage.location.value == rhs.storage.location.value
+      || lhs.storage.location == rhs.storage.location
       && lhs.storage.tag == rhs.storage.tag
   }
 
@@ -75,12 +75,12 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
     self.location = UUID()
   }
 
-  private final class Storage: Sendable {
-    fileprivate let location: LockIsolated<UUID>
+  private final class Storage: @unchecked Sendable {
+    fileprivate var location: UUID
     fileprivate let tag: Int?
 
     init(location: UUID = UUID(), tag: Int? = nil) {
-      self.location = LockIsolated(location)
+      self.location = location
       self.tag = tag
     }
   }
