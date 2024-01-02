@@ -110,7 +110,7 @@ struct SyncUpsList {
 
 struct SyncUpsListView: View {
   @Bindable var store: StoreOf<SyncUpsList>
-  
+
   var body: some View {
     List {
       ForEach(store.syncUps) { syncUp in

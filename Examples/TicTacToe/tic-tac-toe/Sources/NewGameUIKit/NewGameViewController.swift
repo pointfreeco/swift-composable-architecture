@@ -134,6 +134,8 @@ public class NewGameViewController: UIViewController {
   }
 }
 
-fileprivate extension NewGame.State {
-  var isLetsPlayButtonEnabled: Bool { !self.oPlayerName.isEmpty && !self.xPlayerName.isEmpty }
+extension NewGame.State {
+  fileprivate var isLetsPlayButtonEnabled: Bool {
+    !self.oPlayerName.isEmpty && !self.xPlayerName.isEmpty
+  }
 }

@@ -88,7 +88,7 @@ struct SyncUpFormView: View {
         .onDelete { indices in
           store.send(.deleteAttendees(atOffsets: indices))
         }
-        
+
         Button("New attendee") {
           store.send(.addAttendeeButtonTapped)
         }

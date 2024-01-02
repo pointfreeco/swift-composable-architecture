@@ -14,7 +14,7 @@ import Foundation
 internal struct _ManagedCriticalState<State> {
   // TODO: use OSAllocatedUnfairLock when available?
   private let lock = NSLock()
-  final private class LockedBuffer: ManagedBuffer<State, UnsafeRawPointer> { }
+  final private class LockedBuffer: ManagedBuffer<State, UnsafeRawPointer> {}
 
   private let buffer: ManagedBuffer<State, UnsafeRawPointer>
 
@@ -23,10 +23,12 @@ internal struct _ManagedCriticalState<State> {
   }
 
   internal init(_ initial: State) {
-    let roundedSize = (MemoryLayout<UnsafeRawPointer>.size - 1) / MemoryLayout<UnsafeRawPointer>.size
-    self.init(LockedBuffer.create(minimumCapacity: Swift.max(roundedSize, 1)) { buffer in
-      return initial
-    })
+    let roundedSize =
+      (MemoryLayout<UnsafeRawPointer>.size - 1) / MemoryLayout<UnsafeRawPointer>.size
+    self.init(
+      LockedBuffer.create(minimumCapacity: Swift.max(roundedSize, 1)) { buffer in
+        return initial
+      })
   }
 
   internal func withCriticalRegion<R>(
@@ -42,7 +44,7 @@ internal struct _ManagedCriticalState<State> {
   }
 }
 
-extension _ManagedCriticalState: @unchecked Sendable where State: Sendable { }
+extension _ManagedCriticalState: @unchecked Sendable where State: Sendable {}
 
 extension _ManagedCriticalState: Identifiable {
   internal var id: ObjectIdentifier {

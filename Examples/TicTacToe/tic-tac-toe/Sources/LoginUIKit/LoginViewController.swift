@@ -166,9 +166,9 @@ public class LoginViewController: UIViewController {
   }
 }
 
-fileprivate extension Login.State {
-  var isActivityIndicatorHidden: Bool { !self.isLoginRequestInFlight }
-  var isEmailTextFieldEnabled: Bool { !self.isLoginRequestInFlight }
-  var isLoginButtonEnabled: Bool { self.isFormValid && !self.isLoginRequestInFlight }
-  var isPasswordTextFieldEnabled: Bool { !self.isLoginRequestInFlight }
+extension Login.State {
+  fileprivate var isActivityIndicatorHidden: Bool { !self.isLoginRequestInFlight }
+  fileprivate var isEmailTextFieldEnabled: Bool { !self.isLoginRequestInFlight }
+  fileprivate var isLoginButtonEnabled: Bool { self.isFormValid && !self.isLoginRequestInFlight }
+  fileprivate var isPasswordTextFieldEnabled: Bool { !self.isLoginRequestInFlight }
 }

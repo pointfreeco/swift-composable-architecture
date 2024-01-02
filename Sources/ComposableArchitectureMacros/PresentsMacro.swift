@@ -198,7 +198,7 @@ extension PatternBindingListSyntax {
               set {
               _$observationRegistrar.mutate(self, keyPath: \\.\(identifier), &_\(identifier).projectedValue, newValue, _$isIdentityEqual)
               }
-              """
+              """,
             ])
           )
         )

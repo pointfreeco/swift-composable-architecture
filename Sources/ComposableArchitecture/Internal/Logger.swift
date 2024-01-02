@@ -35,4 +35,5 @@ public final class Logger {
   #endif
 }
 
-private var isRunningForPreviews = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+private var isRunningForPreviews =
+  ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"

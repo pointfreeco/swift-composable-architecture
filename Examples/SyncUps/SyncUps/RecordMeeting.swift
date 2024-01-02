@@ -172,7 +172,7 @@ struct RecordMeetingView: View {
     ZStack {
       RoundedRectangle(cornerRadius: 16)
         .fill(store.syncUp.theme.mainColor)
-      
+
       VStack {
         MeetingHeaderView(
           secondsElapsed: store.secondsElapsed,

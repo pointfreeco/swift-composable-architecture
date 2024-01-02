@@ -11,7 +11,7 @@ struct SyncUpsApp: App {
       $0.dataManager = .mock()
     }
   }
-  
+
   var body: some Scene {
     WindowGroup {
       // NB: This conditional is here only to facilitate UI testing so that we can mock out certain

@@ -9,12 +9,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftSyntax
-import SwiftSyntaxMacros
 import SwiftDiagnostics
 import SwiftOperators
+import SwiftSyntax
 import SwiftSyntaxBuilder
-
+import SwiftSyntaxMacros
 
 extension AttributeSyntax {
   var availability: AttributeSyntax? {

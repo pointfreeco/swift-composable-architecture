@@ -9,12 +9,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftSyntax
-import SwiftSyntaxMacros
 import SwiftDiagnostics
 import SwiftOperators
+import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacroExpansion
+import SwiftSyntaxMacros
 
 public struct ObservableStateMacro {
   static let moduleName = "ComposableArchitecture"
@@ -94,13 +94,18 @@ struct ObservationDiagnostic: DiagnosticMessage {
   var diagnosticID: MessageID
   var severity: DiagnosticSeverity
 
-  init(message: String, diagnosticID: SwiftDiagnostics.MessageID, severity: SwiftDiagnostics.DiagnosticSeverity = .error) {
+  init(
+    message: String, diagnosticID: SwiftDiagnostics.MessageID,
+    severity: SwiftDiagnostics.DiagnosticSeverity = .error
+  ) {
     self.message = message
     self.diagnosticID = diagnosticID
     self.severity = severity
   }
 
-  init(message: String, domain: String, id: ID, severity: SwiftDiagnostics.DiagnosticSeverity = .error) {
+  init(
+    message: String, domain: String, id: ID, severity: SwiftDiagnostics.DiagnosticSeverity = .error
+  ) {
     self.message = message
     self.diagnosticID = MessageID(domain: domain, id: id.rawValue)
     self.severity = severity
@@ -108,9 +113,15 @@ struct ObservationDiagnostic: DiagnosticMessage {
 }
 
 extension DiagnosticsError {
-  init<S: SyntaxProtocol>(syntax: S, message: String, domain: String = "Observation", id: ObservationDiagnostic.ID, severity: SwiftDiagnostics.DiagnosticSeverity = .error) {
+  init<S: SyntaxProtocol>(
+    syntax: S, message: String, domain: String = "Observation", id: ObservationDiagnostic.ID,
+    severity: SwiftDiagnostics.DiagnosticSeverity = .error
+  ) {
     self.init(diagnostics: [
-      Diagnostic(node: Syntax(syntax), message: ObservationDiagnostic(message: message, domain: domain, id: id, severity: severity))
+      Diagnostic(
+        node: Syntax(syntax),
+        message: ObservationDiagnostic(message: message, domain: domain, id: id, severity: severity)
+      )
     ])
   }
 }
@@ -118,22 +129,20 @@ extension DiagnosticsError {
 extension DeclModifierListSyntax {
   func privatePrefixed(_ prefix: String) -> DeclModifierListSyntax {
     let modifier: DeclModifierSyntax = DeclModifierSyntax(name: "private", trailingTrivia: .space)
-    return [modifier] + filter {
-      switch $0.name.tokenKind {
-      case .keyword(let keyword):
-        switch keyword {
-        case .fileprivate: fallthrough
-        case .private: fallthrough
-        case .internal: fallthrough
-        case .public:
-          return false
+    return [modifier]
+      + filter {
+        switch $0.name.tokenKind {
+        case .keyword(let keyword):
+          switch keyword {
+          case .fileprivate, .private, .internal, .public:
+            return false
+          default:
+            return true
+          }
         default:
           return true
         }
-      default:
-        return true
       }
-    }
   }
 
   init(keyword: Keyword) {
@@ -145,7 +154,9 @@ extension TokenSyntax {
   func privatePrefixed(_ prefix: String) -> TokenSyntax {
     switch tokenKind {
     case .identifier(let identifier):
-      return TokenSyntax(.identifier(prefix + identifier), leadingTrivia: leadingTrivia, trailingTrivia: trailingTrivia, presence: presence)
+      return TokenSyntax(
+        .identifier(prefix + identifier), leadingTrivia: leadingTrivia,
+        trailingTrivia: trailingTrivia, presence: presence)
     default:
       return self
     }
@@ -179,13 +190,17 @@ extension PatternBindingListSyntax {
 }
 
 extension VariableDeclSyntax {
-  func privatePrefixed(_ prefix: String, addingAttribute attribute: AttributeSyntax) -> VariableDeclSyntax {
+  func privatePrefixed(_ prefix: String, addingAttribute attribute: AttributeSyntax)
+    -> VariableDeclSyntax
+  {
     let newAttributes = attributes + [.attribute(attribute)]
     return VariableDeclSyntax(
       leadingTrivia: leadingTrivia,
       attributes: newAttributes,
       modifiers: modifiers.privatePrefixed(prefix),
-      bindingSpecifier: TokenSyntax(bindingSpecifier.tokenKind, leadingTrivia: .space, trailingTrivia: .space, presence: .present),
+      bindingSpecifier: TokenSyntax(
+        bindingSpecifier.tokenKind, leadingTrivia: .space, trailingTrivia: .space,
+        presence: .present),
       bindings: bindings.privatePrefixed(prefix),
       trailingTrivia: trailingTrivia
     )
@@ -218,17 +233,24 @@ extension ObservableStateMacro: MemberMacro {
 
     if declaration.isClass {
       // classes are not supported
-      throw DiagnosticsError(syntax: node, message: "'@ObservableState' cannot be applied to class type '\(observableType.text)'", id: .invalidApplication)
+      throw DiagnosticsError(
+        syntax: node,
+        message: "'@ObservableState' cannot be applied to class type '\(observableType.text)'",
+        id: .invalidApplication)
     }
     if declaration.isActor {
       // actors cannot yet be supported for their isolation
-      throw DiagnosticsError(syntax: node, message: "'@ObservableState' cannot be applied to actor type '\(observableType.text)'", id: .invalidApplication)
+      throw DiagnosticsError(
+        syntax: node,
+        message: "'@ObservableState' cannot be applied to actor type '\(observableType.text)'",
+        id: .invalidApplication)
     }
 
     var declarations = [DeclSyntax]()
 
     let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
-    declaration.addIfNeeded(ObservableStateMacro.registrarVariable(observableType), to: &declarations)
+    declaration.addIfNeeded(
+      ObservableStateMacro.registrarVariable(observableType), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.idVariable(access), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.willModifyFunction(access), to: &declarations)
 
@@ -322,13 +344,15 @@ extension ObservableStateMacro: MemberAttributeMacro {
     in context: Context
   ) throws -> [AttributeSyntax] {
     guard let property = member.as(VariableDeclSyntax.self), property.isValidForObservation,
-          property.identifier != nil else {
+      property.identifier != nil
+    else {
       return []
     }
 
     // dont apply to ignored properties or properties that are already flagged as tracked
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.trackedMacroName) {
+      || property.hasMacroApplication(ObservableStateMacro.trackedMacroName)
+    {
       return []
     }
 
@@ -372,12 +396,16 @@ extension ObservableStateMacro: MemberAttributeMacro {
 
     if property.hasMacroApplication(ObservableStateMacro.presentsMacroName) {
       return [
-        AttributeSyntax(attributeName: IdentifierTypeSyntax(name: .identifier(ObservableStateMacro.ignoredMacroName)))
+        AttributeSyntax(
+          attributeName: IdentifierTypeSyntax(
+            name: .identifier(ObservableStateMacro.ignoredMacroName)))
       ]
     }
 
     return [
-      AttributeSyntax(attributeName: IdentifierTypeSyntax(name: .identifier(ObservableStateMacro.trackedMacroName)))
+      AttributeSyntax(
+        attributeName: IdentifierTypeSyntax(
+          name: .identifier(ObservableStateMacro.trackedMacroName)))
     ]
   }
 }
@@ -415,7 +443,7 @@ extension ObservableStateMacro: ExtensionMacro {
     } else {
       return [
         ext,
-        obsExt
+        obsExt,
       ]
     }
   }
@@ -431,8 +459,9 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     in context: Context
   ) throws -> [AccessorDeclSyntax] {
     guard let property = declaration.as(VariableDeclSyntax.self),
-          property.isValidForObservation,
-          let identifier = property.identifier?.trimmed else {
+      property.isValidForObservation,
+      let identifier = property.identifier?.trimmed
+    else {
       return []
     }
 
@@ -489,7 +518,8 @@ extension ObservationStateTrackedMacro: PeerMacro {
     in context: Context
   ) throws -> [DeclSyntax] {
     guard let property = declaration.as(VariableDeclSyntax.self),
-          property.isValidForObservation else {
+      property.isValidForObservation
+    else {
       return []
     }
 
@@ -501,7 +531,8 @@ extension ObservationStateTrackedMacro: PeerMacro {
       return []
     }
 
-    let storage = DeclSyntax(property.privatePrefixed("_", addingAttribute: ObservableStateMacro.ignoredAttribute))
+    let storage = DeclSyntax(
+      property.privatePrefixed("_", addingAttribute: ObservableStateMacro.ignoredAttribute))
     return [storage]
   }
 }
@@ -518,4 +549,3 @@ public struct ObservationStateIgnoredMacro: AccessorMacro {
     return []
   }
 }
-

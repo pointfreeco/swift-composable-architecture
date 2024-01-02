@@ -155,10 +155,10 @@ struct WebSocketView: View {
         VStack(alignment: .leading) {
           Button(
             store.connectivityState == .connected
-            ? "Disconnect"
-            : store.connectivityState == .disconnected
-            ? "Connect"
-            : "Connecting..."
+              ? "Disconnect"
+              : store.connectivityState == .disconnected
+                ? "Connect"
+                : "Connecting..."
           ) {
             store.send(.connectButtonTapped)
           }

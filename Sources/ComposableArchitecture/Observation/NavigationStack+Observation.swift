@@ -168,8 +168,8 @@ public struct _NavigationDestinationViewModifier<
         self
           .destination(
             self.store.scope(
-              id: self.store.id(state: \.[id: component.id], action: \.[id: component.id]),
-              state: ToState(\.[id: component.id, default: SubscriptDefault(component.element)]),
+              id: self.store.id(state: \.[id:component.id], action: \.[id:component.id]),
+              state: ToState(\.[id:component.id,default:SubscriptDefault(component.element)]),
               action: { .element(id: component.id, action: $0) },
               isInvalid: { !$0.ids.contains(component.id) }
             )
@@ -263,8 +263,9 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
     #if DEBUG
       self.label.onAppear {
         if self.navigationDestinationType != State.self {
-          let elementType = self.navigationDestinationType.map(typeName)
-            ?? """
+          let elementType =
+            self.navigationDestinationType.map(typeName)
+              ?? """
               (None found in view hierarchy. Is this link inside a store-powered 'NavigationStack'?)
               """
           runtimeWarn(

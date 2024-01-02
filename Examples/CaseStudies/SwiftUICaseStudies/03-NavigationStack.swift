@@ -441,10 +441,10 @@ struct ScreenCView: View {
   var body: some View {
     Form {
       Text(
-          """
-          This screen demonstrates that if you start a long-living effects in a stack, then it \
-          will automatically be torn down when the screen is dismissed.
-          """
+        """
+        This screen demonstrates that if you start a long-living effects in a stack, then it \
+        will automatically be torn down when the screen is dismissed.
+        """
       )
       Section {
         Text("\(store.count)")

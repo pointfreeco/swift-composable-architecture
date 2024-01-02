@@ -44,8 +44,10 @@ public struct NewGameView: View {
   }
 }
 
-fileprivate extension NewGame.State {
-  var isLetsPlayButtonDisabled: Bool { self.oPlayerName.isEmpty || self.xPlayerName.isEmpty }
+extension NewGame.State {
+  fileprivate var isLetsPlayButtonDisabled: Bool {
+    self.oPlayerName.isEmpty || self.xPlayerName.isEmpty
+  }
 }
 
 struct NewGame_Previews: PreviewProvider {

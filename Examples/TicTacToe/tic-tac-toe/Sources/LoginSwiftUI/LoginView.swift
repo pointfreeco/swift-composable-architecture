@@ -61,10 +61,10 @@ public struct LoginView: View {
   }
 }
 
-fileprivate extension Login.State {
-  var isActivityIndicatorVisible: Bool { self.isLoginRequestInFlight }
-  var isFormDisabled: Bool { self.isLoginRequestInFlight }
-  var isLoginButtonDisabled: Bool { !self.isFormValid }
+extension Login.State {
+  fileprivate var isActivityIndicatorVisible: Bool { self.isLoginRequestInFlight }
+  fileprivate var isFormDisabled: Bool { self.isLoginRequestInFlight }
+  fileprivate var isLoginButtonDisabled: Bool { !self.isFormValid }
 }
 
 struct LoginView_Previews: PreviewProvider {

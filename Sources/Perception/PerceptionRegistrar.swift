@@ -191,8 +191,7 @@ extension PerceptionRegistrar: Hashable {
 
 #if DEBUG
   private func perceptionCheck() {
-    if
-      #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
+    if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10),
       !PerceptionLocals.isInPerceptionTracking,
       !PerceptionLocals.skipPerceptionChecking,
       isInSwiftUIBody()

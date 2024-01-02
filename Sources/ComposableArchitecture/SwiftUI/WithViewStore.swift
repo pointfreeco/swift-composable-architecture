@@ -134,7 +134,7 @@ import SwiftUI
 /// Changes to the internal and child state should not cause the view's body to re-compute since
 /// that state is not needed in the view.
 ///
-/// For example, if the root of our application was a tab view, then we could model that in state 
+/// For example, if the root of our application was a tab view, then we could model that in state
 /// as a struct that holds each tab's state as a property:
 ///
 /// ```swift
@@ -229,7 +229,7 @@ import SwiftUI
 /// ```
 ///
 /// However, this style of state observation is terribly inefficient since _every_ change to
-/// `AppFeature.State` will cause the view to re-compute even though the only piece of state we 
+/// `AppFeature.State` will cause the view to re-compute even though the only piece of state we
 /// actually care about is the `selectedTab`. The reason we are observing too much state is because
 /// we use `observe: { $0 }` in the construction of the ``WithViewStore``, which means the view
 /// store will observe all of state.
@@ -245,7 +245,7 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// In the future, the view may need access to more state. For example, suppose `Activity.State` 
+/// In the future, the view may need access to more state. For example, suppose `Activity.State`
 /// holds onto an `unreadCount` integer to represent how many new activities you have. There's no
 /// need to observe _all_ of `Activity.State` to get access to this one field. You can observe just
 /// the one field.
@@ -304,11 +304,11 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// This gives you maximum flexibility in the future for adding new fields to `ViewState` without 
+/// This gives you maximum flexibility in the future for adding new fields to `ViewState` without
 /// making your view convoluted.
 ///
 /// This technique for reducing view re-computations is most effective towards the root of your app
-/// hierarchy and least effective towards the leaf nodes of your app. Root features tend to hold 
+/// hierarchy and least effective towards the leaf nodes of your app. Root features tend to hold
 /// lots of state that its view does not need, such as child features, and leaf features tend to
 /// only hold what's necessary. If you are going to employ this technique you will get the most
 /// benefit by applying it to views closer to the root. At leaf features and views that need access
@@ -317,7 +317,7 @@ import SwiftUI
 @available(
   iOS,
   deprecated: 9999,
-  message: 
+  message:
     "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 @available(

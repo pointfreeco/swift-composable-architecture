@@ -26,7 +26,7 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
     ///   - keyPath: The key path of an observed property.
     @inlinable
     public func access<Subject: Observable, Member>(
-      _ subject: Subject, 
+      _ subject: Subject,
       keyPath: KeyPath<Subject, Member>
     ) {
       self.registrar.access(subject, keyPath: keyPath)
@@ -58,7 +58,7 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
         }
       }
     }
-  
+
     /// A no-op for non-observable values.
     ///
     /// See ``willModify(_:keyPath:_:)-3ybfo`` for info on what this method does when used with
@@ -71,7 +71,7 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
     ) -> Member {
       member
     }
-  
+
     /// A property observation called before setting the value of the subject.
     ///
     /// - Parameters:
@@ -87,7 +87,7 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
       member._$willModify()
       return member
     }
-  
+
     /// A property observation called after setting the value of the subject.
     ///
     /// If the identity of the value changed between ``willModify(_:keyPath:_:)-3ybfo`` and

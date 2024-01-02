@@ -45,10 +45,10 @@ public struct TwoFactorView: View {
   }
 }
 
-fileprivate extension TwoFactor.State {
-  var isActivityIndicatorVisible: Bool { self.isTwoFactorRequestInFlight }
-  var isFormDisabled: Bool { self.isTwoFactorRequestInFlight }
-  var isSubmitButtonDisabled: Bool { !self.isFormValid }
+extension TwoFactor.State {
+  fileprivate var isActivityIndicatorVisible: Bool { self.isTwoFactorRequestInFlight }
+  fileprivate var isFormDisabled: Bool { self.isTwoFactorRequestInFlight }
+  fileprivate var isSubmitButtonDisabled: Bool { !self.isFormValid }
 }
 
 struct TwoFactorView_Previews: PreviewProvider {

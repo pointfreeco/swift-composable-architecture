@@ -50,7 +50,7 @@ public struct BindableStore<State: ObservableState, Action> {
     self.wrappedValue = wrappedValue
   }
   public var projectedValue: BindableStore<State, Action> {
-    self 
+    self
   }
   public subscript<Subject>(
     dynamicMember keyPath: ReferenceWritableKeyPath<Store<State, Action>, Subject>

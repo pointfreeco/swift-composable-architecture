@@ -45,7 +45,7 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.storage === rhs.storage
       || lhs.storage.location == rhs.storage.location
-      && lhs.storage.tag == rhs.storage.tag
+        && lhs.storage.tag == rhs.storage.tag
   }
 
   public func hash(into hasher: inout Hasher) {
@@ -95,7 +95,7 @@ public func _$isIdentityEqual<T: ObservableState>(
 
 @inlinable
 public func _$isIdentityEqual<ID: Hashable, T: ObservableState>(
-  _ lhs: IdentifiedArray<ID, T>, 
+  _ lhs: IdentifiedArray<ID, T>,
   _ rhs: IdentifiedArray<ID, T>
 ) -> Bool {
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
@@ -103,7 +103,7 @@ public func _$isIdentityEqual<ID: Hashable, T: ObservableState>(
 
 @inlinable
 public func _$isIdentityEqual<T: ObservableState>(
-  _ lhs: PresentationState<T>, 
+  _ lhs: PresentationState<T>,
   _ rhs: PresentationState<T>
 ) -> Bool {
   lhs.wrappedValue?._$id == rhs.wrappedValue?._$id
@@ -111,7 +111,7 @@ public func _$isIdentityEqual<T: ObservableState>(
 
 @inlinable
 public func _$isIdentityEqual<T: ObservableState>(
-  _ lhs: StackState<T>, 
+  _ lhs: StackState<T>,
   _ rhs: StackState<T>
 ) -> Bool {
   areOrderedSetsDuplicates(lhs.ids, rhs.ids)
@@ -122,8 +122,7 @@ public func _$isIdentityEqual<C: Collection>(
   _ lhs: C,
   _ rhs: C
 ) -> Bool
-where C.Element: ObservableState
-{
+where C.Element: ObservableState {
   lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
 }
 
@@ -136,7 +135,7 @@ public func _$isIdentityEqual(_ lhs: String, _ rhs: String) -> Bool {
 @inlinable
 public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   guard !_isPOD(T.self) else { return false }
-  
+
   func openCollection<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
     guard C.Element.self is ObservableState.Type else {
       return false
@@ -152,8 +151,7 @@ public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
       return areOrderedSetsDuplicates(lhs.ids, rhs.ids)
     }
 
-    if
-      let identifiable = C.Element.self as? any Identifiable.Type,
+    if let identifiable = C.Element.self as? any Identifiable.Type,
       let result = openIdentifiable(identifiable)
     {
       return result

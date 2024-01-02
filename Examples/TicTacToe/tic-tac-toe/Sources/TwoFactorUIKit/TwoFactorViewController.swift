@@ -97,7 +97,9 @@ public final class TwoFactorViewController: UIViewController {
   }
 }
 
-fileprivate extension TwoFactor.State {
-  var isActivityIndicatorHidden: Bool { !self.isTwoFactorRequestInFlight }
-  var isLoginButtonEnabled: Bool { self.isFormValid && !self.isTwoFactorRequestInFlight }
+extension TwoFactor.State {
+  fileprivate var isActivityIndicatorHidden: Bool { !self.isTwoFactorRequestInFlight }
+  fileprivate var isLoginButtonEnabled: Bool {
+    self.isFormValid && !self.isTwoFactorRequestInFlight
+  }
 }

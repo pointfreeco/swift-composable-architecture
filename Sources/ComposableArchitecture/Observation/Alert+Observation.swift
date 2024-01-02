@@ -47,7 +47,7 @@ extension View {
       (confirmationDialogState?.title).map(Text.init) ?? Text(verbatim: ""),
       isPresented: item.isPresent(),
       titleVisibility: (confirmationDialogState?.titleVisibility).map(Visibility.init)
-      ?? .automatic,
+        ?? .automatic,
       presenting: confirmationDialogState,
       actions: { confirmationDialogState in
         ForEach(confirmationDialogState.buttons) { button in

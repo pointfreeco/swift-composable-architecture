@@ -6,16 +6,7 @@ struct TodosApp: App {
   var body: some Scene {
     WindowGroup {
       AppView(
-        store: Store(
-          initialState: Todos.State(
-//            todos: IdentifiedArray(
-//              // TODO: revert this
-//              uncheckedUniqueElements: (1...10_000).map { index in
-//                Todo.State(description: "\(index)", id: UUID())
-//              }
-//            )
-          )
-        ) {
+        store: Store(initialState: Todos.State()) {
           Todos()
         }
       )

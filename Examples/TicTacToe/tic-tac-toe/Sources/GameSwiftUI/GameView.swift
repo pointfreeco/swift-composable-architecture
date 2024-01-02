@@ -69,16 +69,16 @@ public struct GameView: View {
   }
 }
 
-fileprivate extension Game.State {
-  var rows: [[String]] { self.board.map { $0.map { $0?.label ?? "" } } }
-  var isGameDisabled: Bool { self.board.hasWinner || self.board.isFilled }
-  var isPlayAgainButtonVisible: Bool { self.board.hasWinner || self.board.isFilled }
-  var title: String {
+extension Game.State {
+  fileprivate var rows: [[String]] { self.board.map { $0.map { $0?.label ?? "" } } }
+  fileprivate var isGameDisabled: Bool { self.board.hasWinner || self.board.isFilled }
+  fileprivate var isPlayAgainButtonVisible: Bool { self.board.hasWinner || self.board.isFilled }
+  fileprivate var title: String {
     self.board.hasWinner
-    ? "Winner! Congrats \(self.currentPlayerName)!"
-    : self.board.isFilled
-      ? "Tied game!"
-      : "\(self.currentPlayerName), place your \(self.currentPlayer.label)"
+      ? "Winner! Congrats \(self.currentPlayerName)!"
+      : self.board.isFilled
+        ? "Tied game!"
+        : "\(self.currentPlayerName), place your \(self.currentPlayer.label)"
   }
 }
 

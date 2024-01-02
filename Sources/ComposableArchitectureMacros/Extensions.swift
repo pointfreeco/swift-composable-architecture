@@ -9,11 +9,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftSyntax
-import SwiftSyntaxMacros
 import SwiftDiagnostics
 import SwiftOperators
+import SwiftSyntax
 import SwiftSyntaxBuilder
+import SwiftSyntaxMacros
 
 extension VariableDeclSyntax {
   var identifierPattern: IdentifierPatternSyntax? {
@@ -142,13 +142,14 @@ extension TypeSyntax {
   }
 
   func genericSubstitution(_ parameters: GenericParameterListSyntax?) -> String? {
-    var genericParameters = [String : TypeSyntax?]()
+    var genericParameters = [String: TypeSyntax?]()
     if let parameters {
       for parameter in parameters {
         genericParameters[parameter.name.text] = parameter.inheritedType
       }
     }
-    var iterator = self.asProtocol(TypeSyntaxProtocol.self).tokens(viewMode: .sourceAccurate).makeIterator()
+    var iterator = self.asProtocol(TypeSyntaxProtocol.self).tokens(viewMode: .sourceAccurate)
+      .makeIterator()
     guard let base = iterator.next() else {
       return nil
     }
@@ -209,10 +210,14 @@ extension FunctionDeclSyntax {
   var signatureStandin: SignatureStandin {
     var parameters = [String]()
     for parameter in signature.parameterClause.parameters {
-      parameters.append(parameter.firstName.text + ":" + (parameter.type.genericSubstitution(genericParameterClause?.parameters) ?? "" ))
+      parameters.append(
+        parameter.firstName.text + ":"
+          + (parameter.type.genericSubstitution(genericParameterClause?.parameters) ?? ""))
     }
-    let returnType = signature.returnClause?.type.genericSubstitution(genericParameterClause?.parameters) ?? "Void"
-    return SignatureStandin(isInstance: isInstance, identifier: name.text, parameters: parameters, returnType: returnType)
+    let returnType =
+      signature.returnClause?.type.genericSubstitution(genericParameterClause?.parameters) ?? "Void"
+    return SignatureStandin(
+      isInstance: isInstance, identifier: name.text, parameters: parameters, returnType: returnType)
   }
 
   func isEquivalent(to other: FunctionDeclSyntax) -> Bool {
@@ -255,7 +260,8 @@ extension DeclGroupSyntax {
 
   var definedVariables: [VariableDeclSyntax] {
     memberBlock.members.compactMap { member in
-      if let variableDecl = member.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self) {
+      if let variableDecl = member.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self)
+      {
         return variableDecl
       }
       return nil

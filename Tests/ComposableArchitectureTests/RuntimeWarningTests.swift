@@ -87,8 +87,7 @@
     func testViewStoreSendMainThread() async {
       uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
-        $0.compactDescription ==
-          """
+        $0.compactDescription == """
           "ViewStore.send" was called on a non-main thread with: () …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \

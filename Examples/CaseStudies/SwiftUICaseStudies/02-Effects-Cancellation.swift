@@ -90,8 +90,8 @@ struct EffectsCancellationView: View {
             Button("Cancel") { store.send(.cancelButtonTapped) }
             Spacer()
             ProgressView()
-            // NB: There seems to be a bug in SwiftUI where the progress view does not show
-            // a second time unless it is given a new identity.
+              // NB: There seems to be a bug in SwiftUI where the progress view does not show
+              // a second time unless it is given a new identity.
               .id(UUID())
           }
         } else {

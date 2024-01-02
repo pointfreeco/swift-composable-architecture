@@ -37,7 +37,7 @@ final class iOS17_ObservableBasicsTests: BaseIntegrationTests {
     self.app.buttons["Increment"].tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.clearLogs()
-    
+
     self.app.buttons["Reset"].tap()
     XCTAssertEqual(self.app.staticTexts["0"].exists, true)
     self.assertLogs {
@@ -45,7 +45,7 @@ final class iOS17_ObservableBasicsTests: BaseIntegrationTests {
       ObservableBasicsView.body
       """
     }
-    
+
     self.app.buttons["Increment"].tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.assertLogs {
@@ -59,7 +59,7 @@ final class iOS17_ObservableBasicsTests: BaseIntegrationTests {
     self.app.buttons["Increment"].tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.clearLogs()
-    
+
     self.app.buttons["Copy, increment, discard"].tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.assertLogs {
@@ -67,7 +67,7 @@ final class iOS17_ObservableBasicsTests: BaseIntegrationTests {
       ObservableBasicsView.body
       """
     }
-    
+
     self.app.buttons["Increment"].tap()
     XCTAssertEqual(self.app.staticTexts["2"].exists, true)
     self.assertLogs {
@@ -89,7 +89,7 @@ final class iOS17_ObservableBasicsTests: BaseIntegrationTests {
       ObservableBasicsView.body
       """
     }
-    
+
     self.app.buttons["Increment"].tap()
     XCTAssertEqual(self.app.staticTexts["3"].exists, true)
     self.assertLogs {

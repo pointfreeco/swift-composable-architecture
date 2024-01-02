@@ -264,7 +264,7 @@ final class PerceptionTests: XCTestCase {
           .onAppear { _ = self.model.count }
       }
     }
-    
+
     self.render(FeatureView())
   }
 

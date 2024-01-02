@@ -9,17 +9,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftSyntax
-import SwiftSyntaxMacros
 import SwiftDiagnostics
 import SwiftOperators
+import SwiftSyntax
 import SwiftSyntaxBuilder
+import SwiftSyntaxMacros
 
 extension VariableDeclSyntax {
   var identifierPattern: IdentifierPatternSyntax? {
     bindings.first?.pattern.as(IdentifierPatternSyntax.self)
   }
-  
+
   var isInstance: Bool {
     for modifier in modifiers {
       for token in modifier.tokens(viewMode: .all) {
@@ -30,11 +30,11 @@ extension VariableDeclSyntax {
     }
     return true
   }
-  
+
   var identifier: TokenSyntax? {
     identifierPattern?.identifier
   }
-  
+
   var type: TypeSyntax? {
     bindings.first?.typeAnnotation?.type
   }
@@ -62,14 +62,14 @@ extension VariableDeclSyntax {
       }
     }
   }
-  
+
   var willSetAccessors: [AccessorDeclSyntax] {
     accessorsMatching { $0 == .keyword(.willSet) }
   }
   var didSetAccessors: [AccessorDeclSyntax] {
     accessorsMatching { $0 == .keyword(.didSet) }
   }
-  
+
   var isComputed: Bool {
     if accessorsMatching({ $0 == .keyword(.get) }).count > 0 {
       return true
@@ -83,23 +83,22 @@ extension VariableDeclSyntax {
       }
     }
   }
-  
-  
+
   var isImmutable: Bool {
     return bindingSpecifier.tokenKind == .keyword(.let)
   }
-  
+
   func isEquivalent(to other: VariableDeclSyntax) -> Bool {
     if isInstance != other.isInstance {
       return false
     }
     return identifier?.text == other.identifier?.text
   }
-  
+
   var initializer: InitializerClauseSyntax? {
     bindings.first?.initializer
   }
-  
+
   func hasMacroApplication(_ name: String) -> Bool {
     for attribute in attributes {
       switch attribute {
@@ -127,19 +126,20 @@ extension TypeSyntax {
     }
     return nil
   }
-  
+
   func genericSubstitution(_ parameters: GenericParameterListSyntax?) -> String? {
-    var genericParameters = [String : TypeSyntax?]()
+    var genericParameters = [String: TypeSyntax?]()
     if let parameters {
       for parameter in parameters {
         genericParameters[parameter.name.text] = parameter.inheritedType
       }
     }
-    var iterator = self.asProtocol(TypeSyntaxProtocol.self).tokens(viewMode: .sourceAccurate).makeIterator()
+    var iterator = self.asProtocol(TypeSyntaxProtocol.self).tokens(viewMode: .sourceAccurate)
+      .makeIterator()
     guard let base = iterator.next() else {
       return nil
     }
-    
+
     if let genericBase = genericParameters[base.text] {
       if let text = genericBase?.identifier {
         return "some " + text
@@ -148,7 +148,7 @@ extension TypeSyntax {
       }
     }
     var substituted = base.text
-    
+
     while let token = iterator.next() {
       switch token.tokenKind {
       case .leftAngle:
@@ -169,7 +169,7 @@ extension TypeSyntax {
         break
       }
     }
-    
+
     return substituted
   }
 }
@@ -185,23 +185,27 @@ extension FunctionDeclSyntax {
     }
     return true
   }
-  
+
   struct SignatureStandin: Equatable {
     var isInstance: Bool
     var identifier: String
     var parameters: [String]
     var returnType: String
   }
-  
+
   var signatureStandin: SignatureStandin {
     var parameters = [String]()
     for parameter in signature.parameterClause.parameters {
-      parameters.append(parameter.firstName.text + ":" + (parameter.type.genericSubstitution(genericParameterClause?.parameters) ?? "" ))
+      parameters.append(
+        parameter.firstName.text + ":"
+          + (parameter.type.genericSubstitution(genericParameterClause?.parameters) ?? ""))
     }
-    let returnType = signature.returnClause?.type.genericSubstitution(genericParameterClause?.parameters) ?? "Void"
-    return SignatureStandin(isInstance: isInstance, identifier: name.text, parameters: parameters, returnType: returnType)
+    let returnType =
+      signature.returnClause?.type.genericSubstitution(genericParameterClause?.parameters) ?? "Void"
+    return SignatureStandin(
+      isInstance: isInstance, identifier: name.text, parameters: parameters, returnType: returnType)
   }
-  
+
   func isEquivalent(to other: FunctionDeclSyntax) -> Bool {
     return signatureStandin == other.signatureStandin
   }
@@ -217,7 +221,7 @@ extension DeclGroupSyntax {
     }
     return standins
   }
-  
+
   func hasMemberFunction(equvalentTo other: FunctionDeclSyntax) -> Bool {
     for member in memberBlock.members {
       if let function = member.as(MemberBlockItemSyntax.self)?.decl.as(FunctionDeclSyntax.self) {
@@ -228,7 +232,7 @@ extension DeclGroupSyntax {
     }
     return false
   }
-  
+
   func hasMemberProperty(equivalentTo other: VariableDeclSyntax) -> Bool {
     for member in memberBlock.members {
       if let variable = member.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self) {
@@ -239,16 +243,17 @@ extension DeclGroupSyntax {
     }
     return false
   }
-  
+
   var definedVariables: [VariableDeclSyntax] {
     memberBlock.members.compactMap { member in
-      if let variableDecl = member.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self) {
+      if let variableDecl = member.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self)
+      {
         return variableDecl
       }
       return nil
     }
   }
-  
+
   func addIfNeeded(_ decl: DeclSyntax?, to declarations: inout [DeclSyntax]) {
     guard let decl else { return }
     if let fn = decl.as(FunctionDeclSyntax.self) {
@@ -261,19 +266,19 @@ extension DeclGroupSyntax {
       }
     }
   }
-  
+
   var isClass: Bool {
     return self.is(ClassDeclSyntax.self)
   }
-  
+
   var isActor: Bool {
     return self.is(ActorDeclSyntax.self)
   }
-  
+
   var isEnum: Bool {
     return self.is(EnumDeclSyntax.self)
   }
-  
+
   var isStruct: Bool {
     return self.is(StructDeclSyntax.self)
   }

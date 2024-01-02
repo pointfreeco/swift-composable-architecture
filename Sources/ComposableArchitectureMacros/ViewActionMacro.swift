@@ -87,7 +87,8 @@ extension SyntaxProtocol {
         if let sendExpression = functionCall.sendExpression {
           var fixIt: FixIt?
           if let outer = functionCall.arguments.first,
-            let inner = outer
+            let inner =
+              outer
               .as(LabeledExprSyntax.self)?.expression
               .as(FunctionCallExprSyntax.self),
             inner.calledExpression

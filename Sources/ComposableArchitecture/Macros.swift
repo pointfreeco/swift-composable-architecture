@@ -150,25 +150,26 @@
   /// ```
   @attached(memberAttribute)
   @attached(extension, conformances: Reducer)
-  public macro Reducer() = #externalMacro(
-    module: "ComposableArchitectureMacros", type: "ReducerMacro"
-  )
+  public macro Reducer() =
+    #externalMacro(
+      module: "ComposableArchitectureMacros", type: "ReducerMacro"
+    )
 
   /// Defines and implements conformance of the Observable protocol.
   @attached(extension, conformances: Observable, ObservableState)
   @attached(member, names: named(_$id), named(_$observationRegistrar), named(_$willModify))
   @attached(memberAttribute)
   public macro ObservableState() =
-  #externalMacro(module: "ComposableArchitectureMacros", type: "ObservableStateMacro")
+    #externalMacro(module: "ComposableArchitectureMacros", type: "ObservableStateMacro")
 
   @attached(accessor, names: named(init), named(get), named(set))
   @attached(peer, names: prefixed(_))
   public macro ObservationStateTracked() =
-  #externalMacro(module: "ComposableArchitectureMacros", type: "ObservationStateTrackedMacro")
+    #externalMacro(module: "ComposableArchitectureMacros", type: "ObservationStateTrackedMacro")
 
   @attached(accessor, names: named(willSet))
   public macro ObservationStateIgnored() =
-  #externalMacro(module: "ComposableArchitectureMacros", type: "ObservationStateIgnoredMacro")
+    #externalMacro(module: "ComposableArchitectureMacros", type: "ObservationStateIgnoredMacro")
 
   /// Wraps a property with ``PresentationState`` and observes it.
   ///
@@ -177,7 +178,7 @@
   @attached(accessor, names: named(init), named(get), named(set))
   @attached(peer, names: prefixed(`$`), prefixed(_))
   public macro Presents() =
-  #externalMacro(module: "ComposableArchitectureMacros", type: "PresentsMacro")
+    #externalMacro(module: "ComposableArchitectureMacros", type: "PresentsMacro")
 
   /// Provides a view with access to a feature's ``ViewAction``s.
   ///
@@ -232,7 +233,8 @@
   ///   }
   ///   ```
   @attached(extension, conformances: ViewActionSending)
-  public macro ViewAction<R: Reducer>(for: R.Type) = #externalMacro(
-    module: "ComposableArchitectureMacros", type: "ViewActionMacro"
-  ) where R.Action: ViewAction
+  public macro ViewAction<R: Reducer>(for: R.Type) =
+    #externalMacro(
+      module: "ComposableArchitectureMacros", type: "ViewActionMacro"
+    ) where R.Action: ViewAction
 #endif

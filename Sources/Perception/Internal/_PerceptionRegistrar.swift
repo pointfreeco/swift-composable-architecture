@@ -201,7 +201,7 @@ struct _PerceptionRegistrar: Sendable {
     }
 
     internal mutating func didSet<Subject: Perceptible, Member>(keyPath: KeyPath<Subject, Member>)
-    -> ([@Sendable (Any) -> Void], [@Sendable () -> Void])
+      -> ([@Sendable (Any) -> Void], [@Sendable () -> Void])
     {
       var perceptors = [@Sendable (Any) -> Void]()
       var trackers = [@Sendable () -> Void]()
@@ -252,7 +252,7 @@ struct _PerceptionRegistrar: Sendable {
     }
 
     internal func registerValues(for properties: Set<AnyKeyPath>, storage: ValuePerceptionStorage)
-    -> Int
+      -> Int
     {
       state.withCriticalRegion { $0.registerValues(for: properties, storage: storage) }
     }

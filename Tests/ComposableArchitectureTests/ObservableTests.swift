@@ -382,16 +382,24 @@ final class ObservableTests: BaseTCATestCase {
     ])
     let firstRowCountDidChange = self.expectation(description: "firstRowCountDidChange")
 
-    withPerceptionTracking { _ = state.rows } onChange: {
+    withPerceptionTracking {
+      _ = state.rows
+    } onChange: {
       XCTFail("rows should not change")
     }
-    withPerceptionTracking { _ = state.rows[0] } onChange: {
+    withPerceptionTracking {
+      _ = state.rows[0]
+    } onChange: {
       XCTFail("rows[0] should not change")
     }
-    withPerceptionTracking { _ = state.rows[0].count } onChange: {
+    withPerceptionTracking {
+      _ = state.rows[0].count
+    } onChange: {
       firstRowCountDidChange.fulfill()
     }
-    withPerceptionTracking { _ = state.rows[1].count } onChange: {
+    withPerceptionTracking {
+      _ = state.rows[1].count
+    } onChange: {
       XCTFail("rows[1].count should not change")
     }
 
@@ -459,16 +467,24 @@ final class ObservableTests: BaseTCATestCase {
     )
     let firstElementCountDidChange = self.expectation(description: "firstElementCountDidChange")
 
-    withPerceptionTracking { _ = state.path } onChange: {
+    withPerceptionTracking {
+      _ = state.path
+    } onChange: {
       XCTFail("path should not change")
     }
-    withPerceptionTracking { _ = state.path[0] } onChange: {
+    withPerceptionTracking {
+      _ = state.path[0]
+    } onChange: {
       XCTFail("path[0] should not change")
     }
-    withPerceptionTracking { _ = state.path[0].count } onChange: {
+    withPerceptionTracking {
+      _ = state.path[0].count
+    } onChange: {
       firstElementCountDidChange.fulfill()
     }
-    withPerceptionTracking { _ = state.path[1].count } onChange: {
+    withPerceptionTracking {
+      _ = state.path[1].count
+    } onChange: {
       XCTFail("path[1].count should not change")
     }
 
