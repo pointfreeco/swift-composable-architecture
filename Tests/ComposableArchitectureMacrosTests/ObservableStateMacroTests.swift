@@ -7,7 +7,9 @@
 
   final class ObservableStateMacroTests: MacroBaseTestCase {
     override func invokeTest() {
-      withMacroTesting {
+      withMacroTesting(
+        //isRecording: true
+      ) {
         super.invokeTest()
       }
     }
@@ -31,37 +33,29 @@
               _count = initialValue
             }
             get {
-              access(keyPath: \.count)
+              _$observationRegistrar.access(self, keyPath: \.count)
               return _count
             }
             set {
-              if _$isIdentityEqual(newValue, _count) == true {
-                _count = newValue
-              } else {
-                withMutation(keyPath: \.count) {
-                  _count = newValue
-                }
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+            }
+            _modify {
+              let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
+              defer {
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
               }
+              yield &_count
             }
           }
 
-          private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
-
-          internal nonisolated func access<Member>(
-            keyPath: KeyPath<State, Member>
-          ) {
-            _$observationRegistrar.access(self, keyPath: keyPath)
-          }
-
-          internal nonisolated func withMutation<Member, MutationResult>(
-            keyPath: KeyPath<State, Member>,
-            _ mutation: () throws -> MutationResult
-          ) rethrows -> MutationResult {
-            try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-          }
+          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
           var _$id: ComposableArchitecture.ObservableStateID {
-            self._$observationRegistrar.id
+            _$observationRegistrar.id
+          }
+
+          mutating func _$willModify() {
+            _$observationRegistrar._$willModify()
           }
         }
         """#
@@ -85,37 +79,29 @@
               _count = initialValue
             }
             get {
-              access(keyPath: \.count)
+              _$observationRegistrar.access(self, keyPath: \.count)
               return _count
             }
             set {
-              if _$isIdentityEqual(newValue, _count) == true {
-                _count = newValue
-              } else {
-                withMutation(keyPath: \.count) {
-                  _count = newValue
-                }
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+            }
+            _modify {
+              let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
+              defer {
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
               }
+              yield &_count
             }
           }
 
-          private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
-
-          internal nonisolated func access<Member>(
-            keyPath: KeyPath<State, Member>
-          ) {
-            _$observationRegistrar.access(self, keyPath: keyPath)
-          }
-
-          internal nonisolated func withMutation<Member, MutationResult>(
-            keyPath: KeyPath<State, Member>,
-            _ mutation: () throws -> MutationResult
-          ) rethrows -> MutationResult {
-            try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-          }
+          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
           var _$id: ComposableArchitecture.ObservableStateID {
-            self._$observationRegistrar.id
+            _$observationRegistrar.id
+          }
+
+          mutating func _$willModify() {
+            _$observationRegistrar._$willModify()
           }
         }
         """#
@@ -136,23 +122,14 @@
         struct State {
           var count = 0
 
-          private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
-
-          internal nonisolated func access<Member>(
-            keyPath: KeyPath<State, Member>
-          ) {
-            _$observationRegistrar.access(self, keyPath: keyPath)
-          }
-
-          internal nonisolated func withMutation<Member, MutationResult>(
-            keyPath: KeyPath<State, Member>,
-            _ mutation: () throws -> MutationResult
-          ) rethrows -> MutationResult {
-            try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-          }
+          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
           var _$id: ComposableArchitecture.ObservableStateID {
-            self._$observationRegistrar.id
+            _$observationRegistrar.id
+          }
+
+          mutating func _$willModify() {
+            _$observationRegistrar._$willModify()
           }
         }
         """
@@ -180,6 +157,17 @@
               return ._$id(for: state)._$tag(0)
             case let .feature2(state):
               return ._$id(for: state)._$tag(1)
+            }
+          }
+
+          mutating func _$willModify() {
+            switch self {
+            case var .feature1(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .feature1(state)
+            case var .feature2(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .feature2(state)
             }
           }
         }
@@ -210,6 +198,49 @@
               return ._$id(for: state)._$tag(1)
             }
           }
+
+          public mutating func _$willModify() {
+            switch self {
+            case var .feature1(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .feature1(state)
+            case var .feature2(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .feature2(state)
+            }
+          }
+        }
+        """
+      }
+    }
+
+    func testObservableState_Enum_NonObservableCase() {
+      assertMacro {
+        """
+        @ObservableState
+        public enum Path {
+          case foo(Int)
+        }
+        """
+      } expansion: {
+        """
+        public enum Path {
+          case foo(Int)
+
+          public var _$id: ComposableArchitecture.ObservableStateID {
+            switch self {
+            case let .foo(state):
+              return ._$id(for: state)._$tag(0)
+            }
+          }
+
+          public mutating func _$willModify() {
+            switch self {
+            case var .foo(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .foo(state)
+            }
+          }
         }
         """
       }
@@ -232,6 +263,13 @@
             switch self {
             case .foo:
               return ._$inert._$tag(0)
+            }
+          }
+
+          public mutating func _$willModify() {
+            switch self {
+            case .foo:
+              break
             }
           }
         }

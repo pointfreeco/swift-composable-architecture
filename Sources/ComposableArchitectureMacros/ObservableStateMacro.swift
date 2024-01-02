@@ -52,29 +52,24 @@ public struct ObservableStateMacro {
   static func registrarVariable(_ observableType: TokenSyntax) -> DeclSyntax {
     return
       """
-      @\(raw: ignoredMacroName) private let \(raw: registrarVariableName) = \(raw: qualifiedRegistrarTypeName)()
+      @\(raw: ignoredMacroName) var \(raw: registrarVariableName) = \(raw: qualifiedRegistrarTypeName)()
       """
   }
 
-  static func accessFunction(_ observableType: TokenSyntax) -> DeclSyntax {
+  static func idVariable(_ access: DeclModifierListSyntax.Element?) -> DeclSyntax {
     return
       """
-      internal nonisolated func access<Member>(
-      keyPath: KeyPath<\(observableType), Member>
-      ) {
-      \(raw: registrarVariableName).access(self, keyPath: keyPath)
+      \(access)var _$id: \(raw: qualifiedIDName) {
+      \(raw: registrarVariableName).id
       }
       """
   }
 
-  static func withMutationFunction(_ observableType: TokenSyntax) -> DeclSyntax {
+  static func willModifyFunction(_ access: DeclModifierListSyntax.Element?) -> DeclSyntax {
     return
       """
-      internal nonisolated func withMutation<Member, MutationResult>(
-      keyPath: KeyPath<\(observableType), Member>,
-      _ mutation: () throws -> MutationResult
-      ) rethrows -> MutationResult {
-      try \(raw: registrarVariableName).withMutation(of: self, keyPath: keyPath, mutation)
+      \(access)mutating func _$willModify() {
+      \(raw: registrarVariableName)._$willModify()
       }
       """
   }
@@ -232,18 +227,10 @@ extension ObservableStateMacro: MemberMacro {
 
     var declarations = [DeclSyntax]()
 
-    declaration.addIfNeeded(ObservableStateMacro.registrarVariable(observableType), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.accessFunction(observableType), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.withMutationFunction(observableType), to: &declarations)
     let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
-    declaration.addIfNeeded(
-      """
-      \(access)var _$id: \(raw: qualifiedIDName) {
-      self.\(raw: registrarVariableName).id
-      }
-      """ as DeclSyntax,
-      to: &declarations
-    )
+    declaration.addIfNeeded(ObservableStateMacro.registrarVariable(observableType), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.idVariable(access), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.willModifyFunction(access), to: &declarations)
 
     return declarations
   }
@@ -262,20 +249,34 @@ extension ObservableStateMacro {
 
     let enumCaseDecls = declaration.memberBlock.members
       .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
-    var cases: [String] = []
+    var getCases: [String] = []
+    var willModifyCases: [String] = []
     for (tag, enumCaseDecl) in enumCaseDecls.enumerated() {
       if enumCaseDecl.parameterClause?.parameters.count == 1 {
-        cases.append(
+        getCases.append(
           """
           case let .\(enumCaseDecl.name.text)(state):
           return ._$id(for: state)._$tag(\(tag))
           """
         )
+        willModifyCases.append(
+          """
+          case var .\(enumCaseDecl.name.text)(state):
+          \(moduleName)._$willModify(&state)
+          self = .\(enumCaseDecl.name.text)(state)
+          """
+        )
       } else {
-        cases.append(
+        getCases.append(
           """
           case .\(enumCaseDecl.name.text):
           return ._$inert._$tag(\(tag))
+          """
+        )
+        willModifyCases.append(
+          """
+          case .\(enumCaseDecl.name.text):
+          break
           """
         )
       }
@@ -285,10 +286,17 @@ extension ObservableStateMacro {
       """
       \(access)var _$id: \(raw: qualifiedIDName) {
       switch self {
-      \(raw: cases.joined(separator: "\n"))
+      \(raw: getCases.joined(separator: "\n"))
       }
       }
+      """,
       """
+      \(access)mutating func _$willModify() {
+      switch self {
+      \(raw: willModifyCases.joined(separator: "\n"))
+      }
+      }
+      """,
     ]
   }
 }
@@ -389,8 +397,8 @@ extension ObservableStateMacro: ExtensionMacro {
     }
 
     let decl: DeclSyntax = """
-        extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName) {}
-        """
+      extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName) {}
+      """
     // TODO: Take maximum of current availability and 17/14/17/10/etc...
     let obsDecl: DeclSyntax = """
       @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
@@ -439,32 +447,35 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
       """
       @storageRestrictions(initializes: _\(identifier))
       init(initialValue) {
-        _\(identifier) = initialValue
+      _\(identifier) = initialValue
       }
       """
 
     let getAccessor: AccessorDeclSyntax =
       """
       get {
-        access(keyPath: \\.\(identifier))
-        return _\(identifier)
+      \(raw: ObservableStateMacro.registrarVariableName).access(self, keyPath: \\.\(identifier))
+      return _\(identifier)
       }
       """
 
     let setAccessor: AccessorDeclSyntax =
       """
       set {
-        if _$isIdentityEqual(newValue, _\(identifier)) == true {
-          _\(identifier) = newValue
-        } else {
-          withMutation(keyPath: \\.\(identifier)) {
-            _\(identifier) = newValue
-          }
+      \(raw: ObservableStateMacro.registrarVariableName).mutate(self, keyPath: \\.\(identifier), &_\(identifier), newValue, _$isIdentityEqual)
+      }
+      """
+    let modifyAccessor: AccessorDeclSyntax = """
+      _modify {
+        let oldValue = _$observationRegistrar.willModify(self, keyPath: \\.\(identifier), &_\(identifier))
+        defer {
+          _$observationRegistrar.didModify(self, keyPath: \\.\(identifier), &_\(identifier), oldValue, _$isIdentityEqual)
         }
+        yield &_\(identifier)
       }
       """
 
-    return [initAccessor, getAccessor, setAccessor]
+    return [initAccessor, getAccessor, setAccessor, modifyAccessor]
   }
 }
 

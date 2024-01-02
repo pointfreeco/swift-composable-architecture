@@ -9,30 +9,80 @@ import Perception
 /// observation support to a type.
 public protocol ObservableState: Perceptible {
   var _$id: ObservableStateID { get }
+  mutating func _$willModify()
 }
 
 /// A unique identifier for a observed value.
 public struct ObservableStateID: Equatable, Hashable, Sendable {
-  private let uuid: UUID
-  private var tag: Int?
+  @usableFromInline
+  var location: UUID {
+    get { self.storage.location }
+    set {
+      if isKnownUniquelyReferenced(&self.storage) {
+        self.storage.location = newValue
+      } else {
+        self.storage = Storage(location: newValue, tag: self.tag)
+      }
+    }
+  }
+
+  @usableFromInline
+  var tag: Int? {
+    self.storage.tag
+  }
+
+  private var storage: Storage
+
+  @usableFromInline
+  init(location: UUID, tag: Int? = nil) {
+    self.storage = Storage(location: location, tag: tag)
+  }
 
   public init() {
-    self.uuid = UUID()
+    self.init(location: UUID())
+  }
+
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.storage === rhs.storage
+      || lhs.storage.location == rhs.storage.location
+      && lhs.storage.tag == rhs.storage.tag
+  }
+
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.location)
+    hasher.combine(self.tag)
+  }
+
+  @inlinable
+  public static func _$id<T>(for value: T) -> Self {
+    (value as? any ObservableState)?._$id ?? ._$inert
+  }
+
+  @inlinable
+  public static func _$id(for value: some ObservableState) -> Self {
+    value._$id
   }
 
   public static let _$inert = Self()
 
+  @inlinable
   public func _$tag(_ tag: Int?) -> Self {
-    var copy = self
-    copy.tag = tag
-    return copy
+    Self(location: self.location, tag: tag)
   }
 
-  public static func _$id<T>(for value: T) -> Self {
-    (value as? any ObservableState)?._$id ?? ._$inert
+  @inlinable
+  public mutating func _$willModify() {
+    self.location = UUID()
   }
-  public static func _$id(for value: some ObservableState) -> Self {
-    value._$id
+
+  private final class Storage: @unchecked Sendable {
+    fileprivate var location: UUID
+    fileprivate let tag: Int?
+
+    init(location: UUID = UUID(), tag: Int? = nil) {
+      self.location = location
+      self.tag = tag
+    }
   }
 }
 
@@ -43,44 +93,50 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
 //  return lhs._$id == rhs._$id
 //}
 
+@inlinable
 public func _$isIdentityEqual<ID: Hashable, T: ObservableState>(
-  _ lhs: IdentifiedArray<ID, T>, _ rhs: IdentifiedArray<ID, T>
+  _ lhs: IdentifiedArray<ID, T>, 
+  _ rhs: IdentifiedArray<ID, T>
 ) -> Bool {
   return areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
+@inlinable
 public func _$isIdentityEqual<T: ObservableState>(
-  _ lhs: PresentationState<T>, _ rhs: PresentationState<T>
+  _ lhs: PresentationState<T>, 
+  _ rhs: PresentationState<T>
 ) -> Bool {
   return lhs.wrappedValue?._$id == rhs.wrappedValue?._$id
 }
 
+@inlinable
 public func _$isIdentityEqual<T: ObservableState>(
-  _ lhs: StackState<T>, _ rhs: StackState<T>
+  _ lhs: StackState<T>, 
+  _ rhs: StackState<T>
 ) -> Bool {
   return areOrderedSetsDuplicates(lhs.ids, rhs.ids)
 }
 
-// TODO: When is this hit?
-@_disfavoredOverload
-public func _$isIdentityEqual<C: Collection>(_ lhs: C, _ rhs: C) -> Bool
-where C.Element: ObservableState {
-  fatalError(
-    """
-    If you encounter this fatal error, please let us know on GitHub:
-
-    https://github.com/pointfreeco/swift-composable-architecture
-    """
-  )
-  // lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
+@inlinable
+public func _$isIdentityEqual<C: Collection>(
+  _ lhs: C,
+  _ rhs: C
+) -> Bool
+where C.Element: ObservableState
+{
+  lhs.count == rhs.count && zip(lhs, rhs).allSatisfy { $0._$id == $1._$id }
 }
 
 // NB: This is a fast path so that String is not checked as a collection.
+@inlinable
 public func _$isIdentityEqual(_ lhs: String, _ rhs: String) -> Bool {
   return false
 }
 
+@inlinable
 public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
+  guard !_isPOD(T.self) else { return false }
+  
   func openCollection<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
     guard C.Element.self is ObservableState.Type else {
       return false
@@ -115,4 +171,11 @@ public func _$isIdentityEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
   } else {
     return false
   }
+}
+
+@inlinable
+public func _$willModify<T>(_: inout T) {}
+@inlinable
+public func _$willModify<T: ObservableState>(_ value: inout T) {
+  value._$willModify()
 }

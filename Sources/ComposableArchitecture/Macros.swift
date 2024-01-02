@@ -150,14 +150,13 @@
   /// ```
   @attached(memberAttribute)
   @attached(extension, conformances: Reducer)
-  @attached(memberAttribute)
   public macro Reducer() = #externalMacro(
     module: "ComposableArchitectureMacros", type: "ReducerMacro"
   )
 
   /// Defines and implements conformance of the Observable protocol.
   @attached(extension, conformances: Observable, ObservableState)
-  @attached(member, names: named(_$id), named(_$observationRegistrar), named(access), named(withMutation))
+  @attached(member, names: named(_$id), named(_$observationRegistrar), named(_$willModify))
   @attached(memberAttribute)
   public macro ObservableState() =
   #externalMacro(module: "ComposableArchitectureMacros", type: "ObservableStateMacro")

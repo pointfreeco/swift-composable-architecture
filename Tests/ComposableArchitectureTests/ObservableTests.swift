@@ -261,8 +261,6 @@ final class ObservableTests: BaseTCATestCase {
   }
 
   func testReplaceWithCopy() async {
-    XCTTODO("This currently fails but it should not.")
-
     let childState = ChildState(count: 1)
     var childStateCopy = childState
     childStateCopy.count = 2
@@ -374,7 +372,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.rows.append(ChildState())
     XCTAssertEqual(state.rows.count, 1)
-    self.wait(for: [rowsDidChange])
+    self.wait(for: [rowsDidChange], timeout: 0)
   }
 
   func testIdentifiedArray_MutateElement() {
@@ -399,7 +397,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.rows[0].count += 1
     XCTAssertEqual(state.rows[0].count, 1)
-    self.wait(for: [firstRowCountDidChange])
+    self.wait(for: [firstRowCountDidChange], timeout: 0)
   }
 
   func testPresents_NilToNonNil() {
@@ -414,7 +412,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.presentation = ChildState()
     XCTAssertEqual(state.presentation?.count, 0)
-    self.wait(for: [presentationDidChange])
+    self.wait(for: [presentationDidChange], timeout: 0)
   }
 
   func testPresents_Mutate() {
@@ -434,7 +432,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.presentation?.count += 1
     XCTAssertEqual(state.presentation?.count, 1)
-    self.wait(for: [presentationCountDidChange])
+    self.wait(for: [presentationCountDidChange], timeout: 0)
   }
 
   func testStackState_AddElement() {
@@ -449,7 +447,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.path.append(ChildState())
     XCTAssertEqual(state.path.count, 1)
-    self.wait(for: [pathDidChange])
+    self.wait(for: [pathDidChange], timeout: 0)
   }
 
   func testStackState_MutateElement() {
@@ -476,9 +474,51 @@ final class ObservableTests: BaseTCATestCase {
 
     state.path[id: 0]?.count += 1
     XCTAssertEqual(state.path[0].count, 1)
-    self.wait(for: [firstElementCountDidChange])
+    self.wait(for: [firstElementCountDidChange], timeout: 0)
   }
 
+  func testCopy() {
+    var state = ParentState()
+    var childCopy = state.child.copy()
+    childCopy.count = 42
+    let childCountDidChange = self.expectation(description: "childCountDidChange")
+
+    withPerceptionTracking {
+      _ = state.child.count
+    } onChange: {
+      childCountDidChange.fulfill()
+    }
+
+    state.child.replace(with: childCopy)
+    XCTAssertEqual(state.child.count, 42)
+    self.wait(for: [childCountDidChange], timeout: 0)
+  }
+
+  func testArrayAppend() {
+    var state = ParentState()
+    let childrenDidChange = self.expectation(description: "childrenDidChange")
+
+    withPerceptionTracking {
+      _ = state.children
+    } onChange: {
+      childrenDidChange.fulfill()
+    }
+
+    state.children.append(ChildState())
+    self.wait(for: [childrenDidChange])
+  }
+
+  func testArrayMutate() {
+    var state = ParentState(children: [ChildState()])
+
+    withPerceptionTracking {
+      _ = state.children
+    } onChange: {
+      XCTFail("children should not change")
+    }
+
+    state.children[0].count += 1
+  }
 }
 
 @ObservableState
@@ -491,11 +531,15 @@ private struct ChildState: Equatable, Identifiable {
   mutating func reset() {
     self = Self()
   }
+  mutating func copy() -> Self {
+    self
+  }
 }
 @ObservableState
 private struct ParentState: Equatable {
   var child = ChildState()
   @Presents var destination: DestinationState?
+  var children: [ChildState] = []
   @Presents var optional: ChildState?
   var path = StackState<ChildState>()
   @Presents var presentation: ChildState?

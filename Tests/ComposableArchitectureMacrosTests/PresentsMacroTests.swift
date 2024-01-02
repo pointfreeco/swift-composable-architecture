@@ -31,33 +31,21 @@
               _destination = PresentationState(wrappedValue: initialValue)
             }
             get {
-              access(keyPath: \.destination)
+              _$observationRegistrar.access(self, keyPath: \.destination)
               return _destination.wrappedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.wrappedValue) {
-                _destination.wrappedValue = newValue
-              } else {
-                withMutation(keyPath: \.destination) {
-                  _destination.wrappedValue = newValue
-                }
-              }
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.wrappedValue, newValue, _$isIdentityEqual)
             }
           }
 
           var $destination: ComposableArchitecture.PresentationState<Destination.State> {
             get {
-              access(keyPath: \.destination)
+              _$observationRegistrar.access(self, keyPath: \.destination)
               return _destination.projectedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.projectedValue) {
-                _destination.projectedValue = newValue
-              } else {
-                withMutation(keyPath: \.destination) {
-                  _destination.projectedValue = newValue
-                }
-              }
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.projectedValue, newValue, _$isIdentityEqual)
             }
           }
 
@@ -83,33 +71,21 @@
               _destination = PresentationState(wrappedValue: initialValue)
             }
             get {
-              access(keyPath: \.destination)
+              _$observationRegistrar.access(self, keyPath: \.destination)
               return _destination.wrappedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.wrappedValue) {
-                _destination.wrappedValue = newValue
-              } else {
-                withMutation(keyPath: \.destination) {
-                  _destination.wrappedValue = newValue
-                }
-              }
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.wrappedValue, newValue, _$isIdentityEqual)
             }
           }
 
           public var $destination: ComposableArchitecture.PresentationState<Destination.State> {
             get {
-              access(keyPath: \.destination)
+              _$observationRegistrar.access(self, keyPath: \.destination)
               return _destination.projectedValue
             }
             set {
-              if _$isIdentityEqual(newValue, _destination.projectedValue) {
-                _destination.projectedValue = newValue
-              } else {
-                withMutation(keyPath: \.destination) {
-                  _destination.projectedValue = newValue
-                }
-              }
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.projectedValue, newValue, _$isIdentityEqual)
             }
           }
 
@@ -153,23 +129,14 @@
         """
         struct State: Equatable {
 
-          private let _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
-
-          internal nonisolated func access<Member>(
-            keyPath: KeyPath<State, Member>
-          ) {
-            _$observationRegistrar.access(self, keyPath: keyPath)
-          }
-
-          internal nonisolated func withMutation<Member, MutationResult>(
-            keyPath: KeyPath<State, Member>,
-            _ mutation: () throws -> MutationResult
-          ) rethrows -> MutationResult {
-            try _$observationRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-          }
+          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
           var _$id: ComposableArchitecture.ObservableStateID {
-            self._$observationRegistrar.id
+            _$observationRegistrar.id
+          }
+
+          mutating func _$willModify() {
+            _$observationRegistrar._$willModify()
           }
         }
         """
