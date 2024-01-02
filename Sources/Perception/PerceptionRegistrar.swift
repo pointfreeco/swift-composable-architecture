@@ -265,27 +265,27 @@ extension PerceptionRegistrar: Hashable {
 #endif
 
 #if DEBUG
-@available(iOS, deprecated: 17, message: "TODO")
-@available(macOS, deprecated: 14, message: "TODO")
-@available(tvOS, deprecated: 17, message: "TODO")
-@available(watchOS, deprecated: 10, message: "TODO")
-public func withoutPerceptionChecking<T>(
-  _ apply: () -> T
-) -> T {
-    return PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+  @available(iOS, deprecated: 17, message: "TODO")
+  @available(macOS, deprecated: 14, message: "TODO")
+  @available(tvOS, deprecated: 17, message: "TODO")
+  @available(watchOS, deprecated: 10, message: "TODO")
+  public func _withoutPerceptionChecking<T>(
+    _ apply: () -> T
+  ) -> T {
+    PerceptionLocals.$skipPerceptionChecking.withValue(true) {
       apply()
     }
-}
+  }
 #else
-@available(iOS, deprecated: 17, message: "TODO")
-@available(macOS, deprecated: 14, message: "TODO")
-@available(tvOS, deprecated: 17, message: "TODO")
-@available(watchOS, deprecated: 10, message: "TODO")
-@_transparent
-@inline(__always)
-public func withoutPerceptionChecking<T>(
-  _ apply: () -> T
-) -> T {
+  @available(iOS, deprecated: 17, message: "TODO")
+  @available(macOS, deprecated: 14, message: "TODO")
+  @available(tvOS, deprecated: 17, message: "TODO")
+  @available(watchOS, deprecated: 10, message: "TODO")
+  @_transparent
+  @inline(__always)
+  public func _withoutPerceptionChecking<T>(
+    _ apply: () -> T
+  ) -> T {
     apply()
-}
+  }
 #endif

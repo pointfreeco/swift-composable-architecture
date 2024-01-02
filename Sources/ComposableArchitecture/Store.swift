@@ -359,7 +359,7 @@ public final class Store<State, Action> {
         return .none
       }
     #endif
-    return withoutPerceptionChecking {
+    return _withoutPerceptionChecking {
       self.rootStore.send(self.fromAction(action))
     }
   }

@@ -27,9 +27,13 @@ public struct WithPerceptionTracking<Content: View>: View {
       // NB: View will not re-render when 'id' changes unless we access it in the view.
       let _ = self.id
       return withPerceptionTracking {
-        PerceptionLocals.$isInPerceptionTracking.withValue(true) {
+        #if DEBUG
+          PerceptionLocals.$isInPerceptionTracking.withValue(true) {
+            self.content()
+          }
+        #else
           self.content()
-        }
+        #endif
       } onChange: {
         Task { @MainActor in
           self.id += 1

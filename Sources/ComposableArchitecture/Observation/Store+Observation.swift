@@ -158,13 +158,19 @@ extension Binding {
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>
   ) -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
-    let isInViewBody = PerceptionLocals.isInPerceptionTracking
+    #if DEBUG
+      let isInViewBody = PerceptionLocals.isInPerceptionTracking
+    #endif
     return Binding<Store<ChildState, ChildAction>?>(
       get: {
-        // TODO: Can this be localized to the `Perception` framework?
-        PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+        #if DEBUG
+          // TODO: Can this be localized to the `Perception` framework?
+          PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+            self.wrappedValue.scope(state: state, action: action.appending(path: \.presented))
+          }
+        #else
           self.wrappedValue.scope(state: state, action: action.appending(path: \.presented))
-        }
+        #endif
       },
       set: {
         if $0 == nil, self.wrappedValue.state[keyPath: state] != nil {
