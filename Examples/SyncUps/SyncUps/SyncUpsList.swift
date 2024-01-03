@@ -95,7 +95,8 @@ struct SyncUpsList {
 
         return .run { @MainActor _ in
           do {
-//            try self.modelContainer.mainContext.save()
+            print("!!!!", ObjectIdentifier(modelContainer))
+            try self.modelContainer.mainContext.save()
           } catch {
             print(error)
             print(error.localizedDescription)

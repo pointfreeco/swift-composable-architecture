@@ -5,17 +5,11 @@ import SwiftUI
 @main
 @MainActor
 struct SyncUpsApp: App {
-  let store = Store(initialState: AppFeature.State()) {
+  @State var store = Store(initialState: AppFeature.State()) {
     AppFeature()
       ._printChanges()
   } withDependencies: {
-    let schema = Schema([SyncUp.self])
-    $0.modelContainer = try! ModelContainer(
-      for: schema,
-      configurations: [
-        ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-      ]
-    )
+    $0.modelContainer = modelContainer
     if ProcessInfo.processInfo.environment["UITesting"] == "true" {
       $0.dataManager = .mock()
     }
@@ -36,3 +30,8 @@ struct SyncUpsApp: App {
     }
   }
 }
+
+private let modelContainer = try! ModelContainer(
+  for: SyncUp.self,
+  configurations: .init()
+)

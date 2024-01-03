@@ -5,10 +5,19 @@ import SwiftData
 
 @Model
 class SyncUp {
-  var attendees: IdentifiedArrayOf<Attendee>
+  var attendees: IdentifiedArrayOf<Attendee> {
+    get { [] }
+    set { }
+  }
   var duration: Int
-  var meetings: IdentifiedArrayOf<Meeting>
-  var theme: Theme
+  var meetings: IdentifiedArrayOf<Meeting> {
+    get { [] }
+    set { }
+  }
+  var theme: Theme {
+    get { Theme.bubblegum }
+    set { }
+  }
   var title: String
 
   var durationPerAttendee: TimeInterval {
@@ -22,10 +31,10 @@ class SyncUp {
     theme: Theme = .bubblegum,
     title: String = ""
   ) {
-    self.attendees = attendees
+    //self.attendees = attendees
     self.duration = duration
-    self.meetings = meetings
-    self.theme = theme
+    //self.meetings = meetings
+    //self.theme = theme
     self.title = title
   }
 
