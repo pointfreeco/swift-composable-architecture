@@ -7,13 +7,20 @@ import SwiftUI
 struct SyncUpsApp: App {
   @State var store = Store(initialState: AppFeature.State()) {
     AppFeature()
-      ._printChanges()
+      //._printChanges()
   } withDependencies: {
     $0.modelContainer = modelContainer
     if ProcessInfo.processInfo.environment["UITesting"] == "true" {
       $0.dataManager = .mock()
     }
   }
+//  @State var timestampStore = Store(
+//    initialState: TimestampApp.State()
+//  ) {
+//    TimestampApp()
+//  } withDependencies: {
+//    $0.modelContainer = timestampModelContainer
+//  }
 
   var body: some Scene {
     WindowGroup {
@@ -26,6 +33,7 @@ struct SyncUpsApp: App {
         EmptyView()
       } else {
         AppView(store: store)
+//        TimestampAppView(store: timestampStore)
       }
     }
   }
@@ -33,5 +41,10 @@ struct SyncUpsApp: App {
 
 private let modelContainer = try! ModelContainer(
   for: SyncUp.self,
+  configurations: .init()
+)
+
+let timestampModelContainer = try! ModelContainer(
+  for: Item.self,
   configurations: .init()
 )

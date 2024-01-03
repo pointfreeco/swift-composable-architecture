@@ -104,12 +104,12 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
-        state.syncUp.update(editState.syncUp)
+        try? editState.syncUp.modelContext?.save()
         state.destination = nil
         return .none
 
       case .editButtonTapped:
-        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp.copy()))
+        state.destination = .edit(SyncUpForm.State(syncUpID: state.syncUp.persistentModelID))
         return .none
 
       case .startMeetingButtonTapped:

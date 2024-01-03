@@ -22,13 +22,8 @@ struct SyncUpsList {
             FetchDescriptor()
           )
         )
-        print("!!!")
-      } catch is DecodingError {
-        self.destination = .alert(.dataFailedToLoad)
       } catch {
-        print(error)
-        print(error.localizedDescription)
-        print("!!!!")
+        self.destination = .alert(.dataFailedToLoad)
       }
     }
   }
@@ -39,6 +34,8 @@ struct SyncUpsList {
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
     case onDelete(IndexSet)
+    case onTask
+    case contextDidSave
   }
 
   @Reducer
@@ -73,7 +70,7 @@ struct SyncUpsList {
     Reduce { state, action in
       switch action {
       case .addSyncUpButtonTapped:
-        state.destination = .add(SyncUpForm.State(syncUp: SyncUp()))
+        state.destination = .add(SyncUpForm.State())
         return .none
 
       case .confirmAddSyncUpButtonTapped:
@@ -92,17 +89,8 @@ struct SyncUpsList {
         state.syncUps.append(syncUp)
         state.destination = nil
         self.modelContainer.mainContext.insert(syncUp)
-
-        return .run { @MainActor _ in
-          do {
-            print("!!!!", ObjectIdentifier(modelContainer))
-            try self.modelContainer.mainContext.save()
-          } catch {
-            print(error)
-            print(error.localizedDescription)
-            print("!!!")
-          }
-        }
+        try! self.modelContainer.mainContext.save()
+        return .none
 
       case .destination(.presented(.alert(.confirmLoadMockData))):
         state.syncUps = [
@@ -122,15 +110,40 @@ struct SyncUpsList {
       case let .onDelete(indexSet):
         state.syncUps.remove(atOffsets: indexSet)
         return .none
+
+      case .onTask:
+//        state.syncUps = try! IdentifiedArray(
+//          uncheckedUniqueElements: self.modelContainer.mainContext.fetch(
+//            FetchDescriptor()
+//          )
+//        )
+//        return .run { send in
+//          for await _ in NotificationCenter.default.notifications(named: .NSManagedObjectContextDidSave) {
+//            await send(.contextDidSave)
+//          }
+//        }
+        return .none
+
+      case .contextDidSave:
+//        print("!!!!", state.syncUps[0].title)
+//        state.syncUps = try! IdentifiedArray(
+//          uncheckedUniqueElements: self.modelContainer.mainContext.fetch(
+//            FetchDescriptor()
+//          )
+//        )
+        return .none
       }
     }
     .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
+    //.query()
+    //0x0000600001774b00
   }
 }
 
 struct SyncUpsListView: View {
+  @Query var syncUps: [SyncUp]
   @Bindable var store: StoreOf<SyncUpsList>
 
   var body: some View {
@@ -174,8 +187,13 @@ struct SyncUpsListView: View {
           }
       }
     }
+    .task {
+      store.send(.onTask)
+    }
   }
 }
+
+import SwiftData
 
 extension AlertState where Action == SyncUpsList.Destination.Action.Alert {
   static let dataFailedToLoad = Self {
@@ -200,7 +218,13 @@ extension AlertState where Action == SyncUpsList.Destination.Action.Alert {
 struct CardView: View {
   let syncUp: SyncUp
 
+  init(syncUp: SyncUp) {
+    self.syncUp = syncUp
+    print(ObjectIdentifier(syncUp), syncUp.title)
+  }
+
   var body: some View {
+    let _ = Self._printChanges()
     VStack(alignment: .leading) {
       Text(self.syncUp.title)
         .font(.headline)

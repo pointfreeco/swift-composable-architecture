@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftData
 import SwiftUI
 import SwiftUINavigation
 
@@ -8,10 +9,21 @@ struct SyncUpForm {
   struct State: Equatable {
     var focus: Field? = .title
     var syncUp: SyncUp
+    let scratchContext: ModelContext
 
     @MainActor
-    init(focus: Field? = .title, syncUp: SyncUp) {
+    init(focus: Field? = .title, syncUpID: PersistentIdentifier? = nil) {
+      @Dependency(\.modelContainer) var modelContainer
+      self.scratchContext = .init(modelContainer)
+      self.scratchContext.autosaveEnabled = false
+
       self.focus = focus
+      if let syncUpID {
+        self.syncUp = scratchContext.model(for: syncUpID) as! SyncUp
+      } else {
+        self.syncUp = SyncUp()
+      }
+
       self.syncUp = syncUp
       if self.syncUp.attendees.isEmpty {
         @Dependency(\.uuid) var uuid
@@ -131,11 +143,11 @@ extension Int {
 struct EditSyncUp_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
-      SyncUpFormView(
-        store: Store(initialState: SyncUpForm.State(syncUp: .mock)) {
-          SyncUpForm()
-        }
-      )
+//      SyncUpFormView(
+//        store: Store(initialState: SyncUpForm.State(syncUp: .mock)) {
+//          SyncUpForm()
+//        }
+//      )
     }
   }
 }

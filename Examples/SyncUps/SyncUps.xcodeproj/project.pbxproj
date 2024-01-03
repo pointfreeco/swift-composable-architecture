@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CA14FF052B361C7400104A70 /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = CA14FF042B361C7400104A70 /* SwiftUINavigation */; };
+		CA82235C2B46160C0003CC36 /* TimestampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA82235B2B46160C0003CC36 /* TimestampView.swift */; };
 		DC7CE4E729E9E6E4006B6263 /* ding.wav in Resources */ = {isa = PBXBuildFile; fileRef = DC7CE4E629E9E6E4006B6263 /* ding.wav */; };
 		DC808D7329E9C3AC0072B4A9 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D7229E9C3AC0072B4A9 /* App.swift */; };
 		DC808D7729E9C3AD0072B4A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC808D7629E9C3AD0072B4A9 /* Assets.xcassets */; };
@@ -49,6 +50,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CA82235B2B46160C0003CC36 /* TimestampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampView.swift; sourceTree = "<group>"; };
 		DC43064F2AE8CF7C005AFB1E /* SyncUps.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = SyncUps.xctestplan; sourceTree = "<group>"; };
 		DC7CE4E629E9E6E4006B6263 /* ding.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ding.wav; sourceTree = "<group>"; };
 		DC808D6F29E9C3AC0072B4A9 /* SyncUps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SyncUps.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -148,6 +150,7 @@
 				DC808DB229E9C5540072B4A9 /* SyncUpsList.swift */,
 				DC808D7629E9C3AD0072B4A9 /* Assets.xcassets */,
 				DC7CE4E529E9E6E4006B6263 /* Resources */,
+				CA82235B2B46160C0003CC36 /* TimestampView.swift */,
 			);
 			path = SyncUps;
 			sourceTree = "<group>";
@@ -333,6 +336,7 @@
 				DC80B1E929EDE5D1001CC0CC /* AppFeature.swift in Sources */,
 				DC808DA529E9C4C70072B4A9 /* OpenSettings.swift in Sources */,
 				DC808DAD29E9C52A0072B4A9 /* Models.swift in Sources */,
+				CA82235C2B46160C0003CC36 /* TimestampView.swift in Sources */,
 				DC808DB129E9C54A0072B4A9 /* SyncUpDetail.swift in Sources */,
 				DC808DA029E9C4340072B4A9 /* DataManager.swift in Sources */,
 				DC808D7329E9C3AC0072B4A9 /* App.swift in Sources */,
