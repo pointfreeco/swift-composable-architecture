@@ -31,7 +31,6 @@ struct SyncUpDetail {
     @CasePathable
     enum Delegate {
       case deleteSyncUp
-      case syncUpUpdated(SyncUp)
       case startMeeting
     }
   }
@@ -105,12 +104,12 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
-        state.syncUp = editState.syncUp
+        state.syncUp.update(editState.syncUp)
         state.destination = nil
         return .none
 
       case .editButtonTapped:
-        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp))
+        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp.copy()))
         return .none
 
       case .startMeetingButtonTapped:
@@ -133,11 +132,6 @@ struct SyncUpDetail {
     }
     .ifLet(\.$destination, action: \.destination) {
       Destination()
-    }
-    .onChange(of: \.syncUp) { oldValue, newValue in
-      Reduce { state, action in
-        .send(.delegate(.syncUpUpdated(newValue)))
-      }
     }
   }
 }

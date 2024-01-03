@@ -38,10 +38,6 @@ struct AppFeature {
           state.syncUpsList.syncUps.remove(id: detailState.syncUp.id)
           return .none
 
-        case let .syncUpUpdated(syncUp):
-          state.syncUpsList.syncUps[id: syncUp.id] = syncUp
-          return .none
-
         case .startMeeting:
           state.path.append(.record(RecordMeeting.State(syncUp: detailState.syncUp)))
           return .none
@@ -86,10 +82,12 @@ struct AppFeature {
     }
 
     Reduce { state, action in
-      return .run { [syncUps = state.syncUpsList.syncUps] _ in
+      guard let data = try? JSONEncoder().encode(state.syncUpsList.syncUps)
+      else { return .none }
+      return .run { _ in
         try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
           try await self.clock.sleep(for: .seconds(1))
-          try await self.saveData(JSONEncoder().encode(syncUps), .syncUps)
+          try await self.saveData(data, .syncUps)
         }
       } catch: { _, _ in
       }

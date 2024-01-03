@@ -2,16 +2,66 @@ import IdentifiedCollections
 import SwiftUI
 import Tagged
 
-struct SyncUp: Equatable, Identifiable, Codable {
-  let id: Tagged<Self, UUID>
-  var attendees: IdentifiedArrayOf<Attendee> = []
-  var duration: Duration = .seconds(60 * 5)
-  var meetings: IdentifiedArrayOf<Meeting> = []
-  var theme: Theme = .bubblegum
-  var title = ""
+@Observable
+class SyncUp: Equatable, Identifiable, Codable {
+  let id: Tagged<SyncUp, UUID>
+  var attendees: IdentifiedArrayOf<Attendee>
+  var duration: Duration
+  var meetings: IdentifiedArrayOf<Meeting>
+  var theme: Theme
+  var title: String
+
+  enum CodingKeys: String, CodingKey {
+    case id
+    case _attendees = "attendees"
+    case _duration = "duration"
+    case _meetings = "meetings"
+    case _theme = "theme"
+    case _title = "title"
+  }
 
   var durationPerAttendee: Duration {
     self.duration / self.attendees.count
+  }
+
+  init(
+    id: Tagged<SyncUp, UUID>,
+    attendees: IdentifiedArrayOf<Attendee> = [] ,
+    duration: Duration = .seconds(60 * 5),
+    meetings: IdentifiedArrayOf<Meeting> = [],
+    theme: Theme = .bubblegum,
+    title: String = ""
+  ) {
+    self.id = id
+    self.attendees = attendees
+    self.duration = duration
+    self.meetings = meetings
+    self.theme = theme
+    self.title = title
+  }
+
+  func copy() -> SyncUp {
+    SyncUp(
+      id: self.id,
+      attendees: self.attendees,
+      duration: self.duration,
+      meetings: self.meetings,
+      theme: self.theme,
+      title: self.title
+    )
+  }
+  
+  func update(_ other: SyncUp) {
+    precondition(self.id == other.id)
+    self.attendees = other.attendees
+    self.duration = other.duration
+    self.meetings = other.meetings
+    self.theme = other.theme
+    self.title = other.title
+  }
+
+  static func == (lhs: SyncUp, rhs: SyncUp) -> Bool {
+    lhs === rhs
   }
 }
 
@@ -62,7 +112,7 @@ enum Theme: String, CaseIterable, Equatable, Identifiable, Codable {
 }
 
 extension SyncUp {
-  static let mock = Self(
+  static let mock = SyncUp(
     id: SyncUp.ID(),
     attendees: [
       Attendee(id: Attendee.ID(), name: "Blob"),
@@ -91,7 +141,7 @@ extension SyncUp {
     title: "Point-Free morning sync"
   )
 
-  static let engineeringMock = Self(
+  static let engineeringMock = SyncUp(
     id: SyncUp.ID(),
     attendees: [
       Attendee(id: Attendee.ID(), name: "Blob"),
@@ -102,7 +152,7 @@ extension SyncUp {
     title: "Engineering"
   )
 
-  static let designMock = Self(
+  static let designMock = SyncUp(
     id: SyncUp.ID(),
     attendees: [
       Attendee(id: Attendee.ID(), name: "Blob Sr"),

@@ -68,7 +68,7 @@ struct SyncUpsList {
       case .confirmAddSyncUpButtonTapped:
         guard case let .some(.add(editState)) = state.destination
         else { return .none }
-        var syncUp = editState.syncUp
+        let syncUp = editState.syncUp
         syncUp.attendees.removeAll { attendee in
           attendee.name.allSatisfy(\.isWhitespace)
         }

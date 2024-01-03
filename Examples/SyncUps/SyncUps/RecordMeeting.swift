@@ -12,6 +12,7 @@ struct RecordMeeting {
     var syncUp: SyncUp
     var transcript = ""
 
+    @MainActor
     var durationRemaining: Duration {
       self.syncUp.duration - .seconds(self.secondsElapsed)
     }

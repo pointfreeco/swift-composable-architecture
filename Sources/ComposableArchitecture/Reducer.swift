@@ -213,7 +213,12 @@ public protocol Reducer<State, Action> {
   ///     side effect that can communicate with the outside world.
   /// - Returns: An effect that can communicate with the outside world and feed actions back into
   ///   the system.
+  @MainActor(unsafe)
   func reduce(into state: inout State, action: Action) -> Effect<Action>
+
+
+
+
 
   /// The content and behavior of a reducer that is composed from other reducers.
   ///
@@ -228,6 +233,7 @@ public protocol Reducer<State, Action> {
   /// > business logic it needs to layer into the system, introduce this logic into the body
   /// > instead, either with ``Reduce``, or with a separate, dedicated conformance.
   @ReducerBuilder<State, Action>
+  @MainActor(unsafe)
   var body: Body { get }
 }
 

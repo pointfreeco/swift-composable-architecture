@@ -5,10 +5,11 @@ import SwiftUINavigation
 @Reducer
 struct SyncUpForm {
   @ObservableState
-  struct State: Equatable, Sendable {
+  struct State: Equatable {
     var focus: Field? = .title
     var syncUp: SyncUp
 
+    @MainActor
     init(focus: Field? = .title, syncUp: SyncUp) {
       self.focus = focus
       self.syncUp = syncUp
