@@ -1305,6 +1305,39 @@ extension TestStore where State: Equatable {
     )
   }
 
+  private func _receive<Value: Equatable>(
+    _ actionCase: AnyCasePath<Action, Value>,
+    _ value: Value,
+    assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    self.receiveAction(
+      matching: { actionCase.extract(from: $0) == value },
+      failureMessage: "Expected to receive an action matching case path, but didn't get one.",
+      unexpectedActionDescription: { receivedAction in
+        var action = ""
+        if actionCase.extract(from: receivedAction) != nil,
+          let difference = diff(actionCase.embed(value), receivedAction, format: .proportional)
+        {
+          action.append(
+            """
+            \(difference.indent(by: 2))
+
+            (Expected: −, Actual: +)
+            """
+          )
+        } else {
+          customDump(receivedAction, to: &action, indent: 2)
+        }
+        return action
+      },
+      updateStateToExpectedResult,
+      file: file,
+      line: line
+    )
+  }
+
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
@@ -1500,18 +1533,30 @@ extension TestStore where State: Equatable {
     line: UInt = #line
   ) async
   where Action: CasePathable {
-    await self.receive(
-      AnyCasePath(
-        embed: { actionCase($0) },
-        extract: { action in
-          action[case: actionCase].flatMap { $0 == value ? $0 : nil }
-        }
-      ),
-      timeout: nanoseconds,
-      assert: updateStateToExpectedResult,
-      file: file,
-      line: line
-    )
+    let actionCase = AnyCasePath(actionCase)
+    await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+      guard !self.reducer.inFlightEffects.isEmpty
+      else {
+        _ = {
+          self._receive(
+            actionCase, value, assert: updateStateToExpectedResult, file: file, line: line
+          )
+        }()
+        return
+      }
+      await self.receiveAction(
+        matching: { actionCase.extract(from: $0) != nil },
+        timeout: nanoseconds,
+        file: file,
+        line: line
+      )
+      _ = {
+        self._receive(
+          actionCase, value, assert: updateStateToExpectedResult, file: file, line: line
+        )
+      }()
+      await Task.megaYield()
+    }
   }
 
   @available(
