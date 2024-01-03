@@ -4,7 +4,7 @@ import XCTest
 
 class SyncUpsListTests: XCTestCase {
   func testAddSyncUp() async {
-    let store = TestStore(initialState: SyncupsList.State()) {
+    let store = TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()
     } withDependencies: {
       $0.uuid = .incrementing
@@ -16,17 +16,7 @@ class SyncUpsListTests: XCTestCase {
       )
     }
 
-    let editedSyncUp = SyncUp(
-      id: SyncUp.ID(UUID(0)),
-      attendees: [
-        Attendee(id: Attendee.ID(), name: "Blob"),
-        Attendee(id: Attendee.ID(), name: "Blob Jr."),
-      ],
-      title: "Point-Free morning sync"
-    )
-    await store.send(.addSyncUp(.presented(.set(\.syncUp, editedSyncUp)))) {
-      $0.addSyncUp?.syncUp = editedSyncUp
-    }
+    await store.send(.addSyncUp(.presented(.set(<#property#>, <#value#>))))
   }
 
   func testDeletion() async {

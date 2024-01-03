@@ -1,55 +1,38 @@
 import ComposableArchitecture
-import SwiftUI
+import SyncUps
+import XCTest
 
-@Reducer
-struct SyncUpsList {
-  @ObservableState
-  struct State {
-    @Presents var addSyncUp: SyncUpForm.State?
-    var syncUps: IdentifiedArrayOf<SyncUps> = []
-  }
-  enum Action {
-    case addButtonTapped
-    case addSyncUp(PresentationAction<SyncUpForm.Action>)
-    case confirmAddButtonTapped
-    case discardButtonTapped
-    case onDelete(IndexSet)
-    case syncUpTapped(id: SyncUp.ID)
-  }
-
-  @Dependency(\.uuid) var uuid
-
-  var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
-      case .addButtonTapped:
-        state.addSyncUp = SyncUpForm.State(syncUp: SyncUp(id: SyncUp.ID()))
-        return .none
-
-      case .addSyncUp:
-        return .none
-
-      case .confirmAddButtonTapped:
-        guard let newSyncUp = state.addSyncUp?.syncUp
-        else { return .none }
-        state.addSyncUp = nil
-        state.syncUps.append(newSyncUp)
-        return .none
-
-      case .discardButtonTapped:
-        state.addSyncUp = nil
-        return .none
-
-      case let .onDelete(indexSet):
-        state.syncUps.remove(atOffsets: indexSet)
-        return .none
-
-      case .syncUpTapped:
-        return .none
-      }
+class SyncUpsListTests: XCTestCase {
+  func testAddSyncUp() async {
+    let store = TestStore(initialState: SyncUpsList.State()) {
+      SyncUpsList()
     }
-    .ifLet(\.$addSyncUp, action: \.addSyncUp) {
-      SyncUpForm()
+
+    await store.send(.addButtonTapped) {
+      $0.addSyncUp = SyncUpForm.State(syncUp: SyncUp(id: SyncUp.ID()))
     }
+    // ❌ A state change does not match expectation: …
+    //
+    //       SyncUpsList.State(
+    //         _addSyncUp: SyncUpForm.State(
+    //           _focus: .title,
+    //           _syncUp: SyncUp(
+    //     −       id: Tagged(rawValue: UUID(46714C1B-449D-430C-9AE9-300BEF39D259))
+    //     +       id: Tagged(rawValue: UUID(29CEC58B-1FC1-443C-8178-D35C9CA062C1))
+    //             attendees: [],
+    //             duration: 5 minutes,
+    //             meetings: [],
+    //             theme: .bubblegum,
+    //             title: ""
+    //           )
+    //         ),
+    //         _syncUps: []
+    //       )
+    //
+    // (Expected: −, Actual: +)
+  }
+
+  func testDeletion() async {
+    // ...
   }
 }

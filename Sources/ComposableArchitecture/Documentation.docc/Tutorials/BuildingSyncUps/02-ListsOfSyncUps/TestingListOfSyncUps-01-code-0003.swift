@@ -5,7 +5,7 @@ import XCTest
 class SyncUpsListTests: XCTestCase {
   func testDeletion() async {
     let store = TestStore(
-      initialState: SyncupsList.State(
+      initialState: SyncUpsList.State(
         syncUps: [
           SyncUp(
             id: SyncUp.ID(),

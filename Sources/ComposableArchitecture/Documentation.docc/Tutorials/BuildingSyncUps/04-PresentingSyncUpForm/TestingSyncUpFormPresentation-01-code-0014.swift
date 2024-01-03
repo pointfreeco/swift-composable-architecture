@@ -27,6 +27,11 @@ class SyncUpsListTests: XCTestCase {
     await store.send(.addSyncUp(.presented(.set(\.syncUp, editedSyncUp)))) {
       $0.addSyncUp?.syncUp = editedSyncUp
     }
+
+    await store.send(.confirmAddButtonTapped) {
+      $0.addSyncUp = nil
+      $0.syncUps = [editedSyncUp]
+    }
   }
 
   func testDeletion() async {

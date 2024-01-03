@@ -9,6 +9,7 @@ class SyncUpFormTests: XCTestCase {
         syncUp: SyncUp(
           id: SyncUp.ID(),
           attendees: [
+            Attendee(id: Attendee.ID()),
             Attendee(id: Attendee.ID())
           ]
         )
@@ -18,7 +19,7 @@ class SyncUpFormTests: XCTestCase {
     }
 
     await store.send(.onDeleteAttendees([0])) {
-      state.syncUp.attendees = []
+      state.syncUp.attendees.removeFirst()
     }
   }
 }

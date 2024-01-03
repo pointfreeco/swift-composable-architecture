@@ -21,20 +21,16 @@
       }
       
       @Step {
-        Constuct a ``ComposableArchitecture/TestStore`` with the initial state that has a single
-        attendee so that we have something to delete.
-        
-<!--
-TODO: initial state will need two attendees because otherwise an attendee will be inserted
-and the ID will be uncontrolled.
--->
+        Constuct a ``ComposableArchitecture/TestStore`` with the initial state that has two 
+        attendees so that we can delete one of them.
         
         @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0002.swift)
       }
       
       @Step {
         Emulate the user deleting the attendee by sending the `onDeleteAttendees` action and assert
-        that the attendee is indeed removed from the array.
+        that the attendee is indeed removed from the array, leaving only the other attendee in the
+        array.
         
         @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0003.swift)
       }
@@ -50,7 +46,9 @@ and the ID will be uncontrolled.
         the initial state with start with two attendees, which have been pulled out into variables
         so that we can reference them. The first attendee will also be focused.
         
-        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0004.swift)
+        > Note: We have collapsed the `testRemoveAttendee` method in the code snippet.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0004.swift, previousFile: TestingSyncUpForm-01-code-0004-previous.swift)
       }
       
       @Step {

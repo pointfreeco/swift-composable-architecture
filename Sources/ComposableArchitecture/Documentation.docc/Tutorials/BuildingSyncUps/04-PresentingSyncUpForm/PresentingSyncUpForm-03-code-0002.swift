@@ -102,7 +102,7 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 #Preview {
   SyncUpsListView(
     store: Store(
-      initialState: SyncupsList.State(
+      initialState: SyncUpsList.State(
         syncUps: [
           SyncUp(
             id: SyncUp.ID(),

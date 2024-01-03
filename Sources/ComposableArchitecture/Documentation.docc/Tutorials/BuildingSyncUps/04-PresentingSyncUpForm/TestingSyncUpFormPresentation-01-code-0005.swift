@@ -23,9 +23,7 @@ struct SyncUpsList {
     Reduce { state, action in
       switch action {
       case .addButtonTapped:
-        state.addSyncUp = SyncUpForm.State(
-          syncUp: SyncUp(id: SyncUp.ID(uuid()))
-        )
+        state.addSyncUp = SyncUpForm.State(syncUp: SyncUp(id: SyncUp.ID()))
         return .none
 
       case .addSyncUp:
@@ -55,5 +53,3 @@ struct SyncUpsList {
     }
   }
 }
-
-

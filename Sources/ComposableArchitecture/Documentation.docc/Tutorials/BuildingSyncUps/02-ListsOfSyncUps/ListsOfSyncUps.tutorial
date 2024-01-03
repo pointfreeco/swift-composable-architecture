@@ -197,8 +197,8 @@
       
       @Step {
         With that done we can set up a preview. Add a `#Preview` down at the bottom of the file.
-        To construct a `SyncupsListView` you need to construct a ``ComposableArchitecture/Store`` 
-        of the `SyncupsList` feature. This is done by providing the initial state of the feature,
+        To construct a `SyncUpsListView` you need to construct a ``ComposableArchitecture/Store`` 
+        of the `SyncUpsList` feature. This is done by providing the initial state of the feature,
         and we can even pre-populate it with a `SyncUp` in the array, as well as specifying the 
         reducer that will power the feature.
         

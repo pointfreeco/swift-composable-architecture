@@ -4,16 +4,14 @@ import XCTest
 
 class SyncUpsListTests: XCTestCase {
   func testAddSyncUp() async {
-    let store = TestStore(initialState: SyncupsList.State()) {
+    let store = TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()
     } withDependencies: {
       $0.uuid = .incrementing
     }
 
     await store.send(.addButtonTapped) {
-      $0.addSyncUp = SyncUpForm.State(
-        syncUp: SyncUp(id: SyncUp.ID(UUID(0)))
-      )
+      $0.addSyncUp = SyncUpForm.State(syncUp: SyncUp(id: SyncUp.ID()))
     }
   }
 

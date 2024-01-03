@@ -4,7 +4,7 @@ import XCTest
 
 class SyncUpsListTests: XCTestCase {
   func testAddSyncUp() async {
-    let store = TestStore(initialState: SyncupsList.State()) {
+    let store = TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()
     } withDependencies: {
       $0.uuid = .incrementing
@@ -16,7 +16,7 @@ class SyncUpsListTests: XCTestCase {
       )
     }
 
-    await store.send(.addSyncUp(.presented(.set(<#property#>, <#value#>))))
+    await store.send(.addSyncUp(.presented(…)))
   }
 
   func testDeletion() async {
