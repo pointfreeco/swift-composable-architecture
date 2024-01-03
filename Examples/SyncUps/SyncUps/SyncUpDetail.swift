@@ -152,7 +152,7 @@ struct SyncUpDetailView: View {
         HStack {
           Label("Length", systemImage: "clock")
           Spacer()
-          Text(store.syncUp.duration.formatted(.units()))
+          Text(Duration.seconds(store.syncUp.duration).formatted(.units()))
         }
 
         HStack {

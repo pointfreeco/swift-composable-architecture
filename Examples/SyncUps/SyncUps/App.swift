@@ -1,12 +1,21 @@
 import ComposableArchitecture
+import SwiftData
 import SwiftUI
 
 @main
+@MainActor
 struct SyncUpsApp: App {
   let store = Store(initialState: AppFeature.State()) {
     AppFeature()
       ._printChanges()
   } withDependencies: {
+    let schema = Schema([SyncUp.self])
+    $0.modelContainer = try! ModelContainer(
+      for: schema,
+      configurations: [
+        ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+      ]
+    )
     if ProcessInfo.processInfo.environment["UITesting"] == "true" {
       $0.dataManager = .mock()
     }

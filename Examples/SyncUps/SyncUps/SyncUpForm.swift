@@ -75,7 +75,7 @@ struct SyncUpFormView: View {
             Text("Length")
           }
           Spacer()
-          Text(store.syncUp.duration.formatted(.units()))
+          Text(store.syncUp.duration.formatted())  // TOOD
         }
         ThemePicker(selection: $store.syncUp.theme)
       } header: {
@@ -121,10 +121,10 @@ struct ThemePicker: View {
   }
 }
 
-extension Duration {
+extension Int {
   fileprivate var minutes: Double {
-    get { Double(self.components.seconds / 60) }
-    set { self = .seconds(newValue * 60) }
+    get { Double(self / 60) }
+    set { self = Int(newValue * 60) }
   }
 }
 

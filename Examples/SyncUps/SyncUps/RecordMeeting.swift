@@ -13,8 +13,8 @@ struct RecordMeeting {
     var transcript = ""
 
     @MainActor
-    var durationRemaining: Duration {
-      self.syncUp.duration - .seconds(self.secondsElapsed)
+    var durationRemaining: Int {
+      self.syncUp.duration - self.secondsElapsed
     }
 
     // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
@@ -92,7 +92,7 @@ struct RecordMeeting {
         }
         state.speakerIndex += 1
         state.secondsElapsed =
-          state.speakerIndex * Int(state.syncUp.durationPerAttendee.components.seconds)
+          state.speakerIndex * Int(state.syncUp.durationPerAttendee)
         return .none
 
       case .onTask:
@@ -120,7 +120,7 @@ struct RecordMeeting {
 
         state.secondsElapsed += 1
 
-        let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
+        let secondsPerAttendee = Int(state.syncUp.durationPerAttendee)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.speakerIndex == state.syncUp.attendees.count - 1 {
             return .run { [transcript = state.transcript] send in
@@ -251,7 +251,7 @@ extension AlertState where Action == RecordMeeting.Action.Alert {
 
 struct MeetingHeaderView: View {
   let secondsElapsed: Int
-  let durationRemaining: Duration
+  let durationRemaining: Int
   let theme: Theme
 
   var body: some View {
@@ -271,7 +271,7 @@ struct MeetingHeaderView: View {
         VStack(alignment: .trailing) {
           Text("Time Remaining")
             .font(.caption)
-          Label(self.durationRemaining.formatted(.units()), systemImage: "hourglass.tophalf.fill")
+          Label(Duration.seconds(self.durationRemaining).formatted(.units()), systemImage: "hourglass.tophalf.fill")
             .font(.body.monospacedDigit())
             .labelStyle(.trailingIcon)
         }
@@ -280,13 +280,13 @@ struct MeetingHeaderView: View {
     .padding([.top, .horizontal])
   }
 
-  private var totalDuration: Duration {
-    .seconds(self.secondsElapsed) + self.durationRemaining
+  private var totalDuration: Int {
+    self.secondsElapsed + self.durationRemaining
   }
 
   private var progress: Double {
-    guard self.totalDuration > .seconds(0) else { return 0 }
-    return Double(self.secondsElapsed) / Double(self.totalDuration.components.seconds)
+    guard self.totalDuration > 0 else { return 0 }
+    return Double(self.secondsElapsed) / Double(self.totalDuration)
   }
 }
 

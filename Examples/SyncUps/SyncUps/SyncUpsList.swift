@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftData
 import SwiftUI
 
 @Reducer
@@ -8,17 +9,26 @@ struct SyncUpsList {
     @Presents var destination: Destination.State?
     var syncUps: IdentifiedArrayOf<SyncUp> = []
 
+    @MainActor
     init(
       destination: Destination.State? = nil
     ) {
       self.destination = destination
 
       do {
-        @Dependency(\.dataManager.load) var load
-        self.syncUps = try JSONDecoder().decode(IdentifiedArray.self, from: load(.syncUps))
+        @Dependency(\.modelContainer) var modelContainer
+        self.syncUps = try IdentifiedArray(
+          uncheckedUniqueElements: modelContainer.mainContext.fetch(
+            FetchDescriptor()
+          )
+        )
+        print("!!!")
       } catch is DecodingError {
         self.destination = .alert(.dataFailedToLoad)
       } catch {
+        print(error)
+        print(error.localizedDescription)
+        print("!!!!")
       }
     }
   }
@@ -57,12 +67,13 @@ struct SyncUpsList {
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.uuid) var uuid
+  @Dependency(\.modelContainer) var modelContainer
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .addSyncUpButtonTapped:
-        state.destination = .add(SyncUpForm.State(syncUp: SyncUp(id: SyncUp.ID(self.uuid()))))
+        state.destination = .add(SyncUpForm.State(syncUp: SyncUp()))
         return .none
 
       case .confirmAddSyncUpButtonTapped:
@@ -80,7 +91,17 @@ struct SyncUpsList {
         }
         state.syncUps.append(syncUp)
         state.destination = nil
-        return .none
+        self.modelContainer.mainContext.insert(syncUp)
+
+        return .run { @MainActor _ in
+          do {
+//            try self.modelContainer.mainContext.save()
+          } catch {
+            print(error)
+            print(error.localizedDescription)
+            print("!!!")
+          }
+        }
 
       case .destination(.presented(.alert(.confirmLoadMockData))):
         state.syncUps = [
@@ -186,7 +207,7 @@ struct CardView: View {
       HStack {
         Label("\(self.syncUp.attendees.count)", systemImage: "person.3")
         Spacer()
-        Label(self.syncUp.duration.formatted(.units()), systemImage: "clock")
+        Label(Duration.seconds(self.syncUp.duration).formatted(.units()), systemImage: "clock")
           .labelStyle(.trailingIcon)
       }
       .font(.caption)
@@ -214,14 +235,14 @@ struct SyncUpsList_Previews: PreviewProvider {
     SyncUpsListView(
       store: Store(initialState: SyncUpsList.State()) {
         SyncUpsList()
-      } withDependencies: {
-        $0.dataManager.load = { @Sendable _ in
-          try JSONEncoder().encode([
-            SyncUp.mock,
-            .designMock,
-            .engineeringMock,
-          ])
-        }
+      } withDependencies: { _ in 
+//        $0.dataManager.load = { @Sendable _ in
+//          try JSONEncoder().encode([
+//            SyncUp.mock,
+//            .designMock,
+//            .engineeringMock,
+//          ])
+//        }
       }
     )
 
@@ -239,9 +260,8 @@ struct SyncUpsList_Previews: PreviewProvider {
 #Preview {
   CardView(
     syncUp: SyncUp(
-      id: SyncUp.ID(),
       attendees: [],
-      duration: .seconds(60),
+      duration: 60,
       meetings: [],
       theme: .bubblegum,
       title: "Point-Free Morning Sync"

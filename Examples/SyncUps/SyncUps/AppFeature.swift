@@ -5,8 +5,17 @@ import SwiftUI
 struct AppFeature {
   @ObservableState
   struct State: Equatable {
-    var path = StackState<Path.State>()
-    var syncUpsList = SyncUpsList.State()
+    var path: StackState<Path.State>
+    var syncUpsList: SyncUpsList.State
+
+    @MainActor
+    init(
+      path: StackState<Path.State> = StackState<Path.State>(),
+      syncUpsList: SyncUpsList.State? = nil
+    ) {
+      self.path = path
+      self.syncUpsList = syncUpsList ?? SyncUpsList.State()
+    }
   }
 
   enum Action {
@@ -81,17 +90,17 @@ struct AppFeature {
       Path()
     }
 
-    Reduce { state, action in
-      guard let data = try? JSONEncoder().encode(state.syncUpsList.syncUps)
-      else { return .none }
-      return .run { _ in
-        try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
-          try await self.clock.sleep(for: .seconds(1))
-          try await self.saveData(data, .syncUps)
-        }
-      } catch: { _, _ in
-      }
-    }
+//    Reduce { state, action in
+//      guard let data = try? JSONEncoder().encode(state.syncUpsList.syncUps)
+//      else { return .none }
+//      return .run { _ in
+//        try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
+//          try await self.clock.sleep(for: .seconds(1))
+//          try await self.saveData(data, .syncUps)
+//        }
+//      } catch: { _, _ in
+//      }
+//    }
   }
 
   @Reducer
@@ -146,4 +155,18 @@ struct AppView: View {
 
 extension URL {
   static let syncUps = Self.documentsDirectory.appending(component: "sync-ups.json")
+}
+
+import SwiftData
+private enum ModelContainerKey: TestDependencyKey {
+  static var testValue = try! ModelContainer(
+    for: Schema(),
+    configurations: []
+  )
+}
+extension DependencyValues {
+  var modelContainer: ModelContainer {
+    get { self[ModelContainerKey.self] }
+    set { self[ModelContainerKey.self] = newValue }
+  }
 }
