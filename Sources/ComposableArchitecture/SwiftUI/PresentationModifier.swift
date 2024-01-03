@@ -234,7 +234,8 @@ public struct PresentationStore<
       id: store.id(state: \.wrappedValue, action: \.presented),
       state: ToState(\.wrappedValue),
       action: { .presented($0) },
-      isInvalid: nil
+      isInvalid: nil,
+      removedDuplicatesOn: { ObjectIdentifier($0.storage) }
     )
     self.content = content
     self.viewStore = viewStore

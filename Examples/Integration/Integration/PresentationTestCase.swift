@@ -15,6 +15,9 @@ struct PresentationView: View {
 
   var body: some View {
     Form {
+      Button("Start timer") {
+        store.send(.startTimer)
+      }
       Section {
         Button("Present full-screen cover") {
           self.store.send(.presentFullScreenCoverButtonTapped)
@@ -106,6 +109,9 @@ struct PresentationView: View {
       @PresentationState var sheet: BasicsView.Feature.State?
     }
     enum Action {
+      case startTimer
+      case count
+
       case destination(PresentationAction<Destination.Action>)
       case dismissButtonTapped
       case presentFullScreenCoverButtonTapped
@@ -136,6 +142,17 @@ struct PresentationView: View {
     var body: some ReducerOf<Self> {
       Reduce { state, action in
         switch action {
+        case .count:
+          return .none
+
+        case .startTimer:
+          return .run { send in
+            while true {
+              try await Task.sleep(for: .seconds(1))
+              await send(.count)
+            }
+          }
+
         case .destination:
           return .none
         case .dismissButtonTapped:

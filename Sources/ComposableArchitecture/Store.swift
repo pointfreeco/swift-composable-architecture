@@ -139,6 +139,7 @@ public final class Store<State, Action> {
   @_spi(Internals) public let rootStore: RootStore
   private let toState: PartialToState<State>
   private let fromAction: (Action) -> Any
+  let didSet: AnyPublisher<Void, Never>
 
   /// Initializes a store from an initial state and a reducer.
   ///
@@ -430,7 +431,8 @@ public final class Store<State, Action> {
       id: ScopeID<State, Action>?,
       state: ToState<State, ChildState>,
       action fromChildAction: @escaping (ChildAction) -> Action,
-      isInvalid: ((State) -> Bool)?
+      isInvalid: ((State) -> Bool)?,
+      removedDuplicatesOn: ((State) -> ObjectIdentifier)? = nil // TODO
     ) -> Store<ChildState, ChildAction>
   {
     threadCheck(status: .scope)
@@ -441,11 +443,26 @@ public final class Store<State, Action> {
     {
       return childStore
     }
+
+    let didSet: AnyPublisher<Void, Never>
+    if let removedDuplicatesOn {
+      didSet = //self.didSet
+      self.didSet
+        .map { [unowned self] in removedDuplicatesOn(self.currentState) }
+        .removeDuplicates()
+        .map { _ in () }
+        .eraseToAnyPublisher()
+    } else {
+      didSet = self.didSet
+    }
+
     let childStore = Store<ChildState, ChildAction>(
       rootStore: self.rootStore,
       toState: self.toState.appending(state.base),
-      fromAction: { [fromAction] in fromAction(fromChildAction($0)) }
+      fromAction: { [fromAction] in fromAction(fromChildAction($0)) },
+      didSet: didSet
     )
+
     childStore._isInvalidated =
       id == nil || !self.canCacheChildren
       ? {
@@ -478,12 +495,14 @@ public final class Store<State, Action> {
   private init(
     rootStore: RootStore,
     toState: PartialToState<State>,
-    fromAction: @escaping (Action) -> Any
+    fromAction: @escaping (Action) -> Any,
+    didSet: AnyPublisher<Void, Never>
   ) {
     defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     self.rootStore = rootStore
     self.toState = toState
     self.fromAction = fromAction
+    self.didSet = didSet
   }
 
   convenience init<R: Reducer>(
@@ -494,10 +513,12 @@ public final class Store<State, Action> {
     R.State == State,
     R.Action == Action
   {
+    let rootStore = RootStore(initialState: initialState, reducer: reducer)
     self.init(
-      rootStore: RootStore(initialState: initialState, reducer: reducer),
+      rootStore: rootStore,
       toState: .keyPath(\State.self),
-      fromAction: { $0 }
+      fromAction: { $0 },
+      didSet: rootStore.didSet.eraseToAnyPublisher()
     )
   }
 
@@ -513,7 +534,7 @@ public final class Store<State, Action> {
   public var publisher: StorePublisher<State> {
     StorePublisher(
       store: self,
-      upstream: self.rootStore.didSet.map { self.currentState }
+      upstream: self.didSet.map { self.currentState }
     )
   }
 
