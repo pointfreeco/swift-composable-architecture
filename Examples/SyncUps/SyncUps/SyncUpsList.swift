@@ -36,6 +36,7 @@ struct SyncUpsList {
     case onDelete(IndexSet)
     case onTask
     case contextDidSave
+    case syncUpTapped(id: PersistentIdentifier)
   }
 
   @Reducer
@@ -112,46 +113,57 @@ struct SyncUpsList {
         return .none
 
       case .onTask:
-//        state.syncUps = try! IdentifiedArray(
-//          uncheckedUniqueElements: self.modelContainer.mainContext.fetch(
-//            FetchDescriptor()
-//          )
-//        )
+        //state.filter = .active
+
+        state.syncUps = try! IdentifiedArray(
+          uncheckedUniqueElements: self.modelContainer.mainContext.fetch(
+            FetchDescriptor()
+          )
+        )
+        return .none
 //        return .run { send in
 //          for await _ in NotificationCenter.default.notifications(named: .NSManagedObjectContextDidSave) {
 //            await send(.contextDidSave)
 //          }
 //        }
-        return .none
 
       case .contextDidSave:
-//        print("!!!!", state.syncUps[0].title)
 //        state.syncUps = try! IdentifiedArray(
 //          uncheckedUniqueElements: self.modelContainer.mainContext.fetch(
 //            FetchDescriptor()
 //          )
 //        )
+        return .none
+
+      case .syncUpTapped:
         return .none
       }
     }
     .ifLet(\.$destination, action: \.destination) {
       Destination()
     }
+//    .query { state in
+//      //FetchDescriptor()
+//    }
     //.query()
-    //0x0000600001774b00
   }
 }
 
 struct SyncUpsListView: View {
-  @Query var syncUps: [SyncUp]
+  //@Query var syncUps: [SyncUp]
   @Bindable var store: StoreOf<SyncUpsList>
 
   var body: some View {
     List {
       ForEach(store.syncUps) { syncUp in
-        NavigationLink(
-          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
-        ) {
+//        NavigationLink(
+//          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
+//        ) {
+//          CardView(syncUp: syncUp)
+//        }
+        Button {
+          store.send(.syncUpTapped(id: syncUp.persistentModelID))
+        } label: {
           CardView(syncUp: syncUp)
         }
         .listRowBackground(syncUp.theme.mainColor)

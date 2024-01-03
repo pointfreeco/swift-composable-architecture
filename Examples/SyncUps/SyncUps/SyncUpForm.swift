@@ -24,7 +24,6 @@ struct SyncUpForm {
         self.syncUp = SyncUp()
       }
 
-      self.syncUp = syncUp
       if self.syncUp.attendees.isEmpty {
         @Dependency(\.uuid) var uuid
         self.syncUp.attendees.append(Attendee(id: Attendee.ID(uuid())))

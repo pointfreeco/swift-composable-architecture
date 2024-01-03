@@ -104,7 +104,8 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
-        try? editState.syncUp.modelContext?.save()
+        //try? editState.syncUp.modelContext?.save()
+        try! editState.scratchContext.save()
         state.destination = nil
         return .none
 
