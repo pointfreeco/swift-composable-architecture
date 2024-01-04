@@ -118,7 +118,7 @@ public struct ForEachStore<
         content(
           store.scope(
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
-            state: ToState {
+            state: _ClosureToState {
               element = $0[id: id] ?? element
               return element
             },
@@ -177,7 +177,7 @@ public struct ForEachStore<
         content(
           store.scope(
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
-            state: ToState {
+            state: _ClosureToState {
               element = $0[id: id] ?? element
               return element
             },

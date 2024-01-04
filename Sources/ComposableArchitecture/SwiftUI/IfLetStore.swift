@@ -36,7 +36,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     let store = store.scope(
       id: store.id(state: \.self, action: \.self),
-      state: ToState(\.self),
+      state: \.self,
       action: { $0 },
       isInvalid: { $0 == nil }
     )
@@ -48,7 +48,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
           first: ifContent(
             store.scope(
               id: store.id(state: \.!, action: \.self),
-              state: ToState {
+              state: _ClosureToState {
                 state = $0 ?? state
                 return state
               },
@@ -76,7 +76,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ) where Content == IfContent? {
     let store = store.scope(
       id: store.id(state: \.self, action: \.self),
-      state: ToState(\.self),
+      state: \.self,
       action: { $0 },
       isInvalid: { $0 == nil }
     )
@@ -86,7 +86,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
         return ifContent(
           store.scope(
             id: store.id(state: \.!, action: \.self),
-            state: ToState {
+            state: _ClosureToState {
               state = $0 ?? state
               return state
             },

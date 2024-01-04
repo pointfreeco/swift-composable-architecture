@@ -216,7 +216,7 @@ public struct PresentationStore<
   ) where State == DestinationState, Action == DestinationAction {
     let store = store.scope(
       id: nil,
-      state: ToState(\.self),
+      state: \.self,
       action: { $0 },
       isInvalid: { $0.wrappedValue == nil }
     )
@@ -232,7 +232,7 @@ public struct PresentationStore<
     self.fromDestinationAction = { $0 }
     self.destinationStore = store.scope(
       id: store.id(state: \.wrappedValue, action: \.presented),
-      state: ToState(\.wrappedValue),
+      state: \PresentationState.wrappedValue,
       action: { .presented($0) },
       isInvalid: nil
     )
@@ -252,7 +252,7 @@ public struct PresentationStore<
   ) {
     let store = store.scope(
       id: nil,
-      state: ToState(\.self),
+      state: \.self,
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
     )
@@ -318,7 +318,7 @@ public struct DestinationContent<State, Action> {
     IfLetStore(
       self.store.scope(
         id: self.store.id(state: \.self, action: \.self),
-        state: ToState(returningLastNonNilValue { $0 }),
+        state: _ClosureToState(returningLastNonNilValue { $0 }),
         action: { $0 },
         isInvalid: nil
       ),

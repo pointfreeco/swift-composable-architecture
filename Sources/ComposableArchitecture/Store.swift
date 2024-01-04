@@ -137,7 +137,7 @@ public final class Store<State, Action> {
   var _isInvalidated = { false }
 
   @_spi(Internals) public let rootStore: RootStore
-  private let toState: PartialToState<State>
+  private let toState: any _PartialToState<State>
   private let fromAction: (Action) -> Any
 
   /// Initializes a store from an initial state and a reducer.
@@ -380,7 +380,7 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.scope(
       id: self.id(state: state, action: action),
-      state: ToState(state),
+      state: state,
       action: { action($0) },
       isInvalid: nil
     )
@@ -412,7 +412,7 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.scope(
       id: nil,
-      state: ToState(toChildState),
+      state: _ClosureToState(toChildState),
       action: fromChildAction,
       isInvalid: nil
     )
@@ -421,14 +421,18 @@ public final class Store<State, Action> {
   @_spi(Internals)
   public var currentState: State {
     threadCheck(status: .state)
-    return self.toState(self.rootStore.state)
+    func open<T: _ToState>(_ toState: T) -> State {
+      toState(self.rootStore.state as! T.Root) as! State
+    }
+    let toState = self.toState as! any _ToState
+    return open(toState)
   }
 
   @_spi(Internals)
   public
     func scope<ChildState, ChildAction>(
       id: ScopeID<State, Action>?,
-      state: ToState<State, ChildState>,
+      state: some _ToState<State, ChildState>,
       action fromChildAction: @escaping (ChildAction) -> Action,
       isInvalid: ((State) -> Bool)?
     ) -> Store<ChildState, ChildAction>
@@ -443,7 +447,7 @@ public final class Store<State, Action> {
     }
     let childStore = Store<ChildState, ChildAction>(
       rootStore: self.rootStore,
-      toState: self.toState.appending(state.base),
+      toState: self.toState.appending(state),
       fromAction: { [fromAction] in fromAction(fromChildAction($0)) }
     )
     childStore._isInvalidated =
@@ -477,7 +481,7 @@ public final class Store<State, Action> {
 
   private init(
     rootStore: RootStore,
-    toState: PartialToState<State>,
+    toState: any _PartialToState<State>,
     fromAction: @escaping (Action) -> Any
   ) {
     defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
@@ -496,7 +500,7 @@ public final class Store<State, Action> {
   {
     self.init(
       rootStore: RootStore(initialState: initialState, reducer: reducer),
-      toState: .keyPath(\State.self),
+      toState: \State.self,
       fromAction: { $0 }
     )
   }
@@ -716,43 +720,124 @@ func typeName(
   return name
 }
 
-@_spi(Internals)
-public struct ToState<State, ChildState> {
-  fileprivate let base: PartialToState<ChildState>
-  @_spi(Internals)
-  public init(_ closure: @escaping (State) -> ChildState) {
-    self.base = .closure { closure($0 as! State) }
+public protocol _PartialToState<Value> {
+  associatedtype Value
+
+  func appending<AppendedValue>(
+    _ toState: some _ToState<Value, AppendedValue>
+  ) -> any _PartialToState<AppendedValue>
+  func appending<AppendedValue>(
+    _ keyPath: KeyPath<Value, AppendedValue>
+  ) -> any _PartialToState<AppendedValue>
+}
+
+public protocol _ToState<Root, Value>: _PartialToState {
+  associatedtype Root
+  associatedtype Value = Value
+
+  func callAsFunction(_ root: Root) -> Value
+}
+
+extension _PartialToState {
+  @inlinable
+  public func appending<AppendedValue>(
+    _ toState: some _ToState<Value, AppendedValue>
+  ) -> any _PartialToState<AppendedValue> {
+    _AppendToState(accumulated: self, next: toState)
   }
-  @_spi(Internals)
-  public init(_ keyPath: KeyPath<State, ChildState>) {
-    self.base = .keyPath(keyPath)
+  @inlinable
+  public func appending<AppendedValue>(
+    _ keyPath: KeyPath<Value, AppendedValue>
+  ) -> any _PartialToState<AppendedValue> {
+    _AppendKeyPath(accumulated: self, keyPath: keyPath)
   }
 }
 
-private enum PartialToState<State> {
-  case closure((Any) -> State)
-  case keyPath(AnyKeyPath)
-  case appended((Any) -> Any, AnyKeyPath)
-  func callAsFunction(_ state: Any) -> State {
-    switch self {
-    case let .closure(closure):
-      return closure(state)
-    case let .keyPath(keyPath):
-      return state[keyPath: keyPath] as! State
-    case let .appended(closure, keyPath):
-      return closure(state)[keyPath: keyPath] as! State
+extension KeyPath: _ToState {
+  @inlinable
+  public func callAsFunction(_ root: Root) -> Value {
+    root[keyPath: self]
+  }
+  @inlinable
+  public func appending<AppendedValue>(
+    _ keyPath: KeyPath<Value, AppendedValue>
+  ) -> any _PartialToState<AppendedValue> {
+    self.appending(path: keyPath)
+  }
+}
+
+public struct _AppendToState<Accumulated: _PartialToState, Next: _ToState>: _PartialToState
+where Next.Root == Accumulated.Value {
+  public typealias Value = Next.Value
+  @usableFromInline
+  let accumulated: Accumulated
+  @usableFromInline
+  let next: Next
+  @inlinable
+  init(accumulated: Accumulated, next: Next) {
+    self.accumulated = accumulated
+    self.next = next
+  }
+  @inlinable
+  public func appending<AppendedValue>(
+    _ keyPath: KeyPath<Next.Value, AppendedValue>
+  ) -> any _PartialToState<AppendedValue> {
+    func open(
+      next: some _ToState<Next.Root, AppendedValue>
+    ) -> any _PartialToState<AppendedValue> {
+      _AppendToState<Accumulated, _>(accumulated: self.accumulated, next: next)
+    }
+    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+      let next = self.next.appending(keyPath) as! any _ToState<Next.Root, AppendedValue>
+      return open(next: next)
+    } else {
+      fatalError()
     }
   }
-  func appending<ChildState>(_ state: PartialToState<ChildState>) -> PartialToState<ChildState> {
-    switch (self, state) {
-    case let (.keyPath(lhs), .keyPath(rhs)):
-      return .keyPath(lhs.appending(path: rhs)!)
-    case let (.closure(lhs), .keyPath(rhs)):
-      return .appended(lhs, rhs)
-    case let (.appended(lhsClosure, lhsKeyPath), .keyPath(rhs)):
-      return .appended(lhsClosure, lhsKeyPath.appending(path: rhs)!)
-    default:
-      return .closure { state(self($0)) }
-    }
+}
+
+extension _AppendToState: _ToState where Accumulated: _ToState {
+  public func callAsFunction(_ state: Accumulated.Root) -> Next.Value {
+    self.next.callAsFunction(self.accumulated.callAsFunction(state))
+  }
+}
+
+public struct _AppendKeyPath<Accumulated: _PartialToState, Value>: _PartialToState {
+  @usableFromInline
+  let accumulated: Accumulated
+  @usableFromInline
+  let keyPath: KeyPath<Accumulated.Value, Value>
+  @inlinable
+  init(accumulated: Accumulated, keyPath: KeyPath<Accumulated.Value, Value>) {
+    self.accumulated = accumulated
+    self.keyPath = keyPath
+  }
+  @inlinable
+  public func appending<AppendedValue>(
+    _ keyPath: KeyPath<Value, AppendedValue>
+  ) -> any _PartialToState<AppendedValue> {
+    _AppendKeyPath<Accumulated, AppendedValue>(
+      accumulated: self.accumulated,
+      keyPath: self.keyPath.appending(path: keyPath)
+    )
+  }
+}
+
+extension _AppendKeyPath: _ToState where Accumulated: _ToState {
+  @inlinable
+  public func callAsFunction(_ root: Accumulated.Root) -> Value {
+    self.accumulated.callAsFunction(root)[keyPath: self.keyPath]
+  }
+}
+
+public struct _ClosureToState<Root, Value>: _ToState {
+  @usableFromInline
+  let toState: (Root) -> Value
+  @inlinable
+  init(_ toState: @escaping (Root) -> Value) {
+    self.toState = toState
+  }
+  public func callAsFunction(_ root: Root) -> Value {
+    self.toState(root)
   }
 }

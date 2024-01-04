@@ -73,7 +73,7 @@ public struct NavigationLinkStore<
   ) {
     let store = store.scope(
       id: nil,
-      state: ToState(\.self),
+      state: \.self,
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
     )
@@ -122,7 +122,7 @@ public struct NavigationLinkStore<
   ) where DestinationState: Identifiable {
     let store = store.scope(
       id: nil,
-      state: ToState(\.self),
+      state: \.self,
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id }
     )

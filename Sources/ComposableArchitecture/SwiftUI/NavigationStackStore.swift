@@ -34,7 +34,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
         store
           .scope(
             id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
-            state: ToState {
+            state: _ClosureToState {
               element = $0[id: component.id] ?? element
               return element
             },
@@ -73,7 +73,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
         store
           .scope(
             id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
-            state: ToState {
+            state: _ClosureToState {
               element = $0[id: component.id] ?? element
               return element
             },

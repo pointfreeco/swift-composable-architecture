@@ -57,7 +57,7 @@ extension Store {
           unwrap(
             self.scope(
               id: self.id(state: \.!, action: \.self),
-              state: ToState {
+              state: _ClosureToState {
                 state = $0 ?? state
                 return state
               },
