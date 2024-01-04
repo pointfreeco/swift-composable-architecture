@@ -27,7 +27,7 @@ struct CounterFeature {
         state.count -= 1
         state.fact = nil
         return .none
-        
+
       case .factButtonTapped:
         state.fact = nil
         state.isLoading = true
@@ -37,22 +37,22 @@ struct CounterFeature {
           let fact = String(decoding: data, as: UTF8.self)
           await send(.factResponse(fact))
         }
-        
+
       case let .factResponse(fact):
         state.fact = fact
         state.isLoading = false
         return .none
-        
+
       case .incrementButtonTapped:
         state.count += 1
         state.fact = nil
         return .none
-        
+
       case .timerTick:
         state.count += 1
         state.fact = nil
         return .none
-        
+
       case .toggleTimerButtonTapped:
         state.isTimerRunning.toggle()
         if state.isTimerRunning {

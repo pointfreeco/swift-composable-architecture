@@ -21,7 +21,7 @@ struct CounterFeature {
         state.count -= 1
         state.fact = nil
         return .none
-        
+
       case .factButtonTapped:
         state.fact = nil
         state.isLoading = true
@@ -33,7 +33,7 @@ struct CounterFeature {
           // 🛑 Mutable capture of 'inout' parameter 'state' is not allowed in
           //    concurrently-executing code
         }
-        
+
       case .incrementButtonTapped:
         state.count += 1
         state.fact = nil
