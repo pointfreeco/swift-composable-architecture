@@ -9,19 +9,24 @@ struct SyncUpsApp: App {
       //     dependencies for the duration of the test (e.g. the data manager). We do not really
       //     recommend performing UI tests in general, but we do want to demonstrate how it can be
       //     done.
-      if ProcessInfo.processInfo.environment["UITesting"] == "true" {
-        UITestingView()
-      } else if _XCTIsTesting {
-        // NB: Don't run application when testing so that it doesn't interfere with tests.
-        EmptyView()
-      } else {
-        AppView(
-          store: Store(initialState: AppFeature.State()) {
-            AppFeature()
-              ._printChanges()
-          }
-        )
-      }
+      //      if ProcessInfo.processInfo.environment["UITesting"] == "true" {
+      //        UITestingView()
+      //      } else if _XCTIsTesting {
+      //        // NB: Don't run application when testing so that it doesn't interfere with tests.
+      //        EmptyView()
+      //      } else {
+      FeatureView(
+        store: Store(initialState: Feature.State()) {
+          Feature()
+        }
+      )
+      //        AppView(
+      //          store: Store(initialState: AppFeature.State()) {
+      //            AppFeature()
+      //              ._printChanges()
+      //          }
+      //        )
+      //      }
     }
   }
 }
@@ -37,3 +42,4 @@ struct UITestingView: View {
     )
   }
 }
+

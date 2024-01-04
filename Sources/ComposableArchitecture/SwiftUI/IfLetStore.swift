@@ -44,14 +44,13 @@ public struct IfLetStore<State, Action, Content: View>: View {
     let elseContent = elseContent()
     self.content = { viewStore in
       if var state = viewStore.state {
+        let tmp: any _ToState<State?, State> = OptionalToState<State?, State>(currentValue: state, keyPath: \State?.self)
+        
         return ViewBuilder.buildEither(
           first: ifContent(
             store.scope(
               id: store.id(state: \.!, action: \.self),
-              state: _ClosureToState {
-                state = $0 ?? state
-                return state
-              },
+              state: tmp,
               action: { $0 },
               isInvalid: { $0 == nil }
             )

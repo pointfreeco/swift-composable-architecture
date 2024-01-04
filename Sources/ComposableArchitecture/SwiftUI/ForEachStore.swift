@@ -114,14 +114,11 @@ public struct ForEachStore<
     ) { viewStore in
       ForEach(viewStore.state, id: viewStore.state.id) { element in
         let id = element[keyPath: viewStore.state.id]
-        var element = element
+        //var element = element
         content(
           store.scope(
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
-            state: _ClosureToState {
-              element = $0[id: id] ?? element
-              return element
-            },
+            state: OptionalToState(currentValue: element, keyPath: \.[id: id]),
             action: { .element(id: id, action: $0) },
             isInvalid: { !$0.ids.contains(id) }
           )
@@ -201,5 +198,22 @@ extension Case {
       embed: { (id: id, action: $0) },
       extract: { $0.id == id ? $0.action : nil }
     )
+  }
+}
+
+final class OptionalToState<Root, Wrapped>: _ToState {
+  var currentValue: Wrapped
+  let keyPath: KeyPath<Root, Wrapped?>
+
+  @inlinable
+  init(currentValue: Wrapped, keyPath: KeyPath<Root, Wrapped?>) {
+    self.currentValue = currentValue
+    self.keyPath = keyPath
+  }
+
+  @inlinable
+  func callAsFunction(_ root: Root) -> Wrapped {
+    self.currentValue = root[keyPath: self.keyPath] ?? self.currentValue
+    return self.currentValue
   }
 }

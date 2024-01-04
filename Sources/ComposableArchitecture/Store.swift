@@ -137,7 +137,7 @@ public final class Store<State, Action> {
   var _isInvalidated = { false }
 
   @_spi(Internals) public let rootStore: RootStore
-  private let toState: any _PartialToState<State>
+  let toState: any _PartialToState<State>
   private let fromAction: (Action) -> Any
 
   /// Initializes a store from an initial state and a reducer.
@@ -380,7 +380,7 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.scope(
       id: self.id(state: state, action: action),
-      state: state,
+      state: self.toState.appending(state),
       action: { action($0) },
       isInvalid: nil
     )
@@ -412,7 +412,7 @@ public final class Store<State, Action> {
   ) -> Store<ChildState, ChildAction> {
     self.scope(
       id: nil,
-      state: _ClosureToState(toChildState),
+      state: self.toState.appending(_ClosureToState(toChildState)),
       action: fromChildAction,
       isInvalid: nil
     )
@@ -425,14 +425,47 @@ public final class Store<State, Action> {
       toState(self.rootStore.state as! T.Root) as! State
     }
     let toState = self.toState as! any _ToState
+
     return open(toState)
   }
 
   @_spi(Internals)
   public
+  func scope<ChildState, ChildAction>(
+    id: ScopeID<State, Action>?,
+    state: some _ToState<State, ChildState>,
+    action fromChildAction: @escaping (ChildAction) -> Action,
+    isInvalid: ((State) -> Bool)?
+  ) -> Store<ChildState, ChildAction>
+  {
+    self.scope(
+      id: id,
+      state: self.toState.appending(state),
+      action: fromChildAction,
+      isInvalid: isInvalid
+    )
+  }
+  @_spi(Internals)
+  public
+  func scope<ChildState, ChildAction>(
+    id: ScopeID<State, Action>?,
+    state: KeyPath<State, ChildState>,
+    action fromChildAction: @escaping (ChildAction) -> Action,
+    isInvalid: ((State) -> Bool)?
+  ) -> Store<ChildState, ChildAction>
+  {
+    self.scope(
+      id: id,
+      state: self.toState.appending(state),
+      action: fromChildAction,
+      isInvalid: isInvalid
+    )
+  }
+
+  private
     func scope<ChildState, ChildAction>(
       id: ScopeID<State, Action>?,
-      state: some _ToState<State, ChildState>,
+      state: any _PartialToState<ChildState>,
       action fromChildAction: @escaping (ChildAction) -> Action,
       isInvalid: ((State) -> Bool)?
     ) -> Store<ChildState, ChildAction>
@@ -445,9 +478,10 @@ public final class Store<State, Action> {
     {
       return childStore
     }
+
     let childStore = Store<ChildState, ChildAction>(
       rootStore: self.rootStore,
-      toState: self.toState.appending(state),
+      toState: state,
       fromAction: { [fromAction] in fromAction(fromChildAction($0)) }
     )
     childStore._isInvalidated =
@@ -498,8 +532,9 @@ public final class Store<State, Action> {
     R.State == State,
     R.Action == Action
   {
+    let rootStore = RootStore(initialState: initialState, reducer: reducer)
     self.init(
-      rootStore: RootStore(initialState: initialState, reducer: reducer),
+      rootStore: rootStore,
       toState: \State.self,
       fromAction: { $0 }
     )
@@ -778,25 +813,26 @@ where Next.Root == Accumulated.Value {
     self.accumulated = accumulated
     self.next = next
   }
-  @inlinable
-  public func appending<AppendedValue>(
-    _ keyPath: KeyPath<Next.Value, AppendedValue>
-  ) -> any _PartialToState<AppendedValue> {
-    func open(
-      next: some _ToState<Next.Root, AppendedValue>
-    ) -> any _PartialToState<AppendedValue> {
-      _AppendToState<Accumulated, _>(accumulated: self.accumulated, next: next)
-    }
-    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-      let next = self.next.appending(keyPath) as! any _ToState<Next.Root, AppendedValue>
-      return open(next: next)
-    } else {
-      fatalError()
-    }
-  }
+//  @inlinable
+//  public func appending<AppendedValue>(
+//    _ keyPath: KeyPath<Next.Value, AppendedValue>
+//  ) -> any _PartialToState<AppendedValue> {
+//    func open(
+//      next: some _ToState<Next.Root, AppendedValue>
+//    ) -> any _PartialToState<AppendedValue> {
+//      _AppendToState<Accumulated, _>(accumulated: self.accumulated, next: next)
+//    }
+//    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+//      let next = self.next.appending(keyPath) as! any _ToState<Next.Root, AppendedValue>
+//      return open(next: next)
+//    } else {
+//      fatalError()
+//    }
+//  }
 }
 
 extension _AppendToState: _ToState where Accumulated: _ToState {
+  @inlinable
   public func callAsFunction(_ state: Accumulated.Root) -> Next.Value {
     self.next.callAsFunction(self.accumulated.callAsFunction(state))
   }
@@ -837,6 +873,7 @@ public struct _ClosureToState<Root, Value>: _ToState {
   init(_ toState: @escaping (Root) -> Value) {
     self.toState = toState
   }
+  @inlinable
   public func callAsFunction(_ root: Root) -> Value {
     self.toState(root)
   }

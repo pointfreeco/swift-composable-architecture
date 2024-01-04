@@ -131,7 +131,7 @@ extension View {
 public struct PresentationStore<
   State, Action, DestinationState, DestinationAction, Content: View
 >: View {
-  let store: Store<PresentationState<State>, PresentationAction<Action>>
+  //let store: Store<PresentationState<State>, PresentationAction<Action>>
   let toDestinationState: (State) -> DestinationState?
   let toID: (PresentationState<State>) -> AnyHashable?
   let fromDestinationAction: (DestinationAction) -> Action
@@ -226,7 +226,7 @@ public struct PresentationStore<
       removeDuplicates: { toID($0) == toID($1) }
     )
 
-    self.store = store
+    //self.store = store
     self.toDestinationState = { $0 }
     self.toID = toID
     self.fromDestinationAction = { $0 }
@@ -264,7 +264,7 @@ public struct PresentationStore<
       }
     )
 
-    self.store = store
+    //self.store = store
     self.toDestinationState = toDestinationState
     self.toID = toID
     self.fromDestinationAction = fromDestinationAction
@@ -318,11 +318,24 @@ public struct DestinationContent<State, Action> {
     IfLetStore(
       self.store.scope(
         id: self.store.id(state: \.self, action: \.self),
-        state: _ClosureToState(returningLastNonNilValue { $0 }),
+        state: ReturningLastNonNil(),
         action: { $0 },
         isInvalid: nil
       ),
       then: body
     )
+  }
+}
+
+final class ReturningLastNonNil<Root>: _ToState {
+  var currentValue: Root?
+
+  @inlinable
+  init() {}
+
+  @inlinable
+  func callAsFunction(_ root: Root?) -> Root? {
+    self.currentValue = root ?? self.currentValue
+    return self.currentValue
   }
 }
