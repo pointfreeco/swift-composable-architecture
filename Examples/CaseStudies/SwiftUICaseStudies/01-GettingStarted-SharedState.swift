@@ -21,8 +21,8 @@ struct SharedState {
   enum Tab { case stats, profile }
 
   struct State: Equatable {
-    var stats = Stats.State()
     var currentTab = Tab.stats
+    var stats = Stats.State()
 
     /// The Profile.State can be derived from the Stats.State by getting and setting the parts it
     /// cares about. This allows the profile feature to operate on a subset of app state instead of
@@ -48,9 +48,9 @@ struct SharedState {
   }
 
   enum Action {
-    case stats(Stats.Action)
     case profile(Profile.Action)
     case selectTab(Tab)
+    case stats(Stats.Action)
   }
 
   var body: some Reducer<State, Action> {
@@ -64,7 +64,7 @@ struct SharedState {
 
     Reduce { state, action in
       switch action {
-      case .stats, .profile:
+      case .profile, .stats:
         return .none
       case let .selectTab(tab):
         state.currentTab = tab
