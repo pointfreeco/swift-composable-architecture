@@ -21,7 +21,7 @@ struct SharedState {
   enum Tab { case counter, profile }
 
   struct State: Equatable {
-    var counter = Counter.State()
+    var counter = Stats.State()
     var currentTab = Tab.counter
 
     /// The Profile.State can be derived from the Counter.State by getting and setting the parts it
@@ -48,14 +48,14 @@ struct SharedState {
   }
 
   enum Action {
-    case counter(Counter.Action)
+    case counter(Stats.Action)
     case profile(Profile.Action)
     case selectTab(Tab)
   }
 
   var body: some Reducer<State, Action> {
     Scope(state: \.counter, action: \.counter) {
-      Counter()
+      Stats()
     }
 
     Scope(state: \.profile, action: \.profile) {
@@ -69,91 +69,6 @@ struct SharedState {
       case let .selectTab(tab):
         state.currentTab = tab
         return .none
-      }
-    }
-  }
-
-  @Reducer
-  struct Counter {
-    struct State: Equatable {
-      @PresentationState var alert: AlertState<Action.Alert>?
-      var count = 0
-      var maxCount = 0
-      var minCount = 0
-      var numberOfCounts = 0
-    }
-
-    enum Action {
-      case alert(PresentationAction<Alert>)
-      case decrementButtonTapped
-      case incrementButtonTapped
-      case isPrimeButtonTapped
-
-      enum Alert: Equatable {}
-    }
-
-    var body: some Reducer<State, Action> {
-      Reduce { state, action in
-        switch action {
-        case .alert:
-          return .none
-
-        case .decrementButtonTapped:
-          state.count -= 1
-          state.numberOfCounts += 1
-          state.minCount = min(state.minCount, state.count)
-          return .none
-
-        case .incrementButtonTapped:
-          state.count += 1
-          state.numberOfCounts += 1
-          state.maxCount = max(state.maxCount, state.count)
-          return .none
-
-        case .isPrimeButtonTapped:
-          state.alert = AlertState {
-            TextState(
-              isPrime(state.count)
-                ? "👍 The number \(state.count) is prime!"
-                : "👎 The number \(state.count) is not prime :("
-            )
-          }
-          return .none
-        }
-      }
-      .ifLet(\.$alert, action: \.alert)
-    }
-  }
-
-  @Reducer
-  struct Profile {
-    struct State: Equatable {
-      private(set) var currentTab: Tab
-      private(set) var count = 0
-      private(set) var maxCount: Int
-      private(set) var minCount: Int
-      private(set) var numberOfCounts: Int
-
-      fileprivate mutating func resetCount() {
-        self.currentTab = .counter
-        self.count = 0
-        self.maxCount = 0
-        self.minCount = 0
-        self.numberOfCounts = 0
-      }
-    }
-
-    enum Action {
-      case resetCounterButtonTapped
-    }
-
-    var body: some Reducer<State, Action> {
-      Reduce { state, action in
-        switch action {
-        case .resetCounterButtonTapped:
-          state.resetCount()
-          return .none
-        }
       }
     }
   }
@@ -179,13 +94,13 @@ struct SharedStateView: View {
         .pickerStyle(.segmented)
 
         if viewStore.state == .counter {
-          SharedStateCounterView(
+          StatsView(
             store: self.store.scope(state: \.counter, action: \.counter)
           )
         }
 
         if viewStore.state == .profile {
-          SharedStateProfileView(
+          ProfileView(
             store: self.store.scope(state: \.profile, action: \.profile)
           )
         }
@@ -197,8 +112,8 @@ struct SharedStateView: View {
   }
 }
 
-struct SharedStateCounterView: View {
-  let store: StoreOf<SharedState.Counter>
+private struct StatsView: View {
+  let store: StoreOf<Stats>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -233,8 +148,8 @@ struct SharedStateCounterView: View {
   }
 }
 
-struct SharedStateProfileView: View {
-  let store: StoreOf<SharedState.Profile>
+private struct ProfileView: View {
+  let store: StoreOf<Profile>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -288,3 +203,89 @@ private func isPrime(_ p: Int) -> Bool {
   }
   return true
 }
+
+
+@Reducer
+struct Stats {
+  struct State: Equatable {
+    @PresentationState var alert: AlertState<Action.Alert>?
+    var count = 0
+    var maxCount = 0
+    var minCount = 0
+    var numberOfCounts = 0
+  }
+
+  enum Action {
+    case alert(PresentationAction<Alert>)
+    case decrementButtonTapped
+    case incrementButtonTapped
+    case isPrimeButtonTapped
+
+    enum Alert: Equatable {}
+  }
+
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .alert:
+        return .none
+
+      case .decrementButtonTapped:
+        state.count -= 1
+        state.numberOfCounts += 1
+        state.minCount = min(state.minCount, state.count)
+        return .none
+
+      case .incrementButtonTapped:
+        state.count += 1
+        state.numberOfCounts += 1
+        state.maxCount = max(state.maxCount, state.count)
+        return .none
+
+      case .isPrimeButtonTapped:
+        state.alert = AlertState {
+          TextState(
+            isPrime(state.count)
+            ? "👍 The number \(state.count) is prime!"
+            : "👎 The number \(state.count) is not prime :("
+          )
+        }
+        return .none
+      }
+    }
+    .ifLet(\.$alert, action: \.alert)
+  }
+}
+
+@Reducer
+struct Profile {
+  struct State: Equatable {
+    private(set) var currentTab: SharedState.Tab
+    private(set) var count = 0
+    private(set) var maxCount: Int
+    private(set) var minCount: Int
+    private(set) var numberOfCounts: Int
+
+    fileprivate mutating func resetCount() {
+      self.currentTab = .counter
+      self.count = 0
+      self.maxCount = 0
+      self.minCount = 0
+      self.numberOfCounts = 0
+    }
+  }
+
+  enum Action {
+    case resetCounterButtonTapped
+  }
+
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .resetCounterButtonTapped:
+        state.resetCount()
+        return .none
+      }
+    }
+  }
+  }
