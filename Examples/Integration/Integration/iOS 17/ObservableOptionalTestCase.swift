@@ -2,7 +2,7 @@
 import SwiftUI
 
 struct ObservableOptionalView: View {
-  @BindableStore var store = Store(initialState: Feature.State()) {
+  @Perception.Bindable var store = Store(initialState: Feature.State()) {
     Feature()
   }
 

@@ -42,7 +42,7 @@ extension Binding {
   ///
   /// ```swift
   /// struct FeatureView: View {
-  ///   @BindableStore var store: StoreOf<Feature>
+  ///   @Bindable var store: StoreOf<Feature>
   ///
   ///   var body: some View {
   ///     NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
