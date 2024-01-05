@@ -29,6 +29,16 @@ extension Shared: Hashable {
     hasher.combine(ObjectIdentifier(self))
   }
 }
+extension Shared: TestDependencyKey where Value: TestDependencyKey {
+  public static var testValue: Shared<Value.Value> {
+    Shared<Value.Value>(Value.testValue)
+  }
+}
+extension Shared: DependencyKey where Value: DependencyKey {
+  public static var liveValue: Shared<Value.Value> {
+    Shared<Value.Value>(Value.liveValue)
+  }
+}
 // TODO: try reference identity
 extension Shared: Identifiable where Value: Identifiable {
   public var id: Value.ID {

@@ -81,13 +81,13 @@ extension Reducer {
 
   @inlinable
   @warn_unqualified_access
-  public func dependency<Value: Sendable>(
+  public func dependency<Value: TestDependencyKey>(
     _ value: Value
   )
     // NB: We should not return `some Reducer<State, Action>` here. That would prevent the
     //     specialization defined below from being called, which fuses chained calls.
     -> _DependencyKeyWritingReducer<Self>
-  {
+  where Value.Value == Value {
     _DependencyKeyWritingReducer(base: self) { $0[Value.self] = value }
   }
 

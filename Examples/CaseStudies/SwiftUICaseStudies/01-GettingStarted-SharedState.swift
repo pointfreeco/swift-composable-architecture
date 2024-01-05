@@ -16,12 +16,6 @@ private let readMe = """
 
 // MARK: - Feature domain
 
-extension Dependency: Equatable where Value: Equatable {
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.wrappedValue == rhs.wrappedValue
-  }
-}
-
 @Reducer
 struct SharedState {
   enum Tab { case counter, profile }
@@ -69,7 +63,9 @@ struct SharedState {
   @Reducer
   struct Counter {
     @ObservableState
-    struct State: Equatable {
+    struct State: Equatable, TestDependencyKey {
+      static let testValue = Self()
+
       @Presents var alert: AlertState<Action.Alert>?
       var count = 0
       var maxCount = 0
