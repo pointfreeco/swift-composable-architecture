@@ -29,7 +29,6 @@ struct SyncUpsList {
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
     case onDelete(IndexSet)
-    case syncUpTapped(id: SyncUp.ID)
   }
 
   @Reducer
@@ -100,9 +99,6 @@ struct SyncUpsList {
 
       case let .onDelete(indexSet):
         state.syncUps.remove(atOffsets: indexSet)
-        return .none
-
-      case let .syncUpTapped(id: id):
         return .none
       }
     }

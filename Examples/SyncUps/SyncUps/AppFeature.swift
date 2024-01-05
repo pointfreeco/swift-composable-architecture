@@ -29,12 +29,6 @@ struct AppFeature {
     }
     Reduce<State, Action> { state, action in
       switch action {
-      case let .syncUpsList(.syncUpTapped(id: id)):
-        guard let syncUp = state.syncUpsList.syncUps[id: id]
-        else { return .none }
-        state.path.append(.detail(SyncUpDetail.State(syncUp: syncUp)))
-        return .none
-
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
         guard case let .some(.detail(detailState)) = state.path[id: id]
         else { return .none }
