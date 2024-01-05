@@ -35,7 +35,7 @@ extension Binding {
 }
 
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension Bindable {
+extension SwiftUI.Bindable {
   @_disfavoredOverload
   public subscript<State: ObservableState, Action, Member>(
     dynamicMember keyPath: KeyPath<State, Member>
@@ -45,11 +45,16 @@ extension Bindable {
   }
 }
 
-extension BindableStore {
+@available(iOS, introduced: 13, obsoleted: 17)
+@available(macOS, introduced: 10.15, obsoleted: 14)
+@available(tvOS, introduced: 13, obsoleted: 17)
+@available(watchOS, introduced: 6, obsoleted: 10)
+extension Perception.Bindable {
   @_disfavoredOverload
-  public subscript<Member>(
+  public subscript<State: ObservableState, Action, Member>(
     dynamicMember keyPath: KeyPath<State, Member>
-  ) -> _StoreBinding<Member, Action> {
+  ) -> _StoreBinding<Member, Action>
+  where Value == Store<State, Action> {
     _StoreBinding(wrappedValue: self.wrappedValue.scope(state: keyPath, action: \.self))
   }
 }
@@ -178,7 +183,7 @@ where
   }
 
   @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-  extension Bindable {
+  extension SwiftUI.Bindable {
     public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(
       dynamicMember keyPath: WritableKeyPath<State, Member>
     ) -> Binding<Member>
@@ -214,14 +219,15 @@ where
     }
   }
 
-  extension BindableStore {
-    public subscript<Member: Equatable>(
+  @available(iOS, introduced: 13, obsoleted: 17)
+  @available(macOS, introduced: 10.15, obsoleted: 14)
+  @available(tvOS, introduced: 13, obsoleted: 17)
+  @available(watchOS, introduced: 6, obsoleted: 10)
+  extension Perception.Bindable {
+    public subscript<State: ObservableState, Action: BindableAction, Member: Equatable>(
       dynamicMember keyPath: WritableKeyPath<State, Member>
     ) -> Binding<Member>
-    where
-      Action.State == State,
-      Action: BindableAction
-    {
+    where Value == Store<State, Action>, Action.State == State {
       Binding<Member>(
         get: { self.wrappedValue.state[keyPath: keyPath] },
         set: { newValue, transaction in
@@ -232,13 +238,13 @@ where
       )
     }
 
-    public subscript<Member: Equatable>(
+    public subscript<State: ObservableState, Action: ViewAction, Member: Equatable>(
       dynamicMember keyPath: WritableKeyPath<State, Member>
     ) -> Binding<Member>
     where
+      Value == Store<State, Action>,
       Action.ViewAction: BindableAction,
-      Action.ViewAction.State == State,
-      Action: ViewAction
+      Action.ViewAction.State == State
     {
       Binding<Member>(
         get: { self.wrappedValue.state[keyPath: keyPath] },

@@ -78,8 +78,8 @@
         store that is scoped to the alert domain.
         
         > Note: In order for the `$store.scope` syntax to work you must hold onto the store in the
-        > view using the `@Bindable` property wrapper, or ``ComposableArchitecture/BindableStore``
-        > if you are targeting older platforms.
+        > view using the `@Bindable` property wrapper, or `@Perception.Bindable` if you are
+        > targeting older platforms.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0006.swift, previousFile: 02-02-01-code-0006-previous.swift)
       }

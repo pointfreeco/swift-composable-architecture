@@ -78,7 +78,7 @@ extension Binding {
 }
 
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension Bindable {
+extension SwiftUI.Bindable {
   /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
   ///
   /// See ``SwiftUI/Binding/scope(state:action:)-4mj4d`` defined on `Binding` for more
@@ -95,15 +95,20 @@ extension Bindable {
   }
 }
 
-extension BindableStore {
+@available(iOS, introduced: 13, obsoleted: 17)
+@available(macOS, introduced: 10.15, obsoleted: 14)
+@available(tvOS, introduced: 13, obsoleted: 17)
+@available(watchOS, introduced: 6, obsoleted: 10)
+extension Perception.Bindable {
   /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
   ///
   /// See ``SwiftUI/Binding/scope(state:action:)-4mj4d`` defined on `Binding` for more
   /// information.
-  public func scope<ElementState, ElementAction>(
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
-  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>> {
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
     Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
       get: { self.wrappedValue.scope(state: state, action: action) },
       set: { _ in }

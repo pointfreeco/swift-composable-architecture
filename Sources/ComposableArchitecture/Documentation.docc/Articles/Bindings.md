@@ -66,11 +66,11 @@ struct Settings {
 
 And finally, in the view, we can derive a binding from the domain that allows a toggle to 
 communicate with our Composable Architecture feature. First you must hold onto the store in a 
-bindable way, which can be done using ``BindableStore`` if targeting older platforms:
+bindable way, which can be done using `@Perception.Bindable` if targeting older platforms:
 
 ```swift
 struct SettingsView: View {
-  @BindableStore var store: StoreOf<Settings>
+  @Perception.Bindable var store: StoreOf<Settings>
   // ...
 }
 ```
@@ -229,11 +229,11 @@ struct Settings {
 ```
 
 Then in the view you must hold onto the store in a bindable manner, which can be done using 
-``BindableStore`` if targeting older platforms:
+`@Perception.Bindable` if targeting older platforms:
 
 ```swift
 struct SettingsView: View {
-  @BindableStore var store: StoreOf<Settings>
+  @Perception.Bindable var store: StoreOf<Settings>
   // ...
 }
 ```
