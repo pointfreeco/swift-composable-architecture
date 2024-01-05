@@ -85,7 +85,7 @@ struct AppFeature {
     }
 
     Reduce { state, action in
-      return .run { [syncUps = state.syncUpsList.syncUps] _ in
+      return .run { [syncUps = state.syncUpsList.syncUps.map(\.value)] _ in
         try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
           try await self.clock.sleep(for: .seconds(1))
           try await self.saveData(JSONEncoder().encode(syncUps), .syncUps)
