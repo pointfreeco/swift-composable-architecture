@@ -2,7 +2,7 @@
 import SwiftUI
 
 struct ObservableIdentifiedListView: View {
-  @BindableStore var store = Store(initialState: Feature.State()) {
+  @Perception.Bindable var store = Store(initialState: Feature.State()) {
     Feature()
   }
 
