@@ -1,4 +1,3 @@
-import Perception
 import SwiftUI
 
 #if canImport(Observation)

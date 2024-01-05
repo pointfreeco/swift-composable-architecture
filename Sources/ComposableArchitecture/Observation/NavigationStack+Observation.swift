@@ -1,4 +1,3 @@
-import Perception
 import SwiftUI
 
 extension Binding {
@@ -58,12 +57,12 @@ extension Binding {
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
   ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
   where Value == Store<State, Action> {
-    #if DEBUG
+    #if DEBUG && canImport(Perception)
       let isInViewBody = PerceptionLocals.isInPerceptionTracking
     #endif
     return Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
       get: {
-        #if DEBUG
+        #if DEBUG && canImport(Perception)
           // TODO: Can this be localized to the `Perception` framework?
           PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
             self.wrappedValue.scope(state: state, action: action)
@@ -95,26 +94,28 @@ extension SwiftUI.Bindable {
   }
 }
 
-@available(iOS, introduced: 13, obsoleted: 17)
-@available(macOS, introduced: 10.15, obsoleted: 14)
-@available(tvOS, introduced: 13, obsoleted: 17)
-@available(watchOS, introduced: 6, obsoleted: 10)
-extension Perception.Bindable {
-  /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
-  ///
-  /// See ``SwiftUI/Binding/scope(state:action:)-4mj4d`` defined on `Binding` for more
-  /// information.
-  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
-    state: KeyPath<State, StackState<ElementState>>,
-    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
-  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
-  where Value == Store<State, Action> {
-    Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
-      get: { self.wrappedValue.scope(state: state, action: action) },
-      set: { _ in }
-    )
+#if canImport(Perception)
+  @available(iOS, introduced: 13, obsoleted: 17)
+  @available(macOS, introduced: 10.15, obsoleted: 14)
+  @available(tvOS, introduced: 13, obsoleted: 17)
+  @available(watchOS, introduced: 6, obsoleted: 10)
+  extension Perception.Bindable {
+    /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
+    ///
+    /// See ``SwiftUI/Binding/scope(state:action:)-4mj4d`` defined on `Binding` for more
+    /// information.
+    public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+      state: KeyPath<State, StackState<ElementState>>,
+      action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+    ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+    where Value == Store<State, Action> {
+      Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
+        get: { self.wrappedValue.scope(state: state, action: action) },
+        set: { _ in }
+      )
+    }
   }
-}
+#endif
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension NavigationStack {

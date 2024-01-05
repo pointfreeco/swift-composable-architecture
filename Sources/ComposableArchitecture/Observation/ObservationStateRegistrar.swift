@@ -1,5 +1,3 @@
-import Perception
-
 /// Provides storage for tracking and access to data changes.
 public struct ObservationStateRegistrar: Sendable {
   public private(set) var id = ObservableStateID()
@@ -41,7 +39,7 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
     ///   - value: The value being mutated.
     ///   - newValue: The new value to mutate with.
     ///   - isIdentityEqual: A comparison function that determines whether two values have the same
-    ///                      identity or not.
+    ///     identity or not.
     @inlinable
     public func mutate<Subject: Observable, Member, Value>(
       _ subject: Subject,
