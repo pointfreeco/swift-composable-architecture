@@ -45,10 +45,10 @@ final class SyncUpFormTests: XCTestCase {
           SyncUp(
             id: SyncUp.ID(),
             attendees: [
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
+              Attendee(id: Attendee.ID(UUID(0))),
+              Attendee(id: Attendee.ID(UUID(1))),
+              Attendee(id: Attendee.ID(UUID(2))),
+              Attendee(id: Attendee.ID(UUID(3))),
             ],
             title: "Engineering"
           )
@@ -61,8 +61,8 @@ final class SyncUpFormTests: XCTestCase {
     }
 
     await store.send(.deleteAttendees(atOffsets: [0])) {
-      $0.focus = .attendee($0.syncUp.attendees[0].id)
-      XCTAssertEqual($0.syncUp.attendees.count, 3)
+      $0.focus = .attendee(Attendee.ID(UUID(1)))
+      XCTAssertEqual($0.syncUp.attendees.map(\.id.rawValue), [UUID(1), UUID(2), UUID(3)])
     }
 
     await store.send(.deleteAttendees(atOffsets: [1])) {

@@ -2,6 +2,13 @@ import IdentifiedCollections
 import SwiftUI
 import Tagged
 
+// TODO: make unchecked sendable with a lock
+
+import Dependencies
+
+// @Dependency(Ref<Settings>.self) settings
+
+// TODO: Other names: Shared, ObservableRef,
 @dynamicMemberLookup
 @Observable
 final class Ref<Value> {
@@ -27,6 +34,7 @@ extension Ref: Hashable {
     hasher.combine(ObjectIdentifier(self))
   }
 }
+// TODO: try reference identity
 extension Ref: Identifiable where Value: Identifiable {
   var id: Value.ID {
     self.value.id
