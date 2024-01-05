@@ -180,7 +180,7 @@ extension Binding {
 }
 
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension Bindable {
+extension SwiftUI.Bindable {
   /// Scopes the binding of a store to a binding of an optional presentation store.
   ///
   /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
@@ -243,7 +243,11 @@ extension Bindable {
   }
 }
 
-extension BindableStore {
+@available(iOS, introduced: 13, obsoleted: 17)
+@available(macOS, introduced: 10.15, obsoleted: 14)
+@available(tvOS, introduced: 13, obsoleted: 17)
+@available(watchOS, introduced: 6, obsoleted: 10)
+extension Perception.Bindable {
   /// Scopes the binding of a store to a binding of an optional presentation store.
   ///
   /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
@@ -275,7 +279,7 @@ extension BindableStore {
   ///
   /// ```swift
   /// struct FeatureView: View {
-  ///   @BindableStore var store: StoreOf<Feature>
+  ///   @Bindable var store: StoreOf<Feature>
   ///
   ///   var body: some View {
   ///     // ...
@@ -290,10 +294,11 @@ extension BindableStore {
   ///   - state: A key path to optional child state.
   ///   - action: A case key path to presentation child actions.
   /// - Returns: A binding of an optional child store.
-  public func scope<ChildState, ChildAction>(
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>
-  ) -> Binding<Store<ChildState, ChildAction>?> {
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
     Binding<Store<ChildState, ChildAction>?>(
       get: { self.wrappedValue.scope(state: state, action: action.appending(path: \.presented)) },
       set: {

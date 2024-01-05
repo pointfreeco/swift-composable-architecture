@@ -354,11 +354,11 @@ Then previously you would drive a sheet presentation from the view like so:
 ```
 
 You can now replace `sheet(store:)` with the vanilla SwiftUI modifier, `sheet(item:)`. First you
-must hold onto the store in your view in a bindable manner, using ``BindableStore`` if targeting
-older platforms:
+must hold onto the store in your view in a bindable manner, using `@Perception.Bindable`` if
+targeting older platforms:
 
 ```swift
-@BindableStore var store: StoreOf<Feature>
+@Perception.Bindable var store: StoreOf<Feature>
 ```
 
 …or using `@Bindable` if targeting newer platforms:
@@ -512,10 +512,10 @@ struct Path {
 ```
 
 Then in the view you must start holding onto the `store` in a bindable manner, using 
-``BindableStore`` if targeting older platforms:
+`@Perception.Bindable` if targeting older platforms:
 
 ```swift
-@BindableStore var store: StoreOf<Feature>
+@Perception.Bindable var store: StoreOf<Feature>
 ```
 
 …or using `@Bindable` if targeting newer platforms:
@@ -616,10 +616,10 @@ your feature's state with ``ObservableState()`` and removing all instances of <d
 ``BindingReducer`` from your reducer. Those are still required for bindings.
 
 In the view you must start holding onto the `store` in a bindable manner, which means using 
-``BindableStore`` if targeting older platforms:
+`@Perception.Bindable` if targeting older platforms:
 
 ```swift
-@BindableStore var store: StoreOf<Feature>
+@Perception.Bindable var store: StoreOf<Feature>
 ```
 
 …or using `@Bindable` if targeting newer platforms:
@@ -693,10 +693,10 @@ struct Feature {
 ```
 
 In the view you must start holding onto the `store` in a bindable manner, which means using 
-``BindableStore`` if targeting older platforms:
+`@Perception.Bindable` if targeting older platforms:
 
 ```swift
-@BindableStore var store: StoreOf<Feature>
+@Perception.Bindable var store: StoreOf<Feature>
 ```
 
 …or using `@Bindable` if targeting newer platforms:

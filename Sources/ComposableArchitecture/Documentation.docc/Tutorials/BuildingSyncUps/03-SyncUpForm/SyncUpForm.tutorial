@@ -100,8 +100,8 @@
         allow us to derive bindings from the store.
         
         > Note: The `@Bindable` property wrapper is iOS 17+, and so if you are supporting older
-        platforms you can use the ``ComposableArchitecture/BindableStore`` property wrapper
-        that comes with the library.
+        platforms you can use the `@Perception.Bindable` property wrapper that comes with the
+        library.
         
         @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0008.swift)
       }

@@ -29,6 +29,7 @@ let package = Package(
     // .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.0.0"),
     .package(path: "../swift-dependencies"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-perception", branch: "main"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.0"),
     .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.0.0"),
@@ -38,7 +39,6 @@ let package = Package(
       name: "ComposableArchitecture",
       dependencies: [
         "ComposableArchitectureMacros",
-        "Perception",
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
@@ -47,6 +47,7 @@ let package = Package(
         .product(name: "DependenciesMacros", package: "swift-dependencies"),
         .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
         .product(name: "OrderedCollections", package: "swift-collections"),
+        .product(name: "Perception", package: "swift-perception"),
         .product(name: "SwiftUINavigationCore", package: "swiftui-navigation"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ]
@@ -76,29 +77,6 @@ let package = Package(
       dependencies: [
         "ComposableArchitecture",
         .product(name: "Benchmark", package: "swift-benchmark"),
-      ]
-    ),
-    .target(
-      name: "Perception",
-      dependencies: [
-        "PerceptionMacros",
-        .product(name: "OrderedCollections", package: "swift-collections"),
-        .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
-      ]
-    ),
-    .testTarget(name: "PerceptionTests", dependencies: ["Perception"]),
-    .macro(
-      name: "PerceptionMacros",
-      dependencies: [
-        .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-        .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-      ]
-    ),
-    .testTarget(
-      name: "PerceptionMacrosTests",
-      dependencies: [
-        "PerceptionMacros",
-        .product(name: "MacroTesting", package: "swift-macro-testing"),
       ]
     ),
   ]

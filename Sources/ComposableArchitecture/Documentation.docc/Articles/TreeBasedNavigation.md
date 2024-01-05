@@ -99,7 +99,7 @@ state and actions:
 
 ```swift
 struct InventoryView: View {
-  @BindableStore var store: StoreOf<InventoryFeature>
+  @Bindable var store: StoreOf<InventoryFeature>
 
   var body: some View {
     List {
@@ -276,12 +276,12 @@ by a popover, and the "detail" screen is presented in a drill-down. Then we can 
 from SwiftUI to have each of those styles of presentation powered by the respective case of the
 destination enum.
 
-To do this you must first hold onto the store in a bindable manner by using the ``BindableStore``
-property wrapper:
+To do this you must first hold onto the store in a bindable manner by using the `@Bindable` property
+wrapper:
 
 ```swift
 struct InventoryView: View {
-  @BindableStore var store: StoreOf<InventoryFeature>
+  @Bindable var store: StoreOf<InventoryFeature>
   // ...
 }
 ```

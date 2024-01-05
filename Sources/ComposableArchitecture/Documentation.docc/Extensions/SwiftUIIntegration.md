@@ -30,7 +30,6 @@ designed with SwiftUI in mind, and comes with many powerful tools to integrate i
 - ``BindableAction``
 - ``BindingAction``
 - ``BindingReducer``
-- ``BindableStore``
 
 ### Deprecations
 

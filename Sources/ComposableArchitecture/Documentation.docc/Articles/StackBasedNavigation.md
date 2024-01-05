@@ -131,7 +131,7 @@ To fill in the first argument you only need to scope a binding of your store to 
 
 ```swift
 struct RootView: View {
-  @BindableStore var store: StoreOf<RootFeature>
+  @Bindable var store: StoreOf<RootFeature>
 
   var body: some View {
     NavigationStack(
