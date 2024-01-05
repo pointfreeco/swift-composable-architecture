@@ -153,12 +153,13 @@ public final class Store<State, Action> {
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
     if let prepareDependencies = prepareDependencies {
-      let (initialState, reducer) = withDependencies(prepareDependencies) {
-        (initialState(), reducer())
+      let (initialState, reducer, dependencies) = withDependencies(prepareDependencies) {
+        @Dependency(\.self) var dependencies
+        return (initialState(), reducer(), dependencies)
       }
       self.init(
         initialState: initialState,
-        reducer: reducer.transformDependency(\.self, transform: prepareDependencies)
+        reducer: reducer.dependency(\.self, dependencies)
       )
     } else {
       self.init(
