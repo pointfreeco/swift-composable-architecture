@@ -94,6 +94,6 @@ struct SyncUpDetail.Destination {
   // ...
 }
 
-struct SyncUpDetailView {
+struct SyncUpDetailView: View {
   // ...
 }

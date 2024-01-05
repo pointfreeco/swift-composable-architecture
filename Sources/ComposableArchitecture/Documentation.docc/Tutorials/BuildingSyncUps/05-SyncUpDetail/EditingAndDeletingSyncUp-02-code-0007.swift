@@ -73,6 +73,6 @@ extension AlertState where Action == SyncUpDetail.Action.Alert {
   }
 }
 
-struct SyncUpDetailView {
+struct SyncUpDetailView: View {
   // ...
 }

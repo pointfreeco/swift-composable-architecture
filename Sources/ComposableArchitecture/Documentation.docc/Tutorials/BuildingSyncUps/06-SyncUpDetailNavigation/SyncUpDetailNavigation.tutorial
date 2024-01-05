@@ -198,11 +198,19 @@
   
   @Section(title: "Navigating to the detail") {
     @ContentAndMedia {
-      
+      To navigate to the detail screen from the list screen we need to append some 
+      `SyncUpDetail.State` to the `path` of the `App` feature. The easiest way to do this is with
+      a `NavigationLink`, which will automatically append some state to the path when tapped.
     }
     
     @Steps {
       @Step {
+        Go to the SyncUpsList.swift file where the `SyncUpListView` is defined. In that view we 
+        currently have a `Button` in the list. Let's now replace it with a `NavigationLink`, but
+        using the special initializer that comes with this library: 
+        ``SwiftUI/NavigationLink/init(state:label:fileID:line:)``.
+        
+        @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0001.swift, previousFile: SyncUpDetailNavigation-03-code-0001-previous.swift))
       }
     }
   }

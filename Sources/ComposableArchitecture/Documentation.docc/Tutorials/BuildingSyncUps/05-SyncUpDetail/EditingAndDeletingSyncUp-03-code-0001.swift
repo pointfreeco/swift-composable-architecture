@@ -11,6 +11,6 @@ extension SyncUpDetail {
   }
 }
 
-struct SyncUpDetailView {
+struct SyncUpDetailView: View {
   // ...
 }

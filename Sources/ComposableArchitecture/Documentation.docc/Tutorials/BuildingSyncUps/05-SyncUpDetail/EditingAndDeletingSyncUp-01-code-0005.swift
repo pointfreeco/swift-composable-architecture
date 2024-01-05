@@ -5,7 +5,7 @@ struct SyncUpDetail {
   // ...
 }
 
-struct SyncUpDetailView {
+struct SyncUpDetailView: View {
   @Bindable var store: StoreOf<SyncUpDetail>
 
   var body: some View {

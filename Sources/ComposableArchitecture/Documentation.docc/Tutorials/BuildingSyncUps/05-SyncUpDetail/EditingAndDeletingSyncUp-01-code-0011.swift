@@ -51,6 +51,6 @@ struct SyncUpDetail {
   }
 }
 
-struct SyncUpDetailView {
+struct SyncUpDetailView: View {
   // ...
 }
