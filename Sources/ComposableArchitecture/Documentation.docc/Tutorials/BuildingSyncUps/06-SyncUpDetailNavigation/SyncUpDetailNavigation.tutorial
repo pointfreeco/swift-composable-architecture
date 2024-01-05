@@ -212,6 +212,36 @@
         
         @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0001.swift, previousFile: SyncUpDetailNavigation-03-code-0001-previous.swift))
       }
+      
+      This special initializer takes a piece of state that matches the type that is held in the 
+      root feature's ``ComposableArchitecture/StackState``. In our case, that is `App.Path.State`,
+      which is an enum of all the possible destinations that can be navigated to.
+      
+      @Step {
+        Provide the `.detail` state to `NavigationLink` so that when the link is tapped the 
+        detail state will be appended to the ``ComposableArchitecture/StackState`` powering the
+        navigation stack.
+        
+        @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0002.swift)
+      }
+      
+      That is all it takes to perform a navigation from the list feature to the detail feature.
+      When the navigation link is tapped, SwiftUI will search up the view heirarch to find the
+      `NavigationStack` powering the view, find its `path` binding, and append the new `.detail`
+      state to the path, thus triggering a drill-down animation.
+      
+      This is the easiest way to navigate to one screen to another, but it does have some drawbacks.
+      Because we need to reference all of `App.State.Path` to construct a navigation link, it can
+      make modularization difficult. Every navigation link will need access to every feature's 
+      state.
+      
+      An alternative is to use a plain `Button` instead of `NavigationLink`, and send an action
+      from that button. Then the parent `App` feature can intercept that action and manually append
+      state to its `path`. This fully decouples the features from one another, and only the `App`
+      feature needs to have knowledge about all of the child features.
+      
+      We will not do that refactor now, but it would be instructive for the reader to try 
+      themselves.
     }
   }
 }
