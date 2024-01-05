@@ -1,5 +1,7 @@
 import Perception
 
+// TODO: Should we force Value: TestDependencyKey so that we don't get crashes and just
+//       get runtime warnings/test failures?
 // TODO: make unchecked sendable with a lock
 // TODO: Other names: Shared, ObservableRef,
 @dynamicMemberLookup

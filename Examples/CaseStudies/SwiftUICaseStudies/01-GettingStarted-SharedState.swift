@@ -16,14 +16,21 @@ private let readMe = """
 
 // MARK: - Feature domain
 
+extension Dependency: Equatable where Value: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.wrappedValue == rhs.wrappedValue
+  }
+}
+
 @Reducer
 struct SharedState {
   enum Tab { case counter, profile }
 
   @ObservableState
-  struct State {
+  struct State: Equatable {
     @ObservationStateIgnored
     @Dependency(Shared<SharedState.Counter.State>.self) var counter
+    //@Dependency(SharedState.Counter.State.self) var counter
     var profile: Profile.State
     var currentTab: Tab
 
@@ -115,7 +122,7 @@ struct SharedState {
   @Reducer
   struct Profile {
     @ObservableState
-    struct State {
+    struct State: Equatable {
       @ObservationStateIgnored
       @Dependency(Shared<SharedState.Counter.State>.self) var counter
 
@@ -154,14 +161,12 @@ struct SharedState {
 
 // MARK: - Feature view
 
-private let sharedCounterState = Shared(SharedState.Counter.State())
-
 struct SharedStateView: View {
   @Bindable var store = Store(initialState: SharedState.State()) {
     SharedState()
       ._printChanges()
   } withDependencies: {
-    $0[Shared<SharedState.Counter.State>.self] = Shared(SharedState.Counter.State())//sharedCounterState
+    $0[Shared<SharedState.Counter.State>.self] = Shared(SharedState.Counter.State())
   }
 
   var body: some View {
