@@ -40,9 +40,9 @@ extension Shared: DependencyKey where Value: DependencyKey {
   }
 }
 // TODO: try reference identity
-extension Shared: Identifiable where Value: Identifiable {
-  public var id: Value.ID {
-    self.value.id
+extension Shared: Identifiable {
+  public var id: ObjectIdentifier {
+    ObjectIdentifier(self)
   }
 }
 extension Shared: Codable where Value: Codable {

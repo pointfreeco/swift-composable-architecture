@@ -6,7 +6,7 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    var syncUps: IdentifiedArrayOf<Ref<SyncUp>> = []
+    var syncUps: IdentifiedArrayOf<Shared<SyncUp>> = []
 
     init(
       destination: Destination.State? = nil
@@ -62,7 +62,7 @@ struct SyncUpsList {
     Reduce { state, action in
       switch action {
       case .addSyncUpButtonTapped:
-        state.destination = .add(SyncUpForm.State(syncUp: Ref(SyncUp(id: SyncUp.ID(self.uuid())))))
+        state.destination = .add(SyncUpForm.State(syncUp: Shared(SyncUp(id: SyncUp.ID(self.uuid())))))
         return .none
 
       case .confirmAddSyncUpButtonTapped:
@@ -84,9 +84,9 @@ struct SyncUpsList {
 
       case .destination(.presented(.alert(.confirmLoadMockData))):
         state.syncUps = [
-          Ref(.mock),
-          Ref(.designMock),
-          Ref(.engineeringMock),
+          Shared(.mock),
+          Shared(.designMock),
+          Shared(.engineeringMock),
         ]
         return .none
 
