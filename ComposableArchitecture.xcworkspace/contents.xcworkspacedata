@@ -2,9 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:../swift-dependencies">
-   </FileRef>
-   <FileRef
       location = "group:">
    </FileRef>
    <FileRef
