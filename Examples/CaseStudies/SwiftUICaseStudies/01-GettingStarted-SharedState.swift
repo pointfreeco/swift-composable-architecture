@@ -18,43 +18,43 @@ private let readMe = """
 
 @Reducer
 struct SharedState {
-  enum Tab { case counter, profile }
+  enum Tab { case stats, profile }
 
   struct State: Equatable {
-    var counter = Stats.State()
-    var currentTab = Tab.counter
+    var stats = Stats.State()
+    var currentTab = Tab.stats
 
-    /// The Profile.State can be derived from the Counter.State by getting and setting the parts it
+    /// The Profile.State can be derived from the Stats.State by getting and setting the parts it
     /// cares about. This allows the profile feature to operate on a subset of app state instead of
     /// the whole thing.
     var profile: Profile.State {
       get {
         Profile.State(
           currentTab: self.currentTab,
-          count: self.counter.count,
-          maxCount: self.counter.maxCount,
-          minCount: self.counter.minCount,
-          numberOfCounts: self.counter.numberOfCounts
+          count: self.stats.count,
+          maxCount: self.stats.maxCount,
+          minCount: self.stats.minCount,
+          numberOfCounts: self.stats.numberOfCounts
         )
       }
       set {
         self.currentTab = newValue.currentTab
-        self.counter.count = newValue.count
-        self.counter.maxCount = newValue.maxCount
-        self.counter.minCount = newValue.minCount
-        self.counter.numberOfCounts = newValue.numberOfCounts
+        self.stats.count = newValue.count
+        self.stats.maxCount = newValue.maxCount
+        self.stats.minCount = newValue.minCount
+        self.stats.numberOfCounts = newValue.numberOfCounts
       }
     }
   }
 
   enum Action {
-    case counter(Stats.Action)
+    case stats(Stats.Action)
     case profile(Profile.Action)
     case selectTab(Tab)
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.counter, action: \.counter) {
+    Scope(state: \.stats, action: \.stats) {
       Stats()
     }
 
@@ -64,7 +64,7 @@ struct SharedState {
 
     Reduce { state, action in
       switch action {
-      case .counter, .profile:
+      case .stats, .profile:
         return .none
       case let .selectTab(tab):
         state.currentTab = tab
@@ -85,17 +85,17 @@ struct SharedStateView: View {
     WithViewStore(self.store, observe: \.currentTab) { viewStore in
       VStack {
         Picker("Tab", selection: viewStore.binding(send: { .selectTab($0) })) {
-          Text("Counter")
-            .tag(SharedState.Tab.counter)
+          Text("Stats")
+            .tag(SharedState.Tab.stats)
 
           Text("Profile")
             .tag(SharedState.Tab.profile)
         }
         .pickerStyle(.segmented)
 
-        if viewStore.state == .counter {
+        if viewStore.state == .stats {
           StatsView(
-            store: self.store.scope(state: \.counter, action: \.counter)
+            store: self.store.scope(state: \.stats, action: \.stats)
           )
         }
 
@@ -171,7 +171,7 @@ private struct ProfileView: View {
           Text("Max count: \(viewStore.maxCount)")
           Text("Min count: \(viewStore.minCount)")
           Text("Total number of count events: \(viewStore.numberOfCounts)")
-          Button("Reset") { viewStore.send(.resetCounterButtonTapped) }
+          Button("Reset") { viewStore.send(.resetStatsButtonTapped) }
         }
       }
       .padding(.top)
@@ -267,7 +267,7 @@ struct Profile {
     private(set) var numberOfCounts: Int
 
     fileprivate mutating func resetCount() {
-      self.currentTab = .counter
+      self.currentTab = .stats
       self.count = 0
       self.maxCount = 0
       self.minCount = 0
@@ -276,13 +276,13 @@ struct Profile {
   }
 
   enum Action {
-    case resetCounterButtonTapped
+    case resetStatsButtonTapped
   }
 
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case .resetCounterButtonTapped:
+      case .resetStatsButtonTapped:
         state.resetCount()
         return .none
       }
