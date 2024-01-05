@@ -21,30 +21,15 @@ struct SharedState {
   enum Tab { case counter, profile }
 
   @ObservableState
-  struct State: Equatable {
-    var counter = Counter.State()
-    var currentTab = Tab.counter
+  struct State {
+    @ObservationStateIgnored
+    @Dependency(Shared<SharedState.Counter.State>.self) var counter
+    var profile: Profile.State
+    var currentTab: Tab
 
-    /// The Profile.State can be derived from the Counter.State by getting and setting the parts it
-    /// cares about. This allows the profile feature to operate on a subset of app state instead of
-    /// the whole thing.
-    var profile: Profile.State {
-      get {
-        Profile.State(
-          currentTab: self.currentTab,
-          count: self.counter.count,
-          maxCount: self.counter.maxCount,
-          minCount: self.counter.minCount,
-          numberOfCounts: self.counter.numberOfCounts
-        )
-      }
-      set {
-        self.currentTab = newValue.currentTab
-        self.counter.count = newValue.count
-        self.counter.maxCount = newValue.maxCount
-        self.counter.minCount = newValue.minCount
-        self.counter.numberOfCounts = newValue.numberOfCounts
-      }
+    init(currentTab: Tab = .counter) {
+      self.currentTab = currentTab
+      self.profile = Profile.State()
     }
   }
 
@@ -55,7 +40,7 @@ struct SharedState {
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.counter, action: \.counter) {
+    Scope(state: \.counter.value, action: \.counter) {
       Counter()
     }
 
@@ -130,31 +115,24 @@ struct SharedState {
   @Reducer
   struct Profile {
     @ObservableState
-    struct State: Equatable {
-      private(set) var currentTab: Tab
-      private(set) var count = 0
-      private(set) var maxCount: Int
-      private(set) var minCount: Int
-      private(set) var numberOfCounts: Int
+    struct State {
+      @ObservationStateIgnored
+      @Dependency(Shared<SharedState.Counter.State>.self) var counter
 
-      // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
-      //     this). We can remove when Xcode 15.1 is released and CI uses it.
-      #if swift(<5.9.2)
-        init(currentTab: Tab, count: Int = 0, maxCount: Int, minCount: Int, numberOfCounts: Int) {
-          self.currentTab = currentTab
-          self.count = count
-          self.maxCount = maxCount
-          self.minCount = minCount
-          self.numberOfCounts = numberOfCounts
-        }
-      #endif
+//      // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
+//      //     this). We can remove when Xcode 15.1 is released and CI uses it.
+//      #if swift(<5.9.2)
+//        init(currentTab: Tab, count: Int = 0, maxCount: Int, minCount: Int, numberOfCounts: Int) {
+//          self.currentTab = currentTab
+//          self.count = count
+//          self.maxCount = maxCount
+//          self.minCount = minCount
+//          self.numberOfCounts = numberOfCounts
+//        }
+//      #endif
 
       fileprivate mutating func resetCount() {
-        self.currentTab = .counter
-        self.count = 0
-        self.maxCount = 0
-        self.minCount = 0
-        self.numberOfCounts = 0
+        self.counter.value = Counter.State()
       }
     }
 
@@ -176,9 +154,14 @@ struct SharedState {
 
 // MARK: - Feature view
 
+private let sharedCounterState = Shared(SharedState.Counter.State())
+
 struct SharedStateView: View {
   @Bindable var store = Store(initialState: SharedState.State()) {
     SharedState()
+      ._printChanges()
+  } withDependencies: {
+    $0[Shared<SharedState.Counter.State>.self] = Shared(SharedState.Counter.State())//sharedCounterState
   }
 
   var body: some View {
@@ -195,7 +178,7 @@ struct SharedStateView: View {
       switch store.currentTab {
       case .counter:
         SharedStateCounterView(
-          store: store.scope(state: \.counter, action: \.counter)
+          store: store.scope(state: \.counter.value, action: \.counter)
         )
 
       case .profile:
@@ -262,10 +245,10 @@ struct SharedStateProfileView: View {
       )
 
       VStack(spacing: 16) {
-        Text("Current count: \(store.count)")
-        Text("Max count: \(store.maxCount)")
-        Text("Min count: \(store.minCount)")
-        Text("Total number of count events: \(store.numberOfCounts)")
+        Text("Current count: \(store.counter.count)")
+        Text("Max count: \(store.counter.maxCount)")
+        Text("Min count: \(store.counter.minCount)")
+        Text("Total number of count events: \(store.counter.numberOfCounts)")
         Button("Reset") { store.send(.resetCounterButtonTapped) }
       }
     }
