@@ -6,12 +6,12 @@ struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    var syncUp: SyncUp
+    var syncUp: Ref<SyncUp>
 
     // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
     //     this). We can remove when Xcode 15.1 is released and CI uses it.
     #if swift(<5.9.2)
-      init(destination: Destination.State? = nil, syncUp: SyncUp) {
+      init(destination: Destination.State? = nil, syncUp: Ref<SyncUp>) {
         self.destination = destination
         self.syncUp = syncUp
       }
@@ -31,7 +31,6 @@ struct SyncUpDetail {
     @CasePathable
     enum Delegate {
       case deleteSyncUp
-      case syncUpUpdated(SyncUp)
       case startMeeting
     }
   }
@@ -105,12 +104,12 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
-        state.syncUp = editState.syncUp
+        state.syncUp.value = editState.syncUp.value
         state.destination = nil
         return .none
 
       case .editButtonTapped:
-        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp))
+        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp.copy()))
         return .none
 
       case .startMeetingButtonTapped:
@@ -133,11 +132,6 @@ struct SyncUpDetail {
     }
     .ifLet(\.$destination, action: \.destination) {
       Destination()
-    }
-    .onChange(of: \.syncUp) { oldValue, newValue in
-      Reduce { state, action in
-        .send(.delegate(.syncUpUpdated(newValue)))
-      }
     }
   }
 }
@@ -178,7 +172,7 @@ struct SyncUpDetailView: View {
         Section {
           ForEach(store.syncUp.meetings) { meeting in
             NavigationLink(
-              state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
+              state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp.value)
             ) {
               HStack {
                 Image(systemName: "calendar")
@@ -296,7 +290,7 @@ struct SyncUpDetail_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       SyncUpDetailView(
-        store: Store(initialState: SyncUpDetail.State(syncUp: .mock)) {
+        store: Store(initialState: SyncUpDetail.State(syncUp: Ref(.mock))) {
           SyncUpDetail()
         }
       )

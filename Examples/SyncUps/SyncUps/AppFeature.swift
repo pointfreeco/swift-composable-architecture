@@ -27,8 +27,14 @@ struct AppFeature {
     Scope(state: \.syncUpsList, action: \.syncUpsList) {
       SyncUpsList()
     }
-    Reduce { state, action in
+    Reduce<State, Action> { state, action in
       switch action {
+      case let .syncUpsList(.syncUpTapped(id: id)):
+        guard let syncUp = state.syncUpsList.syncUps[id: id]
+        else { return .none }
+        state.path.append(.detail(SyncUpDetail.State(syncUp: syncUp)))
+        return .none
+
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
         guard case let .some(.detail(detailState)) = state.path[id: id]
         else { return .none }
@@ -38,12 +44,8 @@ struct AppFeature {
           state.syncUpsList.syncUps.remove(id: detailState.syncUp.id)
           return .none
 
-        case let .syncUpUpdated(syncUp):
-          state.syncUpsList.syncUps[id: syncUp.id] = syncUp
-          return .none
-
         case .startMeeting:
-          state.path.append(.record(RecordMeeting.State(syncUp: detailState.syncUp)))
+          state.path.append(.record(RecordMeeting.State(syncUp: detailState.syncUp.value)))
           return .none
         }
 

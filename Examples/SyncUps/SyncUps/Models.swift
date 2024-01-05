@@ -2,6 +2,54 @@ import IdentifiedCollections
 import SwiftUI
 import Tagged
 
+@dynamicMemberLookup
+@Observable
+final class Ref<Value> {
+  var value: Value
+  init(_ value: Value) {
+    self.value = value
+  }
+  subscript<T>(dynamicMember keyPath: WritableKeyPath<Value, T>) -> T {
+    get { self.value[keyPath: keyPath] }
+    set { self.value[keyPath: keyPath] = newValue }
+  }
+  func copy() -> Ref<Value> {
+    Ref(self.value)
+  }
+}
+extension Ref: Equatable {
+  static func == (lhs: Ref, rhs: Ref) -> Bool {
+    lhs === rhs
+  }
+}
+extension Ref: Hashable {
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(ObjectIdentifier(self))
+  }
+}
+extension Ref: Identifiable where Value: Identifiable {
+  var id: Value.ID {
+    self.value.id
+  }
+}
+extension Ref: Codable where Value: Codable {
+  convenience init(from decoder: Decoder) throws {
+    do {
+      self.init(try decoder.singleValueContainer().decode(Value.self))
+    } catch {
+      self.init(try .init(from: decoder))
+    }
+  }
+  func encode(to encoder: Encoder) throws {
+    do {
+      var container = encoder.singleValueContainer()
+      try container.encode(self.value)
+    } catch {
+      try self.value.encode(to: encoder)
+    }
+  }
+}
+
 struct SyncUp: Equatable, Identifiable, Codable {
   let id: Tagged<Self, UUID>
   var attendees: IdentifiedArrayOf<Attendee> = []

@@ -6,7 +6,7 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    var syncUps: IdentifiedArrayOf<SyncUp> = []
+    var syncUps: IdentifiedArrayOf<Ref<SyncUp>> = []
 
     init(
       destination: Destination.State? = nil
@@ -29,6 +29,7 @@ struct SyncUpsList {
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
     case onDelete(IndexSet)
+    case syncUpTapped(id: SyncUp.ID)
   }
 
   @Reducer
@@ -62,7 +63,7 @@ struct SyncUpsList {
     Reduce { state, action in
       switch action {
       case .addSyncUpButtonTapped:
-        state.destination = .add(SyncUpForm.State(syncUp: SyncUp(id: SyncUp.ID(self.uuid()))))
+        state.destination = .add(SyncUpForm.State(syncUp: Ref(SyncUp(id: SyncUp.ID(self.uuid())))))
         return .none
 
       case .confirmAddSyncUpButtonTapped:
@@ -84,9 +85,9 @@ struct SyncUpsList {
 
       case .destination(.presented(.alert(.confirmLoadMockData))):
         state.syncUps = [
-          .mock,
-          .designMock,
-          .engineeringMock,
+          Ref(.mock),
+          Ref(.designMock),
+          Ref(.engineeringMock),
         ]
         return .none
 
@@ -99,6 +100,9 @@ struct SyncUpsList {
 
       case let .onDelete(indexSet):
         state.syncUps.remove(atOffsets: indexSet)
+        return .none
+
+      case let .syncUpTapped(id: id):
         return .none
       }
     }
@@ -117,7 +121,7 @@ struct SyncUpsListView: View {
         NavigationLink(
           state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
         ) {
-          CardView(syncUp: syncUp)
+          CardView(syncUp: syncUp.value)
         }
         .listRowBackground(syncUp.theme.mainColor)
       }

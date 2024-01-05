@@ -7,9 +7,9 @@ struct SyncUpForm {
   @ObservableState
   struct State: Equatable, Sendable {
     var focus: Field? = .title
-    var syncUp: SyncUp
+    var syncUp: Ref<SyncUp>
 
-    init(focus: Field? = .title, syncUp: SyncUp) {
+    init(focus: Field? = .title, syncUp: Ref<SyncUp>) {
       self.focus = focus
       self.syncUp = syncUp
       if self.syncUp.attendees.isEmpty {
@@ -131,7 +131,7 @@ struct EditSyncUp_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       SyncUpFormView(
-        store: Store(initialState: SyncUpForm.State(syncUp: .mock)) {
+        store: Store(initialState: SyncUpForm.State(syncUp: Ref(.mock))) {
           SyncUpForm()
         }
       )
