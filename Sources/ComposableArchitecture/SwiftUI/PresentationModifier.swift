@@ -285,11 +285,12 @@ public struct PresentationStore<
             ? toID($0).map { AnyIdentifiable(Identified($0) { $0 }) }
             : nil
         },
-        compactSend: {
+        compactSend: { [weak viewStore = self.viewStore] in
           guard
+            let viewStore = viewStore,
             $0 == nil,
-            self.viewStore.wrappedValue != nil,
-            id == nil || self.toID(self.viewStore.state) == id
+            viewStore.wrappedValue != nil,
+            id == nil || self.toID(viewStore.state) == id
           else { return nil }
           return .dismiss
         }
