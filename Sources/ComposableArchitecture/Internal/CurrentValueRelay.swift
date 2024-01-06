@@ -6,6 +6,7 @@ final class CurrentValueRelay<Output>: Publisher {
 
   private var currentValue: Output
   private var subscriptions: [Subscription<AnySubscriber<Output, Failure>>] = []
+  private let lock: os_unfair_lock_t
 
   var value: Output {
     get { self.currentValue }
@@ -14,19 +15,36 @@ final class CurrentValueRelay<Output>: Publisher {
 
   init(_ value: Output) {
     self.currentValue = value
+    self.lock = os_unfair_lock_t.allocate(capacity: 1)
+    self.lock.initialize(to: os_unfair_lock())
+  }
+
+  deinit {
+    self.lock.deinitialize(count: 1)
+    self.lock.deallocate()
   }
 
   func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Never {
-    let subscription = Subscription(downstream: AnySubscriber(subscriber))
-    self.subscriptions.append(subscription)
+    let subscription = Subscription(upstream: self, downstream: AnySubscriber(subscriber))
+    self.lock.sync {
+      self.subscriptions.append(subscription)
+    }
     subscriber.receive(subscription: subscription)
     subscription.forwardValueToBuffer(self.currentValue)
   }
 
   func send(_ value: Output) {
     self.currentValue = value
-    for subscription in subscriptions {
+    for subscription in self.subscriptions {
       subscription.forwardValueToBuffer(value)
+    }
+  }
+
+  func remove(_ subscription: AnyObject) {
+    self.lock.sync {
+      if let index = subscriptions.firstIndex(where: { $0 === subscription }) {
+        self.subscriptions.remove(at: index)
+      }
     }
   }
 }
@@ -34,22 +52,25 @@ final class CurrentValueRelay<Output>: Publisher {
 extension CurrentValueRelay {
   final class Subscription<Downstream: Subscriber>: Combine.Subscription
   where Downstream.Input == Output, Downstream.Failure == Failure {
+    private weak var upstream: CurrentValueRelay?
     private var demandBuffer: DemandBuffer<Downstream>?
 
-    init(downstream: Downstream) {
+    init(upstream: CurrentValueRelay, downstream: Downstream) {
+      self.upstream = upstream
       self.demandBuffer = DemandBuffer(subscriber: downstream)
     }
 
     func forwardValueToBuffer(_ value: Output) {
-      _ = demandBuffer?.buffer(value: value)
+      _ = self.demandBuffer?.buffer(value: value)
     }
 
     func request(_ demand: Subscribers.Demand) {
-      _ = demandBuffer?.demand(demand)
+      _ = self.demandBuffer?.demand(demand)
     }
 
     func cancel() {
-      demandBuffer = nil
+      self.demandBuffer = nil
+      self.upstream?.remove(self)
     }
   }
 }
