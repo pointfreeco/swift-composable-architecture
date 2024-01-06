@@ -40,11 +40,11 @@ final class CurrentValueRelay<Output>: Publisher {
     }
   }
 
-  func remove(_ subscription: AnyObject) {
+  fileprivate func remove(subscription: AnyObject) {
     self.lock.sync {
-      if let index = subscriptions.firstIndex(where: { $0 === subscription }) {
-        self.subscriptions.remove(at: index)
-      }
+      guard let index = subscriptions.firstIndex(where: { $0 === subscription })
+      else { return }
+      self.subscriptions.remove(at: index)
     }
   }
 }
@@ -70,7 +70,7 @@ extension CurrentValueRelay {
 
     func cancel() {
       self.demandBuffer = nil
-      self.upstream?.remove(self)
+      self.upstream?.remove(subscription: self)
     }
   }
 }
