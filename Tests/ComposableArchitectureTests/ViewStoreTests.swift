@@ -175,6 +175,28 @@ final class ViewStoreTests: BaseTCATestCase {
     XCTAssertEqual(results, Array(repeating: [0, 1, 2], count: 10).flatMap { $0 })
   }
 
+  func testStorePublisherRemovesSubscriptionOnCancel() {
+    let store = Store<Void, Void>(initialState: ()) {}
+    weak var subscription: AnyObject?
+    let cancellable = store.publisher
+      .handleEvents(receiveSubscription: { subscription = $0 as AnyObject })
+      .sink { _ in }
+    XCTAssertNotNil(subscription)
+    cancellable.cancel()
+    XCTAssertNil(subscription)
+  }
+
+  func testSubscriptionOwnsStorePublisher() {
+    var store: Store<Void, Void>? = Store(initialState: ()) {}
+    weak var weakStore = store
+    let cancellable = store!.publisher
+      .sink { _ in }
+    store = nil
+    XCTAssertNotNil(weakStore)
+    cancellable.cancel()
+    XCTAssertNil(weakStore)
+  }
+
   func testSendWhile() async {
     enum Action {
       case response
