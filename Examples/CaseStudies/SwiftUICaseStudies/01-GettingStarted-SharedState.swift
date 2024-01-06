@@ -18,44 +18,44 @@ private let readMe = """
 
 @Reducer
 struct SharedState {
-  enum Tab { case counter, profile }
+  enum Tab { case stats, profile }
 
   struct State: Equatable {
-    var counter = Counter.State()
-    var currentTab = Tab.counter
+    var currentTab = Tab.stats
+    var stats = Stats.State()
 
-    /// The Profile.State can be derived from the Counter.State by getting and setting the parts it
+    /// The Profile.State can be derived from the Stats.State by getting and setting the parts it
     /// cares about. This allows the profile feature to operate on a subset of app state instead of
     /// the whole thing.
     var profile: Profile.State {
       get {
         Profile.State(
           currentTab: self.currentTab,
-          count: self.counter.count,
-          maxCount: self.counter.maxCount,
-          minCount: self.counter.minCount,
-          numberOfCounts: self.counter.numberOfCounts
+          count: self.stats.count,
+          maxCount: self.stats.maxCount,
+          minCount: self.stats.minCount,
+          numberOfCounts: self.stats.numberOfCounts
         )
       }
       set {
         self.currentTab = newValue.currentTab
-        self.counter.count = newValue.count
-        self.counter.maxCount = newValue.maxCount
-        self.counter.minCount = newValue.minCount
-        self.counter.numberOfCounts = newValue.numberOfCounts
+        self.stats.count = newValue.count
+        self.stats.maxCount = newValue.maxCount
+        self.stats.minCount = newValue.minCount
+        self.stats.numberOfCounts = newValue.numberOfCounts
       }
     }
   }
 
   enum Action {
-    case counter(Counter.Action)
     case profile(Profile.Action)
     case selectTab(Tab)
+    case stats(Stats.Action)
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.counter, action: \.counter) {
-      Counter()
+    Scope(state: \.stats, action: \.stats) {
+      Stats()
     }
 
     Scope(state: \.profile, action: \.profile) {
@@ -64,96 +64,11 @@ struct SharedState {
 
     Reduce { state, action in
       switch action {
-      case .counter, .profile:
+      case .profile, .stats:
         return .none
       case let .selectTab(tab):
         state.currentTab = tab
         return .none
-      }
-    }
-  }
-
-  @Reducer
-  struct Counter {
-    struct State: Equatable {
-      @PresentationState var alert: AlertState<Action.Alert>?
-      var count = 0
-      var maxCount = 0
-      var minCount = 0
-      var numberOfCounts = 0
-    }
-
-    enum Action {
-      case alert(PresentationAction<Alert>)
-      case decrementButtonTapped
-      case incrementButtonTapped
-      case isPrimeButtonTapped
-
-      enum Alert: Equatable {}
-    }
-
-    var body: some Reducer<State, Action> {
-      Reduce { state, action in
-        switch action {
-        case .alert:
-          return .none
-
-        case .decrementButtonTapped:
-          state.count -= 1
-          state.numberOfCounts += 1
-          state.minCount = min(state.minCount, state.count)
-          return .none
-
-        case .incrementButtonTapped:
-          state.count += 1
-          state.numberOfCounts += 1
-          state.maxCount = max(state.maxCount, state.count)
-          return .none
-
-        case .isPrimeButtonTapped:
-          state.alert = AlertState {
-            TextState(
-              isPrime(state.count)
-                ? "👍 The number \(state.count) is prime!"
-                : "👎 The number \(state.count) is not prime :("
-            )
-          }
-          return .none
-        }
-      }
-      .ifLet(\.$alert, action: \.alert)
-    }
-  }
-
-  @Reducer
-  struct Profile {
-    struct State: Equatable {
-      private(set) var currentTab: Tab
-      private(set) var count = 0
-      private(set) var maxCount: Int
-      private(set) var minCount: Int
-      private(set) var numberOfCounts: Int
-
-      fileprivate mutating func resetCount() {
-        self.currentTab = .counter
-        self.count = 0
-        self.maxCount = 0
-        self.minCount = 0
-        self.numberOfCounts = 0
-      }
-    }
-
-    enum Action {
-      case resetCounterButtonTapped
-    }
-
-    var body: some Reducer<State, Action> {
-      Reduce { state, action in
-        switch action {
-        case .resetCounterButtonTapped:
-          state.resetCount()
-          return .none
-        }
       }
     }
   }
@@ -170,22 +85,22 @@ struct SharedStateView: View {
     WithViewStore(self.store, observe: \.currentTab) { viewStore in
       VStack {
         Picker("Tab", selection: viewStore.binding(send: { .selectTab($0) })) {
-          Text("Counter")
-            .tag(SharedState.Tab.counter)
+          Text("Stats")
+            .tag(SharedState.Tab.stats)
 
           Text("Profile")
             .tag(SharedState.Tab.profile)
         }
         .pickerStyle(.segmented)
 
-        if viewStore.state == .counter {
-          SharedStateCounterView(
-            store: self.store.scope(state: \.counter, action: \.counter)
+        if viewStore.state == .stats {
+          StatsView(
+            store: self.store.scope(state: \.stats, action: \.stats)
           )
         }
 
         if viewStore.state == .profile {
-          SharedStateProfileView(
+          ProfileView(
             store: self.store.scope(state: \.profile, action: \.profile)
           )
         }
@@ -197,8 +112,8 @@ struct SharedStateView: View {
   }
 }
 
-struct SharedStateCounterView: View {
-  let store: StoreOf<SharedState.Counter>
+private struct StatsView: View {
+  let store: StoreOf<Stats>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -233,8 +148,8 @@ struct SharedStateCounterView: View {
   }
 }
 
-struct SharedStateProfileView: View {
-  let store: StoreOf<SharedState.Profile>
+private struct ProfileView: View {
+  let store: StoreOf<Profile>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -256,7 +171,7 @@ struct SharedStateProfileView: View {
           Text("Max count: \(viewStore.maxCount)")
           Text("Min count: \(viewStore.minCount)")
           Text("Total number of count events: \(viewStore.numberOfCounts)")
-          Button("Reset") { viewStore.send(.resetCounterButtonTapped) }
+          Button("Reset") { viewStore.send(.resetStatsButtonTapped) }
         }
       }
       .padding(.top)
@@ -287,4 +202,90 @@ private func isPrime(_ p: Int) -> Bool {
     if p % i == 0 { return false }
   }
   return true
+}
+
+
+@Reducer
+struct Stats {
+  struct State: Equatable {
+    @PresentationState var alert: AlertState<Action.Alert>?
+    var count = 0
+    var maxCount = 0
+    var minCount = 0
+    var numberOfCounts = 0
+  }
+
+  enum Action {
+    case alert(PresentationAction<Alert>)
+    case decrementButtonTapped
+    case incrementButtonTapped
+    case isPrimeButtonTapped
+
+    enum Alert: Equatable {}
+  }
+
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .alert:
+        return .none
+
+      case .decrementButtonTapped:
+        state.count -= 1
+        state.numberOfCounts += 1
+        state.minCount = min(state.minCount, state.count)
+        return .none
+
+      case .incrementButtonTapped:
+        state.count += 1
+        state.numberOfCounts += 1
+        state.maxCount = max(state.maxCount, state.count)
+        return .none
+
+      case .isPrimeButtonTapped:
+        state.alert = AlertState {
+          TextState(
+            isPrime(state.count)
+            ? "👍 The number \(state.count) is prime!"
+            : "👎 The number \(state.count) is not prime :("
+          )
+        }
+        return .none
+      }
+    }
+    .ifLet(\.$alert, action: \.alert)
+  }
+}
+
+@Reducer
+struct Profile {
+  struct State: Equatable {
+    private(set) var currentTab: SharedState.Tab
+    private(set) var count = 0
+    private(set) var maxCount: Int
+    private(set) var minCount: Int
+    private(set) var numberOfCounts: Int
+
+    fileprivate mutating func resetCount() {
+      self.currentTab = .stats
+      self.count = 0
+      self.maxCount = 0
+      self.minCount = 0
+      self.numberOfCounts = 0
+    }
+  }
+
+  enum Action {
+    case resetStatsButtonTapped
+  }
+
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .resetStatsButtonTapped:
+        state.resetCount()
+        return .none
+      }
+    }
+  }
 }

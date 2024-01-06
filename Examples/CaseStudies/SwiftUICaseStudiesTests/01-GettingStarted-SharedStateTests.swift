@@ -12,14 +12,14 @@ final class SharedStateTests: XCTestCase {
 
     await store.send(.selectTab(.profile)) {
       $0.currentTab = .profile
-      $0.profile = SharedState.Profile.State(
+      $0.profile = Profile.State(
         currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0
       )
     }
-    await store.send(.profile(.resetCounterButtonTapped)) {
-      $0.currentTab = .counter
-      $0.profile = SharedState.Profile.State(
-        currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0
+    await store.send(.profile(.resetStatsButtonTapped)) {
+      $0.currentTab = .stats
+      $0.profile = Profile.State(
+        currentTab: .stats, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0
       )
     }
   }
@@ -31,14 +31,14 @@ final class SharedStateTests: XCTestCase {
 
     await store.send(.selectTab(.profile)) {
       $0.currentTab = .profile
-      $0.profile = SharedState.Profile.State(
+      $0.profile = Profile.State(
         currentTab: .profile, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0
       )
     }
-    await store.send(.selectTab(.counter)) {
-      $0.currentTab = .counter
-      $0.profile = SharedState.Profile.State(
-        currentTab: .counter, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0
+    await store.send(.selectTab(.stats)) {
+      $0.currentTab = .stats
+      $0.profile = Profile.State(
+        currentTab: .stats, count: 0, maxCount: 0, minCount: 0, numberOfCounts: 0
       )
     }
   }
@@ -48,29 +48,29 @@ final class SharedStateTests: XCTestCase {
       SharedState()
     }
 
-    await store.send(.counter(.incrementButtonTapped)) {
-      $0.counter.count = 1
-      $0.counter.maxCount = 1
-      $0.counter.numberOfCounts = 1
+    await store.send(.stats(.incrementButtonTapped)) {
+      $0.stats.count = 1
+      $0.stats.maxCount = 1
+      $0.stats.numberOfCounts = 1
     }
-    await store.send(.counter(.decrementButtonTapped)) {
-      $0.counter.count = 0
-      $0.counter.numberOfCounts = 2
+    await store.send(.stats(.decrementButtonTapped)) {
+      $0.stats.count = 0
+      $0.stats.numberOfCounts = 2
     }
-    await store.send(.counter(.decrementButtonTapped)) {
-      $0.counter.count = -1
-      $0.counter.minCount = -1
-      $0.counter.numberOfCounts = 3
+    await store.send(.stats(.decrementButtonTapped)) {
+      $0.stats.count = -1
+      $0.stats.minCount = -1
+      $0.stats.numberOfCounts = 3
     }
   }
 
   func testIsPrimeWhenPrime() async {
     let store = TestStore(
-      initialState: SharedState.Counter.State(
+      initialState: Stats.State(
         alert: nil, count: 3, maxCount: 0, minCount: 0, numberOfCounts: 0
       )
     ) {
-      SharedState.Counter()
+      Stats()
     }
 
     await store.send(.isPrimeButtonTapped) {
@@ -85,11 +85,11 @@ final class SharedStateTests: XCTestCase {
 
   func testIsPrimeWhenNotPrime() async {
     let store = TestStore(
-      initialState: SharedState.Counter.State(
+      initialState: Stats.State(
         alert: nil, count: 6, maxCount: 0, minCount: 0, numberOfCounts: 0
       )
     ) {
-      SharedState.Counter()
+      Stats()
     }
 
     await store.send(.isPrimeButtonTapped) {
