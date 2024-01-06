@@ -204,7 +204,6 @@ private func isPrime(_ p: Int) -> Bool {
   return true
 }
 
-
 @Reducer
 struct Stats {
   struct State: Equatable {
@@ -246,8 +245,8 @@ struct Stats {
         state.alert = AlertState {
           TextState(
             isPrime(state.count)
-            ? "👍 The number \(state.count) is prime!"
-            : "👎 The number \(state.count) is not prime :("
+              ? "👍 The number \(state.count) is prime!"
+              : "👎 The number \(state.count) is not prime :("
           )
         }
         return .none
