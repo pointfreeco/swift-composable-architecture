@@ -5,7 +5,7 @@ final class CurrentValueRelay<Output>: Publisher {
   typealias Failure = Never
 
   private var currentValue: Output
-  private var subscriptions: [Subscription<AnySubscriber<Output, Failure>>] = []
+  private var subscriptions: [Subscription] = []
   private let lock: os_unfair_lock_t
 
   var value: Output {
@@ -40,7 +40,7 @@ final class CurrentValueRelay<Output>: Publisher {
     }
   }
 
-  fileprivate func remove(subscription: AnyObject) {
+  fileprivate func remove(subscription: Subscription) {
     self.lock.sync {
       guard let index = subscriptions.firstIndex(where: { $0 === subscription })
       else { return }
@@ -50,12 +50,12 @@ final class CurrentValueRelay<Output>: Publisher {
 }
 
 extension CurrentValueRelay {
-  final class Subscription<Downstream: Subscriber>: Combine.Subscription
-  where Downstream.Input == Output, Downstream.Failure == Failure {
-    private weak var upstream: CurrentValueRelay?
+  final class Subscription: Combine.Subscription {
+    typealias Downstream = AnySubscriber<Output, Never>
+    private let upstream: CurrentValueRelay
     private var demandBuffer: DemandBuffer<Downstream>?
 
-    init(upstream: CurrentValueRelay, downstream: Downstream) {
+    fileprivate init(upstream: CurrentValueRelay, downstream: Downstream) {
       self.upstream = upstream
       self.demandBuffer = DemandBuffer(subscriber: downstream)
     }
@@ -70,7 +70,7 @@ extension CurrentValueRelay {
 
     func cancel() {
       self.demandBuffer = nil
-      self.upstream?.remove(subscription: self)
+      self.upstream.remove(subscription: self)
     }
   }
 }
