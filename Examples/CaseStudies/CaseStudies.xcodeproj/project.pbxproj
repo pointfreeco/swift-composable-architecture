@@ -31,6 +31,7 @@
 		CAA9ADCC2446615B0003A984 /* 02-Effects-LongLivingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADCB2446615B0003A984 /* 02-Effects-LongLivingTests.swift */; };
 		CABC4F3926AEE00C00D5FA2C /* 02-Effects-Refreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3826AEE00C00D5FA2C /* 02-Effects-Refreshable.swift */; };
 		CABC4F3B26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3A26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift */; };
+		CACAC8912B4B174D009416FC /* StressTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACAC8902B4B174D009416FC /* StressTest.swift */; };
 		CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift */; };
 		CAF88E7324B8E26D00539345 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E7224B8E26D00539345 /* AppDelegate.swift */; };
 		CAF88E7524B8E26D00539345 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF88E7424B8E26D00539345 /* RootView.swift */; };
@@ -171,6 +172,7 @@
 		CAA9ADCB2446615B0003A984 /* 02-Effects-LongLivingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-LongLivingTests.swift"; sourceTree = "<group>"; };
 		CABC4F3826AEE00C00D5FA2C /* 02-Effects-Refreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-Refreshable.swift"; sourceTree = "<group>"; };
 		CABC4F3A26AEE20200D5FA2C /* 02-Effects-RefreshableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-RefreshableTests.swift"; sourceTree = "<group>"; };
+		CACAC8902B4B174D009416FC /* StressTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressTest.swift; sourceTree = "<group>"; };
 		CAE962FC24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-AlertsAndConfirmationDialogs.swift"; sourceTree = "<group>"; };
 		CAF88E7024B8E26D00539345 /* tvOSCaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tvOSCaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAF88E7224B8E26D00539345 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -395,6 +397,7 @@
 				CA3E421E26B8337500581ABC /* 01-GettingStarted-FocusState.swift */,
 				DCC68EDC2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift */,
 				CA7BC8ED245CCFE4001FB69F /* 01-GettingStarted-SharedState.swift */,
+				CACAC8902B4B174D009416FC /* StressTest.swift */,
 				CAA9ADC12446587C0003A984 /* 02-Effects-Basics.swift */,
 				CAA9ADC524465C810003A984 /* 02-Effects-Cancellation.swift */,
 				CAA9ADC92446605B0003A984 /* 02-Effects-LongLiving.swift */,
@@ -760,6 +763,7 @@
 				DC89C44D244621A5006900B9 /* 03-Navigation-NavigateAndLoad.swift in Sources */,
 				DC89C4442446111B006900B9 /* 01-GettingStarted-Counter.swift in Sources */,
 				DCE63B71245CC0B90080A23D /* 04-HigherOrderReducers-Recursion.swift in Sources */,
+				CACAC8912B4B174D009416FC /* StressTest.swift in Sources */,
 				CAA9ADCA2446605B0003A984 /* 02-Effects-LongLiving.swift in Sources */,
 				DC89C45524465C44006900B9 /* 02-Effects-Timers.swift in Sources */,
 				CA410EE0247A15FE00E41798 /* 02-Effects-WebSocket.swift in Sources */,
