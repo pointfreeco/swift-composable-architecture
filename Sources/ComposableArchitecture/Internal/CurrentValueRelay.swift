@@ -5,7 +5,7 @@ final class CurrentValueRelay<Output>: Publisher {
   typealias Failure = Never
 
   private var currentValue: Output
-  private var subscriptions: [Subscription] = []
+  private var subscriptions: [WeakSubscription] = []
   private let lock: os_unfair_lock_t
 
   var value: Output {
@@ -27,7 +27,7 @@ final class CurrentValueRelay<Output>: Publisher {
   func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Never {
     let subscription = Subscription(upstream: self, downstream: AnySubscriber(subscriber))
     self.lock.sync {
-      self.subscriptions.append(subscription)
+      self.subscriptions.append(WeakSubscription(object: subscription))
     }
     subscriber.receive(subscription: subscription)
     subscription.forwardValueToBuffer(self.currentValue)
@@ -35,16 +35,17 @@ final class CurrentValueRelay<Output>: Publisher {
 
   func send(_ value: Output) {
     self.currentValue = value
+    var hasCancelledSubscription = false
     for subscription in self.subscriptions {
-      subscription.forwardValueToBuffer(value)
+      if let subscription = subscription.object {
+        subscription.forwardValueToBuffer(value)
+      } else {
+        hasCancelledSubscription = true
+      }
     }
-  }
-
-  fileprivate func remove(subscription: Subscription) {
+    guard hasCancelledSubscription else { return }
     self.lock.sync {
-      guard let index = subscriptions.firstIndex(where: { $0 === subscription })
-      else { return }
-      self.subscriptions.remove(at: index)
+      self.subscriptions.removeAll(where: { $0.object == nil })
     }
   }
 }
@@ -70,7 +71,10 @@ extension CurrentValueRelay {
 
     func cancel() {
       self.demandBuffer = nil
-      self.upstream.remove(subscription: self)
     }
+  }
+
+  private struct WeakSubscription {
+    weak var object: Subscription?
   }
 }
