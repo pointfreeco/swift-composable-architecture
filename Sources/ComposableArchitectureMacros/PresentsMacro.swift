@@ -126,7 +126,7 @@ extension VariableDeclSyntax {
 }
 
 extension PatternBindingListSyntax {
-  var privateWrapped: PatternBindingListSyntax {
+  fileprivate var privateWrapped: PatternBindingListSyntax {
     var bindings = self
     for index in bindings.indices {
       var binding = bindings[index]
@@ -166,7 +166,7 @@ extension PatternBindingListSyntax {
     return bindings
   }
 
-  var projected: PatternBindingListSyntax {
+  fileprivate var projected: PatternBindingListSyntax {
     var bindings = self
     for index in bindings.indices {
       var binding = bindings[index]

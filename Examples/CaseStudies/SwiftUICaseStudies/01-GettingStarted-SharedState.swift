@@ -22,31 +22,24 @@ struct SharedState {
 
   @ObservableState
   struct State: Equatable {
-    @ObservationStateIgnored
-    @Dependency(Shared<SharedState.Counter.State>.self) var counter
-    //@Dependency(SharedState.Counter.State.self) var counter
-    var profile: Profile.State
-    var currentTab: Tab
-
-    init(currentTab: Tab = .counter) {
-      self.currentTab = currentTab
-      self.profile = Profile.State()
-    }
+    var currentTab = Tab.counter
+    var counter = CounterTab.State()
+    var profile = ProfileTab.State()
   }
 
   enum Action {
-    case counter(Counter.Action)
-    case profile(Profile.Action)
+    case counter(CounterTab.Action)
+    case profile(ProfileTab.Action)
     case selectTab(Tab)
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.counter.value, action: \.counter) {
-      Counter()
+    Scope(state: \.counter, action: \.counter) {
+      CounterTab()
     }
 
     Scope(state: \.profile, action: \.profile) {
-      Profile()
+      ProfileTab()
     }
 
     Reduce { state, action in
@@ -59,146 +52,87 @@ struct SharedState {
       }
     }
   }
-
-  @Reducer
-  struct Counter {
-    @ObservableState
-    struct State: Equatable, TestDependencyKey {
-      static let testValue = Self()
-
-      @Presents var alert: AlertState<Action.Alert>?
-      var count = 0
-      var maxCount = 0
-      var minCount = 0
-      var numberOfCounts = 0
-    }
-
-    enum Action {
-      case alert(PresentationAction<Alert>)
-      case decrementButtonTapped
-      case incrementButtonTapped
-      case isPrimeButtonTapped
-
-      enum Alert: Equatable {}
-    }
-
-    var body: some Reducer<State, Action> {
-      Reduce { state, action in
-        switch action {
-        case .alert:
-          return .none
-
-        case .decrementButtonTapped:
-          state.count -= 1
-          state.numberOfCounts += 1
-          state.minCount = min(state.minCount, state.count)
-          return .none
-
-        case .incrementButtonTapped:
-          state.count += 1
-          state.numberOfCounts += 1
-          state.maxCount = max(state.maxCount, state.count)
-          return .none
-
-        case .isPrimeButtonTapped:
-          state.alert = AlertState {
-            TextState(
-              isPrime(state.count)
-                ? "👍 The number \(state.count) is prime!"
-                : "👎 The number \(state.count) is not prime :("
-            )
-          }
-          return .none
-        }
-      }
-      .ifLet(\.$alert, action: \.alert)
-    }
-  }
-
-  @Reducer
-  struct Profile {
-    @ObservableState
-    struct State: Equatable {
-      @ObservationStateIgnored
-      @Dependency(Shared<SharedState.Counter.State>.self) var counter
-
-//      // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
-//      //     this). We can remove when Xcode 15.1 is released and CI uses it.
-//      #if swift(<5.9.2)
-//        init(currentTab: Tab, count: Int = 0, maxCount: Int, minCount: Int, numberOfCounts: Int) {
-//          self.currentTab = currentTab
-//          self.count = count
-//          self.maxCount = maxCount
-//          self.minCount = minCount
-//          self.numberOfCounts = numberOfCounts
-//        }
-//      #endif
-
-      fileprivate mutating func resetCount() {
-        self.counter.value = Counter.State()
-      }
-    }
-
-    enum Action {
-      case resetCounterButtonTapped
-    }
-
-    var body: some Reducer<State, Action> {
-      Reduce { state, action in
-        switch action {
-        case .resetCounterButtonTapped:
-          state.resetCount()
-          return .none
-        }
-      }
-    }
-  }
 }
 
 // MARK: - Feature view
 
 struct SharedStateView: View {
-  @Bindable var store = Store(initialState: SharedState.State()) {
+  @State var store = Store(initialState: SharedState.State()) {
     SharedState()
-      ._printChanges()
-  } withDependencies: {
-    $0[Shared<SharedState.Counter.State>.self] = Shared(SharedState.Counter.State())
   }
 
   var body: some View {
-    VStack {
-      Picker("Tab", selection: $store.currentTab.sending(\.selectTab)) {
-        Text("Counter")
-          .tag(SharedState.Tab.counter)
-
-        Text("Profile")
-          .tag(SharedState.Tab.profile)
-      }
-      .pickerStyle(.segmented)
-
-      switch store.currentTab {
-      case .counter:
-        SharedStateCounterView(
-          store: store.scope(state: \.counter.value, action: \.counter)
-        )
-
-      case .profile:
-        SharedStateProfileView(
-          store: store.scope(state: \.profile, action: \.profile)
+    TabView(selection: $store.currentTab.sending(\.selectTab)) {
+      NavigationStack {
+        CounterTabView(
+          store: self.store.scope(state: \.counter, action: \.counter)
         )
       }
+      .tag(SharedState.Tab.counter)
+      .tabItem { Text("Counter") }
 
-      Spacer()
+      NavigationStack {
+        ProfileTabView(
+          store: self.store.scope(state: \.profile, action: \.profile)
+        )
+      }
+      .tag(SharedState.Tab.profile)
+      .tabItem { Text("Profile") }
     }
-    .padding()
   }
 }
 
-struct SharedStateCounterView: View {
-  @Bindable var store: StoreOf<SharedState.Counter>
+@Reducer
+struct CounterTab {
+  @ObservableState
+  struct State: Equatable {
+    @Presents var alert: AlertState<Action.Alert>?
+    @Shared var stats: Stats
+  }
+
+  enum Action {
+    case alert(PresentationAction<Alert>)
+    case decrementButtonTapped
+    case incrementButtonTapped
+    case isPrimeButtonTapped
+
+    enum Alert: Equatable {}
+  }
+
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .alert:
+        return .none
+
+      case .decrementButtonTapped:
+        state.stats.decrement()
+        return .none
+
+      case .incrementButtonTapped:
+        state.stats.increment()
+        return .none
+
+      case .isPrimeButtonTapped:
+        state.alert = AlertState {
+          TextState(
+            isPrime(state.stats.count)
+            ? "👍 The number \(state.stats.count) is prime!"
+            : "👎 The number \(state.stats.count) is not prime :("
+          )
+        }
+        return .none
+      }
+    }
+    .ifLet(\.$alert, action: \.alert)
+  }
+}
+
+struct CounterTabView: View {
+  @Bindable var store: StoreOf<CounterTab>
 
   var body: some View {
-    VStack(spacing: 64) {
+    Form {
       Text(template: readMe, .caption)
 
       VStack(spacing: 16) {
@@ -209,7 +143,7 @@ struct SharedStateCounterView: View {
             Image(systemName: "minus")
           }
 
-          Text("\(store.count)")
+          Text("\(store.stats.count)")
             .monospacedDigit()
 
           Button {
@@ -222,39 +156,91 @@ struct SharedStateCounterView: View {
         Button("Is this prime?") { store.send(.isPrimeButtonTapped) }
       }
     }
-    .padding(.top)
+    .buttonStyle(.borderless)
     .navigationTitle("Shared State Demo")
     .alert($store.scope(state: \.alert, action: \.alert))
   }
 }
 
-struct SharedStateProfileView: View {
-  let store: StoreOf<SharedState.Profile>
+@Reducer
+struct ProfileTab {
+  @ObservableState
+  struct State: Equatable {
+    @Shared var stats: Stats
+
+    fileprivate mutating func resetCount() {
+      self.stats = Stats()
+    }
+  }
+
+  enum Action {
+    case resetStatsButtonTapped
+  }
+
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .resetStatsButtonTapped:
+        state.resetCount()
+        return .none
+      }
+    }
+  }
+}
+
+struct ProfileTabView: View {
+  let store: StoreOf<ProfileTab>
 
   var body: some View {
-    VStack(spacing: 64) {
+    Form {
       Text(
         template: """
-          This tab shows state from the previous tab, and it is capable of reseting all of the \
-          state back to 0.
+            This tab shows state from the previous tab, and it is capable of reseting all of the \
+            state back to 0.
 
-          This shows that it is possible for each screen to model its state in the way that makes \
-          the most sense for it, while still allowing the state and mutations to be shared \
-          across independent screens.
-          """,
+            This shows that it is possible for each screen to model its state in the way that makes \
+            the most sense for it, while still allowing the state and mutations to be shared \
+            across independent screens.
+            """,
         .caption
       )
 
       VStack(spacing: 16) {
-        Text("Current count: \(store.counter.count)")
-        Text("Max count: \(store.counter.maxCount)")
-        Text("Min count: \(store.counter.minCount)")
-        Text("Total number of count events: \(store.counter.numberOfCounts)")
-        Button("Reset") { store.send(.resetCounterButtonTapped) }
+        Text("Current count: \(store.stats.count)")
+        Text("Max count: \(store.stats.maxCount)")
+        Text("Min count: \(store.stats.minCount)")
+        Text("Total number of count events: \(store.stats.numberOfCounts)")
+        Button("Reset") { store.send(.resetStatsButtonTapped) }
       }
     }
-    .padding(.top)
+    .buttonStyle(.borderless)
     .navigationTitle("Profile")
+  }
+}
+
+struct Stats: Equatable {
+  private(set) var count = 0
+  private(set) var maxCount = 0
+  private(set) var minCount = 0
+  private(set) var numberOfCounts = 0
+  mutating func increment() {
+    count += 1
+    numberOfCounts += 1
+    maxCount = max(minCount, count)
+  }
+  mutating func decrement() {
+    count -= 1
+    numberOfCounts += 1
+    minCount = min(minCount, count)
+  }
+}
+
+extension Stats: DependencyKey {
+  static var liveValue: Self {
+    Self()
+  }
+  static var testValue: Self {
+    Self()
   }
 }
 
@@ -262,11 +248,7 @@ struct SharedStateProfileView: View {
 
 struct SharedState_Previews: PreviewProvider {
   static var previews: some View {
-    SharedStateView(
-      store: Store(initialState: SharedState.State()) {
-        SharedState()
-      }
-    )
+    SharedStateView()
   }
 }
 
@@ -280,4 +262,11 @@ private func isPrime(_ p: Int) -> Bool {
     if p % i == 0 { return false }
   }
   return true
+}
+
+extension DependencyValues {
+  subscript<Key>(shared _: Key.Type) -> Key {
+    get { self[Shared<Key>.self].value }
+    set { self[Shared<Key>.self] = Shared(newValue) }
+  }
 }

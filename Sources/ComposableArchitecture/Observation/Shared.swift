@@ -29,14 +29,28 @@ extension Shared: Hashable {
     hasher.combine(ObjectIdentifier(self))
   }
 }
-extension Shared: TestDependencyKey where Value: TestDependencyKey {
-  public static var testValue: Shared<Value.Value> {
-    Shared<Value.Value>(Value.testValue)
+extension Shared: TestDependencyKey {
+  public static var testValue: Shared<Value> {
+    func open<T: TestDependencyKey>(_: T.Type) -> Value? {
+      T.testValue as? Value
+    }
+    guard
+      let key = Value.self as? any TestDependencyKey.Type,
+      let value = open(key)
+    else { fatalError() }
+    return Shared(value)
   }
 }
-extension Shared: DependencyKey where Value: DependencyKey {
-  public static var liveValue: Shared<Value.Value> {
-    Shared<Value.Value>(Value.liveValue)
+extension Shared: DependencyKey {
+  public static var liveValue: Shared<Value> {
+    func open<T: DependencyKey>(_: T.Type) -> Value? {
+      T.liveValue as? Value
+    }
+    guard
+      let key = Value.self as? any DependencyKey.Type,
+      let value = open(key)
+    else { fatalError() }
+    return Shared(value)
   }
 }
 // TODO: try reference identity

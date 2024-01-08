@@ -180,6 +180,12 @@
   public macro Presents() =
     #externalMacro(module: "ComposableArchitectureMacros", type: "PresentsMacro")
 
+  // TODO: Should this be `@Shares`?
+  @attached(accessor, names: named(get), named(set))
+  @attached(peer, names: prefixed(_))
+  public macro Shared() =
+    #externalMacro(module: "ComposableArchitectureMacros", type: "SharedMacro")
+
   /// Provides a view with access to a feature's ``ViewAction``s.
   ///
   /// If you want to restrict what actions can be sent from the view you can use this macro along
