@@ -52,7 +52,7 @@ jobs:
       - name: Select Xcode 14.1
         run: sudo xcode-select -s /Applications/Xcode_14.1.app
       - name: Build ${{ matrix.config }}
-        run: swift -c ${{ matrix.config }} build
+        run: swift build -c ${{ matrix.config }}
 
   benchmarks:
     name: Benchmarks
