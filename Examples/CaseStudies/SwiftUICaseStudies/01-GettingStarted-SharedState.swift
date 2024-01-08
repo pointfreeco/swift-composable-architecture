@@ -17,7 +17,7 @@ private let readMe = """
 // MARK: - Feature domain
 
 @Reducer
-private struct SharedState {
+struct SharedState {
   enum Tab { case counter, profile }
 
   @ObservableState
@@ -63,7 +63,7 @@ private struct SharedState {
 // MARK: - Feature view
 
 struct SharedStateView: View {
-  @State private var store = Store(initialState: SharedState.State()) {
+  @State var store = Store(initialState: SharedState.State()) {
     SharedState()
   }
 
@@ -89,7 +89,7 @@ struct SharedStateView: View {
 }
 
 @Reducer
-private struct CounterTab {
+struct CounterTab {
   @ObservableState
   struct State: Equatable {
     @Presents var alert: AlertState<Action.Alert>?
@@ -134,7 +134,7 @@ private struct CounterTab {
   }
 }
 
-private struct CounterTabView: View {
+struct CounterTabView: View {
   @Bindable var store: StoreOf<CounterTab>
 
   var body: some View {
@@ -169,7 +169,7 @@ private struct CounterTabView: View {
 }
 
 @Reducer
-private struct ProfileTab {
+struct ProfileTab {
   @ObservableState
   struct State: Equatable {
     var stats = Stats()
@@ -194,7 +194,7 @@ private struct ProfileTab {
   }
 }
 
-private struct ProfileTabView: View {
+struct ProfileTabView: View {
   let store: StoreOf<ProfileTab>
 
   var body: some View {
@@ -224,7 +224,7 @@ private struct ProfileTabView: View {
   }
 }
 
-private struct Stats: Equatable {
+struct Stats: Equatable {
   private(set) var count = 0
   private(set) var maxCount = 0
   private(set) var minCount = 0
