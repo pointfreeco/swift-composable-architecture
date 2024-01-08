@@ -9,7 +9,7 @@ final class CounterFeatureTests: XCTestCase {
     } withDependencies: {
       $0.numberFact.fetch = { "\($0) is a good number." }
     }
-
+    
     await store.send(.factButtonTapped) {
       $0.isLoading = true
     }

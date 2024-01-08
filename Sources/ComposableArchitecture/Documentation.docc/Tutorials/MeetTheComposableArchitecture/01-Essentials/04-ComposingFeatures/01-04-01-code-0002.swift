@@ -7,7 +7,7 @@ struct AppView: View {
         .tabItem {
           Text("Counter 1")
         }
-
+      
       CounterView(store: ???)
         .tabItem {
           Text("Counter 2")

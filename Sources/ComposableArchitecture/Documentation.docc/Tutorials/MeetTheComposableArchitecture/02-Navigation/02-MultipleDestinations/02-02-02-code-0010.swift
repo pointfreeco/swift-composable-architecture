@@ -22,18 +22,18 @@ struct ContactsFeature {
           )
         )
         return .none
-
+        
       case let .destination(.presented(.addContact(.delegate(.saveContact(contact))))):
         state.contacts.append(contact)
         return .none
-
+        
       case let .alert(.presented(.confirmDeletion(id: id))):
         state.contacts.remove(id: id)
         return .none
-
+        
       case .alert:
         return .none
-
+        
       case let .deleteButtonTapped(id: id):
         state.alert = AlertState {
           TextState("Are you sure?")

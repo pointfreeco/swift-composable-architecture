@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AddContactView: View {
   let store: StoreOf<AddContactFeature>
-
+  
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
       Form {
