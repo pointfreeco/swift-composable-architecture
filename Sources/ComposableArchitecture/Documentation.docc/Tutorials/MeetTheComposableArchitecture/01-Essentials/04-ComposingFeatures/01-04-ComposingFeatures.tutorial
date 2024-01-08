@@ -187,7 +187,7 @@
       @Step {
         Replace the two individual store properties with a single store of the `AppFeature` domain.
         
-        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0001.swift, previousFile: 01-04-03-code-0001-previous.swift)
+        @Code(name: "AppFeature.swift", file: 01-04-03-code-0001.swift, previousFile: 01-04-03-code-0001-previous.swift)
       }
       
       @Step {
@@ -196,13 +196,13 @@
         domain. This is done by using key path syntax to single out the field of the state and
         the case of the action enum.
         
-        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0002.swift)
+        @Code(name: "AppFeature.swift", file: 01-04-03-code-0002.swift)
       }
       
       @Step {
         And do the same for the second tab.
         
-        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0003.swift)
+        @Code(name: "AppFeature.swift", file: 01-04-03-code-0003.swift)
       }
       
       That is all it takes. We now have a single ``ComposableArchitecture/Store`` powering this 
@@ -212,7 +212,7 @@
       @Step {
         Create a preview for `AppView` by initializing a store with the `AppFeature` domain.
         
-        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0004.swift)
+        @Code(name: "AppFeature.swift", file: 01-04-03-code-0004.swift)
       }
       
       We can also run the feature in the simulator by updating the entry point of the app to be
