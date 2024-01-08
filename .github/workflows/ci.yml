@@ -39,6 +39,21 @@ jobs:
       - name: Build for library evolution
         run: make build-for-library-evolution
 
+  library-compatibility:
+    name: Library (Swift 5.7.1)
+    runs-on: macos-12
+    strategy:
+      matrix:
+        config:
+          - debug
+          - release
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 14.1
+        run: sudo xcode-select -s /Applications/Xcode_14.1.app
+      - name: Build ${{ matrix.config }}
+        run: swift build -c ${{ matrix.config }}
+
   benchmarks:
     name: Benchmarks
     runs-on: macos-13
