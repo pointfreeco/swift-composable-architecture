@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ContactsView: View {
   let store: StoreOf<ContactsFeature>
-
+  
   var body: some View {
     NavigationStack {
       WithViewStore(self.store, observe: \.contacts) { viewStore in

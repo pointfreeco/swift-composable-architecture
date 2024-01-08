@@ -22,14 +22,14 @@ struct ContactsFeature {
           contact: Contact(id: UUID(), name: "")
         )
         return .none
-
+        
       case let .addContact(.presented(.delegate(.saveContact(contact)))):
         state.contacts.append(contact)
         return .none
-
+        
       case .addContact:
         return .none
-
+        
       case let .deleteButtonTapped(id: id):
         return .none
       }

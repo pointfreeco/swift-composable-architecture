@@ -16,16 +16,16 @@ struct ContactsFeature {
           contact: Contact(id: UUID(), name: "")
         )
         return .none
-
+        
       // case .addContact(.presented(.delegate(.cancel))):
       //   state.addContact = nil
       //   return .none
-
+        
       case let .addContact(.presented(.delegate(.saveContact(contact)))):
         state.contacts.append(contact)
         // state.addContact = nil
         return .none
-
+        
       case .addContact:
         return .none
       }
