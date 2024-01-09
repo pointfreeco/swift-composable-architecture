@@ -263,10 +263,3 @@ private func isPrime(_ p: Int) -> Bool {
   }
   return true
 }
-
-extension DependencyValues {
-  subscript<Key>(shared _: Key.Type) -> Key {
-    get { self[Shared<Key>.self].value }
-    set { self[Shared<Key>.self] = Shared(newValue) }
-  }
-}

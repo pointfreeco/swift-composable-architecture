@@ -1,93 +1,43 @@
+import Foundation
 import Perception
 
-protocol SharedProtocol: AnyObject {
-  var didAssert: Bool { get set }
-}
-enum SharedLocal {
-  @TaskLocal static var didSet: ((any SharedProtocol) -> Void)?
-}
-
-// TODO: Should we force Value: TestDependencyKey so that we don't get crashes and just
-//       get runtime warnings/test failures?
-// TODO: make unchecked sendable with a lock
-// TODO: Other names: Shared, ObservableRef,
 @dynamicMemberLookup
 @Perceptible
-public final class Shared<Value>: SharedProtocol {
-  var didAssert = false
-  public func assert(
-    _ check: (inout Value) -> Void,
-    file: StaticString = #file,
-    line: UInt = #line
-  ) where Value: Equatable {
-    var previous = self.snapshot
-    check(&previous)
-    XCTAssertNoDifference(previous, self.value, file: file, line: line)
-    self.didAssert = true
-  }
-
-  deinit {
-    print("!!!")
-  }
+public final class Shared<Value> {
+  private var _value: Value
+  private let lock = NSRecursiveLock()
 
   public var value: Value {
-    didSet {
-      if let didSet = SharedLocal.didSet {
-        didSet(self)
-      } else {
-        snapshot = value
-      }
-    }
+    get { self.lock.sync { self._value } }
+    set { self.lock.sync { self._value = newValue } }
   }
-  var snapshot: Value
 
   public init(_ value: Value) {
-    self.value = value
-    self.snapshot = value
+    self._value = value
   }
-  public subscript<T>(dynamicMember keyPath: WritableKeyPath<Value, T>) -> T {
+  
+  public subscript<Member>(dynamicMember keyPath: WritableKeyPath<Value, Member>) -> Member {
     get { self.value[keyPath: keyPath] }
     set { self.value[keyPath: keyPath] = newValue }
   }
-  public func copy() -> Shared<Value> {
-    Shared(self.value)
-  }
 }
+
+// TODO: Should these be conditional conformances?
+
 extension Shared: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
     lhs === rhs
   }
 }
+
 extension Shared: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(ObjectIdentifier(self))
   }
 }
-extension Shared: TestDependencyKey {
-  public static var testValue: Shared<Value> {
-    func open<T: TestDependencyKey>(_: T.Type) -> Value? {
-      T.testValue as? Value
-    }
-    guard
-      let key = Value.self as? any TestDependencyKey.Type,
-      let value = open(key)
-    else { fatalError() }
-    return Shared(value)
-  }
-}
-extension Shared: DependencyKey {
-  public static var liveValue: Shared<Value> {
-    func open<T: DependencyKey>(_: T.Type) -> Value? {
-      T.liveValue as? Value
-    }
-    guard
-      let key = Value.self as? any DependencyKey.Type,
-      let value = open(key)
-    else { fatalError() }
-    return Shared(value)
-  }
-}
-// TODO: try reference identity
+
+// TODO: Should this be conditional conformance?
+
 extension Shared: Identifiable {
   public var id: ObjectIdentifier {
     ObjectIdentifier(self)
@@ -113,31 +63,55 @@ extension Shared: Encodable where Value: Encodable {
   }
 }
 
-@propertyWrapper
-public struct SharedDependency<Value> {
-  private var dependency = Dependency(Shared<Value>.self)
 
-  public var wrappedValue: Value {
+extension Shared: @unchecked Sendable where Value: Sendable {}
+
+extension Shared: TestDependencyKey where Value: TestDependencyKey {
+  public static var testValue: Shared<Value.Value> {
+    Shared<Value.Value>(Value.testValue)
+  }
+}
+extension Shared: DependencyKey where Value: DependencyKey {
+  public static var liveValue: Shared<Value.Value> {
+    Shared<Value.Value>(Value.liveValue)
+  }
+}
+
+extension DependencyValues {
+  public subscript<Key: TestDependencyKey>(shared _: Key.Type) -> Key.Value {
+    get { self[Shared<Key>.self].value }
+    set { self[Shared<Key>.self] = Shared(newValue) }
+  }
+}
+
+@propertyWrapper
+public struct SharedDependency<Key: TestDependencyKey> where Key.Value == Key {
+  private let dependency = Dependency(Shared<Key>.self)
+
+  public var wrappedValue: Key.Value {
     get { dependency.wrappedValue.value }
     set { dependency.wrappedValue.value = newValue }
   }
 
-  public var projectedValue: Shared<Value> {
+  public var projectedValue: Shared<Key.Value> {
     dependency.wrappedValue
   }
 
   public init() {}
 }
-extension SharedDependency: Equatable where Value: Equatable {
+
+extension SharedDependency: Equatable where Key.Value: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.wrappedValue == rhs.wrappedValue
   }
 }
-extension SharedDependency: Hashable where Value: Hashable {
+
+extension SharedDependency: Hashable where Key.Value: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(self.wrappedValue)
   }
 }
+
 extension SharedDependency: CustomDumpReflectable {
   public var customDumpMirror: Mirror {
     Mirror(reflecting: self.wrappedValue)

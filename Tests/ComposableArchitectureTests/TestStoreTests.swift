@@ -563,22 +563,6 @@ final class TestStoreTests: BaseTCATestCase {
       await store.receive(\.delegate.success, 43)
     }
   #endif
-
-  func testSharedState() async {
-    let store = TestStore(initialState: SharedFeature.State()) {
-      SharedFeature()
-    }
-
-    await store.send(.increment) {
-      $0.stats.assert {
-        $0.count = 1
-      }
-    }
-    await store.send(.tap)
-    store.state.stats.assert {
-      $0.count = 2
-    }
-  }
 }
 
 private struct Client: DependencyKey {
@@ -600,31 +584,4 @@ private enum Action {
   enum Delegate {
     case success(Int)
   }
-}
-
-@Reducer
-private struct SharedFeature {
-  struct State: Equatable {
-    let stats = Shared(Stats())
-  }
-  enum Action {
-    case increment
-    case tap
-  }
-  var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
-      case .increment:
-        state.stats.count += 1
-        return .none
-      case .tap:
-        return .run { [stats = state.stats] _ in
-          stats.count += 1
-        }
-      }
-    }
-  }
-}
-struct Stats: Equatable {
-  var count = 0
 }
