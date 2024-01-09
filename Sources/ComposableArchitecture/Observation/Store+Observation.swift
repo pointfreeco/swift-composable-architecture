@@ -156,13 +156,13 @@ extension Binding {
   ) -> Binding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
     #if DEBUG
-      let isInViewBody = PerceptionLocals.isInPerceptionTracking
+      let isInViewBody = _PerceptionLocals.isInPerceptionTracking
     #endif
     return Binding<Store<ChildState, ChildAction>?>(
       get: {
         #if DEBUG
           // TODO: Can this be localized to the `Perception` framework?
-          PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+          _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
             self.wrappedValue.scope(state: state, action: action.appending(path: \.presented))
           }
         #else
