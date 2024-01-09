@@ -36,4 +36,16 @@ final class SharedStateTests: XCTestCase {
       $0.profile.stats = Stats()
     }
   }
+
+  func testAlert() async {
+    let store = TestStore(initialState: SharedState.State()) {
+      SharedState()
+    }
+
+    await store.send(.counter(.isPrimeButtonTapped)) {
+      $0.counter.alert = AlertState {
+        TextState("👎 The number 0 is not prime :(")
+      }
+    }
+  }
 }
