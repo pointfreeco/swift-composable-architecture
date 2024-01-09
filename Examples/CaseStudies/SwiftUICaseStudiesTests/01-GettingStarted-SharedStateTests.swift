@@ -19,8 +19,7 @@ final class SharedStateTests: XCTestCase {
   }
 
   func testSharedCounts() async {
-    @Shared var stats: Stats
-    stats = Stats()
+    @Shares var stats: Stats
 
     let store = TestStore(initialState: SharedState.State()) {
       SharedState()

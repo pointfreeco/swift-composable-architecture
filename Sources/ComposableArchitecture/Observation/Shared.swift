@@ -76,3 +76,17 @@ extension Shared: Codable where Value: Codable {
     }
   }
 }
+
+@propertyWrapper
+public struct Shares<Value> {
+  private let _dependency = Dependency(Shared<Value>.self)
+
+  public var wrappedValue: Value {
+    get { _dependency.wrappedValue.value }
+    set { _dependency.wrappedValue.value = newValue }
+  }
+
+  public init() {}
+}
+extension Shares: Equatable where Value: Equatable {}
+extension Shares: Hashable where Value: Hashable {}

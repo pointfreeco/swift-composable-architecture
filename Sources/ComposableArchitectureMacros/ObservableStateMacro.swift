@@ -46,7 +46,7 @@ public struct ObservableStateMacro {
   static let ignoredMacroName = "ObservationStateIgnored"
   static let presentsMacroName = "Presents"
   static let presentationStatePropertyWrapperName = "PresentationState"
-  static let sharedMacroName = "Shared"
+  static let sharedMacroName = "Shares"
 
   static let registrarVariableName = "_$observationRegistrar"
 
