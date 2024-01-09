@@ -113,6 +113,10 @@ extension Shared: Encodable where Value: Encodable {
   }
 }
 
+// TODO: Better name? `@SharedState`? `@SharedDependency`?
+// TODO: Move this and above to dependencies
+// TODO: 
+
 @propertyWrapper
 public struct Shares<Value> {
   private let _dependency = Dependency(Shared<Value>.self)

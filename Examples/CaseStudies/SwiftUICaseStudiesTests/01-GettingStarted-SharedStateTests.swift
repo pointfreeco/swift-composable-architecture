@@ -25,6 +25,12 @@ final class SharedStateTests: XCTestCase {
       SharedState()
     }
 
+    // let (oldState, newState) = SharedLocal.$cow.withValue(true) {
+    //   // return (oldState, newState)
+    // }
+    // run reducer
+    // 
+
     await store.send(.counter(.incrementButtonTapped))
     XCTAssertEqual(stats, Stats(count: 1, maxCount: 1, numberOfCounts: 1))
 
