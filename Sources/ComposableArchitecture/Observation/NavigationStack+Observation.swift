@@ -58,13 +58,13 @@ extension Binding {
   ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
   where Value == Store<State, Action> {
     #if DEBUG && canImport(Perception)
-      let isInViewBody = PerceptionLocals.isInPerceptionTracking
+      let isInViewBody = _PerceptionLocals.isInPerceptionTracking
     #endif
     return Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
       get: {
         #if DEBUG && canImport(Perception)
           // TODO: Can this be localized to the `Perception` framework?
-          PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+        _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
             self.wrappedValue.scope(state: state, action: action)
           }
         #else
