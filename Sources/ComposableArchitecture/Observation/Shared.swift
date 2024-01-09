@@ -59,7 +59,7 @@ extension Shared: Identifiable {
     ObjectIdentifier(self)
   }
 }
-extension Shared: Codable where Value: Codable {
+extension Shared: Decodable where Value: Decodable {
   public convenience init(from decoder: Decoder) throws {
     do {
       self.init(try decoder.singleValueContainer().decode(Value.self))
@@ -67,6 +67,8 @@ extension Shared: Codable where Value: Codable {
       self.init(try .init(from: decoder))
     }
   }
+}
+extension Shared: Encodable where Value: Encodable {
   public func encode(to encoder: Encoder) throws {
     do {
       var container = encoder.singleValueContainer()
@@ -84,6 +86,10 @@ public struct Shares<Value> {
   public var wrappedValue: Value {
     get { _dependency.wrappedValue.value }
     set { _dependency.wrappedValue.value = newValue }
+  }
+
+  public var projectedValue: Shared<Value> {
+    _dependency.wrappedValue
   }
 
   public init() {}
