@@ -1,12 +1,13 @@
 import ComposableArchitecture
 import XCTest
 
-class AppFeatureTests: XCTestCase {
-  func testIncrementInFirstTab() {
+@MainActor
+final class AppFeatureTests: XCTestCase {
+  func testIncrementInFirstTab() async {
     let store = TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
-
+    
     await store.send(.tab1(.incrementButtonTapped))
   }
 }

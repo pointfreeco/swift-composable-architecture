@@ -11,7 +11,7 @@ struct AppFeature {
     case tab2(CounterFeature.Action)
   }
   var body: some ReducerOf<Self> {
-    Reduce { state, action in 
+    Reduce { state, action in
       // Core logic of the app feature
       return .none
     }

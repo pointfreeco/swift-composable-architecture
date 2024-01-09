@@ -551,9 +551,12 @@ final class TestStoreTests: BaseTCATestCase {
         $0.compactDescription == """
           Received unexpected action: …
 
-            Action.delegate(
-              .success(42)
-            )
+              Action.delegate(
+            −   .success(43)
+            +   .success(42)
+              )
+
+          (Expected: −, Actual: +)
           """
       }
       await store.send(.tap)
