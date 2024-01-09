@@ -1,15 +1,49 @@
 import Perception
 
+protocol SharedProtocol: AnyObject {
+  var didAssert: Bool { get set }
+}
+enum SharedLocal {
+  @TaskLocal static var didSet: ((any SharedProtocol) -> Void)?
+}
+
 // TODO: Should we force Value: TestDependencyKey so that we don't get crashes and just
 //       get runtime warnings/test failures?
 // TODO: make unchecked sendable with a lock
 // TODO: Other names: Shared, ObservableRef,
 @dynamicMemberLookup
 @Perceptible
-public final class Shared<Value> {
-  public var value: Value
+public final class Shared<Value>: SharedProtocol {
+  var didAssert = false
+  public func assert(
+    _ check: (inout Value) -> Void,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) where Value: Equatable {
+    var previous = self.snapshot
+    check(&previous)
+    XCTAssertNoDifference(previous, self.value, file: file, line: line)
+    self.didAssert = true
+  }
+
+  deinit {
+    print("!!!)")
+  }
+
+  public var value: Value {
+    didSet {
+      if let didSet = SharedLocal.didSet {
+        didSet(self)
+      } else {
+        snapshot = value
+      }
+    }
+  }
+  var snapshot: Value
+
   public init(_ value: Value) {
     self.value = value
+    self.snapshot = value
   }
   public subscript<T>(dynamicMember keyPath: WritableKeyPath<Value, T>) -> T {
     get { self.value[keyPath: keyPath] }
