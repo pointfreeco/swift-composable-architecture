@@ -113,24 +113,33 @@ extension Shared: Encodable where Value: Encodable {
   }
 }
 
-// TODO: Better name? `@SharedState`? `@SharedDependency`?
-// TODO: Move this and above to dependencies
-// TODO: 
-
 @propertyWrapper
-public struct Shares<Value> {
-  private let _dependency = Dependency(Shared<Value>.self)
+public struct SharedDependency<Value> {
+  private var dependency = Dependency(Shared<Value>.self)
 
   public var wrappedValue: Value {
-    get { _dependency.wrappedValue.value }
-    set { _dependency.wrappedValue.value = newValue }
+    get { dependency.wrappedValue.value }
+    set { dependency.wrappedValue.value = newValue }
   }
 
   public var projectedValue: Shared<Value> {
-    _dependency.wrappedValue
+    dependency.wrappedValue
   }
 
   public init() {}
 }
-extension Shares: Equatable where Value: Equatable {}
-extension Shares: Hashable where Value: Hashable {}
+extension SharedDependency: Equatable where Value: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.wrappedValue == rhs.wrappedValue
+  }
+}
+extension SharedDependency: Hashable where Value: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.wrappedValue)
+  }
+}
+extension SharedDependency: CustomDumpReflectable {
+  public var customDumpMirror: Mirror {
+    Mirror(reflecting: self.wrappedValue)
+  }
+}

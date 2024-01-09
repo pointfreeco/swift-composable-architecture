@@ -19,17 +19,11 @@ final class SharedStateTests: XCTestCase {
   }
 
   func testSharedCounts() async {
-    @Shares var stats: Stats
+    @SharedDependency var stats: Stats
 
     let store = TestStore(initialState: SharedState.State()) {
       SharedState()
     }
-
-    // let (oldState, newState) = SharedLocal.$cow.withValue(true) {
-    //   // return (oldState, newState)
-    // }
-    // run reducer
-    // 
 
     await store.send(.counter(.incrementButtonTapped))
     XCTAssertEqual(stats, Stats(count: 1, maxCount: 1, numberOfCounts: 1))

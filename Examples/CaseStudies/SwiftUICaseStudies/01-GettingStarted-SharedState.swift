@@ -87,7 +87,7 @@ struct CounterTab {
   @ObservableState
   struct State: Equatable {
     @Presents var alert: AlertState<Action.Alert>?
-    @Shares var stats: Stats
+    @SharedDependency var stats: Stats
   }
 
   enum Action {
@@ -166,7 +166,7 @@ struct CounterTabView: View {
 struct ProfileTab {
   @ObservableState
   struct State: Equatable {
-    @Shares var stats: Stats
+    @SharedDependency var stats: Stats
 
     fileprivate mutating func resetCount() {
       self.stats = Stats()
