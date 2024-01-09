@@ -27,7 +27,7 @@ public final class Shared<Value>: SharedProtocol {
   }
 
   deinit {
-    print("!!!)")
+    print("!!!")
   }
 
   public var value: Value {

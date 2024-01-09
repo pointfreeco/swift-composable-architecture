@@ -575,9 +575,9 @@ final class TestStoreTests: BaseTCATestCase {
       }
     }
     await store.send(.tap)
-//    store.state.stats.assert {
-//      $0.count = 2
-//    }
+    store.state.stats.assert {
+      $0.count = 2
+    }
   }
 }
 
