@@ -21,15 +21,16 @@ public final class Shared<Value> {
     set {
       self.lock.sync {
         @Dependency(\.context) var context
+        @Dependency(\.sharedChangeTracker) var sharedChangeTracker
         guard context != .test else {
           if SharedLocals.isAsserting {
             self.previousValue = newValue
           } else {
-            if SharedLocals.changeTracker == nil {
+            if sharedChangeTracker == nil {
               self.previousValue = self.currentValue
             }
             self.currentValue = newValue
-            SharedLocals.changeTracker?.track(self)
+            sharedChangeTracker?.track(self)
           }
           return
         }
@@ -121,14 +122,28 @@ extension Shared: DependencyKey where Value: DependencyKey {
 }
 
 enum SharedLocals {
-  @TaskLocal static var changeTracker: ChangeTracker?
   @TaskLocal static var isAsserting = false
 }
 
-final class ChangeTracker {
-  private var changed: Set<ObjectIdentifier> = []
-  var hasChanges: Bool { !self.changed.isEmpty }
+final class SharedChangeTracker: @unchecked Sendable {
+  private var changed = LockIsolated<Set<ObjectIdentifier>>([])
+  var hasChanges: Bool { !self.changed.value.isEmpty }
   func track<T>(_ shared: Shared<T>) {
-    self.changed.insert(ObjectIdentifier(shared))
+    self.changed.withValue { _ = $0.insert(ObjectIdentifier(shared)) }
+  }
+  func reset() {
+    self.changed.withValue { $0.removeAll() }
+  }
+}
+
+struct SharedChangeTrackerKey: DependencyKey {
+  static let liveValue: SharedChangeTracker? = nil
+  static let testValue: SharedChangeTracker? = nil
+}
+
+extension DependencyValues {
+  var sharedChangeTracker: SharedChangeTracker? {
+    get { self[SharedChangeTrackerKey.self] }
+    set { self[SharedChangeTrackerKey.self] = newValue }
   }
 }

@@ -1,5 +1,5 @@
-import XCTest
 import ComposableArchitecture
+import XCTest
 
 @MainActor
 final class SharedTests: XCTestCase {
