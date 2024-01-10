@@ -72,8 +72,9 @@ final class SharedTests: XCTestCase {
     ) {
       SharedFeature()
     }
-    await store.send(.sharedIncrement) {
-      $0.sharedCount += 1
+    await store.send(.request)
+    await store.receive(\.sharedIncrement) {
+      $0.sharedCount = 1
     }
   }
 }
