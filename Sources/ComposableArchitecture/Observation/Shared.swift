@@ -20,10 +20,10 @@ public final class Shared<Value> {
     }
     set {
       self.lock.sync {
-        @Dependency(\.sharedChangeTracker) var sharedChangeTracker
         if SharedLocals.isAsserting {
           self.previousValue = newValue
         } else {
+          @Dependency(\.sharedChangeTracker) var sharedChangeTracker
           if sharedChangeTracker == nil {
             self.previousValue = self.currentValue
           }
