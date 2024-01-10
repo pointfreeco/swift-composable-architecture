@@ -28,8 +28,7 @@ final class SharedTests: XCTestCase {
   }
 
   func testMultiSharing() async {
-    @Shared var stats: Stats
-    _stats = .init(Stats())
+    @Shared(Stats()) var stats
 
     let store = TestStore(
       initialState: SharedFeature.State(
