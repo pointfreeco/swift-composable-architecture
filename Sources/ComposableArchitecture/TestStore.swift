@@ -855,7 +855,7 @@ extension TestStore where State: Equatable {
     line: UInt = #line
   ) async -> TestStoreTask {
     await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+      await SharedLocals.$changeTracker.withValue(ChangeTracker()) {
         if !self.reducer.receivedActions.isEmpty {
           var actions = ""
           customDump(self.reducer.receivedActions.map(\.action), to: &actions)
@@ -982,7 +982,7 @@ extension TestStore where State: Equatable {
     expected: State,
     actual: State,
     updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
-    skipUnnecessaryModifyFailure: Bool = SharedLocals.changeTracker?.isEmpty == false,
+    skipUnnecessaryModifyFailure: Bool = SharedLocals.changeTracker?.hasChanges == true,
     file: StaticString,
     line: UInt
   ) throws {
@@ -1247,7 +1247,7 @@ extension TestStore where State: Equatable, Action: Equatable {
     line: UInt = #line
   ) async {
     await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+      await SharedLocals.$changeTracker.withValue(ChangeTracker()) {
         guard !self.reducer.inFlightEffects.isEmpty
         else {
           _ = {
@@ -1442,7 +1442,7 @@ extension TestStore where State: Equatable {
     line: UInt = #line
   ) async {
     await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+      await SharedLocals.$changeTracker.withValue(ChangeTracker()) {
         guard !self.reducer.inFlightEffects.isEmpty
         else {
           _ = {
@@ -1544,7 +1544,7 @@ extension TestStore where State: Equatable {
   where Action: CasePathable {
     let actionCase = AnyCasePath(actionCase)
     await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+      await SharedLocals.$changeTracker.withValue(ChangeTracker()) {
         guard !self.reducer.inFlightEffects.isEmpty
         else {
           _ = {
@@ -1604,7 +1604,7 @@ extension TestStore where State: Equatable {
     line: UInt = #line
   ) async {
     await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+      await SharedLocals.$changeTracker.withValue(ChangeTracker()) {
         guard !self.reducer.inFlightEffects.isEmpty
         else {
           _ = {
@@ -1765,7 +1765,7 @@ extension TestStore where State: Equatable {
       line: UInt = #line
     ) async {
       await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-        await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+        await SharedLocals.$changeTracker.withValue(ChangeTracker()) {
           guard !self.reducer.inFlightEffects.isEmpty
           else {
             _ = {

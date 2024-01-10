@@ -29,18 +29,7 @@ public final class Shared<Value> {
               self.previousValue = self.currentValue
             }
             self.currentValue = newValue
-            SharedLocals.changeTracker?.onDeinit(id: self) { file, line in
-              func open<T: Equatable>(_: T.Type) {
-                guard
-                  let currentValue = self.currentValue as? T,
-                  let previousValue = self.previousValue as? T
-                else { return }
-                //                XCTAssertNoDifference(currentValue, previousValue, file: file, line: line)
-              }
-              if let type = Value.self as? any Equatable.Type {
-                open(type)
-              }
-            }
+            SharedLocals.changeTracker?.track(self)
           }
           return
         }
@@ -141,19 +130,9 @@ enum SharedLocals {
 }
 
 final class ChangeTracker {
-  private let file: StaticString
-  private let line: UInt
-  private var onDeinit: [ObjectIdentifier: (_ file: StaticString, _ line: UInt) -> Void] = [:]
-  var isEmpty: Bool { self.onDeinit.isEmpty }
-  init(file: StaticString, line: UInt) {
-    self.file = file
-    self.line = line
-  }
-  deinit { self.onDeinit.values.forEach { $0(self.file, self.line) } }
-  func onDeinit<T: AnyObject>(
-    id: T,
-    operation: @escaping (_ file: StaticString, _ line: UInt) -> Void
-  ) {
-    self.onDeinit[ObjectIdentifier(id)] = operation
+  private var changed: Set<ObjectIdentifier> = []
+  var hasChanges: Bool { !changed.isEmpty }
+  func track<T>(_ shared: Shared<T>) {
+    changed.insert(ObjectIdentifier(shared))
   }
 }

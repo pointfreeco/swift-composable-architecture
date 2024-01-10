@@ -33,8 +33,8 @@ final class SharedTests: XCTestCase {
 
     let store = TestStore(
       initialState: SharedFeature.State(
-        profile: .init(Profile(stats: $stats)),
-        sharedCount: .init(0),
+        profile: Shared(Profile(stats: $stats)),
+        sharedCount: Shared(0),
         stats: $stats
       )
     ) {
@@ -50,9 +50,9 @@ final class SharedTests: XCTestCase {
   func testIncrementalMutation() async {
     let store = TestStore(
       initialState: SharedFeature.State(
-        profile: .init(Profile(stats: .init(Stats()))),
-        sharedCount: .init(0),
-        stats: .init(Stats())
+        profile: Shared(Profile(stats: Shared(Stats()))),
+        sharedCount: Shared(0),
+        stats: Shared(Stats())
       )
     ) {
       SharedFeature()
@@ -65,9 +65,9 @@ final class SharedTests: XCTestCase {
   func testEffect() async {
     let store = TestStore(
       initialState: SharedFeature.State(
-        profile: .init(Profile(stats: .init(Stats()))),
-        sharedCount: .init(0),
-        stats: .init(Stats())
+        profile: Shared(Profile(stats: Shared(Stats()))),
+        sharedCount: Shared(0),
+        stats: Shared(Stats())
       )
     ) {
       SharedFeature()
