@@ -855,10 +855,11 @@ extension TestStore where State: Equatable {
     line: UInt = #line
   ) async -> TestStoreTask {
     await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      if !self.reducer.receivedActions.isEmpty {
-        var actions = ""
-        customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-        XCTFailHelper(
+      await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+        if !self.reducer.receivedActions.isEmpty {
+          var actions = ""
+          customDump(self.reducer.receivedActions.map(\.action), to: &actions)
+          XCTFailHelper(
           """
           Must handle \(self.reducer.receivedActions.count) received \
           action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
@@ -867,59 +868,62 @@ extension TestStore where State: Equatable {
           """,
           file: file,
           line: line
-        )
-      }
+          )
+        }
 
-      switch self.exhaustivity {
-      case .on:
-        break
-      case .off(showSkippedAssertions: true):
-        await self.skipReceivedActions(strict: false)
-      case .off(showSkippedAssertions: false):
-        self.reducer.receivedActions = []
-      }
-
-      let expectedState = self.state
-      let previousState = self.reducer.state
-      let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
-      let task = self.store.send(
-        .init(origin: .send(action), file: file, line: line),
-        originatingFrom: nil
-      )
-      if uncheckedUseMainSerialExecutor {
-        await Task.yield()
-      } else {
-        for await _ in self.reducer.effectDidSubscribe.stream {
+        switch self.exhaustivity {
+        case .on:
           break
-        }
-      }
-      do {
-        let currentState = self.state
-        let currentStackElementID = self.reducer.dependencies.stackElementID
-        self.reducer.state = previousState
-        self.reducer.dependencies.stackElementID = previousStackElementID
-        defer {
-          self.reducer.state = currentState
-          self.reducer.dependencies.stackElementID = currentStackElementID
+        case .off(showSkippedAssertions: true):
+          await self.skipReceivedActions(strict: false)
+        case .off(showSkippedAssertions: false):
+          self.reducer.receivedActions = []
         }
 
-        try self.expectedStateShouldMatch(
-          expected: expectedState,
-          actual: currentState,
-          updateStateToExpectedResult: updateStateToExpectedResult,
-          file: file,
-          line: line
+        let expectedState = self.state
+        let previousState = self.reducer.state
+        let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
+        let task = self.store.send(
+          .init(origin: .send(action), file: file, line: line),
+          originatingFrom: nil
         )
-      } catch {
-        XCTFail("Threw error: \(error)", file: file, line: line)
+        if uncheckedUseMainSerialExecutor {
+          await Task.yield()
+        } else {
+          for await _ in self.reducer.effectDidSubscribe.stream {
+            break
+          }
+        }
+        do {
+          let currentState = self.state
+          let currentStackElementID = self.reducer.dependencies.stackElementID
+          self.reducer.state = previousState
+          self.reducer.dependencies.stackElementID = previousStackElementID
+          defer {
+            self.reducer.state = currentState
+            self.reducer.dependencies.stackElementID = currentStackElementID
+          }
+
+          try SharedLocals.$isAsserting.withValue(true) {
+            try self.expectedStateShouldMatch(
+              expected: expectedState,
+              actual: currentState,
+              updateStateToExpectedResult: updateStateToExpectedResult,
+              file: file,
+              line: line
+            )
+          }
+        } catch {
+          XCTFail("Threw error: \(error)", file: file, line: line)
+        }
+        if "\(self.file)" == "\(file)" {
+          self.line = line
+        }
+        // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
+        //     instrument their effects.
+        await Task.megaYield(count: 20)
+        return .init(rawValue: task, timeout: self.timeout)
       }
-      if "\(self.file)" == "\(file)" {
-        self.line = line
-      }
-      // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
-      //     instrument their effects.
-      await Task.megaYield(count: 20)
-      return .init(rawValue: task, timeout: self.timeout)
     }
   }
 
@@ -980,7 +984,7 @@ extension TestStore where State: Equatable {
     expected: State,
     actual: State,
     updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
-    skipUnnecessaryModifyFailure: Bool = false,
+    skipUnnecessaryModifyFailure: Bool = SharedLocals.changeTracker?.isEmpty == false,
     file: StaticString,
     line: UInt
   ) throws {
