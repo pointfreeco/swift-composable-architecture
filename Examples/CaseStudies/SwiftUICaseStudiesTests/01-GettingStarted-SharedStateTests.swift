@@ -25,13 +25,16 @@ final class SharedStateTests: XCTestCase {
       SharedState()
     }
 
-    await store.send(.counter(.incrementButtonTapped))
-    XCTAssertEqual(stats, Stats(count: 1, maxCount: 1, numberOfCounts: 1))
+    await store.send(.counter(.incrementButtonTapped)) { _ in
+      stats.increment()
+    }
 
-    await store.send(.counter(.decrementButtonTapped))
-    XCTAssertEqual(stats, Stats(count: 0, maxCount: 1, numberOfCounts: 2))
+    await store.send(.counter(.decrementButtonTapped)) { _ in
+      stats.decrement()
+    }
 
-    await store.send(.profile(.resetStatsButtonTapped))
-    XCTAssertEqual(stats, Stats())
+    await store.send(.profile(.resetStatsButtonTapped)) { _ in
+      stats = Stats()
+    }
   }
 }
