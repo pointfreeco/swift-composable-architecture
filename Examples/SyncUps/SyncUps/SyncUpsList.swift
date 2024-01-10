@@ -6,7 +6,7 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    var syncUps: IdentifiedArrayOf<Shared<SyncUp>> = []
+    var syncUps: IdentifiedArrayOf<Shared2<SyncUp>> = []
 
     init(
       destination: Destination.State? = nil
@@ -62,13 +62,17 @@ struct SyncUpsList {
     Reduce { state, action in
       switch action {
       case .addSyncUpButtonTapped:
-        state.destination = .add(SyncUpForm.State(syncUp: Shared(SyncUp(id: SyncUp.ID(self.uuid())))))
+        state.destination = .add(
+          SyncUpForm.State(
+            syncUp: SyncUp(id: SyncUp.ID(self.uuid()))
+          )
+        )
         return .none
 
       case .confirmAddSyncUpButtonTapped:
         guard case let .some(.add(editState)) = state.destination
         else { return .none }
-        let syncUp = editState.syncUp
+        let syncUp = editState.$syncUp
         syncUp.attendees.removeAll { attendee in
           attendee.name.allSatisfy(\.isWhitespace)
         }
@@ -84,9 +88,9 @@ struct SyncUpsList {
 
       case .destination(.presented(.alert(.confirmLoadMockData))):
         state.syncUps = [
-          Shared(.mock),
-          Shared(.designMock),
-          Shared(.engineeringMock),
+          Shared2(.mock),
+          Shared2(.designMock),
+          Shared2(.engineeringMock),
         ]
         return .none
 
@@ -117,7 +121,7 @@ struct SyncUpsListView: View {
         NavigationLink(
           state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
         ) {
-          CardView(syncUp: syncUp.value)
+          CardView(syncUp: syncUp.wrappedValue)
         }
         .listRowBackground(syncUp.theme.mainColor)
       }

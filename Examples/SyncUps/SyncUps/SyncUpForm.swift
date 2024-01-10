@@ -7,11 +7,12 @@ struct SyncUpForm {
   @ObservableState
   struct State: Equatable {
     var focus: Field? = .title
-    var syncUp: Shared<SyncUp>
+    @ObservationStateIgnored
+    @Shared2 var syncUp: SyncUp
 
-    init(focus: Field? = .title, syncUp: Shared<SyncUp>) {
+    init(focus: Field? = .title, syncUp: SyncUp) {
       self.focus = focus
-      self.syncUp = syncUp
+      self._syncUp = Shared2(syncUp)
       if self.syncUp.attendees.isEmpty {
         @Dependency(\.uuid) var uuid
         self.syncUp.attendees.append(Attendee(id: Attendee.ID(uuid())))
@@ -131,7 +132,7 @@ struct EditSyncUp_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       SyncUpFormView(
-        store: Store(initialState: SyncUpForm.State(syncUp: Shared(.mock))) {
+        store: Store(initialState: SyncUpForm.State(syncUp: .mock)) {
           SyncUpForm()
         }
       )

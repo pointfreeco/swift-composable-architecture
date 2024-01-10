@@ -9,7 +9,15 @@ public final class Shared2<Value> {
   private let lock = NSRecursiveLock()
 
   public var wrappedValue: Value {
-    get { self.lock.sync { self.currentValue } }
+    get {
+      self.lock.sync {
+        if SharedLocals.isAsserting {
+          self.previousValue
+        } else {
+          self.currentValue
+        }
+      }
+    }
     set {
       self.lock.sync {
         @Dependency(\.context) var context

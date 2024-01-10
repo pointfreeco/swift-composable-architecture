@@ -6,14 +6,15 @@ struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    var syncUp: Shared<SyncUp>
+    @ObservationStateIgnored
+    @Shared2 var syncUp: SyncUp
 
     // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
     //     this). We can remove when Xcode 15.1 is released and CI uses it.
     #if swift(<5.9.2)
-      init(destination: Destination.State? = nil, syncUp: Shared<SyncUp>) {
+      init(destination: Destination.State? = nil, syncUp: Shared2<SyncUp>) {
         self.destination = destination
-        self.syncUp = syncUp
+        self._syncUp = syncUp
       }
     #endif
   }
@@ -104,12 +105,12 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
-        state.syncUp.value = editState.syncUp.value
+        state.syncUp = editState.syncUp
         state.destination = nil
         return .none
 
       case .editButtonTapped:
-        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp.copy()))
+        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp))
         return .none
 
       case .startMeetingButtonTapped:
@@ -172,7 +173,7 @@ struct SyncUpDetailView: View {
         Section {
           ForEach(store.syncUp.meetings) { meeting in
             NavigationLink(
-              state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp.value)
+              state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
             ) {
               HStack {
                 Image(systemName: "calendar")
@@ -290,7 +291,7 @@ struct SyncUpDetail_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       SyncUpDetailView(
-        store: Store(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
+        store: Store(initialState: SyncUpDetail.State(syncUp: Shared2(.mock))) {
           SyncUpDetail()
         }
       )
