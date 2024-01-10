@@ -47,10 +47,6 @@ public final class Shared<Value> {
     self.previousValue = value
   }
 
-  //  public convenience init(wrappedValue: Value) {
-  //    self.init(wrappedValue)
-  //  }
-
   public subscript<Member>(dynamicMember keyPath: WritableKeyPath<Value, Member>) -> Member {
     get { self.wrappedValue[keyPath: keyPath] }
     set { self.wrappedValue[keyPath: keyPath] = newValue }
@@ -131,8 +127,8 @@ enum SharedLocals {
 
 final class ChangeTracker {
   private var changed: Set<ObjectIdentifier> = []
-  var hasChanges: Bool { !changed.isEmpty }
+  var hasChanges: Bool { !self.changed.isEmpty }
   func track<T>(_ shared: Shared<T>) {
-    changed.insert(ObjectIdentifier(shared))
+    self.changed.insert(ObjectIdentifier(shared))
   }
 }
