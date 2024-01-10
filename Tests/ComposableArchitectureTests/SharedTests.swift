@@ -97,6 +97,7 @@ final class SharedTests: XCTestCase {
 
 @Reducer
 private struct SharedFeature {
+  @ObservableState
   struct State: Equatable {
     var count = 0
     @Shared var profile: Profile
