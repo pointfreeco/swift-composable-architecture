@@ -173,10 +173,6 @@ struct ProfileTab {
   @ObservableState
   struct State: Equatable {
     var stats = Stats()
-
-    fileprivate mutating func resetCount() {
-      self.stats = Stats()
-    }
   }
 
   enum Action {
@@ -187,7 +183,7 @@ struct ProfileTab {
     Reduce { state, action in
       switch action {
       case .resetStatsButtonTapped:
-        state.resetCount()
+        state.stats.reset()
         return .none
       }
     }
@@ -238,6 +234,9 @@ struct Stats: Equatable {
     count -= 1
     numberOfCounts += 1
     minCount = min(minCount, count)
+  }
+  mutating func reset() {
+    self = Self()
   }
 }
 
