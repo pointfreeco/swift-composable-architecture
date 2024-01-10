@@ -76,6 +76,23 @@ final class SharedTests: XCTestCase {
       $0.sharedCount = 1
     }
   }
+
+  func testDependency() async {
+    let store = TestStore(
+      initialState: SharedFeature.State(
+        profile: Shared(Profile(stats: Shared(Stats()))),
+        sharedCount: Shared(0),
+        stats: Shared(Stats())
+      )
+    ) {
+      SharedFeature()
+    } withDependencies: {
+      $0[shared: Stats.self] = Stats(count: 42)
+    }
+    await store.send(.sharedDependencyIncrement) {
+      $0.statsDependency.count = 43
+    }
+  }
 }
 
 @Reducer
@@ -85,12 +102,14 @@ private struct SharedFeature {
     @Shared var profile: Profile
     @Shared var sharedCount: Int
     @Shared var stats: Stats
+    @SharedDependency var statsDependency: Stats
   }
   enum Action {
     case increment
     case incrementStats
     case noop
     case sharedIncrement
+    case sharedDependencyIncrement
     case request
   }
   var body: some ReducerOf<Self> {
@@ -108,6 +127,9 @@ private struct SharedFeature {
       case .sharedIncrement:
         state.sharedCount += 1
         return .none
+      case .sharedDependencyIncrement:
+        state.statsDependency.count += 1
+        return .none
       case .request:
         return .run { send in
           await send(.sharedIncrement)
@@ -119,6 +141,10 @@ private struct SharedFeature {
 
 private struct Stats: Equatable {
   var count = 0
+}
+extension Stats: DependencyKey {
+  static let liveValue = Stats()
+  static let testValue = Stats()
 }
 private struct Profile: Equatable {
   @Shared var stats: Stats
