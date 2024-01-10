@@ -6,9 +6,9 @@ final class SharedTests: XCTestCase {
   func testSharing() async {
     let store = TestStore(
       initialState: SharedFeature.State(
-        profile: .init(Profile(stats: .init(Stats()))),
+        profile: Shared(Profile(stats: Shared(Stats()))),
         sharedCount: .init(0),
-        stats: .init(Stats())
+        stats: Shared(Stats())
       )
     ) {
       SharedFeature()
@@ -28,7 +28,7 @@ final class SharedTests: XCTestCase {
   }
 
   func testMultiSharing() async {
-    @Shared2 var stats: Stats
+    @Shared var stats: Stats
     _stats = .init(Stats())
 
     let store = TestStore(
@@ -83,9 +83,9 @@ final class SharedTests: XCTestCase {
 private struct SharedFeature {
   struct State: Equatable {
     var count = 0
-    @Shared2 var profile: Profile
-    @Shared2 var sharedCount: Int
-    @Shared2 var stats: Stats
+    @Shared var profile: Profile
+    @Shared var sharedCount: Int
+    @Shared var stats: Stats
   }
   enum Action {
     case increment
@@ -122,5 +122,5 @@ private struct Stats: Equatable {
   var count = 0
 }
 private struct Profile: Equatable {
-  @Shared2 var stats: Stats
+  @Shared var stats: Stats
 }

@@ -7,7 +7,7 @@ struct SyncUpDetail {
   struct State: Equatable {
     @Presents var destination: Destination.State?
     @ObservationStateIgnored
-    @Shared2 var syncUp: SyncUp
+    @Shared var syncUp: SyncUp
 
     // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
     //     this). We can remove when Xcode 15.1 is released and CI uses it.
@@ -291,7 +291,7 @@ struct SyncUpDetail_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       SyncUpDetailView(
-        store: Store(initialState: SyncUpDetail.State(syncUp: Shared2(.mock))) {
+        store: Store(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
           SyncUpDetail()
         }
       )

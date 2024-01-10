@@ -1,49 +1,99 @@
 import Foundation
 
-@dynamicMemberLookup
 @Perceptible
+@dynamicMemberLookup
+@propertyWrapper
 public final class Shared<Value> {
-  private var _value: Value
+  private var currentValue: Value
+  private var previousValue: Value
   private let lock = NSRecursiveLock()
 
-  public var value: Value {
-    get { self.lock.sync { self._value } }
-    set { self.lock.sync { self._value = newValue } }
+  public var wrappedValue: Value {
+    get {
+      self.lock.sync {
+        if SharedLocals.isAsserting {
+          self.previousValue
+        } else {
+          self.currentValue
+        }
+      }
+    }
+    set {
+      self.lock.sync {
+        @Dependency(\.context) var context
+        guard context != .test else {
+          if SharedLocals.isAsserting {
+            self.previousValue = newValue
+          } else {
+            if SharedLocals.changeTracker == nil {
+              self.previousValue = self.currentValue
+            }
+            self.currentValue = newValue
+            SharedLocals.changeTracker?.onDeinit(id: self) { file, line in
+              func open<T: Equatable>(_: T.Type) {
+                guard
+                  let currentValue = self.currentValue as? T,
+                  let previousValue = self.previousValue as? T
+                else { return }
+                //                XCTAssertNoDifference(currentValue, previousValue, file: file, line: line)
+              }
+              if let type = Value.self as? any Equatable.Type {
+                open(type)
+              }
+            }
+          }
+          return
+        }
+        self.currentValue = newValue
+      }
+    }
+  }
+
+  public var projectedValue: Shared {
+    self
   }
 
   public init(_ value: Value) {
-    self._value = value
+    self.currentValue = value
+    self.previousValue = value
   }
 
+  //  public convenience init(wrappedValue: Value) {
+  //    self.init(wrappedValue)
+  //  }
+
   public subscript<Member>(dynamicMember keyPath: WritableKeyPath<Value, Member>) -> Member {
-    get { self.value[keyPath: keyPath] }
-    set { self.value[keyPath: keyPath] = newValue }
+    get { self.wrappedValue[keyPath: keyPath] }
+    set { self.wrappedValue[keyPath: keyPath] = newValue }
   }
 
   public func copy() -> Shared {
-    Shared(self.value)
+    Shared(self.wrappedValue)
   }
 }
 
-// TODO: Should these be conditional conformances?
+// TODO: Write tests that try to break equatable/hashable invariants.
 
-extension Shared: Equatable {
+extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
-    lhs === rhs
+    if SharedLocals.isAsserting, lhs === rhs {
+      return lhs.previousValue == rhs.currentValue
+    } else {
+      return lhs.wrappedValue == rhs.wrappedValue
+    }
   }
 }
 
-extension Shared: Hashable {
+extension Shared: Hashable where Value: Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(ObjectIdentifier(self))
+    // TODO: hasher.combine(ObjectIdentifier(self))
+    hasher.combine(self.wrappedValue)
   }
 }
 
-// TODO: Should this be conditional conformance?
-
-extension Shared: Identifiable {
-  public var id: ObjectIdentifier {
-    ObjectIdentifier(self)
+extension Shared: Identifiable where Value: Identifiable {
+  public var id: Value.ID {
+    self.wrappedValue.id
   }
 }
 extension Shared: Decodable where Value: Decodable {
@@ -59,10 +109,16 @@ extension Shared: Encodable where Value: Encodable {
   public func encode(to encoder: Encoder) throws {
     do {
       var container = encoder.singleValueContainer()
-      try container.encode(self.value)
+      try container.encode(self.wrappedValue)
     } catch {
-      try self.value.encode(to: encoder)
+      try self.wrappedValue.encode(to: encoder)
     }
+  }
+}
+
+extension Shared: _CustomDiffObject {
+  public var _customDiffValues: (Any, Any) {
+    (self.previousValue, self.currentValue)
   }
 }
 
@@ -79,43 +135,25 @@ extension Shared: DependencyKey where Value: DependencyKey {
   }
 }
 
-extension DependencyValues {
-  public subscript<Key: TestDependencyKey>(shared _: Key.Type) -> Key.Value {
-    get { self[Shared<Key>.self].value }
-    set { self[Shared<Key>.self] = Shared(newValue) }
-  }
+enum SharedLocals {
+  @TaskLocal static var changeTracker: ChangeTracker?
+  @TaskLocal static var isAsserting = false
 }
 
-@propertyWrapper
-public struct SharedDependency<Key: TestDependencyKey> where Key.Value == Key {
-  private let dependency = Dependency(Shared<Key>.self)
-
-  public var wrappedValue: Key.Value {
-    get { dependency.wrappedValue.value }
-    set { dependency.wrappedValue.value = newValue }
+final class ChangeTracker {
+  private let file: StaticString
+  private let line: UInt
+  private var onDeinit: [ObjectIdentifier: (_ file: StaticString, _ line: UInt) -> Void] = [:]
+  var isEmpty: Bool { self.onDeinit.isEmpty }
+  init(file: StaticString, line: UInt) {
+    self.file = file
+    self.line = line
   }
-
-  public var projectedValue: Shared<Key.Value> {
-    dependency.wrappedValue
-  }
-
-  public init() {}
-}
-
-extension SharedDependency: Equatable where Key.Value: Equatable {
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.wrappedValue == rhs.wrappedValue
-  }
-}
-
-extension SharedDependency: Hashable where Key.Value: Hashable {
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.wrappedValue)
-  }
-}
-
-extension SharedDependency: CustomDumpReflectable {
-  public var customDumpMirror: Mirror {
-    Mirror(reflecting: self.wrappedValue)
+  deinit { self.onDeinit.values.forEach { $0(self.file, self.line) } }
+  func onDeinit<T: AnyObject>(
+    id: T,
+    operation: @escaping (_ file: StaticString, _ line: UInt) -> Void
+  ) {
+    self.onDeinit[ObjectIdentifier(id)] = operation
   }
 }

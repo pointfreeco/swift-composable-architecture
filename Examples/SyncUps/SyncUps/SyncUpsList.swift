@@ -6,7 +6,7 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    var syncUps: IdentifiedArrayOf<Shared2<SyncUp>> = []
+    var syncUps: IdentifiedArrayOf<Shared<SyncUp>> = []
 
     init(
       destination: Destination.State? = nil
@@ -82,15 +82,15 @@ struct SyncUpsList {
               ?? Attendee(id: Attendee.ID(self.uuid()))
           )
         }
-        state.syncUps.append(Shared2(syncUp))
+        state.syncUps.append(Shared(syncUp))
         state.destination = nil
         return .none
 
       case .destination(.presented(.alert(.confirmLoadMockData))):
         state.syncUps = [
-          Shared2(.mock),
-          Shared2(.designMock),
-          Shared2(.engineeringMock),
+          Shared(.mock),
+          Shared(.designMock),
+          Shared(.engineeringMock),
         ]
         return .none
 
