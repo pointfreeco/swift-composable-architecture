@@ -6,8 +6,8 @@ final class SharedTests: XCTestCase {
   func testSharing() async {
     let store = TestStore(
       initialState: SharedFeature.State(
-        sharedCount: .init(0),
         profile: .init(Profile(stats: .init(Stats()))),
+        sharedCount: .init(0),
         stats: .init(Stats())
       )
     ) {
@@ -27,11 +27,46 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(store.state.profile.stats.count, 1)
   }
 
+  func testMultiSharing() async {
+    @Shared2 var stats: Stats
+    _stats = .init(Stats())
+
+    let store = TestStore(
+      initialState: SharedFeature.State(
+        profile: .init(Profile(stats: $stats)),
+        sharedCount: .init(0),
+        stats: $stats
+      )
+    ) {
+      SharedFeature()
+    }
+    await store.send(.incrementStats) {
+      $0.profile.stats.count = 2
+      $0.stats.count = 2
+    }
+    XCTAssertEqual(stats.count, 2)
+  }
+
   func testIncrementalMutation() async {
     let store = TestStore(
       initialState: SharedFeature.State(
-        sharedCount: .init(0),
         profile: .init(Profile(stats: .init(Stats()))),
+        sharedCount: .init(0),
+        stats: .init(Stats())
+      )
+    ) {
+      SharedFeature()
+    }
+    await store.send(.sharedIncrement) {
+      $0.sharedCount += 1
+    }
+  }
+
+  func testEffect() async {
+    let store = TestStore(
+      initialState: SharedFeature.State(
+        profile: .init(Profile(stats: .init(Stats()))),
+        sharedCount: .init(0),
         stats: .init(Stats())
       )
     ) {
@@ -47,15 +82,16 @@ final class SharedTests: XCTestCase {
 private struct SharedFeature {
   struct State: Equatable {
     var count = 0
-    @Shared2 var sharedCount: Int
     @Shared2 var profile: Profile
+    @Shared2 var sharedCount: Int
     @Shared2 var stats: Stats
   }
   enum Action {
     case increment
+    case incrementStats
     case noop
     case sharedIncrement
-    case incrementStats
+    case request
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -63,15 +99,19 @@ private struct SharedFeature {
       case .increment:
         state.count += 1
         return .none
+      case .incrementStats:
+        state.profile.stats.count += 1
+        state.stats.count += 1
+        return .none
       case .noop:
         return .none
       case .sharedIncrement:
         state.sharedCount += 1
         return .none
-      case .incrementStats:
-        state.profile.stats.count += 1
-        state.stats.count += 1
-        return .none
+      case .request:
+        return .run { send in
+          await send(.sharedIncrement)
+        }
       }
     }
   }

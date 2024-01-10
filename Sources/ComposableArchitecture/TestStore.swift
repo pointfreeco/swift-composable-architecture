@@ -860,14 +860,14 @@ extension TestStore where State: Equatable {
           var actions = ""
           customDump(self.reducer.receivedActions.map(\.action), to: &actions)
           XCTFailHelper(
-          """
-          Must handle \(self.reducer.receivedActions.count) received \
-          action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
+            """
+            Must handle \(self.reducer.receivedActions.count) received \
+            action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
-          Unhandled actions: \(actions)
-          """,
-          file: file,
-          line: line
+            Unhandled actions: \(actions)
+            """,
+            file: file,
+            line: line
           )
         }
 
@@ -904,15 +904,13 @@ extension TestStore where State: Equatable {
             self.reducer.dependencies.stackElementID = currentStackElementID
           }
 
-          try SharedLocals.$isAsserting.withValue(true) {
-            try self.expectedStateShouldMatch(
-              expected: expectedState,
-              actual: currentState,
-              updateStateToExpectedResult: updateStateToExpectedResult,
-              file: file,
-              line: line
-            )
-          }
+          try self.expectedStateShouldMatch(
+            expected: expectedState,
+            actual: currentState,
+            updateStateToExpectedResult: updateStateToExpectedResult,
+            file: file,
+            line: line
+          )
         } catch {
           XCTFail("Threw error: \(error)", file: file, line: line)
         }
@@ -988,97 +986,98 @@ extension TestStore where State: Equatable {
     file: StaticString,
     line: UInt
   ) throws {
-    let current = expected
-    var expected = expected
+    try SharedLocals.$isAsserting.withValue(true) {
+      let current = expected
+      var expected = expected
 
-    let currentStackElementID = self.reducer.dependencies.stackElementID
-    let copiedStackElementID = currentStackElementID.incrementingCopy()
-    self.reducer.dependencies.stackElementID = copiedStackElementID
-    defer {
-      self.reducer.dependencies.stackElementID = currentStackElementID
-    }
-
-    let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
-      { (state: inout State) in
-        try XCTModifyLocals.$isExhaustive.withValue(self.exhaustivity == .on) {
-          try original(&state)
-        }
-      }
-    }
-
-    switch self.exhaustivity {
-    case .on:
-      var expectedWhenGivenPreviousState = expected
-      if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try Dependencies.withDependencies {
-          $0 = self.reducer.dependencies
-        } operation: {
-          try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
-        }
-      }
-      expected = expectedWhenGivenPreviousState
-
-      if expectedWhenGivenPreviousState != actual {
-        expectationFailure(expected: expectedWhenGivenPreviousState)
-      } else {
-        tryUnnecessaryModifyFailure()
+      let currentStackElementID = self.reducer.dependencies.stackElementID
+      let copiedStackElementID = currentStackElementID.incrementingCopy()
+      self.reducer.dependencies.stackElementID = copiedStackElementID
+      defer {
+        self.reducer.dependencies.stackElementID = currentStackElementID
       }
 
-    case .off:
-      var expectedWhenGivenActualState = actual
-      if let updateStateToExpectedResult = updateStateToExpectedResult {
-        try Dependencies.withDependencies {
-          $0 = self.reducer.dependencies
-        } operation: {
-          try updateStateToExpectedResult(&expectedWhenGivenActualState)
+      let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
+        { (state: inout State) in
+          try XCTModifyLocals.$isExhaustive.withValue(self.exhaustivity == .on) {
+            try original(&state)
+          }
         }
       }
-      expected = expectedWhenGivenActualState
 
-      if expectedWhenGivenActualState != actual {
-        self.withExhaustivity(.on) {
-          expectationFailure(expected: expectedWhenGivenActualState)
-        }
-      } else if self.exhaustivity == .off(showSkippedAssertions: true)
-        && expectedWhenGivenActualState == actual
-      {
-        var expectedWhenGivenPreviousState = current
+      switch self.exhaustivity {
+      case .on:
+        var expectedWhenGivenPreviousState = expected
         if let updateStateToExpectedResult = updateStateToExpectedResult {
-          _XCTExpectFailure(strict: false) {
-            do {
-              try Dependencies.withDependencies {
-                $0 = self.reducer.dependencies
-              } operation: {
-                try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
-              }
-            } catch {
-              XCTFail(
-                """
-                Skipped assertions: …
-
-                Threw error: \(error)
-                """,
-                file: file,
-                line: line
-              )
-            }
+          try Dependencies.withDependencies {
+            $0 = self.reducer.dependencies
+          } operation: {
+            try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
           }
         }
         expected = expectedWhenGivenPreviousState
+
         if expectedWhenGivenPreviousState != actual {
           expectationFailure(expected: expectedWhenGivenPreviousState)
         } else {
           tryUnnecessaryModifyFailure()
         }
-      } else {
-        tryUnnecessaryModifyFailure()
-      }
-    }
 
-    func expectationFailure(expected: State) {
-      let difference =
-        diff(expected, actual, format: .proportional)
-        .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+      case .off:
+        var expectedWhenGivenActualState = actual
+        if let updateStateToExpectedResult = updateStateToExpectedResult {
+          try Dependencies.withDependencies {
+            $0 = self.reducer.dependencies
+          } operation: {
+            try updateStateToExpectedResult(&expectedWhenGivenActualState)
+          }
+        }
+        expected = expectedWhenGivenActualState
+
+        if expectedWhenGivenActualState != actual {
+          self.withExhaustivity(.on) {
+            expectationFailure(expected: expectedWhenGivenActualState)
+          }
+        } else if self.exhaustivity == .off(showSkippedAssertions: true)
+          && expectedWhenGivenActualState == actual
+        {
+          var expectedWhenGivenPreviousState = current
+          if let updateStateToExpectedResult = updateStateToExpectedResult {
+            _XCTExpectFailure(strict: false) {
+              do {
+                try Dependencies.withDependencies {
+                  $0 = self.reducer.dependencies
+                } operation: {
+                  try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
+                }
+              } catch {
+                XCTFail(
+                  """
+                  Skipped assertions: …
+
+                  Threw error: \(error)
+                  """,
+                  file: file,
+                  line: line
+                )
+              }
+            }
+          }
+          expected = expectedWhenGivenPreviousState
+          if expectedWhenGivenPreviousState != actual {
+            expectationFailure(expected: expectedWhenGivenPreviousState)
+          } else {
+            tryUnnecessaryModifyFailure()
+          }
+        } else {
+          tryUnnecessaryModifyFailure()
+        }
+      }
+
+      func expectationFailure(expected: State) {
+        let difference =
+          diff(expected, actual, format: .proportional)
+          .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
           ?? """
           Expected:
           \(String(describing: expected).indent(by: 2))
@@ -1086,38 +1085,39 @@ extension TestStore where State: Equatable {
           Actual:
           \(String(describing: actual).indent(by: 2))
           """
-      let messageHeading =
-        updateStateToExpectedResult != nil
-        ? "A state change does not match expectation"
-        : "State was not expected to change, but a change occurred"
-      XCTFailHelper(
-        """
-        \(messageHeading): …
+        let messageHeading =
+          updateStateToExpectedResult != nil
+          ? "A state change does not match expectation"
+          : "State was not expected to change, but a change occurred"
+        XCTFailHelper(
+          """
+          \(messageHeading): …
 
-        \(difference)
-        """,
-        file: file,
-        line: line
-      )
-    }
+          \(difference)
+          """,
+          file: file,
+          line: line
+        )
+      }
 
-    func tryUnnecessaryModifyFailure() {
-      guard
-        !skipUnnecessaryModifyFailure,
-        expected == current,
-        updateStateToExpectedResult != nil
-      else { return }
+      func tryUnnecessaryModifyFailure() {
+        guard
+          !skipUnnecessaryModifyFailure,
+          expected == current,
+          updateStateToExpectedResult != nil
+        else { return }
 
-      XCTFailHelper(
-        """
-        Expected state to change, but no change occurred.
+        XCTFailHelper(
+          """
+          Expected state to change, but no change occurred.
 
-        The trailing closure made no observable modifications to state. If no change to state is \
-        expected, omit the trailing closure.
-        """,
-        file: file,
-        line: line
-      )
+          The trailing closure made no observable modifications to state. If no change to state is \
+          expected, omit the trailing closure.
+          """,
+          file: file,
+          line: line
+        )
+      }
     }
   }
 }
@@ -1142,13 +1142,13 @@ extension TestStore where State: Equatable, Action: Equatable {
         TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-              ?? """
-              Expected:
-              \(String(describing: expectedAction).indent(by: 2))
+            ?? """
+            Expected:
+            \(String(describing: expectedAction).indent(by: 2))
 
-              Received:
-              \(String(describing: receivedAction).indent(by: 2))
-              """
+            Received:
+            \(String(describing: receivedAction).indent(by: 2))
+            """
         }
       },
       updateStateToExpectedResult,
@@ -1247,23 +1247,25 @@ extension TestStore where State: Equatable, Action: Equatable {
     line: UInt = #line
   ) async {
     await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      guard !self.reducer.inFlightEffects.isEmpty
-      else {
+      await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+        guard !self.reducer.inFlightEffects.isEmpty
+        else {
+          _ = {
+            self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+          }()
+          return
+        }
+        await self.receiveAction(
+          matching: { expectedAction == $0 },
+          timeout: nanoseconds,
+          file: file,
+          line: line
+        )
         _ = {
           self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
         }()
-        return
+        await Task.megaYield()
       }
-      await self.receiveAction(
-        matching: { expectedAction == $0 },
-        timeout: nanoseconds,
-        file: file,
-        line: line
-      )
-      _ = {
-        self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
-      }()
-      await Task.megaYield()
     }
   }
 }
@@ -1439,18 +1441,20 @@ extension TestStore where State: Equatable {
     line: UInt = #line
   ) async {
     await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      guard !self.reducer.inFlightEffects.isEmpty
-      else {
+      await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+        guard !self.reducer.inFlightEffects.isEmpty
+        else {
+          _ = {
+            self._receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
+          }()
+          return
+        }
+        await self.receiveAction(matching: isMatching, timeout: nanoseconds, file: file, line: line)
         _ = {
           self._receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
         }()
-        return
+        await Task.megaYield()
       }
-      await self.receiveAction(matching: isMatching, timeout: nanoseconds, file: file, line: line)
-      _ = {
-        self._receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
-      }()
-      await Task.megaYield()
     }
   }
 
@@ -1539,27 +1543,29 @@ extension TestStore where State: Equatable {
   where Action: CasePathable {
     let actionCase = AnyCasePath(actionCase)
     await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      guard !self.reducer.inFlightEffects.isEmpty
-      else {
+      await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+        guard !self.reducer.inFlightEffects.isEmpty
+        else {
+          _ = {
+            self._receive(
+              actionCase, value, assert: updateStateToExpectedResult, file: file, line: line
+            )
+          }()
+          return
+        }
+        await self.receiveAction(
+          matching: { actionCase.extract(from: $0) != nil },
+          timeout: nanoseconds,
+          file: file,
+          line: line
+        )
         _ = {
           self._receive(
             actionCase, value, assert: updateStateToExpectedResult, file: file, line: line
           )
         }()
-        return
+        await Task.megaYield()
       }
-      await self.receiveAction(
-        matching: { actionCase.extract(from: $0) != nil },
-        timeout: nanoseconds,
-        file: file,
-        line: line
-      )
-      _ = {
-        self._receive(
-          actionCase, value, assert: updateStateToExpectedResult, file: file, line: line
-        )
-      }()
-      await Task.megaYield()
     }
   }
 
@@ -1597,23 +1603,25 @@ extension TestStore where State: Equatable {
     line: UInt = #line
   ) async {
     await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      guard !self.reducer.inFlightEffects.isEmpty
-      else {
+      await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+        guard !self.reducer.inFlightEffects.isEmpty
+        else {
+          _ = {
+            self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
+          }()
+          return
+        }
+        await self.receiveAction(
+          matching: { actionCase.extract(from: $0) != nil },
+          timeout: nanoseconds,
+          file: file,
+          line: line
+        )
         _ = {
           self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
         }()
-        return
+        await Task.megaYield()
       }
-      await self.receiveAction(
-        matching: { actionCase.extract(from: $0) != nil },
-        timeout: nanoseconds,
-        file: file,
-        line: line
-      )
-      _ = {
-        self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
-      }()
-      await Task.megaYield()
     }
   }
 
@@ -1756,25 +1764,27 @@ extension TestStore where State: Equatable {
       line: UInt = #line
     ) async {
       await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-        guard !self.reducer.inFlightEffects.isEmpty
-        else {
+        await SharedLocals.$changeTracker.withValue(ChangeTracker(file: file, line: line)) {
+          guard !self.reducer.inFlightEffects.isEmpty
+          else {
+            _ = {
+              self._receive(
+                actionCase, assert: updateStateToExpectedResult, file: file, line: line
+              )
+            }()
+            return
+          }
+          await self.receiveAction(
+            matching: { actionCase.extract(from: $0) != nil },
+            timeout: duration.nanoseconds,
+            file: file,
+            line: line
+          )
           _ = {
-            self._receive(
-              actionCase, assert: updateStateToExpectedResult, file: file, line: line
-            )
+            self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
           }()
-          return
+          await Task.megaYield()
         }
-        await self.receiveAction(
-          matching: { actionCase.extract(from: $0) != nil },
-          timeout: duration.nanoseconds,
-          file: file,
-          line: line
-        )
-        _ = {
-          self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
-        }()
-        await Task.megaYield()
       }
     }
   #endif
