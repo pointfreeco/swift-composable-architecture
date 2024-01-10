@@ -7,12 +7,11 @@ struct SyncUpForm {
   @ObservableState
   struct State: Equatable {
     var focus: Field? = .title
-    @ObservationStateIgnored
-    @Shared2 var syncUp: SyncUp
+    var syncUp: SyncUp
 
     init(focus: Field? = .title, syncUp: SyncUp) {
       self.focus = focus
-      self._syncUp = Shared2(syncUp)
+      self.syncUp = syncUp
       if self.syncUp.attendees.isEmpty {
         @Dependency(\.uuid) var uuid
         self.syncUp.attendees.append(Attendee(id: Attendee.ID(uuid())))

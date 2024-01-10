@@ -35,7 +35,7 @@ struct AppFeature {
 
         switch delegateAction {
         case .deleteSyncUp:
-          state.syncUpsList.syncUps.remove(id: detailState.$syncUp.id)
+          state.syncUpsList.syncUps.remove(id: detailState.syncUp.id)
           return .none
 
         case .startMeeting:
@@ -81,11 +81,11 @@ struct AppFeature {
       Path()
     }
     .onChange(of: \.path.first?.detail?.syncUp) { _, _ in
-        EmptyReducer()
+      EmptyReducer()
     }
 
     Reduce { state, action in
-      return .run { [syncUps = state.syncUpsList.syncUps.map(\.wrappedValue)] _ in
+      return .run { [syncUps = state.syncUpsList.syncUps] _ in
         try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
           try await self.clock.sleep(for: .seconds(1))
           try await self.saveData(JSONEncoder().encode(syncUps), .syncUps)

@@ -35,7 +35,7 @@ public final class Shared2<Value> {
                   let currentValue = self.currentValue as? T,
                   let previousValue = self.previousValue as? T
                 else { return }
-//                XCTAssertNoDifference(currentValue, previousValue, file: file, line: line)
+                //                XCTAssertNoDifference(currentValue, previousValue, file: file, line: line)
               }
               if let type = Value.self as? any Equatable.Type {
                 open(type)
@@ -58,9 +58,9 @@ public final class Shared2<Value> {
     self.previousValue = value
   }
 
-//  public convenience init(wrappedValue: Value) {
-//    self.init(wrappedValue)
-//  }
+  //  public convenience init(wrappedValue: Value) {
+  //    self.init(wrappedValue)
+  //  }
 
   public subscript<Member>(dynamicMember keyPath: WritableKeyPath<Value, Member>) -> Member {
     get { self.wrappedValue[keyPath: keyPath] }
@@ -72,32 +72,28 @@ public final class Shared2<Value> {
   }
 }
 
-// TODO: Should these be conditional conformances?
+// TODO: Write tests that try to break equatable/hashable invariants.
 
-extension Shared2: Equatable {
+extension Shared2: Equatable where Value: Equatable {
   public static func == (lhs: Shared2, rhs: Shared2) -> Bool {
-    guard
-      SharedLocals.isAsserting,
-      let type = Value.self as? any Equatable.Type
-    else { return lhs === rhs }
-    func open<T: Equatable>(_: T.Type) -> Bool {
-      lhs.previousValue as? T == rhs.currentValue as? T
+    if SharedLocals.isAsserting, lhs === rhs {
+      return lhs.previousValue == rhs.currentValue
+    } else {
+      return lhs.wrappedValue == rhs.wrappedValue
     }
-    return open(type)
   }
 }
 
-extension Shared2: Hashable {
+extension Shared2: Hashable where Value: Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(ObjectIdentifier(self))
+    // TODO: hasher.combine(ObjectIdentifier(self))
+    hasher.combine(self.wrappedValue)
   }
 }
 
-// TODO: Should this be conditional conformance?
-
-extension Shared2: Identifiable {
-  public var id: ObjectIdentifier {
-    ObjectIdentifier(self)
+extension Shared2: Identifiable where Value: Identifiable {
+  public var id: Value.ID {
+    self.wrappedValue.id
   }
 }
 extension Shared2: Decodable where Value: Decodable {

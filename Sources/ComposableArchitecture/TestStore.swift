@@ -1078,13 +1078,13 @@ extension TestStore where State: Equatable {
         let difference =
           diff(expected, actual, format: .proportional)
           .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-          ?? """
-          Expected:
-          \(String(describing: expected).indent(by: 2))
+            ?? """
+            Expected:
+            \(String(describing: expected).indent(by: 2))
 
-          Actual:
-          \(String(describing: actual).indent(by: 2))
-          """
+            Actual:
+            \(String(describing: actual).indent(by: 2))
+            """
         let messageHeading =
           updateStateToExpectedResult != nil
           ? "A state change does not match expectation"
@@ -1142,13 +1142,13 @@ extension TestStore where State: Equatable, Action: Equatable {
         TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-            ?? """
-            Expected:
-            \(String(describing: expectedAction).indent(by: 2))
+              ?? """
+              Expected:
+              \(String(describing: expectedAction).indent(by: 2))
 
-            Received:
-            \(String(describing: receivedAction).indent(by: 2))
-            """
+              Received:
+              \(String(describing: receivedAction).indent(by: 2))
+              """
         }
       },
       updateStateToExpectedResult,
@@ -1251,7 +1251,8 @@ extension TestStore where State: Equatable, Action: Equatable {
         guard !self.reducer.inFlightEffects.isEmpty
         else {
           _ = {
-            self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+            self._receive(
+              expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
           }()
           return
         }

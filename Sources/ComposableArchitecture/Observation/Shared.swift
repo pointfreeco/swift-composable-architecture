@@ -14,7 +14,7 @@ public final class Shared<Value> {
   public init(_ value: Value) {
     self._value = value
   }
-  
+
   public subscript<Member>(dynamicMember keyPath: WritableKeyPath<Value, Member>) -> Member {
     get { self.value[keyPath: keyPath] }
     set { self.value[keyPath: keyPath] = newValue }
@@ -65,7 +65,6 @@ extension Shared: Encodable where Value: Encodable {
     }
   }
 }
-
 
 extension Shared: @unchecked Sendable where Value: Sendable {}
 

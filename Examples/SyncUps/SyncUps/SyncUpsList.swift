@@ -72,7 +72,7 @@ struct SyncUpsList {
       case .confirmAddSyncUpButtonTapped:
         guard case let .some(.add(editState)) = state.destination
         else { return .none }
-        let syncUp = editState.$syncUp
+        var syncUp = editState.syncUp
         syncUp.attendees.removeAll { attendee in
           attendee.name.allSatisfy(\.isWhitespace)
         }
@@ -82,7 +82,7 @@ struct SyncUpsList {
               ?? Attendee(id: Attendee.ID(self.uuid()))
           )
         }
-        state.syncUps.append(syncUp)
+        state.syncUps.append(Shared2(syncUp))
         state.destination = nil
         return .none
 
