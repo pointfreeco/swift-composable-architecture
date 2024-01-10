@@ -19,6 +19,10 @@ public final class Shared<Value> {
     get { self.value[keyPath: keyPath] }
     set { self.value[keyPath: keyPath] = newValue }
   }
+
+  public func copy() -> Shared {
+    Shared(self.value)
+  }
 }
 
 // TODO: Should these be conditional conformances?
