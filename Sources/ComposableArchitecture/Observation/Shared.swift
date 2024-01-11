@@ -5,14 +5,14 @@ import Foundation
 @propertyWrapper
 public final class Shared<Value> {
   private var currentValue: Value
-  private var previousValue: Value
+  private var snapshot: Value?
   private let lock = NSRecursiveLock()
 
   public var wrappedValue: Value {
     get {
       self.lock.sync {
         if SharedLocals.isAsserting {
-          self.previousValue
+          self.snapshot ?? self.currentValue
         } else {
           self.currentValue
         }
@@ -20,15 +20,20 @@ public final class Shared<Value> {
     }
     set {
       self.lock.sync {
-        if SharedLocals.isAsserting {
-          self.previousValue = newValue
-        } else {
-          @Dependency(\.sharedChangeTracker) var sharedChangeTracker
-          if sharedChangeTracker == nil {
-            self.previousValue = self.currentValue
+        @Dependency(\.sharedChangeTracker) var sharedChangeTracker
+        if let sharedChangeTracker {
+          if SharedLocals.isAsserting {
+            self.snapshot = newValue
+          } else {
+            if self.snapshot == nil {
+              self.snapshot = self.currentValue
+            }
+            self.currentValue = newValue
+            sharedChangeTracker.track(self)
           }
+        } else {
           self.currentValue = newValue
-          sharedChangeTracker?.track(self)
+          self.snapshot = nil
         }
       }
     }
@@ -40,7 +45,6 @@ public final class Shared<Value> {
 
   public init(_ value: Value) {
     self.currentValue = value
-    self.previousValue = value
   }
 
   public subscript<Member>(dynamicMember keyPath: WritableKeyPath<Value, Member>) -> Member {
@@ -58,7 +62,7 @@ public final class Shared<Value> {
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
     if SharedLocals.isAsserting, lhs === rhs {
-      return lhs.previousValue == rhs.currentValue
+      return lhs.snapshot ?? lhs.currentValue == rhs.currentValue
     } else {
       return lhs.wrappedValue == rhs.wrappedValue
     }
@@ -77,6 +81,7 @@ extension Shared: Identifiable where Value: Identifiable {
     self.wrappedValue.id
   }
 }
+
 extension Shared: Decodable where Value: Decodable {
   public convenience init(from decoder: Decoder) throws {
     do {
@@ -86,6 +91,7 @@ extension Shared: Decodable where Value: Decodable {
     }
   }
 }
+
 extension Shared: Encodable where Value: Encodable {
   public func encode(to encoder: Encoder) throws {
     do {
@@ -99,7 +105,7 @@ extension Shared: Encodable where Value: Encodable {
 
 extension Shared: _CustomDiffObject {
   public var _customDiffValues: (Any, Any) {
-    (self.previousValue, self.currentValue)
+    (self.snapshot ?? self.currentValue, self.currentValue)
   }
 }
 

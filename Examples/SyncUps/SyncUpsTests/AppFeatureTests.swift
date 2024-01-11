@@ -83,6 +83,7 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0, case: \.detail]?.destination = nil
       $0.path[id: 0, case: \.detail]?.syncUp.title = "Blob"
     }
+    .finish()
 
     var savedSyncUp = syncUp
     savedSyncUp.title = "Blob"
