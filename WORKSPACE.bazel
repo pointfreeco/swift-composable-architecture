@@ -23,7 +23,7 @@ load(
 swift_rules_extra_dependencies()
 
 load(
-    "//:deps.bzl",
+    "//:bazel_integration/deps.bzl",
     "swift_cmposable_architecture_deps",
 )
 

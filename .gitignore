@@ -6,3 +6,4 @@
 /*.xcodeproj
 xcuserdata/
 bazel-*/
+MODULE.bazel.lock
