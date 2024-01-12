@@ -5,7 +5,7 @@ import Foundation
 @propertyWrapper
 public final class Shared<Value> {
   private var currentValue: Value
-  private var snapshot: Value?
+  fileprivate var snapshot: Value?
   private let lock = NSRecursiveLock()
 
   public var wrappedValue: Value {
@@ -54,6 +54,21 @@ public final class Shared<Value> {
 
   public func copy() -> Shared {
     Shared(self.wrappedValue)
+  }
+
+  public func assert(
+    _ updateValueToExpectedResult: (inout Value) throws -> Void,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) rethrows where Value: Equatable {
+    guard var snapshot = self.snapshot, snapshot != self.currentValue else {
+      XCTFail("Expected changes, but none occurred.", file: file, line: line)
+      return
+    }
+    try updateValueToExpectedResult(&snapshot)
+    self.snapshot = snapshot
+    XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
+    self.snapshot = nil
   }
 }
 
@@ -127,13 +142,22 @@ enum SharedLocals {
 }
 
 final class SharedChangeTracker: @unchecked Sendable {
-  private var changed = LockIsolated<Set<ObjectIdentifier>>([])
+  private var changed = LockIsolated<[ObjectIdentifier: () -> Void]>([:])
   var hasChanges: Bool { !self.changed.value.isEmpty }
   func track<T>(_ shared: Shared<T>) {
-    self.changed.withValue { _ = $0.insert(ObjectIdentifier(shared)) }
+    self.changed.withValue {
+      _ = $0[ObjectIdentifier(shared)] = { [weak shared] in
+        shared?.snapshot = nil
+      }
+    }
   }
   func reset() {
-    self.changed.withValue { $0.removeAll() }
+    self.changed.withValue {
+      for reset in $0.values {
+        reset()
+      }
+      $0.removeAll()
+    }
   }
 }
 

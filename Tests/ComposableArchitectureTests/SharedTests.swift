@@ -93,6 +93,51 @@ final class SharedTests: XCTestCase {
       $0.statsDependency.count = 43
     }
   }
+
+  func testComplexEffect() async {
+    struct Feature: Reducer {
+      struct State: Equatable {
+        @Shared var count: Int
+      }
+      enum Action {
+        case startTimer
+        case stopTimer
+        case timerTick
+      }
+      @Dependency(\.mainQueue) var queue
+      enum CancelID { case timer }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .startTimer:
+            return .run { [count = state.$count] send in
+              for await _ in self.queue.timer(interval: .seconds(1)) {
+                count.wrappedValue += 1
+                await send(.timerTick)
+              }
+            }
+            .cancellable(id: CancelID.timer)
+          case .stopTimer:
+            return .cancel(id: CancelID.timer)
+          case .timerTick:
+            return .none
+          }
+        }
+      }
+    }
+    let mainQueue = DispatchQueue.test
+    let store = TestStore(initialState: Feature.State(count: Shared(0))) {
+      Feature()
+    } withDependencies: {
+      $0.mainQueue = mainQueue.eraseToAnyScheduler()
+    }
+    await store.send(.startTimer)
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.timerTick) {
+      $0.count = 1
+    }
+    await store.send(.stopTimer)
+  }
 }
 
 @Reducer
