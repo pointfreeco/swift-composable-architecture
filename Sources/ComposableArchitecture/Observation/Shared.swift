@@ -7,6 +7,8 @@ public final class Shared<Value> {
   private var currentValue: Value
   fileprivate var snapshot: Value?
   private let lock = NSRecursiveLock()
+  private let fileID: StaticString
+  private let line: UInt
 
   public var wrappedValue: Value {
     get {
@@ -43,8 +45,30 @@ public final class Shared<Value> {
     self
   }
 
-  public init(_ value: Value) {
+  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
     self.currentValue = value
+    self.fileID = fileID
+    self.line = line
+  }
+
+  deinit {
+    if
+      let snapshot = self.snapshot,
+      let difference = diff(snapshot, self.currentValue, format: .proportional)
+    {
+      XCTFail(
+        """
+        Tracked changes to '\(Self.self)@\(self.fileID):\(self.line)' but failed to assert: …
+
+        \(difference.indent(by: 2))
+
+        (Before: −, After: +)
+
+        Call '\(Self.self).assert' to exhaustively test these changes, or call 'skipChanges' to \
+        ignore them.
+        """
+      )
+    }
   }
 
   public subscript<Member>(dynamicMember keyPath: WritableKeyPath<Value, Member>) -> Member {
@@ -52,8 +76,8 @@ public final class Shared<Value> {
     set { self.wrappedValue[keyPath: keyPath] = newValue }
   }
 
-  public func copy() -> Shared {
-    Shared(self.wrappedValue)
+  public func copy(fileID: StaticString = #fileID, line: UInt = #line) -> Shared {
+    Shared(self.wrappedValue, fileID: fileID, line: line)
   }
 
   public func assert(
@@ -68,6 +92,17 @@ public final class Shared<Value> {
     try updateValueToExpectedResult(&snapshot)
     self.snapshot = snapshot
     XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
+    self.snapshot = nil
+  }
+
+  public func skipChanges(
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    guard self.snapshot != nil else {
+      XCTFail("Expected changes, but none occurred.", file: file, line: line)
+      return
+    }
     self.snapshot = nil
   }
 }

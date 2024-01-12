@@ -118,7 +118,15 @@ final class SharedTests: XCTestCase {
             }
             .cancellable(id: CancelID.timer)
           case .stopTimer:
-            return .cancel(id: CancelID.timer)
+            return .merge(
+              .cancel(id: CancelID.timer),
+              .run { [count = state.$count] _ in
+                Task {
+                  try await self.queue.sleep(for: .seconds(1))
+                  count.wrappedValue = 42
+                }
+              }
+            )
           case .timerTick:
             return .none
           }
@@ -137,6 +145,10 @@ final class SharedTests: XCTestCase {
       $0.count = 1
     }
     await store.send(.stopTimer)
+    await mainQueue.advance(by: .seconds(1))
+//    store.state.$count.assert {
+//      $0 = 42
+//    }
   }
 }
 
