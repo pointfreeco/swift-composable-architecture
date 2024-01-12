@@ -5,8 +5,8 @@ final class CurrentValueRelay<Output>: Publisher {
   typealias Failure = Never
 
   private var currentValue: Output
-  private var subscriptions: [WeakSubscription] = []
   private let lock: os_unfair_lock_t
+  private var subscriptions = ContiguousArray<Subscription>()
 
   var value: Output {
     get { self.currentValue }
@@ -24,57 +24,117 @@ final class CurrentValueRelay<Output>: Publisher {
     self.lock.deallocate()
   }
 
-  func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Never {
-    let subscription = Subscription(upstream: self, downstream: AnySubscriber(subscriber))
+  func receive(subscriber: some Subscriber<Output, Never>) {
+    let subscription = Subscription(upstream: self, downstream: subscriber)
     self.lock.sync {
-      self.subscriptions.append(WeakSubscription(object: subscription))
+      self.subscriptions.append(subscription)
     }
     subscriber.receive(subscription: subscription)
-    subscription.forwardValueToBuffer(self.currentValue)
   }
 
   func send(_ value: Output) {
     self.currentValue = value
-    var hasCancelledSubscription = false
-    for subscription in self.subscriptions {
-      if let subscription = subscription.object {
-        subscription.forwardValueToBuffer(value)
-      } else {
-        hasCancelledSubscription = true
-      }
-    }
-    guard hasCancelledSubscription else { return }
+    self.subscriptions.forEach { $0.receive(value) }
+  }
+
+  private func remove(_ subscription: Subscription) {
     self.lock.sync {
-      self.subscriptions.removeAll(where: { $0.object == nil })
+      guard let index = self.subscriptions.firstIndex(of: subscription)
+      else { return }
+      self.subscriptions.remove(at: index)
     }
   }
 }
 
 extension CurrentValueRelay {
-  final class Subscription: Combine.Subscription {
-    typealias Downstream = AnySubscriber<Output, Never>
-    private let upstream: CurrentValueRelay
-    private var demandBuffer: DemandBuffer<Downstream>?
+  fileprivate final class Subscription: Combine.Subscription, Equatable {
+    private var demand = Subscribers.Demand.none
+    private var downstream: (any Subscriber<Output, Never>)?
+    private let lock: os_unfair_lock_t
+    private var receivedLastValue = false
+    private var upstream: CurrentValueRelay?
 
-    fileprivate init(upstream: CurrentValueRelay, downstream: Downstream) {
+    init(upstream: CurrentValueRelay, downstream: any Subscriber<Output, Never>) {
       self.upstream = upstream
-      self.demandBuffer = DemandBuffer(subscriber: downstream)
+      self.downstream = downstream
+      self.lock = os_unfair_lock_t.allocate(capacity: 1)
+      self.lock.initialize(to: os_unfair_lock())
     }
 
-    func forwardValueToBuffer(_ value: Output) {
-      _ = self.demandBuffer?.buffer(value: value)
-    }
-
-    func request(_ demand: Subscribers.Demand) {
-      _ = self.demandBuffer?.demand(demand)
+    deinit {
+      self.lock.deinitialize(count: 1)
+      self.lock.deallocate()
     }
 
     func cancel() {
-      self.demandBuffer = nil
+      self.lock.sync {
+        self.downstream = nil
+        self.upstream?.remove(self)
+        self.upstream = nil
+      }
     }
-  }
 
-  private struct WeakSubscription {
-    weak var object: Subscription?
+    func receive(_ value: Output) {
+      guard let downstream else { return }
+
+      switch self.demand {
+      case .unlimited:
+        // NB: Adding to unlimited demand has no effect and can be ignored.
+        _ = downstream.receive(value)
+
+      case .none:
+        self.lock.sync {
+          self.receivedLastValue = false
+        }
+
+      default:
+        self.lock.sync {
+          self.receivedLastValue = true
+          self.demand -= 1
+        }
+        let moreDemand = downstream.receive(value)
+        self.lock.sync {
+          self.demand += moreDemand
+        }
+      }
+    }
+
+    func request(_ demand: Subscribers.Demand) {
+      precondition(demand > 0, "Demand must be greater than zero")
+
+      guard let downstream else { return }
+
+      self.lock.lock()
+      self.demand += demand
+
+      guard
+        !self.receivedLastValue,
+        let value = self.upstream?.currentValue
+      else {
+        self.lock.unlock()
+        return
+      }
+
+      self.receivedLastValue = true
+
+      switch self.demand {
+      case .unlimited:
+        self.lock.unlock()
+        // NB: Adding to unlimited demand has no effect and can be ignored.
+        _ = downstream.receive(value)
+
+      default:
+        self.demand -= 1
+        self.lock.unlock()
+        let moreDemand = downstream.receive(value)
+        self.lock.lock()
+        self.demand += moreDemand
+        self.lock.unlock()
+      }
+    }
+
+    static func == (lhs: Subscription, rhs: Subscription) -> Bool {
+      lhs === rhs
+    }
   }
 }
