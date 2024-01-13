@@ -27,6 +27,23 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(store.state.profile.stats.count, 1)
   }
 
+  func testSharing_NonExhaustive() async {
+    let store = TestStore(
+      initialState: SharedFeature.State(
+        profile: Shared(Profile(stats: Shared(Stats()))),
+        sharedCount: .init(0),
+        stats: Shared(Stats())
+      )
+    ) {
+      SharedFeature()
+    }
+    store.exhaustivity = .off(showSkippedAssertions: true)
+
+    XCTTODO("We are not correctly handling shared state with non-exhaustive test stores.")
+    await store.send(.sharedIncrement)
+    XCTAssertEqual(store.state.sharedCount, 1)
+  }
+
   func testMultiSharing() async {
     @Shared(Stats()) var stats
 
@@ -146,9 +163,9 @@ final class SharedTests: XCTestCase {
     }
     await store.send(.stopTimer)
     await mainQueue.advance(by: .seconds(1))
-//    store.state.$count.assert {
-//      $0 = 42
-//    }
+    store.state.$count.assert {
+      $0 = 42
+    }
   }
 }
 
