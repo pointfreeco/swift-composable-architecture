@@ -34,7 +34,9 @@ final class CurrentValueRelay<Output>: Publisher {
 
   func send(_ value: Output) {
     self.currentValue = value
-    self.subscriptions.forEach { $0.receive(value) }
+    for subscription in self.subscriptions {
+      subscription.receive(value)
+    }
   }
 
   private func remove(_ subscription: Subscription) {
