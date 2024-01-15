@@ -144,7 +144,7 @@ import SwiftUI
                 transaction: transaction
               )
             } else {
-              path.transaction(transaction).wrappedValue.send(
+              path.wrappedValue.send(
                 .popFrom(id: path.wrappedValue.withState { $0 }.ids[pathView.count]),
                 transaction: transaction
               )
