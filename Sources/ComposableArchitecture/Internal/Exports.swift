@@ -5,11 +5,13 @@
 @_exported import CustomDump
 @_exported import Dependencies
 @_exported import IdentifiedCollections
-@_exported import Observation
 @_exported import SwiftUINavigationCore
 
 #if canImport(DependenciesMacros)
   @_exported import DependenciesMacros
+#endif
+#if canImport(Observation)
+  @_exported import Observation
 #endif
 #if canImport(Perception)
   @_exported import Perception

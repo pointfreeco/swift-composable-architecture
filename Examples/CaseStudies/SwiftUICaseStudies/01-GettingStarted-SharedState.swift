@@ -167,10 +167,6 @@ struct ProfileTab {
   @ObservableState
   struct State: Equatable {
     @SharedDependency var stats: Stats
-
-    fileprivate mutating func resetCount() {
-      self.stats = Stats()
-    }
   }
 
   enum Action {
@@ -181,7 +177,7 @@ struct ProfileTab {
     Reduce { state, action in
       switch action {
       case .resetStatsButtonTapped:
-        state.resetCount()
+        state.stats = Stats()
         return .none
       }
     }

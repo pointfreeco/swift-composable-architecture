@@ -2,32 +2,32 @@ import Benchmark
 import ComposableArchitecture
 import Foundation
 
-let observationSuite = BenchmarkSuite(name: "Observation") {
+let observationSuite = BenchmarkSuite(name: "Observation") { suite in
   #if swift(>=5.9)
     if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
       var stateWithObservation: StateWithObservation!
-      $0.benchmark("ObservableState: Mutate count") {
+      suite.benchmark("ObservableState: Mutate count") {
         doNotOptimizeAway(stateWithObservation.count += 1)
       } setUp: {
         stateWithObservation = StateWithObservation()
       } tearDown: {
         stateWithObservation = nil
       }
-      $0.benchmark("ObservableState: Mutate name") {
+      suite.benchmark("ObservableState: Mutate name") {
         doNotOptimizeAway(stateWithObservation.name += "!!!")
       } setUp: {
         stateWithObservation = StateWithObservation()
       } tearDown: {
         stateWithObservation = nil
       }
-      $0.benchmark("ObservableState: Append item") {
+      suite.benchmark("ObservableState: Append item") {
         doNotOptimizeAway(stateWithObservation.items.append(Item()))
       } setUp: {
         stateWithObservation = StateWithObservation()
       } tearDown: {
         stateWithObservation = nil
       }
-      $0.benchmark("ObservableState: Mutate item") {
+      suite.benchmark("ObservableState: Mutate item") {
         doNotOptimizeAway(stateWithObservation.items[0].name += "!!!")
       } setUp: {
         stateWithObservation = StateWithObservation()
@@ -36,28 +36,28 @@ let observationSuite = BenchmarkSuite(name: "Observation") {
       }
 
       var stateWithoutObservation: StateWithoutObservation!
-      $0.benchmark("State: Mutate count") {
+      suite.benchmark("State: Mutate count") {
         doNotOptimizeAway(stateWithoutObservation.count += 1)
       } setUp: {
         stateWithoutObservation = StateWithoutObservation()
       } tearDown: {
         stateWithoutObservation = nil
       }
-      $0.benchmark("State: Mutate name") {
+      suite.benchmark("State: Mutate name") {
         doNotOptimizeAway(stateWithoutObservation.name += "!!!")
       } setUp: {
         stateWithoutObservation = StateWithoutObservation()
       } tearDown: {
         stateWithoutObservation = nil
       }
-      $0.benchmark("State: Append item") {
+      suite.benchmark("State: Append item") {
         doNotOptimizeAway(stateWithoutObservation.items.append(Item()))
       } setUp: {
         stateWithoutObservation = StateWithoutObservation()
       } tearDown: {
         stateWithoutObservation = nil
       }
-      $0.benchmark("State: Mutate item") {
+      suite.benchmark("State: Mutate item") {
         doNotOptimizeAway(stateWithoutObservation.items[0].name += "!!!")
       } setUp: {
         stateWithoutObservation = StateWithoutObservation()
@@ -66,28 +66,28 @@ let observationSuite = BenchmarkSuite(name: "Observation") {
       }
 
       var objectWithObservation: ObjectWithObservation!
-      $0.benchmark("Observable: Mutate count") {
+      suite.benchmark("Observable: Mutate count") {
         doNotOptimizeAway(objectWithObservation.count += 1)
       } setUp: {
         objectWithObservation = ObjectWithObservation()
       } tearDown: {
         objectWithObservation = nil
       }
-      $0.benchmark("Observable: Mutate name") {
+      suite.benchmark("Observable: Mutate name") {
         doNotOptimizeAway(objectWithObservation.name += "!!!")
       } setUp: {
         objectWithObservation = ObjectWithObservation()
       } tearDown: {
         objectWithObservation = nil
       }
-      $0.benchmark("Observable: Append item") {
+      suite.benchmark("Observable: Append item") {
         doNotOptimizeAway(objectWithObservation.items.append(Item()))
       } setUp: {
         objectWithObservation = ObjectWithObservation()
       } tearDown: {
         objectWithObservation = nil
       }
-      $0.benchmark("Observable: Mutate item") {
+      suite.benchmark("Observable: Mutate item") {
         doNotOptimizeAway(objectWithObservation.items[0].name += "!!!")
       } setUp: {
         objectWithObservation = ObjectWithObservation()
@@ -96,28 +96,28 @@ let observationSuite = BenchmarkSuite(name: "Observation") {
       }
 
       var objectWithoutObservation: ObjectWithoutObservation!
-      $0.benchmark("Class: Mutate count") {
+      suite.benchmark("Class: Mutate count") {
         doNotOptimizeAway(objectWithoutObservation.count += 1)
       } setUp: {
         objectWithoutObservation = ObjectWithoutObservation()
       } tearDown: {
         objectWithoutObservation = nil
       }
-      $0.benchmark("Class: Mutate name") {
+      suite.benchmark("Class: Mutate name") {
         doNotOptimizeAway(objectWithoutObservation.name += "!!!")
       } setUp: {
         objectWithoutObservation = ObjectWithoutObservation()
       } tearDown: {
         objectWithoutObservation = nil
       }
-      $0.benchmark("Class: Append item") {
+      suite.benchmark("Class: Append item") {
         doNotOptimizeAway(objectWithoutObservation.items.append(Item()))
       } setUp: {
         objectWithoutObservation = ObjectWithoutObservation()
       } tearDown: {
         objectWithoutObservation = nil
       }
-      $0.benchmark("Class: Mutate item") {
+      suite.benchmark("Class: Mutate item") {
         doNotOptimizeAway(objectWithoutObservation.items[0].name += "!!!")
       } setUp: {
         objectWithoutObservation = ObjectWithoutObservation()
