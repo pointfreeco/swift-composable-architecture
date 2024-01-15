@@ -39,7 +39,6 @@ final class SharedTests: XCTestCase {
     }
     store.exhaustivity = .off(showSkippedAssertions: true)
 
-    XCTTODO("We are not correctly handling shared state with non-exhaustive test stores.")
     await store.send(.sharedIncrement)
     XCTAssertEqual(store.state.sharedCount, 1)
   }

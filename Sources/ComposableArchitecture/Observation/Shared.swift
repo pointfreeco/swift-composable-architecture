@@ -115,7 +115,7 @@
 
   extension Shared: Equatable where Value: Equatable {
     public static func == (lhs: Shared, rhs: Shared) -> Bool {
-      if SharedLocals.isAsserting, lhs === rhs {
+      if SharedLocals.exhaustivity == .on, lhs === rhs {
         return lhs.snapshot ?? lhs.currentValue == rhs.currentValue
       } else {
         return lhs.wrappedValue == rhs.wrappedValue
@@ -177,7 +177,8 @@
   }
 
   enum SharedLocals {
-    @TaskLocal static var isAsserting = false
+    @TaskLocal static var exhaustivity: Exhaustivity?
+    static var isAsserting: Bool { Self.exhaustivity != nil }
   }
 
   final class SharedChangeTracker: @unchecked Sendable {

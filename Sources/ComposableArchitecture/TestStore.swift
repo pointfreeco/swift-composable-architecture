@@ -732,10 +732,12 @@ public final class TestStore<State, Action> {
     _ exhaustivity: Exhaustivity,
     operation: () throws -> R
   ) rethrows -> R {
-    let previous = self.exhaustivity
-    defer { self.exhaustivity = previous }
-    self.exhaustivity = exhaustivity
-    return try operation()
+    try SharedLocals.$exhaustivity.withValue(exhaustivity) {
+      let previous = self.exhaustivity
+      defer { self.exhaustivity = previous }
+      self.exhaustivity = exhaustivity
+      return try operation()
+    }
   }
 
   /// Overrides the store's exhaustivity for a given operation.
@@ -748,10 +750,12 @@ public final class TestStore<State, Action> {
     _ exhaustivity: Exhaustivity,
     operation: @MainActor () async throws -> R
   ) async rethrows -> R {
-    let previous = self.exhaustivity
-    defer { self.exhaustivity = previous }
-    self.exhaustivity = exhaustivity
-    return try await operation()
+    try await SharedLocals.$exhaustivity.withValue(exhaustivity) {
+      let previous = self.exhaustivity
+      defer { self.exhaustivity = previous }
+      self.exhaustivity = exhaustivity
+      return try await operation()
+    }
   }
 }
 
@@ -987,7 +991,7 @@ extension TestStore where State: Equatable {
     let skipUnnecessaryModifyFailure =
       skipUnnecessaryModifyFailure
       || self.reducer.dependencies.sharedChangeTracker?.hasChanges == true
-    try SharedLocals.$isAsserting.withValue(true) {
+    try SharedLocals.$exhaustivity.withValue(self.exhaustivity) {
       let current = expected
       var expected = expected
 
@@ -1065,7 +1069,7 @@ extension TestStore where State: Equatable {
             }
           }
           expected = expectedWhenGivenPreviousState
-          if expectedWhenGivenPreviousState != actual {
+          if self.withExhaustivity(.on, operation: { expectedWhenGivenPreviousState != actual }) {
             expectationFailure(expected: expectedWhenGivenPreviousState)
           } else {
             tryUnnecessaryModifyFailure()
@@ -1076,9 +1080,9 @@ extension TestStore where State: Equatable {
       }
 
       func expectationFailure(expected: State) {
-        let difference =
+        let difference = self.withExhaustivity(.on) {
           diff(expected, actual, format: .proportional)
-          .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
+            .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
             ?? """
             Expected:
             \(String(describing: expected).indent(by: 2))
@@ -1086,6 +1090,7 @@ extension TestStore where State: Equatable {
             Actual:
             \(String(describing: actual).indent(by: 2))
             """
+        }
         let messageHeading =
           updateStateToExpectedResult != nil
           ? "A state change does not match expectation"
@@ -1144,13 +1149,13 @@ extension TestStore where State: Equatable, Action: Equatable {
         TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-              ?? """
-              Expected:
-              \(String(describing: expectedAction).indent(by: 2))
+            ?? """
+            Expected:
+            \(String(describing: expectedAction).indent(by: 2))
 
-              Received:
-              \(String(describing: receivedAction).indent(by: 2))
-              """
+            Received:
+            \(String(describing: receivedAction).indent(by: 2))
+            """
         }
       },
       updateStateToExpectedResult,
