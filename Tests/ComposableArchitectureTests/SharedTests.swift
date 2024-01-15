@@ -212,6 +212,10 @@ private struct SharedFeature {
       }
     }
   }
+
+  // TODO: @SharedDependency not able to auto-fail right now
+  // TODO: Show that we expect Send should suspend to avoid processing shared mutations
+  // TODO: Show that we expect TestStore.receive to receive incremental updates
 }
 
 private struct Stats: Equatable {

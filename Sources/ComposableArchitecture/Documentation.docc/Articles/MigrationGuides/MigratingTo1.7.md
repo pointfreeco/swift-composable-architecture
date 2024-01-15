@@ -410,6 +410,8 @@ This can now be changed to this:
 Note that the state key path is simply `state: \.destination?.editForm`, and not 
 `state: \.$destination.editForm`.
 
+<!-- TODO: Link to `navigationDestination(item:)` availability article section here. -->
+
 ## Updating alert and confirmationDialog
 
 The ``SwiftUI/View/alert(store:)`` and ``SwiftUI/View/confirmationDialog(store:)`` modifiers have
