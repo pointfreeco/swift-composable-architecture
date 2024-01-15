@@ -85,7 +85,7 @@ struct AppFeature {
       Path()
     }
     .onChange(of: \.path.first?.detail?.syncUp) { _, _ in
-        EmptyReducer()
+      EmptyReducer()
     }
 
     Reduce { state, action in

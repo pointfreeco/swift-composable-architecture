@@ -38,14 +38,20 @@ struct SharedState {
       CounterTab()
     }
     .onChange(of: \.counter.stats) { _, stats in
-      Reduce { state, _ in state.profile.stats = stats; return .none }
+      Reduce { state, _ in
+        state.profile.stats = stats
+        return .none
+      }
     }
 
     Scope(state: \.profile, action: \.profile) {
       ProfileTab()
     }
     .onChange(of: \.profile.stats) { _, stats in
-      Reduce { state, _ in state.counter.stats = stats; return .none }
+      Reduce { state, _ in
+        state.counter.stats = stats
+        return .none
+      }
     }
 
     Reduce { state, action in
@@ -123,8 +129,8 @@ struct CounterTab {
         state.alert = AlertState {
           TextState(
             isPrime(state.stats.count)
-            ? "👍 The number \(state.stats.count) is prime!"
-            : "👎 The number \(state.stats.count) is not prime :("
+              ? "👍 The number \(state.stats.count) is prime!"
+              : "👎 The number \(state.stats.count) is not prime :("
           )
         }
         return .none
@@ -197,13 +203,13 @@ struct ProfileTabView: View {
     Form {
       Text(
         template: """
-            This tab shows state from the previous tab, and it is capable of reseting all of the \
-            state back to 0.
+          This tab shows state from the previous tab, and it is capable of reseting all of the \
+          state back to 0.
 
-            This shows that it is possible for each screen to model its state in the way that makes \
-            the most sense for it, while still allowing the state and mutations to be shared \
-            across independent screens.
-            """,
+          This shows that it is possible for each screen to model its state in the way that makes \
+          the most sense for it, while still allowing the state and mutations to be shared \
+          across independent screens.
+          """,
         .caption
       )
 

@@ -65,7 +65,7 @@ import SwiftUI
         get: {
           #if DEBUG
             // TODO: Can this be localized to the `Perception` framework?
-          _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+            _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
               self.wrappedValue.scope(state: state, action: action)
             }
           #else
