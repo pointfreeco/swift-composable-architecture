@@ -142,7 +142,9 @@ public final class Store<State, Action> {
   private let fromAction: (Action) -> Any
 
   #if canImport(Perception)
-    let _$observationRegistrar = PerceptionRegistrar()
+    let _$observationRegistrar = PerceptionRegistrar(
+      isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
+    )
     private var parentCancellable: AnyCancellable?
   #else
     // NB: This dynamic member lookup is needed to support pre-Observation (<5.9) versions of Swift.
@@ -677,3 +679,13 @@ private enum PartialToState<State> {
     }
   }
 }
+
+#if canImport(Perception)
+  private let _isStorePerceptionCheckingEnabled: Bool = {
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
+      return false
+    } else {
+      return true
+    }
+  }()
+#endif
