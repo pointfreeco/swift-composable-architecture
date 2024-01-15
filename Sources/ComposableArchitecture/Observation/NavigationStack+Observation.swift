@@ -139,12 +139,14 @@ import SwiftUI
             if pathView.count > path.wrappedValue.withState({ $0 }).count,
               let component = pathView.last
             {
-              path.transaction(transaction).wrappedValue.send(
-                .push(id: component.id, state: component.element)
+              path.wrappedValue.send(
+                .push(id: component.id, state: component.element),
+                transaction: transaction
               )
             } else {
               path.transaction(transaction).wrappedValue.send(
-                .popFrom(id: path.wrappedValue.withState { $0 }.ids[pathView.count])
+                .popFrom(id: path.wrappedValue.withState { $0 }.ids[pathView.count]),
+                transaction: transaction
               )
             }
           }
