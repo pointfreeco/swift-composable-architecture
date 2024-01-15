@@ -131,9 +131,7 @@ import SwiftUI
 /// to run only on the main thread, and so a check is executed immediately to make sure that is the
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-90255``)
 /// of the store are also checked to make sure that work is performed on the main thread.
-#if canImport(Perception)
-  @dynamicMemberLookup
-#endif
+@dynamicMemberLookup
 public final class Store<State, Action> {
   var canCacheChildren = true
   private var children: [ScopeID<State, Action>: AnyObject] = [:]
@@ -146,6 +144,12 @@ public final class Store<State, Action> {
   #if canImport(Perception)
     let _$observationRegistrar = PerceptionRegistrar()
     private var parentCancellable: AnyCancellable?
+  #else
+    // NB: This dynamic member lookup is needed to support pre-Observation (<5.9) versions of Swift.
+    @_disfavoredOverload
+    private subscript(dynamicMember keyPath: KeyPath<State, Never>) -> Never {
+      self.currentState[keyPath: keyPath]
+    }
   #endif
 
   /// Initializes a store from an initial state and a reducer.
