@@ -237,7 +237,7 @@
         get: { self.wrappedValue.scope(state: state, action: action.appending(path: \.presented)) },
         set: {
           if $0 == nil, self.wrappedValue.currentState[keyPath: state] != nil {
-            self.wrappedValue.send(action(.dismiss))
+            self.wrappedValue.send(action(.dismiss), transaction: $1)
           }
         }
       )
@@ -304,7 +304,7 @@
         get: { self.wrappedValue.scope(state: state, action: action.appending(path: \.presented)) },
         set: {
           if $0 == nil, self.wrappedValue.currentState[keyPath: state] != nil {
-            self.wrappedValue.send(action(.dismiss))
+            self.wrappedValue.send(action(.dismiss), transaction: $1)
           }
         }
       )
