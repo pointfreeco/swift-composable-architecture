@@ -1,4 +1,4 @@
-#if DEBUG
+#if swift(>=5.9) && DEBUG
   import ComposableArchitecture
   import XCTest
 

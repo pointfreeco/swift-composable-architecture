@@ -1,25 +1,25 @@
-import Combine
-@_spi(Internals) import ComposableArchitecture
-import CustomDump
-import XCTest
-import os.signpost
+#if swift(>=5.9)
+  import Combine
+  @_spi(Internals) import ComposableArchitecture
+  import CustomDump
+  import XCTest
+  import os.signpost
 
-@MainActor
-final class ReducerTests: BaseTCATestCase {
-  var cancellables: Set<AnyCancellable> = []
+  @MainActor
+  final class ReducerTests: BaseTCATestCase {
+    var cancellables: Set<AnyCancellable> = []
 
-  func testCallableAsFunction() {
-    let reducer = Reduce<Int, Void> { state, _ in
-      state += 1
-      return .none
+    func testCallableAsFunction() {
+      let reducer = Reduce<Int, Void> { state, _ in
+        state += 1
+        return .none
+      }
+
+      var state = 0
+      _ = reducer.reduce(into: &state, action: ())
+      XCTAssertEqual(state, 1)
     }
 
-    var state = 0
-    _ = reducer.reduce(into: &state, action: ())
-    XCTAssertEqual(state, 1)
-  }
-
-  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
     @Reducer
     @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     fileprivate struct Feature_testCombine_EffectsAreMerged {
@@ -69,48 +69,48 @@ final class ReducerTests: BaseTCATestCase {
         XCTAssertEqual(slowValue, 1729)
       }
     }
-  #endif
 
-  @Reducer
-  fileprivate struct Feature_testCombine {
-    typealias State = Int
-    enum Action { case increment }
-    let effect: @Sendable () async -> Void
-    var body: some Reducer<State, Action> {
-      Reduce { state, action in
-        state += 1
-        return .run { _ in
-          await self.effect()
+    @Reducer
+    fileprivate struct Feature_testCombine {
+      typealias State = Int
+      enum Action { case increment }
+      let effect: @Sendable () async -> Void
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          state += 1
+          return .run { _ in
+            await self.effect()
+          }
         }
       }
     }
-  }
-  func testCombine() async {
-    var first = false
-    var second = false
+    func testCombine() async {
+      var first = false
+      var second = false
 
-    let store = TestStore(initialState: 0) {
-      Feature_testCombine(effect: { @MainActor in first = true })
-      Feature_testCombine(effect: { @MainActor in second = true })
+      let store = TestStore(initialState: 0) {
+        Feature_testCombine(effect: { @MainActor in first = true })
+        Feature_testCombine(effect: { @MainActor in second = true })
+      }
+
+      await store
+        .send(.increment) { $0 = 2 }
+        .finish()
+
+      XCTAssertTrue(first)
+      XCTAssertTrue(second)
     }
 
-    await store
-      .send(.increment) { $0 = 2 }
-      .finish()
+    func testDefaultSignpost() async {
+      let reducer = EmptyReducer<Int, Void>().signpost(log: .default)
+      var n = 0
+      for await _ in reducer.reduce(into: &n, action: ()).actions {}
+    }
 
-    XCTAssertTrue(first)
-    XCTAssertTrue(second)
+    func testDisabledSignpost() async {
+      let reducer = EmptyReducer<Int, Void>().signpost(log: .disabled)
+      var n = 0
+      for await _ in reducer.reduce(into: &n, action: ()).actions {}
+    }
   }
-
-  func testDefaultSignpost() async {
-    let reducer = EmptyReducer<Int, Void>().signpost(log: .default)
-    var n = 0
-    for await _ in reducer.reduce(into: &n, action: ()).actions {}
-  }
-
-  func testDisabledSignpost() async {
-    let reducer = EmptyReducer<Int, Void>().signpost(log: .disabled)
-    var n = 0
-    for await _ in reducer.reduce(into: &n, action: ()).actions {}
-  }
-}
+#endif

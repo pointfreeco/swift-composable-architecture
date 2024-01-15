@@ -131,7 +131,9 @@ import SwiftUI
 /// to run only on the main thread, and so a check is executed immediately to make sure that is the
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-90255``)
 /// of the store are also checked to make sure that work is performed on the main thread.
-@dynamicMemberLookup
+#if canImport(Perception)
+  @dynamicMemberLookup
+#endif
 public final class Store<State, Action> {
   var canCacheChildren = true
   private var children: [ScopeID<State, Action>: AnyObject] = [:]
@@ -141,8 +143,10 @@ public final class Store<State, Action> {
   private let toState: PartialToState<State>
   private let fromAction: (Action) -> Any
 
-  let _$observationRegistrar = PerceptionRegistrar()
-  private var parentCancellable: AnyCancellable?
+  #if canImport(Perception)
+    let _$observationRegistrar = PerceptionRegistrar()
+    private var parentCancellable: AnyCancellable?
+  #endif
 
   /// Initializes a store from an initial state and a reducer.
   ///
@@ -360,9 +364,13 @@ public final class Store<State, Action> {
         return .none
       }
     #endif
-    return _withoutPerceptionChecking {
-      self.rootStore.send(self.fromAction(action))
-    }
+    #if canImport(Perception)
+      return _withoutPerceptionChecking {
+        self.rootStore.send(self.fromAction(action))
+      }
+    #else
+      return self.rootStore.send(self.fromAction(action))
+    #endif
   }
 
   private init(
@@ -375,23 +383,25 @@ public final class Store<State, Action> {
     self.toState = toState
     self.fromAction = fromAction
 
-    func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
-      let toState = toState as! PartialToState<T>
-      return rootStore.didSet
-        .compactMap { [weak rootStore] in
-          rootStore.map { toState($0.state) }?._$id
-        }
-        .removeDuplicates()
-        .dropFirst()
-        .sink { [weak self] _ in
-          guard let self else { return }
-          self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
-        }
-    }
+    #if canImport(Perception)
+      func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
+        let toState = toState as! PartialToState<T>
+        return rootStore.didSet
+          .compactMap { [weak rootStore] in
+            rootStore.map { toState($0.state) }?._$id
+          }
+          .removeDuplicates()
+          .dropFirst()
+          .sink { [weak self] _ in
+            guard let self else { return }
+            self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+          }
+      }
 
-    if let stateType = State.self as? ObservableState.Type {
-      self.parentCancellable = subscribeToDidSet(stateType)
-    }
+      if let stateType = State.self as? ObservableState.Type {
+        self.parentCancellable = subscribeToDidSet(stateType)
+      }
+    #endif
   }
 
   convenience init<R: Reducer>(
