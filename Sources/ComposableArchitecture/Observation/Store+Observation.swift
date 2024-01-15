@@ -1,10 +1,6 @@
 #if canImport(Perception)
   import SwiftUI
 
-  #if canImport(Observation)
-    import Observation
-  #endif
-
   extension Store: Perceptible {}
 
   #if canImport(Observation)

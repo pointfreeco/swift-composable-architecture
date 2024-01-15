@@ -143,7 +143,7 @@ public final class Store<State, Action> {
 
   #if canImport(Perception)
     let _$observationRegistrar = PerceptionRegistrar(
-      isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
+      isPerceptionCheckingEnabled: _isPlatformPerceptionCheckingEnabled
     )
     private var parentCancellable: AnyCancellable?
   #else
@@ -681,7 +681,7 @@ private enum PartialToState<State> {
 }
 
 #if canImport(Perception)
-  private let _isStorePerceptionCheckingEnabled: Bool = {
+  let _isPlatformPerceptionCheckingEnabled: Bool = {
     if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
       return false
     } else {
