@@ -2,7 +2,7 @@
   import Foundation
 
   @Perceptible
-  @dynamicMemberLookup
+  // @dynamicMemberLookup
   @propertyWrapper
   public final class Shared<Value> {
     private var currentValue: Value
@@ -79,10 +79,14 @@
       self.complete()
     }
 
-    public subscript<Member>(dynamicMember keyPath: WritableKeyPath<Value, Member>) -> Member {
-      get { self.wrappedValue[keyPath: keyPath] }
-      set { self.wrappedValue[keyPath: keyPath] = newValue }
-    }
+    // public subscript<Member>(
+    //   dynamicMember keyPath: WritableKeyPath<Value, Member>
+    // ) -> Shared<Member> {
+    //   Shared<Member>(
+    //     get: { self.wrappedValue[keyPath: keyPath] },
+    //     set: { self.wrappedValue[keyPath: keyPath] = $0 }
+    //   )
+    // }
 
     public func copy(fileID: StaticString = #fileID, line: UInt = #line) -> Shared {
       Shared(self.wrappedValue, fileID: fileID, line: line)
