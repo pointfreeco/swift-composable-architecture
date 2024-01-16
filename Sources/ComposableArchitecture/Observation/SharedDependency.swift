@@ -1,6 +1,6 @@
 @propertyWrapper
 public struct SharedDependency<Key: TestDependencyKey> where Key.Value == Key {
-  private let dependency = Dependency(Shared<Key>.self)
+  private let dependency: Dependency<Shared<Key>>
 
   public var wrappedValue: Key.Value {
     get { dependency.wrappedValue.wrappedValue }
@@ -11,7 +11,13 @@ public struct SharedDependency<Key: TestDependencyKey> where Key.Value == Key {
     dependency.wrappedValue
   }
 
-  public init() {}
+  public init(
+    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.dependency = Dependency(Shared<Key>.self, file: file, fileID: fileID, line: line)
+  }
 }
 
 extension SharedDependency: Equatable where Key.Value: Equatable {
