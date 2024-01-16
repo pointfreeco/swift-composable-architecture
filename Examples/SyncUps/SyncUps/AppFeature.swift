@@ -64,9 +64,6 @@ struct AppFeature {
             ),
             at: 0
           )
-          guard let syncUp = state.path[id: id, case: \.detail]?.$syncUp
-          else { return .none }
-          state.syncUpsList.syncUps[id: syncUp.id] = syncUp
           return .none
         }
 
