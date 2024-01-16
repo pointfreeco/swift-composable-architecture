@@ -141,6 +141,22 @@
       )
     }
 
+    public subscript<Member>(
+      dynamicMember keyPath: WritableKeyPath<Value, Member?>
+    ) -> Shared<Member>? {
+      guard var wrappedValue = self.wrappedValue[keyPath: keyPath]
+      else { return nil }
+      return Shared<Member>(
+        storage: .function(
+          get: {
+            wrappedValue = self.wrappedValue[keyPath: keyPath] ?? wrappedValue
+            return wrappedValue
+          },
+          set: { self.wrappedValue[keyPath: keyPath] = $0 }
+        )
+      )
+    }
+
     public func assert(
       _ updateValueToExpectedResult: (inout Value) throws -> Void,
       file: StaticString = #file,

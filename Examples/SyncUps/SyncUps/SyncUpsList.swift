@@ -31,6 +31,7 @@ struct SyncUpsList {
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
     case onDelete(IndexSet)
+    case syncUpTapped(id: SyncUp.ID)
   }
 
   @Reducer
@@ -106,6 +107,9 @@ struct SyncUpsList {
       case let .onDelete(indexSet):
         state.syncUps.remove(atOffsets: indexSet)
         return .none
+
+      case .syncUpTapped:
+        return .none
       }
     }
     .ifLet(\.$destination, action: \.destination) {
@@ -119,11 +123,10 @@ struct SyncUpsListView: View {
 
   var body: some View {
     List {
-      ForEach(store.syncUps.ids, id: \.self) { id in
-        let syncUp = store.syncUps[id: id]!
-        NavigationLink(
-          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: store.$syncUps[dynamicMember: \.[id: id]!]))
-        ) {
+      ForEach(store.syncUps) { syncUp in
+        Button {
+          store.send(.syncUpTapped(id: syncUp.id))
+        } label: {
           CardView(syncUp: syncUp)
         }
         .listRowBackground(syncUp.theme.mainColor)
