@@ -5,7 +5,6 @@ import SwiftUI
 struct SyncUpsApp: App {
   let store = Store(initialState: AppFeature.State()) {
     AppFeature()
-      //.dependency(<#T##keyPath: WritableKeyPath<DependencyValues, Value>##WritableKeyPath<DependencyValues, Value>#>, <#T##value: Value##Value#>)
       ._printChanges()
   } withDependencies: {
     if ProcessInfo.processInfo.environment["UITesting"] == "true" {
