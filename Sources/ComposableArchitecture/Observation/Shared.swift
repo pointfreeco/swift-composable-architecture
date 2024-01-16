@@ -175,7 +175,12 @@
 
   extension Shared: TestDependencyKey where Value: TestDependencyKey {
     public static var testValue: Shared<Value.Value> {
-      Shared<Value.Value>(Value.testValue)
+      withDependencies {
+        $0[Value.self] = Value.testValue
+      } operation: {
+        @Dependency(Value.self) var testValue
+        return Shared<Value.Value>(testValue)
+      }
     }
   }
   extension Shared: DependencyKey where Value: DependencyKey {

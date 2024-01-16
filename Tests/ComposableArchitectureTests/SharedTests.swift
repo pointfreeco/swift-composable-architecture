@@ -321,6 +321,8 @@ private struct SharedFeature {
   // TODO: Show that we expect Send should suspend to avoid processing shared mutations
   // TODO: Show that we expect TestStore.receive to receive incremental updates
   // TODO: Test expected failures
+  // TODO: Test that no test value doesn't emit runtime warning / XCTFail
+  // TODO: Test that no live value _does_ emit runtime warning / XCTFail in a live context
 }
 
 private struct Stats: Equatable {
@@ -328,7 +330,6 @@ private struct Stats: Equatable {
 }
 extension Stats: DependencyKey {
   static let liveValue = Stats()
-  static let testValue = Stats()
 }
 private struct Profile: Equatable {
   @Shared var stats: Stats
