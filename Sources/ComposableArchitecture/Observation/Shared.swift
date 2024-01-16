@@ -63,14 +63,14 @@
         {
           XCTFail(
             """
-            Tracked changes to '\(Self.self)@\(self.fileID):\(self.line)' but failed to assert: …
+            Tracked changes to '\(Shared.self)@\(self.fileID):\(self.line)' but failed to assert: …
 
             \(difference.indent(by: 2))
 
             (Before: −, After: +)
 
-            Call '\(Self.self).assert' to exhaustively test these changes, or call 'skipChanges' to \
-            ignore them.
+            Call '\(Shared.self).assert' to exhaustively test these changes, or call 'skipChanges' \
+            to ignore them.
             """
           )
         }
@@ -196,7 +196,12 @@
 
   extension Shared: Equatable where Value: Equatable {
     public static func == (lhs: Shared, rhs: Shared) -> Bool {
-      lhs.wrappedValue == rhs.wrappedValue
+      switch (lhs.storage, rhs.storage) {
+      case let (.reference(lhs), .reference(rhs)):
+        return lhs == rhs
+      default:
+        return lhs.wrappedValue == rhs.wrappedValue
+      }
     }
   }
 
@@ -230,6 +235,23 @@
         try container.encode(self.wrappedValue)
       } catch {
         try self.wrappedValue.encode(to: encoder)
+      }
+    }
+  }
+
+  extension Shared.Reference: CustomDumpRepresentable {
+    public var customDumpValue: Any {
+      self.wrappedValue
+    }
+  }
+
+  extension Shared: CustomDumpRepresentable {
+    public var customDumpValue: Any {
+      switch self.storage {
+      case let .reference(reference):
+        return reference
+      default:
+        return self.wrappedValue
       }
     }
   }

@@ -43,11 +43,11 @@ final class SharedTests: XCTestCase {
 
             SharedFeature.State(
               _count: 0,
-              _profile: Shared(…),
+              _profile: Profile(…),
           −   _sharedCount: 2,
           +   _sharedCount: 1,
-              _stats: Shared(…),
-              _statsDependency: Shared(…)
+              _stats: Stats(count: 0),
+              _statsDependency: Stats(count: 0)
             )
 
       (Expected: −, Actual: +)
@@ -125,11 +125,11 @@ final class SharedTests: XCTestCase {
 
               SharedFeature.State(
                 _count: 0,
-                _profile: Shared(…),
+                _profile: Profile(…),
             −   _sharedCount: 2,
             +   _sharedCount: 1,
-                _stats: Shared(…),
-                _statsDependency: Shared(…)
+                _stats: Stats(count: 0),
+                _statsDependency: Stats(count: 0)
               )
 
         (Expected: −, Actual: +)
@@ -172,11 +172,11 @@ final class SharedTests: XCTestCase {
 
               SharedFeature.State(
                 _count: 0,
-                _profile: Shared(…),
+                _profile: Profile(…),
             −   _sharedCount: 0,
             +   _sharedCount: 1,
-                _stats: Shared(…),
-                _statsDependency: Shared(…)
+                _stats: Stats(count: 0),
+                _statsDependency: Stats(count: 0)
               )
 
         (Expected: −, Actual: +)
@@ -217,9 +217,9 @@ final class SharedTests: XCTestCase {
 
               SharedFeature.State(
                 _count: 0,
-                _profile: Shared(…),
-                _sharedCount: Shared(…),
-                _stats: Shared(…),
+                _profile: Profile(…),
+                _sharedCount: 0,
+                _stats: Stats(count: 0),
             −   _statsDependency: Stats(count: 2)
             +   _statsDependency: Stats(count: 1)
               )
@@ -296,7 +296,6 @@ final class SharedTests: XCTestCase {
   }
 
   func testMutationOfSharedStateInLongLivingEffect_IncorrectAssertion() async {
-    let sharedCountInitLine = #line + 4
     let store = TestStore(
       initialState: SharedFeature.State(
         profile: Shared(Profile(stats: Shared(Stats()))),
@@ -486,7 +485,7 @@ final class SharedTests: XCTestCase {
       $0.count = 42
     }
   }
-  
+
   func testSharedDependencyAccessWithOnlyTestValue_TestContext() {
     @SharedDependency var shared: SharedStateWithTestValue
     _ = shared
@@ -528,6 +527,18 @@ final class SharedTests: XCTestCase {
       @SharedDependency var shared: SharedStateWithLiveValue
       _ = shared
     }
+  }
+
+  func testDump() {
+    let profile = Shared(Profile(stats: Shared(Stats())))
+    XCTAssertEqual(
+      String(customDumping: profile),
+      """
+      Profile(
+        _stats: Stats(count: 0)
+      )
+      """
+    )
   }
 }
 
