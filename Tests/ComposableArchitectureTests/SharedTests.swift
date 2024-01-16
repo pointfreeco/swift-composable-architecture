@@ -103,7 +103,7 @@ final class SharedTests: XCTestCase {
     ) {
       SharedFeature()
     } withDependencies: {
-      $0[shared: Stats.self] = Stats(count: 42)
+      $0[Shared<Stats>.self] = Shared(Stats(count: 42))
     }
     await store.send(.sharedDependencyIncrement) {
       $0.statsDependency.count = 43
@@ -259,7 +259,7 @@ final class SharedTests: XCTestCase {
       Feature()
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
-      $0[shared: Stats.self] = Stats(count: 2)
+      $0[Shared<Stats>.self] = Shared(Stats(count: 2))
     }
     await store.send(.startTimer)
     await mainQueue.advance(by: .seconds(1))
