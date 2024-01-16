@@ -31,7 +31,7 @@ final class SyncUpsListTests: XCTestCase {
 
     await store.send(.confirmAddSyncUpButtonTapped) {
       $0.destination = nil
-      $0.syncUps = [Shared(syncUp)]
+      $0.syncUps = [syncUp]
     }
   }
 
@@ -64,14 +64,12 @@ final class SyncUpsListTests: XCTestCase {
     await store.send(.confirmAddSyncUpButtonTapped) {
       $0.destination = nil
       $0.syncUps = [
-        Shared(
-          SyncUp(
-            id: SyncUp.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
-            attendees: [
-              Attendee(id: Attendee.ID(UUID(0)))
-            ],
-            title: "Design"
-          )
+        SyncUp(
+          id: SyncUp.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
+          attendees: [
+            Attendee(id: Attendee.ID(UUID(0)))
+          ],
+          title: "Design"
         )
       ]
     }
@@ -92,9 +90,9 @@ final class SyncUpsListTests: XCTestCase {
     await store.send(.destination(.presented(.alert(.confirmLoadMockData)))) {
       $0.destination = nil
       $0.syncUps = [
-        Shared(.mock),
-        Shared(.designMock),
-        Shared(.engineeringMock),
+        .mock,
+        .designMock,
+        .engineeringMock,
       ]
     }
   }

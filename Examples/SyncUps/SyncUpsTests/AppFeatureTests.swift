@@ -56,9 +56,8 @@ final class AppFeatureTests: XCTestCase {
       }
     }
 
-    let firstSyncUp = store.state.syncUpsList.syncUps[0]
-    await store.send(.path(.push(id: 0, state: .detail(SyncUpDetail.State(syncUp: firstSyncUp))))) {
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: firstSyncUp))
+    await store.send(.syncUpsList(.syncUpTapped(id: syncUp.id))) {
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: $0.syncUpsList.$syncUps[id: syncUp.id]!))
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.editButtonTapped)))) {
