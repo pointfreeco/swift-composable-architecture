@@ -6,7 +6,7 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    var syncUps: IdentifiedArrayOf<Shared<SyncUp>> = []
+    @Shared var syncUps: IdentifiedArrayOf<SyncUp>
 
     init(
       destination: Destination.State? = nil
@@ -15,10 +15,12 @@ struct SyncUpsList {
 
       do {
         @Dependency(\.dataManager.load) var load
-        self.syncUps = try JSONDecoder().decode(IdentifiedArray.self, from: load(.syncUps))
+        self._syncUps = try Shared(JSONDecoder().decode(IdentifiedArray.self, from: load(.syncUps)))
       } catch is DecodingError {
         self.destination = .alert(.dataFailedToLoad)
+        self._syncUps = Shared([])
       } catch {
+        self._syncUps = Shared([])
       }
     }
   }
@@ -82,15 +84,15 @@ struct SyncUpsList {
               ?? Attendee(id: Attendee.ID(self.uuid()))
           )
         }
-        state.syncUps.append(Shared(syncUp))
+        state.syncUps.append(syncUp)
         state.destination = nil
         return .none
 
       case .destination(.presented(.alert(.confirmLoadMockData))):
         state.syncUps = [
-          Shared(.mock),
-          Shared(.designMock),
-          Shared(.engineeringMock),
+          .mock,
+          .designMock,
+          .engineeringMock,
         ]
         return .none
 
@@ -117,11 +119,12 @@ struct SyncUpsListView: View {
 
   var body: some View {
     List {
-      ForEach(store.syncUps) { syncUp in
+      ForEach(store.syncUps.ids, id: \.self) { id in
+        let syncUp = store.syncUps[id: id]!
         NavigationLink(
-          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
+          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: store.$syncUps[dynamicMember: \.[id: id]!]))
         ) {
-          CardView(syncUp: syncUp.wrappedValue)
+          CardView(syncUp: syncUp)
         }
         .listRowBackground(syncUp.theme.mainColor)
       }
