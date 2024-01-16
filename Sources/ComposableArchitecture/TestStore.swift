@@ -688,6 +688,7 @@ public final class TestStore<State, Action> {
         line: effect.action.line
       )
     }
+    self.dependencies.sharedChangeTracker?.complete()
   }
 
   /// Overrides the store's dependencies for a given operation.

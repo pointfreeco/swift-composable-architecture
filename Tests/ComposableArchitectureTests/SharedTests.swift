@@ -110,7 +110,53 @@ final class SharedTests: XCTestCase {
     }
   }
 
-  func testComplexEffect() async {
+  func testComplexSharedEffect_ReducerMutation() async {
+    struct Feature: Reducer {
+      struct State: Equatable {
+        @Shared var count: Int
+      }
+      enum Action {
+        case startTimer
+        case stopTimer
+        case timerTick
+      }
+      @Dependency(\.mainQueue) var queue
+      enum CancelID { case timer }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .startTimer:
+            return .run { send in
+              for await _ in self.queue.timer(interval: .seconds(1)) {
+                await send(.timerTick)
+              }
+            }
+            .cancellable(id: CancelID.timer)
+          case .stopTimer:
+            return .cancel(id: CancelID.timer)
+          case .timerTick:
+            state.count += 1
+            return .none
+          }
+        }
+      }
+    }
+    let mainQueue = DispatchQueue.test
+    let store = TestStore(initialState: Feature.State(count: Shared(0))) {
+      Feature()
+    } withDependencies: {
+      $0.mainQueue = mainQueue.eraseToAnyScheduler()
+    }
+    await store.send(.startTimer)
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.timerTick) {
+      $0.count = 1
+    }
+    await store.send(.stopTimer)
+    await mainQueue.advance(by: .seconds(1))
+  }
+
+  func testComplexSharedEffect_EffectMutation() async {
     struct Feature: Reducer {
       struct State: Equatable {
         @Shared var count: Int
@@ -164,6 +210,66 @@ final class SharedTests: XCTestCase {
     await mainQueue.advance(by: .seconds(1))
     store.state.$count.assert {
       $0 = 42
+    }
+  }
+
+  func testComplexSharedDependencyEffect_EffectMutation() async {
+    struct Feature: Reducer {
+      struct State: Equatable {
+        @SharedDependency var stats: Stats
+      }
+      enum Action {
+        case startTimer
+        case stopTimer
+        case timerTick
+      }
+      @Dependency(\.mainQueue) var queue
+      enum CancelID { case timer }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .startTimer:
+            return .run { send in
+              for await _ in self.queue.timer(interval: .seconds(1)) {
+                @SharedDependency var stats: Stats
+                stats.count += 1
+                await send(.timerTick)
+              }
+            }
+            .cancellable(id: CancelID.timer)
+          case .stopTimer:
+            return .merge(
+              .cancel(id: CancelID.timer),
+              .run { _ in
+                Task {
+                  try await self.queue.sleep(for: .seconds(1))
+                  @SharedDependency var stats: Stats
+                  stats.count = 42
+                }
+              }
+            )
+          case .timerTick:
+            return .none
+          }
+        }
+      }
+    }
+    let mainQueue = DispatchQueue.test
+    let store = TestStore(initialState: Feature.State()) {
+      Feature()
+    } withDependencies: {
+      $0.mainQueue = mainQueue.eraseToAnyScheduler()
+      $0[shared: Stats.self] = Stats(count: 2)
+    }
+    await store.send(.startTimer)
+    await mainQueue.advance(by: .seconds(1))
+    await store.receive(.timerTick) {
+      $0.stats.count = 3
+    }
+    await store.send(.stopTimer)
+    await mainQueue.advance(by: .seconds(1))
+    store.state.$stats.assert {
+      $0.count = 42
     }
   }
 }

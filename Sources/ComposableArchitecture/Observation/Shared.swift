@@ -55,7 +55,7 @@
       self.line = line
     }
 
-    deinit {
+    func complete() {
       if
         let snapshot = self.snapshot,
         let difference = diff(snapshot, self.currentValue, format: .proportional)
@@ -73,6 +73,10 @@
           """
         )
       }
+    }
+
+    deinit {
+      self.complete()
     }
 
     public subscript<Member>(dynamicMember keyPath: WritableKeyPath<Value, Member>) -> Member {
@@ -182,19 +186,38 @@
   }
 
   final class SharedChangeTracker: @unchecked Sendable {
-    private var changed = LockIsolated<[ObjectIdentifier: () -> Void]>([:])
+    private struct Value {
+      let complete: () -> Void
+      let reset: () -> Void
+    }
+
+    private var changed = LockIsolated<[ObjectIdentifier: Value]>([:])
     var hasChanges: Bool { !self.changed.value.isEmpty }
     func track<T>(_ shared: Shared<T>) {
       self.changed.withValue {
-        _ = $0[ObjectIdentifier(shared)] = { [weak shared] in
-          shared?.snapshot = nil
+        _ = $0[ObjectIdentifier(shared)] = Value(
+          complete: { [weak shared] in
+            shared?.complete()
+          },
+          reset: { [weak shared] in
+            shared?.snapshot = nil
+          }
+        )
+      }
+    }
+    func complete() {
+      self.changed.withValue {
+        for value in $0.values {
+          value.complete()
+          value.reset()
         }
+        $0.removeAll()
       }
     }
     func reset() {
       self.changed.withValue {
-        for reset in $0.values {
-          reset()
+        for value in $0.values {
+          value.reset()
         }
         $0.removeAll()
       }
