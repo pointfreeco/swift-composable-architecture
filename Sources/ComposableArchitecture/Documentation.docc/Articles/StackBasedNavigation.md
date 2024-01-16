@@ -487,6 +487,18 @@ await store.receive(\.path.popFrom) {
 }
 ```
 
+If you need to assert that a specific child action is received, you can construct a case key path 
+for a specific child element action by subscripting on the `\.path` case with the element ID. 
+
+For example, if the child feature performed an effect that sent an `.response` action, you 
+can test that it is received:
+
+```swift
+await store.receive(\.path[id: 0].counter.response) {
+  // ...
+}
+```
+
 This shows how we can write very nuanced tests on how parent and child features interact with each
 other in a navigation stack.
 
