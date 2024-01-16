@@ -1,7 +1,11 @@
 extension DependencyValues {
-  public subscript<Key: TestDependencyKey>(shared _: Key.Type) -> Key.Value {
+  public subscript<Key: TestDependencyKey>(
+    shared _: Key.Type,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Key.Value {
     get { self[Shared<Key>.self].wrappedValue }
-    set { self[Shared<Key>.self] = Shared(newValue) }
+    set { self[Shared<Key>.self] = Shared(newValue, fileID: fileID, line: line) }
   }
 }
 

@@ -320,6 +320,7 @@ private struct SharedFeature {
 
   // TODO: Show that we expect Send should suspend to avoid processing shared mutations
   // TODO: Show that we expect TestStore.receive to receive incremental updates
+  // TODO: Test expected failures
 }
 
 private struct Stats: Equatable {
