@@ -141,3 +141,14 @@ struct AppView: View {
 extension URL {
   static let syncUps = Self.documentsDirectory.appending(component: "sync-ups.json")
 }
+
+#Preview {
+  let store = Store(initialState: AppFeature.State(syncUpsList: SyncUpsList.State())) {
+    AppFeature()
+  }
+  store.syncUpsList.syncUps = [.mock, .designMock, .engineeringMock]
+
+  return AppView(
+    store: store
+  )
+}

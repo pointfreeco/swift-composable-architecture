@@ -4,13 +4,7 @@ import SwiftUI
 @main
 struct SyncUpsApp: App {
   let store = Store(
-    initialState: AppFeature.State(
-      syncUpsList: SyncUpsList.State(
-        syncUps: ProcessInfo.processInfo.environment["UITesting"] == "true"
-          ? Shared([])
-          : Shared(initialValue: [], persistTo: .appStorage("syncUps"))
-      )
-    )
+    initialState: AppFeature.State(syncUpsList: SyncUpsList.State())
   ) {
     AppFeature()
       ._printChanges()

@@ -1,4 +1,5 @@
 #if canImport(Perception)
+import Combine
   import Foundation
 
   public struct _Empty<Element>: AsyncSequence {
@@ -50,12 +51,17 @@
   }()
 
   @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
-  public struct SharedAppStorage<Value>: SharedPersistence {
+  public class SharedAppStorage<Value>: NSObject, SharedPersistence {
     private let _get: () -> Value?
     private let _didSet: (Value) -> Void
+    private let key: String
     private let store: UserDefaults
+    private let (stream, continuation) = AsyncStream.makeStream(of: Value.self)
 
-    public init(_ key: String, store: UserDefaults = .standard) where Value: Codable {
+    public init(_ key: String, store: UserDefaults?) where Value: Codable {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self.key = key
       self._get = {
         try? store.data(forKey: key).map { try decoder.decode(Value.self, from: $0) }
       }
@@ -66,14 +72,27 @@
         }
       }
       self.store = store
+      super.init()
+      self.store.addObserver(self, forKeyPath: key, context: nil)
+    }
+
+    public override func observeValue(
+      forKeyPath keyPath: String?,
+      of object: Any?,
+      change: [NSKeyValueChangeKey: Any]?,
+      context: UnsafeMutableRawPointer?
+    ) {
+      guard let value = self.get()
+      else { return }
+      self.continuation.yield(value)
+    }
+
+    deinit {
+      self.removeObserver(self.store, forKeyPath: self.key)
     }
 
     public var values: AsyncStream<Value> {
-      AsyncStream(
-        NotificationCenter.default
-          .notifications(named: UserDefaults.didChangeNotification, object: self.store)
-          .compactMap { _ in self.get() }
-      )
+      self.stream
     }
 
     public func get() -> Value? {
@@ -96,11 +115,11 @@
     }
 
     public init(
-      initialValue value: Value,
-      persistTo persistence: some SharedPersistence<Value>,
+      wrappedValue value: Value,
+      _ persistence: some SharedPersistence<Value>,
       fileID: StaticString = #fileID,
       line: UInt = #line
-    ) throws {
+    ) {
       self.init(
         reference: Reference(
           value,
@@ -326,10 +345,11 @@
     )
     let fileID: StaticString
     let line: UInt
-    let persistence: (any SharedPersistence<Value>)?
+    @PerceptionIgnored
+    var persistence: (any SharedPersistence<Value>)?
     var currentValue: Value {
       get { self.lock.withLock { self._currentValue } }
-      set { 
+      set {
         self.lock.withLock {
           let oldValue = self._currentValue
           self.persistence?.willSet(value: oldValue, newValue: newValue)
@@ -501,3 +521,20 @@
     }
   }
 #endif
+
+private enum UserDefaultsKey: DependencyKey {
+//  static var testValue: UncheckedSendable<UserDefaults> {
+//    UncheckedSendable(UserDefaults())
+//  }
+//  static var previewValue: UncheckedSendable<UserDefaults> {
+//    UncheckedSendable(UserDefaults(suiteName: UUID().uuidString)!)
+//  }
+  static let liveValue = UncheckedSendable(UserDefaults.standard)
+}
+
+extension DependencyValues {
+  public var userDefaults: UserDefaults {
+    get { self[UserDefaultsKey.self].value }
+    set { self[UserDefaultsKey.self].value = newValue }
+  }
+}

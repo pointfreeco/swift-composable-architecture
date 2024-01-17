@@ -6,7 +6,7 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    @Shared var syncUps: IdentifiedArrayOf<SyncUp>
+    @Shared(.appStorage("syncUps")) var syncUps: IdentifiedArrayOf<SyncUp> = []
   }
 
   enum Action {
@@ -170,19 +170,21 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 
 struct SyncUpsList_Previews: PreviewProvider {
   static var previews: some View {
-    SyncUpsListView(
-      store: Store(
-        initialState: SyncUpsList.State(
-          syncUps: Shared([
-            .mock,
-            .designMock,
-            .engineeringMock,
-          ])
-        )
-      ) {
-        SyncUpsList()
-      }
-    )
+    NavigationStack {
+      SyncUpsListView(
+        store: Store(
+          initialState: SyncUpsList.State(
+            //          syncUps: Shared([
+            //            .mock,
+            //            .designMock,
+            //            .engineeringMock,
+            //          ])
+          )
+        ) {
+          SyncUpsList()
+        }
+      )
+    }
   }
 }
 
