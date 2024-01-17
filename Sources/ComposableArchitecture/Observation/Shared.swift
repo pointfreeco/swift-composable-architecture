@@ -523,12 +523,12 @@ import Combine
 #endif
 
 private enum UserDefaultsKey: DependencyKey {
-//  static var testValue: UncheckedSendable<UserDefaults> {
-//    UncheckedSendable(UserDefaults())
-//  }
-//  static var previewValue: UncheckedSendable<UserDefaults> {
-//    UncheckedSendable(UserDefaults(suiteName: UUID().uuidString)!)
-//  }
+  static var testValue: UncheckedSendable<UserDefaults> {
+    UncheckedSendable(UserDefaults())
+  }
+  static var previewValue: UncheckedSendable<UserDefaults> {
+    UncheckedSendable(UserDefaults(suiteName: UUID().uuidString)!)
+  }
   static let liveValue = UncheckedSendable(UserDefaults.standard)
 }
 
