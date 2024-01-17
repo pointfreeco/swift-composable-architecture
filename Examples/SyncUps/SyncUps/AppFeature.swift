@@ -6,7 +6,7 @@ struct AppFeature {
   @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
-    var syncUpsList = SyncUpsList.State()
+    var syncUpsList: SyncUpsList.State
   }
 
   enum Action {
@@ -16,7 +16,6 @@ struct AppFeature {
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.date.now) var now
-  @Dependency(\.dataManager.save) var saveData
   @Dependency(\.uuid) var uuid
 
   private enum CancelID {
@@ -86,16 +85,6 @@ struct AppFeature {
     }
     .onChange(of: \.path.first?.detail?.syncUp) { _, _ in
       EmptyReducer()
-    }
-
-    Reduce { state, action in
-      return .run { [syncUps = state.syncUpsList.syncUps] _ in
-        try await withTaskCancellation(id: CancelID.saveDebounce, cancelInFlight: true) {
-          try await self.clock.sleep(for: .seconds(1))
-          try await self.saveData(JSONEncoder().encode(syncUps), .syncUps)
-        }
-      } catch: { _, _ in
-      }
     }
   }
 

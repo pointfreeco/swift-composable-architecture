@@ -1,6 +1,90 @@
 #if canImport(Perception)
   import Foundation
 
+  public struct _Empty<Element>: AsyncSequence {
+    public struct AsyncIterator: AsyncIteratorProtocol {
+      public func next() async throws -> Element? {
+        nil
+      }
+    }
+    public func makeAsyncIterator() -> AsyncIterator {
+      AsyncIterator()
+    }
+  }
+
+  public protocol SharedPersistence<Value> {
+    associatedtype Value
+    associatedtype Values: AsyncSequence = _Empty<Value> where Values.Element == Value
+
+    var values: Values { get }
+    func get() -> Value?
+    func willSet(value: Value, newValue: Value)
+    func didSet(oldValue: Value, value: Value)
+  }
+
+  extension SharedPersistence {
+    public func willSet(value _: Value, newValue _: Value) {}
+    public func didSet(oldValue _: Value, value _: Value) {}
+  }
+
+  extension SharedPersistence where Values == _Empty<Value> {
+    public var values: _Empty<Value> {
+      _Empty()
+    }
+  }
+
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  extension SharedPersistence {
+    public static func appStorage<Value: Codable>(
+      _ key: String, store: UserDefaults = .standard
+    ) -> Self where Self == SharedAppStorage<Value> {
+      SharedAppStorage(key, store: store)
+    }
+  }
+
+  private let decoder = JSONDecoder()
+  private let encoder: JSONEncoder = {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = .sortedKeys
+    return encoder
+  }()
+
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+  public struct SharedAppStorage<Value>: SharedPersistence {
+    private let _get: () -> Value?
+    private let _didSet: (Value) -> Void
+    private let store: UserDefaults
+
+    public init(_ key: String, store: UserDefaults = .standard) where Value: Codable {
+      self._get = {
+        try? store.data(forKey: key).map { try decoder.decode(Value.self, from: $0) }
+      }
+      self._didSet = {
+        let data = try! encoder.encode($0)
+        if data != store.data(forKey: key) {
+          store.set(data, forKey: key)
+        }
+      }
+      self.store = store
+    }
+
+    public var values: AsyncStream<Value> {
+      AsyncStream(
+        NotificationCenter.default
+          .notifications(named: UserDefaults.didChangeNotification, object: self.store)
+          .compactMap { _ in self.get() }
+      )
+    }
+
+    public func get() -> Value? {
+      self._get()
+    }
+
+    public func didSet(oldValue _: Value, value: Value) {
+      self._didSet(value)
+    }
+  }
+
   @dynamicMemberLookup
   @propertyWrapper
   public struct Shared<Value> {
@@ -9,6 +93,23 @@
 
     public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
       self.init(reference: Reference(value, fileID: fileID, line: line), keyPath: \Value.self)
+    }
+
+    public init(
+      initialValue value: Value,
+      persistTo persistence: some SharedPersistence<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) throws {
+      self.init(
+        reference: Reference(
+          value,
+          persistence: persistence,
+          fileID: fileID,
+          line: line
+        ),
+        keyPath: \Value.self
+      )
     }
 
     private init(reference: any ReferenceProtocol, keyPath: AnyKeyPath) {
@@ -75,6 +176,7 @@
       }
       nonmutating set {
         func open<Root>(_ reference: some ReferenceProtocol<Root>) {
+          // TODO: Instead, copy `currentValue` over to `snapshot` when `nil` before applying changes.
           if self.keyPath == \Root.self {
             reference.snapshot = newValue as! Root?
           } else if let newValue {
@@ -138,6 +240,7 @@
 
   extension Shared: @unchecked Sendable where Value: Sendable {}
 
+  // TODO: Can this just be `lhs.reference == rhs.reference`
   extension Shared: Equatable where Value: Equatable {
     public static func == (lhs: Shared, rhs: Shared) -> Bool {
       if SharedLocals.exhaustivity == .on, lhs.reference === rhs.reference {
@@ -215,6 +318,7 @@
   @Perceptible
   private final class Reference<Value>: ReferenceProtocol {
     var _currentValue: Value
+    @PerceptionIgnored
     var _snapshot: Value?
     let lock = NSRecursiveLock()
     let _$perceptionRegistrar = PerceptionRegistrar(
@@ -222,18 +326,47 @@
     )
     let fileID: StaticString
     let line: UInt
+    let persistence: (any SharedPersistence<Value>)?
     var currentValue: Value {
       get { self.lock.withLock { self._currentValue } }
-      set { self.lock.withLock { self._currentValue = newValue } }
+      set { 
+        self.lock.withLock {
+          let oldValue = self._currentValue
+          self.persistence?.willSet(value: oldValue, newValue: newValue)
+          self._currentValue = newValue
+          self.persistence?.didSet(oldValue: oldValue, value: newValue)
+        }
+      }
     }
     var snapshot: Value? {
       get { self.lock.withLock { self._snapshot } }
       set { self.lock.withLock { self._snapshot = newValue } }
     }
-    init(_ value: Value, fileID: StaticString, line: UInt) {
+    init(
+      _ value: Value,
+      fileID: StaticString,
+      line: UInt
+    ) {
       self._currentValue = value
+      self.persistence = nil
       self.fileID = fileID
       self.line = line
+    }
+    init(
+      _ value: Value,
+      persistence: some SharedPersistence<Value>,
+      fileID: StaticString,
+      line: UInt
+    ) {
+      self._currentValue = persistence.get() ?? value
+      self.persistence = persistence
+      self.fileID = fileID
+      self.line = line
+      Task { @MainActor [weak self] in
+        for try await value in persistence.values {
+          self?.currentValue = value
+        }
+      }
     }
     deinit {
       self.complete()

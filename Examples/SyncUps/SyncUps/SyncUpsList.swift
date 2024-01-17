@@ -7,22 +7,6 @@ struct SyncUpsList {
   struct State: Equatable {
     @Presents var destination: Destination.State?
     @Shared var syncUps: IdentifiedArrayOf<SyncUp>
-
-    init(
-      destination: Destination.State? = nil
-    ) {
-      self.destination = destination
-
-      do {
-        @Dependency(\.dataManager.load) var load
-        self._syncUps = try Shared(JSONDecoder().decode(IdentifiedArray.self, from: load(.syncUps)))
-      } catch is DecodingError {
-        self.destination = .alert(.dataFailedToLoad)
-        self._syncUps = Shared([])
-      } catch {
-        self._syncUps = Shared([])
-      }
-    }
   }
 
   enum Action {
@@ -39,16 +23,10 @@ struct SyncUpsList {
     @ObservableState
     enum State: Equatable {
       case add(SyncUpForm.State)
-      case alert(AlertState<Action.Alert>)
     }
 
     enum Action {
       case add(SyncUpForm.Action)
-      case alert(Alert)
-
-      enum Alert {
-        case confirmLoadMockData
-      }
     }
 
     var body: some ReducerOf<Self> {
@@ -87,14 +65,6 @@ struct SyncUpsList {
         }
         state.syncUps.append(syncUp)
         state.destination = nil
-        return .none
-
-      case .destination(.presented(.alert(.confirmLoadMockData))):
-        state.syncUps = [
-          .mock,
-          .designMock,
-          .engineeringMock,
-        ]
         return .none
 
       case .destination:
@@ -143,7 +113,6 @@ struct SyncUpsListView: View {
       }
     }
     .navigationTitle("Daily Sync-ups")
-    .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
     .sheet(item: $store.scope(state: \.destination?.add, action: \.destination.add)) { store in
       NavigationStack {
         SyncUpFormView(store: store)
@@ -162,26 +131,6 @@ struct SyncUpsListView: View {
           }
       }
     }
-  }
-}
-
-extension AlertState where Action == SyncUpsList.Destination.Action.Alert {
-  static let dataFailedToLoad = Self {
-    TextState("Data failed to load")
-  } actions: {
-    ButtonState(action: .send(.confirmLoadMockData, animation: .default)) {
-      TextState("Yes")
-    }
-    ButtonState(role: .cancel) {
-      TextState("No")
-    }
-  } message: {
-    TextState(
-      """
-      Unfortunately your past data failed to load. Would you like to load some mock data to play \
-      around with?
-      """
-    )
   }
 }
 
@@ -222,27 +171,18 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 struct SyncUpsList_Previews: PreviewProvider {
   static var previews: some View {
     SyncUpsListView(
-      store: Store(initialState: SyncUpsList.State()) {
-        SyncUpsList()
-      } withDependencies: {
-        $0.dataManager.load = { @Sendable _ in
-          try JSONEncoder().encode([
-            SyncUp.mock,
+      store: Store(
+        initialState: SyncUpsList.State(
+          syncUps: Shared([
+            .mock,
             .designMock,
             .engineeringMock,
           ])
-        }
-      }
-    )
-
-    SyncUpsListView(
-      store: Store(initialState: SyncUpsList.State()) {
+        )
+      ) {
         SyncUpsList()
-      } withDependencies: {
-        $0.dataManager = .mock(initialData: Data("!@#$% bad data ^&*()".utf8))
       }
     )
-    .previewDisplayName("Load data failure")
   }
 }
 

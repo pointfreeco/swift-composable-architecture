@@ -3,13 +3,17 @@ import SwiftUI
 
 @main
 struct SyncUpsApp: App {
-  let store = Store(initialState: AppFeature.State()) {
+  let store = Store(
+    initialState: AppFeature.State(
+      syncUpsList: SyncUpsList.State(
+        syncUps: ProcessInfo.processInfo.environment["UITesting"] == "true"
+          ? Shared([])
+          : Shared(initialValue: [], persistTo: .appStorage("syncUps"))
+      )
+    )
+  ) {
     AppFeature()
       ._printChanges()
-  } withDependencies: {
-    if ProcessInfo.processInfo.environment["UITesting"] == "true" {
-      $0.dataManager = .mock()
-    }
   }
 
   var body: some Scene {
