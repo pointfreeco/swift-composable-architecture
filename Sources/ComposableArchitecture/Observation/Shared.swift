@@ -50,7 +50,9 @@
     fileprivate var currentValue: Value {
       get {
         func open<Root>(_ reference: some ReferenceProtocol<Root>) -> Value {
-          reference.currentValue[keyPath: unsafeDowncast(self.keyPath, to: KeyPath<Root, Value>.self)]
+          reference.currentValue[
+            keyPath: unsafeDowncast(self.keyPath, to: KeyPath<Root, Value>.self)
+          ]
         }
         return open(self.reference)
       }
@@ -67,16 +69,13 @@
     fileprivate var snapshot: Value? {
       get {
         func open<Root>(_ reference: some ReferenceProtocol<Root>) -> Value? {
-          dump(reference.snapshot)
-          let v = reference.snapshot?[keyPath: unsafeDowncast(self.keyPath, to: KeyPath<Root, Value>.self)]
-          dump(v)
-          return v
+          reference.snapshot?[keyPath: unsafeDowncast(self.keyPath, to: KeyPath<Root, Value>.self)]
         }
         return open(self.reference)
       }
       nonmutating set {
         func open<Root>(_ reference: some ReferenceProtocol<Root>) {
-          if self.keyPath == \Value.self {
+          if self.keyPath == \Root.self {
             reference.snapshot = newValue as! Root?
           } else if let newValue {
             reference.snapshot?[
@@ -99,12 +98,14 @@
     public subscript<Member>(
       dynamicMember keyPath: WritableKeyPath<Value, Member?>
     ) -> Shared<Member>? {
-      guard self.wrappedValue[keyPath: keyPath] != nil
+      guard let initialValue = self.wrappedValue[keyPath: keyPath]
       else { return nil }
       return Shared<Member>(
         reference: self.reference,
         // TODO: Can this crash?
-        keyPath: self.keyPath.appending(path: keyPath.appending(path: \.!))!
+        keyPath: self.keyPath.appending(
+          path: keyPath.appending(path: \.[default: DefaultSubscript(initialValue)])
+        )!
       )
     }
 
@@ -338,6 +339,32 @@
     var sharedChangeTracker: SharedChangeTracker? {
       get { self[SharedChangeTrackerKey.self] }
       set { self[SharedChangeTrackerKey.self] = newValue }
+    }
+  }
+
+  extension Optional {
+    fileprivate subscript(default defaultSubscript: DefaultSubscript<Wrapped>) -> Wrapped {
+      get { self ?? defaultSubscript.value }
+      set {
+        defaultSubscript.value = newValue
+        if self != nil { self = newValue }
+      }
+    }
+  }
+
+  fileprivate final class DefaultSubscript<Value>: Hashable {
+    var value: Value
+
+    init(_ value: Value) {
+      self.value = value
+    }
+
+    static func == (lhs: DefaultSubscript, rhs: DefaultSubscript) -> Bool {
+      lhs === rhs
+    }
+
+    func hash(into hasher: inout Hasher) {
+      hasher.combine(ObjectIdentifier(self))
     }
   }
 #endif
