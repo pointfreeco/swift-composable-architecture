@@ -4,116 +4,41 @@
   @dynamicMemberLookup
   @propertyWrapper
   public struct Shared<Value> {
-    @Perceptible
-    final class Reference {
-      private var currentValue: Value
-      fileprivate var snapshot: Value?
-      private let lock = NSRecursiveLock()
-      private let fileID: StaticString
-      private let line: UInt
-      private let _$perceptionRegistrar = PerceptionRegistrar(
-        isPerceptionCheckingEnabled: _isPlatformPerceptionCheckingEnabled
-      )
+    fileprivate let reference: any ReferenceProtocol
+    private let keyPath: AnyKeyPath
 
-      var wrappedValue: Value {
-        get {
-          self.lock.sync {
-            if SharedLocals.isAsserting {
-              self.snapshot ?? self.currentValue
-            } else {
-              self.currentValue
-            }
-          }
-        }
-        set {
-          self.lock.sync {
-            @Dependency(\.sharedChangeTracker) var sharedChangeTracker
-            if let sharedChangeTracker {
-              if SharedLocals.isAsserting {
-                self.snapshot = newValue
-              } else {
-                if self.snapshot == nil {
-                  self.snapshot = self.currentValue
-                }
-                self.currentValue = newValue
-                sharedChangeTracker.track(self)
-              }
-            } else {
-              self.currentValue = newValue
-              self.snapshot = nil
-            }
-          }
-        }
-      }
-
-      init(_ value: Value, fileID: StaticString, line: UInt) {
-        self.currentValue = value
-        self.fileID = fileID
-        self.line = line
-      }
-
-      deinit {
-        self.complete()
-      }
-
-      func complete() {
-        if
-          let snapshot = self.snapshot,
-          let difference = diff(snapshot, self.currentValue, format: .proportional)
-        {
-          XCTFail(
-            """
-            Tracked changes to '\(Shared.self)@\(self.fileID):\(self.line)' but failed to assert: …
-
-            \(difference.indent(by: 2))
-
-            (Before: −, After: +)
-
-            Call '\(Shared.self).assert' to exhaustively test these changes, or call 'skipChanges' \
-            to ignore them.
-            """
-          )
-        }
-      }
-
-      public func assert(
-        _ updateValueToExpectedResult: (inout Value) throws -> Void,
-        file: StaticString = #file,
-        line: UInt = #line
-      ) rethrows where Value: Equatable {
-        guard var snapshot = self.snapshot, snapshot != self.currentValue else {
-          XCTFail("Expected changes, but none occurred.", file: file, line: line)
-          return
-        }
-        try updateValueToExpectedResult(&snapshot)
-        self.snapshot = snapshot
-        XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
-        self.snapshot = nil
-      }
+    public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
+      self.init(reference: Reference(value, fileID: fileID, line: line), keyPath: \Value.self)
     }
 
-    enum Storage {
-      case function(get: () -> Value, set: (Value) -> Void)
-      case reference(Reference)
+    private init(reference: any ReferenceProtocol, keyPath: AnyKeyPath) {
+      self.reference = reference
+      self.keyPath = keyPath
     }
-
-    private let storage: Storage
 
     public var wrappedValue: Value {
       get {
-        switch self.storage {
-        case let .function(get, _):
-          return get()
-        case let .reference(reference):
-          return reference.wrappedValue
+        if SharedLocals.isAsserting {
+          self.snapshot ?? self.currentValue
+        } else {
+          self.currentValue
         }
       }
       nonmutating set {
-        switch self.storage {
-        case let .function(_, set):
-          return set(newValue)
-        case let .reference(reference):
-          return reference.wrappedValue = newValue
+        @Dependency(\.sharedChangeTracker) var sharedChangeTracker
+        if let sharedChangeTracker {
+          if SharedLocals.isAsserting {
+            self.snapshot = newValue
+          } else {
+            if self.snapshot == nil {
+              self.snapshot = self.currentValue
+            }
+            self.currentValue = newValue
+            sharedChangeTracker.track(self)
+          }
+        } else {
+          self.currentValue = newValue
+          self.snapshot = nil
         }
       }
     }
@@ -122,38 +47,64 @@
       self
     }
 
-    public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
-      self.storage = .reference(Reference(value, fileID: fileID, line: line))
+    fileprivate var currentValue: Value {
+      get {
+        func open<Root>(_ reference: some ReferenceProtocol<Root>) -> Value {
+          reference.currentValue[keyPath: unsafeDowncast(self.keyPath, to: KeyPath<Root, Value>.self)]
+        }
+        return open(self.reference)
+      }
+      nonmutating set {
+        func open<Root>(_ reference: some ReferenceProtocol<Root>) {
+          reference.currentValue[
+            keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
+          ] = newValue
+        }
+        return open(self.reference)
+      }
     }
 
-    init(storage: Storage) {
-      self.storage = storage
+    fileprivate var snapshot: Value? {
+      get {
+        func open<Root>(_ reference: some ReferenceProtocol<Root>) -> Value? {
+          dump(reference.snapshot)
+          let v = reference.snapshot?[keyPath: unsafeDowncast(self.keyPath, to: KeyPath<Root, Value>.self)]
+          dump(v)
+          return v
+        }
+        return open(self.reference)
+      }
+      nonmutating set {
+        func open<Root>(_ reference: some ReferenceProtocol<Root>) {
+          if self.keyPath == \Value.self {
+            reference.snapshot = newValue as! Root?
+          } else if let newValue {
+            reference.snapshot?[
+              keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
+            ] = newValue
+          } else {
+            reference.snapshot = nil
+          }
+        }
+        return open(self.reference)
+      }
     }
 
     public subscript<Member>(
       dynamicMember keyPath: WritableKeyPath<Value, Member>
     ) -> Shared<Member> {
-      Shared<Member>(
-        storage: .function(
-          get: { self.wrappedValue[keyPath: keyPath] },
-          set: { self.wrappedValue[keyPath: keyPath] = $0 }
-        )
-      )
+      Shared<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
     }
 
     public subscript<Member>(
       dynamicMember keyPath: WritableKeyPath<Value, Member?>
     ) -> Shared<Member>? {
-      guard var wrappedValue = self.wrappedValue[keyPath: keyPath]
+      guard self.wrappedValue[keyPath: keyPath] != nil
       else { return nil }
       return Shared<Member>(
-        storage: .function(
-          get: {
-            wrappedValue = self.wrappedValue[keyPath: keyPath] ?? wrappedValue
-            return wrappedValue
-          },
-          set: { self.wrappedValue[keyPath: keyPath] = $0 }
-        )
+        reference: self.reference,
+        // TODO: Can this crash?
+        keyPath: self.keyPath.appending(path: keyPath.appending(path: \.!))!
       )
     }
 
@@ -162,31 +113,33 @@
       file: StaticString = #file,
       line: UInt = #line
     ) rethrows where Value: Equatable {
-      switch self.storage {
-      case .function:
-        fatalError()
-      case .reference(let reference):
-        try reference.assert(updateValueToExpectedResult, file: file, line: line)
+      guard var snapshot = self.snapshot, snapshot != self.currentValue else {
+        XCTFail("Expected changes, but none occurred.", file: file, line: line)
+        return
       }
+      try updateValueToExpectedResult(&snapshot)
+      self.snapshot = snapshot
+      XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
+      self.snapshot = nil
     }
 
-//    public func skipChanges(
-//      file: StaticString = #file,
-//      line: UInt = #line
-//    ) {
-//      guard self.snapshot != nil else {
-//        XCTFail("Expected changes, but none occurred.", file: file, line: line)
-//        return
-//      }
-//      self.snapshot = nil
-//    }
+    public func skipChanges(
+      file: StaticString = #file,
+      line: UInt = #line
+    ) {
+      guard self.snapshot != nil else {
+        XCTFail("Expected changes, but none occurred.", file: file, line: line)
+        return
+      }
+      self.snapshot = nil
+    }
   }
 
-  // TODO: Write tests that try to break equatable/hashable invariants.
+  extension Shared: @unchecked Sendable where Value: Sendable {}
 
-  extension Shared.Reference: Equatable where Value: Equatable {
-    static func == (lhs: Shared.Reference, rhs: Shared.Reference) -> Bool {
-      if SharedLocals.exhaustivity == .on, lhs === rhs {
+  extension Shared: Equatable where Value: Equatable {
+    public static func == (lhs: Shared, rhs: Shared) -> Bool {
+      if SharedLocals.exhaustivity == .on, lhs.reference === rhs.reference {
         return lhs.snapshot ?? lhs.currentValue == rhs.currentValue
       } else {
         return lhs.wrappedValue == rhs.wrappedValue
@@ -194,20 +147,8 @@
     }
   }
 
-  extension Shared: Equatable where Value: Equatable {
-    public static func == (lhs: Shared, rhs: Shared) -> Bool {
-      switch (lhs.storage, rhs.storage) {
-      case let (.reference(lhs), .reference(rhs)):
-        return lhs == rhs
-      default:
-        return lhs.wrappedValue == rhs.wrappedValue
-      }
-    }
-  }
-
   extension Shared: Hashable where Value: Hashable {
     public func hash(into hasher: inout Hasher) {
-      // TODO: hasher.combine(ObjectIdentifier(self))
       hasher.combine(self.wrappedValue)
     }
   }
@@ -239,31 +180,6 @@
     }
   }
 
-  extension Shared.Reference: CustomDumpRepresentable {
-    public var customDumpValue: Any {
-      self.wrappedValue
-    }
-  }
-
-  extension Shared: CustomDumpRepresentable {
-    public var customDumpValue: Any {
-      switch self.storage {
-      case let .reference(reference):
-        return reference
-      default:
-        return self.wrappedValue
-      }
-    }
-  }
-
-  extension Shared.Reference: _CustomDiffObject {
-    public var _customDiffValues: (Any, Any) {
-      (self.snapshot ?? self.currentValue, self.currentValue)
-    }
-  }
-
-  extension Shared: @unchecked Sendable where Value: Sendable {}
-
   extension Shared: TestDependencyKey where Value: TestDependencyKey {
     public static var testValue: Shared<Value.Value> {
       withDependencies {
@@ -274,9 +190,97 @@
       }
     }
   }
+
   extension Shared: DependencyKey where Value: DependencyKey {
     public static var liveValue: Shared<Value.Value> {
       Shared<Value.Value>(Value.liveValue)
+    }
+  }
+
+  extension Shared: CustomDumpRepresentable {
+    public var customDumpValue: Any {
+      self.reference
+    }
+  }
+
+  private protocol ReferenceProtocol<Value>: AnyObject {
+    associatedtype Value
+    var currentValue: Value { get set }
+    var snapshot: Value? { get set }
+    func complete()
+    func reset()
+  }
+
+  @Perceptible
+  private final class Reference<Value>: ReferenceProtocol {
+    var _currentValue: Value
+    var _snapshot: Value?
+    let lock = NSRecursiveLock()
+    let _$perceptionRegistrar = PerceptionRegistrar(
+      isPerceptionCheckingEnabled: _isPlatformPerceptionCheckingEnabled
+    )
+    let fileID: StaticString
+    let line: UInt
+    var currentValue: Value {
+      get { self.lock.withLock { self._currentValue } }
+      set { self.lock.withLock { self._currentValue = newValue } }
+    }
+    var snapshot: Value? {
+      get { self.lock.withLock { self._snapshot } }
+      set { self.lock.withLock { self._snapshot = newValue } }
+    }
+    init(_ value: Value, fileID: StaticString, line: UInt) {
+      self._currentValue = value
+      self.fileID = fileID
+      self.line = line
+    }
+    deinit {
+      self.complete()
+    }
+    func complete() {
+      if
+        let snapshot = self.snapshot,
+        let difference = diff(snapshot, self.currentValue, format: .proportional)
+      {
+        XCTFail(
+          """
+          Tracked changes to 'Shared<\(Value.self)>@\(self.fileID):\(self.line)' but failed to \
+          assert: …
+
+          \(difference.indent(by: 2))
+
+          (Before: −, After: +)
+
+          Call 'Shared<\(Value.self)>.assert' to exhaustively test these changes, or call \
+          'skipChanges' to ignore them.
+          """
+        )
+      }
+    }
+    func reset() {
+      self.snapshot = nil
+    }
+  }
+
+  extension Reference: Equatable where Value: Equatable {
+    static func == (lhs: Reference, rhs: Reference) -> Bool {
+      if SharedLocals.exhaustivity == .on, lhs === rhs {
+        return lhs.snapshot ?? lhs.currentValue == rhs.currentValue
+      } else {
+        return lhs.currentValue == rhs.currentValue
+      }
+    }
+  }
+
+  extension Reference: CustomDumpRepresentable {
+    public var customDumpValue: Any {
+      self.currentValue
+    }
+  }
+
+  extension Reference: _CustomDiffObject {
+    public var _customDiffValues: (Any, Any) {
+      (self.snapshot ?? self.currentValue, self.currentValue)
     }
   }
 
@@ -293,14 +297,15 @@
 
     private var changed = LockIsolated<[ObjectIdentifier: Value]>([:])
     var hasChanges: Bool { !self.changed.value.isEmpty }
-    func track<T>(_ shared: Shared<T>.Reference) {
+    func track<T>(_ shared: Shared<T>) {
+      let reference = shared.reference
       self.changed.withValue {
-        _ = $0[ObjectIdentifier(shared)] = Value(
-          complete: { [weak shared] in
-            shared?.complete()
+        _ = $0[ObjectIdentifier(reference)] = Value(
+          complete: { [weak reference] in
+            reference?.complete()
           },
-          reset: { [weak shared] in
-            shared?.snapshot = nil
+          reset: { [weak reference] in
+            reference?.reset()
           }
         )
       }
