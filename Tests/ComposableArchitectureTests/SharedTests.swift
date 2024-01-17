@@ -472,7 +472,6 @@ final class SharedTests: XCTestCase {
       Feature()
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
-      $0[Shared<Stats>.self] = Shared(Stats(count: 2))
     }
     await store.send(.startTimer)
     await mainQueue.advance(by: .seconds(1))
@@ -602,7 +601,7 @@ private struct SharedFeature {
   // TODO: Show that we expect TestStore.receive to receive incremental updates
 }
 
-private struct Stats: Equatable {
+private struct Stats: Codable, Equatable {
   var count = 0
 }
 extension Stats: DependencyKey {

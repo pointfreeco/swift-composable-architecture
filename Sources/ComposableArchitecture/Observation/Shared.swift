@@ -21,7 +21,6 @@ import Combine
     func get() -> Value?
     func willSet(value: Value, newValue: Value)
     func didSet(oldValue: Value, value: Value)
-    mutating func subscribe()
   }
 
   extension SharedPersistence {
@@ -57,26 +56,12 @@ import Combine
     private let _didSet: (Value) -> Void
     private let key: String
     private let store: UserDefaults
-    private let (stream, continuation) = AsyncStream.makeStream(of: Value.self)
-    private var observer: Observer?
 
     private class Observer: NSObject {
       let didChange: () -> Void
-      let key: String
-      let store: UserDefaults
-      init(
-        store: UserDefaults,
-        key: String,
-        didChange: @escaping () -> Void
-      ) {
-        self.key = key
-        self.store = store
+      init(didChange: @escaping () -> Void) {
         self.didChange = didChange
         super.init()
-        store.addObserver(self, forKeyPath: key, context: nil)
-      }
-      deinit {
-        self.removeObserver(self.store, forKeyPath: self.key)
       }
       public override func observeValue(
         forKeyPath keyPath: String?,
@@ -114,7 +99,18 @@ import Combine
     }
 
     public var values: AsyncStream<Value> {
-      self.stream
+      AsyncStream<Value> { continuation in
+        let observer = Observer {
+          guard let value = self.get() else {
+            return
+          }
+          continuation.yield(value)
+        }
+        self.store.addObserver(observer, forKeyPath: self.key, context: nil)
+        continuation.onTermination = { _ in
+          observer.removeObserver(self.store, forKeyPath: self.key)
+        }
+      }
     }
 
     public func get() -> Value? {
@@ -123,15 +119,6 @@ import Combine
 
     public func didSet(oldValue _: Value, value: Value) {
       self._didSet(value)
-    }
-
-    public mutating func subscribe() {
-      self.observer = Observer(store: store, key: key) { [get = self.get, continuation = self.continuation] in
-        guard
-          let value = get()
-        else { return }
-        continuation.yield(value)
-      }
     }
   }
 
@@ -437,7 +424,6 @@ import Combine
       self.persistence = persistence
       self.fileID = fileID
       self.line = line
-      self.persistence?.subscribe()
       Task { @MainActor [weak self] in
         for try await value in persistence.values {
           self?.currentValue = value
