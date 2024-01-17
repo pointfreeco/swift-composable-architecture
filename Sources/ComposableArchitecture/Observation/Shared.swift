@@ -21,6 +21,7 @@ import Combine
     func get() -> Value?
     func willSet(value: Value, newValue: Value)
     func didSet(oldValue: Value, value: Value)
+    mutating func subscribe()
   }
 
   extension SharedPersistence {
@@ -37,7 +38,7 @@ import Combine
   @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
   extension SharedPersistence {
     public static func appStorage<Value: Codable>(
-      _ key: String, store: UserDefaults = .standard
+      _ key: String, store: UserDefaults? = nil
     ) -> Self where Self == SharedAppStorage<Value> {
       SharedAppStorage(key, store: store)
     }
@@ -51,12 +52,41 @@ import Combine
   }()
 
   @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
-  public class SharedAppStorage<Value>: NSObject, SharedPersistence {
+  public struct SharedAppStorage<Value>: SharedPersistence, Hashable {
     private let _get: () -> Value?
     private let _didSet: (Value) -> Void
     private let key: String
     private let store: UserDefaults
     private let (stream, continuation) = AsyncStream.makeStream(of: Value.self)
+    private var observer: Observer?
+
+    private class Observer: NSObject {
+      let didChange: () -> Void
+      let key: String
+      let store: UserDefaults
+      init(
+        store: UserDefaults,
+        key: String,
+        didChange: @escaping () -> Void
+      ) {
+        self.key = key
+        self.store = store
+        self.didChange = didChange
+        super.init()
+        store.addObserver(self, forKeyPath: key, context: nil)
+      }
+      deinit {
+        self.removeObserver(self.store, forKeyPath: self.key)
+      }
+      public override func observeValue(
+        forKeyPath keyPath: String?,
+        of object: Any?,
+        change: [NSKeyValueChangeKey: Any]?,
+        context: UnsafeMutableRawPointer?
+      ) {
+        self.didChange()
+      }
+    }
 
     public init(_ key: String, store: UserDefaults?) where Value: Codable {
       @Dependency(\.userDefaults) var userDefaults
@@ -72,23 +102,15 @@ import Combine
         }
       }
       self.store = store
-      super.init()
-      self.store.addObserver(self, forKeyPath: key, context: nil)
     }
 
-    public override func observeValue(
-      forKeyPath keyPath: String?,
-      of object: Any?,
-      change: [NSKeyValueChangeKey: Any]?,
-      context: UnsafeMutableRawPointer?
-    ) {
-      guard let value = self.get()
-      else { return }
-      self.continuation.yield(value)
+    public static func == (lhs: SharedAppStorage, rhs: SharedAppStorage) -> Bool {
+      lhs.key == rhs.key && lhs.store == rhs.store
     }
 
-    deinit {
-      self.removeObserver(self.store, forKeyPath: self.key)
+    public func hash(into hasher: inout Hasher) {
+      hasher.combine(self.key)
+      hasher.combine(self.store)
     }
 
     public var values: AsyncStream<Value> {
@@ -102,7 +124,18 @@ import Combine
     public func didSet(oldValue _: Value, value: Value) {
       self._didSet(value)
     }
+
+    public mutating func subscribe() {
+      self.observer = Observer(store: store, key: key) { [get = self.get, continuation = self.continuation] in
+        guard
+          let value = get()
+        else { return }
+        continuation.yield(value)
+      }
+    }
   }
+
+  fileprivate let storage = LockIsolated<[AnyHashable: any ReferenceProtocol]>([:])
 
   @dynamicMemberLookup
   @propertyWrapper
@@ -120,13 +153,34 @@ import Combine
       fileID: StaticString = #fileID,
       line: UInt = #line
     ) {
+
+      let reference: any ReferenceProtocol = storage.withValue {
+        let reference: any ReferenceProtocol
+        if let id = persistence as? AnyHashable {
+          if let cachedReference = $0[id] {
+            reference = cachedReference
+          } else {
+            reference = Reference(
+              value,
+              persistence: persistence,
+              fileID: fileID,
+              line: line
+            )
+            $0[id] = reference
+          }
+        } else {
+          return Reference(
+            value,
+            persistence: persistence,
+            fileID: fileID,
+            line: line
+          )
+        }
+        return reference
+      }
+
       self.init(
-        reference: Reference(
-          value,
-          persistence: persistence,
-          fileID: fileID,
-          line: line
-        ),
+        reference: reference,
         keyPath: \Value.self
       )
     }
@@ -164,7 +218,8 @@ import Combine
     }
 
     public var projectedValue: Shared {
-      self
+      get { self }
+      set { self = newValue }
     }
 
     fileprivate var currentValue: Value {
@@ -382,6 +437,7 @@ import Combine
       self.persistence = persistence
       self.fileID = fileID
       self.line = line
+      self.persistence?.subscribe()
       Task { @MainActor [weak self] in
         for try await value in persistence.values {
           self?.currentValue = value
@@ -524,10 +580,12 @@ import Combine
 
 private enum UserDefaultsKey: DependencyKey {
   static var testValue: UncheckedSendable<UserDefaults> {
-    UncheckedSendable(UserDefaults())
+    let userDefaults = UserDefaults(suiteName: "test")!
+    userDefaults.removePersistentDomain(forName: "test")
+    return UncheckedSendable(userDefaults)
   }
   static var previewValue: UncheckedSendable<UserDefaults> {
-    UncheckedSendable(UserDefaults(suiteName: UUID().uuidString)!)
+    Self.testValue
   }
   static let liveValue = UncheckedSendable(UserDefaults.standard)
 }
