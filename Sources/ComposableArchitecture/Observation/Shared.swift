@@ -43,12 +43,68 @@ import Combine
     }
   }
 
+extension SharedPersistence {
+  public static func json<Value: Codable>(
+    _ filePath: URL,
+    fileManager: FileManager = .default,
+    jsonDecoder: JSONDecoder = JSONDecoder(),
+    jsonEncoder: JSONEncoder = JSONEncoder()
+  ) -> Self where Self == FileStorage<Value> {
+    FileStorage(
+      fileManager: fileManager,
+      filePath: filePath,
+      jsonDecoder: jsonDecoder,
+      jsonEncoder: jsonEncoder
+    )
+  }
+}
+
   private let decoder = JSONDecoder()
   private let encoder: JSONEncoder = {
     let encoder = JSONEncoder()
     encoder.outputFormatting = .sortedKeys
     return encoder
   }()
+
+public struct FileStorage<Value: Codable>: SharedPersistence, Hashable {
+  let fileManager: FileManager
+  let filePath: URL
+  let jsonDecoder: JSONDecoder
+  let jsonEncoder: JSONEncoder
+
+  init(
+    fileManager: FileManager,
+    filePath: URL,
+    jsonDecoder: JSONDecoder,
+    jsonEncoder: JSONEncoder
+  ) {
+    self.fileManager = fileManager
+    self.filePath = filePath
+    self.jsonDecoder = jsonDecoder
+    self.jsonEncoder = jsonEncoder
+    try? self.fileManager.createDirectory(at: self.filePath.deletingLastPathComponent(), withIntermediateDirectories: true)
+  }
+
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.filePath == rhs.filePath
+      && lhs.fileManager == rhs.fileManager
+  }
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.fileManager)
+    hasher.combine(self.filePath)
+  }
+
+  public func didSet(oldValue: Value, value: Value) {
+    try? JSONEncoder().encode(value).write(to: self.filePath)
+  }
+
+  public func get() -> Value? {
+    try? JSONDecoder().decode(Value.self, from: Data(contentsOf: self.filePath))
+  }
+
+  public func subscribe() {
+  }
+}
 
   @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
   public struct SharedAppStorage<Value>: SharedPersistence, Hashable {
