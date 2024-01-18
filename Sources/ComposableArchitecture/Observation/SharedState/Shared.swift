@@ -305,12 +305,8 @@
     var currentValue: Value {
       get { self.lock.withLock { self._currentValue } }
       set {
-        self.lock.withLock {
-          let oldValue = self._currentValue
-          self.persistence?.willSet(value: oldValue, newValue: newValue)
-          self._currentValue = newValue
-          self.persistence?.didSet(oldValue: oldValue, value: newValue)
-        }
+        self.lock.withLock { self._currentValue = newValue }
+        self.persistence?.save(newValue)
       }
     }
     var snapshot: Value? {
@@ -333,12 +329,12 @@
       fileID: StaticString,
       line: UInt
     ) {
-      self._currentValue = persistence.get() ?? value
+      self._currentValue = persistence.load() ?? value
       self.persistence = persistence
       self.fileID = fileID
       self.line = line
       Task { @MainActor [weak self] in
-        for try await value in persistence.values {
+        for try await value in persistence.updates {
           self?.currentValue = value
         }
       }

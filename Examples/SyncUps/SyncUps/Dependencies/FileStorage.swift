@@ -11,12 +11,12 @@ struct _FileStorage<Value: Codable>: SharedPersistence {
   @Dependency(\.dataManager) var dataManager
   let url: URL
 
-  public func didSet(oldValue: Value, value: Value) {
-    try? dataManager.save(JSONEncoder().encode(value), to: self.url)
+  public func load() -> Value? {
+    try? JSONDecoder().decode(Value.self, from: dataManager.load(from: self.url))
   }
 
-  public func get() -> Value? {
-    try? JSONDecoder().decode(Value.self, from: dataManager.load(from: self.url))
+  public func save(_ value: Value) {
+    try? dataManager.save(JSONEncoder().encode(value), to: self.url)
   }
 }
 
