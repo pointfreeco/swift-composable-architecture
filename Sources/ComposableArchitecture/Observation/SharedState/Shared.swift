@@ -1,142 +1,6 @@
 #if canImport(Perception)
   import Foundation
 
-  public struct _Empty<Element>: AsyncSequence {
-    public struct AsyncIterator: AsyncIteratorProtocol {
-      public func next() async throws -> Element? {
-        nil
-      }
-    }
-    public func makeAsyncIterator() -> AsyncIterator {
-      AsyncIterator()
-    }
-  }
-
-  public protocol SharedPersistence<Value> {
-    associatedtype Value
-    associatedtype Values: AsyncSequence = _Empty<Value> where Values.Element == Value
-
-    var values: Values { get }
-    func get() -> Value?
-    func willSet(value: Value, newValue: Value)
-    func didSet(oldValue: Value, value: Value)
-  }
-
-  extension SharedPersistence {
-    public func willSet(value _: Value, newValue _: Value) {}
-    public func didSet(oldValue _: Value, value _: Value) {}
-  }
-
-  extension SharedPersistence where Values == _Empty<Value> {
-    public var values: _Empty<Value> {
-      _Empty()
-    }
-  }
-
-  extension SharedPersistence {
-    public static func appStorage<Value: Codable>(
-      _ key: String, store: UserDefaults? = nil
-    ) -> Self where Self == SharedAppStorage<Value> {
-      SharedAppStorage(key, store: store)
-    }
-  }
-
-extension SharedPersistence {
-  public static func json<Value: Codable>(
-    _ filePath: URL,
-    fileManager: FileManager = .default,
-    jsonDecoder: JSONDecoder = JSONDecoder(),
-    jsonEncoder: JSONEncoder = JSONEncoder()
-  ) -> Self where Self == FileStorage<Value> {
-    FileStorage(
-      fileManager: fileManager,
-      filePath: filePath,
-      jsonDecoder: jsonDecoder,
-      jsonEncoder: jsonEncoder
-    )
-  }
-}
-
-  private let decoder = JSONDecoder()
-  private let encoder: JSONEncoder = {
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = .sortedKeys
-    return encoder
-  }()
-
-  public struct SharedAppStorage<Value>: SharedPersistence, Hashable {
-    private let _get: () -> Value?
-    private let _didSet: (Value) -> Void
-    private let key: String
-    private let store: UserDefaults
-
-    private class Observer: NSObject {
-      let didChange: () -> Void
-      init(didChange: @escaping () -> Void) {
-        self.didChange = didChange
-        super.init()
-      }
-      public override func observeValue(
-        forKeyPath keyPath: String?,
-        of object: Any?,
-        change: [NSKeyValueChangeKey: Any]?,
-        context: UnsafeMutableRawPointer?
-      ) {
-        self.didChange()
-      }
-    }
-
-    public init(_ key: String, store: UserDefaults?) where Value: Codable {
-      @Dependency(\.userDefaults) var userDefaults
-      let store = store ?? userDefaults
-      self.key = key
-      self._get = {
-        try? store.data(forKey: key).map { try decoder.decode(Value.self, from: $0) }
-      }
-      self._didSet = {
-        let data = try! encoder.encode($0)
-        if data != store.data(forKey: key) {
-          store.set(data, forKey: key)
-        }
-      }
-      self.store = store
-    }
-
-    public static func == (lhs: SharedAppStorage, rhs: SharedAppStorage) -> Bool {
-      lhs.key == rhs.key && lhs.store == rhs.store
-    }
-
-    public func hash(into hasher: inout Hasher) {
-      hasher.combine(self.key)
-      hasher.combine(self.store)
-    }
-
-    public var values: AsyncStream<Value> {
-      AsyncStream<Value> { continuation in
-        let observer = Observer {
-          guard let value = self.get() else {
-            return
-          }
-          continuation.yield(value)
-        }
-        self.store.addObserver(observer, forKeyPath: self.key, context: nil)
-        continuation.onTermination = { _ in
-          observer.removeObserver(self.store, forKeyPath: self.key)
-        }
-      }
-    }
-
-    public func get() -> Value? {
-      self._get()
-    }
-
-    public func didSet(oldValue _: Value, value: Value) {
-      self._didSet(value)
-    }
-  }
-
-  fileprivate let storage = LockIsolated<[AnyHashable: any ReferenceProtocol]>([:])
-
   @dynamicMemberLookup
   @propertyWrapper
   public struct Shared<Value> {
@@ -153,34 +17,32 @@ extension SharedPersistence {
       fileID: StaticString = #fileID,
       line: UInt = #line
     ) {
-
-      let reference: any ReferenceProtocol = storage.withValue {
-        let reference: any ReferenceProtocol
-        if let id = persistence as? AnyHashable {
-          if let cachedReference = $0[id] {
-            reference = cachedReference
+      self.init(
+        reference: {
+          if let id = persistence as? AnyHashable {
+            return references.withValue {
+              if let reference = $0[id] {
+                return reference
+              } else {
+                let reference = Reference(
+                  value,
+                  persistence: persistence,
+                  fileID: fileID,
+                  line: line
+                )
+                $0[id] = reference
+                return reference
+              }
+            }
           } else {
-            reference = Reference(
+            return Reference(
               value,
               persistence: persistence,
               fileID: fileID,
               line: line
             )
-            $0[id] = reference
           }
-        } else {
-          return Reference(
-            value,
-            persistence: persistence,
-            fileID: fileID,
-            line: line
-          )
-        }
-        return reference
-      }
-
-      self.init(
-        reference: reference,
+        }(),
         keyPath: \Value.self
       )
     }
@@ -381,7 +243,9 @@ extension SharedPersistence {
     }
   }
 
-  private protocol ReferenceProtocol<Value>: AnyObject {
+  fileprivate let references = LockIsolated<[AnyHashable: any ReferenceProtocol]>([:])
+
+  private protocol ReferenceProtocol<Value>: AnyObject /* TODO: , Hashable? */ {
     associatedtype Value
     var currentValue: Value { get set }
     var snapshot: Value? { get set }
@@ -576,59 +440,3 @@ extension SharedPersistence {
     }
   }
 #endif
-
-private enum UserDefaultsKey: DependencyKey {
-  static var testValue: UncheckedSendable<UserDefaults> {
-    let userDefaults = UserDefaults(suiteName: "test")!
-    userDefaults.removePersistentDomain(forName: "test")
-    return UncheckedSendable(userDefaults)
-  }
-  static var previewValue: UncheckedSendable<UserDefaults> {
-    Self.testValue
-  }
-  static let liveValue = UncheckedSendable(UserDefaults.standard)
-}
-
-extension DependencyValues {
-  public var userDefaults: UserDefaults {
-    get { self[UserDefaultsKey.self].value }
-    set { self[UserDefaultsKey.self].value = newValue }
-  }
-}
-
-public struct FileStorage<Value: Codable>: SharedPersistence, Hashable {
-  let fileManager: FileManager
-  let filePath: URL
-  let jsonDecoder: JSONDecoder
-  let jsonEncoder: JSONEncoder
-
-  init(
-    fileManager: FileManager,
-    filePath: URL,
-    jsonDecoder: JSONDecoder,
-    jsonEncoder: JSONEncoder
-  ) {
-    self.fileManager = fileManager
-    self.filePath = filePath
-    self.jsonDecoder = jsonDecoder
-    self.jsonEncoder = jsonEncoder
-    try? self.fileManager.createDirectory(at: self.filePath.deletingLastPathComponent(), withIntermediateDirectories: true)
-  }
-
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.filePath == rhs.filePath
-      && lhs.fileManager == rhs.fileManager
-  }
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.fileManager)
-    hasher.combine(self.filePath)
-  }
-
-  public func didSet(oldValue: Value, value: Value) {
-    try? JSONEncoder().encode(value).write(to: self.filePath)
-  }
-
-  public func get() -> Value? {
-    try? JSONDecoder().decode(Value.self, from: Data(contentsOf: self.filePath))
-  }
-}

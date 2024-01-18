@@ -503,7 +503,7 @@ final class SharedTests: XCTestCase {
         "@Dependency(Shared<ComposableArchitectureTests.SharedStateWithTestValue>.self)" has no live implementation, but was accessed from a live context.
 
           Location:
-            ComposableArchitectureTests/SharedTests.swift:499
+            ComposableArchitectureTests/SharedTests.swift:498
           Dependency:
             Shared<ComposableArchitectureTests.SharedStateWithTestValue>
 
