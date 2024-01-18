@@ -266,10 +266,6 @@
     }
   }
 
-  private enum SharedAppStorageLocals {
-    @TaskLocal static var isSetting = false
-  }
-
   extension _SharedAppStorage: Hashable {
     public static func == (lhs: _SharedAppStorage, rhs: _SharedAppStorage) -> Bool {
       lhs.key == rhs.key && lhs.store == rhs.store
@@ -298,5 +294,9 @@
       DefaultAppStorageKey.testValue
     }
     static let liveValue = UncheckedSendable(UserDefaults.standard)
+  }
+
+  private enum SharedAppStorageLocals {
+    @TaskLocal static var isSetting = false
   }
 #endif

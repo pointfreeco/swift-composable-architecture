@@ -1,5 +1,5 @@
 #if canImport(Perception)
-  public protocol SharedPersistence<Value> {
+  public protocol SharedPersistence<Value>: Hashable {
     associatedtype Value
     associatedtype Updates: AsyncSequence = _Empty<Value> where Updates.Element == Value
 

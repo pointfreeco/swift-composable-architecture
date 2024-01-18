@@ -19,29 +19,20 @@
     ) {
       self.init(
         reference: {
-          if let id = persistence as? AnyHashable {
-            @Dependency(\.sharedPersistentReferences) var references
-            return references.withValue {
-              if let reference = $0[id] {
-                return reference
-              } else {
-                let reference = Reference(
-                  value,
-                  persistence: persistence,
-                  fileID: fileID,
-                  line: line
-                )
-                $0[id] = reference
-                return reference
-              }
+          @Dependency(\.sharedPersistentReferences) var references
+          return references.withValue {
+            if let reference = $0[persistence] {
+              return reference
+            } else {
+              let reference = Reference(
+                value,
+                persistence: persistence,
+                fileID: fileID,
+                line: line
+              )
+              $0[persistence] = reference
+              return reference
             }
-          } else {
-            return Reference(
-              value,
-              persistence: persistence,
-              fileID: fileID,
-              line: line
-            )
           }
         }(),
         keyPath: \Value.self
@@ -56,29 +47,20 @@
     ) where Value == Wrapped? {
       self.init(
         reference: {
-          if let id = persistence as? AnyHashable {
-            @Dependency(\.sharedPersistentReferences) var references
-            return references.withValue {
-              if let reference = $0[id] {
-                return reference
-              } else {
-                let reference = Reference(
-                  value,
-                  persistence: persistence,
-                  fileID: fileID,
-                  line: line
-                )
-                $0[id] = reference
-                return reference
-              }
+          @Dependency(\.sharedPersistentReferences) var references
+          return references.withValue {
+            if let reference = $0[persistence] {
+              return reference
+            } else {
+              let reference = Reference(
+                value,
+                persistence: persistence,
+                fileID: fileID,
+                line: line
+              )
+              $0[persistence] = reference
+              return reference
             }
-          } else {
-            return Reference(
-              value,
-              persistence: persistence,
-              fileID: fileID,
-              line: line
-            )
           }
         }(),
         keyPath: \Value.self
@@ -470,15 +452,12 @@
 
   fileprivate final class DefaultSubscript<Value>: Hashable {
     var value: Value
-
     init(_ value: Value) {
       self.value = value
     }
-
     static func == (lhs: DefaultSubscript, rhs: DefaultSubscript) -> Bool {
       lhs === rhs
     }
-
     func hash(into hasher: inout Hasher) {
       hasher.combine(ObjectIdentifier(self))
     }
