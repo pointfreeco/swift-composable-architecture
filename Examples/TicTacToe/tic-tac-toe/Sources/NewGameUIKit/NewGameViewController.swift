@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import GameUIKit
 import NewGameCore
@@ -6,7 +5,6 @@ import UIKit
 
 public class NewGameViewController: UIViewController {
   let store: StoreOf<NewGame>
-  private var cancellables: Set<AnyCancellable> = []
 
   public init(store: StoreOf<NewGame>) {
     self.store = store
@@ -20,9 +18,9 @@ public class NewGameViewController: UIViewController {
   public override func viewDidLoad() {
     super.viewDidLoad()
 
-    self.navigationItem.title = "New Game"
+    navigationItem.title = "New Game"
 
-    self.navigationItem.rightBarButtonItem = UIBarButtonItem(
+    navigationItem.rightBarButtonItem = UIBarButtonItem(
       title: "Logout",
       style: .done,
       target: self,
@@ -78,64 +76,54 @@ public class NewGameViewController: UIViewController {
     rootStackView.axis = .vertical
     rootStackView.spacing = 24
 
-    self.view.addSubview(rootStackView)
+    view.addSubview(rootStackView)
 
     NSLayoutConstraint.activate([
-      rootStackView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-      rootStackView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-      rootStackView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+      rootStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      rootStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      rootStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
 
-    self.store.publisher.isLetsPlayButtonEnabled
-      .assign(to: \.isEnabled, on: letsPlayButton)
-      .store(in: &self.cancellables)
+    var gameController: GameViewController?
 
-    self.store.publisher.oPlayerName
-      .map(Optional.some)
-      .assign(to: \.text, on: playerOTextField)
-      .store(in: &self.cancellables)
+    observe { [weak self] in
+      guard let self = self else { return }
+      playerOTextField.text = store.oPlayerName
+      playerXTextField.text = store.xPlayerName
+      letsPlayButton.isEnabled = store.isLetsPlayButtonEnabled
 
-    self.store.publisher.xPlayerName
-      .map(Optional.some)
-      .assign(to: \.text, on: playerXTextField)
-      .store(in: &self.cancellables)
-
-    self.store
-      .scope(state: \.game, action: \.game.presented)
-      .ifLet(
-        then: { [weak self] gameStore in
-          self?.navigationController?.pushViewController(
-            GameViewController(store: gameStore),
-            animated: true
-          )
-        },
-        else: { [weak self] in
-          guard let self = self else { return }
-          self.navigationController?.popToViewController(self, animated: true)
-        }
-      )
-      .store(in: &self.cancellables)
+      if 
+        let store = store.scope(state: \.game, action: \.game.presented),
+        gameController == nil
+      {
+        gameController = GameViewController(store: store)
+        navigationController?.pushViewController(gameController!, animated: true)
+      } else if gameController != nil {
+        gameController?.dismiss(animated: true)
+        gameController = nil
+      }
+    }
   }
 
   @objc private func logoutButtonTapped() {
-    self.store.send(.logoutButtonTapped)
+    store.send(.logoutButtonTapped)
   }
 
   @objc private func playerXTextChanged(sender: UITextField) {
-    self.store.xPlayerName = sender.text ?? ""
+    store.xPlayerName = sender.text ?? ""
   }
 
   @objc private func playerOTextChanged(sender: UITextField) {
-    self.store.oPlayerName = sender.text ?? ""
+    store.oPlayerName = sender.text ?? ""
   }
 
   @objc private func letsPlayTapped() {
-    self.store.send(.letsPlayButtonTapped)
+    store.send(.letsPlayButtonTapped)
   }
 }
 
 extension NewGame.State {
   fileprivate var isLetsPlayButtonEnabled: Bool {
-    !self.oPlayerName.isEmpty && !self.xPlayerName.isEmpty
+    !oPlayerName.isEmpty && !xPlayerName.isEmpty
   }
 }

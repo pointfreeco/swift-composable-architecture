@@ -83,9 +83,6 @@ struct AppFeature {
     .forEach(\.path, action: \.path) {
       Path()
     }
-    .onChange(of: \.path.first?.detail?.syncUp) { _, _ in
-      EmptyReducer()
-    }
   }
 
   @Reducer
