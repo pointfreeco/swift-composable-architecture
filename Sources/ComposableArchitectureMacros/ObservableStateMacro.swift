@@ -46,7 +46,6 @@ public struct ObservableStateMacro {
   static let ignoredMacroName = "ObservationStateIgnored"
   static let presentsMacroName = "Presents"
   static let presentationStatePropertyWrapperName = "PresentationState"
-  static let sharedDependencyMacroName = "SharedDependency"
   static let sharedMacroName = "Shared"
 
   static let registrarVariableName = "_$observationRegistrar"
@@ -397,7 +396,6 @@ extension ObservableStateMacro: MemberAttributeMacro {
     }
 
     if property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.sharedDependencyMacroName)
       || property.hasMacroApplication(ObservableStateMacro.sharedMacroName)
     {
       return [
@@ -473,7 +471,6 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
       || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.sharedDependencyMacroName)
       || property.hasMacroApplication(ObservableStateMacro.sharedMacroName)
     {
       return []
@@ -533,7 +530,6 @@ extension ObservationStateTrackedMacro: PeerMacro {
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
       || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.sharedDependencyMacroName)
       || property.hasMacroApplication(ObservableStateMacro.sharedMacroName)
       || property.hasMacroApplication(ObservableStateMacro.trackedMacroName)
     {

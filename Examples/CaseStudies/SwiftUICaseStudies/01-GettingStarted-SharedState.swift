@@ -63,22 +63,19 @@ struct SharedStateView: View {
 
   var body: some View {
     TabView(selection: $store.currentTab.sending(\.selectTab)) {
-      NavigationStack {
-        CounterTabView(
-          store: self.store.scope(state: \.counter, action: \.counter)
-        )
-      }
+      CounterTabView(
+        store: self.store.scope(state: \.counter, action: \.counter)
+      )
       .tag(SharedState.Tab.counter)
       .tabItem { Text("Counter") }
 
-      NavigationStack {
-        ProfileTabView(
-          store: self.store.scope(state: \.profile, action: \.profile)
-        )
-      }
+      ProfileTabView(
+        store: self.store.scope(state: \.profile, action: \.profile)
+      )
       .tag(SharedState.Tab.profile)
       .tabItem { Text("Profile") }
     }
+    .navigationTitle("Shared State Demo")
   }
 }
 
@@ -87,7 +84,7 @@ struct CounterTab {
   @ObservableState
   struct State: Equatable {
     @Presents var alert: AlertState<Action.Alert>?
-    @SharedDependency var stats: Stats
+    @Shared(.appStorage("stats")) var stats = Stats()
   }
 
   enum Action {
@@ -157,7 +154,6 @@ struct CounterTabView: View {
       }
     }
     .buttonStyle(.borderless)
-    .navigationTitle("Shared State Demo")
     .alert($store.scope(state: \.alert, action: \.alert))
   }
 }
@@ -166,7 +162,7 @@ struct CounterTabView: View {
 struct ProfileTab {
   @ObservableState
   struct State: Equatable {
-    @SharedDependency var stats: Stats
+    @Shared(.appStorage("stats")) var stats = Stats()
   }
 
   enum Action {
@@ -191,7 +187,7 @@ struct ProfileTabView: View {
     Form {
       Text(
         template: """
-          This tab shows state from the previous tab, and it is capable of reseting all of the \
+          This tab shows state from the previous tab, and it is capable of resetting all of the \
           state back to 0.
 
           This shows that it is possible for each screen to model its state in the way that makes \
@@ -210,7 +206,6 @@ struct ProfileTabView: View {
       }
     }
     .buttonStyle(.borderless)
-    .navigationTitle("Profile")
   }
 }
 
@@ -231,12 +226,42 @@ struct Stats: Equatable {
   }
 }
 
-extension Stats: DependencyKey {
-  static var liveValue: Self {
-    Self()
+// These `Codable` and `RawRepresentable` conformances are used to persist this demo data to user
+// defaults as JSON.
+
+extension Stats: Codable {
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    try self.init(
+      count: container.decode(Int.self, forKey: .count),
+      maxCount: container.decode(Int.self, forKey: .maxCount),
+      minCount: container.decode(Int.self, forKey: .minCount),
+      numberOfCounts: container.decode(Int.self, forKey: .numberOfCounts)
+    )
   }
-  static var testValue: Self {
-    Self()
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(self.count, forKey: .count)
+    try container.encode(self.maxCount, forKey: .maxCount)
+    try container.encode(self.minCount, forKey: .minCount)
+    try container.encode(self.numberOfCounts, forKey: .numberOfCounts)
+  }
+  private enum CodingKeys: String, CodingKey {
+    case count
+    case maxCount
+    case minCount
+    case numberOfCounts
+  }
+}
+
+extension Stats: RawRepresentable {
+  init?(rawValue: String) {
+    guard let stats = try? JSONDecoder().decode(Stats.self, from: Data(rawValue.utf8))
+    else { return nil }
+    self = stats
+  }
+  var rawValue: String {
+    try! String(decoding: JSONEncoder().encode(self), as: UTF8.self)
   }
 }
 

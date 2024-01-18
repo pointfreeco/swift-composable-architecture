@@ -7,6 +7,7 @@
     fileprivate let reference: any ReferenceProtocol
     private let keyPath: AnyKeyPath
 
+    @_disfavoredOverload
     public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
       self.init(reference: Reference(value, fileID: fileID, line: line), keyPath: \Value.self)
     }
@@ -430,7 +431,9 @@
 
   enum SharedPersistentReferencesKey: DependencyKey {
     static let liveValue = LockIsolated<[AnyHashable: any ReferenceProtocol]>([:])
-    static let testValue = LockIsolated<[AnyHashable: any ReferenceProtocol]>([:])
+    static var testValue: LockIsolated<[AnyHashable: any ReferenceProtocol]> {
+      LockIsolated([:])
+    }
   }
 
   extension DependencyValues {

@@ -19,22 +19,20 @@ final class SharedStateTests: XCTestCase {
   }
 
   func testSharedCounts() async {
-    @SharedDependency var stats: Stats
-
     let store = TestStore(initialState: SharedState.State()) {
       SharedState()
     }
 
-    await store.send(.counter(.incrementButtonTapped)) { _ in
-      stats.increment()
+    await store.send(.counter(.incrementButtonTapped)) {
+      $0.counter.stats.increment()
     }
 
-    await store.send(.counter(.decrementButtonTapped)) { _ in
-      stats.decrement()
+    await store.send(.counter(.decrementButtonTapped)) {
+      $0.counter.stats.decrement()
     }
 
-    await store.send(.profile(.resetStatsButtonTapped)) { _ in
-      stats = Stats()
+    await store.send(.profile(.resetStatsButtonTapped)) {
+      $0.profile.stats = Stats()
     }
   }
 
