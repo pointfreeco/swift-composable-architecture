@@ -476,7 +476,7 @@ final class SharedTests: XCTestCase {
     await store.send(.startTimer)
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.timerTick) {
-      $0.stats.count = 3
+      $0.stats.count = 1
     }
     await store.send(.stopTimer)
     await mainQueue.advance(by: .seconds(1))
@@ -539,11 +539,6 @@ final class SharedTests: XCTestCase {
       """
     )
   }
-
-  func testAssert() {
-    @Shared(Stats()) var stats
-//    $stats.count.assert { $0 = 0 }
-  }
 }
 
 @Reducer
@@ -599,6 +594,7 @@ private struct SharedFeature {
 
   // TODO: Show that we expect Send should suspend to avoid processing shared mutations
   // TODO: Show that we expect TestStore.receive to receive incremental updates
+  // TODO: Show that you get failure if you do `store.$shared.assert` when there's nothing to assert on
 }
 
 private struct Stats: Codable, Equatable {

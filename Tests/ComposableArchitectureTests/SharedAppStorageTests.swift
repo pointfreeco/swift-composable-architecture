@@ -23,7 +23,7 @@ final class SharedAppStorageTests: XCTestCase {
       $0.count = 1
     }
     @Dependency(\.userDefaults) var userDefaults
-    userDefaults.setValue(Data("42".utf8), forKey: "count")
+    userDefaults.setValue(42, forKey: "count")
     await Task.yield()
     await store.send(.incrementButtonTapped) {
       $0.count = 43

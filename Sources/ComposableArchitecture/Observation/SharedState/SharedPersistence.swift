@@ -3,15 +3,15 @@
     associatedtype Value
     associatedtype Values: AsyncSequence = _Empty<Value> where Values.Element == Value
 
-    var values: Values { get }
-    func get() -> Value?
-    func willSet(value: Value, newValue: Value)
-    func didSet(oldValue: Value, value: Value)
+    var values: Values { get }  // TODO: rename to changes or updates
+    func get() -> Value? // TODO: rename to load
+    func willSet(value: Value, newValue: Value) // TODO: remove
+    func didSet(oldValue: Value, value: Value) // TODO: get rid of oldValue. rename to save
   }
 
   extension SharedPersistence {
-    public func willSet(value _: Value, newValue _: Value) {}
-    public func didSet(oldValue _: Value, value _: Value) {}
+    public func willSet(value _: Value, newValue _: Value) {} // TODO: remove
+    public func didSet(oldValue _: Value, value _: Value) {} // TODO: remove
   }
 
   extension SharedPersistence where Values == _Empty<Value> {

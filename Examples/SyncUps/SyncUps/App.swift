@@ -4,7 +4,7 @@ import SwiftUI
 @main
 struct SyncUpsApp: App {
   let store = Store(
-    initialState: AppFeature.State(syncUpsList: SyncUpsList.State())
+    initialState: AppFeature.State()
   ) {
     AppFeature()
       ._printChanges()
