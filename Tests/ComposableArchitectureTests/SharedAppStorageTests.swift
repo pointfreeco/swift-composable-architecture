@@ -25,7 +25,9 @@ final class SharedAppStorageTests: XCTestCase {
     @Dependency(\.userDefaults) var userDefaults
     userDefaults.setValue(Data("42".utf8), forKey: "count")
     await Task.yield()
-    XCTAssertEqual(store.state.count , 42)
+    await store.send(.incrementButtonTapped) {
+      $0.count = 43
+    }
   }
 
   func testSiblings() async {

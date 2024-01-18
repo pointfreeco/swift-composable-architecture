@@ -101,9 +101,6 @@ public struct FileStorage<Value: Codable>: SharedPersistence, Hashable {
   public func get() -> Value? {
     try? JSONDecoder().decode(Value.self, from: Data(contentsOf: self.filePath))
   }
-
-  public func subscribe() {
-  }
 }
 
   @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
