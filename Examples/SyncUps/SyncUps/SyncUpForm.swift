@@ -5,7 +5,7 @@ import SwiftUINavigation
 @Reducer
 struct SyncUpForm {
   @ObservableState
-  struct State: Equatable {
+  struct State: Codable, Equatable {
     var focus: Field? = .title
     var syncUp: SyncUp
 
@@ -18,7 +18,7 @@ struct SyncUpForm {
       }
     }
 
-    enum Field: Hashable {
+    enum Field: Codable, Hashable {
       case attendee(Attendee.ID)
       case title
     }

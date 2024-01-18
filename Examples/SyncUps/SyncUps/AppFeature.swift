@@ -6,7 +6,7 @@ struct AppFeature {
   @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
-    var syncUpsList: SyncUpsList.State
+    @Shared(.appStorage("syncUpsList")) var syncUpsList = SyncUpsList.State()
   }
 
   enum Action {
@@ -70,7 +70,7 @@ struct AppFeature {
         return .none
 
       case let .syncUpsList(.syncUpTapped(id)):
-        guard let $syncUp = state.syncUpsList.$syncUps[id: id]
+        guard let $syncUp = state.$syncUpsList.syncUps[id: id]
         else { return .none }
 
         state.path.append(.detail(SyncUpDetail.State(syncUp: $syncUp)))
@@ -146,7 +146,7 @@ extension URL {
   let store = Store(initialState: AppFeature.State(syncUpsList: SyncUpsList.State())) {
     AppFeature()
   }
-  store.syncUpsList.syncUps = [.mock, .designMock, .engineeringMock]
+  store.$syncUpsList.syncUps.wrappedValue = [.mock, .designMock, .engineeringMock]
 
   return AppView(
     store: store

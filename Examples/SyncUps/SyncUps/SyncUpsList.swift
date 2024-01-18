@@ -4,10 +4,41 @@ import SwiftUI
 @Reducer
 struct SyncUpsList {
   @ObservableState
-  struct State: Equatable {
+  struct State: Codable, Equatable, RawRepresentable {
     @Presents var destination: Destination.State?
-    // @Shared(.appStorage("syncUps")) var syncUps: IdentifiedArrayOf<SyncUp> = []
-    @Shared(.json(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
+    var syncUps: IdentifiedArrayOf<SyncUp> = []
+
+    init(destination: Destination.State? = nil, syncUps: IdentifiedArrayOf<SyncUp> = []) {
+      self.destination = destination
+      self.syncUps = syncUps
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case _destination = "destination"
+      case syncUps
+    }
+
+    init(from decoder: Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+      self.destination = try container.decodeIfPresent(Destination.State.self, forKey: ._destination)
+      self.syncUps = try container.decode(IdentifiedArrayOf<SyncUp>.self, forKey: .syncUps)
+    }
+
+    func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encodeIfPresent(self.destination, forKey: ._destination)
+      try container.encode(self.syncUps, forKey: .syncUps)
+    }
+
+    init?(rawValue: String) {
+      guard let state = try? JSONDecoder().decode(Self.self, from: Data(rawValue.utf8))
+      else { return nil }
+      self = state
+    }
+
+    var rawValue: String {
+      try! String(decoding: JSONEncoder().encode(self), as: UTF8.self)
+    }
   }
 
   enum Action {
@@ -22,7 +53,7 @@ struct SyncUpsList {
   @Reducer
   struct Destination {
     @ObservableState
-    enum State: Equatable {
+    enum State: Codable, Equatable {
       case add(SyncUpForm.State)
     }
 
