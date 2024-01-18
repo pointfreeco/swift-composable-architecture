@@ -3,87 +3,87 @@
 
   extension SharedPersistence {
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<Bool> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<Bool> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<Int> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<Int> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<Double> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<Double> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<String> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<String> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<URL> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<URL> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<Data> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<Data> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage<Value: RawRepresentable>(_ key: String) -> Self
-    where Value.RawValue == Int, Self == SharedAppStorage<Value> {
-      SharedAppStorage(key)
+    where Value.RawValue == Int, Self == _SharedAppStorage<Value> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage<Value: RawRepresentable>(_ key: String) -> Self
-    where Value.RawValue == String, Self == SharedAppStorage<Value> {
-      SharedAppStorage(key)
+    where Value.RawValue == String, Self == _SharedAppStorage<Value> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<Bool?> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<Bool?> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<Int?> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<Int?> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<Double?> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<Double?> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<String?> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<String?> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<URL?> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<URL?> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage(_ key: String) -> Self
-    where Self == SharedAppStorage<Data?> {
-      SharedAppStorage(key)
+    where Self == _SharedAppStorage<Data?> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage<Value: RawRepresentable>(_ key: String) -> Self
-    where Value.RawValue == Int, Self == SharedAppStorage<Value?> {
-      SharedAppStorage(key)
+    where Value.RawValue == Int, Self == _SharedAppStorage<Value?> {
+      _SharedAppStorage(key)
     }
 
     public static func appStorage<Value: RawRepresentable>(_ key: String) -> Self
-    where Value.RawValue == String, Self == SharedAppStorage<Value?> {
-      SharedAppStorage(key)
+    where Value.RawValue == String, Self == _SharedAppStorage<Value?> {
+      _SharedAppStorage(key)
     }
   }
 
-  public struct SharedAppStorage<Value> {
+  public struct _SharedAppStorage<Value> {
     private let _load: () -> Value?
     private let _save: (Value) -> Void
     private let key: String
@@ -222,7 +222,7 @@
     }
   }
 
-  extension SharedAppStorage: SharedPersistence {
+  extension _SharedAppStorage: SharedPersistence {
     public var updates: AsyncStream<Value> {
       AsyncStream<Value> { continuation in
         let observer = Observer { value in
@@ -270,8 +270,8 @@
     @TaskLocal static var isSetting = false
   }
 
-  extension SharedAppStorage: Hashable {
-    public static func == (lhs: SharedAppStorage, rhs: SharedAppStorage) -> Bool {
+  extension _SharedAppStorage: Hashable {
+    public static func == (lhs: _SharedAppStorage, rhs: _SharedAppStorage) -> Bool {
       lhs.key == rhs.key && lhs.store == rhs.store
     }
 
