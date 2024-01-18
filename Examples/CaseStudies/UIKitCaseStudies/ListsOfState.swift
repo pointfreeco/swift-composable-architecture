@@ -5,6 +5,7 @@ import UIKit
 
 @Reducer
 struct CounterList {
+  @ObservableState
   struct State: Equatable {
     var counters: IdentifiedArrayOf<Counter.State> = []
   }
@@ -25,12 +26,9 @@ let cellIdentifier = "Cell"
 
 final class CountersTableViewController: UITableViewController {
   let store: StoreOf<CounterList>
-  let viewStore: ViewStoreOf<CounterList>
-  var cancellables: Set<AnyCancellable> = []
 
   init(store: StoreOf<CounterList>) {
     self.store = store
-    self.viewStore = ViewStore(store, observe: { $0 })
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -41,17 +39,13 @@ final class CountersTableViewController: UITableViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    self.title = "Lists"
+    title = "Lists"
 
-    self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellIdentifier)
-
-    self.viewStore.publisher.counters
-      .sink(receiveValue: { [weak self] _ in self?.tableView.reloadData() })
-      .store(in: &self.cancellables)
+    tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellIdentifier)
   }
 
   override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    self.viewStore.counters.count
+    store.counters.count
   }
 
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath)
@@ -59,19 +53,19 @@ final class CountersTableViewController: UITableViewController {
   {
     let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
     cell.accessoryType = .disclosureIndicator
-    cell.textLabel?.text = "\(self.viewStore.counters[indexPath.row].count)"
+    observe { [weak self] in
+      guard let self else { return }
+      cell.textLabel?.text = "\(store.counters[indexPath.row].count)"
+    }
     return cell
   }
 
   override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    let indexPathRow = indexPath.row
-    let counter = self.viewStore.counters[indexPathRow]
-    self.navigationController?.pushViewController(
+    let offset = indexPath.row
+    let id = store.counters[offset].id
+    navigationController?.pushViewController(
       CounterViewController(
-        store: self.store.scope(
-          state: \.counters[indexPathRow],
-          action: \.counters[id:counter.id]
-        )
+        store: store.scope(state: \.counters[offset], action: \.counters[id:id])
       ),
       animated: true
     )
