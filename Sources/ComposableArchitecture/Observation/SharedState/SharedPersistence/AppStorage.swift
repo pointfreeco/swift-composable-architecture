@@ -100,22 +100,6 @@
     private let key: String
     private let store: UserDefaults
 
-    private class Observer: NSObject {
-      let didChange: () -> Void
-      init(didChange: @escaping () -> Void) {
-        self.didChange = didChange
-        super.init()
-      }
-      public override func observeValue(
-        forKeyPath keyPath: String?,
-        of object: Any?,
-        change: [NSKeyValueChangeKey: Any]?,
-        context: UnsafeMutableRawPointer?
-      ) {
-        self.didChange()
-      }
-    }
-
     @available(*, deprecated)
     public init(_ key: String, store: UserDefaults?) where Value: Codable {
       @Dependency(\.userDefaults) var userDefaults
@@ -325,6 +309,22 @@
 
     public func didSet(oldValue _: Value, value: Value) {
       self._didSet(value)
+    }
+
+    private class Observer: NSObject {
+      let didChange: () -> Void
+      init(didChange: @escaping () -> Void) {
+        self.didChange = didChange
+        super.init()
+      }
+      public override func observeValue(
+        forKeyPath keyPath: String?,
+        of object: Any?,
+        change: [NSKeyValueChangeKey: Any]?,
+        context: UnsafeMutableRawPointer?
+      ) {
+        self.didChange()
+      }
     }
   }
 
