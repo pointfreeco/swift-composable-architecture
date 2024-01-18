@@ -6,8 +6,7 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    // @Shared(.appStorage("syncUps")) var syncUps: IdentifiedArrayOf<SyncUp> = []
-    @Shared(.json(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
+    @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
   }
 
   enum Action {

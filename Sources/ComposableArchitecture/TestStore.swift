@@ -516,7 +516,11 @@ public final class TestStore<State, Action> {
     State: Equatable
   {
     let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      Dependencies.withDependencies(prepareDependencies) {
+      Dependencies.withDependencies {
+        $0.sharedChangeTracker = SharedChangeTracker()
+        $0.sharedPersistentReferences = LockIsolated([:])
+        prepareDependencies(&$0)
+      } operation: {
         TestReducer(Reduce(reducer()), initialState: initialState())
       }
     }
@@ -2362,8 +2366,6 @@ class TestReducer<State, Action>: Reducer {
     self.base = base
     self.dependencies = dependencies
     self.state = initialState
-
-    self.dependencies.sharedChangeTracker = SharedChangeTracker()
   }
 
   func reduce(into state: inout State, action: TestAction) -> Effect<TestAction> {

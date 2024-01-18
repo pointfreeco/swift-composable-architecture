@@ -20,6 +20,7 @@
       self.init(
         reference: {
           if let id = persistence as? AnyHashable {
+            @Dependency(\.sharedPersistentReferences) var references
             return references.withValue {
               if let reference = $0[id] {
                 return reference
@@ -56,6 +57,7 @@
       self.init(
         reference: {
           if let id = persistence as? AnyHashable {
+            @Dependency(\.sharedPersistentReferences) var references
             return references.withValue {
               if let reference = $0[id] {
                 return reference
@@ -279,9 +281,7 @@
     }
   }
 
-  fileprivate let references = LockIsolated<[AnyHashable: any ReferenceProtocol]>([:])
-
-  private protocol ReferenceProtocol<Value>: AnyObject /* TODO: , Hashable? */ {
+  protocol ReferenceProtocol<Value>: AnyObject /* TODO: , Hashable? */ {
     associatedtype Value
     var currentValue: Value { get set }
     var snapshot: Value? { get set }
@@ -447,6 +447,18 @@
     var sharedChangeTracker: SharedChangeTracker? {
       get { self[SharedChangeTrackerKey.self] }
       set { self[SharedChangeTrackerKey.self] = newValue }
+    }
+  }
+
+  enum SharedPersistentReferencesKey: DependencyKey {
+    static let liveValue = LockIsolated<[AnyHashable: any ReferenceProtocol]>([:])
+    static let testValue = LockIsolated<[AnyHashable: any ReferenceProtocol]>([:])
+  }
+
+  extension DependencyValues {
+    var sharedPersistentReferences: LockIsolated<[AnyHashable: any ReferenceProtocol]> {
+      get { self[SharedPersistentReferencesKey.self] }
+      set { self[SharedPersistentReferencesKey.self] = newValue }
     }
   }
 

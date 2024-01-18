@@ -43,7 +43,9 @@ final class AppFeatureTests: XCTestCase {
     var syncUp = SyncUp.mock
     let savedData = LockIsolated(Data?.none)
 
-    let store = TestStore(initialState: AppFeature.State()) {
+    let store = TestStore(
+      initialState: AppFeature.State(syncUpsList: SyncUpsList.State(syncUps: [syncUp]))
+    ) {
       AppFeature()
     } withDependencies: { dependencies in
       dependencies.continuousClock = ImmediateClock()
@@ -52,7 +54,7 @@ final class AppFeatureTests: XCTestCase {
       )
       dependencies.dataManager.save = { @Sendable [dependencies] data, url in
         savedData.setValue(data)
-        try await dependencies.dataManager.save(data, to: url)
+        try dependencies.dataManager.save(data, to: url)
       }
     }
 

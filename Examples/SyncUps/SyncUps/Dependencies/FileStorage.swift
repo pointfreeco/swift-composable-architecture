@@ -2,48 +2,89 @@ import ComposableArchitecture
 import Foundation
 
 extension SharedPersistence {
-  public static func json<Value: Codable>(
-    _ filePath: URL,
-    fileManager: FileManager = .default
-  ) -> Self where Self == FileStorage<Value> {
-    FileStorage(
-      fileManager: fileManager,
-      filePath: filePath
-    )
+  static func fileStorage<Value: Codable>(_ url: URL) -> Self where Self == _FileStorage<Value> {
+    _FileStorage(url: url)
   }
 }
 
-public struct FileStorage<Value: Codable>: SharedPersistence {
-  let fileManager: FileManager
-  let filePath: URL
-
-  init(
-    fileManager: FileManager,
-    filePath: URL
-  ) {
-    self.fileManager = fileManager
-    self.filePath = filePath
-    try? self.fileManager.createDirectory(
-      at: self.filePath.deletingLastPathComponent(), withIntermediateDirectories: true
-    )
-  }
+struct _FileStorage<Value: Codable>: SharedPersistence {
+  @Dependency(\.dataManager) var dataManager
+  let url: URL
 
   public func didSet(oldValue: Value, value: Value) {
-    try? JSONEncoder().encode(value).write(to: self.filePath)
+    try? dataManager.save(JSONEncoder().encode(value), to: self.url)
   }
 
   public func get() -> Value? {
-    try? JSONDecoder().decode(Value.self, from: Data(contentsOf: self.filePath))
+    try? JSONDecoder().decode(Value.self, from: dataManager.load(from: self.url))
   }
 }
 
-extension FileStorage: Hashable {
+extension _FileStorage: Hashable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.filePath == rhs.filePath && lhs.fileManager == rhs.fileManager
+    lhs.url == rhs.url
   }
 
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.fileManager)
-    hasher.combine(self.filePath)
+    hasher.combine(self.url)
   }
+}
+
+@DependencyClient
+struct DataManager: Sendable {
+  var load: @Sendable (_ from: URL) throws -> Data
+  var save: @Sendable (Data, _ to: URL) throws -> Void
+}
+
+extension DataManager: DependencyKey {
+  static let liveValue = Self(
+    load: { url in try Data(contentsOf: url) },
+    save: { data, url in
+      try FileManager.default
+        .createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+      try data.write(to: url)
+    }
+  )
+
+  static let testValue = Self()
+}
+
+extension DependencyValues {
+  var dataManager: DataManager {
+    get { self[DataManager.self] }
+    set { self[DataManager.self] = newValue }
+  }
+}
+
+extension DataManager {
+  static func mock(initialData: Data? = nil) -> Self {
+    let data = LockIsolated(initialData)
+    return Self(
+      load: { _ in
+        guard let data = data.value
+        else {
+          struct FileNotFound: Error {}
+          throw FileNotFound()
+        }
+        return data
+      },
+      save: { newData, _ in data.setValue(newData) }
+    )
+  }
+
+  static let failToWrite = Self(
+    load: { _ in Data() },
+    save: { _, _ in
+      struct SaveError: Error {}
+      throw SaveError()
+    }
+  )
+
+  static let failToLoad = Self(
+    load: { _ in
+      struct LoadError: Error {}
+      throw LoadError()
+    },
+    save: { _, _ in }
+  )
 }

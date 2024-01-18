@@ -6,7 +6,7 @@ struct AppFeature {
   @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
-    var syncUpsList: SyncUpsList.State
+    var syncUpsList = SyncUpsList.State()
   }
 
   enum Action {
