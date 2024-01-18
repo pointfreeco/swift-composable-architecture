@@ -3,6 +3,7 @@
 
   extension SharedPersistence {
     @available(*, deprecated)
+    @_disfavoredOverload
     public static func appStorage<Value: Codable>(
       _ key: String, store: UserDefaults? = nil
     ) -> Self where Self == SharedAppStorage<Value> {
@@ -107,17 +108,9 @@
 
       let decoder = JSONDecoder()
       let encoder = JSONEncoder()
-      encoder.outputFormatting = .sortedKeys
 
-      self._get = {
-        try? store.data(forKey: key).map { try decoder.decode(Value.self, from: $0) }
-      }
-      self._didSet = {
-        let data = try! encoder.encode($0)
-        if data != store.data(forKey: key) {
-          store.set(data, forKey: key)
-        }
-      }
+      self._get = { try? store.data(forKey: key).map { try decoder.decode(Value.self, from: $0) } }
+      self._didSet = { store.set(try! encoder.encode($0), forKey: key) }
       self.key = key
       self.store = store
     }
@@ -126,7 +119,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -135,7 +128,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -144,7 +137,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -153,7 +146,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -162,7 +155,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -171,7 +164,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -181,11 +174,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:)) }
-      self._didSet = {
-        if store.object(forKey: key) as? Value.RawValue != $0.rawValue {
-          store.set($0.rawValue, forKey: key)
-        }
-      }
+      self._didSet = { store.set($0.rawValue, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -195,11 +184,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:)) }
-      self._didSet = {
-        if store.object(forKey: key) as? Value.RawValue != $0.rawValue {
-          store.set($0.rawValue, forKey: key)
-        }
-      }
+      self._didSet = { store.set($0.rawValue, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -208,7 +193,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -217,7 +202,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -226,7 +211,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -235,7 +220,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -244,7 +229,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -253,7 +238,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { store.object(forKey: key) as? Value }
-      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self._didSet = { store.set($0, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -263,11 +248,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:)) }
-      self._didSet = {
-        if store.object(forKey: key) as? R.RawValue != $0?.rawValue {
-          store.set($0?.rawValue, forKey: key)
-        }
-      }
+      self._didSet = { store.set($0?.rawValue, forKey: key)  }
       self.key = key
       self.store = store
     }
@@ -277,11 +258,7 @@
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
       self._get = { (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:)) }
-      self._didSet = {
-        if store.object(forKey: key) as? R.RawValue != $0?.rawValue {
-          store.set($0?.rawValue, forKey: key)
-        }
-      }
+      self._didSet = { store.set($0?.rawValue, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -308,7 +285,9 @@
     }
 
     public func didSet(oldValue _: Value, value: Value) {
-      self._didSet(value)
+      SharedAppStorageLocals.$isSetting.withValue(true) {
+        self._didSet(value)
+      }
     }
 
     private class Observer: NSObject {
@@ -323,9 +302,14 @@
         change: [NSKeyValueChangeKey: Any]?,
         context: UnsafeMutableRawPointer?
       ) {
+        guard !SharedAppStorageLocals.isSetting else { return }
         self.didChange()
       }
     }
+  }
+
+  private enum SharedAppStorageLocals {
+    @TaskLocal static var isSetting = false
   }
 
   extension SharedAppStorage: Hashable {
