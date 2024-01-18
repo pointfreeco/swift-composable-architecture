@@ -84,22 +84,23 @@ public class NewGameViewController: UIViewController {
       rootStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
 
+    var gameController: GameViewController?
+
     observe { [weak self] in
       guard let self = self else { return }
       playerOTextField.text = store.oPlayerName
       playerXTextField.text = store.xPlayerName
       letsPlayButton.isEnabled = store.isLetsPlayButtonEnabled
-    }
 
-    observe { [weak self] in
-      guard let self = self else { return }
-      if let store = store.scope(state: \.game, action: \.game.presented) {
-        navigationController?.pushViewController(
-          GameViewController(store: store),
-          animated: true
-        )
-      } else {
-        navigationController?.popToViewController(self, animated: true)
+      if 
+        let store = store.scope(state: \.game, action: \.game.presented),
+        gameController == nil
+      {
+        gameController = GameViewController(store: store)
+        navigationController?.pushViewController(gameController!, animated: true)
+      } else if gameController != nil {
+        gameController?.dismiss(animated: true)
+        gameController = nil
       }
     }
   }

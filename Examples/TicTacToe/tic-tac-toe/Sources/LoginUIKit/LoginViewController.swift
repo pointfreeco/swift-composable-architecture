@@ -86,42 +86,50 @@ public class LoginViewController: UIViewController {
       divider.heightAnchor.constraint(equalToConstant: 1),
     ])
 
+    var alertController: UIAlertController?
+    var twoFactorViewController: TwoFactorViewController?
+
     observe { [weak self] in
       guard let self = self else { return }
       emailTextField.text = store.email
       emailTextField.isEnabled = store.isEmailTextFieldEnabled
-
       passwordTextField.text = store.password
       passwordTextField.isEnabled = store.isPasswordTextFieldEnabled
-
       loginButton.isEnabled = store.isLoginButtonEnabled
-
       activityIndicator.isHidden = store.isActivityIndicatorHidden
-    }
 
-    observe { [weak self] in
-      guard let self else { return }
-      if let alert = store.alert {
-        let alertController = UIAlertController(
-          title: String(state: alert.title), message: nil, preferredStyle: .alert)
-        alertController.addAction(
+      if
+        let alert = store.alert,
+        alertController == nil
+      {
+        alertController = UIAlertController(
+          title: String(state: alert.title),
+          message: nil,
+          preferredStyle: .alert
+        )
+        alertController?.addAction(
           UIAlertAction(title: "Ok", style: .default) { _ in
             self.store.send(.alert(.dismiss))
           }
         )
-        present(alertController, animated: true, completion: nil)
+        present(alertController!, animated: true, completion: nil)
+      } else if alertController != nil {
+        alertController?.dismiss(animated: true)
+        alertController = nil
       }
-    }
 
-    observe { [weak self] in
-      guard let self else { return }
-      if let store = store.scope(state: \.twoFactor, action: \.twoFactor.presented) {
+      if 
+        let store = store.scope(state: \.twoFactor, action: \.twoFactor.presented),
+        twoFactorViewController == nil
+      {
+        twoFactorViewController = TwoFactorViewController(store: store)
         navigationController?.pushViewController(
-          TwoFactorViewController(store: store),
+          twoFactorViewController!,
           animated: true
         )
-      } else {
-        navigationController?.popToViewController(self, animated: true)
+      } else if twoFactorViewController != nil {
+        twoFactorViewController?.dismiss(animated: true)
+        twoFactorViewController = nil
       }
     }
   }

@@ -56,24 +56,29 @@ public final class TwoFactorViewController: UIViewController {
       rootStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
 
+    var alertController: UIAlertController?
+
     observe { [weak self] in
       guard let self = self else { return }
       activityIndicator.isHidden = store.isActivityIndicatorHidden
       codeTextField.text = store.code
       loginButton.isEnabled = store.isLoginButtonEnabled
-    }
 
-    observe { [weak self] in
-      guard let self = self else { return }
-      if let alert = store.alert {
-        let alertController = UIAlertController(
+      if 
+        let alert = store.alert,
+        alertController == nil
+      {
+        alertController = UIAlertController(
           title: String(state: alert.title), message: nil, preferredStyle: .alert)
-        alertController.addAction(
+        alertController!.addAction(
           UIAlertAction(title: "Ok", style: .default) { _ in
             self.store.send(.alert(.dismiss))
           }
         )
-        present(alertController, animated: true, completion: nil)
+        present(alertController!, animated: true, completion: nil)
+      } else if alertController != nil {
+        alertController?.dismiss(animated: true)
+        alertController = nil
       }
     }
   }
