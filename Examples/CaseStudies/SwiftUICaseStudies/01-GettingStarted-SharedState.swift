@@ -17,84 +17,6 @@ private let readMe = """
 // MARK: - Feature domain
 
 @Reducer
-struct SharedState {
-  enum Tab { case counter, profile }
-
-  @ObservableState
-  struct State: Equatable {
-    var currentTab = Tab.counter
-    var counter = CounterTab.State()
-    var profile = ProfileTab.State()
-  }
-
-  enum Action {
-    case counter(CounterTab.Action)
-    case profile(ProfileTab.Action)
-    case selectTab(Tab)
-  }
-
-  var body: some Reducer<State, Action> {
-    Scope(state: \.counter, action: \.counter) {
-      CounterTab()
-    }
-    .onChange(of: \.counter.stats) { _, stats in
-      Reduce { state, _ in
-        state.profile.stats = stats
-        return .none
-      }
-    }
-
-    Scope(state: \.profile, action: \.profile) {
-      ProfileTab()
-    }
-    .onChange(of: \.profile.stats) { _, stats in
-      Reduce { state, _ in
-        state.counter.stats = stats
-        return .none
-      }
-    }
-
-    Reduce { state, action in
-      switch action {
-      case .counter, .profile:
-        return .none
-      case let .selectTab(tab):
-        state.currentTab = tab
-        return .none
-      }
-    }
-  }
-}
-
-// MARK: - Feature view
-
-struct SharedStateView: View {
-  @State var store = Store(initialState: SharedState.State()) {
-    SharedState()
-  }
-
-  var body: some View {
-    TabView(selection: $store.currentTab.sending(\.selectTab)) {
-      NavigationStack {
-        CounterTabView(
-          store: self.store.scope(state: \.counter, action: \.counter)
-        )
-      }
-      .tag(SharedState.Tab.counter)
-      .tabItem { Text("Counter") }
-
-      NavigationStack {
-        ProfileTabView(
-          store: self.store.scope(state: \.profile, action: \.profile)
-        )
-      }
-      .tag(SharedState.Tab.profile)
-      .tabItem { Text("Profile") }
-    }
-  }
-}
-
-@Reducer
 struct CounterTab {
   @ObservableState
   struct State: Equatable {
@@ -129,8 +51,8 @@ struct CounterTab {
         state.alert = AlertState {
           TextState(
             isPrime(state.stats.count)
-              ? "👍 The number \(state.stats.count) is prime!"
-              : "👎 The number \(state.stats.count) is not prime :("
+            ? "👍 The number \(state.stats.count) is prime!"
+            : "👎 The number \(state.stats.count) is not prime :("
           )
         }
         return .none
@@ -223,6 +145,82 @@ struct ProfileTabView: View {
     }
     .buttonStyle(.borderless)
     .navigationTitle("Profile")
+  }
+}
+
+@Reducer
+struct SharedState {
+  enum Tab { case counter, profile }
+
+  @ObservableState
+  struct State: Equatable {
+    var currentTab = Tab.counter
+    var counter = CounterTab.State()
+    var profile = ProfileTab.State()
+  }
+
+  enum Action {
+    case counter(CounterTab.Action)
+    case profile(ProfileTab.Action)
+    case selectTab(Tab)
+  }
+
+  var body: some Reducer<State, Action> {
+    Scope(state: \.counter, action: \.counter) {
+      CounterTab()
+    }
+    .onChange(of: \.counter.stats) { _, stats in
+      Reduce { state, _ in
+        state.profile.stats = stats
+        return .none
+      }
+    }
+
+    Scope(state: \.profile, action: \.profile) {
+      ProfileTab()
+    }
+    .onChange(of: \.profile.stats) { _, stats in
+      Reduce { state, _ in
+        state.counter.stats = stats
+        return .none
+      }
+    }
+
+    Reduce { state, action in
+      switch action {
+      case .counter, .profile:
+        return .none
+      case let .selectTab(tab):
+        state.currentTab = tab
+        return .none
+      }
+    }
+  }
+}
+
+struct SharedStateView: View {
+  @State var store = Store(initialState: SharedState.State()) {
+    SharedState()
+  }
+
+  var body: some View {
+    TabView(selection: $store.currentTab.sending(\.selectTab)) {
+      NavigationStack {
+        CounterTabView(
+          store: self.store.scope(state: \.counter, action: \.counter)
+        )
+      }
+      .tag(SharedState.Tab.counter)
+      .tabItem { Text("Counter") }
+
+      NavigationStack {
+        ProfileTabView(
+          store: self.store.scope(state: \.profile, action: \.profile)
+        )
+      }
+      .tag(SharedState.Tab.profile)
+      .tabItem { Text("Profile") }
+    }
   }
 }
 
