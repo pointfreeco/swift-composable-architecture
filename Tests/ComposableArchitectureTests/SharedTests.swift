@@ -46,8 +46,7 @@ final class SharedTests: XCTestCase {
               _profile: Profile(…),
           −   _sharedCount: 2,
           +   _sharedCount: 1,
-              _stats: Stats(count: 0),
-              _statsDependency: Stats(count: 0)
+              _stats: Stats(count: 0)
             )
 
       (Expected: −, Actual: +)
@@ -128,8 +127,7 @@ final class SharedTests: XCTestCase {
                 _profile: Profile(…),
             −   _sharedCount: 2,
             +   _sharedCount: 1,
-                _stats: Stats(count: 0),
-                _statsDependency: Stats(count: 0)
+                _stats: Stats(count: 0)
               )
 
         (Expected: −, Actual: +)
@@ -175,8 +173,7 @@ final class SharedTests: XCTestCase {
                 _profile: Profile(…),
             −   _sharedCount: 0,
             +   _sharedCount: 1,
-                _stats: Stats(count: 0),
-                _statsDependency: Stats(count: 0)
+                _stats: Stats(count: 0)
               )
 
         (Expected: −, Actual: +)
@@ -184,69 +181,6 @@ final class SharedTests: XCTestCase {
     }
     await store.send(.request)
     await store.receive(\.sharedIncrement)
-  }
-
-  func testDependency() async {
-    let store = TestStore(
-      initialState: SharedFeature.State(
-        profile: Shared(Profile(stats: Shared(Stats()))),
-        sharedCount: Shared(0),
-        stats: Shared(Stats())
-      )
-    ) {
-      SharedFeature()
-    }
-    await store.send(.sharedDependencyIncrement) {
-      $0.statsDependency.count = 1
-    }
-  }
-
-  func testDependency_Failure() async {
-    let store = TestStore(
-      initialState: SharedFeature.State(
-        profile: Shared(Profile(stats: Shared(Stats()))),
-        sharedCount: Shared(0),
-        stats: Shared(Stats())
-      )
-    ) {
-      SharedFeature()
-    }
-    XCTExpectFailure {
-      $0.compactDescription == """
-        A state change does not match expectation: …
-
-              SharedFeature.State(
-                _count: 0,
-                _profile: Profile(…),
-                _sharedCount: 0,
-                _stats: Stats(count: 0),
-            −   _statsDependency: Stats(count: 2)
-            +   _statsDependency: Stats(count: 1)
-              )
-
-        (Expected: −, Actual: +)
-        """
-    }
-    await store.send(.sharedDependencyIncrement) {
-      $0.statsDependency.count = 2
-    }
-  }
-
-  func testDependency_WithOverride() async {
-    let store = TestStore(
-      initialState: SharedFeature.State(
-        profile: Shared(Profile(stats: Shared(Stats()))),
-        sharedCount: Shared(0),
-        stats: Shared(Stats())
-      )
-    ) {
-      SharedFeature()
-    } withDependencies: {
-      $0[Shared<Stats>.self] = Shared(Stats(count: 42))
-    }
-    await store.send(.sharedDependencyIncrement) {
-      $0.statsDependency.count = 43
-    }
   }
 
   func testMutationOfSharedStateInLongLivingEffect() async {
@@ -426,108 +360,6 @@ final class SharedTests: XCTestCase {
     }
   }
 
-  func testComplexSharedDependencyEffect_EffectMutation() async {
-    struct Feature: Reducer {
-      struct State: Equatable {
-        @SharedDependency var stats: Stats
-      }
-      enum Action {
-        case startTimer
-        case stopTimer
-        case timerTick
-      }
-      @Dependency(\.mainQueue) var queue
-      enum CancelID { case timer }
-      var body: some ReducerOf<Self> {
-        Reduce { state, action in
-          switch action {
-          case .startTimer:
-            return .run { send in
-              for await _ in self.queue.timer(interval: .seconds(1)) {
-                @SharedDependency var stats: Stats
-                stats.count += 1
-                await send(.timerTick)
-              }
-            }
-            .cancellable(id: CancelID.timer)
-          case .stopTimer:
-            return .merge(
-              .cancel(id: CancelID.timer),
-              .run { _ in
-                Task {
-                  try await self.queue.sleep(for: .seconds(1))
-                  @SharedDependency var stats: Stats
-                  stats.count = 42
-                }
-              }
-            )
-          case .timerTick:
-            return .none
-          }
-        }
-      }
-    }
-    let mainQueue = DispatchQueue.test
-    let store = TestStore(initialState: Feature.State()) {
-      Feature()
-    } withDependencies: {
-      $0.mainQueue = mainQueue.eraseToAnyScheduler()
-    }
-    await store.send(.startTimer)
-    await mainQueue.advance(by: .seconds(1))
-    await store.receive(.timerTick) {
-      $0.stats.count = 1
-    }
-    await store.send(.stopTimer)
-    await mainQueue.advance(by: .seconds(1))
-    store.state.$stats.assert {
-      $0.count = 42
-    }
-  }
-
-  func testSharedDependencyAccessWithOnlyTestValue_TestContext() {
-    @SharedDependency var shared: SharedStateWithTestValue
-    _ = shared
-  }
-
-  func testSharedDependencyAccessWithOnlyTestValue_LiveContext() {
-    XCTExpectFailure {
-      withDependencies {
-        $0.context = .live
-      } operation: {
-        @SharedDependency var shared: SharedStateWithTestValue
-        _ = shared
-      }
-    } issueMatcher: {
-      $0.compactDescription == """
-        "@Dependency(Shared<ComposableArchitectureTests.SharedStateWithTestValue>.self)" has no live implementation, but was accessed from a live context.
-
-          Location:
-            ComposableArchitectureTests/SharedTests.swift:498
-          Dependency:
-            Shared<ComposableArchitectureTests.SharedStateWithTestValue>
-
-        Every dependency registered with the library must conform to "DependencyKey", and that conformance must be visible to the running application.
-
-        To fix, make sure that "Shared<ComposableArchitectureTests.SharedStateWithTestValue>" conforms to "DependencyKey" by providing a live implementation of your dependency, and make sure that the conformance is linked with this current application.
-        """
-    }
-  }
-
-  func testSharedDependencyAccessWithOnlyLiveValue_TestContext() {
-    @SharedDependency var shared: SharedStateWithLiveValue
-    _ = shared
-  }
-
-  func testSharedDependencyAccessWithOnlyLiveValue_LiveContext() {
-    withDependencies {
-      $0.context = .live
-    } operation: {
-      @SharedDependency var shared: SharedStateWithLiveValue
-      _ = shared
-    }
-  }
-
   func testDump() {
     let profile = Shared(Profile(stats: Shared(Stats())))
     XCTAssertEqual(
@@ -549,7 +381,6 @@ private struct SharedFeature {
     @Shared var profile: Profile
     @Shared var sharedCount: Int
     @Shared var stats: Stats
-    @SharedDependency var statsDependency: Stats
   }
   enum Action {
     case increment
@@ -557,7 +388,6 @@ private struct SharedFeature {
     case longLivingEffect
     case noop
     case sharedIncrement
-    case sharedDependencyIncrement
     case request
   }
   @Dependency(\.mainQueue) var mainQueue
@@ -580,9 +410,6 @@ private struct SharedFeature {
         return .none
       case .sharedIncrement:
         state.sharedCount += 1
-        return .none
-      case .sharedDependencyIncrement:
-        state.statsDependency.count += 1
         return .none
       case .request:
         return .run { send in
