@@ -1,11 +1,9 @@
-import Combine
 import ComposableArchitecture
 import GameCore
 import UIKit
 
 public final class GameViewController: UIViewController {
   let store: StoreOf<Game>
-  private var cancellables: Set<AnyCancellable> = []
 
   public init(store: StoreOf<Game>) {
     self.store = store
@@ -108,27 +106,19 @@ public final class GameViewController: UIViewController {
         ])
       }
 
-    self.store.publisher.title
-      .map(Optional.some)
-      .assign(to: \.text, on: titleLabel)
-      .store(in: &self.cancellables)
+    observe { [weak self] in
+      guard let self else { return }
+      titleLabel.text = self.store.title
+      playAgainButton.isHidden = self.store.isPlayAgainButtonHidden
 
-    self.store.publisher.isPlayAgainButtonHidden
-      .assign(to: \.isHidden, on: playAgainButton)
-      .store(in: &self.cancellables)
-
-    self.store.publisher.map(\.rows, \.isGameEnabled)
-      .removeDuplicates(by: ==)
-      .sink { board, isGameEnabled in
-        board.enumerated().forEach { rowIdx, row in
-          row.enumerated().forEach { colIdx, label in
-            let button = cells[rowIdx][colIdx]
-            button.setTitle(label, for: .normal)
-            button.isEnabled = isGameEnabled
-          }
+      for (rowIdx, row) in self.store.rows.enumerated() {
+        for (colIdx, label) in row.enumerated() {
+          let button = cells[rowIdx][colIdx]
+          button.setTitle(label, for: .normal)
+          button.isEnabled = self.store.isGameEnabled
         }
       }
-      .store(in: &self.cancellables)
+    }
   }
 
   @objc private func gridCell11Tapped() { self.store.send(.cellTapped(row: 0, column: 0)) }

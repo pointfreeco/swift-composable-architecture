@@ -1,5 +1,4 @@
 import AppCore
-import Combine
 import ComposableArchitecture
 import LoginUIKit
 import NewGameUIKit
@@ -27,7 +26,6 @@ public struct UIKitAppView: UIViewControllerRepresentable {
 
 class AppViewController: UINavigationController {
   let store: StoreOf<TicTacToe>
-  private var cancellables: Set<AnyCancellable> = []
 
   init(store: StoreOf<TicTacToe>) {
     self.store = store
@@ -41,18 +39,18 @@ class AppViewController: UINavigationController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    self.store
-      .scope(state: \.login, action: \.login)
-      .ifLet { [weak self] loginStore in
-        self?.setViewControllers([LoginViewController(store: loginStore)], animated: false)
+    observe { [weak self] in
+      guard let self else { return }
+      switch store.state {
+      case .login:
+        if let store = store.scope(state: \.login, action: \.login) {
+          setViewControllers([LoginViewController(store: store)], animated: false)
+        }
+      case .newGame:
+        if let store = store.scope(state: \.newGame, action: \.newGame) {
+          setViewControllers([NewGameViewController(store: store)], animated: false)
+        }
       }
-      .store(in: &self.cancellables)
-
-    self.store
-      .scope(state: \.newGame, action: \.newGame)
-      .ifLet { [weak self] newGameStore in
-        self?.setViewControllers([NewGameViewController(store: newGameStore)], animated: false)
-      }
-      .store(in: &self.cancellables)
+    }
   }
 }

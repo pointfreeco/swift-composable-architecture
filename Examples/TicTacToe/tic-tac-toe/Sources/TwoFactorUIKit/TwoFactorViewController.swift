@@ -1,11 +1,9 @@
-import Combine
 import ComposableArchitecture
 import TwoFactorCore
 import UIKit
 
 public final class TwoFactorViewController: UIViewController {
   let store: StoreOf<TwoFactor>
-  private var cancellables: Set<AnyCancellable> = []
 
   public init(store: StoreOf<TwoFactor>) {
     self.store = store
@@ -19,7 +17,7 @@ public final class TwoFactorViewController: UIViewController {
   public override func viewDidLoad() {
     super.viewDidLoad()
 
-    self.view.backgroundColor = .systemBackground
+    view.backgroundColor = .systemBackground
 
     let titleLabel = UILabel()
     titleLabel.text = "Enter the one time code to continue"
@@ -50,32 +48,24 @@ public final class TwoFactorViewController: UIViewController {
     rootStackView.axis = .vertical
     rootStackView.spacing = 24
 
-    self.view.addSubview(rootStackView)
+    view.addSubview(rootStackView)
 
     NSLayoutConstraint.activate([
-      rootStackView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-      rootStackView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-      rootStackView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+      rootStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      rootStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      rootStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
 
-    self.store.publisher.isActivityIndicatorHidden
-      .assign(to: \.isHidden, on: activityIndicator)
-      .store(in: &self.cancellables)
+    observe { [weak self] in
+      guard let self = self else { return }
+      activityIndicator.isHidden = store.isActivityIndicatorHidden
+      codeTextField.text = store.code
+      loginButton.isEnabled = store.isLoginButtonEnabled
+    }
 
-    self.store.publisher.code
-      .map(Optional.some)
-      .assign(to: \.text, on: codeTextField)
-      .store(in: &self.cancellables)
-
-    self.store.publisher.isLoginButtonEnabled
-      .assign(to: \.isEnabled, on: loginButton)
-      .store(in: &self.cancellables)
-
-    self.store.publisher.alert
-      .sink { [weak self] alert in
-        guard let self = self else { return }
-        guard let alert = alert else { return }
-
+    observe { [weak self] in
+      guard let self = self else { return }
+      if let alert = store.alert {
         let alertController = UIAlertController(
           title: String(state: alert.title), message: nil, preferredStyle: .alert)
         alertController.addAction(
@@ -83,23 +73,21 @@ public final class TwoFactorViewController: UIViewController {
             self.store.send(.alert(.dismiss))
           }
         )
-        self.present(alertController, animated: true, completion: nil)
+        present(alertController, animated: true, completion: nil)
       }
-      .store(in: &self.cancellables)
+    }
   }
 
   @objc private func codeTextFieldChanged(sender: UITextField) {
-    self.store.code = sender.text ?? ""
+    store.code = sender.text ?? ""
   }
 
   @objc private func loginButtonTapped() {
-    self.store.send(.view(.submitButtonTapped))
+    store.send(.view(.submitButtonTapped))
   }
 }
 
 extension TwoFactor.State {
-  fileprivate var isActivityIndicatorHidden: Bool { !self.isTwoFactorRequestInFlight }
-  fileprivate var isLoginButtonEnabled: Bool {
-    self.isFormValid && !self.isTwoFactorRequestInFlight
-  }
+  fileprivate var isActivityIndicatorHidden: Bool { !isTwoFactorRequestInFlight }
+  fileprivate var isLoginButtonEnabled: Bool { isFormValid && !isTwoFactorRequestInFlight }
 }
