@@ -1,5 +1,4 @@
 #if canImport(Perception)
-import Combine
   import Foundation
 
   public struct _Empty<Element>: AsyncSequence {
@@ -34,7 +33,6 @@ import Combine
     }
   }
 
-  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
   extension SharedPersistence {
     public static func appStorage<Value: Codable>(
       _ key: String, store: UserDefaults? = nil
@@ -66,44 +64,6 @@ extension SharedPersistence {
     return encoder
   }()
 
-public struct FileStorage<Value: Codable>: SharedPersistence, Hashable {
-  let fileManager: FileManager
-  let filePath: URL
-  let jsonDecoder: JSONDecoder
-  let jsonEncoder: JSONEncoder
-
-  init(
-    fileManager: FileManager,
-    filePath: URL,
-    jsonDecoder: JSONDecoder,
-    jsonEncoder: JSONEncoder
-  ) {
-    self.fileManager = fileManager
-    self.filePath = filePath
-    self.jsonDecoder = jsonDecoder
-    self.jsonEncoder = jsonEncoder
-    try? self.fileManager.createDirectory(at: self.filePath.deletingLastPathComponent(), withIntermediateDirectories: true)
-  }
-
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.filePath == rhs.filePath
-      && lhs.fileManager == rhs.fileManager
-  }
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.fileManager)
-    hasher.combine(self.filePath)
-  }
-
-  public func didSet(oldValue: Value, value: Value) {
-    try? JSONEncoder().encode(value).write(to: self.filePath)
-  }
-
-  public func get() -> Value? {
-    try? JSONDecoder().decode(Value.self, from: Data(contentsOf: self.filePath))
-  }
-}
-
-  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
   public struct SharedAppStorage<Value>: SharedPersistence, Hashable {
     private let _get: () -> Value?
     private let _didSet: (Value) -> Void
@@ -633,5 +593,42 @@ extension DependencyValues {
   public var userDefaults: UserDefaults {
     get { self[UserDefaultsKey.self].value }
     set { self[UserDefaultsKey.self].value = newValue }
+  }
+}
+
+public struct FileStorage<Value: Codable>: SharedPersistence, Hashable {
+  let fileManager: FileManager
+  let filePath: URL
+  let jsonDecoder: JSONDecoder
+  let jsonEncoder: JSONEncoder
+
+  init(
+    fileManager: FileManager,
+    filePath: URL,
+    jsonDecoder: JSONDecoder,
+    jsonEncoder: JSONEncoder
+  ) {
+    self.fileManager = fileManager
+    self.filePath = filePath
+    self.jsonDecoder = jsonDecoder
+    self.jsonEncoder = jsonEncoder
+    try? self.fileManager.createDirectory(at: self.filePath.deletingLastPathComponent(), withIntermediateDirectories: true)
+  }
+
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.filePath == rhs.filePath
+      && lhs.fileManager == rhs.fileManager
+  }
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.fileManager)
+    hasher.combine(self.filePath)
+  }
+
+  public func didSet(oldValue: Value, value: Value) {
+    try? JSONEncoder().encode(value).write(to: self.filePath)
+  }
+
+  public func get() -> Value? {
+    try? JSONDecoder().decode(Value.self, from: Data(contentsOf: self.filePath))
   }
 }
