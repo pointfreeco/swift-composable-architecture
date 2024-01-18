@@ -47,6 +47,42 @@
       )
     }
 
+    public init<Wrapped>(
+      wrappedValue value: Value = nil,
+      _ persistence: some SharedPersistence<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) where Value == Wrapped? {
+      self.init(
+        reference: {
+          if let id = persistence as? AnyHashable {
+            return references.withValue {
+              if let reference = $0[id] {
+                return reference
+              } else {
+                let reference = Reference(
+                  value,
+                  persistence: persistence,
+                  fileID: fileID,
+                  line: line
+                )
+                $0[id] = reference
+                return reference
+              }
+            }
+          } else {
+            return Reference(
+              value,
+              persistence: persistence,
+              fileID: fileID,
+              line: line
+            )
+          }
+        }(),
+        keyPath: \Value.self
+      )
+    }
+
     private init(reference: any ReferenceProtocol, keyPath: AnyKeyPath) {
       self.reference = reference
       self.keyPath = keyPath

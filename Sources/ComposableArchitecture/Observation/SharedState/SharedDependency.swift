@@ -1,3 +1,5 @@
+// TODO: Remove this concept?
+
 @propertyWrapper
 public struct SharedDependency<Key: TestDependencyKey> where Key.Value == Key {
   private let dependency: Dependency<Shared<Key>>

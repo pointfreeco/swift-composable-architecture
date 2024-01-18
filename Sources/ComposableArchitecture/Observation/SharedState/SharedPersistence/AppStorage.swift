@@ -2,9 +2,94 @@
   import Foundation
 
   extension SharedPersistence {
+    @available(*, deprecated)
     public static func appStorage<Value: Codable>(
       _ key: String, store: UserDefaults? = nil
     ) -> Self where Self == SharedAppStorage<Value> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<Bool> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<Int> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<Double> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<String> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<URL> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<Data> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage<Value: RawRepresentable>(
+      _ key: String, store: UserDefaults? = nil
+    ) -> Self where Value.RawValue == Int, Self == SharedAppStorage<Value> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage<Value: RawRepresentable>(
+      _ key: String, store: UserDefaults? = nil
+    ) -> Self where Value.RawValue == String, Self == SharedAppStorage<Value> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<Bool?> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<Int?> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<Double?> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<String?> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<URL?> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage(_ key: String, store: UserDefaults? = nil) -> Self
+    where Self == SharedAppStorage<Data?> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage<Value: RawRepresentable>(
+      _ key: String, store: UserDefaults? = nil
+    ) -> Self where Value.RawValue == Int, Self == SharedAppStorage<Value?> {
+      SharedAppStorage(key, store: store)
+    }
+
+    public static func appStorage<Value: RawRepresentable>(
+      _ key: String, store: UserDefaults? = nil
+    ) -> Self where Value.RawValue == String, Self == SharedAppStorage<Value?> {
       SharedAppStorage(key, store: store)
     }
   }
@@ -31,6 +116,7 @@
       }
     }
 
+    @available(*, deprecated)
     public init(_ key: String, store: UserDefaults?) where Value: Codable {
       @Dependency(\.userDefaults) var userDefaults
       let store = store ?? userDefaults
@@ -46,6 +132,170 @@
         let data = try! encoder.encode($0)
         if data != store.data(forKey: key) {
           store.set(data, forKey: key)
+        }
+      }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == Bool {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == Int {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == Double {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == String {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == URL {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == Data {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?)
+    where Value: RawRepresentable, Value.RawValue == Int {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:)) }
+      self._didSet = {
+        if store.object(forKey: key) as? Value.RawValue != $0.rawValue {
+          store.set($0.rawValue, forKey: key)
+        }
+      }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?)
+    where Value: RawRepresentable, Value.RawValue == String {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:)) }
+      self._didSet = {
+        if store.object(forKey: key) as? Value.RawValue != $0.rawValue {
+          store.set($0.rawValue, forKey: key)
+        }
+      }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == Bool? {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == Int? {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == Double? {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == String? {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == URL? {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init(_ key: String, store: UserDefaults?) where Value == Data? {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { store.object(forKey: key) as? Value }
+      self._didSet = { if store.object(forKey: key) as? Value != $0 { store.set($0, forKey: key) } }
+      self.key = key
+      self.store = store
+    }
+
+    public init<R: RawRepresentable>(_ key: String, store: UserDefaults?)
+    where R.RawValue == Int, Value == R? {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:)) }
+      self._didSet = {
+        if store.object(forKey: key) as? R.RawValue != $0?.rawValue {
+          store.set($0?.rawValue, forKey: key)
+        }
+      }
+      self.key = key
+      self.store = store
+    }
+
+    public init<R: RawRepresentable>(_ key: String, store: UserDefaults?)
+    where R.RawValue == String, Value == R? {
+      @Dependency(\.userDefaults) var userDefaults
+      let store = store ?? userDefaults
+      self._get = { (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:)) }
+      self._didSet = {
+        if store.object(forKey: key) as? R.RawValue != $0?.rawValue {
+          store.set($0?.rawValue, forKey: key)
         }
       }
       self.key = key
