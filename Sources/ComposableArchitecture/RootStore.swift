@@ -130,10 +130,7 @@ public final class RootStore {
                       }
                     #endif
                     if let task = continuation.yield({
-                      self.send(
-                        effectAction
-                        //, originatingFrom: action
-                      )
+                      self.send(effectAction, originatingFrom: action)
                     }) {
                       tasks.wrappedValue.append(task)
                     }
