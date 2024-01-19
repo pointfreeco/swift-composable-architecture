@@ -162,7 +162,13 @@ public final class RootStore {
         }
       }
     }
-    return open(reducer: self.reducer)
+    #if canImport(Perception)
+      return _withoutPerceptionChecking {
+        open(reducer: self.reducer)
+      }
+    #else
+      return open(reducer: self.reducer)
+    #endif
   }
 }
 
