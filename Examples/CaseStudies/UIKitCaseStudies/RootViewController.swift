@@ -1,5 +1,4 @@
 import ComposableArchitecture
-import SwiftUI
 import UIKit
 
 struct CaseStudy {
