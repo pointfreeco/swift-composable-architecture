@@ -67,23 +67,20 @@ final class CountersTableViewController: UITableViewController {
   }
 }
 
-struct CountersTableViewController_Previews: PreviewProvider {
-  static var previews: some View {
-    let vc = UINavigationController(
-      rootViewController: CountersTableViewController(
-        store: Store(
-          initialState: CounterList.State(
-            counters: [
-              Counter.State(),
-              Counter.State(),
-              Counter.State(),
-            ]
-          )
-        ) {
-          CounterList()
-        }
-      )
+#Preview {
+  UINavigationController(
+    rootViewController: CountersTableViewController(
+      store: Store(
+        initialState: CounterList.State(
+          counters: [
+            Counter.State(),
+            Counter.State(),
+            Counter.State(),
+          ]
+        )
+      ) {
+        CounterList()
+      }
     )
-    return UIViewRepresented(makeUIView: { _ in vc.view })
-  }
+  )
 }

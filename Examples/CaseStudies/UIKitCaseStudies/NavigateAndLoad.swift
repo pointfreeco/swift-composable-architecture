@@ -111,15 +111,12 @@ class EagerNavigationViewController: UIViewController {
   }
 }
 
-struct EagerNavigationViewController_Previews: PreviewProvider {
-  static var previews: some View {
-    let vc = UINavigationController(
-      rootViewController: EagerNavigationViewController(
-        store: Store(initialState: EagerNavigation.State()) {
-          EagerNavigation()
-        }
-      )
+#Preview {
+  UINavigationController(
+    rootViewController: EagerNavigationViewController(
+      store: Store(initialState: EagerNavigation.State()) {
+        EagerNavigation()
+      }
     )
-    return UIViewRepresented(makeUIView: { _ in vc.view })
-  }
+  )
 }
