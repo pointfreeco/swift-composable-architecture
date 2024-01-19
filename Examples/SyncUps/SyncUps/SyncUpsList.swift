@@ -36,7 +36,6 @@ struct SyncUpsList {
     }
   }
 
-  @Dependency(\.continuousClock) var clock
   @Dependency(\.uuid) var uuid
 
   var body: some ReducerOf<Self> {

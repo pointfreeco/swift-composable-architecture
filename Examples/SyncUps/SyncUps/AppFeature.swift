@@ -14,7 +14,6 @@ struct AppFeature {
     case syncUpsList(SyncUpsList.Action)
   }
 
-  @Dependency(\.continuousClock) var clock
   @Dependency(\.date.now) var now
   @Dependency(\.uuid) var uuid
 

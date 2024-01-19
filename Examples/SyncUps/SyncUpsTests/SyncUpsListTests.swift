@@ -9,8 +9,6 @@ final class SyncUpsListTests: XCTestCase {
     let store = TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()
     } withDependencies: {
-      $0.continuousClock = ImmediateClock()
-      $0.dataManager = .mock()
       $0.uuid = .incrementing
     }
 
@@ -56,8 +54,6 @@ final class SyncUpsListTests: XCTestCase {
     ) {
       SyncUpsList()
     } withDependencies: {
-      $0.continuousClock = ImmediateClock()
-      $0.dataManager = .mock()
       $0.uuid = .incrementing
     }
 

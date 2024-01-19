@@ -2,26 +2,61 @@ import ComposableArchitecture
 import Foundation
 
 extension SharedPersistence {
-  static func fileStorage<Value: Codable>(_ url: URL) -> Self where Self == _FileStorage<Value> {
+  public static func fileStorage<Value: Codable>(_ url: URL) -> Self
+  where Self == _FileStorage<Value> {
     _FileStorage(url: url)
   }
 }
 
-struct _FileStorage<Value: Codable>: SharedPersistence {
-  @Dependency(\.dataManager) var dataManager
+public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable, SharedPersistence {
+  @Dependency(\.dataManager) fileprivate var dataManager
   let url: URL
+  let queue = DispatchQueue(label: "co.pointfree.ComposableArchitecture._FileStorage")
+  let isSetting = DispatchSpecificKey<Bool>()
+  var workItem: DispatchWorkItem?
+
+  public init(url: URL) {
+    self.url = url
+  }
 
   public func load() -> Value? {
     try? JSONDecoder().decode(Value.self, from: dataManager.load(from: self.url))
   }
 
   public func save(_ value: Value) {
-    try? dataManager.save(JSONEncoder().encode(value), to: self.url)
+    self.workItem?.cancel()
+    let workItem = DispatchWorkItem {
+      self.queue.setSpecific(key: self.isSetting, value: true)
+      try? self.dataManager.save(JSONEncoder().encode(value), to: self.url)
+    }
+    self.workItem = workItem
+    self.queue.asyncAfter(deadline: .now() + .seconds(5), execute: workItem)
+  }
+
+  public var updates: AsyncStream<Value> {
+    AsyncStream { continuation in
+      let source = DispatchSource.makeFileSystemObjectSource(
+        fileDescriptor: open(self.url.path, O_EVTONLY),
+        eventMask: .write,
+        queue: self.queue
+      )
+      continuation.onTermination = { [source = UncheckedSendable(source)] _ in
+        source.wrappedValue.cancel()
+      }
+      source.setEventHandler {
+        if self.queue.getSpecific(key: self.isSetting) == true {
+          self.queue.setSpecific(key: self.isSetting, value: false)
+        } else if let value = self.load() {
+          continuation.yield(value)
+        }
+      }
+      source.resume()
+    }
   }
 }
 
 extension _FileStorage: Hashable {
-  public static func == (lhs: Self, rhs: Self) -> Bool {
+  public static func == (lhs: _FileStorage, rhs: _FileStorage) -> Bool {
     lhs.url == rhs.url
   }
 
@@ -31,7 +66,7 @@ extension _FileStorage: Hashable {
 }
 
 @DependencyClient
-struct DataManager: Sendable {
+private struct DataManager: Sendable {
   var load: @Sendable (_ from: URL) throws -> Data
   var save: @Sendable (Data, _ to: URL) throws -> Void
 }
@@ -46,45 +81,25 @@ extension DataManager: DependencyKey {
     }
   )
 
-  static let testValue = Self()
-}
-
-extension DependencyValues {
-  var dataManager: DataManager {
-    get { self[DataManager.self] }
-    set { self[DataManager.self] = newValue }
-  }
-}
-
-extension DataManager {
-  static func mock(initialData: Data? = nil) -> Self {
-    let data = LockIsolated(initialData)
-    return Self(
-      load: { _ in
-        guard let data = data.value
+  static var testValue: Self {
+    let fileSystem = LockIsolated<[URL: Data]>([:])
+    return DataManager(
+      load: {
+        guard let data = fileSystem[$0]
         else {
-          struct FileNotFound: Error {}
-          throw FileNotFound()
+          struct LoadError: Error {}
+          throw LoadError()
         }
         return data
       },
-      save: { newData, _ in data.setValue(newData) }
+      save: { data, url in fileSystem.withValue { $0[url] = data } }
     )
   }
+}
 
-  static let failToWrite = Self(
-    load: { _ in Data() },
-    save: { _, _ in
-      struct SaveError: Error {}
-      throw SaveError()
-    }
-  )
-
-  static let failToLoad = Self(
-    load: { _ in
-      struct LoadError: Error {}
-      throw LoadError()
-    },
-    save: { _, _ in }
-  )
+extension DependencyValues {
+  fileprivate var dataManager: DataManager {
+    get { self[DataManager.self] }
+    set { self[DataManager.self] = newValue }
+  }
 }

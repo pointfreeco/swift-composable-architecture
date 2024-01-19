@@ -8,17 +8,15 @@ final class AppFeatureTests: XCTestCase {
   func testDelete() async throws {
     let syncUp = SyncUp.mock
 
-    let store = TestStore(initialState: AppFeature.State()) {
+    let store = TestStore(
+      initialState: AppFeature.State(syncUpsList: SyncUpsList.State(syncUps: [syncUp]))
+    ) {
       AppFeature()
-    } withDependencies: {
-      $0.continuousClock = ImmediateClock()
-      $0.dataManager = .mock(
-        initialData: try! JSONEncoder().encode([syncUp])
-      )
     }
 
-    await store.send(.path(.push(id: 0, state: .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))))) {
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
+    await store.send(.syncUpsList(.syncUpTapped(id: syncUp.id))) {
+      let syncUp = try XCTUnwrap($0.syncUpsList.$syncUps[id: syncUp.id])
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: syncUp))
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.deleteButtonTapped)))) {
@@ -47,15 +45,6 @@ final class AppFeatureTests: XCTestCase {
       initialState: AppFeature.State(syncUpsList: SyncUpsList.State(syncUps: [syncUp]))
     ) {
       AppFeature()
-    } withDependencies: { dependencies in
-      dependencies.continuousClock = ImmediateClock()
-      dependencies.dataManager = .mock(
-        initialData: try! JSONEncoder().encode([syncUp])
-      )
-      dependencies.dataManager.save = { @Sendable [dependencies] data, url in
-        savedData.setValue(data)
-        try dependencies.dataManager.save(data, to: url)
-      }
     }
 
     await store.send(.syncUpsList(.syncUpTapped(id: syncUp.id))) {
@@ -85,13 +74,6 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0, case: \.detail]?.syncUp.title = "Blob"
     }
     .finish()
-
-    var savedSyncUp = syncUp
-    savedSyncUp.title = "Blob"
-    XCTAssertNoDifference(
-      try JSONDecoder().decode([SyncUp].self, from: savedData.value!),
-      [savedSyncUp]
-    )
   }
 
   func testRecording() async {
@@ -119,7 +101,6 @@ final class AppFeatureTests: XCTestCase {
     ) {
       AppFeature()
     } withDependencies: {
-      $0.dataManager = .mock(initialData: try! JSONEncoder().encode([syncUp]))
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       $0.continuousClock = ImmediateClock()
       $0.speechClient.authorizationStatus = { .authorized }
