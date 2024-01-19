@@ -370,13 +370,7 @@ public final class Store<State, Action> {
         return .none
       }
     #endif
-    #if canImport(Perception)
-      return _withoutPerceptionChecking {
-        self.rootStore.send(self.fromAction(action))
-      }
-    #else
-      return self.rootStore.send(self.fromAction(action))
-    #endif
+    return self.rootStore.send(self.fromAction(action))
   }
 
   private init(

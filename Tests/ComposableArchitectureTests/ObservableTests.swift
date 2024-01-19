@@ -537,6 +537,10 @@
 
       state.children[0].count += 1
     }
+
+    func testPerceptionWarning() async {
+      
+    }
   }
 
   @ObservableState
