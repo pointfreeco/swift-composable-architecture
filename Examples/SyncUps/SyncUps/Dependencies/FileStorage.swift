@@ -1,6 +1,14 @@
 import ComposableArchitecture
 import Foundation
 
+#if canImport(AppKit)
+  import AppKit
+  private typealias Application = NSApplication
+#elseif canImport(UIKit)
+  import UIKit
+  private typealias Application = UIApplication
+#endif
+
 extension SharedPersistence {
   public static func fileStorage<Value: Codable>(_ url: URL) -> Self
   where Self == _FileStorage<Value> {
@@ -17,10 +25,22 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
 
   public init(url: URL) {
     self.url = url
+    #if canImport(AppKit) || canImport(UIKit)
+      Task {
+        let willResignActiveNotifications = await NotificationCenter.default.notifications(
+          named: Application.willResignActiveNotification
+        )
+        for await _ in willResignActiveNotifications {
+          if let workItem = self.workItem {
+            self.queue.async(execute: workItem)
+          }
+        }
+      }
+    #endif
   }
 
   public func load() -> Value? {
-    try? JSONDecoder().decode(Value.self, from: dataManager.load(from: self.url))
+    try? JSONDecoder().decode(Value.self, from: self.dataManager.load(from: self.url))
   }
 
   public func save(_ value: Value) {
@@ -28,6 +48,7 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
     let workItem = DispatchWorkItem {
       self.queue.setSpecific(key: self.isSetting, value: true)
       try? self.dataManager.save(JSONEncoder().encode(value), to: self.url)
+      self.workItem = nil
     }
     self.workItem = workItem
     self.queue.asyncAfter(deadline: .now() + .seconds(5), execute: workItem)

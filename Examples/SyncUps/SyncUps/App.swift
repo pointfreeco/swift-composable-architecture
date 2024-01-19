@@ -3,13 +3,6 @@ import SwiftUI
 
 @main
 struct SyncUpsApp: App {
-  init() {
-    Task {
-      try await Task.sleep(for: .seconds(5))
-      try Data("[]".utf8).write(to: .syncUps)
-    }
-  }
-
   let store = Store(initialState: AppFeature.State()) {
     AppFeature()
       ._printChanges()
