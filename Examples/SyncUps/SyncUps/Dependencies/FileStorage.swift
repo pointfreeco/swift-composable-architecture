@@ -21,12 +21,13 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
   let url: URL
   let queue = DispatchQueue(label: "co.pointfree.ComposableArchitecture._FileStorage")
   let isSetting = DispatchSpecificKey<Bool>()
+  var task: Task<Void, Never>?
   var workItem: DispatchWorkItem?
 
   public init(url: URL) {
     self.url = url
     #if canImport(AppKit) || canImport(UIKit)
-      Task { [weak self] in
+      self.task = Task { [weak self] in
         let willResignActiveNotifications = await NotificationCenter.default.notifications(
           named: Application.willResignActiveNotification
         )
@@ -38,6 +39,10 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
         }
       }
     #endif
+  }
+
+  deinit {
+    self.task?.cancel()
   }
 
   public func load() -> Value? {
