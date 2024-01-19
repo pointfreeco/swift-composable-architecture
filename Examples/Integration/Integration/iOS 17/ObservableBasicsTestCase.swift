@@ -8,7 +8,7 @@ struct ObservableBasicsView: View {
   }
 
   var body: some View {
-    WithPerceptionTracking {
+    //WithPerceptionTracking {
       let _ = Logger.shared.log("\(Self.self).body")
       Text(self.store.count.description)
       Button("Decrement") { self.store.send(.decrementButtonTapped) }
@@ -19,7 +19,7 @@ struct ObservableBasicsView: View {
         Button("Copy, increment, set") { self.store.send(.copyIncrementSet) }
         Button("Reset") { self.store.send(.resetButtonTapped) }
       }
-    }
+    //}
   }
 
   @Reducer

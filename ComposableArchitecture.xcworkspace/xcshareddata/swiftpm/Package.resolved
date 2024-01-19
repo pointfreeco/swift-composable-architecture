@@ -122,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-perception",
       "state" : {
-        "branch" : "tca-observation",
-        "revision" : "35d1bdb8bd29f13f8c7800f33a6c3a12dbe50ec8"
+        "branch" : "tca-observation-perception-performance",
+        "revision" : "c841fa0431dcef52a7d3eb337f5c4638df84600c"
       }
     },
     {

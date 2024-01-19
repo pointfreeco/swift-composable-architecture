@@ -113,9 +113,11 @@
     @inlinable
     public func access<Subject: Perceptible, Member>(
       _ subject: Subject,
-      keyPath: KeyPath<Subject, Member>
+      keyPath: KeyPath<Subject, Member>,
+      file: StaticString = #file,
+      line: UInt = #line
     ) {
-      self.registrar.access(subject, keyPath: keyPath)
+      self.registrar.access(subject, keyPath: keyPath, file: file, line: line)
     }
 
     @_disfavoredOverload
