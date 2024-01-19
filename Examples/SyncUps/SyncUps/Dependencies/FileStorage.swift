@@ -26,11 +26,12 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
   public init(url: URL) {
     self.url = url
     #if canImport(AppKit) || canImport(UIKit)
-      Task {
+      Task { [weak self] in
         let willResignActiveNotifications = await NotificationCenter.default.notifications(
           named: Application.willResignActiveNotification
         )
         for await _ in willResignActiveNotifications {
+          guard let self else { return }
           if let workItem = self.workItem {
             self.queue.async(execute: workItem)
           }
@@ -45,7 +46,8 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
 
   public func save(_ value: Value) {
     self.workItem?.cancel()
-    let workItem = DispatchWorkItem {
+    let workItem = DispatchWorkItem { [weak self] in
+      guard let self else { return }
       self.queue.setSpecific(key: self.isSetting, value: true)
       try? self.dataManager.save(JSONEncoder().encode(value), to: self.url)
       self.workItem = nil
