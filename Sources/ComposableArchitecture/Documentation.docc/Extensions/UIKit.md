@@ -8,11 +8,12 @@ While the Composable Architecture was designed with SwiftUI in mind, it comes wi
 
 ## Topics
 
-### Scoping stores
-
-- ``Store/ifLet(then:else:)``
-
 ### Subscribing to state changes
 
+- ``ObjectiveC/NSObject/observe(_:)``
+
+### Combine integration
+
+- ``Store/ifLet(then:else:)``
 - ``Store/publisher``
 - ``ViewStore/publisher``
