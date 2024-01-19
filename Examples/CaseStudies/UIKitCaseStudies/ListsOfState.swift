@@ -1,4 +1,3 @@
-import Combine
 import ComposableArchitecture
 import SwiftUI
 import UIKit
@@ -61,14 +60,10 @@ final class CountersTableViewController: UITableViewController {
   }
 
   override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    let offset = indexPath.row
-    let id = store.counters[offset].id
-    navigationController?.pushViewController(
-      CounterViewController(
-        store: store.scope(state: \.counters[offset], action: \.counters[id:id])
-      ),
-      animated: true
-    )
+    let id = store.counters[indexPath.row].id
+    if let store = store.scope(state: \.counters[id:id], action: \.counters[id:id]) {
+      navigationController?.pushViewController(CounterViewController(store: store), animated: true)
+    }
   }
 }
 
