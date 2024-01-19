@@ -2,7 +2,7 @@ import Foundation
 
 extension Notification.Name {
   #if swift(>=5.8)
-    @_documentation(visibility:public)
+    @_documentation(visibility:private)
     @available(*, deprecated, renamed: "_runtimeWarning")
     public static let runtimeWarning = Self("ComposableArchitecture.runtimeWarning")
   #else

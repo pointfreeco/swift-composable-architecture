@@ -194,17 +194,16 @@ public final class Store<State, Action> {
     Logger.shared.log("\(storeTypeName(of: self)).deinit")
   }
 
-  /// Calls the given closure with the current state of the store.
+  /// Calls the given closure with a snapshot of the current state of the store.
   ///
-  /// A lightweight way of accessing store state when no view store is available and state does not
-  /// need to be observed, _e.g._ by a SwiftUI view. If a view store is available, prefer
-  /// ``ViewStore/state-swift.property``.
+  /// A lightweight way of accessing store state when state is not observable and ``state-1qxwl`` is
+  /// unavailable.
   ///
   /// - Parameter body: A closure that takes the current state of the store as its sole argument. If
   ///   the closure has a return value, that value is also used as the return value of the
   ///   `withState` method. The state argument reflects the current state of the store only for the
-  ///   duration of the closure's execution, and is not observable over time, _e.g._ by SwiftUI. If
-  ///   you want to observe store state in a view, use a ``ViewStore`` instead.
+  ///   duration of the closure's execution, and is only observable over time, _e.g._ by SwiftUI, if
+  ///   it conforms to ``ObservableState``.
   /// - Returns: The return value, if any, of the `body` closure.
   public func withState<R>(_ body: (_ state: State) -> R) -> R {
     body(self.currentState)
