@@ -61,8 +61,13 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
 
   public var updates: AsyncStream<Value> {
     AsyncStream { continuation in
+      // NB: Make sure there is a file to create a source for.
+      try? FileManager.default
+        .createDirectory(at: self.url.deletingLastPathComponent(), withIntermediateDirectories: true)
+      try? self.queue.save(Data(), to: self.url)
+
       let cancellable = self.queue.fileSystemSource(
-        fileDescriptor: open(self.url.path, O_EVTONLY),
+        url: self.url,
         eventMask: .write
       ) {
         if self.queue.isSetting() == true {
@@ -94,7 +99,7 @@ public protocol PersistenceQueue: Sendable {
   func asyncAfter(interval: DispatchTimeInterval, execute: DispatchWorkItem)
   func isSetting() -> Bool?
   func fileSystemSource(
-    fileDescriptor: Int32,
+    url: URL,
     eventMask: DispatchSource.FileSystemEvent,
     handler: @escaping () -> Void
   ) -> AnyCancellable
@@ -116,12 +121,12 @@ extension DispatchQueue: PersistenceQueue {
   }
 
   public func fileSystemSource(
-    fileDescriptor: Int32,
+    url: URL,
     eventMask: DispatchSource.FileSystemEvent,
     handler: @escaping () -> Void
   ) -> AnyCancellable {
     let source = DispatchSource.makeFileSystemObjectSource(
-      fileDescriptor: fileDescriptor,
+      fileDescriptor: open(url.path, O_EVTONLY),
       eventMask: eventMask,
       queue: self
     )
@@ -152,7 +157,7 @@ public final class TestPersistenceQueue: PersistenceQueue, Sendable {
   private let _isSetting = LockIsolated<Bool?>(nil)
   public let fileSystem = LockIsolated<[URL: Data]>([:])
   private let scheduler: AnySchedulerOf<DispatchQueue>
-  private let sourceHandler = LockIsolated<(() -> Void)?>(nil)
+  private let sourceHandlers = LockIsolated<[URL: (() -> Void)]>([:])
 
   public init(scheduler: AnySchedulerOf<DispatchQueue> = .immediate) {
     self.scheduler = scheduler
@@ -173,13 +178,13 @@ public final class TestPersistenceQueue: PersistenceQueue, Sendable {
   }
 
   public func fileSystemSource(
-    fileDescriptor: Int32,
+    url: URL,
     eventMask: DispatchSource.FileSystemEvent,
     handler: @escaping () -> Void
   ) -> AnyCancellable {
-    self.sourceHandler.setValue(handler)
+    self.sourceHandlers.withValue { $0[url] = handler }
     return AnyCancellable {
-      self.sourceHandler.setValue(nil)
+      self.sourceHandlers.withValue { $0[url] = nil }
     }
   }
 
@@ -194,7 +199,7 @@ public final class TestPersistenceQueue: PersistenceQueue, Sendable {
 
   public func save(_ data: Data, to url: URL) throws {
     self.fileSystem.withValue { $0[url] = data }
-    self.sourceHandler.value?()
+    self.sourceHandlers.value[url]?()
   }
 
   public func setIsSetting(_ isSetting: Bool) {

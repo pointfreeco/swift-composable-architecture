@@ -12,7 +12,7 @@ final class FileStorageTests: XCTestCase {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertEqual(testQueue.fileSystem.value, [:])
       users.append(.blob)
-      try XCTAssertNoDifference(testQueue.fileSystem.value.users, [.blob])
+      try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
     }
   }
 
@@ -32,7 +32,7 @@ final class FileStorageTests: XCTestCase {
       XCTAssertEqual(testQueue.fileSystem.value, [:])
 
       testScheduler.advance(by: .milliseconds(1))
-      try XCTAssertNoDifference(testQueue.fileSystem.value.users, [.blob])
+      try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
     }
   }
 
@@ -59,7 +59,7 @@ final class FileStorageTests: XCTestCase {
 
       testScheduler.advance(by: .seconds(2))
 
-      try XCTAssertNoDifference(testQueue.fileSystem.value.users, [.blob, .blobJr])
+      try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
     }
   }
 
@@ -77,7 +77,7 @@ final class FileStorageTests: XCTestCase {
 
       NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
       testScheduler.advance()
-      try XCTAssertEqual(testQueue.fileSystem.value.users, [.blob])
+      try XCTAssertEqual(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
     }
   }
 
@@ -98,11 +98,29 @@ final class FileStorageTests: XCTestCase {
 
       NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
       testScheduler.advance()
-      try XCTAssertNoDifference(testQueue.fileSystem.value.users, [.blob])
+      try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
 
       users.append(.blobJr)
       testScheduler.run()
-      try XCTAssertNoDifference(testQueue.fileSystem.value.users, [.blob, .blobJr])
+      try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+    }
+  }
+
+  func testMultipleFiles() throws {
+    let testQueue = TestPersistenceQueue()
+    try withDependencies {
+      $0._fileStoragePersistenceQueue = testQueue
+    } operation: {
+      @Shared(.fileStorage(.fileURL)) var users = [User]()
+      @Shared(.fileStorage(.anotherFileURL)) var otherUsers = [User]()
+
+      users.append(.blob)
+      try XCTAssertEqual(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
+      try XCTAssertEqual(testQueue.fileSystem.value.users(for: .anotherFileURL), nil)
+
+      otherUsers.append(.blobJr)
+      try XCTAssertEqual(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
+      try XCTAssertEqual(testQueue.fileSystem.value.users(for: .anotherFileURL), [.blobJr])
     }
   }
 }
@@ -110,6 +128,8 @@ final class FileStorageTests: XCTestCase {
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 extension URL {
   fileprivate static let fileURL = Self.temporaryDirectory.appending(component: "file.json")
+  fileprivate static let anotherFileURL = Self.temporaryDirectory
+    .appending(component: "another-file.json")
 }
 
 private struct User: Codable, Equatable {
@@ -121,9 +141,7 @@ private struct User: Codable, Equatable {
 }
 
 extension [URL: Data] {
-  fileprivate var users: [User] {
-    get throws {
-      try self.flatMap { try JSONDecoder().decode([User].self, from: $1) }
-    }
+  fileprivate func users(for url: URL) throws -> [User]? {
+    try self[url].map { try JSONDecoder().decode([User].self, from: $0) }
   }
 }
