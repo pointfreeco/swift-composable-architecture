@@ -91,11 +91,12 @@ final class AppFeatureTests: XCTestCase {
       duration: .seconds(6)
     )
 
+    let sharedSyncUp = Shared(syncUp)
     let store = TestStore(
       initialState: AppFeature.State(
         path: StackState([
-          .detail(SyncUpDetail.State(syncUp: Shared(syncUp))),
-          .record(RecordMeeting.State(syncUp: syncUp)),
+          .detail(SyncUpDetail.State(syncUp: sharedSyncUp)),
+          .record(RecordMeeting.State(syncUp: sharedSyncUp)),
         ])
       )
     ) {
@@ -115,15 +116,6 @@ final class AppFeatureTests: XCTestCase {
     store.exhaustivity = .off
 
     await store.send(.path(.element(id: 1, action: .record(.onTask))))
-    await store.receive(\.path[id:1].record.delegate.save) {
-      $0.path[id: 0, case: \.detail]?.syncUp.meetings = [
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: "I completed the project"
-        )
-      ]
-    }
     await store.receive(\.path.popFrom) {
       XCTAssertEqual($0.path.count, 1)
     }

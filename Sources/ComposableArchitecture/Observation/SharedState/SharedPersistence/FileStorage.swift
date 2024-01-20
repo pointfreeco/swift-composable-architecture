@@ -23,26 +23,27 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
   let isSetting = DispatchSpecificKey<Bool>()
   var task: Task<Void, Never>?
   var workItem: DispatchWorkItem?
+  var notificationListener: Any!
 
   public init(url: URL) {
     self.url = url
     #if canImport(AppKit) || canImport(UIKit)
-      self.task = Task { [weak self] in
-        let willResignActiveNotifications = await NotificationCenter.default.notifications(
-          named: Application.willResignActiveNotification
-        )
-        for await _ in willResignActiveNotifications {
-          guard let self else { return }
-          if let workItem = self.workItem {
-            self.queue.async(execute: workItem)
-          }
-        }
-      }
+    self.notificationListener = NotificationCenter.default.addObserver(
+      forName: Application.willResignActiveNotification,
+      object: nil,
+      queue: nil
+    ) { [weak self] _ in
+      guard
+        let self,
+        let workItem = self.workItem
+      else { return }
+      self.queue.async(execute: workItem)
+    }
     #endif
   }
 
   deinit {
-    self.task?.cancel()
+    NotificationCenter.default.removeObserver(self.notificationListener!)
   }
 
   public func load() -> Value? {

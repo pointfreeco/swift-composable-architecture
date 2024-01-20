@@ -9,7 +9,7 @@ struct RecordMeeting {
     @Presents var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
-    var syncUp: SyncUp
+    @Shared var syncUp: SyncUp
     var transcript = ""
 
     var durationRemaining: Duration {
@@ -37,7 +37,6 @@ struct RecordMeeting {
 
   enum Action {
     case alert(PresentationAction<Alert>)
-    case delegate(Delegate)
     case endMeetingButtonTapped
     case nextButtonTapped
     case onTask
@@ -49,15 +48,13 @@ struct RecordMeeting {
       case confirmDiscard
       case confirmSave
     }
-    @CasePathable
-    enum Delegate {
-      case save(transcript: String)
-    }
   }
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.dismiss) var dismiss
+  @Dependency(\.date.now) var now
   @Dependency(\.speechClient) var speechClient
+  @Dependency(\.uuid) var uuid
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -68,15 +65,12 @@ struct RecordMeeting {
         }
 
       case .alert(.presented(.confirmSave)):
-        return .run { [transcript = state.transcript] send in
-          await send(.delegate(.save(transcript: transcript)))
+        return .run { [transcript = state.transcript, syncUp = state.$syncUp] send in
+          syncUp.wrappedValue.insert(transcript: transcript)
           await self.dismiss()
         }
 
       case .alert:
-        return .none
-
-      case .delegate:
         return .none
 
       case .endMeetingButtonTapped:
@@ -122,8 +116,8 @@ struct RecordMeeting {
         let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.speakerIndex == state.syncUp.attendees.count - 1 {
-            return .run { [transcript = state.transcript] send in
-              await send(.delegate(.save(transcript: transcript)))
+            return .run { [transcript = state.transcript, syncUp = state.$syncUp] send in
+              syncUp.wrappedValue.insert(transcript: transcript)
               await self.dismiss()
             }
           }
@@ -162,6 +156,21 @@ struct RecordMeeting {
     for await _ in self.clock.timer(interval: .seconds(1)) {
       await send(.timerTick)
     }
+  }
+}
+
+extension SyncUp {
+  fileprivate mutating func insert(transcript: String) {
+    @Dependency(\.date.now) var now
+    @Dependency(\.uuid) var uuid
+    self.meetings.insert(
+      Meeting(
+        id: Meeting.ID(uuid()),
+        date: now,
+        transcript: transcript
+      ),
+      at: 0
+    )
   }
 }
 
@@ -400,7 +409,7 @@ struct RecordMeeting_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
       RecordMeetingView(
-        store: Store(initialState: RecordMeeting.State(syncUp: .mock)) {
+        store: Store(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
           RecordMeeting()
         }
       )

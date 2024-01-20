@@ -28,7 +28,6 @@
 		DC8C2B0C29EB084900C65286 /* RecordMeetingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */; };
 		DC8C2B0E29EB085600C65286 /* SyncUpDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0D29EB085600C65286 /* SyncUpDetailTests.swift */; };
 		DC8C2B1029EB086A00C65286 /* SyncUpsListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0F29EB086A00C65286 /* SyncUpsListTests.swift */; };
-		DC8E6BA12B59B9DD00A9C855 /* FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8E6BA02B59B9DD00A9C855 /* FileStorage.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,7 +71,6 @@
 		DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMeetingTests.swift; sourceTree = "<group>"; };
 		DC8C2B0D29EB085600C65286 /* SyncUpDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncUpDetailTests.swift; sourceTree = "<group>"; };
 		DC8C2B0F29EB086A00C65286 /* SyncUpsListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncUpsListTests.swift; sourceTree = "<group>"; };
-		DC8E6BA02B59B9DD00A9C855 /* FileStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStorage.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -175,7 +173,6 @@
 		DC808D9E29E9C4040072B4A9 /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
-				DC8E6BA02B59B9DD00A9C855 /* FileStorage.swift */,
 				DC808DA429E9C4C70072B4A9 /* OpenSettings.swift */,
 				DC808DA629E9C4D60072B4A9 /* SpeechRecognizer.swift */,
 			);
@@ -329,7 +326,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC808DAB29E9C51D0072B4A9 /* Meeting.swift in Sources */,
-				DC8E6BA12B59B9DD00A9C855 /* FileStorage.swift in Sources */,
 				DC808DA729E9C4D60072B4A9 /* SpeechRecognizer.swift in Sources */,
 				DC80B1E929EDE5D1001CC0CC /* AppFeature.swift in Sources */,
 				DC808DA529E9C4C70072B4A9 /* OpenSettings.swift in Sources */,

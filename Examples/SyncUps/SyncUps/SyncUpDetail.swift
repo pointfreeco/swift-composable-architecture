@@ -6,13 +6,12 @@ struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    @ObservationStateIgnored
     @Shared var syncUp: SyncUp
 
     // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
     //     this). We can remove when Xcode 15.1 is released and CI uses it.
     #if swift(<5.9.2)
-      init(destination: Destination.State? = nil, syncUp: Shared2<SyncUp>) {
+      init(destination: Destination.State? = nil, syncUp: Shared<SyncUp>) {
         self.destination = destination
         self._syncUp = syncUp
       }
