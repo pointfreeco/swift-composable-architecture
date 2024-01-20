@@ -178,9 +178,7 @@ final class RecordMeetingTests: XCTestCase {
 
     await store.send(.alert(.presented(.confirmSave))) {
       $0.alert = nil
-    }
-    store.state.$syncUp.assert {
-      $0.meetings.insert(
+      $0.syncUp.meetings.insert(
         Meeting(
           id: Meeting.ID(UUID(0)),
           date: Date(timeIntervalSince1970: 1234567890),
@@ -266,10 +264,7 @@ final class RecordMeetingTests: XCTestCase {
 
     await store.send(.alert(.presented(.confirmSave))) {
       $0.alert = nil
-    }
-
-    store.state.$syncUp.assert {
-      $0.meetings.insert(
+      $0.syncUp.meetings.insert(
         Meeting(
           id: Meeting.ID(UUID(0)),
           date: Date(timeIntervalSince1970: 1234567890),
@@ -278,6 +273,7 @@ final class RecordMeetingTests: XCTestCase {
         at: 0
       )
     }
+
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
