@@ -251,7 +251,7 @@
         self.didChange = didChange
         super.init()
       }
-      public override func observeValue(
+      override func observeValue(
         forKeyPath keyPath: String?,
         of object: Any?,
         change: [NSKeyValueChangeKey: Any]?,
@@ -286,14 +286,17 @@
 
   private enum DefaultAppStorageKey: DependencyKey {
     static var testValue: UncheckedSendable<UserDefaults> {
-      let defaultAppStorage = UserDefaults(suiteName: "test")!
-      defaultAppStorage.removePersistentDomain(forName: "test")
+      let suiteName = "co.pointfree.ComposableArchitecture.tests"
+      let defaultAppStorage = UserDefaults(suiteName: suiteName)!
+      defaultAppStorage.removePersistentDomain(forName: suiteName)
       return UncheckedSendable(defaultAppStorage)
     }
     static var previewValue: UncheckedSendable<UserDefaults> {
       DefaultAppStorageKey.testValue
     }
-    static let liveValue = UncheckedSendable(UserDefaults.standard)
+    static var liveValue: UncheckedSendable<UserDefaults> {
+      UncheckedSendable(UserDefaults.standard)
+    }
   }
 
   private enum SharedAppStorageLocals {
