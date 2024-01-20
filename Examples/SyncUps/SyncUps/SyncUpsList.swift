@@ -170,32 +170,41 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 struct SyncUpsList_Previews: PreviewProvider {
   static var previews: some View {
     NavigationStack {
+      let store = Store(
+        initialState: SyncUpsList.State(
+          syncUps: [
+            .mock,
+            .designMock,
+            .engineeringMock,
+          ]
+        )
+      ) {
+        SyncUpsList()
+      }
+      // TODO: Why is this necessary in previews? Works fine in simulator.
+      let _ = store.$syncUps.wrappedValue = [
+        .mock,
+        .designMock,
+        .engineeringMock,
+      ]
       SyncUpsListView(
-        store: Store(
-          initialState: SyncUpsList.State(
-            //          syncUps: Shared([
-            //            .mock,
-            //            .designMock,
-            //            .engineeringMock,
-            //          ])
-          )
-        ) {
-          SyncUpsList()
-        }
+        store: store
       )
     }
   }
 }
 
 #Preview {
-  CardView(
-    syncUp: SyncUp(
-      id: SyncUp.ID(),
-      attendees: [],
-      duration: .seconds(60),
-      meetings: [],
-      theme: .bubblegum,
-      title: "Point-Free Morning Sync"
+  List {
+    CardView(
+      syncUp: SyncUp(
+        id: SyncUp.ID(),
+        attendees: [],
+        duration: .seconds(60),
+        meetings: [],
+        theme: .bubblegum,
+        title: "Point-Free Morning Sync"
+      )
     )
-  )
+  }
 }

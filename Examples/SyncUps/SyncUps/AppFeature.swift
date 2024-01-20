@@ -115,12 +115,10 @@ extension URL {
 }
 
 #Preview {
-  let store = Store(initialState: AppFeature.State(syncUpsList: SyncUpsList.State())) {
+  let store = Store(initialState: AppFeature.State()) {
     AppFeature()
   }
+  // TODO: Why is this necessary in previews?
   store.syncUpsList.syncUps = [.mock, .designMock, .engineeringMock]
-
-  return AppView(
-    store: store
-  )
+  return AppView(store: store)
 }
