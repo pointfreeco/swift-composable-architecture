@@ -43,7 +43,7 @@ final class AppStorageTests: XCTestCase {
     self.wait(for: [countDidChange], timeout: 0)
   }
 
-  func testNotifications() async throws {
+  func testChangeUserDefaultsDirectly() async throws {
     // NB: Need to use a non-persisting defaults to reliably get change notifications.
     let defaults = UserDefaults(suiteName: "test")!
     try await withDependencies {
@@ -51,12 +51,26 @@ final class AppStorageTests: XCTestCase {
     } operation: {
       @Shared(.appStorage("count")) var count = 0
       // NB: This is required to register for notifications
-      _ = count
       count = 0
 
       defaults.setValue(count + 42, forKey: "count")
       try await Task.sleep(nanoseconds: 1_000_000)
       XCTAssertEqual(count, 42)
+    }
+  }
+
+  func testDeleteUserDefault() async throws {
+    // NB: Need to use a non-persisting defaults to reliably get change notifications.
+    let defaults = UserDefaults(suiteName: "test")!
+    try await withDependencies {
+      $0.defaultAppStorage = defaults
+    } operation: {
+      @Shared(.appStorage("count")) var count = 0
+      count = 42
+
+      defaults.removeObject(forKey: "count")
+      try await Task.sleep(nanoseconds: 1_000_000)
+      XCTAssertEqual(count, 0)
     }
   }
 }

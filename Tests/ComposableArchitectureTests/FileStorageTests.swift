@@ -178,6 +178,69 @@ final class FileStorageTests: XCTestCase {
       }
     }
   }
+
+  @MainActor
+  func testChangeFileData() async throws {
+    try await withMainSerialExecutor {
+      try? FileManager.default.removeItem(at: .fileURL)
+      try JSONEncoder().encode([User.blob]).write(to: .fileURL)
+
+      try await withDependencies {
+        $0._fileStoragePersistenceQueue = DispatchQueue.main
+      } operation: {
+        @Shared(.fileStorage(.fileURL)) var users = [User]()
+        await Task.yield()
+        XCTAssertNoDifference(users, [.blob])
+
+        try JSONEncoder().encode([User.blobJr]).write(to: .fileURL)
+        await Task.yield()
+        XCTAssertNoDifference(users, [.blobJr])
+      }
+    }
+  }
+
+  @MainActor
+  func testDeleteFile() async throws {
+    try await withMainSerialExecutor {
+      try? FileManager.default.removeItem(at: .fileURL)
+      try JSONEncoder().encode([User.blob]).write(to: .fileURL)
+
+      try await withDependencies {
+        $0._fileStoragePersistenceQueue = DispatchQueue.main
+      } operation: {
+        @Shared(.fileStorage(.fileURL)) var users = [User]()
+        await Task.yield()
+        XCTAssertNoDifference(users, [.blob])
+
+        try FileManager.default.removeItem(at: .fileURL)
+        try await Task.sleep(nanoseconds: 1_000_000)
+        XCTAssertNoDifference(users, [])
+      }
+    }
+  }
+
+  @MainActor
+  func testMoveFile() async throws {
+    try await withMainSerialExecutor {
+      try? FileManager.default.removeItem(at: .fileURL)
+      try? FileManager.default.removeItem(at: .anotherFileURL)
+      try JSONEncoder().encode([User.blob]).write(to: .fileURL)
+
+      try await withDependencies {
+        $0._fileStoragePersistenceQueue = DispatchQueue.main
+      } operation: {
+        @Shared(.fileStorage(.fileURL)) var users = [User]()
+        await Task.yield()
+        XCTAssertNoDifference(users, [.blob])
+
+        try FileManager.default.moveItem(at: .fileURL, to: .anotherFileURL)
+        try await Task.sleep(nanoseconds: 1_000_000)
+        XCTAssertNoDifference(users, [])
+      }
+    }
+  }
+
+  // TODO: test deleting file with live persistence
 }
 
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)

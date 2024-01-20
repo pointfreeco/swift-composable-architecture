@@ -307,18 +307,18 @@
       self.line = line
     }
     init(
-      _ value: Value,
+      _ initialValue: Value,
       persistence: some SharedPersistence<Value>,
       fileID: StaticString,
       line: UInt
     ) {
-      self._currentValue = persistence.load() ?? value
+      self._currentValue = persistence.load() ?? initialValue
       self.persistence = persistence
       self.fileID = fileID
       self.line = line
-      Task { @MainActor [weak self] in
+      Task { @MainActor [weak self, initialValue] in
         for try await value in persistence.updates {
-          self?.currentValue = value
+          self?.currentValue = value ?? initialValue
         }
       }
     }

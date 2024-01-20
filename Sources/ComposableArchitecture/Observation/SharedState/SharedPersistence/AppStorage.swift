@@ -223,8 +223,8 @@
   }
 
   extension _SharedAppStorage: SharedPersistence {
-    public var updates: AsyncStream<Value> {
-      AsyncStream<Value> { continuation in
+    public var updates: AsyncStream<Value?> {
+      AsyncStream { continuation in
         let observer = Observer { value in
           continuation.yield(value)
         }
@@ -246,8 +246,8 @@
     }
 
     private class Observer: NSObject {
-      let didChange: (Value) -> Void
-      init(didChange: @escaping (Value) -> Void) {
+      let didChange: (Value?) -> Void
+      init(didChange: @escaping (Value?) -> Void) {
         self.didChange = didChange
         super.init()
       }
@@ -258,10 +258,9 @@
         context: UnsafeMutableRawPointer?
       ) {
         guard 
-          !SharedAppStorageLocals.isSetting,
-          let new = change?[.newKey] as? Value
+          !SharedAppStorageLocals.isSetting
         else { return }
-        self.didChange(new)
+        self.didChange(change?[.newKey] as? Value)
       }
     }
   }

@@ -61,7 +61,7 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
     self.queue.asyncAfter(interval: .seconds(5), execute: workItem)
   }
 
-  public var updates: AsyncStream<Value> {
+  public var updates: AsyncStream<Value?> {
     AsyncStream { continuation in
       // NB: Make sure there is a file to create a source for.
       if !FileManager.default.fileExists(atPath: self.url.path) {
@@ -72,12 +72,12 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
 
       let cancellable = self.queue.fileSystemSource(
         url: self.url,
-        eventMask: .write
+        eventMask: [.write, .delete, .rename]
       ) {
         if self.queue.isSetting() == true {
           self.queue.setIsSetting(false)
-        } else if let value = self.load() {
-          continuation.yield(value)
+        } else {
+          continuation.yield(self.load())
         }
       }
       continuation.onTermination = { [cancellable = UncheckedSendable(cancellable)] _ in
