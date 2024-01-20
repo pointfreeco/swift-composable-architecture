@@ -10,7 +10,7 @@ final class FileStorageTests: XCTestCase {
       $0._fileStoragePersistenceQueue = testQueue
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
       users.append(.blob)
       try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
     }
@@ -23,13 +23,13 @@ final class FileStorageTests: XCTestCase {
       $0._fileStoragePersistenceQueue = testQueue
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       users.append(.blob)
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       testScheduler.advance(by: .seconds(5) - .milliseconds(1))
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       testScheduler.advance(by: .milliseconds(1))
       try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
@@ -43,19 +43,19 @@ final class FileStorageTests: XCTestCase {
       $0._fileStoragePersistenceQueue = testQueue
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       users.append(.blob)
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       testScheduler.advance(by: .seconds(3))
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       users.append(.blobJr)
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       testScheduler.advance(by: .seconds(3))
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       testScheduler.advance(by: .seconds(2))
 
@@ -70,14 +70,14 @@ final class FileStorageTests: XCTestCase {
       $0._fileStoragePersistenceQueue = testQueue
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       users.append(.blob)
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
       testScheduler.advance()
-      try XCTAssertEqual(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
+      try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
     }
   }
 
@@ -88,13 +88,13 @@ final class FileStorageTests: XCTestCase {
       $0._fileStoragePersistenceQueue = testQueue
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       users.append(.blob)
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       testScheduler.advance(by: .seconds(3))
-      XCTAssertEqual(testQueue.fileSystem.value, [:])
+      XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
       NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
       testScheduler.advance()
@@ -115,12 +115,33 @@ final class FileStorageTests: XCTestCase {
       @Shared(.fileStorage(.anotherFileURL)) var otherUsers = [User]()
 
       users.append(.blob)
-      try XCTAssertEqual(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
-      try XCTAssertEqual(testQueue.fileSystem.value.users(for: .anotherFileURL), nil)
+      try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
+      try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .anotherFileURL), nil)
 
       otherUsers.append(.blobJr)
-      try XCTAssertEqual(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
-      try XCTAssertEqual(testQueue.fileSystem.value.users(for: .anotherFileURL), [.blobJr])
+      try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
+      try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .anotherFileURL), [.blobJr])
+    }
+  }
+
+  @MainActor
+  func testLivePersistence() async throws {
+    try? FileManager.default.removeItem(at: .fileURL)
+    
+    try await withDependencies {
+      $0._fileStoragePersistenceQueue = DispatchQueue.main
+    } operation: {
+      @Shared(.fileStorage(.fileURL)) var users = [User]()
+      
+      users.append(.blob)
+      NotificationCenter.default
+        .post(name: UIApplication.willResignActiveNotification, object: nil)
+      await Task.yield()
+      
+      try XCTAssertNoDifference(
+        JSONDecoder().decode([User].self, from: Data(contentsOf: .fileURL)) ,
+        [.blob]
+      )
     }
   }
 }

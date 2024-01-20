@@ -16,6 +16,7 @@ extension SharedPersistence {
   }
 }
 
+// TODO: Audio unchecked sendable
 public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable, SharedPersistence {
   @Dependency(\._fileStoragePersistenceQueue) fileprivate var queue
   let url: URL
