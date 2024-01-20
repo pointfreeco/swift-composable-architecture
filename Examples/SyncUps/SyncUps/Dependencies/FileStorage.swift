@@ -109,6 +109,7 @@ extension DataManager: DependencyKey {
     }
   )
 
+  // TODO: Can this just be a no-op client instead?
   static var testValue: Self {
     let fileSystem = LockIsolated<[URL: Data]>([:])
     return DataManager(
