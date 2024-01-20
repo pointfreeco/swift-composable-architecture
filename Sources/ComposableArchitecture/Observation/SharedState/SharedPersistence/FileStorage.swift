@@ -206,12 +206,16 @@ private enum PersistenceQueueKey: DependencyKey {
   static var liveValue: any PersistenceQueue {
     DispatchQueue(label: "co.pointfree.ComposableArchitecture._FileStorage")
   }
+  static var previewValue: any PersistenceQueue {
+    TestPersistenceQueue()
+  }
   static var testValue: any PersistenceQueue {
     TestPersistenceQueue()
   }
 }
 
 extension DependencyValues {
+  // TODO: should this be public? allows you to run app in simulator with mock persistence queue
   @_spi(Internals)
   public var _fileStoragePersistenceQueue: any PersistenceQueue {
     get { self[PersistenceQueueKey.self] }
