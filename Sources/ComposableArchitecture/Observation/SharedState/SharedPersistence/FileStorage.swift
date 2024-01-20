@@ -74,6 +74,7 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
         url: self.url,
         eventMask: [.write, .delete, .rename]
       ) {
+        // TODO: Do we need to do weak self?
         if self.queue.isSetting() == true {
           self.queue.setIsSetting(false)
         } else {

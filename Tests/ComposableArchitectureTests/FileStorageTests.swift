@@ -180,7 +180,7 @@ final class FileStorageTests: XCTestCase {
   }
 
   @MainActor
-  func testChangeFileData() async throws {
+  func testWriteFile() async throws {
     try await withMainSerialExecutor {
       try? FileManager.default.removeItem(at: .fileURL)
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
@@ -195,6 +195,27 @@ final class FileStorageTests: XCTestCase {
         try JSONEncoder().encode([User.blobJr]).write(to: .fileURL)
         await Task.yield()
         XCTAssertNoDifference(users, [.blobJr])
+      }
+    }
+  }
+
+  @MainActor
+  func testWriteFileWhileDebouncing() async throws {
+    try await withMainSerialExecutor {
+      let scheduler = DispatchQueue.test
+      let testQueue = TestPersistenceQueue(scheduler: scheduler.eraseToAnyScheduler())
+
+      try await withDependencies {
+        $0._fileStoragePersistenceQueue = testQueue
+      } operation: {
+        @Shared(.fileStorage(.fileURL)) var users = [User]()
+        await Task.yield()
+
+        users.append(.blob)
+        try testQueue.save(Data(), to: .fileURL)
+        await scheduler.run()
+        XCTAssertNoDifference(users, [])
+        try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [])
       }
     }
   }
@@ -240,7 +261,33 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  // TODO: test deleting file with live persistence
+  @MainActor
+  func testDeleteFile_ThenWriteToFile() async throws {
+    try await withMainSerialExecutor {
+      try? FileManager.default.removeItem(at: .fileURL)
+      try JSONEncoder().encode([User.blob]).write(to: .fileURL)
+
+      try await withDependencies {
+        $0._fileStoragePersistenceQueue = DispatchQueue.main
+      } operation: {
+        @Shared(.fileStorage(.fileURL)) var users = [User]()
+        await Task.yield()
+        XCTAssertNoDifference(users, [.blob])
+
+        try FileManager.default.removeItem(at: .fileURL)
+        try await Task.sleep(nanoseconds: 1_000_000)
+        XCTAssertNoDifference(users, [])
+
+        try JSONEncoder().encode([User.blobJr]).write(to: .fileURL)
+        try await Task.sleep(nanoseconds: 1_000_000)
+        XCTTODO("""
+          This fails but ideally it wouldn't. If you delete a file then you can't listen for writes
+          to that file in the future. Perhaps we have to recreate the dispatch source?
+          """)
+        XCTAssertNoDifference(users, [.blobJr])
+      }
+    }
+  }
 }
 
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
