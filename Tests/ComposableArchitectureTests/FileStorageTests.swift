@@ -127,21 +127,55 @@ final class FileStorageTests: XCTestCase {
   @MainActor
   func testLivePersistence() async throws {
     try? FileManager.default.removeItem(at: .fileURL)
-    
+
     try await withDependencies {
       $0._fileStoragePersistenceQueue = DispatchQueue.main
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      
+
       users.append(.blob)
       NotificationCenter.default
         .post(name: UIApplication.willResignActiveNotification, object: nil)
       await Task.yield()
-      
+
       try XCTAssertNoDifference(
         JSONDecoder().decode([User].self, from: Data(contentsOf: .fileURL)) ,
         [.blob]
       )
+    }
+  }
+
+  func testInitialValue() async throws {
+    try await withMainSerialExecutor {
+      let testQueue = TestPersistenceQueue()
+      try testQueue.save(JSONEncoder().encode([User.blob]), to: .fileURL)
+      try await withDependencies {
+        $0._fileStoragePersistenceQueue = testQueue
+      } operation: {
+        @Shared(.fileStorage(.fileURL)) var users = [User]()
+        _ = users
+        await Task.yield()
+        try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
+      }
+    }
+  }
+
+  func testInitialValue_LivePersistence() async throws {
+    try await withMainSerialExecutor {
+      try? FileManager.default.removeItem(at: .fileURL)
+      try JSONEncoder().encode([User.blob]).write(to: .fileURL)
+
+      try await withDependencies {
+        $0._fileStoragePersistenceQueue = DispatchQueue.main
+      } operation: {
+        @Shared(.fileStorage(.fileURL)) var users = [User]()
+        _ = users
+        await Task.yield()
+        try XCTAssertNoDifference(
+          JSONDecoder().decode([User].self, from: Data(contentsOf: .fileURL)),
+          [.blob]
+        )
+      }
     }
   }
 }

@@ -36,6 +36,7 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
           let workItem = self.workItem
         else { return }
         self.queue.async(execute: workItem)
+        self.workItem = nil
       }
     #endif
   }
@@ -63,9 +64,11 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
   public var updates: AsyncStream<Value> {
     AsyncStream { continuation in
       // NB: Make sure there is a file to create a source for.
-      try? FileManager.default
-        .createDirectory(at: self.url.deletingLastPathComponent(), withIntermediateDirectories: true)
-      try? self.queue.save(Data(), to: self.url)
+      if !FileManager.default.fileExists(atPath: self.url.path) {
+        try? FileManager.default
+          .createDirectory(at: self.url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? self.queue.save(Data(), to: self.url)
+      }
 
       let cancellable = self.queue.fileSystemSource(
         url: self.url,
