@@ -3,10 +3,12 @@ import Foundation
 
 #if canImport(AppKit)
   import AppKit
-  private typealias Application = NSApplication
-#elseif canImport(UIKit)
+#endif
+#if canImport(UIKit)
   import UIKit
-  private typealias Application = UIApplication
+#endif
+#if canImport(WatchKit)
+  import WatchKit
 #endif
 
 extension SharedPersistence {
@@ -27,7 +29,7 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
     self.url = url
     #if canImport(AppKit) || canImport(UIKit)
       self.notificationListener = NotificationCenter.default.addObserver(
-        forName: Application.willResignActiveNotification,
+        forName: willResignNotificationName,
         object: nil,
         queue: nil
       ) { [weak self] _ in
@@ -58,7 +60,11 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
       self.workItem = nil
     }
     self.workItem = workItem
-    self.queue.asyncAfter(interval: .seconds(5), execute: workItem)
+    if canListenForResignActive {
+      self.queue.asyncAfter(interval: .seconds(5), execute: workItem)
+    } else {
+      self.queue.async(execute: workItem)
+    }
   }
 
   public var updates: AsyncStream<Value?> {
@@ -66,7 +72,8 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
       // NB: Make sure there is a file to create a source for.
       if !FileManager.default.fileExists(atPath: self.url.path) {
         try? FileManager.default
-          .createDirectory(at: self.url.deletingLastPathComponent(), withIntermediateDirectories: true)
+          .createDirectory(
+            at: self.url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? self.queue.save(Data(), to: self.url)
       }
 
@@ -231,4 +238,22 @@ extension DependencyValues {
     get { self[PersistenceQueueKey.self] }
     set { self[PersistenceQueueKey.self] = newValue }
   }
+}
+
+private var willResignNotificationName: Notification.Name? {
+  #if os(iOS) || os(tvOS)
+    return UIApplication.willResignActiveNotification
+  #elseif os(macOS)
+    return NSApplication.willResignActiveNotification
+  #else
+  if #available(watchOS 7.0, *) {
+    return WKExtension.applicationWillResignActiveNotification
+  } else {
+    return nil
+  }
+  #endif
+}
+
+private var canListenForResignActive: Bool {
+  willResignNotificationName != nil
 }
