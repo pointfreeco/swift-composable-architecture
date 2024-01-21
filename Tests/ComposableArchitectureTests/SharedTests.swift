@@ -390,6 +390,46 @@ final class SharedTests: XCTestCase {
 
     await store.send(.incrementButtonTapped)
   }
+
+  func testObsevation() {
+    @Shared var count: Int
+    _count = Shared(0)
+    let countDidChange = self.expectation(description: "countDidChange")
+    withPerceptionTracking {
+      _ = count
+    } onChange: {
+      countDidChange.fulfill()
+    }
+    count += 1
+    self.wait(for: [countDidChange], timeout: 0)
+  }
+
+  func testObsevation_Object() {
+    @Shared var object: SharedObject
+    _object = Shared(SharedObject())
+    let countDidChange = self.expectation(description: "countDidChange")
+    withPerceptionTracking {
+      _ = object.count
+    } onChange: {
+      countDidChange.fulfill()
+    }
+    object.count += 1
+    self.wait(for: [countDidChange], timeout: 0)
+  }
+
+  func testAssertSharedStateWithNoChanges() {
+    let store = TestStore(initialState: SimpleFeature.State(count: Shared(0))) {
+      SimpleFeature()
+    }
+    XCTExpectFailure {
+      $0.compactDescription == """
+        Expected changes, but none occurred.
+        """
+    }
+    store.state.$count.assert {
+      $0 = 0
+    }
+  }
 }
 
 @Reducer
@@ -446,19 +486,9 @@ private struct SharedFeature {
 private struct Stats: Codable, Equatable {
   var count = 0
 }
-extension Stats: DependencyKey {
-  static let liveValue = Stats()
-}
 private struct Profile: Equatable {
   @Shared var stats: Stats
 }
-struct SharedStateWithLiveValue: DependencyKey {
-  static let liveValue = SharedStateWithLiveValue()
-}
-struct SharedStateWithTestValue: TestDependencyKey {
-  static let testValue = SharedStateWithTestValue()
-}
-
 @Reducer
 private struct SimpleFeature {
   struct State: Equatable {
@@ -477,4 +507,9 @@ private struct SimpleFeature {
       }
     }
   }
+}
+
+@Perceptible
+class SharedObject {
+  var count = 0
 }
