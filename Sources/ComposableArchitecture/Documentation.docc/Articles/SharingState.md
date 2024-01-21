@@ -1,6 +1,7 @@
 # Sharing state
 
-Learn techniques for sharing state throughout many parts of your application.
+Learn techniques for sharing state throughout many parts of your application, and how to persist
+data to user defaults, the file system, and other external mediums.
 
 ## Overview
 
