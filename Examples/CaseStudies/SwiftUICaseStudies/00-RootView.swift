@@ -23,9 +23,6 @@ struct RootView: View {
           NavigationLink("Optional state") {
             OptionalBasicsView()
           }
-          NavigationLink("Shared state") {
-            SharedStateView()
-          }
           NavigationLink("Alerts and Confirmation Dialogs") {
             AlertAndConfirmationDialogView()
           }
@@ -37,6 +34,20 @@ struct RootView: View {
           }
         } header: {
           Text("Getting started")
+        }
+
+        Section {
+          NavigationLink("In memory") {
+            SharedStateInMemoryView()
+          }
+          NavigationLink("User defaults") {
+            SharedStateUserDefaultsView()
+          }
+          NavigationLink("File storage") {
+            SharedStateInMemoryView()
+          }
+        } header: {
+          Text("Shared state")
         }
 
         Section {

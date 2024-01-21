@@ -4,10 +4,10 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 @MainActor
-final class SharedStateTests: XCTestCase {
+final class SharedStateFileStorageTests: XCTestCase {
   func testTabSelection() async {
-    let store = TestStore(initialState: SharedState.State()) {
-      SharedState()
+    let store = TestStore(initialState: SharedStateFileStorage.State()) {
+      SharedStateFileStorage()
     }
 
     await store.send(.selectTab(.profile)) {
@@ -19,8 +19,8 @@ final class SharedStateTests: XCTestCase {
   }
 
   func testSharedCounts() async {
-    let store = TestStore(initialState: SharedState.State()) {
-      SharedState()
+    let store = TestStore(initialState: SharedStateFileStorage.State()) {
+      SharedStateFileStorage()
     }
 
     await store.send(.counter(.incrementButtonTapped)) {
@@ -37,8 +37,8 @@ final class SharedStateTests: XCTestCase {
   }
 
   func testAlert() async {
-    let store = TestStore(initialState: SharedState.State()) {
-      SharedState()
+    let store = TestStore(initialState: SharedStateFileStorage.State()) {
+      SharedStateFileStorage()
     }
 
     await store.send(.counter(.isPrimeButtonTapped)) {
