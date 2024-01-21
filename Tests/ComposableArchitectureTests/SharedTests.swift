@@ -379,16 +379,16 @@ final class SharedTests: XCTestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        State was not expected to change, but a change occurred: …
+      State was not expected to change, but a change occurred: …
 
-            − SimpleFeature.State(_count: 0)
-            + SimpleFeature.State(_count: 1)
+          − SimpleFeature.State(_count: 0)
+          + SimpleFeature.State(_count: 1)
 
-        (Expected: −, Actual: +)
-        """
+      (Expected: −, Actual: +)
+      """
     }
 
-    await store.send(.incrementButtonTapped)
+    await store.send(.incrementInReducer)
   }
 
   func testObsevation() {
@@ -495,15 +495,19 @@ private struct SimpleFeature {
     @Shared var count: Int
   }
   enum Action {
-    case incrementButtonTapped
+    case incrementInEffect
+    case incrementInReducer
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      case .incrementButtonTapped:
+      case .incrementInEffect:
         return .run { [count = state.$count] _ in
           count.wrappedValue += 1
         }
+      case .incrementInReducer:
+        state.count += 1
+        return .none
       }
     }
   }
