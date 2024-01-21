@@ -56,6 +56,7 @@ day-to-day when building applications, such as:
 ### Tutorials
 
 - <doc:MeetComposableArchitecture>
+- <doc:BuildingSyncUps>
 
 ### State management
 
