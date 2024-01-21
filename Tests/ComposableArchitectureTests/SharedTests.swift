@@ -371,6 +371,25 @@ final class SharedTests: XCTestCase {
       """
     )
   }
+
+  func testSimpleFeatureFailure() async {
+    let store = TestStore(initialState: SimpleFeature.State(count: Shared(0))) {
+      SimpleFeature()
+    }
+
+    XCTExpectFailure {
+      $0.compactDescription == """
+        State was not expected to change, but a change occurred: …
+
+            − SimpleFeature.State(_count: 0)
+            + SimpleFeature.State(_count: 1)
+
+        (Expected: −, Actual: +)
+        """
+    }
+
+    await store.send(.incrementButtonTapped)
+  }
 }
 
 @Reducer
@@ -438,4 +457,24 @@ struct SharedStateWithLiveValue: DependencyKey {
 }
 struct SharedStateWithTestValue: TestDependencyKey {
   static let testValue = SharedStateWithTestValue()
+}
+
+@Reducer
+private struct SimpleFeature {
+  struct State: Equatable {
+    @Shared var count: Int
+  }
+  enum Action {
+    case incrementButtonTapped
+  }
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .incrementButtonTapped:
+        return .run { [count = state.$count] _ in
+          count.wrappedValue += 1
+        }
+      }
+    }
+  }
 }
