@@ -15,15 +15,32 @@ application. There are 3 main strategies shipped with the library: in-memory sha
 persistence, and file storage persistence. You can also implement your own persistence strategy
 if you want to use something besides user defaults or the file system, such as SQLite.
 
-### "Source of truth"
+## "Source of truth"
 
-First a quick discussion on defining exactly what "shared state" is.
+First a quick discussion on defining exactly what "shared state" is. A common concept thrown around
+in architectural discussions is "single source of truth". This is the idea that the complete state
+of an application, even its navigation, can be driven off a single piece of data. It's a great idea,
+in theory, but in practice it can be quite difficult to embrace entirely.
 
-<!--
-todo: discuss "source of truth"?
--->
+First of all, a _single_ piece of data to drive _all_ of application state is just not feasible.
+There is a lot of state in an application that is fine to be local to a view and does not need 
+global representation. For example, the state of whether a button is being pressed is probably
+fine to reside privately inside the button.
 
-### In memory
+And second, applications typically do not have a _single_ source of truth. That is far too 
+simplistic. If your application loads data from an API, or from disk, or from user defaults, then
+the "truth" for that data does not lie in your application. It lies externally.
+
+In reality, there are _two_ sources of "truth" in any application. There is the state the 
+application needs to execute its logic and behavior. This is the kind of state that determines if a
+button is enabled or disabled, drive navigation such as sheets and drill-downs, and handles
+validation of forms. Such state only makes sense for the application.
+
+Then there is a second source of "truth" in an application, which is the data that lies in some 
+external system and needs to be loaded into the application. Such state is best modeled as a 
+dependency or using the shared state tools discussed in this article.
+
+## In-memory shared state
 
 This strategy allows you to share state amongst many features without any persistence. The data is
 only held in memory, and will be cleared out next time the application is run.
@@ -75,7 +92,15 @@ case .presentButtonTapped:
 Now any mutation the `ChildFeature` makes to its `count` will be instantly made to the 
 `ParentFeature`'s count too.
 
-### User defaults
+## Persisted shared state
+
+In-memory shared state discussed above is a nice, lightweight way to share a piece of data with
+many parts of your application. However, sometimes you want to share state _and_ persist any changes
+to that state to some external system. The library comes with two persistence strategies (
+<doc:SharingState#User-defaults> and <doc:SharingState#File-storage>) as well as the ability to
+create custom persistence strategies.
+
+#### User defaults
 
 If you would like to persist your shared value across application launches, then you can use the
 ``SharedPersistence/appStorage(_:)-687rl`` strategy with `@Shared` in order to automatically
@@ -96,7 +121,7 @@ need to store more complex data, such as custom data types serialized to JSON, t
 to use the <doc:SharingState#File-storage> strategy or a <doc:SharingState#Custom-persistence>
 strategy.
 
-### File storage
+#### File storage
 
 If you would like to persist your shared value across application launches, and your value is 
 complex (such as a custom data type), then you can use the ``SharedPersistence/fileStorage(_:)``
@@ -118,7 +143,7 @@ This strategy works by serializing your value to JSON to save to disk, and then 
 when loading from disk. For this reason the value held in `@Shared(.fileStorage(…))` must conform
 to `Codable`.
 
-### Custom persistence
+#### Custom persistence
 
 It is possible to define all new persistence strategies for the times that user defaults or JSON
 files are not sufficient. To do so, define a type that conforms to the ``SharedPersistence``
@@ -143,13 +168,13 @@ extension SharedPersistence {
 ```
 
 With those steps done you can make use of the strategy in the same way one does for 
-``SharedPersistence/appStorage(_:)-73sv4`` and ``SharedPersistence/fileStorage(_:)``:
+``SharedPersistence/appStorage(_:)-687rl`` and ``SharedPersistence/fileStorage(_:)``:
 
 ```swift
 @Shared(.custom(/*...*/)) var myValue: Value
 ```
 
-### Testing
+## Testing
 
 Share state behaves quite a bit different from the regular state held in Composable Architecture
 features. It is capable of being changed by any part of the application, not just went an action
@@ -299,6 +324,38 @@ to its reference semantics, it is still possible to get exhaustive test coverage
 
 #### Testing when using persistence
 
-<!--
-todo: discuss testing user defaults and file storage
--->
+It is also possible to test when using one of the persistence strategies provided by the library, 
+which are ``SharedPersistence/appStorage(_:)-687rl`` and ``SharedPersistence/fileStorage(_:)``.
+Typically perstience is difficult to test because the persisted data bleeds over from test to test,
+making it difficult to exhaustively prove how each test behaves in isolation.
+
+But the `.appStorage` and `.fileStorage` strategies do extra work to make sure that happens. By
+default the `.appStorage` strategy uses a non-persisting user defaults so that changes are not
+actually persisted across test runs. And the `.fileStorage` strategy uses a mock file system so
+that changes to state are not actually persisted to the file system.
+
+This means that if we altered the `SimpleFeature` of the <doc:SharingState#Testing> section above
+to use app storage:
+
+```swift
+struct State: Equatable {
+  @Shared(.appStorage("count")) var count: Int
+}
+````
+
+…then the test for this feature can be written in the same way as before and will still pass.
+
+#### Testing when using custom persistence strategies
+
+When creating your own custom persistence strategies you must careful to do so in a style that
+is amenable to testing. For example, the ``SharedPersistence/appStorage(_:)-687rl`` persistence
+strategy that comes with the library injects a ``Dependencies/DependencyValues/defaultAppStorage``
+dependency so that one can inject a custom `UserDefaults` in order to execute in a controlled
+environment. By default ``Dependencies/DependencyValues/defaultAppStorage`` uses a non-persisting
+user defaults, but you can also customize it to use any kind of defaults.
+
+Similarly the ``SharedPersistence/fileStorage(_:)`` persistence strategy uses an internal dependency
+for changing how files are written to the disk and loaded from disk. In tests the dependency will
+forego any interaction with the file system and instead write data to a `[URL: Data]` dictionary,
+and load data from that dictionary. That emulates how the file system works, but without persisting
+any data to the global file system, which can bleed over into other tests.
