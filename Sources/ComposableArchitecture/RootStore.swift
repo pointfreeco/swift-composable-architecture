@@ -130,10 +130,7 @@ public final class RootStore {
                       }
                     #endif
                     if let task = continuation.yield({
-                      self.send(
-                        effectAction
-                        //, originatingFrom: action
-                      )
+                      self.send(effectAction, originatingFrom: action)
                     }) {
                       tasks.wrappedValue.append(task)
                     }
@@ -162,7 +159,13 @@ public final class RootStore {
         }
       }
     }
-    return open(reducer: self.reducer)
+    #if canImport(Perception)
+      return _withoutPerceptionChecking {
+        open(reducer: self.reducer)
+      }
+    #else
+      return open(reducer: self.reducer)
+    #endif
   }
 }
 
