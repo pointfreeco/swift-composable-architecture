@@ -3,6 +3,7 @@ import SwiftUI
 
 struct RootView: View {
   @State var isNavigationStackCaseStudyPresented = false
+  @State var isSignUpCaseStudyPresented = false
 
   var body: some View {
     NavigationStack {
@@ -45,6 +46,12 @@ struct RootView: View {
           }
           NavigationLink("File storage") {
             SharedStateInMemoryView()
+          }
+          Button("Sign up flow") {
+            isSignUpCaseStudyPresented = true
+          }
+          .sheet(isPresented: $isSignUpCaseStudyPresented) {
+            SignUpFlow()
           }
         } header: {
           Text("Shared state")
