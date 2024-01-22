@@ -146,6 +146,7 @@ extension DispatchQueue: PersistenceQueue {
     source.resume()
     return AnyCancellable {
       source.cancel()
+      close(source.handle)
     }
   }
 
