@@ -38,7 +38,6 @@ private struct SignUpFeature {
   }
   enum Action {
     case path(StackAction<Path.State, Path.Action>)
-    case signUpButtonTapped
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -48,10 +47,6 @@ private struct SignUpFeature {
         return .none
 
       case .path:
-        return .none
-
-      case .signUpButtonTapped:
-        state.path.append(.basics(BasicsFeature.State(signUpData: state.$signUpData)))
         return .none
       }
     }
@@ -106,9 +101,12 @@ struct SignUpFlow: View {
           Text(readMe)
         }
         Section {
-          Button("Sign up") {
-            store.send(.signUpButtonTapped)
-          }
+          NavigationLink(
+            "Sign up",
+            state: SignUpFeature.Path.State.basics(
+              BasicsFeature.State(signUpData: store.$signUpData)
+            )
+          )
         }
       }
       .navigationTitle("Sign up")
