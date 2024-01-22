@@ -43,14 +43,6 @@ private struct SignUpFeature {
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      case .path(.element(id: _, action: .basics(.delegate(.stepFinished)))):
-        state.path.append(.personalInfo(PersonalInfoFeature.State(signUpData: state.$signUpData)))
-        return .none
-
-      case .path(.element(id: _, action: .personalInfo(.delegate(.stepFinished)))):
-        state.path.append(.topics(TopicsFeature.State(signUpData: state.$signUpData)))
-        return .none
-
       case .path(.element(id: _, action: .topics(.delegate(.stepFinished)))):
         state.path.append(.summary(SummaryFeature.State(signUpData: state.$signUpData)))
         return .none
@@ -144,32 +136,14 @@ private struct BasicsFeature {
   }
   enum Action: BindableAction {
     case binding(BindingAction<State>)
-    case delegate(Delegate)
-    case doneButtonTapped
-    case nextButtonTapped
-    enum Delegate {
-      case stepFinished
-    }
   }
-  @Dependency(\.dismiss) var dismiss
   var body: some ReducerOf<Self> {
     BindingReducer()
-    Reduce { state, action in
-      switch action {
-      case .binding:
-        return .none
-      case .delegate:
-        return .none
-      case .doneButtonTapped:
-        return .run { _ in await dismiss() }
-      case .nextButtonTapped:
-        return .send(.delegate(.stepFinished))
-      }
-    }
   }
 }
 
 private struct BasicsStep: View {
+  @Environment(\.dismiss) private var dismiss
   @Bindable var store: StoreOf<BasicsFeature>
 
   var body: some View {
@@ -187,11 +161,15 @@ private struct BasicsStep: View {
       ToolbarItem {
         if store.isEditingFromSummary {
           Button("Done") {
-            store.send(.doneButtonTapped)
+            dismiss()
           }
         } else {
-          Button("Next") {
-            store.send(.nextButtonTapped)
+          NavigationLink(
+            state: SignUpFeature.Path.State.personalInfo(
+              PersonalInfoFeature.State(signUpData: store.$signUpData)
+            )
+          ) {
+            Text("Next")
           }
         }
       }
@@ -208,32 +186,15 @@ private struct PersonalInfoFeature {
   }
   enum Action: BindableAction {
     case binding(BindingAction<State>)
-    case delegate(Delegate)
-    case doneButtonTapped
-    case nextButtonTapped
-    enum Delegate {
-      case stepFinished
-    }
   }
   @Dependency(\.dismiss) var dismiss
   var body: some ReducerOf<Self> {
     BindingReducer()
-    Reduce { state, action in
-      switch action {
-      case .binding:
-        return .none
-      case .delegate:
-        return .none
-      case .doneButtonTapped:
-        return .run { _ in await dismiss() }
-      case .nextButtonTapped:
-        return .send(.delegate(.stepFinished))
-      }
-    }
   }
 }
 
 private struct PersonalInfoStep: View {
+  @Environment(\.dismiss) private var dismiss
   @Bindable var store: StoreOf<PersonalInfoFeature>
 
   var body: some View {
@@ -249,12 +210,15 @@ private struct PersonalInfoStep: View {
       ToolbarItem {
         if store.isEditingFromSummary {
           Button("Done") {
-            store.send(.doneButtonTapped)
+            dismiss()
           }
         } else {
-          Button("Next") {
-            store.send(.nextButtonTapped)
-          }
+          NavigationLink(
+            "Next",
+            state: SignUpFeature.Path.State.topics(
+              TopicsFeature.State(topics: store.$signUpData.topics)
+            )
+          )
         }
       }
     }
@@ -267,7 +231,7 @@ private struct TopicsFeature {
   struct State {
     @Presents var alert: AlertState<Never>?
     var isEditingFromSummary = false
-    @Shared var signUpData: SignUpData
+    @Shared var topics: Set<SignUpData.Topic>
   }
   enum Action: BindableAction {
     case alert(PresentationAction<Never>)
@@ -291,7 +255,7 @@ private struct TopicsFeature {
       case .delegate:
         return .none
       case .doneButtonTapped:
-        if state.signUpData.topics.isEmpty {
+        if state.topics.isEmpty {
           state.alert = AlertState {
             TextState("Please choose at least one topic.")
           }
@@ -300,7 +264,7 @@ private struct TopicsFeature {
           return .run { _ in await dismiss() }
         }
       case .nextButtonTapped:
-        if state.signUpData.topics.isEmpty {
+        if state.topics.isEmpty {
           state.alert = AlertState {
             TextState("Please choose at least one topic.")
           }
@@ -324,7 +288,7 @@ private struct TopicsStep: View {
       }
       Section {
         ForEach(SignUpData.Topic.allCases) { topic in
-          Toggle(isOn: $store.signUpData.topics.isOn(topic)) {
+          Toggle(isOn: $store.topics.isOn(topic)) {
             Text(topic.rawValue)
           }
         }
@@ -345,6 +309,7 @@ private struct TopicsStep: View {
         }
       }
     }
+    .interactiveDismissDisabled()
   }
 }
 
@@ -357,7 +322,6 @@ private struct SummaryFeature {
   }
   enum Action {
     case destination(PresentationAction<Destination.Action>)
-    case doneButtonTapped
     case editFavoriteTopicsButtonTapped
     case editPersonalInfoButtonTapped
     case editRequiredInfoButtonTapped
@@ -368,14 +332,11 @@ private struct SummaryFeature {
       switch action {
       case .destination:
         return .none
-      case .doneButtonTapped:
-        state.destination = nil
-        return .none
       case .editFavoriteTopicsButtonTapped:
         state.destination = .topics(
           TopicsFeature.State(
             isEditingFromSummary: true,
-            signUpData: state.$signUpData
+            topics: state.$signUpData.topics
           )
         )
         return .none
@@ -519,7 +480,6 @@ private struct SummaryStep: View {
         TopicsStep(store: topicsStore)
       }
       .presentationDetents([.medium])
-      .interactiveDismissDisabled()
     }
     .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
   }
@@ -552,7 +512,7 @@ private struct SummaryStep: View {
 #Preview("Topics") {
   NavigationStack {
     TopicsStep(
-      store: Store(initialState: TopicsFeature.State(signUpData: Shared(SignUpData()))) {
+      store: Store(initialState: TopicsFeature.State(topics: Shared([]))) {
         TopicsFeature()
       }
     )
