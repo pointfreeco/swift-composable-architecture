@@ -282,12 +282,15 @@ particular fields:
 ```swift
 var body: some Reducer<State, Action> {
   BindingReducer()
-    .onChange(of: \.displayName) { oldDisplayName, newDisplayName in
+    .onChange(of: \.displayName) { oldValue, newValue in
       // Validate display name
     }
-    .onChange(of: \.displayName) { oldDisplayName, newDisplayName in
+    .onChange(of: \.enableNotifications) { oldValue, newValue in
       // Return an authorization request effect
     }
+
+  // ...
+}
 ```
 
 Binding actions can also be tested in much the same way regular actions are tested. Rather than send
