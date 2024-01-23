@@ -1042,7 +1042,7 @@ extension TestStore where State: Equatable {
       {
         var expectedWhenGivenPreviousState = current
         if let updateStateToExpectedResult = updateStateToExpectedResult {
-          _XCTExpectFailure(strict: false) {
+          XCTExpectFailure(strict: false) {
             do {
               try Dependencies.withDependencies {
                 $0 = self.reducer.dependencies
@@ -2077,7 +2077,7 @@ extension TestStore {
     case .on:
       XCTFail(message, file: file, line: line)
     case .off(showSkippedAssertions: true):
-      _XCTExpectFailure {
+      XCTExpectFailure {
         XCTFail(
           """
           Skipped assertions: …
@@ -2472,33 +2472,6 @@ public enum Exhaustivity: Equatable, Sendable {
 
   /// Non-exhaustive assertions.
   public static let off = Self.off(showSkippedAssertions: false)
-}
-
-@_transparent
-private func _XCTExpectFailure(
-  _ failureReason: String? = nil,
-  strict: Bool = true,
-  failingBlock: () -> Void
-) {
-  #if DEBUG
-    guard
-      let XCTExpectedFailureOptions = NSClassFromString("XCTExpectedFailureOptions")
-        as Any as? NSObjectProtocol,
-      let options = strict
-        ? XCTExpectedFailureOptions
-          .perform(NSSelectorFromString("alloc"))?.takeUnretainedValue()
-          .perform(NSSelectorFromString("init"))?.takeUnretainedValue()
-        : XCTExpectedFailureOptions
-          .perform(NSSelectorFromString("nonStrictOptions"))?.takeUnretainedValue()
-    else { return }
-
-    let XCTExpectFailureWithOptionsInBlock = unsafeBitCast(
-      dlsym(dlopen(nil, RTLD_LAZY), "XCTExpectFailureWithOptionsInBlock"),
-      to: (@convention(c) (String?, AnyObject, () -> Void) -> Void).self
-    )
-
-    XCTExpectFailureWithOptionsInBlock(failureReason, options, failingBlock)
-  #endif
 }
 
 extension TestStore {
