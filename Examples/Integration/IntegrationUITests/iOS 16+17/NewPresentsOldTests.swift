@@ -78,6 +78,10 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       BasicsView.body
       NewPresentsOldTestCase.body
       NewPresentsOldTestCase.body
+      PresentationStoreOf<BasicsView.Feature>.deinit
+      PresentationStoreOf<BasicsView.Feature>.deinit
+      PresentationStoreOf<BasicsView.Feature>.deinit
+      PresentationStoreOf<BasicsView.Feature>.deinit
       PresentationStoreOf<BasicsView.Feature>.init
       PresentationStoreOf<BasicsView.Feature>.init
       PresentationStoreOf<BasicsView.Feature>.init
@@ -91,6 +95,9 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
@@ -106,6 +113,14 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -116,6 +131,8 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
+      ViewPresentationStoreOf<BasicsView.Feature>.deinit
+      ViewPresentationStoreOf<BasicsView.Feature>.deinit
       ViewPresentationStoreOf<BasicsView.Feature>.init
       ViewPresentationStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.deinit
@@ -124,12 +141,14 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
+      ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit
@@ -374,8 +393,27 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       """
       PresentationStoreOf<BasicsView.Feature>.deinit
       PresentationStoreOf<BasicsView.Feature>.deinit
+      PresentationStoreOf<BasicsView.Feature>.deinit
+      PresentationStoreOf<BasicsView.Feature>.deinit
+      PresentationStoreOf<BasicsView.Feature>.deinit
+      PresentationStoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
+      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       ViewPresentationStoreOf<BasicsView.Feature>.deinit
+      ViewPresentationStoreOf<BasicsView.Feature>.deinit
+      ViewPresentationStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature?>.deinit
       """
     }
   }
