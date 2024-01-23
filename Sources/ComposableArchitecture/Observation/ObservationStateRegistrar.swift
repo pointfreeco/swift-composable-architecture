@@ -60,7 +60,7 @@
 
       /// A no-op for non-observable values.
       ///
-      /// See ``willModify(_:keyPath:_:)-3ybfo`` for info on what this method does when used with
+      /// See ``willModify(_:keyPath:_:)-29op6`` info on what this method does when used with
       /// observable values.
       @inlinable
       public func willModify<Subject: Observable, Member>(
@@ -89,8 +89,8 @@
 
       /// A property observation called after setting the value of the subject.
       ///
-      /// If the identity of the value changed between ``willModify(_:keyPath:_:)-3ybfo`` and
-      /// ``didModify(_:keyPath:_:_:_:)-q3nd``, observers are notified.
+      /// If the identity of the value changed between ``willModify(_:keyPath:_:)-29op6`` and
+      /// ``didModify(_:keyPath:_:_:_:)-34nhq``, observers are notified.
       @inlinable
       public func didModify<Subject: Observable, Member>(
         _ subject: Subject,
