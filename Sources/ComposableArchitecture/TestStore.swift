@@ -933,13 +933,15 @@ extension TestStore where State: Equatable {
   /// <doc:Testing#Non-exhaustive-testing>), which allow you to assert on a subset of the things
   /// happening inside your features. For example, you can send an action in a child feature
   /// without asserting on how many changes in the system, and then tell the test store to
-  /// ``finish(timeout:file:line:)-53gi5`` by executing all of its effects and receiving all
-  /// actions. After that is done you can assert on the final state of the store:
+  /// ``finish(timeout:file:line:)-53gi5`` by executing all of its effects, and finally to
+  /// ``skipReceivedActions(strict:file:line:)-a4ri`` to receive all actions. After that is done you
+  /// can assert on the final state of the store:
   ///
   /// ```swift
   /// store.exhaustivity = .off
   /// await store.send(.child(.closeButtonTapped))
   /// await store.finish()
+  /// await store.skipReceivedActions()
   /// store.assert {
   ///   $0.child = nil
   /// }
@@ -1040,7 +1042,7 @@ extension TestStore where State: Equatable {
       {
         var expectedWhenGivenPreviousState = current
         if let updateStateToExpectedResult = updateStateToExpectedResult {
-          _XCTExpectFailure(strict: false) {
+          XCTExpectFailure(strict: false) {
             do {
               try Dependencies.withDependencies {
                 $0 = self.reducer.dependencies
@@ -2075,7 +2077,7 @@ extension TestStore {
     case .on:
       XCTFail(message, file: file, line: line)
     case .off(showSkippedAssertions: true):
-      _XCTExpectFailure {
+      XCTExpectFailure {
         XCTFail(
           """
           Skipped assertions: …
@@ -2475,33 +2477,6 @@ public enum Exhaustivity: Equatable, Sendable {
 
   /// Non-exhaustive assertions.
   public static let off = Self.off(showSkippedAssertions: false)
-}
-
-@_transparent
-private func _XCTExpectFailure(
-  _ failureReason: String? = nil,
-  strict: Bool = true,
-  failingBlock: () -> Void
-) {
-  #if DEBUG
-    guard
-      let XCTExpectedFailureOptions = NSClassFromString("XCTExpectedFailureOptions")
-        as Any as? NSObjectProtocol,
-      let options = strict
-        ? XCTExpectedFailureOptions
-          .perform(NSSelectorFromString("alloc"))?.takeUnretainedValue()
-          .perform(NSSelectorFromString("init"))?.takeUnretainedValue()
-        : XCTExpectedFailureOptions
-          .perform(NSSelectorFromString("nonStrictOptions"))?.takeUnretainedValue()
-    else { return }
-
-    let XCTExpectFailureWithOptionsInBlock = unsafeBitCast(
-      dlsym(dlopen(nil, RTLD_LAZY), "XCTExpectFailureWithOptionsInBlock"),
-      to: (@convention(c) (String?, AnyObject, () -> Void) -> Void).self
-    )
-
-    XCTExpectFailureWithOptionsInBlock(failureReason, options, failingBlock)
-  #endif
 }
 
 extension TestStore {
