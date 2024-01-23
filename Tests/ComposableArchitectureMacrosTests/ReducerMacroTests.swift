@@ -209,5 +209,69 @@
         """
       }
     }
+
+    func testEnum() {
+      assertMacro {
+        """
+        @Reducer
+        enum Destination {
+          case timeline(Timeline)
+          case tweet(Tweet)
+        }
+        """
+      } expansion: {
+        #"""
+        enum Destination {
+          case timeline(Timeline)
+          case tweet(Tweet)
+
+          @CasePathable
+          @dynamicMemberLookup
+          @ObservableState
+          enum State: Equatable {
+            case timeline(Timeline.State)
+            case tweet(Tweet.State)
+          }
+
+          @CasePathable
+          enum Action {
+            case timeline(Timeline.Action)
+            case tweet(Tweet.Action)
+          }
+
+          init() {
+            self = .timeline(Timeline())
+          }
+
+          var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
+            CombineReducers {
+              ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+                Timeline()
+              }
+              ComposableArchitecture.Scope(state: \Self.State.Cases.tweet, action: \Self.Action.Cases.tweet) {
+                Tweet()
+              }
+            }
+          }
+
+          enum _$Store {
+            case timeline(ComposableArchitecture.StoreOf<Timeline>)
+            case tweet(ComposableArchitecture.StoreOf<Tweet>)
+            init(_ store: ComposableArchitecture.StoreOf<Destination>) {
+              switch store.state {
+              case .timeline:
+                self = .timeline(store.scope(state: \.timeline, action: \.timeline)!)
+              case .tweet:
+                self = .tweet(store.scope(state: \.tweet, action: \.tweet)!)
+              }
+            }
+          }
+        }
+
+        extension Destination: ComposableArchitecture.Reducer {
+        }
+        """#
+      }
+    }
   }
 #endif

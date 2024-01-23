@@ -137,6 +137,102 @@ extension ReducerMacro: MemberAttributeMacro {
   }
 }
 
+extension ReducerMacro: MemberMacro {
+  public static func expansion<D: DeclGroupSyntax, C: MacroExpansionContext>(
+    of node: AttributeSyntax,
+    providingMembersOf declaration: D,
+    in context: C
+  ) throws -> [DeclSyntax] {
+    if let enumDecl = declaration.as(EnumDeclSyntax.self) {
+      let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
+      let enumCaseElements = enumDecl.memberBlock
+        .members
+        .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
+
+      var stateCaseDecls: [String] = []
+      var actionCaseDecls: [String] = []
+      var initialValue: String?
+      var reducerScopes: [String] = []
+      var storeCases: [String] = []
+      var storeScopes: [String] = []
+
+      for (offset, enumCaseElement) in enumCaseElements.enumerated() {
+        if let parameterClause = enumCaseElement.parameterClause,
+          parameterClause.parameters.count == 1,
+          let parameter = parameterClause.parameters.first,
+          let type = parameter.type.as(IdentifierTypeSyntax.self)
+        {
+          let name = enumCaseElement.name.text
+          stateCaseDecls.append("case \(name)(\(type.name.text).State)")
+          actionCaseDecls.append("case \(name)(\(type.name.text).Action)")
+          if offset == 0 {
+            initialValue = ".\(name)(\(type.name.text)())"
+          }
+          reducerScopes.append(
+            """
+            ComposableArchitecture.Scope(\
+            state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
+            ) {
+            \(type.name)()
+            }
+            """
+          )
+          storeCases.append("case \(name)(ComposableArchitecture.StoreOf<\(type.name.text)>)")
+          storeScopes.append(
+            """
+            case .\(name):
+            self = .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
+            """
+          )
+        }
+        // TODO: else diagnose?
+      }
+      return [
+        """
+        @CasePathable
+        @dynamicMemberLookup
+        @ObservableState
+        \(access)enum State: Equatable {
+        \(raw: stateCaseDecls.map(\.description).joined(separator: "\n"))
+        }
+        """,
+        """
+        @CasePathable
+        \(access)enum Action {
+        \(raw: actionCaseDecls.map(\.description).joined(separator: "\n"))
+        }
+        """,
+        initialValue.map {
+          """
+          \(access)init() {
+          self = \(raw: $0)
+          }
+          """
+        },
+        """
+        \(access)var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
+        CombineReducers {
+        \(raw: reducerScopes.joined(separator: "\n"))
+        }
+        }
+        """,
+        """
+        \(access)enum _$Store {
+        \(raw: storeCases.joined(separator: "\n"))
+        \(access)init(_ store: ComposableArchitecture.StoreOf<\(enumDecl.name.trimmed)>) {
+        switch store.state {
+        \(raw: storeScopes.joined(separator: "\n"))
+        }
+        }
+        }
+        """
+      ].compactMap { $0 }
+    } else {
+      return []
+    }
+  }
+}
+
 extension Array where Element == String {
   var withCasePathsQualified: Self {
     self.flatMap { [$0, "CasePaths.\($0)"] }

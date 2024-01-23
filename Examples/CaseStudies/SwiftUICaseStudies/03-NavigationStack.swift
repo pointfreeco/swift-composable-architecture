@@ -27,23 +27,23 @@ struct NavigationDemo {
         return .none
 
       case .goToABCButtonTapped:
-        state.path.append(.screenA())
-        state.path.append(.screenB())
-        state.path.append(.screenC())
+        state.path.append(.screenA(.init()))
+        state.path.append(.screenB(.init()))
+        state.path.append(.screenC(.init()))
         return .none
 
       case let .path(action):
         switch action {
         case .element(id: _, action: .screenB(.screenAButtonTapped)):
-          state.path.append(.screenA())
+          state.path.append(.screenA(.init()))
           return .none
 
         case .element(id: _, action: .screenB(.screenBButtonTapped)):
-          state.path.append(.screenB())
+          state.path.append(.screenB(.init()))
           return .none
 
         case .element(id: _, action: .screenB(.screenCButtonTapped)):
-          state.path.append(.screenC())
+          state.path.append(.screenC(.init()))
           return .none
 
         default:
@@ -61,31 +61,10 @@ struct NavigationDemo {
   }
 
   @Reducer
-  struct Path {
-    @ObservableState
-    enum State: Codable, Equatable, Hashable {
-      case screenA(ScreenA.State = .init())
-      case screenB(ScreenB.State = .init())
-      case screenC(ScreenC.State = .init())
-    }
-
-    enum Action {
-      case screenA(ScreenA.Action)
-      case screenB(ScreenB.Action)
-      case screenC(ScreenC.Action)
-    }
-
-    var body: some Reducer<State, Action> {
-      Scope(state: \.screenA, action: \.screenA) {
-        ScreenA()
-      }
-      Scope(state: \.screenB, action: \.screenB) {
-        ScreenB()
-      }
-      Scope(state: \.screenC, action: \.screenC) {
-        ScreenC()
-      }
-    }
+  enum Path {
+    case screenA(ScreenA)
+    case screenB(ScreenB)
+    case screenC(ScreenC)
   }
 }
 
@@ -102,15 +81,15 @@ struct NavigationDemoView: View {
         Section {
           NavigationLink(
             "Go to screen A",
-            state: NavigationDemo.Path.State.screenA()
+            state: NavigationDemo.Path.State.screenA(.init())
           )
           NavigationLink(
             "Go to screen B",
-            state: NavigationDemo.Path.State.screenB()
+            state: NavigationDemo.Path.State.screenB(.init())
           )
           NavigationLink(
             "Go to screen C",
-            state: NavigationDemo.Path.State.screenC()
+            state: NavigationDemo.Path.State.screenC(.init())
           )
         }
 
@@ -122,19 +101,13 @@ struct NavigationDemoView: View {
       }
       .navigationTitle("Root")
     } destination: { store in
-      switch store.state {
-      case .screenA:
-        if let store = store.scope(state: \.screenA, action: \.screenA) {
-          ScreenAView(store: store)
-        }
-      case .screenB:
-        if let store = store.scope(state: \.screenB, action: \.screenB) {
-          ScreenBView(store: store)
-        }
-      case .screenC:
-        if let store = store.scope(state: \.screenC, action: \.screenC) {
-          ScreenCView(store: store)
-        }
+      switch NavigationDemo.Path._$Store(store) {
+      case let .screenA(store):
+        ScreenAView(store: store)
+      case let .screenB(store):
+        ScreenBView(store: store)
+      case let .screenC(store):
+        ScreenCView(store: store)
       }
     }
     .safeAreaInset(edge: .bottom) {
@@ -324,7 +297,7 @@ struct ScreenAView: View {
         )
         NavigationLink(
           "Go to screen B",
-          state: NavigationDemo.Path.State.screenB()
+          state: NavigationDemo.Path.State.screenB(.init())
         )
         NavigationLink(
           "Go to screen C",
@@ -462,11 +435,11 @@ struct ScreenCView: View {
         )
         NavigationLink(
           "Go to screen B",
-          state: NavigationDemo.Path.State.screenB()
+          state: NavigationDemo.Path.State.screenB(.init())
         )
         NavigationLink(
           "Go to screen C",
-          state: NavigationDemo.Path.State.screenC()
+          state: NavigationDemo.Path.State.screenC(.init())
         )
       }
     }

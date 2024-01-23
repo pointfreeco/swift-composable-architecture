@@ -148,6 +148,7 @@
   /// ```shell
   /// xcodebuild -skipMacroValidation …
   /// ```
+  @attached(member, names: named(State), named(Action), named(init), named(body), named(_$Store))
   @attached(memberAttribute)
   @attached(extension, conformances: Reducer)
   public macro Reducer() =
