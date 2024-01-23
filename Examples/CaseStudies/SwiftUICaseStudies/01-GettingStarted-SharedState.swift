@@ -51,8 +51,8 @@ struct CounterTab {
         state.alert = AlertState {
           TextState(
             isPrime(state.stats.count)
-            ? "👍 The number \(state.stats.count) is prime!"
-            : "👎 The number \(state.stats.count) is not prime :("
+              ? "👍 The number \(state.stats.count) is prime!"
+              : "👎 The number \(state.stats.count) is not prime :("
           )
         }
         return .none

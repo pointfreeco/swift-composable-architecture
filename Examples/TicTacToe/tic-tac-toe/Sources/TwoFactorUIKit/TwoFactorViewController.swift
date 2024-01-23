@@ -64,8 +64,7 @@ public final class TwoFactorViewController: UIViewController {
       codeTextField.text = store.code
       loginButton.isEnabled = store.isLoginButtonEnabled
 
-      if 
-        let alert = store.alert,
+      if let alert = store.alert,
         alertController == nil
       {
         alertController = UIAlertController(

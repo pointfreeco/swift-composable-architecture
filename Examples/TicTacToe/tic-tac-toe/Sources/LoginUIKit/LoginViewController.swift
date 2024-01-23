@@ -98,8 +98,7 @@ public class LoginViewController: UIViewController {
       loginButton.isEnabled = store.isLoginButtonEnabled
       activityIndicator.isHidden = store.isActivityIndicatorHidden
 
-      if
-        let alert = store.alert,
+      if let alert = store.alert,
         alertController == nil
       {
         alertController = UIAlertController(
@@ -118,8 +117,7 @@ public class LoginViewController: UIViewController {
         alertController = nil
       }
 
-      if 
-        let store = store.scope(state: \.twoFactor, action: \.twoFactor.presented),
+      if let store = store.scope(state: \.twoFactor, action: \.twoFactor.presented),
         twoFactorViewController == nil
       {
         twoFactorViewController = TwoFactorViewController(store: store)
