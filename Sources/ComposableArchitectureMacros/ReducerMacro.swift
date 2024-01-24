@@ -222,8 +222,9 @@ extension ReducerMacro: MemberMacro {
           let parameterClause = element.parameterClause,
           parameterClause.parameters.count == 1,
           let parameter = parameterClause.parameters.first,
-          let type = parameter.type.as(IdentifierTypeSyntax.self)
+          parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
         {
+          let type = parameter.type
           let stateCase = enumCaseElement.attribute == .ephemeral
             ? element
             : element.suffixed("State")
@@ -235,7 +236,7 @@ extension ReducerMacro: MemberMacro {
               ComposableArchitecture.Scope(\
               state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
               ) {
-              \(type.name)()
+              \(type.trimmed)()
               }
               """
             )
@@ -488,7 +489,7 @@ private extension EnumCaseElementSyntax {
   func suffixed(_ suffix: TokenSyntax) -> Self {
     var element = self
     if var parameterClause = element.parameterClause,
-      let type = parameterClause.parameters.first?.type.as(IdentifierTypeSyntax.self)
+      let type = parameterClause.parameters.first?.type
     {
       let type = MemberTypeSyntax(baseType: type, name: suffix)
       parameterClause.parameters[parameterClause.parameters.startIndex].type = TypeSyntax(type)
