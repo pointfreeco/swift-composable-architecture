@@ -274,7 +274,7 @@ few bugs in `NavigationStack`, but on average it is a lot more stable.
 
 #### Cons of stack-based navigation
 
-  * Stack-based navigation is not a concise tool. It makes it possible to expressive navigation
+  * Stack-based navigation is not a concise tool. It makes it possible to express navigation
     paths that are completely non-sensical. For example, even though it only makes sense to navigate
     to an edit screen from a detail screen, in a stack it would be possible to present the features
     in the reverse order:
