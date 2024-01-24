@@ -155,11 +155,11 @@
       named(Action),
       named(init),
       named(body),
-      named(DestinationStore),
-      named(destination)
+      named(Cases),
+      named(cases)
   )
   @attached(memberAttribute)
-  @attached(extension, conformances: Reducer, DestinationReducer)
+  @attached(extension, conformances: Reducer, CaseReducer)
   public macro Reducer() =
     #externalMacro(
       module: "ComposableArchitectureMacros", type: "ReducerMacro"

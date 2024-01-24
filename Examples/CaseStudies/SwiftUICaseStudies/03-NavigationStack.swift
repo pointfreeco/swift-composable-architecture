@@ -7,6 +7,13 @@ private let readMe = """
 
 @Reducer
 struct NavigationDemo {
+  @Reducer
+  enum Path {
+    case screenA(ScreenA)
+    case screenB(ScreenB)
+    case screenC(ScreenC)
+  }
+
   @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
@@ -55,16 +62,7 @@ struct NavigationDemo {
         return .none
       }
     }
-    .forEach(\.path, action: \.path) {
-      Path()
-    }
-  }
-
-  @Reducer
-  enum Path {
-    case screenA(ScreenA)
-    case screenB(ScreenB)
-    case screenC(ScreenC)
+    .forEach(\.path, action: \.path)
   }
 }
 
@@ -101,7 +99,7 @@ struct NavigationDemoView: View {
       }
       .navigationTitle("Root")
     } destination: { store in
-      switch NavigationDemo.Path.destination(store) {
+      switch store.cases {
       case let .screenA(store):
         ScreenAView(store: store)
       case let .screenB(store):

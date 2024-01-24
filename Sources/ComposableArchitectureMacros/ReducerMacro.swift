@@ -25,9 +25,10 @@ extension ReducerMacro: ExtensionMacro {
     {
       return []
     }
+    let proto = declaration.isEnum ? "CaseReducer" : "Reducer"
     let ext: DeclSyntax =
       """
-      extension \(type.trimmed): ComposableArchitecture.Reducer {}
+      extension \(type.trimmed): ComposableArchitecture.\(raw: proto) {}
       """
     return [ext.cast(ExtensionDeclSyntax.self)]
   }
@@ -165,12 +166,11 @@ extension ReducerMacro: MemberMacro {
 
       var stateCaseDecls: [String] = []
       var actionCaseDecls: [String] = []
-      var initialValue: String?
       var reducerScopes: [String] = []
       var storeCases: [String] = []
       var storeScopes: [String] = []
 
-      for (offset, enumCaseElement) in enumCaseElements.enumerated() {
+      for enumCaseElement in enumCaseElements {
         let element = enumCaseElement.element
         let name = element.name.text
         if enumCaseElement.isIgnored {
@@ -189,9 +189,6 @@ extension ReducerMacro: MemberMacro {
         {
           stateCaseDecls.append("case \(name)(\(type.trimmed).State)")
           actionCaseDecls.append("case \(name)(\(type.trimmed).Action)")
-          if offset == 0 {
-            initialValue = ".\(name)(\(type.name.text)())"
-          }
           reducerScopes.append(
             """
             ComposableArchitecture.Scope(\
@@ -216,7 +213,8 @@ extension ReducerMacro: MemberMacro {
         @CasePathable
         @dynamicMemberLookup
         @ObservableState
-        \(access)enum State: Equatable {
+        \(access)enum State: CaseReducerState, Equatable {
+        \(access)typealias Reducer = \(enumDecl.name.trimmed)
         \(raw: stateCaseDecls.map(\.description).joined(separator: "\n"))
         }
         """,
@@ -226,35 +224,28 @@ extension ReducerMacro: MemberMacro {
         \(raw: actionCaseDecls.map(\.description).joined(separator: "\n"))
         }
         """,
-        initialValue.map {
-          """
-          \(access)init() {
-          self = \(raw: $0)
-          }
-          """
-        },
         """
-        \(access)var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
+        \(access)static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
         CombineReducers {
         \(raw: reducerScopes.joined(separator: "\n"))
         }
         }
         """,
         """
-        \(access)enum DestinationStore {
+        \(access)enum Cases {
         \(raw: storeCases.joined(separator: "\n"))
         }
         """,
         """
-        \(access)static func destination(\
+        \(access)static func cases(\
         _ store: Store<Self.State, Self.Action>\
-        ) -> DestinationStore {
+        ) -> Cases {
         switch store.state {
         \(raw: storeScopes.joined(separator: "\n"))
         }
         }
         """
-      ].compactMap { $0 }
+      ]
     } else {
       let typeNames = declaration.memberBlock.members.compactMap {
         $0.as(MemberBlockItemSyntax.self)?.decl.as(StructDeclSyntax.self)?.name.text
