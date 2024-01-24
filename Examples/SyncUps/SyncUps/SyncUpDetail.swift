@@ -3,6 +3,18 @@ import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
+  @Reducer
+  enum Destination {
+    case alert(AlertState<Alert>)
+    case edit(SyncUpForm)
+
+    enum Alert {
+      case confirmDeletion
+      case continueWithoutRecording
+      case openSettings
+    }
+  }
+
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
@@ -39,32 +51,6 @@ struct SyncUpDetail {
   @Dependency(\.dismiss) var dismiss
   @Dependency(\.openSettings) var openSettings
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
-
-  @Reducer
-  struct Destination {
-    @ObservableState
-    enum State: Equatable {
-      case alert(AlertState<Action.Alert>)
-      case edit(SyncUpForm.State)
-    }
-
-    enum Action: Sendable {
-      case alert(Alert)
-      case edit(SyncUpForm.Action)
-
-      enum Alert {
-        case confirmDeletion
-        case continueWithoutRecording
-        case openSettings
-      }
-    }
-
-    var body: some ReducerOf<Self> {
-      Scope(state: \.edit, action: \.edit) {
-        SyncUpForm()
-      }
-    }
-  }
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -131,9 +117,7 @@ struct SyncUpDetail {
         }
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
     .onChange(of: \.syncUp) { oldValue, newValue in
       Reduce { state, action in
         .send(.delegate(.syncUpUpdated(newValue)))
@@ -178,7 +162,7 @@ struct SyncUpDetailView: View {
         Section {
           ForEach(store.syncUp.meetings) { meeting in
             NavigationLink(
-              state: AppFeature.Path.State.meeting(meeting, store.syncUp)
+              state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
             ) {
               HStack {
                 Image(systemName: "calendar")
@@ -239,7 +223,7 @@ struct SyncUpDetailView: View {
   }
 }
 
-extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
+extension AlertState where Action == SyncUpDetail.Destination.Alert {
   static let deleteSyncUp = Self {
     TextState("Delete?")
   } actions: {

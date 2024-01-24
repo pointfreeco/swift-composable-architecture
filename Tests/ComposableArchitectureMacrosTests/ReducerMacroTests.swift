@@ -211,7 +211,7 @@
     }
 
     func testEnum() {
-      assertMacro {
+      assertMacro(record: true) {
         """
         @Reducer
         enum Destination {
@@ -238,7 +238,8 @@
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          enum State: Equatable {
+          enum State: CaseReducerState, Equatable {
+            typealias Reducer = Destination
             case timeline(Timeline.State)
             case tweet(Tweet.State)
             case alert(AlertState<Alert>.State)
@@ -251,11 +252,7 @@
             case alert(AlertState<Alert>.Action)
           }
 
-          init() {
-            self = .timeline(Timeline())
-          }
-
-          var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
+          static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
             CombineReducers {
               ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
                 Timeline()
@@ -269,13 +266,13 @@
             }
           }
 
-          enum DestinationStore {
+          enum Cases {
             case timeline(ComposableArchitecture.StoreOf<Timeline>)
             case tweet(ComposableArchitecture.StoreOf<Tweet>)
             case alert(ComposableArchitecture.StoreOf<AlertState<Alert>>)
           }
 
-          static func destination(_ store: Store<Self.State, Self.Action>) -> DestinationStore {
+          static func cases(_ store: Store<Self.State, Self.Action>) -> Cases {
             switch store.state {
             case .timeline:
               return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
@@ -287,14 +284,14 @@
           }
         }
 
-        extension Destination: ComposableArchitecture.Reducer {
+        extension Destination: ComposableArchitecture.CaseReducer {
         }
         """#
       }
     }
 
     func testEnum_CaseIgnored() {
-      assertMacro {
+      assertMacro(record: true) {
         """
         @Reducer
         enum Destination {
@@ -313,7 +310,8 @@
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          enum State: Equatable {
+          enum State: CaseReducerState, Equatable {
+            typealias Reducer = Destination
             case timeline(Timeline.State)
             case meeting(Meeting)
           }
@@ -323,11 +321,7 @@
             case timeline(Timeline.Action)
           }
 
-          init() {
-            self = .timeline(Timeline())
-          }
-
-          var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
+          static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
             CombineReducers {
               ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
                 Timeline()
@@ -335,24 +329,90 @@
             }
           }
 
-          enum DestinationStore {
+          enum Cases {
             case timeline(ComposableArchitecture.StoreOf<Timeline>)
             case meeting(Meeting)
           }
 
-          static func destination(_ store: Store<Self.State, Self.Action>) -> DestinationStore {
+          static func cases(_ store: Store<Self.State, Self.Action>) -> Cases {
             switch store.state {
             case .timeline:
               return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
-            case .meeting(let x, let y):
-              return .meeting(x, y)
+            case let .meeting(v0):
+              return .meeting(v0)
             }
           }
         }
 
-        extension Destination: ComposableArchitecture.Reducer {
+        extension Destination: ComposableArchitecture.CaseReducer {
         }
         """#
+      }
+    }
+
+    func testEnum_Attributes() {
+      assertMacro(record: true) {
+        """
+        @Reducer
+        enum Destination {
+          case alert(AlertState<Alert>)
+          case dialog(ConfirmationDialogState<Dialog>)
+          case meeting(Meeting, syncUp: SyncUp)
+        }
+        """
+      } expansion: {
+        """
+        enum Destination {
+          @ReducerCaseEphemeral
+          case alert(AlertState<Alert>)
+          @ReducerCaseEphemeral
+          case dialog(ConfirmationDialogState<Dialog>)
+          @ReducerCaseIgnored
+          case meeting(Meeting, syncUp: SyncUp)
+
+          @CasePathable
+          @dynamicMemberLookup
+          @ObservableState
+          enum State: CaseReducerState, Equatable {
+            typealias Reducer = Destination
+            case alert(AlertState<Alert>)
+            case dialog(ConfirmationDialogState<Dialog>)
+            case meeting(Meeting, syncUp: SyncUp)
+          }
+
+          @CasePathable
+          enum Action {
+            case alert(AlertState<Alert>.Action)
+            case dialog(ConfirmationDialogState<Dialog>.Action)
+          }
+
+          static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
+            CombineReducers {
+
+            }
+          }
+
+          enum Cases {
+            case alert(AlertState<Alert>)
+            case dialog(ConfirmationDialogState<Dialog>)
+            case meeting(Meeting, syncUp: SyncUp)
+          }
+
+          static func cases(_ store: Store<Self.State, Self.Action>) -> Cases {
+            switch store.state {
+            case let .alert(v0):
+              return .alert(v0)
+            case let .dialog(v0):
+              return .dialog(v0)
+            case let .meeting(v0, v1):
+              return .meeting(v0, syncUp: v1)
+            }
+          }
+        }
+
+        extension Destination: ComposableArchitecture.CaseReducer {
+        }
+        """
       }
     }
 

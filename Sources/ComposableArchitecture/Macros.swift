@@ -166,6 +166,10 @@
     )
 
   @attached(peer, names: named(_))
+  public macro ReducerCaseEphemeral() =
+    #externalMacro(module: "ComposableArchitectureMacros", type: "ReducerCaseEphemeralMacro")
+
+  @attached(peer, names: named(_))
   public macro ReducerCaseIgnored() =
     #externalMacro(module: "ComposableArchitectureMacros", type: "ReducerCaseIgnoredMacro")
 

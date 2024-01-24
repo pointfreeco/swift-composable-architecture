@@ -132,9 +132,43 @@ extension ReducerMacro: MemberAttributeMacro {
           )
         )
       ]
+    } else if let enumCaseDecl = member.as(EnumCaseDeclSyntax.self),
+      enumCaseDecl.elements.count == 1,
+      let element = enumCaseDecl.elements.first
+    {
+      if let parameterClause = element.parameterClause,
+        parameterClause.parameters.count == 1,
+        let parameter = parameterClause.parameters.first
+      {
+        if parameter.type.as(IdentifierTypeSyntax.self)?.isEphemeral == true {
+          return [
+            AttributeSyntax(
+              attributeName: IdentifierTypeSyntax(
+                name: .identifier("ReducerCaseEphemeral")
+              )
+            )
+          ]
+        } else {
+          return []
+        }
+      } else {
+        return [
+          AttributeSyntax(
+            attributeName: IdentifierTypeSyntax(
+              name: .identifier("ReducerCaseIgnored")
+            )
+          )
+        ]
+      }
     } else {
       return []
     }
+  }
+}
+
+private extension IdentifierTypeSyntax {
+  var isEphemeral: Bool {
+    self.name.text == "AlertState" || self.name.text == "ConfirmationDialogState"
   }
 }
 
@@ -146,21 +180,12 @@ extension ReducerMacro: MemberMacro {
   ) throws -> [DeclSyntax] {
     let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
     if let enumDecl = declaration.as(EnumDeclSyntax.self) {
-
       let enumCaseElements = enumDecl.memberBlock
         .members
-        .flatMap { member in
-          (member.decl.as(EnumCaseDeclSyntax.self)?.elements ?? []).map {
-            ReducerCase(
-              element: $0,
-              isIgnored: (member.decl.as(EnumCaseDeclSyntax.self)?.attributes ?? []).contains(where: {
-                if case let .attribute(attribute) = $0 {
-                  return attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.text == "ReducerCaseIgnored"
-                } else {
-                  return false
-                }
-              })
-            )
+        .flatMap { member -> [ReducerCase] in
+          guard let decl = member.decl.as(EnumCaseDeclSyntax.self) else { return [] }
+          return decl.elements.map {
+            ReducerCase(element: $0, attribute: decl.attribute)
           }
         }
 
@@ -173,40 +198,61 @@ extension ReducerMacro: MemberMacro {
       for enumCaseElement in enumCaseElements {
         let element = enumCaseElement.element
         let name = element.name.text
-        if enumCaseElement.isIgnored {
-          stateCaseDecls.append("case \(element.trimmedDescription)")
-          storeCases.append("case \(element.trimmedDescription)")
-          storeScopes.append(
-            """
-            case .\(name)(let x, let y):
-            return .\(name)(x, y)
-            """
-          )
-        } else if let parameterClause = element.parameterClause,
+
+        if enumCaseElement.attribute != .ignored,
+          let parameterClause = element.parameterClause,
           parameterClause.parameters.count == 1,
           let parameter = parameterClause.parameters.first,
           let type = parameter.type.as(IdentifierTypeSyntax.self)
         {
-          stateCaseDecls.append("case \(name)(\(type.trimmed).State)")
-          actionCaseDecls.append("case \(name)(\(type.trimmed).Action)")
-          reducerScopes.append(
-            """
-            ComposableArchitecture.Scope(\
-            state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
-            ) {
-            \(type.name)()
-            }
-            """
-          )
-          storeCases.append("case \(name)(ComposableArchitecture.StoreOf<\(type.trimmed)>)")
-          storeScopes.append(
-            """
-            case .\(name):
-            return .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
-            """
-          )
+          let stateCase = enumCaseElement.attribute == .ephemeral
+            ? element
+            : element.suffixed("State")
+          stateCaseDecls.append("case \(stateCase.trimmedDescription)")
+          actionCaseDecls.append("case \(element.suffixed("Action").trimmedDescription)")
+          if enumCaseElement.attribute == nil {
+            reducerScopes.append(
+              """
+              ComposableArchitecture.Scope(\
+              state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
+              ) {
+              \(type.name)()
+              }
+              """
+            )
+            storeCases.append("case \(name)(ComposableArchitecture.StoreOf<\(type.trimmed)>)")
+            storeScopes.append(
+              """
+              case .\(name):
+              return .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
+              """
+            )
+          }
+        } else {
+          stateCaseDecls.append("case \(element.trimmedDescription)")
         }
-        // TODO: else diagnose?
+        if enumCaseElement.attribute != nil {
+          storeCases.append("case \(element.trimmedDescription)")
+          if let parameters = element.parameterClause?.parameters {
+            let bindingNames = (0..<parameters.count).map { "v\($0)" }.joined(separator: ", ")
+            let returnNames = parameters.enumerated()
+              .map { "\($1.firstName.map { "\($0.text): " } ?? "")v\($0)" }
+              .joined(separator: ", ")
+            storeScopes.append(
+              """
+              case let .\(name)(\(bindingNames)):
+              return .\(name)(\(returnNames))
+              """
+            )
+          } else {
+            storeScopes.append(
+              """
+              case .\(name):
+              return .\(name)
+              """
+            )
+          }
+        }
       }
       return [
         """
@@ -291,7 +337,12 @@ extension ReducerMacro: MemberMacro {
 
 private struct ReducerCase {
   let element: EnumCaseElementSyntax
-  let isIgnored: Bool
+  let attribute: Attribute?
+
+  enum Attribute {
+    case ephemeral
+    case ignored
+  }
 }
 
 extension Array where Element == String {
@@ -339,6 +390,72 @@ private final class ReduceVisitor: SyntaxVisitor {
       )
     )
     return .visitChildren
+  }
+}
+
+private extension EnumCaseDeclSyntax {
+  var attribute: ReducerCase.Attribute? {
+    if self.isIgnored {
+      return .ignored
+    } else if self.isEphemeral {
+      return .ephemeral
+    } else {
+      return nil
+    }
+  }
+
+  var isIgnored: Bool {
+    self.attributes.contains("ReducerCaseIgnored")
+      || self.elements.contains { $0.parameterClause?.parameters.count != 1 }
+  }
+
+  var isEphemeral: Bool {
+    self.attributes.contains("ReducerCaseEphemeral")
+      || self.elements.contains {
+        guard
+          let parameterClause = $0.parameterClause,
+          parameterClause.parameters.count == 1,
+          let parameter = parameterClause.parameters.first,
+          parameter.type.as(IdentifierTypeSyntax.self)?.isEphemeral == true
+        else { return false }
+        return true
+      }
+  }
+}
+
+private extension EnumCaseElementSyntax {
+  func suffixed(_ suffix: TokenSyntax) -> Self {
+    var element = self
+    if var parameterClause = element.parameterClause,
+      let type = parameterClause.parameters.first?.type.as(IdentifierTypeSyntax.self)
+    {
+      let type = MemberTypeSyntax(baseType: type, name: suffix)
+      parameterClause.parameters[parameterClause.parameters.startIndex].type = TypeSyntax(type)
+      element.parameterClause = parameterClause
+    }
+    return element
+  }
+}
+
+private extension AttributeListSyntax {
+  func contains(_ name: TokenSyntax) -> Bool {
+    self.contains {
+      guard
+        case let .attribute(attribute) = $0,
+        attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.text == name.text
+      else { return false }
+      return true
+    }
+  }
+}
+
+enum ReducerCaseEphemeralMacro: PeerMacro {
+  static func expansion(
+    of node: AttributeSyntax,
+    providingPeersOf declaration: some DeclSyntaxProtocol,
+    in context: some MacroExpansionContext
+  ) throws -> [DeclSyntax] {
+    []
   }
 }
 

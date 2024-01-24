@@ -3,6 +3,16 @@ import SwiftUI
 
 @Reducer
 struct SyncUpsList {
+  @Reducer
+  enum Destination {
+    case add(SyncUpForm)
+    case alert(AlertState<Alert>)
+
+    enum Alert {
+      case confirmLoadMockData
+    }
+  }
+
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
@@ -29,16 +39,6 @@ struct SyncUpsList {
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
     case onDelete(IndexSet)
-  }
-
-  @Reducer
-  enum Destination {
-    case add(SyncUpForm)
-    case alert(AlertState<Alert>)
-
-    enum Alert {
-      case confirmLoadMockData
-    }
   }
 
   @Dependency(\.continuousClock) var clock
@@ -88,9 +88,7 @@ struct SyncUpsList {
         return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
   }
 }
 

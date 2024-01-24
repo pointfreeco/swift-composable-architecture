@@ -3,6 +3,13 @@ import SwiftUI
 
 @Reducer
 struct AppFeature {
+  @Reducer
+  enum Path {
+    case detail(SyncUpDetail)
+    case meeting(Meeting, syncUp: SyncUp)
+    case record(RecordMeeting)
+  }
+
   @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
@@ -81,9 +88,7 @@ struct AppFeature {
         return .none
       }
     }
-    .forEach(\.path, action: \.path) {
-      Path()
-    }
+    .forEach(\.path, action: \.path)
 
     Reduce { state, action in
       return .run { [syncUps = state.syncUpsList.syncUps] _ in
@@ -94,14 +99,6 @@ struct AppFeature {
       } catch: { _, _ in
       }
     }
-  }
-
-  @Reducer
-  enum Path {
-    case detail(SyncUpDetail)
-    @ReducerCaseIgnored
-    case meeting(Meeting, SyncUp)
-    case record(RecordMeeting)
   }
 }
 
