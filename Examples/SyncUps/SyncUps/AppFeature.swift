@@ -111,17 +111,13 @@ struct AppView: View {
         store: store.scope(state: \.syncUpsList, action: \.syncUpsList)
       )
     } destination: { store in
-      switch store.state {
-      case .detail:
-        if let store = store.scope(state: \.detail, action: \.detail) {
-          SyncUpDetailView(store: store)
-        }
+      switch store.cases {
+      case let .detail(store):
+        SyncUpDetailView(store: store)
       case let .meeting(meeting, syncUp):
         MeetingView(meeting: meeting, syncUp: syncUp)
-      case .record:
-        if let store = store.scope(state: \.record, action: \.record) {
-          RecordMeetingView(store: store)
-        }
+      case let .record(store):
+        RecordMeetingView(store: store)
       }
     }
   }
