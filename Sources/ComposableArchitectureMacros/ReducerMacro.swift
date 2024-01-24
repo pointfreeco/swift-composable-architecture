@@ -277,19 +277,19 @@ extension ReducerMacro: MemberMacro {
       var decls: [DeclSyntax] = []
       if !hasState && !hasExplicitReducerBody {
         decls.append("""
-          \(access)struct State: Codable, Equatable, Hashable, ObservableState { 
+          \(access)struct State: Codable, Equatable, Hashable {
             \(access)init() {}
           }
           """)
       }
       if !hasAction && !hasExplicitReducerBody {
         decls.append("""
-          \(access)enum Action: Codable, Equatable, Hashable {
+          \(access)enum Action: Equatable, Hashable {
           }
           """)
       }
       if !hasBody {
-        decls.append("\(access)let body = EmptyReducer()")
+        decls.append("\(access)let body = EmptyReducer<State, Action>()")
       }
       return decls
     }

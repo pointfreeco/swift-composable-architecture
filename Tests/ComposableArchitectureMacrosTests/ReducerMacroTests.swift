@@ -367,15 +367,15 @@
         """
         struct Feature {
 
-            struct State: Codable, Equatable, Hashable, ObservableState {
+            struct State: Codable, Equatable, Hashable {
               init() {
               }
             }
 
-            enum Action: Codable, Equatable, Hashable {
+            enum Action: Equatable, Hashable {
             }
 
-            let body = EmptyReducer()
+            let body = EmptyReducer<State, Action>()
         }
 
         extension Feature: ComposableArchitecture.Reducer {
@@ -395,16 +395,16 @@
         """
         public struct Feature {
 
-            public struct State: Codable, Equatable, Hashable, ObservableState {
+            public struct State: Codable, Equatable, Hashable {
 
               public init() {
               }
             }
 
-            public enum Action: Codable, Equatable, Hashable {
+            public enum Action: Equatable, Hashable {
             }
 
-            public let body = EmptyReducer()
+            public let body = EmptyReducer<State, Action>()
         }
 
         extension Feature: ComposableArchitecture.Reducer {
@@ -428,7 +428,7 @@
           typealias State = Int
           typealias Action = Bool
 
-          let body = EmptyReducer()
+          let body = EmptyReducer<State, Action>()
         }
 
         extension Feature: ComposableArchitecture.Reducer {

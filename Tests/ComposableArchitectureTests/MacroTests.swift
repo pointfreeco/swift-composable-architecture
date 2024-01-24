@@ -33,4 +33,9 @@
       var body: some ReducerOf<Self> { EmptyReducer() }
     }
   }
+
+private enum TestReducerMacro_FillInRequirements {
+  @Reducer
+  struct Feature {}
+}
 #endif
