@@ -6,7 +6,7 @@
   final class ReducerMacroTests: XCTestCase {
     override func invokeTest() {
       withMacroTesting(
-        // isRecording: true,
+        //isRecording: true,
         macros: [ReducerMacro.self]
       ) {
         super.invokeTest()
@@ -367,7 +367,7 @@
         """
         struct Feature {
 
-            struct State: Codable, Equatable, Hashable {
+            struct State: Codable, Equatable, Hashable, ObservableState {
               init() {
               }
             }
@@ -395,7 +395,7 @@
         """
         public struct Feature {
 
-            public struct State: Codable, Equatable, Hashable {
+            public struct State: Codable, Equatable, Hashable, ObservableState {
 
               public init() {
               }
