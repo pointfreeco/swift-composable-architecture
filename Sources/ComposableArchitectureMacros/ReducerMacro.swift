@@ -274,12 +274,25 @@ extension ReducerMacro: MemberMacro {
         }
       }
       if !hasState {
+        var conformances: [String] = []
+        if case let .argumentList(arguments) = node.arguments,
+          let startIndex = arguments.firstIndex(where: { $0.label?.text == "state" })
+        {
+          let endIndex = arguments.firstIndex(where: { $0.label?.text == "action" })
+            ?? arguments.endIndex
+          conformances.append(
+            contentsOf: arguments[startIndex..<endIndex].compactMap {
+              $0.expression.as(MemberAccessExprSyntax.self)?.declName.baseName.text.capitalized
+            }
+          )
+        }
         decls.append(
           """
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          \(access)enum State: ComposableArchitecture.CaseReducerState, Equatable {
+          \(access)enum State: ComposableArchitecture.CaseReducerState\
+          \(raw: conformances.isEmpty ? "" : ", \(conformances.joined(separator: ", "))") {
           \(access)typealias Reducer = \(enumDecl.name.trimmed)
           \(raw: stateCaseDecls.map(\.description).joined(separator: "\n"))
           }
@@ -287,10 +300,21 @@ extension ReducerMacro: MemberMacro {
         )
       }
       if !hasAction {
+        var conformances: [String] = []
+        if case let .argumentList(arguments) = node.arguments,
+          let startIndex = arguments.firstIndex(where: { $0.label?.text == "action" })
+        {
+          conformances.append(
+            contentsOf: arguments[startIndex..<arguments.endIndex].compactMap {
+              $0.expression.as(MemberAccessExprSyntax.self)?.declName.baseName.text.capitalized
+            }
+          )
+        }
         decls.append(
           """
           @CasePathable
-          \(access)enum Action {
+          \(access)enum Action\
+          \(raw: conformances.isEmpty ? "" : ": \(conformances.joined(separator: ", "))") {
           \(raw: actionCaseDecls.map(\.description).joined(separator: "\n"))
           }
           """
@@ -483,6 +507,16 @@ enum ReducerCaseIgnoredMacro: PeerMacro {
     of node: AttributeSyntax,
     providingPeersOf declaration: some DeclSyntaxProtocol,
     in context: some MacroExpansionContext
+  ) throws -> [DeclSyntax] {
+    []
+  }
+}
+
+enum _ReducerCasesMacro: MemberMacro {
+  static func expansion<D: DeclGroupSyntax, C: MacroExpansionContext>(
+    of node: AttributeSyntax,
+    providingMembersOf declaration: D,
+    in context: C
   ) throws -> [DeclSyntax] {
     []
   }

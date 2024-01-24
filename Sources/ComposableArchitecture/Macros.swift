@@ -160,10 +160,19 @@
   )
   @attached(memberAttribute)
   @attached(extension, conformances: Reducer, CaseReducer)
-  public macro Reducer() =
+  public macro Reducer(state: _SynthesizedConformance..., action: _SynthesizedConformance...) =
     #externalMacro(
       module: "ComposableArchitectureMacros", type: "ReducerMacro"
     )
+
+  public struct _SynthesizedConformance {
+    public static let codable = Self()
+    public static let decodable = Self()
+    public static let encodable = Self()
+    public static let equatable = Self()
+    public static let hashable = Self()
+    public static let sendable = Self()
+  }
 
   @attached(peer, names: named(_))
   public macro ReducerCaseEphemeral() =

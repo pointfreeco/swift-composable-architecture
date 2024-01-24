@@ -7,7 +7,7 @@ private let readMe = """
 
 @Reducer
 struct NavigationDemo {
-  @Reducer
+  @Reducer(state: .equatable)
   enum Path {
     case screenA(ScreenA)
     case screenB(ScreenB)

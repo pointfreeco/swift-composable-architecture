@@ -3,7 +3,7 @@ import SwiftUI
 
 @Reducer
 struct SyncUpsList {
-  @Reducer
+  @Reducer(state: .equatable)
   enum Destination {
     case add(SyncUpForm)
     case alert(AlertState<Alert>)

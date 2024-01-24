@@ -416,6 +416,78 @@
       }
     }
 
+    func testEnum_Conformances() {
+      assertMacro(record: true) {
+        """
+        @Reducer(state: .equatable)
+        enum Destination {
+          case drillDown(Counter)
+          case popover(Counter)
+          case sheet(Counter)
+        }
+        """
+      } expansion: {
+        #"""
+        enum Destination {
+          case drillDown(Counter)
+          case popover(Counter)
+          case sheet(Counter)
+
+          @CasePathable
+          @dynamicMemberLookup
+          @ObservableState
+          enum State: ComposableArchitecture.CaseReducerState, Equatable, Equatable {
+            typealias Reducer = Destination
+            case drillDown(Counter.State)
+            case popover(Counter.State)
+            case sheet(Counter.State)
+          }
+
+          @CasePathable
+          enum Action {
+            case drillDown(Counter.Action)
+            case popover(Counter.Action)
+            case sheet(Counter.Action)
+          }
+
+          static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
+            ComposableArchitecture.CombineReducers {
+              ComposableArchitecture.Scope(state: \Self.State.Cases.drillDown, action: \Self.Action.Cases.drillDown) {
+                Counter()
+              }
+              ComposableArchitecture.Scope(state: \Self.State.Cases.popover, action: \Self.Action.Cases.popover) {
+                Counter()
+              }
+              ComposableArchitecture.Scope(state: \Self.State.Cases.sheet, action: \Self.Action.Cases.sheet) {
+                Counter()
+              }
+            }
+          }
+
+          enum Cases {
+            case drillDown(ComposableArchitecture.StoreOf<Counter>)
+            case popover(ComposableArchitecture.StoreOf<Counter>)
+            case sheet(ComposableArchitecture.StoreOf<Counter>)
+          }
+
+          static func cases(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> Cases {
+            switch store.state {
+            case .drillDown:
+              return .drillDown(store.scope(state: \.drillDown, action: \.drillDown)!)
+            case .popover:
+              return .popover(store.scope(state: \.popover, action: \.popover)!)
+            case .sheet:
+              return .sheet(store.scope(state: \.sheet, action: \.sheet)!)
+            }
+          }
+        }
+
+        extension Destination: ComposableArchitecture.CaseReducer {
+        }
+        """#
+      }
+    }
+
     func testStructWithNoRequirements() {
       assertMacro {
         """
