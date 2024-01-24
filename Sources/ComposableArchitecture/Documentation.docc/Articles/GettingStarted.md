@@ -185,11 +185,10 @@ SwiftUI version:
 
 ```swift
 class FeatureViewController: UIViewController {
-  let viewStore: ViewStoreOf<Feature>
-  var cancellables: Set<AnyCancellable> = []
+  let store: StoreOf<Feature>
 
   init(store: StoreOf<Feature>) {
-    self.viewStore = ViewStore(store, observe: { $0 })
+    self.store = store
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -200,33 +199,38 @@ class FeatureViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
+    var alertController: UIAlertController?
     let countLabel = UILabel()
-    let incrementButton = UIButton()
     let decrementButton = UIButton()
+    let incrementButton = UIButton()
     let factButton = UIButton()
-
+    
     // Omitted: Add subviews and set up constraints...
-
-    self.viewStore.publisher
-      .map { "\($0.count)" }
-      .assign(to: \.text, on: countLabel)
-      .store(in: &self.cancellables)
-
-    self.viewStore.publisher.numberFactAlert
-      .sink { [weak self] numberFactAlert in
-        let alertController = UIAlertController(
-          title: numberFactAlert, message: nil, preferredStyle: .alert
+    
+    observe { [weak self] in
+      guard let self 
+      else { return }
+      
+      countLabel.text = "\(self.store.text)"
+      if let alert = self.store.numberFactAlert,
+        alertController == nil 
+      {
+        alertController = UIAlertController(
+          title: alert, message: nil, preferredStyle: .alert
         )
         alertController.addAction(
           UIAlertAction(
-            title: "OK",
+            title: "Ok",
             style: .default,
-            handler: { _ in self?.viewStore.send(.factAlertDismissed) }
+            handler: { _ in self.store.send(.factAlertDismissed) }
           )
         )
-        self?.present(alertController, animated: true, completion: nil)
+        self.present(alertController!, animated: true, completion: nil)
+      } else if self.store.numberFactAlert == nil, alertController != nil {
+        alertController?.dismiss(animated: true)
+        alertController = nil
       }
-      .store(in: &self.cancellables)
+    }
   }
 
   @objc private func incrementButtonTapped() {

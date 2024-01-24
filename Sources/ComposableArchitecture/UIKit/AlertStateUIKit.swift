@@ -55,6 +55,28 @@
       }
     }
 
+    public convenience init<Action>(
+      store: Store<AlertState<Action>, PresentationAction<Action>>
+    ) {
+      let state = store.currentState
+      self.init(
+        title: String(state: state.title),
+        message: state.message.map { String(state: $0) },
+        preferredStyle: .alert
+      )
+      for button in state.buttons {
+        self.addAction(.init(button, action: { store.send($0.map { .presented($0) } ?? .dismiss) }))
+      }
+      if state.buttons.isEmpty {
+        self.addAction(
+          .init(
+            title: "OK",
+            style: .cancel,
+            handler: { _ in store.send(.dismiss) })
+        )
+      }
+    }
+
     /// Creates a `UIAlertController` from `ConfirmationDialogState`.
     ///
     /// - Parameters:
@@ -72,6 +94,29 @@
         self.addAction(.init(button, action: send))
       }
     }
+
+    public convenience init<Action>(
+      store: Store<ConfirmationDialogState<Action>, PresentationAction<Action>>
+    ) {
+      let state = store.currentState
+      self.init(
+        title: String(state: state.title),
+        message: state.message.map { String(state: $0) },
+        preferredStyle: .actionSheet
+      )
+      for button in state.buttons {
+        self.addAction(.init(button, action: { store.send($0.map { .presented($0) } ?? .dismiss) }))
+      }
+      if state.buttons.isEmpty {
+        self.addAction(
+          .init(
+            title: "OK",
+            style: .cancel,
+            handler: { _ in store.send(.dismiss) })
+        )
+      }
+    }
+
   }
 
   @available(iOS 13, *)

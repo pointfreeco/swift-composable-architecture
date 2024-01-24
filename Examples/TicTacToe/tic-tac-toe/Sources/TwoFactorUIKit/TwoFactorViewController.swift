@@ -64,18 +64,12 @@ public final class TwoFactorViewController: UIViewController {
       codeTextField.text = store.code
       loginButton.isEnabled = store.isLoginButtonEnabled
 
-      if let alert = store.alert,
+      if let store = store.scope(state: \.alert, action: \.alert),
         alertController == nil
       {
-        alertController = UIAlertController(
-          title: String(state: alert.title), message: nil, preferredStyle: .alert)
-        alertController!.addAction(
-          UIAlertAction(title: "Ok", style: .default) { _ in
-            self.store.send(.alert(.dismiss))
-          }
-        )
+        alertController = UIAlertController(store: store)
         present(alertController!, animated: true, completion: nil)
-      } else if alertController != nil {
+      } else if store.alert == nil, alertController != nil {
         alertController?.dismiss(animated: true)
         alertController = nil
       }

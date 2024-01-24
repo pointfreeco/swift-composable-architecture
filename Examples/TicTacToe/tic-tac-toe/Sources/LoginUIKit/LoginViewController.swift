@@ -98,19 +98,10 @@ public class LoginViewController: UIViewController {
       loginButton.isEnabled = store.isLoginButtonEnabled
       activityIndicator.isHidden = store.isActivityIndicatorHidden
 
-      if let alert = store.alert,
+      if let store = store.scope(state: \.alert, action: \.alert),
         alertController == nil
       {
-        alertController = UIAlertController(
-          title: String(state: alert.title),
-          message: nil,
-          preferredStyle: .alert
-        )
-        alertController?.addAction(
-          UIAlertAction(title: "Ok", style: .default) { _ in
-            self.store.send(.alert(.dismiss))
-          }
-        )
+        alertController = UIAlertController(store: store)
         present(alertController!, animated: true, completion: nil)
       } else if alertController != nil {
         alertController?.dismiss(animated: true)
@@ -125,7 +116,7 @@ public class LoginViewController: UIViewController {
           twoFactorViewController!,
           animated: true
         )
-      } else if twoFactorViewController != nil {
+      } else if store.alert == nil, twoFactorViewController != nil {
         twoFactorViewController?.dismiss(animated: true)
         twoFactorViewController = nil
       }
