@@ -292,5 +292,68 @@
         """#
       }
     }
+
+    func testEnum_CaseIgnored() {
+      assertMacro(record: true) {
+        """
+        @Reducer
+        enum Destination {
+          case timeline(Timeline)
+          @ReducerCaseIgnored
+          case meeting(Meeting)
+        }
+        """
+      } expansion: {
+        #"""
+        enum Destination {
+          case timeline(Timeline)
+          @ReducerCaseIgnored
+          case meeting(Meeting)
+
+          @CasePathable
+          @dynamicMemberLookup
+          @ObservableState
+          enum State: Equatable {
+            case timeline(Timeline.State)
+            case meeting(Meeting)
+          }
+
+          @CasePathable
+          enum Action {
+            case timeline(Timeline.Action)
+          }
+
+          init() {
+            self = .timeline(Timeline())
+          }
+
+          var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
+            CombineReducers {
+              ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+                Timeline()
+              }
+            }
+          }
+
+          enum DestinationStore {
+            case timeline(ComposableArchitecture.StoreOf<Timeline>)
+            case meeting(Meeting)
+          }
+
+          static func destination(_ store: Store<Self.State, Self.Action>) -> DestinationStore {
+            switch store.state {
+            case .timeline:
+              return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
+            case .meeting(let x, let y):
+              return .meeting(x, y)
+            }
+          }
+        }
+
+        extension Destination: ComposableArchitecture.Reducer {
+        }
+        """#
+      }
+    }
   }
 #endif

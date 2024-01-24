@@ -97,27 +97,11 @@ struct AppFeature {
   }
 
   @Reducer
-  struct Path {
-    @ObservableState
-    enum State: Equatable {
-      case detail(SyncUpDetail.State)
-      case meeting(Meeting, syncUp: SyncUp)
-      case record(RecordMeeting.State)
-    }
-
-    enum Action {
-      case detail(SyncUpDetail.Action)
-      case record(RecordMeeting.Action)
-    }
-
-    var body: some Reducer<State, Action> {
-      Scope(state: \.detail, action: \.detail) {
-        SyncUpDetail()
-      }
-      Scope(state: \.record, action: \.record) {
-        RecordMeeting()
-      }
-    }
+  enum Path {
+    case detail(SyncUpDetail)
+    @ReducerCaseIgnored
+    case meeting(Meeting, SyncUp)
+    case record(RecordMeeting)
   }
 }
 
@@ -135,7 +119,7 @@ struct AppView: View {
         if let store = store.scope(state: \.detail, action: \.detail) {
           SyncUpDetailView(store: store)
         }
-      case let .meeting(meeting, syncUp: syncUp):
+      case let .meeting(meeting, syncUp):
         MeetingView(meeting: meeting, syncUp: syncUp)
       case .record:
         if let store = store.scope(state: \.record, action: \.record) {

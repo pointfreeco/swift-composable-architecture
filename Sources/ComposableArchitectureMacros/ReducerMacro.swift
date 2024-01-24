@@ -145,9 +145,23 @@ extension ReducerMacro: MemberMacro {
   ) throws -> [DeclSyntax] {
     if let enumDecl = declaration.as(EnumDeclSyntax.self) {
       let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
+
       let enumCaseElements = enumDecl.memberBlock
         .members
-        .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
+        .flatMap { member in
+          (member.decl.as(EnumCaseDeclSyntax.self)?.elements ?? []).map {
+            ReducerCase(
+              element: $0,
+              isIgnored: (member.decl.as(EnumCaseDeclSyntax.self)?.attributes ?? []).contains(where: {
+                if case let .attribute(attribute) = $0 {
+                  return attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.text == "ReducerCaseIgnored"
+                } else {
+                  return false
+                }
+              })
+            )
+          }
+        }
 
       var stateCaseDecls: [String] = []
       var actionCaseDecls: [String] = []
@@ -157,12 +171,22 @@ extension ReducerMacro: MemberMacro {
       var storeScopes: [String] = []
 
       for (offset, enumCaseElement) in enumCaseElements.enumerated() {
-        if let parameterClause = enumCaseElement.parameterClause,
+        let element = enumCaseElement.element
+        let name = element.name.text
+        if enumCaseElement.isIgnored {
+          stateCaseDecls.append("case \(element.trimmedDescription)")
+          storeCases.append("case \(element.trimmedDescription)")
+          storeScopes.append(
+            """
+            case .\(name)(let x, let y):
+            return .\(name)(x, y)
+            """
+          )
+        } else if let parameterClause = element.parameterClause,
           parameterClause.parameters.count == 1,
           let parameter = parameterClause.parameters.first,
           let type = parameter.type.as(IdentifierTypeSyntax.self)
         {
-          let name = enumCaseElement.name.text
           stateCaseDecls.append("case \(name)(\(type.trimmed).State)")
           actionCaseDecls.append("case \(name)(\(type.trimmed).Action)")
           if offset == 0 {
@@ -237,6 +261,11 @@ extension ReducerMacro: MemberMacro {
   }
 }
 
+private struct ReducerCase {
+  let element: EnumCaseElementSyntax
+  let isIgnored: Bool
+}
+
 extension Array where Element == String {
   var withCasePathsQualified: Self {
     self.flatMap { [$0, "CasePaths.\($0)"] }
@@ -282,5 +311,15 @@ private final class ReduceVisitor: SyntaxVisitor {
       )
     )
     return .visitChildren
+  }
+}
+
+enum ReducerCaseIgnoredMacro: PeerMacro {
+  static func expansion(
+    of node: AttributeSyntax,
+    providingPeersOf declaration: some DeclSyntaxProtocol,
+    in context: some MacroExpansionContext
+  ) throws -> [DeclSyntax] {
+    []
   }
 }

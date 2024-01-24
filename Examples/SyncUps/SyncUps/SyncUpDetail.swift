@@ -178,7 +178,7 @@ struct SyncUpDetailView: View {
         Section {
           ForEach(store.syncUp.meetings) { meeting in
             NavigationLink(
-              state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
+              state: AppFeature.Path.State.meeting(meeting, store.syncUp)
             ) {
               HStack {
                 Image(systemName: "calendar")

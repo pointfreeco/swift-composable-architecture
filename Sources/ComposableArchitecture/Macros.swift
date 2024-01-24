@@ -156,6 +156,10 @@
       module: "ComposableArchitectureMacros", type: "ReducerMacro"
     )
 
+  @attached(peer, names: named(_))
+  public macro ReducerCaseIgnored() =
+    #externalMacro(module: "ComposableArchitectureMacros", type: "ReducerCaseIgnoredMacro")
+
   /// Defines and implements conformance of the Observable protocol.
   @attached(extension, conformances: Observable, ObservableState)
   @attached(member, names: named(_$id), named(_$observationRegistrar), named(_$willModify))

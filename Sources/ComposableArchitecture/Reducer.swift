@@ -276,3 +276,8 @@ extension Reducer where Body: Reducer, Body.State == State, Body.Action == Actio
 /// }
 /// ```
 public typealias ReducerOf<R: Reducer> = Reducer<R.State, R.Action>
+
+public protocol DestinationReducer: Reducer {
+  associatedtype DestinationStore
+  static func destination(_ store: Store<State, Action>) -> DestinationStore
+}
