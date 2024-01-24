@@ -277,8 +277,10 @@ extension ReducerMacro: MemberMacro {
       var decls: [DeclSyntax] = []
       if !hasState && !hasExplicitReducerBody {
         decls.append("""
-          \(access)struct State: Codable, Equatable, Hashable {
+          \(access)struct State: Codable, Equatable, Hashable, ObservableState {
+            \(access)var _$id: ObservableStateID { ._$inert }
             \(access)init() {}
+            \(access)mutating func _$willModify() {}
           }
           """)
       }

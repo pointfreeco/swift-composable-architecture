@@ -367,8 +367,13 @@
         """
         struct Feature {
 
-            struct State: Codable, Equatable, Hashable {
+            struct State: Codable, Equatable, Hashable, ObservableState {
+              var _$id: ObservableStateID {
+                  ._$inert
+              }
               init() {
+              }
+              mutating func _$willModify() {
               }
             }
 
@@ -395,9 +400,16 @@
         """
         public struct Feature {
 
-            public struct State: Codable, Equatable, Hashable {
+            public struct State: Codable, Equatable, Hashable, ObservableState {
+
+              public var _$id: ObservableStateID {
+                  ._$inert
+              }
 
               public init() {
+              }
+
+              public mutating func _$willModify() {
               }
             }
 
