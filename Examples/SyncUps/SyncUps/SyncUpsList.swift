@@ -18,9 +18,7 @@ struct SyncUpsList {
     @Presents var destination: Destination.State?
     var syncUps: IdentifiedArrayOf<SyncUp> = []
 
-    init(
-      destination: Destination.State? = nil
-    ) {
+    init(destination: Destination.State? = nil) {
       self.destination = destination
 
       do {

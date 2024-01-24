@@ -179,6 +179,25 @@ extension ReducerMacro: MemberMacro {
     in context: C
   ) throws -> [DeclSyntax] {
     let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
+    let typeNames = declaration.memberBlock.members.compactMap {
+      $0.as(MemberBlockItemSyntax.self)?.decl.as(StructDeclSyntax.self)?.name.text
+        ?? $0.as(MemberBlockItemSyntax.self)?.decl.as(TypeAliasDeclSyntax.self)?.name.text
+        ?? $0.as(MemberBlockItemSyntax.self)?.decl.as(EnumDeclSyntax.self)?.name.text
+    }
+    let hasState = typeNames.contains("State")
+    let hasAction = typeNames.contains("Action")
+    let bindings = declaration.memberBlock.members.flatMap {
+      $0.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self)?.bindings ?? []
+    }
+    let hasExplicitReducerBody = bindings.contains {
+      $0.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self)?.constraint
+        .as(IdentifierTypeSyntax.self)?.name.text == "Reducer"
+    }
+    let hasBody = bindings.contains {
+      $0.as(PatternBindingSyntax.self)?.pattern
+        .as(IdentifierPatternSyntax.self)?.identifier.text == "body"
+    }
+    var decls: [DeclSyntax] = []
     if let enumDecl = declaration.as(EnumDeclSyntax.self) {
       let enumCaseElements = enumDecl.memberBlock
         .members
@@ -254,81 +273,81 @@ extension ReducerMacro: MemberMacro {
           }
         }
       }
-      return [
-        """
-        @CasePathable
-        @dynamicMemberLookup
-        @ObservableState
-        \(access)enum State: CaseReducerState, Equatable {
-        \(access)typealias Reducer = \(enumDecl.name.trimmed)
-        \(raw: stateCaseDecls.map(\.description).joined(separator: "\n"))
-        }
-        """,
-        """
-        @CasePathable
-        \(access)enum Action {
-        \(raw: actionCaseDecls.map(\.description).joined(separator: "\n"))
-        }
-        """,
-        """
-        \(access)static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
-        CombineReducers {
-        \(raw: reducerScopes.joined(separator: "\n"))
-        }
-        }
-        """,
-        """
-        \(access)enum Cases {
-        \(raw: storeCases.joined(separator: "\n"))
-        }
-        """,
-        """
-        \(access)static func cases(\
-        _ store: Store<Self.State, Self.Action>\
-        ) -> Cases {
-        switch store.state {
-        \(raw: storeScopes.joined(separator: "\n"))
-        }
-        }
-        """
-      ]
-    } else {
-      let typeNames = declaration.memberBlock.members.compactMap {
-        $0.as(MemberBlockItemSyntax.self)?.decl.as(StructDeclSyntax.self)?.name.text
-        ?? $0.as(MemberBlockItemSyntax.self)?.decl.as(TypeAliasDeclSyntax.self)?.name.text
-        ?? $0.as(MemberBlockItemSyntax.self)?.decl.as(EnumDeclSyntax.self)?.name.text
-      }
-      let hasState = typeNames.contains("State")
-      let hasAction = typeNames.contains("Action")
-      let bindings = declaration.memberBlock.members.flatMap {
-        $0.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self)?.bindings ?? []
-      }
-      let hasExplicitReducerBody = bindings.contains {
-        $0.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self)?.constraint
-          .as(IdentifierTypeSyntax.self)?.name.text == "Reducer"
-      }
-      let hasBody = bindings.contains {
-        $0.as(PatternBindingSyntax.self)?.pattern
-          .as(IdentifierPatternSyntax.self)?.identifier.text == "body"
-      }
-      var decls: [DeclSyntax] = []
-      if !hasState && !hasExplicitReducerBody {
-        decls.append("""
-          \(access)struct State: Codable, Equatable, Hashable, ObservableState {
-            \(access)var _$id: ObservableStateID { ._$inert }
-            \(access)init() {}
-            \(access)mutating func _$willModify() {}
+      if !hasState {
+        decls.append(
+          """
+          @CasePathable
+          @dynamicMemberLookup
+          @ObservableState
+          \(access)enum State: ComposableArchitecture.CaseReducerState, Equatable {
+          \(access)typealias Reducer = \(enumDecl.name.trimmed)
+          \(raw: stateCaseDecls.map(\.description).joined(separator: "\n"))
           }
-          """)
+          """
+        )
       }
-      if !hasAction && !hasExplicitReducerBody {
-        decls.append("""
-          \(access)enum Action: Equatable, Hashable {
+      if !hasAction {
+        decls.append(
+          """
+          @CasePathable
+          \(access)enum Action {
+          \(raw: actionCaseDecls.map(\.description).joined(separator: "\n"))
           }
-          """)
+          """
+        )
       }
       if !hasBody {
-        decls.append("\(access)let body = EmptyReducer<State, Action>()")
+        decls.append(
+          """
+          \(access)static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
+          ComposableArchitecture.CombineReducers {
+          \(raw: reducerScopes.joined(separator: "\n"))
+          }
+          }
+          """
+        )
+      }
+      if !typeNames.contains("Cases") {
+        decls.append(
+          """
+          \(access)enum Cases {
+          \(raw: storeCases.joined(separator: "\n"))
+          }
+          """
+        )
+      }
+      if !declaration.memberBlock.members.contains(
+        where: { $0.as(FunctionDeclSyntax.self)?.name.text == "cases" }
+      ) {
+        decls.append(
+          """
+          \(access)static func cases(\
+          _ store: ComposableArchitecture.Store<Self.State, Self.Action>\
+          ) -> Cases {
+          switch store.state {
+          \(raw: storeScopes.joined(separator: "\n"))
+          }
+          }
+          """
+        )
+      }
+      return decls
+    } else {
+      if !hasState && !hasExplicitReducerBody {
+        decls.append(
+          """
+          @ObservableState
+          \(access)struct State: Codable, Equatable, Hashable {
+          \(access)init() {}
+          }
+          """
+        )
+      }
+      if !hasAction && !hasExplicitReducerBody {
+        decls.append("\(access)enum Action: Equatable, Hashable {}")
+      }
+      if !hasBody {
+        decls.append("\(access)let body = ComposableArchitecture.EmptyReducer<State, Action>()")
       }
       return decls
     }
