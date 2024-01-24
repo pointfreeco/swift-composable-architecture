@@ -111,7 +111,7 @@ struct AppView: View {
         store: store.scope(state: \.syncUpsList, action: \.syncUpsList)
       )
     } destination: { store in
-      switch store.cases {
+      switch store.case {
       case let .detail(store):
         SyncUpDetailView(store: store)
       case let .meeting(meeting, syncUp):

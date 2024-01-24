@@ -155,8 +155,8 @@
       named(Action),
       named(init),
       named(body),
-      named(Cases),
-      named(cases)
+      named(CaseScope),
+      named(scope)
   )
   @attached(memberAttribute)
   @attached(extension, conformances: Reducer, CaseReducer)

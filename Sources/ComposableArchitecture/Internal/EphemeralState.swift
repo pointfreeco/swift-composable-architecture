@@ -53,13 +53,13 @@ extension _EphemeralState {
   }
 }
 
-public struct _EphemeralStateCases<State: _EphemeralState> {
+public struct _EphemeralStateCaseScope<State: _EphemeralState> {
   let store: Store<State, State.Action>
 }
 
 extension _EphemeralState {
-  public static func cases(_ store: Store<Self, Action>) -> _EphemeralStateCases<Self> {
-    _EphemeralStateCases(store: store)
+  public static func scope(_ store: Store<Self, Action>) -> _EphemeralStateCaseScope<Self> {
+    _EphemeralStateCaseScope(store: store)
   }
   public static var body: some ComposableArchitecture.Reducer<Self, Action> {
     EmptyReducer()

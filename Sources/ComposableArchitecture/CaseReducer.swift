@@ -2,12 +2,12 @@ public protocol CaseReducer<State, Action> {
   associatedtype State: CaseReducerState where State.Reducer == Self
   associatedtype Action
   associatedtype Body: Reducer<State, Action>
-  associatedtype Cases
+  associatedtype CaseScope
 
   @ReducerBuilder<State, Action>
   static var body: Body { get }
 
-  static func cases(_ store: Store<State, Action>) -> Cases
+  static func scope(_ store: Store<State, Action>) -> CaseScope
 }
 
 public protocol CaseReducerState {
@@ -35,8 +35,8 @@ extension Reducer {
 }
 
 extension Store where State: CaseReducerState, State.Reducer.Action == Action {
-  public var cases: State.Reducer.Cases {
-    State.Reducer.cases(self)
+  public var `case`: State.Reducer.CaseScope {
+    State.Reducer.scope(self)
   }
 }
 

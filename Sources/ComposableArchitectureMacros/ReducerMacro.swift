@@ -331,23 +331,23 @@ extension ReducerMacro: MemberMacro {
           """
         )
       }
-      if !typeNames.contains("Cases") {
+      if !typeNames.contains("CaseScope") {
         decls.append(
           """
-          \(access)enum Cases {
+          \(access)enum CaseScope {
           \(raw: storeCases.joined(separator: "\n"))
           }
           """
         )
       }
       if !declaration.memberBlock.members.contains(
-        where: { $0.as(FunctionDeclSyntax.self)?.name.text == "cases" }
+        where: { $0.as(FunctionDeclSyntax.self)?.name.text == "scope" }
       ) {
         decls.append(
           """
-          \(access)static func cases(\
+          \(access)static func scope(\
           _ store: ComposableArchitecture.Store<Self.State, Self.Action>\
-          ) -> Cases {
+          ) -> CaseScope {
           switch store.state {
           \(raw: storeScopes.joined(separator: "\n"))
           }
@@ -525,16 +525,6 @@ enum ReducerCaseIgnoredMacro: PeerMacro {
     of node: AttributeSyntax,
     providingPeersOf declaration: some DeclSyntaxProtocol,
     in context: some MacroExpansionContext
-  ) throws -> [DeclSyntax] {
-    []
-  }
-}
-
-enum _ReducerCasesMacro: MemberMacro {
-  static func expansion<D: DeclGroupSyntax, C: MacroExpansionContext>(
-    of node: AttributeSyntax,
-    providingMembersOf declaration: D,
-    in context: C
   ) throws -> [DeclSyntax] {
     []
   }
