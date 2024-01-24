@@ -357,6 +357,24 @@ extension ReducerMacro: MemberMacro {
       }
       return decls
     } else {
+      if let arguments = node.arguments {
+        context.diagnose(
+          Diagnostic(
+            node: arguments,
+            message: MacroExpansionErrorMessage(
+              "Argument passed to call that takes no arguments"
+            ),
+            fixIt: .replace(
+              message: MacroExpansionFixItMessage("Remove '(\(arguments))'"),
+              oldNode: node,
+              newNode: node
+                .with(\.leftParen, nil)
+                .with(\.arguments, nil)
+                .with(\.rightParen, nil)
+            )
+          )
+        )
+      }
       if !hasState && !hasExplicitReducerBody {
         decls.append(
           """
