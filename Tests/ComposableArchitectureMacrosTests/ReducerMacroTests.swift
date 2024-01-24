@@ -211,12 +211,17 @@
     }
 
     func testEnum() {
-      assertMacro {
+      assertMacro(record: true) {
         """
         @Reducer
         enum Destination {
           case timeline(Timeline)
           case tweet(Tweet)
+          case alert(AlertState<Alert>)
+
+          enum Alert {
+            case ok
+          }
         }
         """
       } expansion: {
@@ -224,6 +229,11 @@
         enum Destination {
           case timeline(Timeline)
           case tweet(Tweet)
+          case alert(AlertState<Alert>)
+
+          enum Alert {
+            case ok
+          }
 
           @CasePathable
           @dynamicMemberLookup
@@ -231,12 +241,14 @@
           enum State: Equatable {
             case timeline(Timeline.State)
             case tweet(Tweet.State)
+            case alert(AlertState<Alert>.State)
           }
 
           @CasePathable
           enum Action {
             case timeline(Timeline.Action)
             case tweet(Tweet.Action)
+            case alert(AlertState<Alert>.Action)
           }
 
           init() {
@@ -251,19 +263,26 @@
               ComposableArchitecture.Scope(state: \Self.State.Cases.tweet, action: \Self.Action.Cases.tweet) {
                 Tweet()
               }
+              ComposableArchitecture.Scope(state: \Self.State.Cases.alert, action: \Self.Action.Cases.alert) {
+                AlertState()
+              }
             }
           }
 
-          enum _$Store {
+          enum DestinationStore {
             case timeline(ComposableArchitecture.StoreOf<Timeline>)
             case tweet(ComposableArchitecture.StoreOf<Tweet>)
-            init(_ store: ComposableArchitecture.StoreOf<Destination>) {
-              switch store.state {
-              case .timeline:
-                self = .timeline(store.scope(state: \.timeline, action: \.timeline)!)
-              case .tweet:
-                self = .tweet(store.scope(state: \.tweet, action: \.tweet)!)
-              }
+            case alert(ComposableArchitecture.StoreOf<AlertState<Alert>>)
+          }
+
+          static func destination(_ store: Store<Self.State, Self.Action>) -> DestinationStore {
+            switch store.state {
+            case .timeline:
+              return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
+            case .tweet:
+              return .tweet(store.scope(state: \.tweet, action: \.tweet)!)
+            case .alert:
+              return .alert(store.scope(state: \.alert, action: \.alert)!)
             }
           }
         }

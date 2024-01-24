@@ -148,9 +148,9 @@
   /// ```shell
   /// xcodebuild -skipMacroValidation …
   /// ```
-  @attached(member, names: named(State), named(Action), named(init), named(body), named(_$Store))
+  @attached(member, names: named(State), named(Action), named(init), named(body), named(DestinationStore), named(destination))
   @attached(memberAttribute)
-  @attached(extension, conformances: Reducer)
+  @attached(extension, conformances: Reducer, DestinationReducer)
   public macro Reducer() =
     #externalMacro(
       module: "ComposableArchitectureMacros", type: "ReducerMacro"

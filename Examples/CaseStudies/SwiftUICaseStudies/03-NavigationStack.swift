@@ -101,7 +101,7 @@ struct NavigationDemoView: View {
       }
       .navigationTitle("Root")
     } destination: { store in
-      switch NavigationDemo.Path._$Store(store) {
+      switch NavigationDemo.Path.destination(store) {
       case let .screenA(store):
         ScreenAView(store: store)
       case let .screenB(store):

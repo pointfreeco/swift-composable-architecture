@@ -51,3 +51,19 @@ extension _EphemeralState {
       } == true
   }
 }
+
+extension AlertState: Reducer {
+  public init() {
+    self.init(title: TextState(""))
+  }
+  public var body: some Reducer<Self, Action> {
+    EmptyReducer()
+  }
+}
+
+@available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
+extension ConfirmationDialogState: Reducer {
+  public var body: some Reducer<Self, Action> {
+    EmptyReducer()
+  }
+}

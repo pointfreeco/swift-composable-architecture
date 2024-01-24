@@ -32,26 +32,12 @@ struct SyncUpsList {
   }
 
   @Reducer
-  struct Destination {
-    @ObservableState
-    enum State: Equatable {
-      case add(SyncUpForm.State)
-      case alert(AlertState<Action.Alert>)
-    }
+  enum Destination {
+    case add(SyncUpForm)
+    case alert(AlertState<Alert>)
 
-    enum Action {
-      case add(SyncUpForm.Action)
-      case alert(Alert)
-
-      enum Alert {
-        case confirmLoadMockData
-      }
-    }
-
-    var body: some ReducerOf<Self> {
-      Scope(state: \.add, action: \.add) {
-        SyncUpForm()
-      }
+    enum Alert {
+      case confirmLoadMockData
     }
   }
 
@@ -155,7 +141,7 @@ struct SyncUpsListView: View {
   }
 }
 
-extension AlertState where Action == SyncUpsList.Destination.Action.Alert {
+extension AlertState where Action == SyncUpsList.Destination.Alert {
   static let dataFailedToLoad = Self {
     TextState("Data failed to load")
   } actions: {

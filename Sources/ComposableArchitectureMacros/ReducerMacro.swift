@@ -163,8 +163,8 @@ extension ReducerMacro: MemberMacro {
           let type = parameter.type.as(IdentifierTypeSyntax.self)
         {
           let name = enumCaseElement.name.text
-          stateCaseDecls.append("case \(name)(\(type.name.text).State)")
-          actionCaseDecls.append("case \(name)(\(type.name.text).Action)")
+          stateCaseDecls.append("case \(name)(\(type.trimmed).State)")
+          actionCaseDecls.append("case \(name)(\(type.trimmed).Action)")
           if offset == 0 {
             initialValue = ".\(name)(\(type.name.text)())"
           }
@@ -177,11 +177,11 @@ extension ReducerMacro: MemberMacro {
             }
             """
           )
-          storeCases.append("case \(name)(ComposableArchitecture.StoreOf<\(type.name.text)>)")
+          storeCases.append("case \(name)(ComposableArchitecture.StoreOf<\(type.trimmed)>)")
           storeScopes.append(
             """
             case .\(name):
-            self = .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
+            return .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
             """
           )
         }
@@ -217,12 +217,16 @@ extension ReducerMacro: MemberMacro {
         }
         """,
         """
-        \(access)enum _$Store {
+        \(access)enum DestinationStore {
         \(raw: storeCases.joined(separator: "\n"))
-        \(access)init(_ store: ComposableArchitecture.StoreOf<\(enumDecl.name.trimmed)>) {
+        }
+        """,
+        """
+        \(access)static func destination(\
+        _ store: Store<Self.State, Self.Action>\
+        ) -> DestinationStore {
         switch store.state {
         \(raw: storeScopes.joined(separator: "\n"))
-        }
         }
         }
         """
