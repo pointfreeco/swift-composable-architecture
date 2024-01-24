@@ -211,7 +211,7 @@
     }
 
     func testEnum() {
-      assertMacro(record: true) {
+      assertMacro {
         """
         @Reducer
         enum Destination {
@@ -294,7 +294,7 @@
     }
 
     func testEnum_CaseIgnored() {
-      assertMacro(record: true) {
+      assertMacro {
         """
         @Reducer
         enum Destination {
@@ -353,6 +353,108 @@
         extension Destination: ComposableArchitecture.Reducer {
         }
         """#
+      }
+    }
+
+    func testStructWithNoRequirements() {
+      assertMacro {
+        """
+        @Reducer
+        struct Feature {
+        }
+        """
+      } expansion: {
+        """
+        struct Feature {
+
+            struct State: Codable, Equatable, Hashable {
+              init() {
+              }
+            }
+
+            enum Action: Codable, Equatable, Hashable {
+            }
+
+            let body = EmptyReducer()
+        }
+
+        extension Feature: ComposableArchitecture.Reducer {
+        }
+        """
+      }
+    }
+
+    func testStructWithNoRequirements_AccessControl() {
+      assertMacro {
+        """
+        @Reducer
+        public struct Feature {
+        }
+        """
+      } expansion: {
+        """
+        public struct Feature {
+
+            public struct State: Codable, Equatable, Hashable {
+
+              public init() {
+              }
+            }
+
+            public enum Action: Codable, Equatable, Hashable {
+            }
+
+            public let body = EmptyReducer()
+        }
+
+        extension Feature: ComposableArchitecture.Reducer {
+        }
+        """
+      }
+    }
+
+    func testFilledRequirements_Typealias() {
+      assertMacro {
+        """
+        @Reducer
+        struct Feature {
+          typealias State = Int
+          typealias Action = Bool
+        }
+        """
+      } expansion: {
+        """
+        struct Feature {
+          typealias State = Int
+          typealias Action = Bool
+
+          let body = EmptyReducer()
+        }
+
+        extension Feature: ComposableArchitecture.Reducer {
+        }
+        """
+      }
+    }
+
+    func testFilledRequirements_BodyWithTypes() {
+      assertMacro {
+        """
+        @Reducer
+        struct Feature {
+          var body: some Reducer<Int, Bool> { EmptyReducer() }
+        }
+        """
+      } expansion: {
+        """
+        struct Feature {
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          var body: some Reducer<Int, Bool> { EmptyReducer() }
+        }
+
+        extension Feature: ComposableArchitecture.Reducer {
+        }
+        """
       }
     }
   }

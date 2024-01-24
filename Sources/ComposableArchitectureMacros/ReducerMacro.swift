@@ -143,8 +143,8 @@ extension ReducerMacro: MemberMacro {
     providingMembersOf declaration: D,
     in context: C
   ) throws -> [DeclSyntax] {
+    let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
     if let enumDecl = declaration.as(EnumDeclSyntax.self) {
-      let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
 
       let enumCaseElements = enumDecl.memberBlock
         .members
@@ -256,7 +256,42 @@ extension ReducerMacro: MemberMacro {
         """
       ].compactMap { $0 }
     } else {
-      return []
+      let typeNames = declaration.memberBlock.members.compactMap {
+        $0.as(MemberBlockItemSyntax.self)?.decl.as(StructDeclSyntax.self)?.name.text
+        ?? $0.as(MemberBlockItemSyntax.self)?.decl.as(TypeAliasDeclSyntax.self)?.name.text
+        ?? $0.as(MemberBlockItemSyntax.self)?.decl.as(EnumDeclSyntax.self)?.name.text
+      }
+      let hasState = typeNames.contains("State")
+      let hasAction = typeNames.contains("Action")
+      let bindings = declaration.memberBlock.members.flatMap {
+        $0.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self)?.bindings ?? []
+      }
+      let hasExplicitReducerBody = bindings.contains {
+        $0.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self)?.constraint
+          .as(IdentifierTypeSyntax.self)?.name.text == "Reducer"
+      }
+      let hasBody = bindings.contains {
+        $0.as(PatternBindingSyntax.self)?.pattern
+          .as(IdentifierPatternSyntax.self)?.identifier.text == "body"
+      }
+      var decls: [DeclSyntax] = []
+      if !hasState && !hasExplicitReducerBody {
+        decls.append("""
+          \(access)struct State: Codable, Equatable, Hashable { 
+            \(access)init() {}
+          }
+          """)
+      }
+      if !hasAction && !hasExplicitReducerBody {
+        decls.append("""
+          \(access)enum Action: Codable, Equatable, Hashable {
+          }
+          """)
+      }
+      if !hasBody {
+        decls.append("\(access)let body = EmptyReducer()")
+      }
+      return decls
     }
   }
 }
