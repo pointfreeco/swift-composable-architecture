@@ -78,7 +78,12 @@ extension ReducerMacro: MemberAttributeMacro {
       let binding = property.bindings.first,
       let identifier = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier,
       identifier.text == "body",
-      case .getter = binding.accessorBlock?.accessors
+      case .getter = binding.accessorBlock?.accessors,
+      let genericArguments = binding.typeAnnotation?
+        .type.as(SomeOrAnyTypeSyntax.self)?
+        .constraint.as(IdentifierTypeSyntax.self)?
+        .genericArgumentClause?
+        .arguments
     {
       if let reduce = declaration.memberBlock.members.first(where: {
         guard
@@ -127,10 +132,13 @@ extension ReducerMacro: MemberAttributeMacro {
           !attributeName.starts(with: "ComposableArchitecture.ReducerBuilder")
         else { return [] }
       }
+      let genericArguments = genericArguments.count == 1
+        ? "\(genericArguments.description).State, \(genericArguments.description).Action"
+        : "\(genericArguments)"
       return [
         AttributeSyntax(
           attributeName: IdentifierTypeSyntax(
-            name: .identifier("ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>")
+            name: .identifier("ComposableArchitecture.ReducerBuilder<\(genericArguments)>")
           )
         )
       ]
