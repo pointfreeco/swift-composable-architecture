@@ -1,5 +1,6 @@
-#if canImport(Perception)
+#if canImport(Perception) && canImport(ObjectiveC)
 import Foundation
+import ObjectiveC
 
 extension NSObject {
   /// Observe access to properties of a `@Perceptible` or `@Observable` object.
@@ -116,15 +117,85 @@ extension NSObject {
   /// Here we are using the ``Store/scope(state:action:)-36e72`` operator for optional state in
   /// order to detect when the `alert` state flips from `nil` to non-`nil` and vice-versa.
   ///
-  public func observe(_ apply: @escaping () -> Void) {
+  /// ## Cancellation
+  ///
+  /// The method returns a ``ObservationToken`` that can be used to cancel observation. For example,
+  /// if you only want to observe while a view controller is visible, you can start observation in
+  /// the `viewWillAppear` and then cancel observation in the `viewWillDisappear`:
+  ///
+  /// ```swift
+  /// var observation: ObservationToken?
+  ///
+  /// func viewWillAppear() {
+  ///   super.viewWillAppear()
+  ///   self.observation = observe { [weak self] in
+  ///     // ...
+  ///   }
+  /// }
+  /// func viewWillDisappear() {
+  ///   super.viewWillDisappear()
+  ///   self.observation?.cancel()
+  /// }
+  /// ```
+  @discardableResult
+  public func observe(_ apply: @escaping () -> Void) -> ObservationToken {
+    let token = ObservationToken()
+    //self.tokens.insert(token)
     @Sendable func onChange() {
+      guard !token.isCancelled
+      else { return }
+
       withPerceptionTracking(apply) {
         Task { @MainActor in
+          guard !token.isCancelled
+          else { return }
           onChange()
         }
       }
     }
     onChange()
+    return token
+  }
+
+  fileprivate var tokens: Set<ObservationToken> {
+    get {
+      (objc_getAssociatedObject(self, &NSObject.tokensHandle) as? Set<ObservationToken>) ?? []
+    }
+    set {
+      objc_setAssociatedObject(
+        self,
+        &NSObject.tokensHandle,
+        newValue,
+        .OBJC_ASSOCIATION_RETAIN_NONATOMIC
+      )
+    }
+  }
+
+  private static var tokensHandle: UInt8 = 0
+}
+
+/// A token for cancelling observation created with ``Foundation/NSObject/observe(_:)``.
+public final class ObservationToken: Sendable, Hashable {
+  private let _isCancelled = LockIsolated(false)
+  fileprivate var isCancelled: Bool { self._isCancelled.value }
+
+  /// Cancels observation that was created with ``Foundation/NSObject/observe(_:)``.
+  ///
+  /// > Note: This cancellation is lazy and cooperative. It does not cancel the observation
+  /// immediately, but rather next time a change is detected by ``Foundation/NSObject/observe(_:)``
+  /// it will cease any future observation.
+  public func cancel() { self._isCancelled.setValue(true) }
+
+  deinit {
+    self.cancel()
+  }
+
+  public static func == (lhs: ObservationToken, rhs: ObservationToken) -> Bool {
+    lhs === rhs
+  }
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(ObjectIdentifier(self))
   }
 }
+
 #endif
