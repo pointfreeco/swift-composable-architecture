@@ -174,15 +174,15 @@ extension NSObject {
   private static var tokensHandle: UInt8 = 0
 }
 
-/// A token for cancelling observation created with ``Foundation/NSObject/observe(_:)``.
+/// A token for cancelling observation created with ``ObjectiveC/NSObject/observe(_:)``.
 public final class ObservationToken: Sendable, Hashable {
   private let _isCancelled = LockIsolated(false)
   fileprivate var isCancelled: Bool { self._isCancelled.value }
 
-  /// Cancels observation that was created with ``Foundation/NSObject/observe(_:)``.
+  /// Cancels observation that was created with ``ObjectiveC/NSObject/observe(_:)``.
   ///
   /// > Note: This cancellation is lazy and cooperative. It does not cancel the observation
-  /// immediately, but rather next time a change is detected by ``Foundation/NSObject/observe(_:)``
+  /// immediately, but rather next time a change is detected by ``ObjectiveC/NSObject/observe(_:)``
   /// it will cease any future observation.
   public func cancel() { self._isCancelled.setValue(true) }
 

@@ -406,8 +406,12 @@ This can now be changed to this:
 }
 ```
 
-Note that the state key path is simply `state: \.destination?.editForm`, and not 
-`state: \.$destination.editForm`.
+Note that the state key path is now simply `\.destination?.editForm`, and not
+`\.$destination.editForm`.
+
+Also note that `navigationDestination(item:)` is not available on older platforms, but can be made
+available as far back as iOS 15 using a wrapper. See
+<doc:TreeBasedNavigation#Backwards-compatible-availability> for more information.
 
 ## Updating alert and confirmationDialog
 
