@@ -391,7 +391,7 @@ extension ReducerMacro: MemberMacro {
           Diagnostic(
             node: arguments,
             message: MacroExpansionErrorMessage(
-              "Argument passed to call that takes no arguments"
+              "Argument passed to call that takes no arguments when applied to a struct"
             ),
             fixIt: .replace(
               message: MacroExpansionFixItMessage("Remove '(\(arguments))'"),
