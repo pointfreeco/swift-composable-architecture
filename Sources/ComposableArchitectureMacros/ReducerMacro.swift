@@ -25,10 +25,12 @@ extension ReducerMacro: ExtensionMacro {
     {
       return []
     }
-    let proto = declaration.isEnum ? "CaseReducer" : "Reducer"
+    let proto = declaration.isEnum
+      ? "ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer"
+      : "ComposableArchitecture.Reducer"
     let ext: DeclSyntax =
       """
-      extension \(type.trimmed): ComposableArchitecture.\(raw: proto) {}
+      extension \(type.trimmed): \(raw: proto) {}
       """
     return [ext.cast(ExtensionDeclSyntax.self)]
   }
@@ -294,7 +296,7 @@ extension ReducerMacro: MemberMacro {
           @ObservableState
           \(access)enum State: ComposableArchitecture.CaseReducerState\
           \(raw: conformances.isEmpty ? "" : ", \(conformances.joined(separator: ", "))") {
-          \(access)typealias Reducer = \(enumDecl.name.trimmed)
+          \(access)typealias StateReducer = \(enumDecl.name.trimmed)
           \(raw: stateCaseDecls.map(\.description).joined(separator: "\n"))
           }
           """

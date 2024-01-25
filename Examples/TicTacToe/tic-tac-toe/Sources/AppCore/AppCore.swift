@@ -5,23 +5,11 @@ import LoginCore
 import NewGameCore
 
 @Reducer
-public struct TicTacToe {
-  @ObservableState
-  public enum State: Equatable {
-    case login(Login.State)
-    case newGame(NewGame.State)
+public enum TicTacToe {
+  case login(Login)
+  case newGame(NewGame)
 
-    public init() { self = .login(Login.State()) }
-  }
-
-  public enum Action {
-    case login(Login.Action)
-    case newGame(NewGame.Action)
-  }
-
-  public init() {}
-
-  public var body: some Reducer<State, Action> {
+  public static var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .login(.twoFactor(.presented(.twoFactorResponse(.success)))):

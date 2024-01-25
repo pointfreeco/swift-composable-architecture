@@ -1,7 +1,13 @@
-public protocol CaseReducer<State, Action> {
-  associatedtype State: CaseReducerState where State.Reducer == Self
-  associatedtype Action
-  associatedtype Body: Reducer<State, Action>
+public protocol CaseReducer<State,Action>: Reducer
+where State: CaseReducerState, Body: Reducer, Body.State == State, Body.Action == Action {
+  associatedtype State = State
+  associatedtype Action = Action
+  #if DEBUG
+    associatedtype _Body = _Body
+    typealias Body = _Body
+  #else
+    associatedtype Body
+  #endif
   associatedtype CaseScope
 
   @ReducerBuilder<State, Action>
@@ -10,33 +16,38 @@ public protocol CaseReducer<State, Action> {
   static func scope(_ store: Store<State, Action>) -> CaseScope
 }
 
+extension CaseReducer {
+  public var body: Body {
+    Self.body
+  }
+}
+
 public protocol CaseReducerState {
-  associatedtype Reducer: CaseReducer where Reducer.State == Self
+  associatedtype StateReducer: CaseReducer where StateReducer.State == Self
 }
 
 extension Reducer {
   public func ifLet<ChildState: CaseReducerState, ChildAction>(
     _ state: WritableKeyPath<State, PresentationState<ChildState>>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>
-  ) -> some ReducerOf<Self> where ChildState.Reducer.Action == ChildAction {
+  ) -> some ReducerOf<Self> where ChildState.StateReducer.Action == ChildAction {
     self.ifLet(state, action: action) {
-      ChildState.Reducer.body
+      ChildState.StateReducer.body
     }
   }
 
   public func forEach<DestinationState: CaseReducerState, DestinationAction>(
     _ state: WritableKeyPath<State, StackState<DestinationState>>,
     action: CaseKeyPath<Action, StackAction<DestinationState, DestinationAction>>
-  ) -> some ReducerOf<Self> where DestinationState.Reducer.Action == DestinationAction {
+  ) -> some ReducerOf<Self> where DestinationState.StateReducer.Action == DestinationAction {
     self.forEach(state, action: action) {
-      DestinationState.Reducer.body
+      DestinationState.StateReducer.body
     }
   }
 }
 
-extension Store where State: CaseReducerState, State.Reducer.Action == Action {
-  public var `case`: State.Reducer.CaseScope {
-    State.Reducer.scope(self)
+extension Store where State: CaseReducerState, State.StateReducer.Action == Action {
+  public var `case`: State.StateReducer.CaseScope {
+    State.StateReducer.scope(self)
   }
 }
-
