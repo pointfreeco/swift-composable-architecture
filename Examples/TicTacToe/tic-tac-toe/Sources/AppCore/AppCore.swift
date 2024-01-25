@@ -1,6 +1,4 @@
-import AuthenticationClient
 import ComposableArchitecture
-import Dispatch
 import LoginCore
 import NewGameCore
 
@@ -9,7 +7,7 @@ public enum TicTacToe {
   case login(Login)
   case newGame(NewGame)
 
-  public static var body: some Reducer<State, Action> {
+  public static var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .login(.twoFactor(.presented(.twoFactorResponse(.success)))):

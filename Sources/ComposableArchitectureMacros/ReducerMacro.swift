@@ -382,14 +382,14 @@ extension ReducerMacro: MemberMacro {
         decls.append(
           """
           @ObservableState
-          \(access)struct State: Codable, Equatable, Hashable {
+          \(access)struct State: Codable, Equatable, Hashable, Sendable {
           \(access)init() {}
           }
           """
         )
       }
       if !hasAction && !hasExplicitReducerBody {
-        decls.append("\(access)enum Action: Equatable, Hashable {}")
+        decls.append("\(access)enum Action: Equatable, Hashable, Sendable {}")
       }
       if !hasBody {
         decls.append("\(access)let body = ComposableArchitecture.EmptyReducer<State, Action>()")
