@@ -59,7 +59,7 @@ inside `WithPerceptionTracking`.
 
 ## Gotchas
 
-There are a few gotchas to be aware of when using 
+There are a few gotchas to be aware of when using `WithPerceptionTracking`.
 
 ### Lazy view closures
 
