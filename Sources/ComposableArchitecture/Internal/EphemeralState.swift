@@ -4,28 +4,25 @@
 /// with they go away. Such features do not manage any behavior on the inside.
 ///
 /// Alerts and confirmation dialogs are examples of this kind of state.
-public protocol _EphemeralState {
+public protocol _EphemeralState<Action> {
+  associatedtype Action
   static var actionType: Any.Type { get }
+}
+
+extension _EphemeralState {
+  public static var actionType: Any.Type { Action.self }
 }
 
 #if swift(>=5.8)
   @_documentation(visibility:private)
-  extension AlertState: _EphemeralState {
-    public static var actionType: Any.Type { Action.self }
-  }
+  extension AlertState: _EphemeralState {}
   @_documentation(visibility:private)
   @available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
-  extension ConfirmationDialogState: _EphemeralState {
-    public static var actionType: Any.Type { Action.self }
-  }
+  extension ConfirmationDialogState: _EphemeralState {}
 #else
-  extension AlertState: _EphemeralState {
-    public static var actionType: Any.Type { Action.self }
-  }
+  extension AlertState: _EphemeralState {}
   @available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
-  extension ConfirmationDialogState: _EphemeralState {
-    public static var actionType: Any.Type { Action.self }
-  }
+  extension ConfirmationDialogState: _EphemeralState {}
 #endif
 
 @usableFromInline
