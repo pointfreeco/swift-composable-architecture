@@ -4,8 +4,8 @@
 /// with they go away. Such features do not manage any behavior on the inside.
 ///
 /// Alerts and confirmation dialogs are examples of this kind of state.
-public protocol _EphemeralState<Action>: CaseReducer, CaseReducerState {
-  associatedtype Reducer = Self
+public protocol _EphemeralState<Action> {
+  associatedtype Action
   static var actionType: Action.Type { get }
 }
 
@@ -50,18 +50,5 @@ extension _EphemeralState {
       || EnumMetadata(Action.self).flatMap { metadata in
         metadata.associatedValueType(forTag: metadata.tag(of: action)) == Self.actionType
       } == true
-  }
-}
-
-public struct _EphemeralStateCaseScope<State: _EphemeralState> {
-  let store: Store<State, State.Action>
-}
-
-extension _EphemeralState {
-  public static func scope(_ store: Store<Self, Action>) -> _EphemeralStateCaseScope<Self> {
-    _EphemeralStateCaseScope(store: store)
-  }
-  public static var body: some ComposableArchitecture.Reducer<Self, Action> {
-    EmptyReducer()
   }
 }

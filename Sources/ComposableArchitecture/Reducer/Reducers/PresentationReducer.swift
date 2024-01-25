@@ -406,6 +406,25 @@ extension Reducer {
     )
   }
 
+  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` for alerts
+  /// and confirmation dialogs that does not require a child reducer.
+  @warn_unqualified_access
+  @inlinable
+  public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
+    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
+    action toPresentationAction: CaseKeyPath<Action, PresentationAction<DestinationAction>>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
+    self.ifLet(
+      toPresentationState,
+      action: toPresentationAction,
+      destination: {},
+      fileID: fileID,
+      line: line
+    )
+  }
+
   @available(
     iOS,
     deprecated: 9999,
@@ -445,6 +464,47 @@ extension Reducer {
       toPresentationState: toPresentationState,
       toPresentationAction: toPresentationAction,
       destination: destination(),
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  @available(
+    iOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @warn_unqualified_access
+  @inlinable
+  public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
+    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
+    action toPresentationAction: AnyCasePath<Action, PresentationAction<DestinationAction>>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
+    self.ifLet(
+      toPresentationState,
+      action: toPresentationAction,
+      destination: {},
       fileID: fileID,
       line: line
     )
