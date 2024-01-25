@@ -199,16 +199,32 @@ extension ReducerMacro: MemberMacro {
     let bindings = declaration.memberBlock.members.flatMap {
       $0.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self)?.bindings ?? []
     }
+    let hasReduceMethod = declaration.memberBlock.members.contains {
+      guard
+        let method = $0.decl.as(FunctionDeclSyntax.self),
+        method.name.text == "reduce",
+        method.signature.parameterClause.parameters.count == 2,
+        let state = method.signature.parameterClause.parameters.first,
+        state.firstName.text == "into",
+        state.type.as(AttributedTypeSyntax.self)?.specifier?.text == "inout",
+        method.signature.parameterClause.parameters.last?.firstName.text == "action",
+        method.signature.effectSpecifiers == nil,
+        method.signature.returnClause?.type.as(IdentifierTypeSyntax.self) != nil
+      else {
+        return false
+      }
+      return true
+    }
     let hasExplicitReducerBody = bindings.contains {
       guard let name = $0.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self)?.constraint
         .as(IdentifierTypeSyntax.self)?.name.text
       else { return false }
       return ["Reducer", "ReducerOf"].withQualified.contains(name)
-    }
+    } || hasReduceMethod
     let hasBody = bindings.contains {
       $0.as(PatternBindingSyntax.self)?.pattern
         .as(IdentifierPatternSyntax.self)?.identifier.text == "body"
-    }
+    } || hasReduceMethod
     var decls: [DeclSyntax] = []
     if let enumDecl = declaration.as(EnumDeclSyntax.self) {
       let enumCaseElements = enumDecl.memberBlock
