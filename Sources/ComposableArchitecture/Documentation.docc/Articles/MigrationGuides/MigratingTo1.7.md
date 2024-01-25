@@ -19,6 +19,8 @@ watchOS 10 or higher, but the tools do work for older platforms too. See the ded
 <doc:ObservationBackport> article for more information on how to use the new observation tools if
 you are targeting older platforms.
 
+# Topics
+
 * [Using @ObservableState](#Using-ObservableState)
 * [Replacing IfLetStore with ‘if let’](#Replacing-IfLetStore-with-if-let)
 * [Replacing ForEachStore with ForEach](#Replacing-ForEachStore-with-ForEach)
@@ -31,6 +33,7 @@ you are targeting older platforms.
 * [ViewStore.binding](#ViewStorebinding)
 * [Computed view state](#Computed-view-state)
 * [View actions](#View-actions)
+* [Observing for UIKit](#Observing-for-UIKit)
 * [Incrementally migrating](#Incrementally-migrating)
 
 ## Using @ObservableState
@@ -833,6 +836,39 @@ rather than going through ``Store/send(_:)``:
  }
 ```
 
+## Observing for UIKit
+
+Prior to the observation tools one would typically subscribe to changes in the store via a Combine
+publisher in the entry point of a view, such as `viewDidLoad` in a `UIViewController` subclass:
+
+```swift
+func viewDidLoad() {
+  super.viewDidLoad()
+
+  store.publisher.count
+    .sink { [weak self] in self?.countLabel.text = "\($0)" }
+    .store(in: &cancellables)
+}
+```
+
+This can now be done more simply using the ``ObjectiveC/NSObject/observe(_:)`` method defined on
+all `NSObject`s:
+
+```swift
+func viewDidLoad() {
+  super.viewDidLoad()
+
+  observe { [weak self] in 
+    guard let self 
+    else { return }
+
+    self.countLabel.text = "\(self.store.count)"
+  }
+}
+```
+
+Be sure to read the documentation for ``ObjectiveC/NSObject/observe(_:)`` to learn how to best 
+wield this tool.
 
 ## Incrementally migrating
 
