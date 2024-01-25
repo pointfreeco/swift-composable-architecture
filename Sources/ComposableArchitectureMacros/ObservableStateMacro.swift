@@ -426,28 +426,15 @@ extension ObservableStateMacro: ExtensionMacro {
       return []
     }
 
-    let decl: DeclSyntax = """
-      extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName) {}
+    return [
+      (
       """
-    // TODO: Take maximum of current availability and 17/14/17/10/etc...
-    let obsDecl: DeclSyntax = """
-      @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-      extension \(raw: type.trimmedDescription): Observation.Observable {}
-      """
-    let ext = decl.cast(ExtensionDeclSyntax.self)
-    let obsExt = obsDecl.cast(ExtensionDeclSyntax.self)
-
-    if let availability = declaration.attributes.availability {
-      return [
-        ext.with(\.attributes, availability),
-        obsExt.with(\.attributes, availability),
-      ]
-    } else {
-      return [
-        ext,
-        obsExt,
-      ]
-    }
+      extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName), \
+      Observation.Observable {}
+      """ as DeclSyntax
+      )
+      .cast(ExtensionDeclSyntax.self)
+    ]
   }
 }
 
