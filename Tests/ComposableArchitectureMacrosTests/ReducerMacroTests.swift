@@ -642,5 +642,52 @@
         """
       }
     }
+
+    func testReducerOf() {
+      assertMacro {
+        #"""
+        @Reducer
+        private struct Haptics<Base: Reducer, Trigger: Equatable> {
+          let base: Base
+          let isEnabled: (Base.State) -> Bool
+          let trigger: (Base.State) -> Trigger
+
+          @Dependency(\.feedbackGenerator) var feedbackGenerator
+
+          var body: some ReducerOf<Base> {
+            self.base.onChange(of: self.trigger) { _, _ in
+              Reduce { state, _ in
+                guard self.isEnabled(state) else { return .none }
+                return .run { _ in await self.feedbackGenerator.selectionChanged() }
+              }
+            }
+          }
+        }
+        """#
+      } expansion: {
+        #"""
+        private struct Haptics<Base: Reducer, Trigger: Equatable> {
+          let base: Base
+          let isEnabled: (Base.State) -> Bool
+          let trigger: (Base.State) -> Trigger
+
+          @Dependency(\.feedbackGenerator) var feedbackGenerator
+          @ComposableArchitecture.ReducerBuilder<Base.State, Base.Action>
+
+          var body: some ReducerOf<Base> {
+            self.base.onChange(of: self.trigger) { _, _ in
+              Reduce { state, _ in
+                guard self.isEnabled(state) else { return .none }
+                return .run { _ in await self.feedbackGenerator.selectionChanged() }
+              }
+            }
+          }
+        }
+
+        extension Haptics: ComposableArchitecture.Reducer {
+        }
+        """#
+      }
+    }
   }
 #endif

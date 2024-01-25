@@ -200,8 +200,10 @@ extension ReducerMacro: MemberMacro {
       $0.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self)?.bindings ?? []
     }
     let hasExplicitReducerBody = bindings.contains {
-      $0.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self)?.constraint
-        .as(IdentifierTypeSyntax.self)?.name.text == "Reducer"
+      guard let name = $0.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self)?.constraint
+        .as(IdentifierTypeSyntax.self)?.name.text
+      else { return false }
+      return ["Reducer", "ReducerOf"].withQualified.contains(name)
     }
     let hasBody = bindings.contains {
       $0.as(PatternBindingSyntax.self)?.pattern
