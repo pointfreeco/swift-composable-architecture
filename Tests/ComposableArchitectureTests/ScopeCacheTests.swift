@@ -8,8 +8,6 @@
     func testOptionalScope_UncachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
-          // TODO: Investigate cancellation cancellables leak
-          // Feature()
         }
 
         XCTExpectFailure {
@@ -32,8 +30,6 @@
     func testOptionalScope_CachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
-          // TODO: Investigate cancellation cancellables leak
-          // Feature()
         }
         store
           .scope(state: \.self, action: \.self)
@@ -61,8 +57,6 @@
     func testOptionalScope_StoreIfLet_UncachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
-          // TODO: Investigate cancellation cancellables leak
-          // Feature()
         }
         XCTExpectFailure {
           let cancellable =
@@ -85,8 +79,6 @@
     func testIdentifiedArrayScope_CachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
-          // TODO: Investigate cancellation cancellables leak
-          // Feature()
         }
 
         let rowsStore = Array(
