@@ -48,7 +48,7 @@ struct OptionalBasics {
 // MARK: - Feature view
 
 struct OptionalBasicsView: View {
-  @Bindable var store = Store(initialState: OptionalBasics.State()) {
+  var store = Store(initialState: OptionalBasics.State()) {
     OptionalBasics()
   }
 

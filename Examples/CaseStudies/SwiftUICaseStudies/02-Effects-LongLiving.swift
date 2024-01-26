@@ -69,7 +69,7 @@ private enum ScreenshotsKey: DependencyKey {
 // MARK: - Feature view
 
 struct LongLivingEffectsView: View {
-  @Bindable var store = Store(initialState: LongLivingEffects.State()) {
+  var store = Store(initialState: LongLivingEffects.State()) {
     LongLivingEffects()
   }
 
