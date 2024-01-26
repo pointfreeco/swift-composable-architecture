@@ -12,7 +12,8 @@ such communication with your application's store.
 
 The simplest tool for creating bindings that communicate with your store is to create a dedicated
 action that can change a piece of state in your feature. For example, a reducer may have a domain
-that tracks if user has enabled haptic feedback. First, it can define a boolean property on state:
+that tracks if the user has enabled haptic feedback. First, it can define a boolean property on
+state:
 
 ```swift
 @Reducer
@@ -76,14 +77,14 @@ struct SettingsView: View {
 ```
 
 > Important: If you are targeting older Apple platforms (iOS 16, macOS 13, tvOS 16, watchOS 9, or
-less), then you must use our backport of the `@Bindable` property wrapper:
+> less), then you must use our backport of the `@Bindable` property wrapper:
 >
 > ```diff
 > -@Bindable var store: StoreOf<Settings>
 > +@Perception.Bindable var store: StoreOf<Settings>
 > ```
 
-Once that is done you can deriving a binding to a piece of state that sends an action when the 
+Once that is done you can derive a binding to a piece of state that sends an action when the 
 binding is mutated:
 
 ```swift
