@@ -140,7 +140,7 @@
     @discardableResult
     public func observe(_ apply: @escaping () -> Void) -> ObservationToken {
       let token = ObservationToken()
-      //self.tokens.insert(token)
+      self.tokens.insert(token)
       @Sendable func onChange() {
         guard !token.isCancelled
         else { return }
@@ -175,7 +175,7 @@
   }
 
   /// A token for cancelling observation created with ``ObjectiveC/NSObject/observe(_:)``.
-  public final class ObservationToken: Sendable, Hashable {
+  public final class ObservationToken: NSObject, Sendable {
     private let _isCancelled = LockIsolated(false)
     fileprivate var isCancelled: Bool { self._isCancelled.value }
 
@@ -189,13 +189,5 @@
     deinit {
       self.cancel()
     }
-
-    public static func == (lhs: ObservationToken, rhs: ObservationToken) -> Bool {
-      lhs === rhs
-    }
-    public func hash(into hasher: inout Hasher) {
-      hasher.combine(ObjectIdentifier(self))
-    }
   }
-
 #endif
