@@ -21,12 +21,12 @@ struct VoiceMemo {
     }
   }
 
-  enum Action: BindableAction {
+  enum Action {
     case audioPlayerClient(Result<Bool, Error>)
-    case binding(BindingAction<State>)
     case delegate(Delegate)
     case playButtonTapped
     case timerUpdated(TimeInterval)
+    case titleTextFieldChanged(String)
 
     @CasePathable
     enum Delegate {
@@ -40,7 +40,6 @@ struct VoiceMemo {
   private enum CancelID { case play }
 
   var body: some Reducer<State, Action> {
-    BindingReducer()
     Reduce { state, action in
       switch action {
       case .audioPlayerClient(.failure):
@@ -53,9 +52,6 @@ struct VoiceMemo {
       case .audioPlayerClient:
         state.mode = .notPlaying
         return .cancel(id: CancelID.play)
-
-      case .binding:
-        return .none
 
       case .delegate:
         return .none
@@ -95,6 +91,10 @@ struct VoiceMemo {
           state.mode = .playing(progress: time / state.duration)
         }
         return .none
+
+      case let .titleTextFieldChanged(text):
+        state.title = text
+        return .none
       }
     }
   }
@@ -109,7 +109,7 @@ struct VoiceMemoView: View {
     HStack {
       TextField(
         "Untitled, \(store.date.formatted(date: .numeric, time: .shortened))",
-        text: $store.title
+        text: $store.title.sending(\.titleTextFieldChanged)
       )
 
       Spacer()
