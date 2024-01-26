@@ -114,8 +114,8 @@ struct InventoryView: View {
 }
 ```
 
-> Note: We use SwiftUI's `@State` property wrapper to produce a binding to a store,
-> which can be further scoped using ``SwiftUI/Binding/scope(state:action:)-4mj4d``.
+> Note: We use SwiftUI's `@Bindable` property wrapper to produce a binding to a store, which can be
+> further scoped using ``SwiftUI/Binding/scope(state:action:)-4mj4d``.
 
 With those few steps completed the domains and views of the parent and child features are now
 integrated together, and when the `addItem` state flips to a non-`nil` value the sheet will be
