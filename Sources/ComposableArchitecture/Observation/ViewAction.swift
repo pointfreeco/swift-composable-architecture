@@ -12,7 +12,7 @@ public protocol ViewAction<ViewAction> {
 public protocol ViewActionSending<StoreState, StoreAction> {
   associatedtype StoreState
   associatedtype StoreAction: ViewAction
-  var store: Store<StoreState, StoreAction> { get }
+  @MainActor(unsafe) var store: Store<StoreState, StoreAction> { get }
 }
 
 extension ViewActionSending {

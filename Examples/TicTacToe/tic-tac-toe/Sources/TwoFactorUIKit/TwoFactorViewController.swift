@@ -2,8 +2,9 @@ import ComposableArchitecture
 import TwoFactorCore
 import UIKit
 
+@ViewAction(for: TwoFactor.self)
 public final class TwoFactorViewController: UIViewController {
-  let store: StoreOf<TwoFactor>
+  public let store: StoreOf<TwoFactor>
 
   public init(store: StoreOf<TwoFactor>) {
     self.store = store
@@ -81,7 +82,7 @@ public final class TwoFactorViewController: UIViewController {
   }
 
   @objc private func loginButtonTapped() {
-    store.send(.view(.submitButtonTapped))
+    send(.submitButtonTapped)
   }
 }
 
