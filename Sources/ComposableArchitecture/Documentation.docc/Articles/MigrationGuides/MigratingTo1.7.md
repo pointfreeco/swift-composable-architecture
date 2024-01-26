@@ -19,7 +19,7 @@ watchOS 10 or higher, but the tools do work for older platforms too. See the ded
 <doc:ObservationBackport> article for more information on how to use the new observation tools if
 you are targeting older platforms.
 
-# Topics
+### Topics
 
 * [Using @ObservableState](#Using-ObservableState)
 * [Replacing IfLetStore with ‘if let’](#Replacing-IfLetStore-with-if-let)
@@ -628,11 +628,12 @@ In the view you must start holding onto the `store` in a bindable manner, which 
 @Bindable var store: StoreOf<Feature>
 ```
 
-…or using `@Perception,Bindable` if targeting older platforms:
-
-```swift
-@Perception.Bindable var store: StoreOf<Feature>
-```
+> Note: If targeting older Apple platorms where `@Bindable` is not available, you can use our
+backport of the property wrapper:
+>
+> ```swift
+> @Perception.Bindable var store: StoreOf<Feature>
+> ```
 
 Then in the `body` of the view you can stop using ``WithViewStore`` and instead derive bindings 
 directly from the store:
@@ -699,16 +700,10 @@ struct Feature {
 ```
 
 In the view you must start holding onto the `store` in a bindable manner, which means using the
-`@Bindable` property wrapper:
+`@Bindable` (or `@Perception.Bindable`) property wrapper:
 
 ```swift
 @Bindable var store: StoreOf<Feature>
-```
-
-…or using `@Perception.Bindable` if targeting older platforms:
-
-```swift
-@Perception.Bindable var store: StoreOf<Feature>
 ```
 
 Then you can derive a binding directly from a ``Store`` binding like so:
