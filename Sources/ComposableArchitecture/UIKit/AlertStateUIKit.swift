@@ -55,6 +55,36 @@
       }
     }
 
+    /// Creates a `UIAlertController` from a ``Store`` focused on alert state.
+    ///
+    /// You can use this initializer in tandem with ``ObjectiveC/NSObject/observe(_:)`` and
+    /// ``Store/scope(state:action:)-36e72`` to drive an alert from state:
+    ///
+    /// ```swift
+    /// class FeatureController: UIViewController {
+    ///   let store: StoreOf<Feature>
+    ///   private weak var alertController: UIAlertController?
+    ///   // ...
+    ///   func viewDidLoad() {
+    ///     // ...
+    ///     observe { [weak self] in
+    ///       guard let self
+    ///       else { return }
+    ///
+    ///       if
+    ///         let store = store.scope(state: \.alert, action: \.alert),
+    ///         alertController == nil
+    ///       {
+    ///         alertController = UIAlertController(store: store)
+    ///         self.present(alertController!, animated: true, completion: nil)
+    ///       } else if store.alert == nil, alertController != nil {
+    ///         alertController?.dismiss(animated: true)
+    ///         alertController = nil
+    ///       }
+    ///     }
+    ///   }
+    /// }
+    /// ```
     public convenience init<Action>(
       store: Store<AlertState<Action>, PresentationAction<Action>>
     ) {
@@ -95,6 +125,36 @@
       }
     }
 
+    /// Creates a `UIAlertController` from a ``Store`` focused on confirmation dialog state.
+    ///
+    /// You can use this initializer in tandem with ``ObjectiveC/NSObject/observe(_:)`` and
+    /// ``Store/scope(state:action:)-36e72`` to drive an alert from state:
+    ///
+    /// ```swift
+    /// class FeatureController: UIViewController {
+    ///   let store: StoreOf<Feature>
+    ///   private weak var alertController: UIAlertController?
+    ///   // ...
+    ///   func viewDidLoad() {
+    ///     // ...
+    ///     observe { [weak self] in
+    ///       guard let self
+    ///       else { return }
+    ///
+    ///       if
+    ///         let store = store.scope(state: \.actionSheet, action: \.actionSheet),
+    ///         alertController == nil
+    ///       {
+    ///         alertController = UIAlertController(store: store)
+    ///         self.present(alertController!, animated: true, completion: nil)
+    ///       } else if store.alert == nil, alertController != nil {
+    ///         alertController?.dismiss(animated: true)
+    ///         alertController = nil
+    ///       }
+    ///     }
+    ///   }
+    /// }
+    /// ```
     public convenience init<Action>(
       store: Store<ConfirmationDialogState<Action>, PresentationAction<Action>>
     ) {
