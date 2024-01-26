@@ -138,7 +138,7 @@ struct Feature {
 }
 ```
 
-> [!NOTE] We've applied the `@ObservableState` macro to `State` in order to take advantage of the
+> [!Note] We've applied the `@ObservableState` macro to `State` in order to take advantage of the
 observation tools in the library.
 
 We also need to define a type for the feature's actions. There are the obvious actions, such as 
