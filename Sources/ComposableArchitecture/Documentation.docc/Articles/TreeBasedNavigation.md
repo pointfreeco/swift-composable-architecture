@@ -374,7 +374,6 @@ seemingly disparate forms of navigation can be unified under a single style of A
 
 #### Backwards compatible availability
 
-
 Depending on your deployment target, certain APIs may be unavailable. For example, if you target
 iOS 16, you will not have access to iOS 17's `navigationDestination(item:)` view modifier. You can
 easily backport the tool to work on older platforms by defining a wrapper for the API that calls
