@@ -86,7 +86,7 @@ iOS word search game built in SwiftUI and the Composable Architecture.
 
 ## Basic Usage
 
-> **Note**
+> [!Note] 
 > For a step-by-step interactive tutorial, be sure to check out [Meet the Composable
 > Architecture][meet-tca].
 
@@ -109,8 +109,7 @@ will be able to break large, complex features into smaller domains that can be g
 
 As a basic example, consider a UI that shows a number along with "+" and "−" buttons that increment 
 and decrement the number. To make things interesting, suppose there is also a button that when 
-tapped makes an API request to fetch a random fact about that number and then displays the fact in 
-an alert.
+tapped makes an API request to fetch a random fact about that number and displays it in the view.
 
 To implement this feature we create a new type that will house the domain and behavior of the 
 feature, and it will be annotated with the `@Reducer` macro:
@@ -124,8 +123,7 @@ struct Feature {
 ```
 
 In here we need to define a type for the feature's state, which consists of an integer for the 
-current count, as well as an optional string that represents the title of the alert we want to show
-(optional because `nil` represents not showing an alert):
+current count, as well as an optional string that represents the fact being presented:
 
 ```swift
 @Reducer
@@ -133,7 +131,7 @@ struct Feature {
   @ObservableState
   struct State: Equatable {
     var count = 0
-    var numberFactAlert: String?
+    var numberFact: String?
   }
 }
 ```
@@ -144,15 +142,15 @@ struct Feature {
 
 We also need to define a type for the feature's actions. There are the obvious actions, such as 
 tapping the decrement button, increment button, or fact button. But there are also some slightly 
-non-obvious ones, such as the action of the user dismissing the alert, and the action that occurs 
-when we receive a response from the fact API request:
+non-obvious ones, such as the action that occurs when we receive a response from the fact API 
+request:
 
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State: Equatable { /* ... */ }
   enum Action {
-    case factAlertDismissed
     case decrementButtonTapped
     case incrementButtonTapped
     case numberFactButtonTapped
@@ -169,16 +167,13 @@ execute effects, and they can return `.none` to represent that:
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State: Equatable { /* ... */ }
   enum Action { /* ... */ }
 
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case .factAlertDismissed:
-        state.numberFactAlert = nil
-        return .none
-
       case .decrementButtonTapped:
         state.count -= 1
         return .none
@@ -198,7 +193,7 @@ struct Feature {
         }
 
       case let .numberFactResponse(fact):
-        state.numberFactAlert = fact
+        state.numberFact = fact
         return .none
       }
     }
@@ -208,44 +203,35 @@ struct Feature {
 
 And then finally we define the view that displays the feature. It holds onto a `StoreOf<Feature>` 
 so that it can observe all changes to the state and re-render, and we can send all user actions to 
-the store so that state changes. We must also introduce a struct wrapper around the fact alert to 
-make it `Identifiable`, which the `.alert` view modifier requires:
+the store so that state changes:
 
 ```swift
 struct FeatureView: View {
   let store: StoreOf<Feature>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack {
-        HStack {
-          Button("−") { viewStore.send(.decrementButtonTapped) }
-          Text("\(viewStore.count)")
-          Button("+") { viewStore.send(.incrementButtonTapped) }
-        }
-
-        Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
+    Form {
+      Section {
+        Text("\(store.count)")
+        Button("Decrement") { store.send(.decrementButtonTapped) }
+        Button("Increment") { store.send(.incrementButtonTapped) }
       }
-      .alert(
-        item: viewStore.binding(
-          get: { $0.numberFactAlert.map(FactAlert.init(title:)) },
-          send: .factAlertDismissed
-        ),
-        content: { Alert(title: Text($0.title)) }
-      )
+
+      Section {
+        Button("Number fact") { store.send(.numberFactButtonTapped) }
+      }
+      
+      if let fact = store.numberFact {
+        Text(fact)
+      }
     }
   }
 }
-
-struct FactAlert: Identifiable {
-  var title: String
-  var id: String { self.title }
-}
 ```
 
-It is also straightforward to have a UIKit controller driven off of this store. You subscribe to the 
-store in `viewDidLoad` in order to update the UI and show alerts. The code is a bit longer than the 
-SwiftUI version, so we have collapsed it here:
+It is also straightforward to have a UIKit controller driven off of this store. You can observe
+state changes in the store in `viewDidLoad`, and then populate the UI components with data from
+the store. The code is a bit longer than the SwiftUI version, so we have collapsed it here:
 
 <details>
   <summary>Click to expand!</summary>
@@ -266,11 +252,10 @@ SwiftUI version, so we have collapsed it here:
     override func viewDidLoad() {
       super.viewDidLoad()
 
-      var alertController: UIAlertController?
       let countLabel = UILabel()
       let decrementButton = UIButton()
       let incrementButton = UIButton()
-      let factButton = UIButton()
+      let factLabel = UILabel()
       
       // Omitted: Add subviews and set up constraints...
       
@@ -279,24 +264,7 @@ SwiftUI version, so we have collapsed it here:
         else { return }
         
         countLabel.text = "\(self.store.text)"
-        if let alert = self.store.numberFactAlert,
-          alertController == nil 
-        {
-          alertController = UIAlertController(
-            title: alert, message: nil, preferredStyle: .alert
-          )
-          alertController.addAction(
-            UIAlertAction(
-              title: "Ok",
-              style: .default,
-              handler: { _ in self.store.send(.factAlertDismissed) }
-            )
-          )
-          self.present(alertController!, animated: true, completion: nil)
-        } else if self.store.numberFactAlert == nil, alertController != nil {
-          alertController?.dismiss(animated: true)
-          alertController = nil
-        }
+        factLabel.text = self.store.numberFact
       }
     }
 
@@ -343,7 +311,7 @@ doing much additional work.
 
 ### Testing
 
-> **Note**
+> [!Note] 
 > For more in-depth information on testing, see the dedicated [testing][testing-article] article. 
 
 To test use a `TestStore`, which can be created with the same information as the `Store`, but it 
@@ -374,13 +342,14 @@ await store.send(.decrementButtonTapped) {
 
 Further, if a step causes an effect to be executed, which feeds data back into the store, we must 
 assert on that. For example, if we simulate the user tapping on the fact button we expect to 
-receive a fact response back with the fact, which then causes the alert to show:
+receive a fact response back with the fact, which then causes the `numberFact` state to be 
+populated:
 
 ```swift
 await store.send(.numberFactButtonTapped)
 
 await store.receive(\.numberFactResponse) {
-  $0.numberFactAlert = ???
+  $0.numberFact = ???
 }
 ```
 
@@ -450,18 +419,13 @@ func testFeature() async {
 ```
 
 With that little bit of upfront work we can finish the test by simulating the user tapping on the 
-fact button, receiving the response from the dependency to trigger the alert, and then dismissing 
-the alert:
+fact button, and thenreceiving the response from the dependency to present the fact:
 
 ```swift
 await store.send(.numberFactButtonTapped)
 
 await store.receive(\.numberFactResponse) {
-  $0.numberFactAlert = "0 is a good number Brent"
-}
-
-await store.send(.factAlertDismissed) {
-  $0.numberFactAlert = nil
+  $0.numberFact = "0 is a good number Brent"
 }
 ```
 
@@ -471,7 +435,7 @@ to `numberFact`, and explicitly passing it through all layers can get annoying. 
 you can follow to “register” dependencies with the library, making them instantly available to any 
 layer in the application.
 
-> **Note**
+> [!Note] 
 > For more in-depth information on dependency management, see the dedicated
 > [dependencies][dependencies-article] article. 
 
