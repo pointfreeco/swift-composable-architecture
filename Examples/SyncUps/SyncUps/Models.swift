@@ -88,7 +88,7 @@ extension SyncUp {
       )
     ],
     theme: .orange,
-    title: "Point-Free morning sync"
+    title: "Design"
   )
 
   static let engineeringMock = Self(
