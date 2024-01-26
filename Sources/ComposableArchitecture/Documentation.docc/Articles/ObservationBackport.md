@@ -1,14 +1,14 @@
 # Observation backport
 
-Learn how the Observation framework from Swift 5.9 was backported to support iOS 16 and earlier, 
+Learn how the Observation framework from Swift 5.9 was backported to support iOS 16 and earlier,
 as well as the caveats of using the backported tools.
 
 ## Overview
 
-With version 1.7 of the Composable Architecture we have introduced 
-support for Swift 5.9's observation tools, _and_ we have backported those tools to work in iOS 13
-and later. Using the observation tools in pre-iOS 17 does require a few additional steps and there
-are some gotchas to be aware of.
+With version 1.7 of the Composable Architecture we have introduced support for Swift 5.9's
+observation tools, _and_ we have backported those tools to work in iOS 13 and later. Using the
+observation tools in pre-iOS 17 does require a few additional steps and there are some gotchas to be
+aware of.
 
 ## The Perception framework
 
@@ -25,7 +25,7 @@ class CounterModel {
 }
 ```
 
-However, in order for a view to properly observe changes to a "perceptible" model, you must 
+However, in order for a view to properly observe changes to a "perceptible" model, you must
 remember to wrap the contents of your view in the `WithPerceptionTracking` view:
 
 ```swift
@@ -44,18 +44,18 @@ struct CounterView: View {
 }
 ```
 
-This will make sure that the view subscribes to any fields accessed in the `@Perceptible` model so 
+This will make sure that the view subscribes to any fields accessed in the `@Perceptible` model so
 that changes to those fields invalidate the view and cause it to re-render.
 
-If a field of a `@Percetible` model is accessed in a view while _not_ inside 
+If a field of a `@Percetible` model is accessed in a view while _not_ inside
 `WithPerceptionTracking`, then a runtime warning will be triggered:
 
-> 🟣 Runtime Warning: Perceptible state was accessed but is not being tracked. Track changes to 
-state by wrapping your view in a 'WithPerceptionTracking' view.
+> 🟣 Runtime Warning: Perceptible state was accessed but is not being tracked. Track changes to
+> state by wrapping your view in a 'WithPerceptionTracking' view.
 
-To debug this, expand the warning in the Issue Navigator of Xcode (cmd+5), and click through the
-stack frames displayed to find the line in your view where you are accessing state without being
-inside `WithPerceptionTracking`.
+To debug this, expand the warning in the Issue Navigator of Xcode (⌘5), and click through the stack
+frames displayed to find the line in your view where you are accessing state without being inside
+`WithPerceptionTracking`.
 
 ## Gotchas
 
@@ -63,8 +63,8 @@ There are a few gotchas to be aware of when using `WithPerceptionTracking`.
 
 ### Lazy view closures
 
-There are many "lazy" closures in SwiftUI that evaluate only when something happens in the view, 
-and not necessarily in the same stack frames as the `body` of the view. For example, the trailing
+There are many "lazy" closures in SwiftUI that evaluate only when something happens in the view, and
+not necessarily in the same stack frames as the `body` of the view. For example, the trailing
 closure of `ForEach` is called _after_ the `body` of the view has been computed.
 
 This means that even if you wrap the body of the view in `WithPerceptionTracking`:
@@ -94,10 +94,10 @@ WithPerceptionTracking {
 
 ### Mixing legacy and modern features together
 
-Some problems can arise when mixing together features built in the "legacy" style, using 
-``ViewStore`` and ``WithViewStore``, and features built in the "modern" style, using the 
+Some problems can arise when mixing together features built in the "legacy" style, using
+``ViewStore`` and ``WithViewStore``, and features built in the "modern" style, using the
 ``ObservableState()`` macro. The problems mostly manifest themselves as re-computing view bodies
 more often than necessary, but that can also put strain on SwiftUI's ability to figure out what
-state changed, and can cause glitchiness or exacerbate navigation bugs.
+state changed, and can cause glitches or exacerbate navigation bugs.
 
 See <doc:MigratingTo1.7#Incrementally-migrating> for more information about this.
