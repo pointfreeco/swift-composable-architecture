@@ -130,12 +130,16 @@ current count, as well as an optional string that represents the title of the al
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State: Equatable {
     var count = 0
     var numberFactAlert: String?
   }
 }
 ```
+
+> [!NOTE] We've applied the `@ObservableState` macro to `State` in order to take advantage of the
+observation tools in the library.
 
 We also need to define a type for the feature's actions. There are the obvious actions, such as 
 tapping the decrement button, increment button, or fact button. But there are also some slightly 
