@@ -85,6 +85,9 @@
         and actions for each tab, each of which are just the `CounterFeature`.
         
         @Code(name: "AppFeature.swift", file: 01-04-02-code-0002.swift)
+        
+        > Note: We are proactively conforming `State` to `Equatable` in order to be able to write
+        tests on this feature later.
       }
       
       @Step {
