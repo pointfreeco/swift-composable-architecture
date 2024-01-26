@@ -274,7 +274,11 @@ extension ObservableStateMacro {
     var getCases: [String] = []
     var willModifyCases: [String] = []
     for (tag, enumCaseDecl) in enumCaseDecls.enumerated() {
-      if enumCaseDecl.parameterClause?.parameters.count == 1 {
+      // TODO: Support multiple parameters of observable state?
+      if let parameters = enumCaseDecl.parameterClause?.parameters,
+        parameters.count == 1,
+        let parameter = parameters.first
+      {
         getCases.append(
           """
           case let .\(enumCaseDecl.name.text)(state):
@@ -285,7 +289,7 @@ extension ObservableStateMacro {
           """
           case var .\(enumCaseDecl.name.text)(state):
           \(moduleName)._$willModify(&state)
-          self = .\(enumCaseDecl.name.text)(state)
+          self = .\(enumCaseDecl.name.text)(\(parameter.firstName.map { "\($0): " } ?? "")state)
           """
         )
       } else {
