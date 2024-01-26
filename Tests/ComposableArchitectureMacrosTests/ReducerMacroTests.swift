@@ -643,104 +643,46 @@
       }
     }
 
-    func testReducerOf() {
+    func testFilledRequirements_ReducerOf() {
       assertMacro {
         #"""
         @Reducer
-        private struct Haptics<Base: Reducer, Trigger: Equatable> {
-          let base: Base
-          let isEnabled: (Base.State) -> Bool
-          let trigger: (Base.State) -> Trigger
-
-          @Dependency(\.feedbackGenerator) var feedbackGenerator
-
-          var body: some ReducerOf<Base> {
-            self.base.onChange(of: self.trigger) { _, _ in
-              Reduce { state, _ in
-                guard self.isEnabled(state) else { return .none }
-                return .run { _ in await self.feedbackGenerator.selectionChanged() }
-              }
-            }
-          }
+        struct Feature {
+          var body: some ReducerOf<Base> { EmptyReducer() }
         }
         """#
       } expansion: {
-        #"""
-        private struct Haptics<Base: Reducer, Trigger: Equatable> {
-          let base: Base
-          let isEnabled: (Base.State) -> Bool
-          let trigger: (Base.State) -> Trigger
-
-          @Dependency(\.feedbackGenerator) var feedbackGenerator
+        """
+        struct Feature {
           @ComposableArchitecture.ReducerBuilder<Base.State, Base.Action>
-
-          var body: some ReducerOf<Base> {
-            self.base.onChange(of: self.trigger) { _, _ in
-              Reduce { state, _ in
-                guard self.isEnabled(state) else { return .none }
-                return .run { _ in await self.feedbackGenerator.selectionChanged() }
-              }
-            }
-          }
+          var body: some ReducerOf<Base> { EmptyReducer() }
         }
 
-        extension Haptics: ComposableArchitecture.Reducer {
+        extension Feature: ComposableArchitecture.Reducer {
         }
-        """#
+        """
       }
     }
 
-    func testReduce() {
-      assertMacro(record: true) {
+    func testFilledRequirements_ReduceMethod() {
+      assertMacro {
         """
         @Reducer
-        public struct _FilterReducer<Base: Reducer> {
-          @usableFromInline
-          let base: Base
-
-          @usableFromInline
-          let predicate: (Base.State, Base.Action) -> Bool
-
-          @usableFromInline
-          init(base: Base, predicate: @escaping (Base.State, Base.Action) -> Bool) {
-            self.base = base
-            self.predicate = predicate
-          }
-
-          @inlinable
-          public func reduce(
-            into state: inout Base.State, action: Base.Action
-          ) -> EffectOf<Base> {
-            guard self.predicate(state, action) else { return .none }
-            return self.base.reduce(into: &state, action: action)
+        struct Feature {
+          func reduce(into state: inout Base.State, action: Base.Action) -> EffectOf<Base> {
+            .none
           }
         }
         """
       } expansion: {
         """
-        public struct _FilterReducer<Base: Reducer> {
-          @usableFromInline
-          let base: Base
-
-          @usableFromInline
-          let predicate: (Base.State, Base.Action) -> Bool
-
-          @usableFromInline
-          init(base: Base, predicate: @escaping (Base.State, Base.Action) -> Bool) {
-            self.base = base
-            self.predicate = predicate
-          }
-
-          @inlinable
-          public func reduce(
-            into state: inout Base.State, action: Base.Action
-          ) -> EffectOf<Base> {
-            guard self.predicate(state, action) else { return .none }
-            return self.base.reduce(into: &state, action: action)
+        struct Feature {
+          func reduce(into state: inout Base.State, action: Base.Action) -> EffectOf<Base> {
+            .none
           }
         }
 
-        extension _FilterReducer: ComposableArchitecture.Reducer {
+        extension Feature: ComposableArchitecture.Reducer {
         }
         """
       }
