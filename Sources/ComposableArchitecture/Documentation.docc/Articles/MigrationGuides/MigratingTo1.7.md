@@ -416,8 +416,6 @@ Also note that `navigationDestination(item:)` is not available on older platform
 available as far back as iOS 15 using a wrapper. See
 <doc:TreeBasedNavigation#Backwards-compatible-availability> for more information.
 
-<!-- TODO: Link to `navigationDestination(item:)` availability article section here. -->
-
 ## Updating alert and confirmationDialog
 
 The ``SwiftUI/View/alert(store:)`` and ``SwiftUI/View/confirmationDialog(store:)`` modifiers have

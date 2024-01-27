@@ -279,7 +279,7 @@
     var _snapshot: Value?
     let lock = NSRecursiveLock()
     let _$perceptionRegistrar = PerceptionRegistrar(
-      isPerceptionCheckingEnabled: _isPlatformPerceptionCheckingEnabled
+      isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
     )
     let fileID: StaticString
     let line: UInt

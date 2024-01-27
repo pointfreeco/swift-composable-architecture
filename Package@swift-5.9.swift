@@ -26,7 +26,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", branch: "diffable-object"),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", branch: "deps-updates"),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", branch: "1.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-perception", from: "1.1.1"),

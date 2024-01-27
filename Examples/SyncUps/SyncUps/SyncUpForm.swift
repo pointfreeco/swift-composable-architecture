@@ -5,7 +5,7 @@ import SwiftUINavigation
 @Reducer
 struct SyncUpForm {
   @ObservableState
-  struct State: Equatable {
+  struct State: Equatable, Sendable {
     var focus: Field? = .title
     var syncUp: SyncUp
 

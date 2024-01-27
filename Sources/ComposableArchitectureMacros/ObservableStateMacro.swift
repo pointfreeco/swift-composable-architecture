@@ -46,7 +46,7 @@ public struct ObservableStateMacro {
   static let ignoredMacroName = "ObservationStateIgnored"
   static let presentsMacroName = "Presents"
   static let presentationStatePropertyWrapperName = "PresentationState"
-  static let sharedMacroName = "Shared"
+  static let sharedPropertyWrapperName = "Shared"
 
   static let registrarVariableName = "_$observationRegistrar"
 
@@ -378,7 +378,7 @@ extension ObservableStateMacro: MemberAttributeMacro {
     )
 
     if property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.sharedMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
     {
       return [
         AttributeSyntax(
@@ -434,12 +434,10 @@ extension ObservableStateMacro: ExtensionMacro {
     }
 
     return [
-      (
-      """
+      ("""
       extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName), \
       Observation.Observable {}
-      """ as DeclSyntax
-      )
+      """ as DeclSyntax)
       .cast(ExtensionDeclSyntax.self)
     ]
   }
@@ -464,7 +462,7 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
       || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.sharedMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
     {
       return []
     }
@@ -523,7 +521,7 @@ extension ObservationStateTrackedMacro: PeerMacro {
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
       || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.sharedMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.trackedMacroName)
     {
       return []
