@@ -114,7 +114,7 @@
         struct State: Equatable {
           @PresentationState var destination: Destination.State?
           ┬─────────────────
-          ╰─ 🛑 '@PresentationState' property wrapper cannot be used directly in '@ObservableState'
+          ╰─ 🛑 '@PresentationState' cannot be used in '@ObservableState'
              ✏️ Use '@Presents' instead
         }
         """

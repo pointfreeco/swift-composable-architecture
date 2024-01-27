@@ -35,7 +35,7 @@ struct TwoCounters {
 // MARK: - Feature view
 
 struct TwoCountersView: View {
-  @Bindable var store = Store(initialState: TwoCounters.State()) {
+  var store = Store(initialState: TwoCounters.State()) {
     TwoCounters()
   }
 

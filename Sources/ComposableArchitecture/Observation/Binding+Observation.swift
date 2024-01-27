@@ -13,6 +13,10 @@
       )
     }
 
+    /// Creates a binding to the value by sending new values through the given action.
+    ///
+    /// - Parameter action: An action for the binding to send values through.
+    /// - Returns: A binding.
     public func sending(_ action: CaseKeyPath<Action, State>) -> Binding<State> {
       Binding(
         get: { self.wrappedValue.withState { $0 } },
