@@ -275,7 +275,11 @@ extension ObservableStateMacro {
     var getCases: [String] = []
     var willModifyCases: [String] = []
     for (tag, enumCaseDecl) in enumCaseDecls.enumerated() {
-      if enumCaseDecl.parameterClause?.parameters.count == 1 {
+      // TODO: Support multiple parameters of observable state?
+      if let parameters = enumCaseDecl.parameterClause?.parameters,
+        parameters.count == 1,
+        let parameter = parameters.first
+      {
         getCases.append(
           """
           case let .\(enumCaseDecl.name.text)(state):
@@ -286,7 +290,7 @@ extension ObservableStateMacro {
           """
           case var .\(enumCaseDecl.name.text)(state):
           \(moduleName)._$willModify(&state)
-          self = .\(enumCaseDecl.name.text)(state)
+          self = .\(enumCaseDecl.name.text)(\(parameter.firstName.map { "\($0): " } ?? "")state)
           """
         )
       } else {
@@ -357,43 +361,21 @@ extension ObservableStateMacro: MemberAttributeMacro {
       return []
     }
 
-    if let attribute = property.firstAttribute(
-      for: ObservableStateMacro.presentationStatePropertyWrapperName
-    ) {
-      context.diagnose(
-        Diagnostic(
-          node: attribute,
-          message: MacroExpansionErrorMessage(
-            """
-            '@PresentationState' property wrapper cannot be used directly in '@ObservableState'
-            """
-          ),
-          fixIt: FixIt(
-            message: MacroExpansionFixItMessage(
-              """
-              Use '@\(ObservableStateMacro.presentsMacroName)' instead
-              """
-            ),
-            changes: [
-              .replace(
-                oldNode: Syntax(attribute),
-                newNode: Syntax(
-                  attribute.with(
-                    \.attributeName,
-                    TypeSyntax(
-                      IdentifierTypeSyntax(
-                        name: .identifier(ObservableStateMacro.presentsMacroName)
-                      )
-                    )
-                  )
-                )
-              )
-            ]
-          )
-        )
-      )
-      return []
-    }
+    property.diagnose(
+      attribute: "ObservationIgnored",
+      renamed: ObservableStateMacro.ignoredMacroName,
+      context: context
+    )
+    property.diagnose(
+      attribute: "ObservationTracked",
+      renamed: ObservableStateMacro.trackedMacroName,
+      context: context
+    )
+    property.diagnose(
+      attribute: "PresentationState",
+      renamed: ObservableStateMacro.presentsMacroName,
+      context: context
+    )
 
     if property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
       || property.hasMacroApplication(ObservableStateMacro.sharedMacroName)
@@ -413,6 +395,30 @@ extension ObservableStateMacro: MemberAttributeMacro {
   }
 }
 
+extension VariableDeclSyntax {
+  func diagnose<C: MacroExpansionContext>(
+    attribute name: String,
+    renamed rename: String,
+    context: C
+  ) {
+    if let attribute = self.firstAttribute(for: name) {
+      context.diagnose(
+        Diagnostic(
+          node: attribute,
+          message: MacroExpansionErrorMessage("'@\(name)' cannot be used in '@ObservableState'"),
+          fixIt: .replace(
+            message: MacroExpansionFixItMessage("Use '@\(rename)' instead"),
+            oldNode: attribute,
+            newNode: attribute.with(
+              \.attributeName, TypeSyntax(IdentifierTypeSyntax(name: .identifier(rename)))
+            )
+          )
+        )
+      )
+    }
+  }
+}
+
 extension ObservableStateMacro: ExtensionMacro {
   public static func expansion(
     of node: AttributeSyntax,
@@ -427,28 +433,15 @@ extension ObservableStateMacro: ExtensionMacro {
       return []
     }
 
-    let decl: DeclSyntax = """
-      extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName) {}
+    return [
+      (
       """
-    // TODO: Take maximum of current availability and 17/14/17/10/etc...
-    let obsDecl: DeclSyntax = """
-      @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-      extension \(raw: type.trimmedDescription): Observation.Observable {}
-      """
-    let ext = decl.cast(ExtensionDeclSyntax.self)
-    let obsExt = obsDecl.cast(ExtensionDeclSyntax.self)
-
-    if let availability = declaration.attributes.availability {
-      return [
-        ext.with(\.attributes, availability),
-        obsExt.with(\.attributes, availability),
-      ]
-    } else {
-      return [
-        ext,
-        obsExt,
-      ]
-    }
+      extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName), \
+      Observation.Observable {}
+      """ as DeclSyntax
+      )
+      .cast(ExtensionDeclSyntax.self)
+    ]
   }
 }
 

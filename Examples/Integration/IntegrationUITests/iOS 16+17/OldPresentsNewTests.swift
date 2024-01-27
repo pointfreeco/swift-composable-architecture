@@ -56,14 +56,8 @@ final class iOS16_17_OldPresentsNewTests: BaseIntegrationTests {
     self.assertLogs {
       """
       OldPresentsNewTestCase.body
-      StoreOf<ObservableBasicsView.Feature>.deinit
-      StoreOf<ObservableBasicsView.Feature?>.deinit
-      StoreOf<ObservableBasicsView.Feature?>.deinit
-      StoreOf<ObservableBasicsView.Feature?>.deinit
-      StoreOf<ObservableBasicsView.Feature?>.deinit
       ViewStore<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.deinit
       ViewStore<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.init
-      ViewStoreOf<ObservableBasicsView.Feature?>.deinit
       WithViewStore<OldPresentsNewTestCase.ViewState, OldPresentsNewTestCase.Feature.Action>.body
       """
     }

@@ -12,6 +12,10 @@ While the Composable Architecture was designed with SwiftUI in mind, it comes wi
 
 - ``ObjectiveC/NSObject/observe(_:)``
 
+### Presenting alerts and action sheets
+
+- ``UIKit/UIAlertController/init(store:)``
+
 ### Combine integration
 
 - ``Store/ifLet(then:else:)``

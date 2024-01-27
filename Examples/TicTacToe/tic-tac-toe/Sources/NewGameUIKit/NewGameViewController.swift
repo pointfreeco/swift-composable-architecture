@@ -92,8 +92,7 @@ public class NewGameViewController: UIViewController {
       playerXTextField.text = store.xPlayerName
       letsPlayButton.isEnabled = store.isLetsPlayButtonEnabled
 
-      if 
-        let store = store.scope(state: \.game, action: \.game.presented),
+      if let store = store.scope(state: \.game, action: \.game.presented),
         gameController == nil
       {
         gameController = GameViewController(store: store)

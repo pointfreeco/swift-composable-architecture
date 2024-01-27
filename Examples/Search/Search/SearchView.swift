@@ -32,9 +32,9 @@ struct Search {
     }
   }
 
-  enum Action: BindableAction {
-    case binding(BindingAction<State>)
+  enum Action {
     case forecastResponse(GeocodingSearch.Result.ID, Result<Forecast, Error>)
+    case searchQueryChanged(String)
     case searchQueryChangeDebounced
     case searchResponse(Result<GeocodingSearch, Error>)
     case searchResultTapped(GeocodingSearch.Result)
@@ -44,22 +44,8 @@ struct Search {
   private enum CancelID { case location, weather }
 
   var body: some Reducer<State, Action> {
-    BindingReducer()
     Reduce { state, action in
       switch action {
-      case .binding(\.searchQuery):
-        // When the query is cleared we can clear the search results, but we have to make sure to
-        // cancel any in-flight search requests too, otherwise we may get data coming in later.
-        guard !state.searchQuery.isEmpty else {
-          state.results = []
-          state.weather = nil
-          return .cancel(id: CancelID.location)
-        }
-        return .none
-
-      case .binding:
-        return .none
-
       case .forecastResponse(_, .failure):
         state.weather = nil
         state.resultForecastRequestInFlight = nil
@@ -79,6 +65,18 @@ struct Search {
           }
         )
         state.resultForecastRequestInFlight = nil
+        return .none
+
+      case let .searchQueryChanged(query):
+        state.searchQuery = query
+
+        // When the query is cleared we can clear the search results, but we have to make sure to
+        // cancel any in-flight search requests too, otherwise we may get data coming in later.
+        guard !state.searchQuery.isEmpty else {
+          state.results = []
+          state.weather = nil
+          return .cancel(id: CancelID.location)
+        }
         return .none
 
       case .searchQueryChangeDebounced:
@@ -128,10 +126,12 @@ struct SearchView: View {
 
         HStack {
           Image(systemName: "magnifyingglass")
-          TextField("New York, San Francisco, ...", text: $store.searchQuery)
-            .textFieldStyle(.roundedBorder)
-            .autocapitalization(.none)
-            .disableAutocorrection(true)
+          TextField(
+            "New York, San Francisco, ...", text: $store.searchQuery.sending(\.searchQueryChanged)
+          )
+          .textFieldStyle(.roundedBorder)
+          .autocapitalization(.none)
+          .disableAutocorrection(true)
         }
         .padding(.horizontal, 16)
 

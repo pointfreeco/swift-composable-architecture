@@ -147,7 +147,7 @@ struct NavigationDemoView: View {
 // MARK: - Floating menu
 
 struct FloatingMenuView: View {
-  @Bindable var store: StoreOf<NavigationDemo>
+  let store: StoreOf<NavigationDemo>
 
   struct ViewState: Equatable {
     struct Screen: Equatable, Identifiable {
@@ -264,7 +264,7 @@ struct ScreenA {
 }
 
 struct ScreenAView: View {
-  @Bindable var store: StoreOf<ScreenA>
+  let store: StoreOf<ScreenA>
 
   var body: some View {
     Form {
@@ -364,7 +364,7 @@ struct ScreenB {
 }
 
 struct ScreenBView: View {
-  @Bindable var store: StoreOf<ScreenB>
+  let store: StoreOf<ScreenB>
 
   var body: some View {
     Form {
@@ -436,7 +436,7 @@ struct ScreenC {
 }
 
 struct ScreenCView: View {
-  @Bindable var store: StoreOf<ScreenC>
+  let store: StoreOf<ScreenC>
 
   var body: some View {
     Form {

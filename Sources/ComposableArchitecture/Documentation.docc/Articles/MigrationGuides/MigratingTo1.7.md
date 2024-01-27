@@ -11,12 +11,15 @@ in favor of newer ones. We recommend people update their code as quickly as poss
 APIs, and this article contains some tips for doing so.
 
 > Important: Before following this migration guide be sure you have fully migrated to the newest
-tools of version 1.5. See <doc:MigratingTo1.4> and <doc:MigratingTo1.5> for more information.
+tools of version 1.6. See <doc:MigratingTo1.4>, <doc:MigratingTo1.5>, and <doc:MigratingTo1.6> for
+more information.
 
 > Note: The following migration guide mostly assumes you are targeting iOS 17, macOS 14, tvOS 17, 
 watchOS 10 or higher, but the tools do work for older platforms too. See the dedicated 
 <doc:ObservationBackport> article for more information on how to use the new observation tools if
 you are targeting older platforms.
+
+### Topics
 
 * [Using @ObservableState](#Using-ObservableState)
 * [Replacing IfLetStore with ‘if let’](#Replacing-IfLetStore-with-if-let)
@@ -30,6 +33,7 @@ you are targeting older platforms.
 * [ViewStore.binding](#ViewStorebinding)
 * [Computed view state](#Computed-view-state)
 * [View actions](#View-actions)
+* [Observing for UIKit](#Observing-for-UIKit)
 * [Incrementally migrating](#Incrementally-migrating)
 
 ## Using @ObservableState
@@ -113,8 +117,8 @@ In particular, the following changes must be made:
   * Replace the use of ``WithViewStore`` with `WithPerceptionTracking`, and the trailing closure
     does not take an argument. The view constructed inside the trailing closure will automatically
     observe state accessed inside the closure.
-  * Access state directly in the `store` rather than `viewStore`.
-  * Send actions directly to the `store` rather than `viewStore`.
+  * Access state directly in the `store` rather than in the `viewStore`.
+  * Send actions directly to the `store` rather than to the `viewStore`.
 
 If you are able to target iOS 17, macOS 14, tvOS 17, watchOS 10 or _higher_, then you will still
 apply all of the updates above, but with one additional simplification to the `body` of the view:
@@ -132,7 +136,7 @@ apply all of the updates above, but with one additional simplification to the `b
  }
 ```
 
-You no longer need the ``WithViewStore`` or `WithPerceptionTracking` at all.
+You no longer need the ``WithViewStore`` or `WithPerceptionTracking` views at all.
 
 ## Replacing IfLetStore with 'if let'
 
@@ -140,8 +144,7 @@ The ``IfLetStore`` view was a helper for transforming a ``Store`` of optional st
 non-optional state so that it can be handed off to a child view. It is no longer needed when using
 the new observation tools, and so it is **soft-deprecated**.
 
-For example, if your feature's 
-reducer looks roughly like this:
+For example, if your feature's reducer looks roughly like this:
 
 ```swift
 @Reducer
@@ -312,7 +315,7 @@ struct State {
 }
 ```
 
-Instead of using the ``PresentationState`` property wrapper you can now use the ``Presents()`` 
+Instead of using the ``PresentationState`` property wrapper you can now use the new ``Presents()`` 
 macro:
 
 ```swift
@@ -354,17 +357,16 @@ Then previously you would drive a sheet presentation from the view like so:
 ```
 
 You can now replace `sheet(store:)` with the vanilla SwiftUI modifier, `sheet(item:)`. First you
-must hold onto the store in your view in a bindable manner, using `@Perception.Bindable`` if
-targeting older platforms:
-
-```swift
-@Perception.Bindable var store: StoreOf<Feature>
-```
-
-…or using `@Bindable` if targeting newer platforms:
+must hold onto the store in your view in a bindable manner, using the `@Bindable` property wrapper:
 
 ```swift
 @Bindable var store: StoreOf<Feature>
+```
+
+…or, if you're targeting older platforms, using `@Perception.Bindable`:
+
+```swift
+@Perception.Bindable var store: StoreOf<Feature>
 ```
 
 Then you can use `sheet(item:)` like so:
@@ -407,8 +409,12 @@ This can now be changed to this:
 }
 ```
 
-Note that the state key path is simply `state: \.destination?.editForm`, and not 
-`state: \.$destination.editForm`.
+Note that the state key path is now simply `\.destination?.editForm`, and not
+`\.$destination.editForm`.
+
+Also note that `navigationDestination(item:)` is not available on older platforms, but can be made
+available as far back as iOS 15 using a wrapper. See
+<doc:TreeBasedNavigation#Backwards-compatible-availability> for more information.
 
 <!-- TODO: Link to `navigationDestination(item:)` availability article section here. -->
 
@@ -513,17 +519,17 @@ struct Path {
 }
 ```
 
-Then in the view you must start holding onto the `store` in a bindable manner, using 
-`@Perception.Bindable` if targeting older platforms:
-
-```swift
-@Perception.Bindable var store: StoreOf<Feature>
-```
-
-…or using `@Bindable` if targeting newer platforms:
+Then in the view you must start holding onto the `store` in a bindable manner, using the `@Bindable`
+property wrapper:
 
 ```swift
 @Bindable var store: StoreOf<Feature>
+```
+
+…or using `@Perception.Bindable` if targeting older platforms:
+
+```swift
+@Perception.Bindable var store: StoreOf<Feature>
 ```
 
 And the original code can now be updated to our custom initializer 
@@ -615,20 +621,21 @@ your feature's state with ``ObservableState()`` and removing all instances of <d
 ```
 
 > Important: Do not remove the ``BindableAction`` conformance from your feature's `Action` or the
-``BindingReducer`` from your reducer. Those are still required for bindings.
+> ``BindingReducer`` from your reducer. Those are still required for bindings.
 
-In the view you must start holding onto the `store` in a bindable manner, which means using 
-`@Perception.Bindable` if targeting older platforms:
-
-```swift
-@Perception.Bindable var store: StoreOf<Feature>
-```
-
-…or using `@Bindable` if targeting newer platforms:
+In the view you must start holding onto the `store` in a bindable manner, which means using the
+`@Bindable` property wrapper:
 
 ```swift
 @Bindable var store: StoreOf<Feature>
 ```
+
+> Note: If targeting older Apple platorms where `@Bindable` is not available, you can use our
+backport of the property wrapper:
+>
+> ```swift
+> @Perception.Bindable var store: StoreOf<Feature>
+> ```
 
 Then in the `body` of the view you can stop using ``WithViewStore`` and instead derive bindings 
 directly from the store:
@@ -674,7 +681,7 @@ the `tab` state and the `tabChanged` action:
 
 ```swift
 TabView(
-  selection: viewStore.binding(get: \.tab, send: Feature.Action.tabChanged)
+  selection: viewStore.binding(get: \.tab, send: { .tabChanged($0) })
 ) {
   // ...
 }
@@ -694,14 +701,8 @@ struct Feature {
 }
 ```
 
-In the view you must start holding onto the `store` in a bindable manner, which means using 
-`@Perception.Bindable` if targeting older platforms:
-
-```swift
-@Perception.Bindable var store: StoreOf<Feature>
-```
-
-…or using `@Bindable` if targeting newer platforms:
+In the view you must start holding onto the `store` in a bindable manner, which means using the
+`@Bindable` (or `@Perception.Bindable`) property wrapper:
 
 ```swift
 @Bindable var store: StoreOf<Feature>
@@ -832,7 +833,39 @@ rather than going through ``Store/send(_:)``:
  }
 ```
 
+## Observing for UIKit
 
+Prior to the observation tools one would typically subscribe to changes in the store via a Combine
+publisher in the entry point of a view, such as `viewDidLoad` in a `UIViewController` subclass:
+
+```swift
+func viewDidLoad() {
+  super.viewDidLoad()
+
+  store.publisher.count
+    .sink { [weak self] in self?.countLabel.text = "\($0)" }
+    .store(in: &cancellables)
+}
+```
+
+This can now be done more simply using the ``ObjectiveC/NSObject/observe(_:)`` method defined on
+all `NSObject`s:
+
+```swift
+func viewDidLoad() {
+  super.viewDidLoad()
+
+  observe { [weak self] in 
+    guard let self 
+    else { return }
+
+    self.countLabel.text = "\(self.store.count)"
+  }
+}
+```
+
+Be sure to read the documentation for ``ObjectiveC/NSObject/observe(_:)`` to learn how to best 
+wield this tool.
 
 ## Incrementally migrating
 

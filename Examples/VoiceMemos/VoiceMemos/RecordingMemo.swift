@@ -10,17 +10,6 @@ struct RecordingMemo {
     var mode: Mode = .recording
     var url: URL
 
-    // NB: This initializer is required in Xcode 15.0.1 (which CI uses at the time of writing
-    //     this). We can remove when Xcode 15.1 is released and CI uses it.
-    #if swift(<5.9.2)
-      init(date: Date, duration: TimeInterval = 0, mode: Mode = .recording, url: URL) {
-        self.date = date
-        self.duration = duration
-        self.mode = mode
-        self.url = url
-      }
-    #endif
-
     enum Mode {
       case recording
       case encoding
@@ -29,14 +18,14 @@ struct RecordingMemo {
 
   enum Action: Sendable {
     case audioRecorderDidFinish(Result<Bool, Error>)
-    case delegate(DelegateAction)
+    case delegate(Delegate)
     case finalRecordingTime(TimeInterval)
     case onTask
     case timerUpdated
     case stopButtonTapped
 
     @CasePathable
-    enum DelegateAction: Sendable {
+    enum Delegate: Sendable {
       case didFinish(Result<State, Error>)
     }
   }
@@ -96,7 +85,7 @@ struct RecordingMemo {
 }
 
 struct RecordingMemoView: View {
-  @Bindable var store: StoreOf<RecordingMemo>
+  let store: StoreOf<RecordingMemo>
 
   var body: some View {
     VStack(spacing: 12) {

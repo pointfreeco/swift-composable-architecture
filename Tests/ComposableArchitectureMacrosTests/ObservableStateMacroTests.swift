@@ -173,6 +173,38 @@
       }
     }
 
+    func testObservableState_Enum_Label() {
+      assertMacro {
+        """
+        @ObservableState
+        enum Path {
+          case feature1(state: String)
+        }
+        """
+      } expansion: {
+        """
+        enum Path {
+          case feature1(state: String)
+
+          var _$id: ComposableArchitecture.ObservableStateID {
+            switch self {
+            case let .feature1(state):
+              return ._$id(for: state)._$tag(0)
+            }
+          }
+
+          mutating func _$willModify() {
+            switch self {
+            case var .feature1(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .feature1(state: state)
+            }
+          }
+        }
+        """
+      }
+    }
+
     func testObservableState_Enum_AccessControl() {
       assertMacro {
         """

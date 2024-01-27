@@ -95,7 +95,7 @@ struct EffectsBasics {
 // MARK: - Feature view
 
 struct EffectsBasicsView: View {
-  @Bindable var store = Store(initialState: EffectsBasics.State()) {
+  var store = Store(initialState: EffectsBasics.State()) {
     EffectsBasics()
   }
   @Environment(\.openURL) var openURL

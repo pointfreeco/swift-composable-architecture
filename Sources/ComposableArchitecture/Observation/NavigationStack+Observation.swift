@@ -64,7 +64,6 @@ import SwiftUI
       return Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
         get: {
           #if DEBUG
-            // TODO: Can this be localized to the `Perception` framework?
             _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
               self.wrappedValue.scope(state: state, action: action)
             }

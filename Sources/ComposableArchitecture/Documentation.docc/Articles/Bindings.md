@@ -12,7 +12,8 @@ such communication with your application's store.
 
 The simplest tool for creating bindings that communicate with your store is to create a dedicated
 action that can change a piece of state in your feature. For example, a reducer may have a domain
-that tracks if user has enabled haptic feedback. First, it can define a boolean property on state:
+that tracks if the user has enabled haptic feedback. First, it can define a boolean property on
+state:
 
 ```swift
 @Reducer
@@ -66,16 +67,7 @@ struct Settings {
 
 And finally, in the view, we can derive a binding from the domain that allows a toggle to 
 communicate with our Composable Architecture feature. First you must hold onto the store in a 
-bindable way, which can be done using `@Perception.Bindable` if targeting older platforms:
-
-```swift
-struct SettingsView: View {
-  @Perception.Bindable var store: StoreOf<Settings>
-  // ...
-}
-```
-
-…or using SwiftUI's `@Bindable` if targeting newer platforms:
+bindable way, which can be done using the `@Bindable` property wrapper from SwiftUI:
 
 ```swift
 struct SettingsView: View {
@@ -84,7 +76,15 @@ struct SettingsView: View {
 }
 ```
 
-Once that is done you can deriving a binding to a piece of state that sends an action when the 
+> Important: If you are targeting older Apple platforms (iOS 16, macOS 13, tvOS 16, watchOS 9, or
+> less), then you must use our backport of the `@Bindable` property wrapper:
+>
+> ```diff
+> -@Bindable var store: StoreOf<Settings>
+> +@Perception.Bindable var store: StoreOf<Settings>
+> ```
+
+Once that is done you can derive a binding to a piece of state that sends an action when the 
 binding is mutated:
 
 ```swift
@@ -100,11 +100,11 @@ var body: some View {
 }
 ```
 
-### Binding state, actions, and reducers
+### Binding actions and reducers
 
 Deriving ad hoc bindings requires many manual steps that can feel tedious, especially for screens
 with many controls driven by many bindings. Because of this, the Composable Architecture comes with
-a collection of tools that can be applied to a reducer's domain and logic to make this easier.
+tools that can be applied to a reducer's domain and logic to make this easier.
 
 For example, a settings screen may model its state with the following struct:
 
@@ -195,8 +195,8 @@ This is a _lot_ of boilerplate for something that should be simple. Luckily, we 
 eliminate this boilerplate using ``BindableAction`` and ``BindingReducer``.
 
 First, we can conform the action type to ``BindableAction`` by collapsing all of the individual,
-field-mutating actions into a single case that holds a ``BindingAction`` generic over the reducer's
-state:
+field-mutating actions into a single case that holds a ``BindingAction`` that is generic over the
+reducer's state:
 
 ```swift
 @Reducer
@@ -212,7 +212,7 @@ struct Settings {
 }
 ```
 
-And then, we can simplify the settings reducer by allowing the ``BindingReducer`` to handle these
+And then, we can simplify the settings reducer by adding a ``BindingReducer`` that handles these
 field mutations for us:
 
 ```swift
@@ -228,17 +228,9 @@ struct Settings {
 }
 ```
 
-Then in the view you must hold onto the store in a bindable manner, which can be done using 
-`@Perception.Bindable` if targeting older platforms:
-
-```swift
-struct SettingsView: View {
-  @Perception.Bindable var store: StoreOf<Settings>
-  // ...
-}
-```
-
-…or using SwiftUI's `@Bindable` if targeting newer platforms:
+Then in the view you must hold onto the store in a bindable manner, which can be done using the
+`@Bindable` property wrapper (or the backported tool `@Perception.Bindable` if targeting older
+Apple platforms):
 
 ```swift
 struct SettingsView: View {
@@ -247,7 +239,7 @@ struct SettingsView: View {
 }
 ```
 
-Then bindings can be derived from the store using a familiar `$` syntax:
+Then bindings can be derived from the store using familiar `$` syntax:
 
 ```swift
 TextField("Display name", text: $store.displayName)
@@ -268,7 +260,7 @@ var body: some Reducer<State, Action> {
       // Validate display name
   
     case .binding(\.enableNotifications):
-      // Return an authorization request effect
+      // Return an effect to request authorization from UNUserNotificationCenter
   
     // ...
     }
@@ -276,10 +268,27 @@ var body: some Reducer<State, Action> {
 }
 ```
 
+Or you can apply ``Reducer/onChange(of:_:)`` to the ``BindingReducer`` to react to changes to
+particular fields:
+
+```swift
+var body: some Reducer<State, Action> {
+  BindingReducer()
+    .onChange(of: \.displayName) { oldValue, newValue in
+      // Validate display name
+    }
+    .onChange(of: \.enableNotifications) { oldValue, newValue in
+      // Return an authorization request effect
+    }
+
+  // ...
+}
+```
+
 Binding actions can also be tested in much the same way regular actions are tested. Rather than send
 a specific action describing how a binding changed, such as `.displayNameChanged("Blob")`, you will
 send a ``BindingAction`` action that describes which key path is being set to what value, such as
-`.set(\.$displayName, "Blob")`:
+`.set(\.displayName, "Blob")`:
 
 ```swift
 let store = TestStore(initialState: Settings.State()) {

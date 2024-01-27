@@ -114,8 +114,8 @@ struct InventoryView: View {
 }
 ```
 
-> Note: We use SwiftUI's `@State` property wrapper to produce a binding to a store,
-> which can be further scoped using ``SwiftUI/Binding/scope(state:action:)-4mj4d``.
+> Note: We use SwiftUI's `@Bindable` property wrapper to produce a binding to a store, which can be
+> further scoped using ``SwiftUI/Binding/scope(state:action:)-4mj4d``.
 
 With those few steps completed the domains and views of the parent and child features are now
 integrated together, and when the `addItem` state flips to a non-`nil` value the sheet will be
@@ -376,10 +376,16 @@ seemingly disparate forms of navigation can be unified under a single style of A
 
 Depending on your deployment target, certain APIs may be unavailable. For example, if you target
 iOS 16, you will not have access to iOS 17's `navigationDestination(item:)` view modifier. You can
-start migration while continuing to support older clients by using an availability condition:
+easily backport the tool to work on older platforms by defining a wrapper for the API that calls
+down to the available `navigationDestination(isPresented:)` API. Just paste the following into your
+project:
 
 ```swift
 extension View {
+  @available(iOS, introduced: 13, deprecated: 16)
+  @available(macOS, introduced: 10.15, deprecated: 13)
+  @available(tvOS, introduced: 13, deprecated: 16)
+  @available(watchOS, introduced: 6, deprecated: 9)
   @ViewBuilder
   func navigationDestinationWrapper<D: Hashable, C: View>(
     item: Binding<D?>,
@@ -407,9 +413,10 @@ extension View {
 }
 ```
 
-If you target earlier OSes, you may find yourself reaching for `NavigationLink`'s deprecated binding
-APIs. You can similarly define your own initializer that takes a binding of an optional "item" to
-programmatically drive navigation links with store bindings:
+If you target platforms earlier than iOS 16, macOS 13, tvOS 16 and watchOS 9, then you cannot use
+`navigationDestination` at all. Instead you can use `NavigationLink`, but you must define another
+helper for driving navigation off of a binding of data rather than just a simple boolean. Just paste
+the following into your project:
 
 ```swift
 @available(iOS, introduced: 13, deprecated: 16)
