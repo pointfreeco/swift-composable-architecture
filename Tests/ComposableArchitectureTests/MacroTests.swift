@@ -34,8 +34,8 @@
     }
   }
 
-private enum TestReducerMacro_FillInRequirements {
-  @Reducer
-  struct Feature {}
-}
+  private enum TestReducerMacro_FillInRequirements {
+    @Reducer
+    struct Feature {}
+  }
 #endif

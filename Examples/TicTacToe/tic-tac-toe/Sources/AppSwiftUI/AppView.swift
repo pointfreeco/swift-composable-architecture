@@ -12,7 +12,7 @@ public struct AppView: View {
   }
 
   public var body: some View {
-    switch self.store.case {
+    switch store.case {
     case let .login(store):
       NavigationStack {
         LoginView(store: store)

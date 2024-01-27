@@ -65,7 +65,8 @@
     @available(tvOS, introduced: 9999)
     @available(visionOS, introduced: 9999)
     @available(watchOS, introduced: 9999)
-    struct Unavailable: Reducer {
+    @Reducer
+    struct Unavailable {
       let body = EmptyReducer<State, Action>()
     }
 
