@@ -114,6 +114,26 @@ struct ObservablePresentationView: View {
       case sheet(PresentationAction<ObservableBasicsView.Feature.Action>)
       case toggleObserveChildCountButtonTapped
     }
+    @Reducer
+    struct Destination {
+      @ObservableState
+      enum State: Equatable {
+        case fullScreenCover(ObservableBasicsView.Feature.State)
+        case popover(ObservableBasicsView.Feature.State)
+      }
+      enum Action {
+        case fullScreenCover(ObservableBasicsView.Feature.Action)
+        case popover(ObservableBasicsView.Feature.Action)
+      }
+      var body: some ReducerOf<Self> {
+        Scope(state: \.fullScreenCover, action: \.fullScreenCover) {
+          ObservableBasicsView.Feature()
+        }
+        Scope(state: \.popover, action: \.popover) {
+          ObservableBasicsView.Feature()
+        }
+      }
+    }
     var body: some ReducerOf<Self> {
       Reduce { state, action in
         switch action {

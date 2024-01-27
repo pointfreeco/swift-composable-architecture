@@ -55,6 +55,58 @@
       }
     }
 
+    /// Creates a `UIAlertController` from a ``Store`` focused on alert state.
+    ///
+    /// You can use this initializer in tandem with ``ObjectiveC/NSObject/observe(_:)`` and
+    /// ``Store/scope(state:action:)-36e72`` to drive an alert from state:
+    ///
+    /// ```swift
+    /// class FeatureController: UIViewController {
+    ///   let store: StoreOf<Feature>
+    ///   private weak var alertController: UIAlertController?
+    ///   // ...
+    ///   func viewDidLoad() {
+    ///     // ...
+    ///     observe { [weak self] in
+    ///       guard let self
+    ///       else { return }
+    ///
+    ///       if
+    ///         let store = store.scope(state: \.alert, action: \.alert),
+    ///         alertController == nil
+    ///       {
+    ///         alertController = UIAlertController(store: store)
+    ///         self.present(alertController!, animated: true, completion: nil)
+    ///       } else if store.alert == nil, alertController != nil {
+    ///         alertController?.dismiss(animated: true)
+    ///         alertController = nil
+    ///       }
+    ///     }
+    ///   }
+    /// }
+    /// ```
+    public convenience init<Action>(
+      store: Store<AlertState<Action>, PresentationAction<Action>>
+    ) {
+      let state = store.currentState
+      self.init(
+        title: String(state: state.title),
+        message: state.message.map { String(state: $0) },
+        preferredStyle: .alert
+      )
+      for button in state.buttons {
+        self.addAction(.init(button, action: { store.send($0.map { .presented($0) } ?? .dismiss) }))
+      }
+      if state.buttons.isEmpty {
+        self.addAction(
+          .init(
+            title: "OK",
+            style: .cancel,
+            handler: { _ in store.send(.dismiss) })
+        )
+      }
+    }
+
     /// Creates a `UIAlertController` from `ConfirmationDialogState`.
     ///
     /// - Parameters:
@@ -72,6 +124,59 @@
         self.addAction(.init(button, action: send))
       }
     }
+
+    /// Creates a `UIAlertController` from a ``Store`` focused on confirmation dialog state.
+    ///
+    /// You can use this initializer in tandem with ``ObjectiveC/NSObject/observe(_:)`` and
+    /// ``Store/scope(state:action:)-36e72`` to drive an alert from state:
+    ///
+    /// ```swift
+    /// class FeatureController: UIViewController {
+    ///   let store: StoreOf<Feature>
+    ///   private weak var alertController: UIAlertController?
+    ///   // ...
+    ///   func viewDidLoad() {
+    ///     // ...
+    ///     observe { [weak self] in
+    ///       guard let self
+    ///       else { return }
+    ///
+    ///       if
+    ///         let store = store.scope(state: \.actionSheet, action: \.actionSheet),
+    ///         alertController == nil
+    ///       {
+    ///         alertController = UIAlertController(store: store)
+    ///         self.present(alertController!, animated: true, completion: nil)
+    ///       } else if store.alert == nil, alertController != nil {
+    ///         alertController?.dismiss(animated: true)
+    ///         alertController = nil
+    ///       }
+    ///     }
+    ///   }
+    /// }
+    /// ```
+    public convenience init<Action>(
+      store: Store<ConfirmationDialogState<Action>, PresentationAction<Action>>
+    ) {
+      let state = store.currentState
+      self.init(
+        title: String(state: state.title),
+        message: state.message.map { String(state: $0) },
+        preferredStyle: .actionSheet
+      )
+      for button in state.buttons {
+        self.addAction(.init(button, action: { store.send($0.map { .presented($0) } ?? .dismiss) }))
+      }
+      if state.buttons.isEmpty {
+        self.addAction(
+          .init(
+            title: "OK",
+            style: .cancel,
+            handler: { _ in store.send(.dismiss) })
+        )
+      }
+    }
+
   }
 
   @available(iOS 13, *)

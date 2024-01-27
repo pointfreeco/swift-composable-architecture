@@ -274,7 +274,11 @@ extension ObservableStateMacro {
     var getCases: [String] = []
     var willModifyCases: [String] = []
     for (tag, enumCaseDecl) in enumCaseDecls.enumerated() {
-      if enumCaseDecl.parameterClause?.parameters.count == 1 {
+      // TODO: Support multiple parameters of observable state?
+      if let parameters = enumCaseDecl.parameterClause?.parameters,
+        parameters.count == 1,
+        let parameter = parameters.first
+      {
         getCases.append(
           """
           case let .\(enumCaseDecl.name.text)(state):
@@ -285,7 +289,7 @@ extension ObservableStateMacro {
           """
           case var .\(enumCaseDecl.name.text)(state):
           \(moduleName)._$willModify(&state)
-          self = .\(enumCaseDecl.name.text)(state)
+          self = .\(enumCaseDecl.name.text)(\(parameter.firstName.map { "\($0): " } ?? "")state)
           """
         )
       } else {
@@ -426,28 +430,13 @@ extension ObservableStateMacro: ExtensionMacro {
       return []
     }
 
-    let decl: DeclSyntax = """
-      extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName) {}
-      """
-    // TODO: Take maximum of current availability and 17/14/17/10/etc...
-    let obsDecl: DeclSyntax = """
-      @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-      extension \(raw: type.trimmedDescription): Observation.Observable {}
-      """
-    let ext = decl.cast(ExtensionDeclSyntax.self)
-    let obsExt = obsDecl.cast(ExtensionDeclSyntax.self)
-
-    if let availability = declaration.attributes.availability {
-      return [
-        ext.with(\.attributes, availability),
-        obsExt.with(\.attributes, availability),
-      ]
-    } else {
-      return [
-        ext,
-        obsExt,
-      ]
-    }
+    return [
+      ("""
+      extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName), \
+      Observation.Observable {}
+      """ as DeclSyntax)
+      .cast(ExtensionDeclSyntax.self)
+    ]
   }
 }
 

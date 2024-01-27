@@ -2593,10 +2593,10 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  func testFastPastEquality() {
+  func testFastPathEquality() {
     struct State: Equatable {
       static func == (lhs: Self, rhs: Self) -> Bool {
-        Thread.sleep(forTimeInterval: 1)
+        Thread.sleep(forTimeInterval: 5)
         return true
       }
     }

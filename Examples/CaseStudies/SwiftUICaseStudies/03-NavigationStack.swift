@@ -101,10 +101,13 @@ struct NavigationDemoView: View {
     } destination: { store in
       switch store.case {
       case let .screenA(store):
+        if let store = store.scope(state: \.screenA, action: \.screenA) {
         ScreenAView(store: store)
       case let .screenB(store):
+        if let store = store.scope(state: \.screenB, action: \.screenB) {
         ScreenBView(store: store)
       case let .screenC(store):
+        if let store = store.scope(state: \.screenC, action: \.screenC) {
         ScreenCView(store: store)
       }
     }

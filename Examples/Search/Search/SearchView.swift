@@ -81,6 +81,18 @@ struct Search {
         state.resultForecastRequestInFlight = nil
         return .none
 
+      case let .searchQueryChanged(query):
+        state.searchQuery = query
+
+        // When the query is cleared we can clear the search results, but we have to make sure to
+        // cancel any in-flight search requests too, otherwise we may get data coming in later.
+        guard !state.searchQuery.isEmpty else {
+          state.results = []
+          state.weather = nil
+          return .cancel(id: CancelID.location)
+        }
+        return .none
+
       case .searchQueryChangeDebounced:
         guard !state.searchQuery.isEmpty else {
           return .none
@@ -128,10 +140,12 @@ struct SearchView: View {
 
         HStack {
           Image(systemName: "magnifyingglass")
-          TextField("New York, San Francisco, ...", text: $store.searchQuery)
-            .textFieldStyle(.roundedBorder)
-            .autocapitalization(.none)
-            .disableAutocorrection(true)
+          TextField(
+            "New York, San Francisco, ...", text: $store.searchQuery.sending(\.searchQueryChanged)
+          )
+          .textFieldStyle(.roundedBorder)
+          .autocapitalization(.none)
+          .disableAutocorrection(true)
         }
         .padding(.horizontal, 16)
 

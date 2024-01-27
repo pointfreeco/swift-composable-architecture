@@ -55,7 +55,7 @@ struct Timers {
 // MARK: - Feature view
 
 struct TimersView: View {
-  @Bindable var store = Store(initialState: Timers.State()) {
+  var store = Store(initialState: Timers.State()) {
     Timers()
   }
 

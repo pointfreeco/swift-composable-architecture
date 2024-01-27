@@ -3,8 +3,9 @@ import LoginCore
 import TwoFactorUIKit
 import UIKit
 
+@ViewAction(for: Login.self)
 public class LoginViewController: UIViewController {
-  let store: StoreOf<Login>
+  public let store: StoreOf<Login>
 
   public init(store: StoreOf<Login>) {
     self.store = store
@@ -97,19 +98,10 @@ public class LoginViewController: UIViewController {
       loginButton.isEnabled = store.isLoginButtonEnabled
       activityIndicator.isHidden = store.isActivityIndicatorHidden
 
-      if let alert = store.alert,
+      if let store = store.scope(state: \.alert, action: \.alert),
         alertController == nil
       {
-        alertController = UIAlertController(
-          title: String(state: alert.title),
-          message: nil,
-          preferredStyle: .alert
-        )
-        alertController?.addAction(
-          UIAlertAction(title: "Ok", style: .default) { _ in
-            self.store.send(.alert(.dismiss))
-          }
-        )
+        alertController = UIAlertController(store: store)
         present(alertController!, animated: true, completion: nil)
       } else if alertController != nil {
         alertController?.dismiss(animated: true)
@@ -124,7 +116,7 @@ public class LoginViewController: UIViewController {
           twoFactorViewController!,
           animated: true
         )
-      } else if twoFactorViewController != nil {
+      } else if store.alert == nil, twoFactorViewController != nil {
         twoFactorViewController?.dismiss(animated: true)
         twoFactorViewController = nil
       }
@@ -135,12 +127,12 @@ public class LoginViewController: UIViewController {
     super.viewDidAppear(animated)
 
     if !isMovingToParent {
-      store.send(.twoFactor(.dismiss))
+      store.twoFactorDismissed()
     }
   }
 
   @objc private func loginButtonTapped(sender: UIButton) {
-    store.send(.view(.loginButtonTapped))
+    send(.loginButtonTapped)
   }
 
   @objc private func emailTextFieldChanged(sender: UITextField) {
@@ -157,4 +149,10 @@ extension Login.State {
   fileprivate var isEmailTextFieldEnabled: Bool { !isLoginRequestInFlight }
   fileprivate var isLoginButtonEnabled: Bool { isFormValid && !isLoginRequestInFlight }
   fileprivate var isPasswordTextFieldEnabled: Bool { !isLoginRequestInFlight }
+}
+
+extension StoreOf<Login> {
+  fileprivate func twoFactorDismissed() {
+    send(.twoFactor(.dismiss))
+  }
 }

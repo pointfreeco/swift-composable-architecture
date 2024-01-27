@@ -9,6 +9,14 @@ private let readMe = """
 @Reducer
 struct MultipleDestinations {
   @Reducer(state: .equatable)
+  public struct Destination {
+    @ObservableState
+    public enum State: Equatable {
+      case drillDown(Counter.State)
+      case popover(Counter.State)
+      case sheet(Counter.State)
+    }
+
   enum Destination {
     case drillDown(Counter)
     case popover(Counter)
