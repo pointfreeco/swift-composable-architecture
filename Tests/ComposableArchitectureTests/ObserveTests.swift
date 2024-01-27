@@ -33,10 +33,9 @@
     }
   }
 
-@Perceptible
-class Model {
-  var count = 0
-}
+  @Perceptible
+  class Model {
+    var count = 0
+  }
 
 #endif
-
