@@ -5,9 +5,10 @@ import Dispatch
 
 @Reducer
 public struct TwoFactor: Sendable {
+  @ObservableState
   public struct State: Equatable {
-    @PresentationState public var alert: AlertState<Action.Alert>?
-    @BindingState public var code = ""
+    @Presents public var alert: AlertState<Action.Alert>?
+    public var code = ""
     public var isFormValid = false
     public var isTwoFactorRequestInFlight = false
     public let token: String
@@ -17,7 +18,7 @@ public struct TwoFactor: Sendable {
     }
   }
 
-  public enum Action: Sendable {
+  public enum Action: Sendable, ViewAction {
     case alert(PresentationAction<Alert>)
     case twoFactorResponse(Result<AuthenticationResponse, Error>)
     case view(View)

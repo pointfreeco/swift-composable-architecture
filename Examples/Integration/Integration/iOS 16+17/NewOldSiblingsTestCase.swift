@@ -1,33 +1,36 @@
 @_spi(Logging) import ComposableArchitecture
 import SwiftUI
 
-struct SiblingFeaturesView: View {
+struct NewOldSiblingsView: View {
   @State var store = Store(initialState: Feature.State()) {
     Feature()
   }
 
   var body: some View {
-    VStack {
-      Form {
+    let _ = Logger.shared.log("\(Self.self).body")
+    Form {
+      Section {
         BasicsView(
           store: self.store.scope(state: \.child1, action: \.child1)
         )
+      } header: {
+        Text("iOS 16")
       }
-      Form {
-        BasicsView(
+
+      Section {
+        ObservableBasicsView(
           store: self.store.scope(state: \.child2, action: \.child2)
         )
+      } header: {
+        Text("iOS 17")
       }
-      Spacer()
-      Form {
+
+      Section {
         Button("Reset all") {
           self.store.send(.resetAllButtonTapped)
         }
         Button("Reset self") {
           self.store.send(.resetSelfButtonTapped)
-        }
-        Button("Swap") {
-          self.store.send(.swapButtonTapped)
         }
       }
     }
@@ -37,21 +40,20 @@ struct SiblingFeaturesView: View {
   struct Feature {
     struct State: Equatable {
       var child1 = BasicsView.Feature.State()
-      var child2 = BasicsView.Feature.State()
+      var child2 = ObservableBasicsView.Feature.State()
     }
     enum Action {
       case child1(BasicsView.Feature.Action)
-      case child2(BasicsView.Feature.Action)
+      case child2(ObservableBasicsView.Feature.Action)
       case resetAllButtonTapped
       case resetSelfButtonTapped
-      case swapButtonTapped
     }
     var body: some ReducerOf<Self> {
       Scope(state: \.child1, action: \.child1) {
         BasicsView.Feature()
       }
       Scope(state: \.child2, action: \.child2) {
-        BasicsView.Feature()
+        ObservableBasicsView.Feature()
       }
       Reduce { state, action in
         switch action {
@@ -61,15 +63,10 @@ struct SiblingFeaturesView: View {
           return .none
         case .resetAllButtonTapped:
           state.child1 = BasicsView.Feature.State()
-          state.child2 = BasicsView.Feature.State()
+          state.child2 = ObservableBasicsView.Feature.State()
           return .none
         case .resetSelfButtonTapped:
           state = State()
-          return .none
-        case .swapButtonTapped:
-          let copy = state.child1
-          state.child1 = state.child2
-          state.child2 = copy
           return .none
         }
       }
@@ -77,9 +74,9 @@ struct SiblingFeaturesView: View {
   }
 }
 
-struct SiblingPreviews: PreviewProvider {
+struct NewOldSiblingsPreviews: PreviewProvider {
   static var previews: some View {
     let _ = Logger.shared.isEnabled = true
-    SiblingFeaturesView()
+    NewOldSiblingsView()
   }
 }

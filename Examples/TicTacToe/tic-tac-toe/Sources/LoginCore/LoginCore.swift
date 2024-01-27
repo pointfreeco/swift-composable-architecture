@@ -5,18 +5,19 @@ import TwoFactorCore
 
 @Reducer
 public struct Login: Sendable {
+  @ObservableState
   public struct State: Equatable {
-    @PresentationState public var alert: AlertState<Action.Alert>?
-    @BindingState public var email = ""
+    @Presents public var alert: AlertState<Action.Alert>?
+    public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
-    @BindingState public var password = ""
-    @PresentationState public var twoFactor: TwoFactor.State?
+    public var password = ""
+    @Presents public var twoFactor: TwoFactor.State?
 
     public init() {}
   }
 
-  public enum Action: Sendable {
+  public enum Action: Sendable, ViewAction {
     case alert(PresentationAction<Alert>)
     case loginResponse(Result<AuthenticationResponse, Error>)
     case twoFactor(PresentationAction<TwoFactor.Action>)

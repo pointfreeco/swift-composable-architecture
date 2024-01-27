@@ -13,6 +13,7 @@ private let readMe = """
 
 @Reducer
 struct Timers {
+  @ObservableState
   struct State: Equatable {
     var isTimerActive = false
     var secondsElapsed = 0
@@ -54,67 +55,65 @@ struct Timers {
 // MARK: - Feature view
 
 struct TimersView: View {
-  @State var store = Store(initialState: Timers.State()) {
+  var store = Store(initialState: Timers.State()) {
     Timers()
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        AboutView(readMe: readMe)
+    Form {
+      AboutView(readMe: readMe)
 
-        ZStack {
-          Circle()
-            .fill(
-              AngularGradient(
-                gradient: Gradient(
-                  colors: [
-                    .blue.opacity(0.3),
-                    .blue,
-                    .blue,
-                    .green,
-                    .green,
-                    .yellow,
-                    .yellow,
-                    .red,
-                    .red,
-                    .purple,
-                    .purple,
-                    .purple.opacity(0.3),
-                  ]
-                ),
-                center: .center
-              )
+      ZStack {
+        Circle()
+          .fill(
+            AngularGradient(
+              gradient: Gradient(
+                colors: [
+                  .blue.opacity(0.3),
+                  .blue,
+                  .blue,
+                  .green,
+                  .green,
+                  .yellow,
+                  .yellow,
+                  .red,
+                  .red,
+                  .purple,
+                  .purple,
+                  .purple.opacity(0.3),
+                ]
+              ),
+              center: .center
             )
-            .rotationEffect(.degrees(-90))
-          GeometryReader { proxy in
-            Path { path in
-              path.move(to: CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2))
-              path.addLine(to: CGPoint(x: proxy.size.width / 2, y: 0))
-            }
-            .stroke(.primary, lineWidth: 3)
-            .rotationEffect(.degrees(Double(viewStore.secondsElapsed) * 360 / 60))
+          )
+          .rotationEffect(.degrees(-90))
+        GeometryReader { proxy in
+          Path { path in
+            path.move(to: CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2))
+            path.addLine(to: CGPoint(x: proxy.size.width / 2, y: 0))
           }
+          .stroke(.primary, lineWidth: 3)
+          .rotationEffect(.degrees(Double(store.secondsElapsed) * 360 / 60))
         }
-        .aspectRatio(1, contentMode: .fit)
-        .frame(maxWidth: 280)
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+      }
+      .aspectRatio(1, contentMode: .fit)
+      .frame(maxWidth: 280)
+      .frame(maxWidth: .infinity)
+      .padding(.vertical, 16)
 
-        Button {
-          viewStore.send(.toggleTimerButtonTapped)
-        } label: {
-          Text(viewStore.isTimerActive ? "Stop" : "Start")
-            .padding(8)
-        }
-        .frame(maxWidth: .infinity)
-        .tint(viewStore.isTimerActive ? Color.red : .accentColor)
-        .buttonStyle(.borderedProminent)
+      Button {
+        store.send(.toggleTimerButtonTapped)
+      } label: {
+        Text(store.isTimerActive ? "Stop" : "Start")
+          .padding(8)
       }
-      .navigationTitle("Timers")
-      .onDisappear {
-        viewStore.send(.onDisappear)
-      }
+      .frame(maxWidth: .infinity)
+      .tint(store.isTimerActive ? Color.red : .accentColor)
+      .buttonStyle(.borderedProminent)
+    }
+    .navigationTitle("Timers")
+    .onDisappear {
+      store.send(.onDisappear)
     }
   }
 }

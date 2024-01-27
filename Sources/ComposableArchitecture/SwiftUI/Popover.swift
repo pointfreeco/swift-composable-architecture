@@ -17,6 +17,26 @@ extension View {
   ///   - arrowEdge: The edge of the `attachmentAnchor` that defines the location of the popover's
   ///     arrow in macOS. iOS ignores this parameter.
   ///   - content: A closure returning the content of the popover.
+  @available(
+    iOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'popover(item:)' instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    macOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'popover(item:)' instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    tvOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'popover(item:)' instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    watchOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'popover(item:)' instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
   public func popover<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),

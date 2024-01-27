@@ -22,6 +22,7 @@ private let readMe = """
 
 @Reducer
 struct EffectsBasics {
+  @ObservableState
   struct State: Equatable {
     var count = 0
     var isNumberFactRequestInFlight = false
@@ -94,63 +95,61 @@ struct EffectsBasics {
 // MARK: - Feature view
 
 struct EffectsBasicsView: View {
-  @State var store = Store(initialState: EffectsBasics.State()) {
+  var store = Store(initialState: EffectsBasics.State()) {
     EffectsBasics()
   }
   @Environment(\.openURL) var openURL
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
 
-        Section {
-          HStack {
-            Button {
-              viewStore.send(.decrementButtonTapped)
-            } label: {
-              Image(systemName: "minus")
-            }
-
-            Text("\(viewStore.count)")
-              .monospacedDigit()
-
-            Button {
-              viewStore.send(.incrementButtonTapped)
-            } label: {
-              Image(systemName: "plus")
-            }
+      Section {
+        HStack {
+          Button {
+            store.send(.decrementButtonTapped)
+          } label: {
+            Image(systemName: "minus")
           }
+
+          Text("\(store.count)")
+            .monospacedDigit()
+
+          Button {
+            store.send(.incrementButtonTapped)
+          } label: {
+            Image(systemName: "plus")
+          }
+        }
+        .frame(maxWidth: .infinity)
+
+        Button("Number fact") { store.send(.numberFactButtonTapped) }
           .frame(maxWidth: .infinity)
 
-          Button("Number fact") { viewStore.send(.numberFactButtonTapped) }
+        if store.isNumberFactRequestInFlight {
+          ProgressView()
             .frame(maxWidth: .infinity)
-
-          if viewStore.isNumberFactRequestInFlight {
-            ProgressView()
-              .frame(maxWidth: .infinity)
-              // NB: There seems to be a bug in SwiftUI where the progress view does not show
-              // a second time unless it is given a new identity.
-              .id(UUID())
-          }
-
-          if let numberFact = viewStore.numberFact {
-            Text(numberFact)
-          }
+            // NB: There seems to be a bug in SwiftUI where the progress view does not show
+            // a second time unless it is given a new identity.
+            .id(UUID())
         }
 
-        Section {
-          Button("Number facts provided by numbersapi.com") {
-            self.openURL(URL(string: "http://numbersapi.com")!)
-          }
-          .foregroundStyle(.secondary)
-          .frame(maxWidth: .infinity)
+        if let numberFact = store.numberFact {
+          Text(numberFact)
         }
       }
-      .buttonStyle(.borderless)
+
+      Section {
+        Button("Number facts provided by numbersapi.com") {
+          openURL(URL(string: "http://numbersapi.com")!)
+        }
+        .foregroundStyle(.secondary)
+        .frame(maxWidth: .infinity)
+      }
     }
+    .buttonStyle(.borderless)
     .navigationTitle("Effects")
   }
 }

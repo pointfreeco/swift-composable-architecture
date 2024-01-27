@@ -13,8 +13,9 @@ private let readMe = """
 
 @Reducer
 struct LoadThenPresent {
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var counter: Counter.State?
+    @Presents var counter: Counter.State?
     var isActivityIndicatorVisible = false
   }
 
@@ -55,33 +56,31 @@ struct LoadThenPresent {
 // MARK: - Feature view
 
 struct LoadThenPresentView: View {
-  @State var store = Store(initialState: LoadThenPresent.State()) {
+  @Bindable var store = Store(initialState: LoadThenPresent.State()) {
     LoadThenPresent()
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        Button {
-          viewStore.send(.counterButtonTapped)
-        } label: {
-          HStack {
-            Text("Load optional counter")
-            if viewStore.isActivityIndicatorVisible {
-              Spacer()
-              ProgressView()
-            }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
+      Button {
+        store.send(.counterButtonTapped)
+      } label: {
+        HStack {
+          Text("Load optional counter")
+          if store.isActivityIndicatorVisible {
+            Spacer()
+            ProgressView()
           }
         }
       }
-      .sheet(store: self.store.scope(state: \.$counter, action: \.counter)) { store in
-        CounterView(store: store)
-      }
-      .navigationTitle("Load and present")
     }
+    .sheet(item: $store.scope(state: \.counter, action: \.counter)) { store in
+      CounterView(store: store)
+    }
+    .navigationTitle("Load and present")
   }
 }
 

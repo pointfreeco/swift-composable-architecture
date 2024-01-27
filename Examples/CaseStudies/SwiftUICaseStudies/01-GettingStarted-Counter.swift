@@ -13,6 +13,7 @@ private let readMe = """
 
 @Reducer
 struct Counter {
+  @ObservableState
   struct State: Equatable {
     var count = 0
   }
@@ -42,29 +43,27 @@ struct CounterView: View {
   let store: StoreOf<Counter>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      HStack {
-        Button {
-          viewStore.send(.decrementButtonTapped)
-        } label: {
-          Image(systemName: "minus")
-        }
+    HStack {
+      Button {
+        store.send(.decrementButtonTapped)
+      } label: {
+        Image(systemName: "minus")
+      }
 
-        Text("\(viewStore.count)")
-          .monospacedDigit()
+      Text("\(store.count)")
+        .monospacedDigit()
 
-        Button {
-          viewStore.send(.incrementButtonTapped)
-        } label: {
-          Image(systemName: "plus")
-        }
+      Button {
+        store.send(.incrementButtonTapped)
+      } label: {
+        Image(systemName: "plus")
       }
     }
   }
 }
 
 struct CounterDemoView: View {
-  @State var store = Store(initialState: Counter.State()) {
+  var store = Store(initialState: Counter.State()) {
     Counter()
   }
 
@@ -75,7 +74,7 @@ struct CounterDemoView: View {
       }
 
       Section {
-        CounterView(store: self.store)
+        CounterView(store: store)
           .frame(maxWidth: .infinity)
       }
     }

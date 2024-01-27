@@ -8,14 +8,25 @@ public protocol _EphemeralState {
   static var actionType: Any.Type { get }
 }
 
-extension AlertState: _EphemeralState {
-  public static var actionType: Any.Type { Action.self }
-}
-
-@available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
-extension ConfirmationDialogState: _EphemeralState {
-  public static var actionType: Any.Type { Action.self }
-}
+#if swift(>=5.8)
+  @_documentation(visibility:private)
+  extension AlertState: _EphemeralState {
+    public static var actionType: Any.Type { Action.self }
+  }
+  @_documentation(visibility:private)
+  @available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
+  extension ConfirmationDialogState: _EphemeralState {
+    public static var actionType: Any.Type { Action.self }
+  }
+#else
+  extension AlertState: _EphemeralState {
+    public static var actionType: Any.Type { Action.self }
+  }
+  @available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
+  extension ConfirmationDialogState: _EphemeralState {
+    public static var actionType: Any.Type { Action.self }
+  }
+#endif
 
 @usableFromInline
 func ephemeralType<State>(of state: State) -> (any _EphemeralState.Type)? {

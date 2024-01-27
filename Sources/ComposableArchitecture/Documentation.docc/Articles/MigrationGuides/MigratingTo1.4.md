@@ -147,7 +147,7 @@ store.receive(\.child.presented.response.success)
 > }
 > ```
 
-And in the case of ``PresentationAction`` you can even omit the ``PresentationAction/presented(_:)`` 
+And in the case of ``PresentationAction`` you can even omit the ``PresentationAction/presented(_:)``
 path component:
 
 ```swift

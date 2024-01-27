@@ -55,7 +55,6 @@
 		DC4C6EB62450DD380066A05D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC4C6EB42450DD380066A05D /* LaunchScreen.storyboard */; };
 		DC4C6EC12450DD390066A05D /* UIKitCaseStudiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6EC02450DD390066A05D /* UIKitCaseStudiesTests.swift */; };
 		DC4C6ED62450E1050066A05D /* CounterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6ED52450E1050066A05D /* CounterViewController.swift */; };
-		DC4C6ED82450E4570066A05D /* UIViewRepresented.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6ED72450E4570066A05D /* UIViewRepresented.swift */; };
 		DC4C6EDA2450E6050066A05D /* NavigateAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4C6ED92450E6050066A05D /* NavigateAndLoad.swift */; };
 		DC5B505125C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */; };
 		DC630FDA2451016B00BAECBA /* ListsOfState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC630FD92451016B00BAECBA /* ListsOfState.swift */; };
@@ -199,7 +198,6 @@
 		DC4C6EC02450DD390066A05D /* UIKitCaseStudiesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitCaseStudiesTests.swift; sourceTree = "<group>"; };
 		DC4C6EC22450DD390066A05D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DC4C6ED52450E1050066A05D /* CounterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterViewController.swift; sourceTree = "<group>"; };
-		DC4C6ED72450E4570066A05D /* UIViewRepresented.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewRepresented.swift; sourceTree = "<group>"; };
 		DC4C6ED92450E6050066A05D /* NavigateAndLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigateAndLoad.swift; sourceTree = "<group>"; };
 		DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Bindings-Forms.swift"; sourceTree = "<group>"; };
 		DC630FD92451016B00BAECBA /* ListsOfState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsOfState.swift; sourceTree = "<group>"; };
@@ -313,7 +311,6 @@
 			children = (
 				DC25DC632450F2DF00082E81 /* ActivityIndicatorViewController.swift */,
 				DC25DC5E2450F13200082E81 /* IfLetStoreController.swift */,
-				DC4C6ED72450E4570066A05D /* UIViewRepresented.swift */,
 			);
 			path = Internal;
 			sourceTree = "<group>";
@@ -706,7 +703,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC4C6ED82450E4570066A05D /* UIViewRepresented.swift in Sources */,
 				DC25DC642450F2DF00082E81 /* ActivityIndicatorViewController.swift in Sources */,
 				DC4C6ED62450E1050066A05D /* CounterViewController.swift in Sources */,
 				DC4C6EDA2450E6050066A05D /* NavigateAndLoad.swift in Sources */,
@@ -835,7 +831,6 @@
 				SDKROOT = appletvos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.3;
 			};
 			name = Debug;
 		};
@@ -855,7 +850,6 @@
 				SDKROOT = appletvos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.3;
 			};
 			name = Release;
 		};
@@ -877,7 +871,6 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOSCaseStudies.app/tvOSCaseStudies";
-				TVOS_DEPLOYMENT_TARGET = 13.3;
 			};
 			name = Debug;
 		};
@@ -899,7 +892,6 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/tvOSCaseStudies.app/tvOSCaseStudies";
-				TVOS_DEPLOYMENT_TARGET = 13.3;
 			};
 			name = Release;
 		};

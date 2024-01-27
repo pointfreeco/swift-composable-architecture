@@ -65,17 +65,17 @@ import SwiftUI
 ///   var body: some View {
 ///     TabView {
 ///       ActivityView(
-///         store: self.store.scope(state: \.activity, action: \.activity)
+///         store: store.scope(state: \.activity, action: \.activity)
 ///       )
 ///       .tabItem { Text("Activity") }
 ///
 ///       SearchView(
-///         store: self.store.scope(state: \.search, action: \.search)
+///         store: store.scope(state: \.search, action: \.search)
 ///       )
 ///       .tabItem { Text("Search") }
 ///
 ///       ProfileView(
-///         store: self.store.scope(state: \.profile, action: \.profile)
+///         store: store.scope(state: \.profile, action: \.profile)
 ///       )
 ///       .tabItem { Text("Profile") }
 ///     }
@@ -131,14 +131,28 @@ import SwiftUI
 /// to run only on the main thread, and so a check is executed immediately to make sure that is the
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-90255``)
 /// of the store are also checked to make sure that work is performed on the main thread.
+@dynamicMemberLookup
 public final class Store<State, Action> {
-  private var canCacheChildren = true
+  var canCacheChildren = true
   private var children: [ScopeID<State, Action>: AnyObject] = [:]
   var _isInvalidated = { false }
 
   @_spi(Internals) public let rootStore: RootStore
   private let toState: PartialToState<State>
   private let fromAction: (Action) -> Any
+
+  #if canImport(Perception)
+    let _$observationRegistrar = PerceptionRegistrar(
+      isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
+    )
+    private var parentCancellable: AnyCancellable?
+  #else
+    // NB: This dynamic member lookup is needed to support pre-Observation (<5.9) versions of Swift.
+    @_disfavoredOverload
+    private subscript(dynamicMember keyPath: KeyPath<State, Never>) -> Never {
+      self.currentState[keyPath: keyPath]
+    }
+  #endif
 
   /// Initializes a store from an initial state and a reducer.
   ///
@@ -169,21 +183,27 @@ public final class Store<State, Action> {
     }
   }
 
+  init() {
+    self._isInvalidated = { true }
+    self.rootStore = RootStore(initialState: (), reducer: EmptyReducer<Void, Never>())
+    self.toState = .keyPath(\State.self)
+    self.fromAction = { $0 }
+  }
+
   deinit {
     Logger.shared.log("\(storeTypeName(of: self)).deinit")
   }
 
-  /// Calls the given closure with the current state of the store.
+  /// Calls the given closure with a snapshot of the current state of the store.
   ///
-  /// A lightweight way of accessing store state when no view store is available and state does not
-  /// need to be observed, _e.g._ by a SwiftUI view. If a view store is available, prefer
-  /// ``ViewStore/state-swift.property``.
+  /// A lightweight way of accessing store state when state is not observable and ``state-1qxwl`` is
+  /// unavailable.
   ///
   /// - Parameter body: A closure that takes the current state of the store as its sole argument. If
   ///   the closure has a return value, that value is also used as the return value of the
   ///   `withState` method. The state argument reflects the current state of the store only for the
-  ///   duration of the closure's execution, and is not observable over time, _e.g._ by SwiftUI. If
-  ///   you want to observe store state in a view, use a ``ViewStore`` instead.
+  ///   duration of the closure's execution, and is only observable over time, _e.g._ by SwiftUI, if
+  ///   it conforms to ``ObservableState``.
   /// - Returns: The return value, if any, of the `body` closure.
   public func withState<R>(_ body: (_ state: State) -> R) -> R {
     body(self.currentState)
@@ -234,6 +254,7 @@ public final class Store<State, Action> {
   /// ```swift
   /// @Reducer
   /// struct AppFeature {
+  ///   @ObservableState
   ///   struct State {
   ///     var login: Login.State
   ///     // ...
@@ -261,116 +282,6 @@ public final class Store<State, Action> {
   /// `LoginView` could be extracted to a module that has no access to `AppFeature.State` or
   /// `AppFeature.Action`.
   ///
-  /// Scoping also gives a view the opportunity to focus on just the state and actions it cares
-  /// about, even if its feature domain is larger.
-  ///
-  /// For example, the above login domain could model a two screen login flow: a login form followed
-  /// by a two-factor authentication screen. The second screen's domain might be nested in the
-  /// first:
-  ///
-  /// ```swift
-  /// @Reducer
-  /// struct Login {
-  ///   struct State: Equatable {
-  ///     var email = ""
-  ///     var password = ""
-  ///     var twoFactorAuth: TwoFactorAuthState?
-  ///   }
-  ///   enum Action {
-  ///     case emailChanged(String)
-  ///     case loginButtonTapped
-  ///     case loginResponse(Result<TwoFactorAuthState, LoginError>)
-  ///     case passwordChanged(String)
-  ///     case twoFactorAuth(TwoFactorAuthAction)
-  ///   }
-  ///   // ...
-  /// }
-  /// ```
-  ///
-  /// The login view holds onto a store of this domain:
-  ///
-  /// ```swift
-  /// struct LoginView: View {
-  ///   let store: StoreOf<Login>
-  ///
-  ///   var body: some View { /* ... */ }
-  /// }
-  /// ```
-  ///
-  /// If its body were to use a view store of the same domain, this would introduce a number of
-  /// problems:
-  ///
-  /// * The login view would be able to read from `twoFactorAuth` state. This state is only intended
-  ///   to be read from the two-factor auth screen.
-  ///
-  /// * Even worse, changes to `twoFactorAuth` state would now cause SwiftUI to recompute
-  ///   `LoginView`'s body unnecessarily.
-  ///
-  /// * The login view would be able to send `twoFactorAuth` actions. These actions are only
-  ///   intended to be sent from the two-factor auth screen (and reducer).
-  ///
-  /// * The login view would be able to send non user-facing login actions, like `loginResponse`.
-  ///   These actions are only intended to be used in the login reducer to feed the results of
-  ///   effects back into the store.
-  ///
-  /// To avoid these issues, one can introduce a view-specific domain that slices off the subset of
-  /// state and actions that a view cares about:
-  ///
-  /// ```swift
-  /// extension LoginView {
-  ///   struct ViewState: Equatable {
-  ///     var email: String
-  ///     var password: String
-  ///   }
-  ///
-  ///   enum ViewAction {
-  ///     case emailChanged(String)
-  ///     case loginButtonTapped
-  ///     case passwordChanged(String)
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// One can also introduce a couple helpers that transform feature state into view state and
-  /// transform view actions into feature actions.
-  ///
-  /// ```swift
-  /// extension Login.State {
-  ///   var view: LoginView.ViewState {
-  ///     .init(email: self.email, password: self.password)
-  ///   }
-  /// }
-  ///
-  /// extension LoginView.ViewAction {
-  ///   var feature: Login.Action {
-  ///     switch self {
-  ///     case let .emailChanged(email)
-  ///       return .emailChanged(email)
-  ///     case .loginButtonTapped:
-  ///       return .loginButtonTapped
-  ///     case let .passwordChanged(password)
-  ///       return .passwordChanged(password)
-  ///     }
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// With these helpers defined, `LoginView` can now scope its store's feature domain into its view
-  /// domain:
-  ///
-  /// ```swift
-  ///  var body: some View {
-  ///    WithViewStore(
-  ///      self.store, observe: \.view, send: \.feature
-  ///    ) { viewStore in
-  ///      // ...
-  ///    }
-  ///  }
-  /// ```
-  ///
-  /// This view store is now incapable of reading any state but view state (and will not recompute
-  /// when non-view state changes), and is incapable of sending any actions but view actions.
-  ///
   /// - Parameters:
   ///   - state: A key path from `State` to `ChildState`.
   ///   - action: A case key path from `Action` to `ChildAction`.
@@ -388,22 +299,7 @@ public final class Store<State, Action> {
   }
 
   @available(
-    iOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    macOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    tvOS, deprecated: 9999,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  @available(
-    watchOS, deprecated: 9999,
+    *, deprecated,
     message:
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )
@@ -485,6 +381,26 @@ public final class Store<State, Action> {
     self.rootStore = rootStore
     self.toState = toState
     self.fromAction = fromAction
+
+    #if canImport(Perception)
+      func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
+        let toState = toState as! PartialToState<T>
+        return rootStore.didSet
+          .compactMap { [weak rootStore] in
+            rootStore.map { toState($0.state) }?._$id
+          }
+          .removeDuplicates()
+          .dropFirst()
+          .sink { [weak self] _ in
+            guard let self else { return }
+            self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+          }
+      }
+
+      if let stateType = State.self as? ObservableState.Type {
+        self.parentCancellable = subscribeToDidSet(stateType)
+      }
+    #endif
   }
 
   convenience init<R: Reducer>(
@@ -637,7 +553,6 @@ extension PresentationState: _OptionalProtocol {}
 func storeTypeName<State, Action>(of store: Store<State, Action>) -> String {
   let stateType = typeName(State.self, genericsAbbreviated: false)
   let actionType = typeName(Action.self, genericsAbbreviated: false)
-  // TODO: `PresentationStoreOf`, `StackStoreOf`, `IdentifiedStoreOf`?
   if stateType.hasSuffix(".State"),
     actionType.hasSuffix(".Action"),
     stateType.dropLast(6) == actionType.dropLast(7)
@@ -757,3 +672,13 @@ private enum PartialToState<State> {
     }
   }
 }
+
+#if canImport(Perception)
+  private let _isStorePerceptionCheckingEnabled: Bool = {
+    if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
+      return false
+    } else {
+      return true
+    }
+  }()
+#endif

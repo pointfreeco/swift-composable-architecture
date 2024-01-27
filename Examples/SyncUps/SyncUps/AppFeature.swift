@@ -3,6 +3,7 @@ import SwiftUI
 
 @Reducer
 struct AppFeature {
+  @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
     var syncUpsList = SyncUpsList.State()
@@ -97,6 +98,7 @@ struct AppFeature {
 
   @Reducer
   struct Path {
+    @ObservableState
     enum State: Equatable {
       case detail(SyncUpDetail.State)
       case meeting(Meeting, syncUp: SyncUp)
@@ -120,29 +122,25 @@ struct AppFeature {
 }
 
 struct AppView: View {
-  let store: StoreOf<AppFeature>
+  @Bindable var store: StoreOf<AppFeature>
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
+    NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
       SyncUpsListView(
-        store: self.store.scope(state: \.syncUpsList, action: \.syncUpsList)
+        store: store.scope(state: \.syncUpsList, action: \.syncUpsList)
       )
-    } destination: {
-      switch $0 {
+    } destination: { store in
+      switch store.state {
       case .detail:
-        CaseLet(
-          \AppFeature.Path.State.detail,
-          action: AppFeature.Path.Action.detail,
-          then: SyncUpDetailView.init(store:)
-        )
+        if let store = store.scope(state: \.detail, action: \.detail) {
+          SyncUpDetailView(store: store)
+        }
       case let .meeting(meeting, syncUp: syncUp):
         MeetingView(meeting: meeting, syncUp: syncUp)
       case .record:
-        CaseLet(
-          \AppFeature.Path.State.record,
-          action: AppFeature.Path.Action.record,
-          then: RecordMeetingView.init(store:)
-        )
+        if let store = store.scope(state: \.record, action: \.record) {
+          RecordMeetingView(store: store)
+        }
       }
     }
   }

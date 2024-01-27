@@ -23,9 +23,10 @@ private let readMe = """
 
 @Reducer
 struct AlertAndConfirmationDialog {
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Action.Alert>?
-    @PresentationState var confirmationDialog: ConfirmationDialogState<Action.ConfirmationDialog>?
+    @Presents var alert: AlertState<Action.Alert>?
+    @Presents var confirmationDialog: ConfirmationDialogState<Action.ConfirmationDialog>?
     var count = 0
   }
 
@@ -106,29 +107,23 @@ struct AlertAndConfirmationDialog {
 // MARK: - Feature view
 
 struct AlertAndConfirmationDialogView: View {
-  @State var store = Store(initialState: AlertAndConfirmationDialog.State()) {
+  @Bindable var store = Store(initialState: AlertAndConfirmationDialog.State()) {
     AlertAndConfirmationDialog()
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-
-        Text("Count: \(viewStore.count)")
-        Button("Alert") { viewStore.send(.alertButtonTapped) }
-        Button("Confirmation Dialog") { viewStore.send(.confirmationDialogButtonTapped) }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
       }
+
+      Text("Count: \(store.count)")
+      Button("Alert") { store.send(.alertButtonTapped) }
+      Button("Confirmation Dialog") { store.send(.confirmationDialogButtonTapped) }
     }
     .navigationTitle("Alerts & Dialogs")
-    .alert(
-      store: self.store.scope(state: \.$alert, action: \.alert)
-    )
-    .confirmationDialog(
-      store: self.store.scope(state: \.$confirmationDialog, action: \.confirmationDialog)
-    )
+    .alert($store.scope(state: \.alert, action: \.alert))
+    .confirmationDialog($store.scope(state: \.confirmationDialog, action: \.confirmationDialog))
   }
 }
 

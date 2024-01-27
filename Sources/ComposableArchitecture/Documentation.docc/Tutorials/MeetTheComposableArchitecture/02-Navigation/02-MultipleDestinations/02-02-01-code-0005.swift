@@ -1,8 +1,9 @@
 @Reducer
 struct ContactsFeature {
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var addContact: AddContactFeature.State?
-    @PresentationState var alert: AlertState<Action.Alert>?
+    @Presents var addContact: AddContactFeature.State?
+    @Presents var alert: AlertState<Action.Alert>?
     var contacts: IdentifiedArrayOf<Contact> = []
   }
   enum Action {

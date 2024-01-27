@@ -3,9 +3,9 @@ import TestCases
 import XCTest
 
 @MainActor
-final class OptionalTests: BaseIntegrationTests {
-  override func setUpWithError() throws {
-    try super.setUpWithError()
+final class iOS16_OptionalTests: BaseIntegrationTests {
+  override func setUp() {
+    super.setUp()
     self.app.buttons["iOS 16"].tap()
     self.app.buttons["Optional"].tap()
     self.clearLogs()

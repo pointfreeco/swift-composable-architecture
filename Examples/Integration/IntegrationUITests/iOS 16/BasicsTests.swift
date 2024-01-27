@@ -3,7 +3,7 @@ import TestCases
 import XCTest
 
 @MainActor
-final class BasicsTests: BaseIntegrationTests {
+final class iOS16_BasicsTests: BaseIntegrationTests {
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["iOS 16"].tap()
@@ -13,7 +13,11 @@ final class BasicsTests: BaseIntegrationTests {
   }
 
   func testBasics() {
+    XCTAssertEqual(self.app.staticTexts["0"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["1"].exists, false)
     self.app.buttons["Increment"].tap()
+    XCTAssertEqual(self.app.staticTexts["0"].exists, false)
+    XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.assertLogs {
       """
       BasicsView.body
@@ -23,6 +27,8 @@ final class BasicsTests: BaseIntegrationTests {
       """
     }
     self.app.buttons["Decrement"].tap()
+    XCTAssertEqual(self.app.staticTexts["0"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["1"].exists, false)
     self.assertLogs {
       """
       BasicsView.body

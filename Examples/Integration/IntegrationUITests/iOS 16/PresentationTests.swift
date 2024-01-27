@@ -3,7 +3,7 @@ import TestCases
 import XCTest
 
 @MainActor
-final class PresentationTests: BaseIntegrationTests {
+final class iOS16_PresentationTests: BaseIntegrationTests {
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["iOS 16"].tap()

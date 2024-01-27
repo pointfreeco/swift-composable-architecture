@@ -1,12 +1,15 @@
 @Reducer
 struct ContactsFeature {
+  @ObservableState
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
-    @PresentationState var destination: Destination.State?
+    @Presents var destination: Destination.State?
   }
   enum Action {
     case addButtonTapped
     case deleteButtonTapped(id: Contact.ID)
+    // case addContact(PresentationAction<AddContactFeature.Action>)
+    // case alert(PresentationAction<Alert>)
     case destination(PresentationAction<Destination.Action>)
     enum Alert: Equatable {
       case confirmDeletion(id: Contact.ID)

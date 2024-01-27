@@ -3,10 +3,10 @@ import TestCases
 import XCTest
 
 @MainActor
-final class SiblingsTests: BaseIntegrationTests {
-  override func setUpWithError() throws {
-    try super.setUpWithError()
-    self.app.buttons["iOS 16"].tap()
+final class iOS17_ObservableSiblingsTests: BaseIntegrationTests {
+  override func setUp() {
+    super.setUp()
+    self.app.buttons["iOS 17"].tap()
     self.app.buttons["Siblings"].tap()
     self.clearLogs()
     // SnapshotTesting.isRecording = true
@@ -17,10 +17,7 @@ final class SiblingsTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.assertLogs {
       """
-      BasicsView.body
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.init
-      WithViewStoreOf<BasicsView.Feature>.body
+      ObservableBasicsView.body
       """
     }
   }
@@ -33,14 +30,11 @@ final class SiblingsTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["1"].exists, false)
     self.assertLogs {
       """
-      BasicsView.body
-      BasicsView.body
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.init
-      ViewStoreOf<BasicsView.Feature>.init
-      WithViewStoreOf<BasicsView.Feature>.body
-      WithViewStoreOf<BasicsView.Feature>.body
+      ObservableBasicsView.body
+      ObservableBasicsView.body
+      ObservableBasicsView.body
+      ObservableBasicsView.body
+      ObservableSiblingFeaturesView.body
       """
     }
   }
@@ -53,14 +47,8 @@ final class SiblingsTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["1"].exists, false)
     self.assertLogs {
       """
-      BasicsView.body
-      BasicsView.body
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.init
-      ViewStoreOf<BasicsView.Feature>.init
-      WithViewStoreOf<BasicsView.Feature>.body
-      WithViewStoreOf<BasicsView.Feature>.body
+      ObservableBasicsView.body
+      ObservableBasicsView.body
       """
     }
   }
@@ -73,14 +61,11 @@ final class SiblingsTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.assertLogs {
       """
-      BasicsView.body
-      BasicsView.body
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.init
-      ViewStoreOf<BasicsView.Feature>.init
-      WithViewStoreOf<BasicsView.Feature>.body
-      WithViewStoreOf<BasicsView.Feature>.body
+      ObservableBasicsView.body
+      ObservableBasicsView.body
+      ObservableBasicsView.body
+      ObservableBasicsView.body
+      ObservableSiblingFeaturesView.body
       """
     }
   }

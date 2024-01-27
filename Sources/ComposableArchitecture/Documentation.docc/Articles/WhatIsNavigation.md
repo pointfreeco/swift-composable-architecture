@@ -23,9 +23,9 @@ their strengths and weaknesses.
 
 The word "navigation" can mean a lot of different things to different people. For example, most
 people would say that an example of "navigation" is the drill-down style of navigation afforded to 
-us by `NavigationStack` in SwiftUI and `UINavigationController` in UIKit "navigation". However, 
-if drill-downs are considered navigation, then surely sheets and fullscreen covers should be too. 
-The only difference is that sheets and covers animate from bottom-to-top instead of from 
+us by `NavigationStack` in SwiftUI and `UINavigationController` in UIKit "navigation". 
+However, if drill-downs are considered navigation, then surely sheets and fullscreen covers should 
+be too.  The only difference is that sheets and covers animate from bottom-to-top instead of from 
 right-to-left, but is that actually substantive?
 
 And if sheets and covers are considered navigation, then certainly popovers should be too. We can
@@ -64,13 +64,14 @@ of navigation are nested they form a tree-like structure.
 
 For example, suppose you have an inventory feature with a list of items such that tapping one of
 those items performs a drill-down navigation to a detail screen for the item. Then that can be
-modeled with the ``PresentationState`` property wrapper pointing to some optional state:
+modeled with the ``Presents()`` macro pointing to some optional state:
 
 ```swift
 @Reducer
 struct InventoryFeature {
+  @ObservableState
   struct State {
-    @PresentationState var detailItem: DetailItemFeature.State?
+    @Presents var detailItem: DetailItemFeature.State?
     // ...
   }
   // ...
@@ -78,13 +79,14 @@ struct InventoryFeature {
 ```
 
 Then, inside that detail screen there may be a button to edit the item in a sheet, and that too can
-be modeled with a ``PresentationState`` property wrapper pointing to a piece of optional state:
+be modeled with the ``Presents()`` macro pointing to a piece of optional state:
 
 ```swift
 @Reducer
 struct DetailItemFeature {
+  @ObservableState
   struct State {
-    @PresentationState var editItem: EditItemFeature.State?
+    @Presents var editItem: EditItemFeature.State?
     // ...
   }
   // ...
@@ -98,7 +100,7 @@ whether or not an alert is displayed:
 @Reducer
 struct EditItemFeature {
   struct State {
-    @PresentationState var alert: AlertState<AlertAction>?
+    @Presents var alert: AlertState<AlertAction>?
     // ...
   }
   // ...
@@ -146,10 +148,10 @@ of modeling the presentation of a child feature with optional state. This takes 
 structure in which a deeply nested feature is represented by a deeply nested piece of state.
 
 There is another powerful tool for modeling the existence and non-existence of state for driving
-navigation: collections. This is most used with SwiftUI's `NavigationStack` view in which an entire
-stack of features are represented by a collection of data. When an item is added to the collection
-it represents a new feature being pushed onto the stack, and when an item is removed from the
-collection it represents popping the feature off the stack.
+navigation: collections. This is most used with SwiftUI's `NavigationStack` view in which 
+an entire stack of features are represented by a collection of data. When an item is added to the 
+collection it represents a new feature being pushed onto the stack, and when an item is removed from 
+the collection it represents popping the feature off the stack.
 
 Typically one defines an enum that holds all of the possible features that can be navigated to on
 the stack, so continuing the analogy from the previous section, if an inventory list can navigate to
@@ -184,10 +186,10 @@ Composable Architecture to implement stack-based navigation in your application.
 ## Tree-based vs stack-based navigation
 
 Most real-world applications will use a mixture of tree-based and stack-based navigation. For
-example, the root of your application may use stack-based navigation with a `NavigationStack` view,
-but then each feature inside the stack may use tree-based navigation for showing sheets, popovers,
-alerts, etc. But, there are pros and cons to each form of navigation, and so it can be important to
-be aware of their differences when modeling your domains.
+example, the root of your application may use stack-based navigation with a 
+`NavigationStack` view, but then each feature inside the stack may use tree-based 
+navigation for showing sheets, popovers, alerts, etc. But, there are pros and cons to each form of 
+navigation, and so it can be important to be aware of their differences when modeling your domains.
 
 #### Pros of tree-based navigation
 
@@ -198,8 +200,9 @@ be aware of their differences when modeling your domains.
     feature needs only to hold onto a piece of optional edit state:
 
     ```swift
+    @ObservableState
     struct State {
-      @PresentationState var editItem: EditItemFeature.State?
+      @Presents var editItem: EditItemFeature.State?
       // ...
     }
     ```
@@ -268,9 +271,10 @@ recursion in this navigation since it is just a flat array.
 stack. This means the features can be put into their own modules with no dependencies on each
 other, and can be compiled without compiling any other features.
 
-* The `NavigationStack` API in SwiftUI typically has fewer bugs than `NavigationLink(isActive:)` and
-`navigationDestination(isPresented:)`, which are used in tree-based navigation. There are still a
-few bugs in `NavigationStack`, but on average it is a lot more stable.
+* The `NavigationStack` API in SwiftUI typically has fewer bugs than 
+`NavigationLink(isActive:)` and `navigationDestination(isPresented:)`, which are used in tree-based 
+navigation. There are still a few bugs in `NavigationStack`, but on average it is a lot 
+more stable.
 
 #### Cons of stack-based navigation
 
@@ -314,9 +318,9 @@ few bugs in `NavigationStack`, but on average it is a lot more stable.
     edit feature interact with each other. The only way to write that test is to compile and run the
     entire application.
 
-  * And finally, stack-based navigation and `NavigationStack` only applies to drill-downs and does 
-    not address at all other forms of navigation, such as sheets, popovers, alerts, etc. It's still
-    on you to do the work to decouple those kinds of navigations.
+  * And finally, stack-based navigation and `NavigationStack` only applies to drill-downs 
+    and does not address at all other forms of navigation, such as sheets, popovers, alerts, etc. 
+    It's still on you to do the work to decouple those kinds of navigations.
 
 ---
 

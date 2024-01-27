@@ -7,11 +7,10 @@ final class EscapedWithViewStoreTests: BaseIntegrationTests {
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
+    app.collectionViews.buttons[TestCase.escapedWithViewStore.rawValue].tap()
   }
 
   func testExample() async throws {
-    app.collectionViews.buttons[TestCase.escapedWithViewStore.rawValue].tap()
-
     XCTAssertEqual(app.staticTexts["Label"].value as? String, "10")
     XCTAssertEqual(app.staticTexts["EscapedLabel"].value as? String, "10")
 

@@ -2,38 +2,36 @@ struct CounterView: View {
   let store: StoreOf<CounterFeature>
   
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack {
-        Text("\(viewStore.count)")
-          .font(.largeTitle)
-          .padding()
-          .background(Color.black.opacity(0.1))
-          .cornerRadius(10)
-        HStack {
-          Button("-") {
-            viewStore.send(.decrementButtonTapped)
-          }
-          .font(.largeTitle)
-          .padding()
-          .background(Color.black.opacity(0.1))
-          .cornerRadius(10)
-          
-          Button("+") {
-            viewStore.send(.incrementButtonTapped)
-          }
-          .font(.largeTitle)
-          .padding()
-          .background(Color.black.opacity(0.1))
-          .cornerRadius(10)
+    VStack {
+      Text("\(store.count)")
+        .font(.largeTitle)
+        .padding()
+        .background(Color.black.opacity(0.1))
+        .cornerRadius(10)
+      HStack {
+        Button("-") {
+          store.send(.decrementButtonTapped)
         }
-        Button("Fact") {
-          viewStore.send(.factButtonTapped)
+        .font(.largeTitle)
+        .padding()
+        .background(Color.black.opacity(0.1))
+        .cornerRadius(10)
+        
+        Button("+") {
+          store.send(.incrementButtonTapped)
         }
         .font(.largeTitle)
         .padding()
         .background(Color.black.opacity(0.1))
         .cornerRadius(10)
       }
+      Button("Fact") {
+        store.send(.factButtonTapped)
+      }
+      .font(.largeTitle)
+      .padding()
+      .background(Color.black.opacity(0.1))
+      .cornerRadius(10)
     }
   }
 }

@@ -19,7 +19,7 @@ final class CounterFeatureTests: XCTestCase {
     //    accessed from a test context:
     //
     //   Location:
-    //     TCATest/CounterFeature.swift:70
+    //     CounterFeature.swift:70
     //   Dependency:
     //     NumberFactClient
     //

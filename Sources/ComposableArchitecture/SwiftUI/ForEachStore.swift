@@ -83,6 +83,26 @@ import SwiftUI
 /// }
 /// ```
 ///
+@available(
+  iOS, deprecated: 9999,
+  message:
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+)
+@available(
+  macOS, deprecated: 9999,
+  message:
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+)
+@available(
+  tvOS, deprecated: 9999,
+  message:
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+)
+@available(
+  watchOS, deprecated: 9999,
+  message:
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+)
 public struct ForEachStore<
   EachState, EachAction, Data: Collection, ID: Hashable, Content: View
 >: DynamicViewContent {

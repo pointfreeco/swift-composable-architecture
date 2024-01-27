@@ -33,7 +33,10 @@ class BaseIntegrationTests: XCTestCase {
         line: line
       )
     } else {
-      XCTAssertFalse(self.app.staticTexts["Runtime warning"].exists)
+      XCTAssertFalse(
+        self.app.staticTexts["Runtime warning"].exists,
+        "\(self.name) emitted an unexpected runtime warning"
+      )
     }
     SnapshotTesting.isRecording = false
   }

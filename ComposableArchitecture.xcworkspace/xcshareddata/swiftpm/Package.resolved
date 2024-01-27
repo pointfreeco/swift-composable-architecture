@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "revision" : "40773cbaf8d71ed5357f297b1ba4073f5b24faaa",
-        "version" : "1.1.0"
+        "revision" : "bba1111185863c9288c5f047770f421c3b7793a4",
+        "version" : "1.1.3"
       }
     },
     {
@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections",
       "state" : {
-        "revision" : "a902f1823a7ff3c9ab2fba0f992396b948eda307",
-        "version" : "1.0.5"
+        "revision" : "d029d9d39c87bed85b1c50adee7c41795261a192",
+        "version" : "1.0.6"
       }
     },
     {
@@ -77,8 +77,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-dependencies",
       "state" : {
-        "revision" : "63301f4a181ed9aefb46dccef2dfb66466798341",
-        "version" : "1.1.1"
+        "revision" : "c31b1445c4fae49e6fdb75496b895a3653f6aefc",
+        "version" : "1.1.5"
       }
     },
     {
@@ -118,12 +118,21 @@
       }
     },
     {
+      "identity" : "swift-perception",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-perception",
+      "state" : {
+        "revision" : "42240120b2a8797595433288ab4118f8042214c3",
+        "version" : "1.1.1"
+      }
+    },
+    {
       "identity" : "swift-snapshot-testing",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing.git",
       "state" : {
-        "revision" : "4862d48562483d274a2ac7522d905c9237a31a48",
-        "version" : "1.15.0"
+        "revision" : "59b663f68e69f27a87b45de48cb63264b8194605",
+        "version" : "1.15.1"
       }
     },
     {

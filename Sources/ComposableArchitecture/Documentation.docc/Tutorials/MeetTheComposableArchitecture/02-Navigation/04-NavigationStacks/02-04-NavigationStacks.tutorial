@@ -57,9 +57,8 @@
       }
       
       @Step {
-        Observe the store so that we can get access to state using 
-        ``ComposableArchitecture/WithViewStore``. There is no real information to show in this 
-        view now other than the contact's name, but more will be added later.
+        Stub out a basic form. There is no real information to show in this view now other than the
+        contact's name, but more will be added later.
         
         @Code(name: "ContactDetailFeature.swift", file: 02-04-01-code-0006.swift)
       }
@@ -122,30 +121,34 @@
       
       @Step {
         Go to the `ContactsView` that holds the view for the contacts list. Swap out the
-        `NavigationStack` for a ``ComposableArchitecture/NavigationStackStore``. This is a type
-        specifically tuned for driving stacks from a ``ComposableArchitecture/Store``. 
-        You hand it a store that is scoped down to ``ComposableArchitecture/StackState`` and
-        ``ComposableArchitecture/StackAction``, and it handles the rest.
+        `NavigationStack` for ``SwiftUI/NavigationStack/init(path:root:destination:)``, which is a
+        special initializer that is specifically tuned for driving stacks from a
+        ``ComposableArchitecture/Store``. 
+        You hand it a binding to a store that is scoped down to
+        ``ComposableArchitecture/StackState`` and ``ComposableArchitecture/StackAction``, and it
+        handles the rest.
         
         @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0003.swift, previousFile: 02-04-02-code-0003-previous.swift) 
       }
       
       @Step {
-        ``ComposableArchitecture/NavigationStackStore`` takes two trailing closures. The first is
-        for the root of the stack, which is our list of contacts. The second is to describe the
-        destinations that can be navigated to. It is handled a store that is focused on the domain
-        of just a single element in the stack.
+        ``SwiftUI/NavigationStack/init(path:root:destination:)`` takes two trailing closures. The
+        first is for the root of the stack, which is our list of contacts. The second is to describe
+        the destinations that can be navigated to. It is handled a store that is focused on the
+        domain of just a single element in the stack.
         
         @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0004.swift) 
       }
       
       @Step {
         Wrap the row in the contacts list in a `NavigationLink`, using the special 
-        `NavigationLink(state:)` initializer that ships with this library. We are also applying a
-        `.borderless` button style so that we can have the delete button in the row too.
+        ``SwiftUI/NavigationLink/init(state:label:fileID:line:)`` initializer that ships with this
+        library. We are also applying a `.borderless` button style so that we can have the delete
+        button in the row too.
         
-        > Warning: It is necessary to use the `init(state)` initializer on `NavigationLink`, 
-        > instead of the `init(value:)` that comes with SwiftUI.
+        > Warning: It is necessary to use the
+        > ``SwiftUI/NavigationLink/init(state:label:fileID:line:)`` initializer on `NavigationLink`
+        > instead of the `init(value:)` initializer that comes with SwiftUI.
         
         @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0005.swift, previousFile: 02-04-02-code-0005-previous.swift) 
       }

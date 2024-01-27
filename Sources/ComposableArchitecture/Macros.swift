@@ -1,4 +1,6 @@
 #if swift(>=5.9)
+  import Observation
+
   /// Helps implement the conformance to the ``Reducer`` protocol for a type.
   ///
   /// To use this macro you will define a new type, typically a struct, and add inner types for the
@@ -41,7 +43,7 @@
   /// ```diff
   /// +@CasePathable
   ///  enum Action {
-  ///    // …
+  ///    // ...
   ///  }
   /// ```
   ///
@@ -57,22 +59,22 @@
   /// +@CasePathable
   /// +@dynamicMemberLookup
   ///  enum State {
-  ///    // …
+  ///    // ...
   ///  }
   /// ```
   ///
   /// This will allow you to use key path syntax for specifying case paths to the `State`'s cases,
   /// as well as allow you to use dot-chaining syntax for optionally extracting a case from the
-  /// state. This can be useful when using the view modifiers that come with the library that allow
-  /// for driving navigation from an enum of options:
+  /// state. This can be useful when using the operators that come with the library that allow for
+  /// driving navigation from an enum of options:
   ///
   /// ```swift
   /// .sheet(
-  ///   store: self.store.scope(state: \.$destination.editForm, action: \.destination.editForm)
+  ///   item: $store.scope(state: \.destination?.editForm, action: \.destination.editForm)
   /// )
   /// ```
   ///
-  /// The syntax `state: \.$destination.editForm` is only possible due to both
+  /// The syntax `state: \.destination?.editForm` is only possible due to both
   /// `@dynamicMemberLookup` and `@CasePathable` being applied to the `State` enum.
   ///
   /// ## Gotchas
@@ -130,11 +132,8 @@
   ///
   /// > Error: CasePathsMacros Target 'CasePathsMacros' must be enabled before it can be used.
   /// >
-  /// >
   /// > ComposableArchitectureMacros Target 'ComposableArchitectureMacros' must be enabled
   /// before it can be used.
-  ///
-  ///
   ///
   /// You can fix this in one of two ways. You can write a default to the CI machine that allows
   /// Xcode to skip macro validation:
@@ -155,4 +154,87 @@
     #externalMacro(
       module: "ComposableArchitectureMacros", type: "ReducerMacro"
     )
+
+  /// Defines and implements conformance of the Observable protocol.
+  @attached(extension, conformances: Observable, ObservableState)
+  @attached(member, names: named(_$id), named(_$observationRegistrar), named(_$willModify))
+  @attached(memberAttribute)
+  public macro ObservableState() =
+    #externalMacro(module: "ComposableArchitectureMacros", type: "ObservableStateMacro")
+
+  @attached(accessor, names: named(init), named(get), named(set))
+  @attached(peer, names: prefixed(_))
+  public macro ObservationStateTracked() =
+    #externalMacro(module: "ComposableArchitectureMacros", type: "ObservationStateTrackedMacro")
+
+  @attached(accessor, names: named(willSet))
+  public macro ObservationStateIgnored() =
+    #externalMacro(module: "ComposableArchitectureMacros", type: "ObservationStateIgnoredMacro")
+
+  /// Wraps a property with ``PresentationState`` and observes it.
+  ///
+  /// Use this macro instead of ``PresentationState`` when you adopt the ``ObservableState()``
+  /// macro, which is incompatible with property wrappers like ``PresentationState``.
+  @attached(accessor, names: named(init), named(get), named(set))
+  @attached(peer, names: prefixed(`$`), prefixed(_))
+  public macro Presents() =
+    #externalMacro(module: "ComposableArchitectureMacros", type: "PresentsMacro")
+
+  /// Provides a view with access to a feature's ``ViewAction``s.
+  ///
+  /// If you want to restrict what actions can be sent from the view you can use this macro along
+  /// the ``ViewAction`` protocol. You start by conforming your reducer's `Action` enum to the
+  /// ``ViewAction`` protocol, and moving view-specific actions to its own inner enum:
+  ///
+  /// ```swift
+  /// @Reducer
+  /// struct Feature {
+  ///   struct State { /* ... */ }
+  ///   enum Action: ViewAction {
+  ///     case loginResponse(Bool)
+  ///     case view(View)
+  ///
+  ///     enum View {
+  ///       case loginButtonTapped
+  ///     }
+  ///   }
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// Then you can apply the ``ViewAction(for:)`` macro to your view by specifying the type of the
+  /// reducer that powers the view:
+  ///
+  /// ```swift
+  /// @ViewAction(for: Feature.self)
+  /// struct FeatureView: View {
+  ///   let store: StoreOf<Feature>
+  ///   // ...
+  /// }
+  /// ```
+  ///
+  /// The macro does two things:
+  ///
+  /// * It adds a `send` method to the view that you can use instead of `store.send`. This allows
+  /// you to send view actions more simply, without wrapping the action in `.view(…)`:
+  ///   ```diff
+  ///    Button("Login") {
+  ///   -  store.send(.view(.loginButtonTapped))
+  ///   +  send(.loginButtonTapped)
+  ///    }
+  ///   ```
+  /// * It creates warning diagnostics if you try sending actions through `store.send` rather than
+  /// using the `send` method on the view:
+  ///   ```swift
+  ///   Button("Login") {
+  ///     store.send(.view(.loginButtonTapped))
+  ///   //┬─────────
+  ///   //╰─ ⚠️ Do not use 'store.send' directly when using '@ViewAction'
+  ///   }
+  ///   ```
+  @attached(extension, conformances: ViewActionSending)
+  public macro ViewAction<R: Reducer>(for: R.Type) =
+    #externalMacro(
+      module: "ComposableArchitectureMacros", type: "ViewActionMacro"
+    ) where R.Action: ViewAction
 #endif

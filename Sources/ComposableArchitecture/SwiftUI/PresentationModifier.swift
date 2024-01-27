@@ -256,21 +256,17 @@ public struct PresentationStore<
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
     )
-    let viewStore = ViewStore(
-      store,
-      observe: { $0 },
-      removeDuplicates: {
-        toID($0) == toID($1)
-      }
-    )
+    let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
 
     self.store = store
     self.toDestinationState = toDestinationState
     self.toID = toID
     self.fromDestinationAction = fromDestinationAction
     self.destinationStore = store.scope(
-      state: { $0.wrappedValue.flatMap(toDestinationState) },
-      action: { .presented(fromDestinationAction($0)) }
+      id: nil,
+      state: ToState { $0.wrappedValue.flatMap(toDestinationState) },
+      action: { .presented(fromDestinationAction($0)) },
+      isInvalid: nil
     )
     self.content = content
     self.viewStore = viewStore

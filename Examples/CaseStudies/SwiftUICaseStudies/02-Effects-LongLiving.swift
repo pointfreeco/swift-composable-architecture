@@ -18,6 +18,7 @@ private let readMe = """
 
 @Reducer
 struct LongLivingEffects {
+  @ObservableState
   struct State: Equatable {
     var screenshotCount = 0
   }
@@ -68,29 +69,29 @@ private enum ScreenshotsKey: DependencyKey {
 // MARK: - Feature view
 
 struct LongLivingEffectsView: View {
-  @State var store = Store(initialState: LongLivingEffects.State()) {
+  var store = Store(initialState: LongLivingEffects.State()) {
     LongLivingEffects()
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
 
-        Text("A screenshot of this screen has been taken \(viewStore.screenshotCount) times.")
-          .font(.headline)
+      Text("A screenshot of this screen has been taken \(store.screenshotCount) times.")
+        .font(.headline)
 
-        Section {
-          NavigationLink(destination: self.detailView) {
-            Text("Navigate to another screen")
-          }
+      Section {
+        NavigationLink {
+          detailView
+        } label: {
+          Text("Navigate to another screen")
         }
       }
-      .navigationTitle("Long-living effects")
-      .task { await viewStore.send(.task).finish() }
     }
+    .navigationTitle("Long-living effects")
+    .task { await store.send(.task).finish() }
   }
 
   var detailView: some View {

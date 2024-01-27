@@ -22,6 +22,7 @@ then assert on how it changed after, like this:
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State: Equatable {
     var count = 0
   }
@@ -199,6 +200,7 @@ an asynchronous context to operate in and can send multiple actions back into th
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State: Equatable {
     var count = 0
   }

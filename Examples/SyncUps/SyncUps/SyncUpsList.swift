@@ -3,8 +3,9 @@ import SwiftUI
 
 @Reducer
 struct SyncUpsList {
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var destination: Destination.State?
+    @Presents var destination: Destination.State?
     var syncUps: IdentifiedArrayOf<SyncUp> = []
 
     init(
@@ -27,10 +28,12 @@ struct SyncUpsList {
     case confirmAddSyncUpButtonTapped
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
+    case onDelete(IndexSet)
   }
 
   @Reducer
   struct Destination {
+    @ObservableState
     enum State: Equatable {
       case add(SyncUpForm.State)
       case alert(AlertState<Action.Alert>)
@@ -93,6 +96,10 @@ struct SyncUpsList {
       case .dismissAddSyncUpButtonTapped:
         state.destination = nil
         return .none
+
+      case let .onDelete(indexSet):
+        state.syncUps.remove(atOffsets: indexSet)
+        return .none
       }
     }
     .ifLet(\.$destination, action: \.destination) {
@@ -102,48 +109,47 @@ struct SyncUpsList {
 }
 
 struct SyncUpsListView: View {
-  let store: StoreOf<SyncUpsList>
+  @Bindable var store: StoreOf<SyncUpsList>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.syncUps) { viewStore in
-      List {
-        ForEach(viewStore.state) { syncUp in
-          NavigationLink(
-            state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
-          ) {
-            CardView(syncUp: syncUp)
-          }
-          .listRowBackground(syncUp.theme.mainColor)
+    List {
+      ForEach(store.syncUps) { syncUp in
+        NavigationLink(
+          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
+        ) {
+          CardView(syncUp: syncUp)
         }
+        .listRowBackground(syncUp.theme.mainColor)
       }
-      .toolbar {
-        Button {
-          viewStore.send(.addSyncUpButtonTapped)
-        } label: {
-          Image(systemName: "plus")
-        }
+      .onDelete { indexSet in
+        store.send(.onDelete(indexSet))
       }
-      .navigationTitle("Daily Sync-ups")
-      .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
-      .sheet(
-        store: self.store.scope(state: \.$destination.add, action: \.destination.add)
-      ) { store in
-        NavigationStack {
-          SyncUpFormView(store: store)
-            .navigationTitle("New sync-up")
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button("Dismiss") {
-                  viewStore.send(.dismissAddSyncUpButtonTapped)
-                }
-              }
-              ToolbarItem(placement: .confirmationAction) {
-                Button("Add") {
-                  viewStore.send(.confirmAddSyncUpButtonTapped)
-                }
+    }
+    .toolbar {
+      Button {
+        store.send(.addSyncUpButtonTapped)
+      } label: {
+        Image(systemName: "plus")
+      }
+    }
+    .navigationTitle("Daily Sync-ups")
+    .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
+    .sheet(item: $store.scope(state: \.destination?.add, action: \.destination.add)) { store in
+      NavigationStack {
+        SyncUpFormView(store: store)
+          .navigationTitle("New sync-up")
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Dismiss") {
+                self.store.send(.dismissAddSyncUpButtonTapped)
               }
             }
-        }
+            ToolbarItem(placement: .confirmationAction) {
+              Button("Add") {
+                self.store.send(.confirmAddSyncUpButtonTapped)
+              }
+            }
+          }
       }
     }
   }
@@ -228,4 +234,17 @@ struct SyncUpsList_Previews: PreviewProvider {
     )
     .previewDisplayName("Load data failure")
   }
+}
+
+#Preview {
+  CardView(
+    syncUp: SyncUp(
+      id: SyncUp.ID(),
+      attendees: [],
+      duration: .seconds(60),
+      meetings: [],
+      theme: .bubblegum,
+      title: "Point-Free Morning Sync"
+    )
+  )
 }

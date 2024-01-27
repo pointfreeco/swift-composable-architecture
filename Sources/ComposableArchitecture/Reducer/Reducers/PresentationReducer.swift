@@ -66,9 +66,10 @@ public struct PresentationState<State> {
     get { self.storage.state }
     set {
       if !isKnownUniquelyReferenced(&self.storage) {
-        self.storage = Storage(state: self.storage.state)
+        self.storage = Storage(state: newValue)
+      } else {
+        self.storage.state = newValue
       }
-      self.storage.state = newValue
     }
   }
 

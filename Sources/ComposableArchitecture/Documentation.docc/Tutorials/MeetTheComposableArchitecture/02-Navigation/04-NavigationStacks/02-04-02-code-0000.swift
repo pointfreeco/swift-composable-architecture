@@ -1,8 +1,9 @@
 @Reducer
 struct ContactsFeature {
+  @ObservableState
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
-    @PresentationState var destination: Destination.State?
+    @Presents var destination: Destination.State?
     var path = StackState<ContactDetailFeature.State>()
   }
   enum Action {
