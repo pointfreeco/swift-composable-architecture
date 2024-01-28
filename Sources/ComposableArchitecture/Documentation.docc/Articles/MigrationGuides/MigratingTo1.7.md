@@ -173,7 +173,7 @@ IfLetStore(store: store.scope(state: \.child, action: \.child)) { childStore in
 This can now be updated to use plain `if let` syntax with ``Store/scope(state:action:)-36e72``:
 
 ```swift
-if let childStore = store.scope(state: \.child, action: \.child)) {
+if let childStore = store.scope(state: \.child, action: \.child) {
   ChildView(store: childStore)
 } else {
   Text("Nothing to show")
