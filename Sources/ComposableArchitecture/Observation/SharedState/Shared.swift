@@ -72,6 +72,10 @@
       )
     }
 
+    public init(projectedValue: Shared) {
+      self = projectedValue
+    }
+
     private init(reference: any ReferenceProtocol, keyPath: AnyKeyPath) {
       self.reference = reference
       self.keyPath = keyPath
@@ -265,6 +269,15 @@
   extension Shared: CustomDumpRepresentable {
     public var customDumpValue: Any {
       self.reference
+    }
+  }
+
+  extension Shared
+  where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable & Sendable {
+    public var elements: some RandomAccessCollection<Shared<Value.Element>> {
+      self.wrappedValue.indices.map { index in
+        self[index]
+      }
     }
   }
 
