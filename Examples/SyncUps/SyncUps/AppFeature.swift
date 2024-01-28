@@ -44,13 +44,6 @@ struct AppFeature {
       case .path:
         return .none
 
-      case let .syncUpsList(.syncUpTapped(id)):
-        guard let $syncUp = state.syncUpsList.$syncUps[id: id]
-        else { return .none }
-
-        state.path.append(.detail(SyncUpDetail.State(syncUp: $syncUp)))
-        return .none
-
       case .syncUpsList:
         return .none
       }

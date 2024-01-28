@@ -14,9 +14,17 @@ final class AppFeatureTests: XCTestCase {
       AppFeature()
     }
 
-    await store.send(.syncUpsList(.syncUpTapped(id: syncUp.id))) {
-      let syncUp = try XCTUnwrap($0.syncUpsList.$syncUps[id: syncUp.id])
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: syncUp))
+    await store.send(
+      .path(
+        .push(
+          id: 0,
+          state: .detail(
+            SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[id: syncUp.id]!)
+          )
+        )
+      )
+    ) {
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: $0.syncUpsList.$syncUps[id: syncUp.id]!))
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.deleteButtonTapped)))) {
@@ -47,7 +55,16 @@ final class AppFeatureTests: XCTestCase {
       AppFeature()
     }
 
-    await store.send(.syncUpsList(.syncUpTapped(id: syncUp.id))) {
+    await store.send(
+      .path(
+        .push(
+          id: 0,
+          state: .detail(
+            SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[id: syncUp.id]!)
+          )
+        )
+      )
+    ) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: $0.syncUpsList.$syncUps[id: syncUp.id]!))
     }
 
