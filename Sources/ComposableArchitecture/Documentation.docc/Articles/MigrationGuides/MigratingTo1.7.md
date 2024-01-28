@@ -25,7 +25,7 @@ you are targeting older platforms.
 * [Replacing IfLetStore with ‘if let’](#Replacing-IfLetStore-with-if-let)
 * [Replacing ForEachStore with ForEach](#Replacing-ForEachStore-with-ForEach)
 * [Replacing SwitchStore and CaseLet with ‘switch’ and ‘case’](#Replacing-SwitchStore-and-CaseLet-with-switch-and-case)
-* [Replacing @PresentationState with @Presentation](#Replacing-PresentationState-with-Presentation)
+* [Replacing @PresentationState with @Presents](#Replacing-PresentationState-with-Presents)
 * [Replacing navigation view modifiers with SwiftUI modifiers](#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers)
 * [Updating alert and confirmationDialog](#Updating-alert-and-confirmationDialog)
 * [Replacing NavigationStackStore with NavigationStack](#Replacing-NavigationStackStore-with-NavigationStack)
@@ -302,7 +302,7 @@ case .settings:
 }
 ```
 
-## Replacing @PresentationState with @Presentation
+## Replacing @PresentationState with @Presents
 
 It is a well-known limitation of Swift macros that they cannot be used with property wrappers.
 This means that if your feature uses ``PresentationState`` you will get compiler errors when 
