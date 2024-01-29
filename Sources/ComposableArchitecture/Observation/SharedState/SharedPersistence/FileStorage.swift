@@ -248,11 +248,11 @@ private var willResignNotificationName: Notification.Name? {
   #elseif os(macOS)
     return NSApplication.willResignActiveNotification
   #else
-  if #available(watchOS 7, *) {
-    return WKExtension.applicationWillResignActiveNotification
-  } else {
-    return nil
-  }
+    if #available(watchOS 7, *) {
+      return WKExtension.applicationWillResignActiveNotification
+    } else {
+      return nil
+    }
   #endif
 }
 

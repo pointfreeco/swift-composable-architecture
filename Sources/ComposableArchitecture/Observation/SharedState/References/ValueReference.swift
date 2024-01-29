@@ -82,7 +82,7 @@ private final class ValueReference<Value>: Reference, Perceptible {
     self.persistentValue = persistentValue
     self.fileID = fileID
     self.line = line
-    Task { @MainActor [weak self, initialValue] in
+    Task { @MainActor[weak self, initialValue] in
       for try await value in persistentValue.updates {
         self?.currentValue = value ?? initialValue
       }

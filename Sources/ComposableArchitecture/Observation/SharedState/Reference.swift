@@ -22,8 +22,7 @@ extension Reference {
   }
 
   public func assertUnchanged() {
-    if
-      let snapshot = self.snapshot,
+    if let snapshot = self.snapshot,
       let difference = diff(snapshot, self.currentValue, format: .proportional)
     {
       XCTFail(

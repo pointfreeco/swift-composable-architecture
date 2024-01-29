@@ -207,7 +207,7 @@
     where R.RawValue == Int, Value == R? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:)) }
-      self._save = { store.set($0?.rawValue, forKey: key)  }
+      self._save = { store.set($0?.rawValue, forKey: key) }
       self.key = key
       self.store = store
     }
@@ -257,7 +257,7 @@
         change: [NSKeyValueChangeKey: Any]?,
         context: UnsafeMutableRawPointer?
       ) {
-        guard 
+        guard
           !SharedAppStorageLocals.isSetting
         else { return }
         self.didChange(change?[.newKey] as? Value)
