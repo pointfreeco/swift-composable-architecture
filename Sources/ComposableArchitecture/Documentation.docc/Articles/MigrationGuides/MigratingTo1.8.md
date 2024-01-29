@@ -94,20 +94,26 @@ case holds onto the reducer that governs the logic and behavior for that case. F
 using the ``Reducer/ifLet(_:action:)`` operator with this style of `Destination` enum reducer
 you can completely leave off the trailing closure as it can be automatically inferred:
 
-```swift
-Reduce { state, action in
-  // Core feature logic
-}
-.ifLet(\.$destination, action: \.destination)
+```diff
+ Reduce { state, action in
+   // Core feature logic
+ }
+-.ifLet(\.$destination, action: \.destination) {
+-   Destination()
+-}
++.ifLet(\.$destination, action: \.destination)
 ```
 
 This pattern also works for `Path` reducers, which is common when dealing with 
 <doc:StackBasedNavigation>, and in that case you can leave off the trailing closure of the
 ``Reducer/forEach(_:action:)`` operator:
 
-```swift
-Reduce { state, action in
-  // Core feature logic
-}
-.forEach(\.path, action: \.path)
+```diff
+ Reduce { state, action in
+   // Core feature logic
+ }
+-.forEach(\.path, action: \.path) {
+-   Destination()
+-}
++.forEach(\.path, action: \.path)
 ```
