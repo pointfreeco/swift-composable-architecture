@@ -373,7 +373,7 @@ extension Reducer {
   ///   * It automatically cancels all child effects when it detects the child's state is `nil`'d
   ///     out.
   ///
-  ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
+  ///   * Automatically `nil` out child state when an action is sent for alerts and confirmation
   ///     dialogs.
   ///
   ///   * It gives the child feature access to the ``DismissEffect`` dependency, which allows the
