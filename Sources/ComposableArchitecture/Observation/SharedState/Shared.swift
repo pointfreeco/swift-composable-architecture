@@ -1,6 +1,10 @@
 #if canImport(Perception)
   import Foundation
 
+  /// A property wrapper type that shares a value with multiple parts of an application.
+  ///
+  /// See the <doc:SharingState> article for more detailed information on how to use this
+  /// property warpper.
   @dynamicMemberLookup
   @propertyWrapper
   public struct Shared<Value> {
@@ -316,7 +320,7 @@
       self.persistence = persistence
       self.fileID = fileID
       self.line = line
-      Task { @MainActor [weak self, initialValue] in
+      Task { @MainActor[weak self, initialValue] in
         for try await value in persistence.updates {
           self?.currentValue = value ?? initialValue
         }
@@ -326,8 +330,7 @@
       self.complete()
     }
     func complete() {
-      if
-        let snapshot = self.snapshot,
+      if let snapshot = self.snapshot,
         let difference = diff(snapshot, self.currentValue, format: .proportional)
       {
         XCTFail(
@@ -388,14 +391,15 @@
     func track<T>(_ shared: Shared<T>) {
       let reference = shared.reference
       self.changed.withValue {
-        _ = $0[ObjectIdentifier(reference)] = Value(
-          complete: { [weak reference] in
-            reference?.complete()
-          },
-          reset: { [weak reference] in
-            reference?.reset()
-          }
-        )
+        _ =
+          $0[ObjectIdentifier(reference)] = Value(
+            complete: { [weak reference] in
+              reference?.complete()
+            },
+            reset: { [weak reference] in
+              reference?.reset()
+            }
+          )
       }
     }
     func complete() {
@@ -453,7 +457,7 @@
     }
   }
 
-  fileprivate final class DefaultSubscript<Value>: Hashable {
+  private final class DefaultSubscript<Value>: Hashable {
     var value: Value
     init(_ value: Value) {
       self.value = value
