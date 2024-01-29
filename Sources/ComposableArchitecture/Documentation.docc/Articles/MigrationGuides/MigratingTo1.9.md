@@ -1,0 +1,75 @@
+# Migrating to 1.9
+
+Update your code to make use of the new state sharing tools in the library, such as the ``Shared``
+property wrapper, and the ``SharedPersistence/appStorage(_:)-687rl`` and 
+``SharedPersistence/fileStorage(_:)`` persistence strategies.
+
+## Overview
+
+The Composable Architecture is under constant development, and we are always looking for ways to
+simplify the library, and make it more powerful. This version of the library only introduced new 
+APIs and did not deprecate any existing APIs. However, to make use of these tools your features
+must already be integrated with the observation tools released in version 1.7. See 
+<doc:MigratingTo1.7> for more information.
+
+> Important: Before following this migration guide be sure you have fully migrated to the newest
+tools of version 1.8. See <doc:MigrationGuides> for more information.
+
+## Sharing state
+
+The new tools added are concerned with allowing one to seamlessly share state with many parts of an 
+application that is easy to understand, and most importantly, testable. See the dedicated 
+<doc:SharingState> article for more information on how to use these new tools. 
+
+To share state in one feature with another feature, simply use the ``Shared`` property wrapper:
+
+```swift
+@ObservableState
+struct State {
+  @Shared var signUpData: SignUpdata
+  // ...
+}
+```
+
+This will require that `SignUpData` be passed in from the parent, and any changes made to this state
+will be instantly observed by all features holding onto it.
+
+Further, there are persistence strategries one can employ in `@Shared`. For example, if you want
+any changes of `signUpData` to be automatically persisted to the file system you can use the
+``SharedPersistence/fileStorage(_:)`` and specify a URL:
+
+```swift
+extension URL {
+  static let signUpData = URL(…)
+}
+
+@ObservableState
+struct State {
+  @Shared(.fileStorage(.signUpData)) var signUpData = SignUpdata()
+  // ...
+}
+```
+
+Upon app launch the `signUpData` will be populated from disk, and any changes made to `signUpData`
+will automatically be persisted to disk. Further, if the disk version changes, all instances of 
+`signUpData` in the application will automatically update.
+
+There is another persistence strategy for storing simple data types in user defaults, called
+``SharedPersistence/appStorage(_:)-687rl``. It can refer to a value in user defaults by a string
+key:
+
+```swift
+@ObservableState 
+struct State {
+  @Shared(.appStorage("isOn")) var isOn = false
+  // ...
+}
+```
+
+Similar to ``SharedPersistence/fileStorage(_:)``, upon launch of the application the initial value
+of `isOn` will be populated from user defaults, and any change to `isOn` will be automatically 
+persisted to user defaults. Further, if the user defaults value changes, all instances of `isOn`
+in the application will automatically update.
+
+That is the basics of sharing data. Be sure to see the dedicated <doc:SharingState> article
+for more detailed information.
