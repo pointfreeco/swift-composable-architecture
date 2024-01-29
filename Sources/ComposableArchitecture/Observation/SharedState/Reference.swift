@@ -1,6 +1,6 @@
 import CustomDump
 
-public protocol Reference<Value>:
+protocol Reference<Value>:
   AnyObject, CustomDumpRepresentable, CustomStringConvertible, _CustomDiffObject
 {
   associatedtype Value
@@ -13,15 +13,15 @@ public protocol Reference<Value>:
 }
 
 extension Reference {
-  public func takeSnapshot() {
+  func takeSnapshot() {
     self.snapshot = self.currentValue
   }
 
-  public func clearSnapshot() {
+  func clearSnapshot() {
     self.snapshot = nil
   }
 
-  public func assertUnchanged() {
+  func assertUnchanged() {
     if let snapshot = self.snapshot,
       let difference = diff(snapshot, self.currentValue, format: .proportional)
     {
@@ -43,11 +43,11 @@ extension Reference {
 }
 
 extension Reference {
-  public var customDumpValue: Any {
+  var customDumpValue: Any {
     self.currentValue
   }
 
-  public var _customDiffValues: (Any, Any) {
+  var _customDiffValues: (Any, Any) {
     (self.snapshot ?? self.currentValue, self.currentValue)
   }
 }

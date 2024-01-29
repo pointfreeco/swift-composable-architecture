@@ -16,7 +16,7 @@ public struct Shared<Value> {
     self.keyPath = keyPath
   }
 
-  public init(reference: some Reference<Value>) {
+  init(reference: some Reference<Value>) {
     self.init(reference: reference, keyPath: \Value.self)
   }
 
