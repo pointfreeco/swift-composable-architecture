@@ -45,7 +45,7 @@ struct RootView: View {
             SharedStateUserDefaultsView()
           }
           NavigationLink("File storage") {
-            SharedStateInMemoryView()
+            SharedStateFileStorageView()
           }
           Button("Sign up flow") {
             isSignUpCaseStudyPresented = true

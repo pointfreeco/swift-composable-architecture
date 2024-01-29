@@ -1,7 +1,7 @@
 #if canImport(Perception)
   import Foundation
 
-  extension SharedPersistence {
+  extension Persistent {
     public static func appStorage(_ key: String) -> Self
     where Self == _SharedAppStorage<Bool> {
       _SharedAppStorage(key)
@@ -222,7 +222,7 @@
     }
   }
 
-  extension _SharedAppStorage: SharedPersistence {
+  extension _SharedAppStorage: Persistent {
     public var updates: AsyncStream<Value?> {
       AsyncStream { continuation in
         let observer = Observer { value in

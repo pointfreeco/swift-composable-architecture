@@ -1,5 +1,5 @@
 #if canImport(Perception)
-  public protocol SharedPersistence<Value>: Hashable {
+  public protocol Persistent<Value>: Hashable {
     associatedtype Value
     associatedtype Updates: AsyncSequence = _Empty<Value?> where Updates.Element == Value?
 
@@ -8,7 +8,7 @@
     func save(_ value: Value)
   }
 
-  extension SharedPersistence where Updates == _Empty<Value?> {
+  extension Persistent where Updates == _Empty<Value?> {
     public var updates: _Empty<Value?> {
       _Empty()
     }
@@ -20,6 +20,20 @@
     }
     public func makeAsyncIterator() -> AsyncIterator {
       AsyncIterator()
+    }
+  }
+
+  enum PersistentReferencesKey: DependencyKey {
+    static let liveValue = LockIsolated<[AnyHashable: any Reference]>([:])
+    static var testValue: LockIsolated<[AnyHashable: any Reference]> {
+      LockIsolated([:])
+    }
+  }
+
+  extension DependencyValues {
+    var persistentReferences: LockIsolated<[AnyHashable: any Reference]> {
+      get { self[PersistentReferencesKey.self] }
+      set { self[PersistentReferencesKey.self] = newValue }
     }
   }
 #endif

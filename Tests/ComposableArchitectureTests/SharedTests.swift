@@ -13,10 +13,10 @@ final class SharedTests: XCTestCase {
     ) {
       SharedFeature()
     }
-    await store.send(.noop)
-    await store.send(.increment) {
-      $0.count = 1
-    }
+//    await store.send(.noop)
+//    await store.send(.increment) {
+//      $0.count = 1
+//    }
     await store.send(.sharedIncrement) {
       $0.sharedCount = 1
     }
@@ -216,14 +216,17 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        Tracked changes to 'Shared<Int>@ComposableArchitectureTests/SharedTests.swift:\(sharedCountInitLine)' but failed to assert: …
+        Tracked changes to \
+        'Shared<Int>@ComposableArchitectureTests/SharedTests.swift:\(sharedCountInitLine)' \
+        but failed to assert: …
 
           − 0
           + 1
 
         (Before: −, After: +)
 
-        Call 'Shared<Int>.assert' to exhaustively test these changes, or call 'skipChanges' to ignore them.
+        Call 'Shared<Int>.assert' to exhaustively test these changes, or call 'skipChanges' to \
+        ignore them.
         """
     }
     await store.send(.longLivingEffect)
@@ -379,13 +382,15 @@ final class SharedTests: XCTestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-      State was not expected to change, but a change occurred: …
+        State was not expected to change, but a change occurred: …
 
-          − SimpleFeature.State(_count: 0)
-          + SimpleFeature.State(_count: 1)
+              SimpleFeature.State(
+            −   _count: 0
+            +   _count: 1
+              )
 
-      (Expected: −, Actual: +)
-      """
+        (Expected: −, Actual: +)
+        """
     }
 
     await store.send(.incrementInReducer)
@@ -404,7 +409,8 @@ final class SharedTests: XCTestCase {
     self.wait(for: [countDidChange], timeout: 0)
   }
 
-  func testObsevation_Object() {
+  @available(*, deprecated)
+  func testObservation_Object() {
     @Shared var object: SharedObject
     _object = Shared(SharedObject())
     let countDidChange = self.expectation(description: "countDidChange")

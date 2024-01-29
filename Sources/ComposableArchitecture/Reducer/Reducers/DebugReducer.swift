@@ -83,7 +83,7 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
     #if DEBUG
       if let printer = self.printer {
         return withDependencies {
-          $0.sharedChangeTracker = self.sharedChangeTracker
+          $0[SharedChangeTracker.self] = sharedChangeTracker
         } operation: {
           let oldState = state
           let effects = self.base.reduce(into: &state, action: action)
@@ -91,7 +91,7 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
             SharedLocals.$exhaustivity.withValue(.on) {
               printer.printChange(receivedAction: action, oldState: oldState, newState: state)
             }
-            self.sharedChangeTracker.reset()
+            self.sharedChangeTracker.clearChanges()
             return effects
           } else {
             return effects.merge(

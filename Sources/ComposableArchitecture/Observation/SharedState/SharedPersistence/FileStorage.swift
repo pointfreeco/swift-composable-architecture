@@ -11,7 +11,7 @@ import Foundation
   import WatchKit
 #endif
 
-extension SharedPersistence {
+extension Persistent {
   public static func fileStorage<Value: Codable>(_ url: URL) -> Self
   where Self == _FileStorage<Value> {
     _FileStorage(url: url)
@@ -19,7 +19,7 @@ extension SharedPersistence {
 }
 
 // TODO: Audio unchecked sendable
-public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable, SharedPersistence {
+public final class _FileStorage<Value: Codable & Sendable>: Persistent, @unchecked Sendable {
   @Dependency(\._fileStoragePersistenceQueue) fileprivate var queue
   let url: URL
   var workItem: DispatchWorkItem?
@@ -61,6 +61,7 @@ public final class _FileStorage<Value: Codable & Sendable>: @unchecked Sendable,
     }
     self.workItem = workItem
     if canListenForResignActive {
+      // TODO: Configurable debounce? Should this be shorter, at least in DEBUG/simulators?
       self.queue.asyncAfter(interval: .seconds(5), execute: workItem)
     } else {
       self.queue.async(execute: workItem)
@@ -242,12 +243,12 @@ extension DependencyValues {
 }
 
 private var willResignNotificationName: Notification.Name? {
-  #if os(iOS) || os(tvOS)
+  #if os(iOS) || os(tvOS) || os(visionOS)
     return UIApplication.willResignActiveNotification
   #elseif os(macOS)
     return NSApplication.willResignActiveNotification
   #else
-  if #available(watchOS 7.0, *) {
+  if #available(watchOS 7, *) {
     return WKExtension.applicationWillResignActiveNotification
   } else {
     return nil

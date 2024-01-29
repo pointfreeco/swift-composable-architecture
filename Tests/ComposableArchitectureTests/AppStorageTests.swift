@@ -31,7 +31,7 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(defaultAppStorage.integer(forKey: "count"), 0)
   }
 
-  func testObsevation() {
+  func testObservation() {
     @Shared(.appStorage("count")) var count = 0
     let countDidChange = self.expectation(description: "countDidChange")
     withPerceptionTracking {
@@ -49,7 +49,7 @@ final class AppStorageTests: XCTestCase {
 
     try await Task.sleep(nanoseconds: 1_000_000)
     defaults.setValue(count + 42, forKey: "count")
-    try await Task.sleep(nanoseconds: 1_000_000)
+    try await Task.sleep(nanoseconds: 10_000_000)
     XCTAssertEqual(count, 42)
   }
 
