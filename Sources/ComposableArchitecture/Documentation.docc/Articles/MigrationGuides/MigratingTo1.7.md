@@ -867,7 +867,7 @@ wield this tool.
 
 ## Incrementally migrating
 
-You are most likely going to want to incrementally your application to the new observation tools, 
+You are most likely going to want to incrementally migrate your application to the new observation tools, 
 rather than doing everything all at once. That is possible, but there are some gotchas to be aware
 of when mixing "legacy" features (_i.e._ features using ``ViewStore`` and ``WithViewStore``) with
 "modern" features (_i.e._ features using ``ObservableState()``).
