@@ -1,7 +1,7 @@
 # Migrating to 1.8
 
 Update your code to make use of the new capabilities of the ``Reducer(state:action:)`` macro,
-including automatic synthesis of requirements for destination reducers and path reducers.
+including automatic fulfillment of requirements for destination reducers and path reducers.
 
 ## Overview
 
@@ -11,7 +11,7 @@ APIs and did not deprecate any existing APIs. However, to make use of these tool
 must already be integrated with the ``Reducer(state:action:)`` macro from version 1.4. See 
 <doc:MigratingTo1.4> for more information.
 
-## Automatic synthesis of reducer requirements
+## Automatic fulfillment of reducer requirements
 
 The ``Reducer(state:action:)`` macro is now capable of automatically filling in the ``Reducer`` 
 protocol's requirements for you. For example, even something as simple as this:
@@ -28,7 +28,7 @@ The `@Reducer` macro will automatically insert an empty ``Reducer/State`` struct
 ``Reducer/Action`` enum, and an empty ``Reducer/body-swift.property``. This effectively means that
 `Feature` is a logicless, behaviorless, inert reducer.
 
-Having these requirements automatically synthesized for you can be handy for slowly
+Having these requirements automatically fulfilled for you can be handy for slowly
 filling them in with their real implementations. For example, this `Feature` reducer could be
 integrated in a parent domain using the library's navigation tools, all without having implemented
 any of the domain yet. Then, once we are ready we can start implementing the real logic and
@@ -90,5 +90,24 @@ enum Destination {
 ```
 
 24 lines of code has become 6. The `@Reducer` macro can now be applied to an _enum_ where each
-case holds onto the reducer that governs the logic and behavior for that case. This pattern also 
-works for `Path` reducers, which is common when dealing with <doc:StackBasedNavigation>.
+case holds onto the reducer that governs the logic and behavior for that case. Further, when
+using the ``Reducer/ifLet(_:action:)`` operator with this style of `Destination` enum reducer
+you can completely leave off the trailing closure as it can be automatically inferred:
+
+```swift
+Reduce { state, action in
+  // Core feature logic
+}
+.ifLet(\.$destination, action: \.destination)
+```
+
+This pattern also works for `Path` reducers, which is common when dealing with 
+<doc:StackBasedNavigation>, and in that case you can leave off the trailing closure of the
+``Reducer/forEach(_:action:)`` operator:
+
+```swift
+Reduce { state, action in
+  // Core feature logic
+}
+.forEach(\.path, action: \.path)
+```

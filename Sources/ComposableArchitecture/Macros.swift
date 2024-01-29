@@ -77,7 +77,7 @@
   /// The syntax `state: \.destination?.editForm` is only possible due to both
   /// `@dynamicMemberLookup` and `@CasePathable` being applied to the `State` enum.
   ///
-  /// ## Automatic synthesis of reducer requirements
+  /// ## Automatic fulfillment of reducer requirements
   ///
   /// The ``Reducer(state:action:)`` macro can automatically fill in the ``Reducer`` protocol's
   /// requirements for you. For example, something as simple as this:
@@ -94,7 +94,7 @@
   /// ``Reducer/Action`` enum, and an empty ``Reducer/body-swift.property``. This effectively means
   /// that `Feature` is a logicless, behaviorless, inert reducer.
   ///
-  /// Having these requirements automatically synthesized for you can be handy for slowly
+  /// Having these requirements automatically fulfilled for you can be handy for slowly
   /// filling them in with their real implementations. For example, this `Feature` reducer could be
   /// integrated in a parent domain using the library's navigation tools, all without having
   /// implemented any of the domain yet. Then, once we are ready we can start implementing the real
@@ -156,8 +156,54 @@
   /// ```
   ///
   /// 24 lines of code has become 6. The `@Reducer` macro can now be applied to an _enum_ where each
-  /// case holds onto the reducer that governs the logic and behavior for that case. This pattern 
-  /// also works for `Path` reducers, which is common when dealing with <doc:StackBasedNavigation>.
+  /// case holds onto the reducer that governs the logic and behavior for that case. Further, when
+  /// using the ``Reducer/ifLet(_:action:)`` operator with this style of `Destination` enum reducer
+  /// you can completely leave off the trailing closure as it can be automatically inferred:
+  ///
+  /// ```swift
+  /// Reduce { state, action in
+  ///   // Core feature logic
+  /// }
+  /// .ifLet(\.$destination, action: \.destination)
+  /// ```
+  ///
+  /// This pattern also works for `Path` reducers, which is common when dealing with
+  /// <doc:StackBasedNavigation>, and in that case you can leave off the trailing closure of the
+  /// ``Reducer/forEach(_:action:)`` operator:
+  ///
+  /// ```swift
+  /// Reduce { state, action in
+  ///   // Core feature logic
+  /// }
+  /// .forEach(\.path, action: \.path)
+  /// ```
+  ///
+  /// ## Synthesizing protocol conformances on State and Action
+  ///
+  /// Since the `State` and `Action` types are generated automatically for you when using `@Reducer`
+  /// on an enum, it's not possible to directly synthesize conformances of `Equatable`, `Hashable`,
+  /// etc. on those types. And further, due to a bug in the Swift compiler you cannot currently
+  /// do this:
+  ///
+  /// ```swift
+  /// @Reducer
+  /// enum Destination {
+  ///   // ...
+  /// }
+  /// extension Destination.State: Equatable {}  // ❌
+  /// ```
+  ///
+  /// See <doc:Reducer(state:action:)#Circular-reference-errors> below for more info on this error.
+  ///
+  /// So, to work around this compiler bug the `@Reducer` macro takes two arguments that allow you
+  /// to describe which protocls you want to attach to the `State` or `Action` types:
+  ///
+  /// ```swift
+  /// @Reducer(state: .equatable, .sendable, action: .sendable)
+  /// enum Destination {
+  ///   // ...
+  /// }
+  /// ```
   ///
   /// ## Gotchas
   ///
