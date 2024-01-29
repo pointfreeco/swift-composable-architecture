@@ -37,7 +37,7 @@ extension Reducer {
   ///   * It automatically cancels all child effects when it detects the child's state is `nil`'d
   ///     out.
   ///
-  ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
+  ///   * Automatically `nil` out child state when an action is sent for alerts and confirmation
   ///     dialogs.
   ///
   /// See ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` for a more advanced operator suited
