@@ -205,6 +205,9 @@
   /// }
   /// ```
   ///
+  /// You can provide any combination of `.codable`, `.decodable`, `.encodable`, `.equatable`,
+  /// `.hashable`, or `.sendable`.
+  ///
   /// ## Gotchas
   ///
   /// ### Autocomplete
