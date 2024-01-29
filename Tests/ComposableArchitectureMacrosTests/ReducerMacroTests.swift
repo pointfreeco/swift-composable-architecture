@@ -240,7 +240,7 @@
           @dynamicMemberLookup
           @ObservableState
           enum State: ComposableArchitecture.CaseReducerState {
-            typealias Reducer = Destination
+            typealias StateReducer = Destination
             case timeline(Timeline.State)
             case tweet(Tweet.State)
             case alert(AlertState<Alert>)
@@ -282,7 +282,7 @@
           }
         }
 
-        extension Destination: ComposableArchitecture.CaseReducer {
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
         }
         """#
       }
@@ -309,7 +309,7 @@
           @dynamicMemberLookup
           @ObservableState
           enum State: ComposableArchitecture.CaseReducerState {
-            typealias Reducer = Destination
+            typealias StateReducer = Destination
             case timeline(Timeline.State)
             case meeting(Meeting)
           }
@@ -342,7 +342,7 @@
           }
         }
 
-        extension Destination: ComposableArchitecture.CaseReducer {
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
         }
         """#
       }
@@ -372,7 +372,7 @@
           @dynamicMemberLookup
           @ObservableState
           enum State: ComposableArchitecture.CaseReducerState {
-            typealias Reducer = Destination
+            typealias StateReducer = Destination
             case alert(AlertState<Alert>)
             case dialog(ConfirmationDialogState<Dialog>)
             case meeting(Meeting, syncUp: SyncUp)
@@ -408,7 +408,7 @@
           }
         }
 
-        extension Destination: ComposableArchitecture.CaseReducer {
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
         }
         """
       }
@@ -435,7 +435,7 @@
           @dynamicMemberLookup
           @ObservableState
           enum State: ComposableArchitecture.CaseReducerState, Equatable {
-            typealias Reducer = Destination
+            typealias StateReducer = Destination
             case drillDown(Counter.State)
             case popover(Counter.State)
             case sheet(Counter.State)
@@ -480,7 +480,7 @@
           }
         }
 
-        extension Destination: ComposableArchitecture.CaseReducer {
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
         }
         """#
       }
@@ -503,7 +503,7 @@
           @dynamicMemberLookup
           @ObservableState
           enum State: ComposableArchitecture.CaseReducerState {
-            typealias Reducer = Destination
+            typealias StateReducer = Destination
             case feature(Nested.Feature.State)
           }
 
@@ -532,7 +532,7 @@
           }
         }
 
-        extension Destination: ComposableArchitecture.CaseReducer {
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
         }
         """#
       }
@@ -550,12 +550,12 @@
         struct Feature {
 
             @ObservableState
-            struct State: Codable, Equatable, Hashable {
+            struct State: Codable, Equatable, Hashable, Sendable {
                 init() {
                 }
             }
 
-            enum Action: Equatable, Hashable {
+            enum Action: Equatable, Hashable, Sendable {
             }
 
             let body = ComposableArchitecture.EmptyReducer<State, Action>()
@@ -580,13 +580,13 @@
 
             @ObservableState
 
-            public struct State: Codable, Equatable, Hashable {
+            public struct State: Codable, Equatable, Hashable, Sendable {
 
                 public init() {
                 }
             }
 
-            public enum Action: Equatable, Hashable {
+            public enum Action: Equatable, Hashable, Sendable {
             }
 
             public let body = ComposableArchitecture.EmptyReducer<State, Action>()
@@ -633,7 +633,7 @@
       } expansion: {
         """
         struct Feature {
-          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          @ComposableArchitecture.ReducerBuilder<Int, Bool>
           var body: some Reducer<Int, Bool> { EmptyReducer() }
         }
 
@@ -683,6 +683,26 @@
         }
 
         extension Feature: ComposableArchitecture.Reducer {
+        }
+        """
+      }
+    }
+
+    func testFilledRequirements_LetBody() {
+      assertMacro {
+        """
+        @Reducer
+        struct Empty {
+          let body = EmptyReducer<State, Action>()
+        }
+        """
+      } expansion: {
+        """
+        struct Empty {
+          let body = EmptyReducer<State, Action>()
+        }
+
+        extension Empty: ComposableArchitecture.Reducer {
         }
         """
       }

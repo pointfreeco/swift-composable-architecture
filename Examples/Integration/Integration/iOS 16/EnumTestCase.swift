@@ -90,24 +90,10 @@ struct EnumView: View {
       case toggle1ButtonTapped
       case toggle2ButtonTapped
     }
-    @Reducer
-    struct Destination {
-      enum State: Equatable {
-        case feature1(BasicsView.Feature.State)
-        case feature2(BasicsView.Feature.State)
-      }
-      enum Action {
-        case feature1(BasicsView.Feature.Action)
-        case feature2(BasicsView.Feature.Action)
-      }
-      var body: some ReducerOf<Self> {
-        Scope(state: \.feature1, action: \.feature1) {
-          BasicsView.Feature()
-        }
-        Scope(state: \.feature2, action: \.feature2) {
-          BasicsView.Feature()
-        }
-      }
+    @Reducer(state: .equatable)
+    enum Destination {
+      case feature1(BasicsView.Feature)
+      case feature2(BasicsView.Feature)
     }
     var body: some ReducerOf<Self> {
       Reduce { state, action in
@@ -136,9 +122,7 @@ struct EnumView: View {
           return .none
         }
       }
-      .ifLet(\.$destination, action: \.destination) {
-        Destination()
-      }
+      .ifLet(\.$destination, action: \.destination)
     }
   }
 }

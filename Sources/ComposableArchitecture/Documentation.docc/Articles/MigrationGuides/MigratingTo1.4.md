@@ -1,7 +1,7 @@
 # Migrating to 1.4
 
-Update your code to make use of the ``Reducer()`` macro, and learn how to better leverage case key
-paths in your features.
+Update your code to make use of the ``Reducer(state:action:)`` macro, and learn how to better 
+leverage case key paths in your features.
 
 ## Overview
 
@@ -19,8 +19,8 @@ APIs, and this article contains some tips for doing so.
 ### Using the @Reducer macro
 
 Version 1.4 of the library has introduced a new macro for automating certain aspects of implementing
-a ``Reducer``. It is called ``Reducer()``, and to migrate existing code one only needs to annotate
-their type with `@Reducer`:
+a ``Reducer``. It is called ``Reducer(state:action:)``, and to migrate existing code one only needs 
+to annotate their type with `@Reducer`:
 
 ```diff
 +@Reducer
@@ -31,7 +31,7 @@ their type with `@Reducer`:
 
 No other changes to be made, and you can immediately start taking advantage of new capabilities of
 reducer composition, such as case key paths (see guides below). See the documentation of 
-``Reducer()`` to see everything that macro adds to your feature's reducer.
+``Reducer(state:action:)`` to see everything that macro adds to your feature's reducer.
 
 You can also technically drop the ``Reducer`` conformance:
 
@@ -44,7 +44,7 @@ You can also technically drop the ``Reducer`` conformance:
 ```
 
 However, there are some known issues in Xcode that cause autocomplete and type inference to break.
-See the documentation of <doc:Reducer()#Gotchas> for more gotchas on using the `@Reducer` macro. 
+See the documentation of <doc:Reducer(state:action:)#Gotchas> for more gotchas on using the `@Reducer` macro. 
 
 
 ### Using case key paths
@@ -84,7 +84,7 @@ Reduce { state, action in
 ```
 
 To be able to take advantage of this syntax with your feature's actions, you must annotate your
-``Reducer`` conformances with the ``Reducer()`` macro:
+``Reducer`` conformances with the ``Reducer(state:action:)`` macro:
 
 ```swift
 @Reducer
@@ -137,8 +137,8 @@ store.receive(\.child.presented.response.success)
 ```
 
 > Note: Case key path syntax requires that every nested action is `@CasePathable`. Reducer actions
-> are typically `@CasePathable` automatically via the ``Reducer()`` macro, but other enums must be
-> explicitly annotated:
+> are typically `@CasePathable` automatically via the ``Reducer(state:action:)`` macro, but other 
+> enums must be explicitly annotated:
 >
 > ```swift
 > @CasePathable

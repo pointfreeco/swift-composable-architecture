@@ -216,9 +216,13 @@ extension ReducerMacro: MemberMacro {
       return true
     }
     let hasExplicitReducerBody = bindings.contains {
+      guard $0.initializer == nil
+      else { return true }
       guard let name = $0.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self)?.constraint
         .as(IdentifierTypeSyntax.self)?.name.text
-      else { return false }
+      else {
+        return false
+      }
       return ["Reducer", "ReducerOf"].withQualified.contains(name)
     } || hasReduceMethod
     let hasBody = bindings.contains {

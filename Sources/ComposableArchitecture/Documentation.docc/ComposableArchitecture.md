@@ -59,7 +59,7 @@ day-to-day when building applications, such as:
 
 ### State management
 
-- ``Reducer()``
+- ``Reducer(state:action:)``
 - ``Effect``
 - ``Store``
 
@@ -76,6 +76,7 @@ day-to-day when building applications, such as:
 
 ### Migration guides
 
+- <doc:MigratingTo1.8>
 - <doc:MigratingTo1.7>
 - <doc:MigratingTo1.6>
 - <doc:MigratingTo1.5>

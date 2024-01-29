@@ -50,9 +50,9 @@ However, as of version 1.5 of the Composable Architecture, the version of
 ``ComposableArchitecture/Store/scope(state:action:)-90255`` that takes a key path for the `state` 
 argument, and a case key path for the `action` argument.
 
-This is easiest to do when you are using the ``ComposableArchitecture/Reducer()`` macro with your
-feature because then case key paths are automatically generated for each case of your action enum.
-The above construction of `ChildView` now becomes:
+This is easiest to do when you are using the ``ComposableArchitecture/Reducer(state:action:)`` macro 
+with your feature because then case key paths are automatically generated for each case of your 
+action enum. The above construction of `ChildView` now becomes:
 
 ```swift
 // ✅ New API

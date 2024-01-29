@@ -1,4 +1,4 @@
-# ``ComposableArchitecture/Reducer()``
+# ``ComposableArchitecture/Reducer(state:action:)``
 
 ## Topics
 

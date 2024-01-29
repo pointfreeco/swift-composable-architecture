@@ -52,8 +52,8 @@
   /// ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``, ``Scope``, and more.
   ///
   /// Further, if the ``Reducer/State`` of your feature is an enum, which is useful for modeling a
-  /// feature that can be one of multiple mutually exclusive values, the ``Reducer()`` will apply
-  /// the `@CasePathable` macro, as well as `@dynamicMemberLookup`:
+  /// feature that can be one of multiple mutually exclusive values, the ``Reducer(state:action:)``
+  /// will apply the `@CasePathable` macro, as well as `@dynamicMemberLookup`:
   ///
   /// ```diff
   /// +@CasePathable
@@ -76,6 +76,88 @@
   ///
   /// The syntax `state: \.destination?.editForm` is only possible due to both
   /// `@dynamicMemberLookup` and `@CasePathable` being applied to the `State` enum.
+  ///
+  /// ## Automatic synthesis of reducer requirements
+  ///
+  /// The ``Reducer(state:action:)`` macro can automatically fill in the ``Reducer`` protocol's
+  /// requirements for you. For example, something as simple as this:
+  ///
+  /// ```swift
+  /// @Reducer
+  /// struct Feature {
+  /// }
+  /// ```
+  ///
+  /// …compiles.
+  ///
+  /// The `@Reducer` macro will automatically insert an empty ``Reducer/State`` struct, an empty
+  /// ``Reducer/Action`` enum, and an empty ``Reducer/body-swift.property``. This effectively means
+  /// that `Feature` is a logicless, behaviorless, inert reducer.
+  ///
+  /// Having these requirements automatically synthesized for you can be handy for slowly
+  /// filling them in with their real implementations. For example, this `Feature` reducer could be
+  /// integrated in a parent domain using the library's navigation tools, all without having
+  /// implemented any of the domain yet. Then, once we are ready we can start implementing the real
+  /// logic and behavior of the feature.
+  ///
+  /// ## Destination and path reducers
+  ///
+  /// There is a common pattern in the Composable Architecture of representing destinations a 
+  /// feature can navigate to as a reducer that operates on enum state, with a case for each
+  /// feature that can be navigated to. This is explained in great detail in the
+  /// <doc:TreeBasedNavigation> and <doc:StackBasedNavigation> articles.
+  ///
+  /// This form of domain modeling can be very powerful, but also incur a bit of boilerplate. For 
+  /// example, if a feature can navigate to 3 other features, then one might have a `Destination`
+  /// reducer like the following:
+  ///
+  /// ```swift
+  /// @Reducer
+  /// struct Destination {
+  ///   @ObservableState
+  ///   enum State {
+  ///     case add(FormFeature.State)
+  ///     case detail(DetailFeature.State)
+  ///     case edit(EditFeature.State)
+  ///   }
+  ///   enum Action {
+  ///     case add(FormFeature.Action)
+  ///     case detail(DetailFeature.Action)
+  ///     case edit(EditFeature.Action)
+  ///   }
+  ///   var body: some ReducerOf<Self> {
+  ///     Scope(state: \.add, action: \.add) {
+  ///       FormFeature()
+  ///     }
+  ///     Scope(state: \.detail, action: \.detail) {
+  ///       DetailFeature()
+  ///     }
+  ///     Scope(state: \.edit, action: \.edit) {
+  ///       EditFeature()
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// It's not the worst code in the world, but it is 24 lines with a lot of repetition, and if we 
+  /// need to add a new destination we must add a case to the ``Reducer/State`` enum, a case to the
+  /// ``Reducer/Action`` enum, and a ``Scope`` to the ``Reducer/body-swift.property``.
+  ///
+  /// The ``Reducer(state:action:)`` macro is now capable of generating all of this code for you 
+  /// from the following simple declaration
+  ///
+  /// ```swift
+  /// @Reducer
+  /// enum Destination {
+  ///   case add(FormFeature)
+  ///   case detail(DetailFeature)
+  ///   case edit(EditFeature)
+  /// }
+  /// ```
+  ///
+  /// 24 lines of code has become 6. The `@Reducer` macro can now be applied to an _enum_ where each
+  /// case holds onto the reducer that governs the logic and behavior for that case. This pattern 
+  /// also works for `Path` reducers, which is common when dealing with <doc:StackBasedNavigation>.
   ///
   /// ## Gotchas
   ///
@@ -265,3 +347,4 @@
       module: "ComposableArchitectureMacros", type: "ViewActionMacro"
     ) where R.Action: ViewAction
 #endif
+
