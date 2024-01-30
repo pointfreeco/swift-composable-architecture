@@ -3,6 +3,7 @@ PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS 17.2,iPhone \d\+ Pro [^M])
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
 PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS 17.2,TV)
+PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS 1.0,Vision)
 PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS 10.2,Watch)
 
 default: test-all
@@ -12,7 +13,7 @@ test-all: test-examples
 	$(MAKE) CONFIG=release test-library
 
 test-library:
-	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_WATCHOS)"; do \
+	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_VISIONOS)" "$(PLATFORM_WATCHOS)"; do \
 		xcodebuild test \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
