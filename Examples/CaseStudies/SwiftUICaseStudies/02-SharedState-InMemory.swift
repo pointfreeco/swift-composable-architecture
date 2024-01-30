@@ -23,14 +23,8 @@ struct SharedStateInMemory {
   @ObservableState
   struct State: Equatable {
     var currentTab = Tab.counter
-    var counter: CounterTab.State
-    var profile: ProfileTab.State
-    init(currentTab: Tab = Tab.counter) {
-      self.currentTab = currentTab
-      let stats = Shared(Stats())
-      self.counter = CounterTab.State(stats: stats)
-      self.profile = ProfileTab.State(stats: stats)
-    }
+    var counter = CounterTab.State()
+    var profile = ProfileTab.State()
   }
 
   enum Action {
@@ -91,7 +85,7 @@ extension SharedStateInMemory {
     @ObservableState
     struct State: Equatable {
       @Presents var alert: AlertState<Action.Alert>?
-      @Shared var stats: Stats
+      @Shared(.stats) var stats = Stats()
     }
 
     enum Action {
@@ -136,7 +130,7 @@ extension SharedStateInMemory {
   struct ProfileTab {
     @ObservableState
     struct State: Equatable {
-      @Shared var stats: Stats
+      @Shared(.stats) var stats = Stats()
     }
 
     enum Action {
@@ -226,6 +220,10 @@ struct SharedStateInMemory_Previews: PreviewProvider {
 }
 
 // MARK: - Private helpers
+
+extension _InMemory<Stats> {
+  static let stats: Self = "stats"
+}
 
 /// Checks if a number is prime or not.
 private func isPrime(_ p: Int) -> Bool {
