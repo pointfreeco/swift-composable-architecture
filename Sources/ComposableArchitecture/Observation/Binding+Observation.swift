@@ -11,6 +11,17 @@
     }
   }
 
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+  extension SwiftUI.Bindable {
+    @_disfavoredOverload
+    public subscript<State: ObservableState, Action, Member>(
+      dynamicMember keyPath: KeyPath<State, Member>
+    ) -> _StoreBindable_SwiftUI<State, Action, Member>
+    where Value == Store<State, Action> {
+      _StoreBindable_SwiftUI(bindable: self, keyPath: keyPath)
+    }
+  }
+
   @available(iOS, introduced: 13, obsoleted: 17)
   @available(macOS, introduced: 10.15, obsoleted: 14)
   @available(tvOS, introduced: 13, obsoleted: 17)
@@ -170,17 +181,6 @@
     /// - Returns: A binding.
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
       self.bindable[state: self.keyPath, action: action]
-    }
-  }
-
-  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-  extension SwiftUI.Bindable {
-    @_disfavoredOverload
-    public subscript<State: ObservableState, Action, Member>(
-      dynamicMember keyPath: KeyPath<State, Member>
-    ) -> _StoreBindable_SwiftUI<State, Action, Member>
-    where Value == Store<State, Action> {
-      _StoreBindable_SwiftUI(bindable: self, keyPath: keyPath)
     }
   }
 
