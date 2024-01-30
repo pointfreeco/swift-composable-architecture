@@ -63,4 +63,32 @@ final class AppStorageTests: XCTestCase {
     try await Task.sleep(nanoseconds: 1_000_000)
     XCTAssertEqual(count, 0)
   }
+
+  func testKeyPath() async throws {
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage(\.count)) var count = 0
+
+    _ = count
+
+    defaults.count += 1
+    try await Task.sleep(nanoseconds: 10_000_000)
+    XCTAssertEqual(count, 1)
+  }
+
+  func testKeyPath_WriteOnly() async throws {
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage(\.count)) var count = 0
+
+    defaults.count += 1
+    try await Task.sleep(nanoseconds: 10_000_000)
+    XCTTODO("Can this ideally pass without the '_ = count' access in 'testKeyPath()'?")
+    XCTAssertEqual(count, 1)
+  }
+}
+
+fileprivate extension UserDefaults {
+  @objc dynamic var count: Int {
+    get { integer(forKey: "count") }
+    set { set(newValue, forKey: "count") }
+  }
 }

@@ -2,6 +2,12 @@
   import Foundation
 
   extension Persistent {
+    public static func appStorage<Value>(
+      _ keyPath: ReferenceWritableKeyPath<UserDefaults, Value>
+    ) -> Self where Self == _SharedAppStorage<Value> {
+      _SharedAppStorage(keyPath)
+    }
+
     public static func appStorage(_ key: String) -> Self
     where Self == _SharedAppStorage<Bool> {
       _SharedAppStorage(key)
@@ -86,14 +92,27 @@
   public struct _SharedAppStorage<Value> {
     private let _load: () -> Value?
     private let _save: (Value) -> Void
-    private let key: String
+    private let key: Key
     private let store: UserDefaults
+
+    private enum Key: Hashable {
+      case string(String)
+      case keyPath(ReferenceWritableKeyPath<UserDefaults, Value>)
+    }
+
+    public init(_ keyPath: ReferenceWritableKeyPath<UserDefaults, Value>) {
+      @Dependency(\.defaultAppStorage) var store
+      self._load = { store[keyPath: keyPath] }
+      self._save = { store[keyPath: keyPath] = $0 }
+      self.key = .keyPath(keyPath)
+      self.store = store
+    }
 
     public init(_ key: String) where Value == Bool {
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -101,7 +120,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -109,7 +128,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -117,7 +136,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -125,7 +144,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -133,7 +152,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -142,7 +161,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:)) }
       self._save = { store.set($0.rawValue, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -151,7 +170,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:)) }
       self._save = { store.set($0.rawValue, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -159,7 +178,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -167,7 +186,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -175,7 +194,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -183,7 +202,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -191,7 +210,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -199,7 +218,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { store.object(forKey: key) as? Value }
       self._save = { store.set($0, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -208,7 +227,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:)) }
       self._save = { store.set($0?.rawValue, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
 
@@ -217,7 +236,7 @@
       @Dependency(\.defaultAppStorage) var store
       self._load = { (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:)) }
       self._save = { store.set($0?.rawValue, forKey: key) }
-      self.key = key
+      self.key = .string(key)
       self.store = store
     }
   }
@@ -225,12 +244,23 @@
   extension _SharedAppStorage: Persistent {
     public var updates: AsyncStream<Value?> {
       AsyncStream { continuation in
-        let observer = Observer { value in
-          continuation.yield(value)
-        }
-        self.store.addObserver(observer, forKeyPath: self.key, options: .new, context: nil)
-        continuation.onTermination = { _ in
-          observer.removeObserver(self.store, forKeyPath: self.key)
+        switch self.key {
+        case let .keyPath(key):
+          let observer = self.store.observe(key, options: .new) { _, change in
+            continuation.yield(change.newValue)
+          }
+          _ = self.store[keyPath: key]
+          continuation.onTermination = { _ in
+            observer.invalidate()
+          }
+        case let .string(key):
+          let observer = Observer { value in
+            continuation.yield(value)
+          }
+          self.store.addObserver(observer, forKeyPath: key, options: .new, context: nil)
+          continuation.onTermination = { _ in
+            observer.removeObserver(self.store, forKeyPath: key)
+          }
         }
       }
     }
