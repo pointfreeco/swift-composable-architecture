@@ -26,6 +26,7 @@
   @available(macOS, introduced: 10.15, obsoleted: 14)
   @available(tvOS, introduced: 13, obsoleted: 17)
   @available(watchOS, introduced: 6, obsoleted: 10)
+  @available(visionOS, unavailable)
   extension Perception.Bindable {
     @_disfavoredOverload
     public subscript<State: ObservableState, Action, Member>(
@@ -188,6 +189,7 @@
   @available(macOS, introduced: 10.15, obsoleted: 14)
   @available(tvOS, introduced: 13, obsoleted: 17)
   @available(watchOS, introduced: 6, obsoleted: 10)
+  @available(visionOS, unavailable)
   @dynamicMemberLookup
   public struct _StoreBindable_Perception<State: ObservableState, Action, Value> {
     fileprivate let bindable: Perception.Bindable<Store<State, Action>>
