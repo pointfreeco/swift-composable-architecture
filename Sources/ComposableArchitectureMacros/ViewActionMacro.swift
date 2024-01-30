@@ -160,7 +160,9 @@ extension DeclGroupSyntax {
 extension DeclModifierListSyntax {
   fileprivate func bindingSpecifier() -> TokenSyntax {
     guard
-      let modifier = first(where: { $0.name.tokenKind == .keyword(.public) || $0.name.tokenKind == .keyword(.package) })
+      let modifier = first(where: {
+        $0.name.tokenKind == .keyword(.public) || $0.name.tokenKind == .keyword(.package)
+      })
     else { return "let" }
     return "\(raw: modifier.name.text) let"
   }
