@@ -612,7 +612,7 @@ your feature's state with ``ObservableState()`` and removing all instances of <d
 +@ObservableState
  struct State {
 -  @BindingState var text = ""
--  @BindingState isOn = false
+-  @BindingState var isOn = false
 +  var text = ""
 +  var isOn = false
  }
