@@ -96,6 +96,7 @@ public struct Shared<Value> {
     }
     try updateValueToExpectedResult(&snapshot)
     self.snapshot = snapshot
+    // TODO: Finesse error more than `XCTAssertNoDifference`
     XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
     self.snapshot = nil
   }
@@ -215,7 +216,7 @@ extension Shared: CustomDumpRepresentable {
 extension Shared
 where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable & Sendable {
   public var elements: some RandomAccessCollection<Shared<Value.Element>> {
-    self.wrappedValue.indices.map { index in
+    self.wrappedValue.indices.lazy.map { index in
       self[index]
     }
   }
