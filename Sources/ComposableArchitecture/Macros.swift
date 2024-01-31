@@ -196,7 +196,7 @@
   /// See <doc:Reducer(state:action:)#Circular-reference-errors> below for more info on this error.
   ///
   /// So, to work around this compiler bug the `@Reducer` macro takes two arguments that allow you
-  /// to describe which protocls you want to attach to the `State` or `Action` types:
+  /// to describe which protocols you want to attach to the `State` or `Action` types:
   ///
   /// ```swift
   /// @Reducer(state: .equatable, .sendable, action: .sendable)
@@ -279,6 +279,21 @@
   /// ```shell
   /// xcodebuild -skipMacroValidation …
   /// ```
+  @attached(
+    member,
+    names:
+      named(State),
+      named(Action),
+      named(init),
+      named(body)
+  )
+  @attached(memberAttribute)
+  @attached(extension, conformances: Reducer)
+  public macro Reducer() =
+    #externalMacro(
+      module: "ComposableArchitectureMacros", type: "ReducerMacro"
+    )
+
   @attached(
     member,
     names:

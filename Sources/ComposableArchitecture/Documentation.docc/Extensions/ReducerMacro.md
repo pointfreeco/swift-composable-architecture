@@ -1,7 +1,12 @@
-# ``ComposableArchitecture/Reducer(state:action:)``
+# ``ComposableArchitecture/Reducer()``
 
 ## Topics
 
 ### Reducer conformance
 
 - ``Reducer``
+
+### Enum reducers
+
+- ``Reducer(state:action:)``
+- ``_SynthesizedConformance``

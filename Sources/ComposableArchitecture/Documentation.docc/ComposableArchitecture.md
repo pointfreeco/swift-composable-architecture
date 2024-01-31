@@ -59,7 +59,7 @@ day-to-day when building applications, such as:
 
 ### State management
 
-- ``Reducer(state:action:)``
+- ``Reducer()``
 - ``Effect``
 - ``Store``
 
