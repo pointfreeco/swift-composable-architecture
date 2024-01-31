@@ -55,7 +55,7 @@
       }
     }
 
-    func testPublicAccess() {
+    func testAccessControl() {
       assertMacro {
         """
         public struct State {
@@ -80,6 +80,43 @@
           }
 
           public var $destination: ComposableArchitecture.PresentationState<Destination.State> {
+            get {
+              _$observationRegistrar.access(self, keyPath: \.destination)
+              return _destination.projectedValue
+            }
+            set {
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.projectedValue, newValue, _$isIdentityEqual)
+            }
+          }
+
+          @ObservationStateIgnored private var _destination = ComposableArchitecture.PresentationState<Destination.State>(wrappedValue: nil)
+        }
+        """#
+      }
+      assertMacro {
+        """
+        package struct State {
+          @Presents package var destination: Destination.State?
+        }
+        """
+      } expansion: {
+        #"""
+        package struct State {
+          package var destination: Destination.State? {
+            @storageRestrictions(initializes: _destination)
+            init(initialValue) {
+              _destination = PresentationState(wrappedValue: initialValue)
+            }
+            get {
+              _$observationRegistrar.access(self, keyPath: \.destination)
+              return _destination.wrappedValue
+            }
+            set {
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.wrappedValue, newValue, _$isIdentityEqual)
+            }
+          }
+
+          package var $destination: ComposableArchitecture.PresentationState<Destination.State> {
             get {
               _$observationRegistrar.access(self, keyPath: \.destination)
               return _destination.projectedValue

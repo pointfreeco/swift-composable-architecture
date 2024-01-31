@@ -11,7 +11,7 @@ final class ContactsFeatureTests: XCTestCase {
     } withDependencies: {
       $0.uuid = .incrementing
     }
-
+    
     await store.send(.addButtonTapped) {
       $0.destination = .addContact(
         AddContactFeature.State(
@@ -31,6 +31,8 @@ final class ContactsFeatureTests: XCTestCase {
         Contact(id: UUID(0), name: "Blob Jr.")
       ]
     }
-    await store.receive(\.destination.dismiss)
+    await store.receive(\.destination.dismiss) {
+      $0.destination = nil
+    }
   }
 }

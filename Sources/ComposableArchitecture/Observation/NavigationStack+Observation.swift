@@ -58,21 +58,7 @@ import SwiftUI
       action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
     ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
     where Value == Store<State, Action> {
-      #if DEBUG
-        let isInViewBody = _PerceptionLocals.isInPerceptionTracking
-      #endif
-      return Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
-        get: {
-          #if DEBUG
-            _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
-              self.wrappedValue.scope(state: state, action: action)
-            }
-          #else
-            self.wrappedValue.scope(state: state, action: action)
-          #endif
-        },
-        set: { _ in }
-      )
+      self[state: state, action: action]
     }
   }
 
@@ -87,10 +73,7 @@ import SwiftUI
       action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
     ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
     where Value == Store<State, Action> {
-      Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
-        get: { self.wrappedValue.scope(state: state, action: action) },
-        set: { _ in }
-      )
+      self[state: state, action: action]
     }
   }
 
@@ -108,10 +91,7 @@ import SwiftUI
       action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
     ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
     where Value == Store<State, Action> {
-      Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>(
-        get: { self.wrappedValue.scope(state: state, action: action) },
-        set: { _ in }
-      )
+      self[state: state, action: action]
     }
   }
 
@@ -131,26 +111,7 @@ import SwiftUI
       Data == StackState<State>.PathView,
       Root == ModifiedContent<R, _NavigationDestinationViewModifier<State, Action, Destination>>
     {
-      self.init(
-        path: Binding(
-          get: { path.wrappedValue.currentState.path },
-          set: { pathView, transaction in
-            if pathView.count > path.wrappedValue.withState({ $0 }).count,
-              let component = pathView.last
-            {
-              path.wrappedValue.send(
-                .push(id: component.id, state: component.element),
-                transaction: transaction
-              )
-            } else {
-              path.wrappedValue.send(
-                .popFrom(id: path.wrappedValue.withState { $0 }.ids[pathView.count]),
-                transaction: transaction
-              )
-            }
-          }
-        )
-      ) {
+      self.init(path: path[]) {
         root()
           .modifier(
             _NavigationDestinationViewModifier(store: path.wrappedValue, destination: destination)
@@ -297,6 +258,40 @@ import SwiftUI
       #else
         self.label
       #endif
+    }
+  }
+
+  extension Store where State: ObservableState {
+    fileprivate subscript<ElementState, ElementAction>(
+      state state: KeyPath<State, StackState<ElementState>>,
+      action action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>,
+      isInViewBody isInViewBody: Bool = _PerceptionLocals.isInPerceptionTracking
+    ) -> Store<StackState<ElementState>, StackAction<ElementState, ElementAction>> {
+      get {
+        #if DEBUG
+          _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+            self.scope(state: state, action: action)
+          }
+        #else
+          self.scope(state: state, action: action)
+        #endif
+      }
+      set {}
+    }
+  }
+
+  extension Store {
+    fileprivate subscript<ElementState, ElementAction>() -> StackState<ElementState>.PathView
+    where State == StackState<ElementState>, Action == StackAction<ElementState, ElementAction> {
+      get { self.currentState.path }
+      set {
+        let newCount = newValue.count
+        if newCount > self.currentState.count, let component = newValue.last {
+          self.send(.push(id: component.id, state: component.element))
+        } else {
+          self.send(.popFrom(id: self.currentState.ids[newCount]))
+        }
+      }
     }
   }
 #endif

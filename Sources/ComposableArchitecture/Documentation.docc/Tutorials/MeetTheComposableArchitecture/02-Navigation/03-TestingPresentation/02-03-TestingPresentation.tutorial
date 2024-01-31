@@ -146,7 +146,7 @@
         To further assert that when the `saveContact` delegate action was received, you must
         annotate `AddContactFeature.Action.Delegate` with the `@CasePathable` macro.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0015.swift, previousFile: 02-03-01-code-0015-previous.swift)
+        @Code(name: "ContactsFeature.swift", file: 02-03-01-code-0015.swift, previousFile: 02-03-01-code-0015-previous.swift)
       }
       
       @Step {

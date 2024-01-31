@@ -135,7 +135,7 @@ extension DeclModifierListSyntax {
         switch $0.name.tokenKind {
         case .keyword(let keyword):
           switch keyword {
-          case .fileprivate, .private, .internal, .public:
+          case .fileprivate, .private, .internal, .public, .package:
             return false
           default:
             return true
@@ -249,7 +249,9 @@ extension ObservableStateMacro: MemberMacro {
 
     var declarations = [DeclSyntax]()
 
-    let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
+    let access = declaration.modifiers.first {
+      $0.name.tokenKind == .keyword(.public) || $0.name.tokenKind == .keyword(.package)
+    }
     declaration.addIfNeeded(
       ObservableStateMacro.registrarVariable(observableType), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.idVariable(access), to: &declarations)
@@ -268,7 +270,9 @@ extension ObservableStateMacro {
     providingMembersOf declaration: Declaration,
     in context: Context
   ) throws -> [DeclSyntax] {
-    let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
+    let access = declaration.modifiers.first {
+      $0.name.tokenKind == .keyword(.public) || $0.name.tokenKind == .keyword(.package)
+    }
 
     let enumCaseDecls = declaration.memberBlock.members
       .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
