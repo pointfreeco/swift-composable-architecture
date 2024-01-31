@@ -35,7 +35,7 @@ public struct LoginView: View {
       Button {
         // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected" if
         //     you disable a text field while it is focused. This hack will force all fields to
-        //     unfocus before we send the action to the view store.
+        //     unfocus before we send the action to the store.
         // CF: https://stackoverflow.com/a/69653555
         _ = UIApplication.shared.sendAction(
           #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil

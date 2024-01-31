@@ -3,8 +3,8 @@ import SwiftUI
 
 private let readMe = """
   This application demonstrates live-searching with the Composable Architecture. As you type the \
-  events are debounced for 300ms, and when you stop typing an API request is made to load \
-  locations. Then tapping on a location will load weather.
+  events are debounced for 300 milliseconds, and when you stop typing an API request is made to \
+  load locations. Then tapping on a location will load weather.
   """
 
 @Reducer

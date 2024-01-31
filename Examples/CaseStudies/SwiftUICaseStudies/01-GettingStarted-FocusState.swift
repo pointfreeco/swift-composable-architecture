@@ -4,7 +4,7 @@ import SwiftUI
 private let readMe = """
   This demonstrates how to make use of SwiftUI's `@FocusState` in the Composable Architecture with \
   the library's `bind` view modifier. If you tap the "Sign in" button while a field is empty, the \
-  focus will be changed to that field.
+  focus will be changed to the first empty field.
   """
 
 @Reducer

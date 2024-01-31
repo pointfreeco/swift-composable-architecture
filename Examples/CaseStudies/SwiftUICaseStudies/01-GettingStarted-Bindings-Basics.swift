@@ -12,10 +12,11 @@ private let readMe = """
   actions to the store, and this means there is only ever one place to see how the state of our \
   feature evolves, which is the reducer.
 
-  Any SwiftUI component that requires a Binding to do its job can be used in the Composable \
-  Architecture. You can derive a Binding from your ViewStore by using the `binding` method. This \
-  will allow you to specify what state renders the component, and what action to send when the \
-  component changes, which means you can keep using a unidirectional style for your feature.
+  Any SwiftUI component that requires a binding to do its job can be used in the Composable \
+  Architecture. You can derive a binding from a store by taking a bindable store, chaining into a \
+  property of state that renders the component, and calling the `sending` method with a key path \
+  to an action to send when the component changes, which means you can keep using a unidirectional \
+  style for your feature.
   """
 
 @Reducer

@@ -5,9 +5,9 @@ private let readMe = """
   This screen demonstrates how to show and hide views based on the presence of some optional child \
   state.
 
-  The parent state holds a `Counter.State?` value. When it is `nil` we will default to a plain text \
-  view. But when it is non-`nil` we will show a view fragment for a counter that operates on the \
-  non-optional counter state.
+  The parent state holds a `Counter.State?` value. When it is `nil` we will default to a plain \
+  text view. But when it is non-`nil` we will show a view fragment for a counter that operates on \
+  the non-optional counter state.
 
   Tapping "Toggle counter state" will flip between the `nil` and non-`nil` counter states.
   """

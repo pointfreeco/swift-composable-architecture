@@ -5,18 +5,15 @@ private let readMe = """
   This demonstrates how to best handle alerts and confirmation dialogs in the Composable \
   Architecture.
 
-  Because the library demands that all data flow through the application in a single direction, we \
-  cannot leverage SwiftUI's two-way bindings because they can make changes to state without going \
-  through a reducer. This means we can't directly use the standard API to display alerts and sheets.
+  The library comes with two types, `AlertState` and `ConfirmationDialogState`, which are data \
+  descriptions of the state and actions of an alert or dialog. These types can be constructed in \
+  reducers to control whether or not an alert or confirmation dialog is displayed, and \
+  corresponding view modifiers, `alert(_:)` and `confirmationDialog(_:)`, can be handed bindings \
+  to a store focused on an alert or dialog domain so that the alert or dialog can be displayed in \
+  the view.
 
-  However, the library comes with two types, `AlertState` and `ConfirmationDialogState`, which can \
-  be constructed from reducers and control whether or not an alert or confirmation dialog is \
-  displayed. Further, it automatically handles sending actions when you tap their buttons, which \
-  allows you to properly handle their functionality in the reducer rather than in two-way bindings \
-  and action closures.
-
-  The benefit of doing this is that you can get full test coverage on how a user interacts with \
-  alerts and dialogs in your application
+  The benefit of using these types is that you can get full test coverage on how a user interacts \
+  with alerts and dialogs in your application
   """
 
 @Reducer
