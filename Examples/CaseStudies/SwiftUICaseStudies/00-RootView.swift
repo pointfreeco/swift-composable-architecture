@@ -177,18 +177,18 @@ struct RootView: View {
 /// This wrapper provides an "entry" point into an individual demo that can own a store.
 struct Demo<State, Action, Content: View>: View {
   @SwiftUI.State var store: Store<State, Action>
-  let content: Content
+  let content: (Store<State, Action>) -> Content
 
   init(
     store: Store<State, Action>,
-    @ViewBuilder content: (Store<State, Action>) -> Content
+    @ViewBuilder content: @escaping (Store<State, Action>) -> Content
   ) {
     self.store = store
-    self.content = content(store)
+    self.content = content
   }
 
   var body: some View {
-    self.content
+    self.content(self.store)
   }
 }
 
