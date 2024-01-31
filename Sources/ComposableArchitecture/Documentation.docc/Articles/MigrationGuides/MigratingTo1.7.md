@@ -25,7 +25,7 @@ you are targeting older platforms.
 * [Replacing IfLetStore with ‘if let’](#Replacing-IfLetStore-with-if-let)
 * [Replacing ForEachStore with ForEach](#Replacing-ForEachStore-with-ForEach)
 * [Replacing SwitchStore and CaseLet with ‘switch’ and ‘case’](#Replacing-SwitchStore-and-CaseLet-with-switch-and-case)
-* [Replacing @PresentationState with @Presentation](#Replacing-PresentationState-with-Presentation)
+* [Replacing @PresentationState with @Presents](#Replacing-PresentationState-with-Presents)
 * [Replacing navigation view modifiers with SwiftUI modifiers](#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers)
 * [Updating alert and confirmationDialog](#Updating-alert-and-confirmationDialog)
 * [Replacing NavigationStackStore with NavigationStack](#Replacing-NavigationStackStore-with-NavigationStack)
@@ -173,7 +173,7 @@ IfLetStore(store: store.scope(state: \.child, action: \.child)) { childStore in
 This can now be updated to use plain `if let` syntax with ``Store/scope(state:action:)-36e72``:
 
 ```swift
-if let childStore = store.scope(state: \.child, action: \.child)) {
+if let childStore = store.scope(state: \.child, action: \.child) {
   ChildView(store: childStore)
 } else {
   Text("Nothing to show")
@@ -302,7 +302,7 @@ case .settings:
 }
 ```
 
-## Replacing @PresentationState with @Presentation
+## Replacing @PresentationState with @Presents
 
 It is a well-known limitation of Swift macros that they cannot be used with property wrappers.
 This means that if your feature uses ``PresentationState`` you will get compiler errors when 
@@ -612,7 +612,7 @@ your feature's state with ``ObservableState()`` and removing all instances of <d
 +@ObservableState
  struct State {
 -  @BindingState var text = ""
--  @BindingState isOn = false
+-  @BindingState var isOn = false
 +  var text = ""
 +  var isOn = false
  }
@@ -867,7 +867,7 @@ wield this tool.
 
 ## Incrementally migrating
 
-You are most likely going to want to incrementally your application to the new observation tools, 
+You are most likely going to want to incrementally migrate your application to the new observation tools, 
 rather than doing everything all at once. That is possible, but there are some gotchas to be aware
 of when mixing "legacy" features (_i.e._ features using ``ViewStore`` and ``WithViewStore``) with
 "modern" features (_i.e._ features using ``ObservableState()``).

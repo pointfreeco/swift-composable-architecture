@@ -217,6 +217,54 @@
       }
     }
 
+    func testNoStore_Package() {
+      assertMacro {
+        """
+        @ViewAction(for: Feature.self)
+        package struct FeatureView: View {
+          package var body: some View {
+            EmptyView()
+          }
+        }
+        """
+      } diagnostics: {
+        """
+        @ViewAction(for: Feature.self)
+        ╰─ 🛑 '@ViewAction' requires 'FeatureView' to have a 'store' property of type 'Store'.
+           ✏️ Add 'store'
+        package struct FeatureView: View {
+          package var body: some View {
+            EmptyView()
+          }
+        }
+        """
+      } fixes: {
+        """
+        @ViewAction(for: Feature.self)
+        package struct FeatureView: View {
+          package let store: StoreOf<Feature>
+
+          package var body: some View {
+            EmptyView()
+          }
+        }
+        """
+      } expansion: {
+        """
+        package struct FeatureView: View {
+          package let store: StoreOf<Feature>
+
+          package var body: some View {
+            EmptyView()
+          }
+        }
+
+        extension FeatureView: ComposableArchitecture.ViewActionSending {
+        }
+        """
+      }
+    }
+
     func testWarning_StoreSend() {
       assertMacro {
         """

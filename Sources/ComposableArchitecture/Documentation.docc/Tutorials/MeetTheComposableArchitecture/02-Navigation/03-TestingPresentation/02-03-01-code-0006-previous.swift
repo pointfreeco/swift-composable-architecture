@@ -32,6 +32,9 @@ struct ContactsFeature {
         state.contacts.remove(id: id)
         return .none
         
+      case .destination:
+        return .none
+        
       case let .deleteButtonTapped(id: id):
         state.destination = .alert(
           AlertState {

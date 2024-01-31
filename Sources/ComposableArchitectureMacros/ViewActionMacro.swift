@@ -26,10 +26,7 @@ public struct ViewActionMacro: ExtensionMacro {
           leadingTrivia: declarationWithStoreVariable.memberBlock.members.first?.leadingTrivia
             ?? "\n    ",
           decl: VariableDeclSyntax(
-            bindingSpecifier: declaration.modifiers
-              .contains(where: { $0.name.tokenKind == .keyword(.public) })
-              ? "public let"
-              : "let",
+            bindingSpecifier: declaration.modifiers.bindingSpecifier(),
             bindings: [
               PatternBindingSyntax(
                 pattern: " store" as PatternSyntax,
@@ -157,6 +154,17 @@ extension DeclGroupSyntax {
     default:
       return nil
     }
+  }
+}
+
+extension DeclModifierListSyntax {
+  fileprivate func bindingSpecifier() -> TokenSyntax {
+    guard
+      let modifier = first(where: {
+        $0.name.tokenKind == .keyword(.public) || $0.name.tokenKind == .keyword(.package)
+      })
+    else { return "let" }
+    return "\(raw: modifier.name.text) let"
   }
 }
 

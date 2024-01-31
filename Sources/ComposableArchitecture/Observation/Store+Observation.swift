@@ -157,25 +157,7 @@
       action: CaseKeyPath<Action, PresentationAction<ChildAction>>
     ) -> Binding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
-      #if DEBUG
-        let isInViewBody = _PerceptionLocals.isInPerceptionTracking
-      #endif
-      return Binding<Store<ChildState, ChildAction>?>(
-        get: {
-          #if DEBUG
-            _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
-              self.wrappedValue.scope(state: state, action: action.appending(path: \.presented))
-            }
-          #else
-            self.wrappedValue.scope(state: state, action: action.appending(path: \.presented))
-          #endif
-        },
-        set: {
-          if $0 == nil, self.wrappedValue.state[keyPath: state] != nil {
-            self.wrappedValue.send(action(.dismiss), transaction: $1)
-          }
-        }
-      )
+      self[state: state, action: action]
     }
   }
 
@@ -232,14 +214,7 @@
       action: CaseKeyPath<Action, PresentationAction<ChildAction>>
     ) -> Binding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
-      Binding<Store<ChildState, ChildAction>?>(
-        get: { self.wrappedValue.scope(state: state, action: action.appending(path: \.presented)) },
-        set: {
-          if $0 == nil, self.wrappedValue.currentState[keyPath: state] != nil {
-            self.wrappedValue.send(action(.dismiss), transaction: $1)
-          }
-        }
-      )
+      self[state: state, action: action]
     }
   }
 
@@ -299,14 +274,30 @@
       action: CaseKeyPath<Action, PresentationAction<ChildAction>>
     ) -> Binding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
-      Binding<Store<ChildState, ChildAction>?>(
-        get: { self.wrappedValue.scope(state: state, action: action.appending(path: \.presented)) },
-        set: {
-          if $0 == nil, self.wrappedValue.currentState[keyPath: state] != nil {
-            self.wrappedValue.send(action(.dismiss), transaction: $1)
+      self[state: state, action: action]
+    }
+  }
+
+  extension Store where State: ObservableState {
+    fileprivate subscript<ChildState, ChildAction>(
+      state state: KeyPath<State, ChildState?>,
+      action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      isInViewBody isInViewBody: Bool = _PerceptionLocals.isInPerceptionTracking
+    ) -> Store<ChildState, ChildAction>? {
+      get {
+        #if DEBUG
+          _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+            self.scope(state: state, action: action.appending(path: \.presented))
           }
+        #else
+          self.scope(state: state, action: action.appending(path: \.presented))
+        #endif
+      }
+      set {
+        if newValue == nil, self.state[keyPath: state] != nil {
+          self.send(action(.dismiss))
         }
-      )
+      }
     }
   }
 #endif

@@ -50,6 +50,7 @@ extension Reducer {
   ///   - oldValue: The old value that failed the comparison check.
   ///   - newValue: The new value that failed the comparison check.
   /// - Returns: A reducer that performs the logic when the state changes.
+  @available(*, deprecated, message: "Use 'onChange(of:)' with and equatable value, instead.")
   @inlinable
   public func onChange<V, R: Reducer>(
     of toValue: @escaping (State) -> V,

@@ -232,7 +232,7 @@ struct Stats: Equatable {
   mutating func increment() {
     count += 1
     numberOfCounts += 1
-    maxCount = max(minCount, count)
+    maxCount = max(maxCount, count)
   }
   mutating func decrement() {
     count -= 1

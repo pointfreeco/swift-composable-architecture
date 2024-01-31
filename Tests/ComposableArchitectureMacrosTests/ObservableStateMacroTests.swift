@@ -106,6 +106,95 @@
       }
     }
 
+    func testObservableState_AccessControl() throws {
+      assertMacro {
+        #"""
+        @ObservableState
+        public struct State {
+          var count = 0
+        }
+        """#
+      } expansion: {
+        #"""
+        public struct State {
+          var count = 0 {
+            @storageRestrictions(initializes: _count)
+            init(initialValue) {
+              _count = initialValue
+            }
+            get {
+              _$observationRegistrar.access(self, keyPath: \.count)
+              return _count
+            }
+            set {
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+            }
+            _modify {
+              let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
+              defer {
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+              }
+              yield &_count
+            }
+          }
+
+          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+
+          public var _$id: ComposableArchitecture.ObservableStateID {
+            _$observationRegistrar.id
+          }
+
+          public mutating func _$willModify() {
+            _$observationRegistrar._$willModify()
+          }
+        }
+        """#
+      }
+      assertMacro {
+        #"""
+        @ObservableState
+        package struct State {
+          var count = 0
+        }
+        """#
+      } expansion: {
+        #"""
+        package struct State {
+          var count = 0 {
+            @storageRestrictions(initializes: _count)
+            init(initialValue) {
+              _count = initialValue
+            }
+            get {
+              _$observationRegistrar.access(self, keyPath: \.count)
+              return _count
+            }
+            set {
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+            }
+            _modify {
+              let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
+              defer {
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+              }
+              yield &_count
+            }
+          }
+
+          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+
+          package var _$id: ComposableArchitecture.ObservableStateID {
+            _$observationRegistrar.id
+          }
+
+          package mutating func _$willModify() {
+            _$observationRegistrar._$willModify()
+          }
+        }
+        """#
+      }
+    }
+
     func testObservableStateIgnored() throws {
       assertMacro {
         #"""
@@ -230,6 +319,42 @@
           }
 
           public mutating func _$willModify() {
+            switch self {
+            case var .feature1(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .feature1(state)
+            case var .feature2(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .feature2(state)
+            }
+          }
+        }
+        """
+      }
+      assertMacro {
+        """
+        @ObservableState
+        package enum Path {
+          case feature1(Feature1.State)
+          case feature2(Feature2.State)
+        }
+        """
+      } expansion: {
+        """
+        package enum Path {
+          case feature1(Feature1.State)
+          case feature2(Feature2.State)
+
+          package var _$id: ComposableArchitecture.ObservableStateID {
+            switch self {
+            case let .feature1(state):
+              return ._$id(for: state)._$tag(0)
+            case let .feature2(state):
+              return ._$id(for: state)._$tag(1)
+            }
+          }
+
+          package mutating func _$willModify() {
             switch self {
             case var .feature1(state):
               ComposableArchitecture._$willModify(&state)

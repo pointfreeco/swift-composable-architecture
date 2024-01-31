@@ -18,3 +18,4 @@ instead.
 - ``Reducer/ifCaseLet(_:action:then:fileID:line:)-36dz4``
 - ``Reducer/forEach(_:action:element:fileID:line:)-65nr1``
 - ``Reducer/forEach(_:action:destination:fileID:line:)-51zt9``
+- ``Reducer/onChange(of:removeDuplicates:_:)``
