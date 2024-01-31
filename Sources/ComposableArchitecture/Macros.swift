@@ -337,10 +337,43 @@
     public static let sendable = Self()
   }
 
+  /// Marks the case of an enum reducer as holding onto "ephemeral" state.
+  ///
+  /// Apply this reducer to any cases of an enum reducer that holds onto state conforming to the
+  /// ``ComposableArchitecture/_EphemeralState`` protocol, such as `AlertState` and
+  /// `ConfirmationDialogState`:
+  ///
+  /// ```swift
+  /// @Reducer
+  /// enum Destination {
+  ///   @ReducerEphemeralCase
+  ///   case alert(AlertState<Alert>)
+  ///   // ...
+  ///
+  ///   enum Alert {
+  ///     case saveButtonTapped
+  ///     case discardButtonTapped
+  ///   }
+  /// }
+  /// ```
   @attached(peer, names: named(_))
   public macro ReducerCaseEphemeral() =
     #externalMacro(module: "ComposableArchitectureMacros", type: "ReducerCaseEphemeralMacro")
 
+  /// Marks the case of an enum reducer as "ignored", and as such will not compose the case's
+  /// domain into the rest of the reducer besides state.
+  ///
+  /// Apply this macro to cases that do not hold onto reducer features, and instead hold onto
+  /// plain data that needs to be passed to a child view.
+  ///
+  /// ```swift
+  /// @Reducer
+  /// enum Destination {
+  ///   @ReducerCaseIgnored
+  ///   case meeting(id: Meeting.ID)
+  ///   // ...
+  /// }
+  /// ```
   @attached(peer, names: named(_))
   public macro ReducerCaseIgnored() =
     #externalMacro(module: "ComposableArchitectureMacros", type: "ReducerCaseIgnoredMacro")

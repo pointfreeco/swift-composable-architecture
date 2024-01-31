@@ -9,4 +9,6 @@
 ### Enum reducers
 
 - ``Reducer(state:action:)``
+- ``ReducerCaseEphemeral()``
+- ``ReducerCaseIgnored()``
 - ``_SynthesizedConformance``
