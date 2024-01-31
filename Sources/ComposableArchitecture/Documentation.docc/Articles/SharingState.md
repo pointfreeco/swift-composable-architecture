@@ -16,6 +16,14 @@ application. There are 3 main strategies shipped with the library: in-memory sha
 persistence, and file storage persistence. You can also implement your own persistence strategy if
 you want to use something other than user defaults or the file system, such as SQLite.
 
+* ["Source of truth"](#Source-of-truth)
+* [In-memory shared state](#In-memory-shared-state)
+* [Persisted shared state](#Persisted-shared-state)
+  * [User defaults](#User-defaults)
+  * [File storage](#File-storage)
+  * [Custom persistence](#Custom-persistence)
+* [Testing](#Testing)
+
 ## "Source of truth"
 
 First a quick discussion on defining exactly what "shared state" is. A common concept thrown around
