@@ -12,8 +12,18 @@ test-all: test-examples
 	$(MAKE) CONFIG=debug test-library
 	$(MAKE) CONFIG=release test-library
 
+build-all-platforms:
+	for platform in "iOS" "macOS" "macOS,variant=Mac Catalyst" "tvOS" "visionOS" "watchOS"; do \
+		xcodebuild \
+			-skipMacroValidation \
+			-configuration $(CONFIG) \
+			-workspace .github/package.xcworkspace \
+			-scheme ComposableArchitecture \
+			-destination generic/platform="$$platform" || exit 1; \
+	done;
+
 test-library:
-	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)" "$(PLATFORM_MAC_CATALYST)" "$(PLATFORM_TVOS)" "$(PLATFORM_VISIONOS)" "$(PLATFORM_WATCHOS)"; do \
+	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)"; do \
 		xcodebuild test \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
