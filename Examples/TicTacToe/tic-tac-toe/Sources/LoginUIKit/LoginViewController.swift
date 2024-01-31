@@ -103,7 +103,7 @@ public class LoginViewController: UIViewController {
       {
         alertController = UIAlertController(store: store)
         present(alertController!, animated: true, completion: nil)
-      } else if alertController != nil {
+      } else if store.alert == nil, alertController != nil {
         alertController?.dismiss(animated: true)
         alertController = nil
       }
