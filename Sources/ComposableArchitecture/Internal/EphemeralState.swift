@@ -2,7 +2,7 @@
 
 #if swift(>=5.8)
   /// Loosely represents features that are only briefly shown and the first time they are interacted
-  /// with they go away. Such features do not manage any behavior on the inside.
+  /// with they are dismissed. Such features do not manage any behavior on the inside.
   ///
   /// Alerts and confirmation dialogs are examples of this kind of state.
   @_documentation(visibility:public)
