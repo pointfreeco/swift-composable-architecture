@@ -137,7 +137,7 @@ import SwiftUI
           self
             .destination(
               self.store.scope(
-                id: self.store.id(state: \.[id:component.id], action: \.[id:component.id]),
+                id: self.store.id(state: \.[id: component.id], action: \.[id: component.id]),
                 state: ToState {
                   element = $0[id: component.id] ?? element
                   return element
@@ -237,10 +237,10 @@ import SwiftUI
           if self.navigationDestinationType != State.self {
             let elementType =
               self.navigationDestinationType.map(typeName)
-                ?? """
-                (None found in view hierarchy. Is this link inside a store-powered \
-                'NavigationStack'?)
-                """
+              ?? """
+              (None found in view hierarchy. Is this link inside a store-powered \
+              'NavigationStack'?)
+              """
             runtimeWarn(
               """
               A navigation link at "\(self.fileID):\(self.line)" is unpresentable. …
@@ -295,13 +295,13 @@ import SwiftUI
     }
   }
 
-var _isInPerceptionTracking: Bool {
-  #if !os(visionOS)
-  return _PerceptionLocals.isInPerceptionTracking
-  #else
-  return false
-  #endif
-}
+  var _isInPerceptionTracking: Bool {
+    #if !os(visionOS)
+      return _PerceptionLocals.isInPerceptionTracking
+    #else
+      return false
+    #endif
+  }
 #endif
 
 extension StackState {

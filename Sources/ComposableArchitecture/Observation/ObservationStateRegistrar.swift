@@ -3,11 +3,11 @@
   public struct ObservationStateRegistrar: Sendable {
     public private(set) var id = ObservableStateID()
     #if !os(visionOS)
-    @usableFromInline
-    let registrar = PerceptionRegistrar()
+      @usableFromInline
+      let registrar = PerceptionRegistrar()
     #else
-    @usableFromInline
-    let registrar = ObservationRegistrar()
+      @usableFromInline
+      let registrar = ObservationRegistrar()
     #endif
     public init() {}
     public mutating func _$willModify() { self.id._$willModify() }
@@ -113,71 +113,71 @@
     }
   #endif
 
-#if !os(visionOS)
-  extension ObservationStateRegistrar {
-    @_disfavoredOverload
-    @inlinable
-    public func access<Subject: Perceptible, Member>(
-      _ subject: Subject,
-      keyPath: KeyPath<Subject, Member>
-    ) {
-      self.registrar.access(subject, keyPath: keyPath)
-    }
+  #if !os(visionOS)
+    extension ObservationStateRegistrar {
+      @_disfavoredOverload
+      @inlinable
+      public func access<Subject: Perceptible, Member>(
+        _ subject: Subject,
+        keyPath: KeyPath<Subject, Member>
+      ) {
+        self.registrar.access(subject, keyPath: keyPath)
+      }
 
-    @_disfavoredOverload
-    @inlinable
-    public func mutate<Subject: Perceptible, Member, Value>(
-      _ subject: Subject,
-      keyPath: KeyPath<Subject, Member>,
-      _ value: inout Value,
-      _ newValue: Value,
-      _ isIdentityEqual: (Value, Value) -> Bool
-    ) {
-      if isIdentityEqual(value, newValue) {
-        value = newValue
-      } else {
-        self.registrar.withMutation(of: subject, keyPath: keyPath) {
+      @_disfavoredOverload
+      @inlinable
+      public func mutate<Subject: Perceptible, Member, Value>(
+        _ subject: Subject,
+        keyPath: KeyPath<Subject, Member>,
+        _ value: inout Value,
+        _ newValue: Value,
+        _ isIdentityEqual: (Value, Value) -> Bool
+      ) {
+        if isIdentityEqual(value, newValue) {
           value = newValue
+        } else {
+          self.registrar.withMutation(of: subject, keyPath: keyPath) {
+            value = newValue
+          }
+        }
+      }
+
+      @_disfavoredOverload
+      @inlinable
+      public func willModify<Subject: Perceptible, Member>(
+        _ subject: Subject,
+        keyPath: KeyPath<Subject, Member>,
+        _ member: inout Member
+      ) -> Member {
+        return member
+      }
+
+      @_disfavoredOverload
+      @inlinable
+      public func willModify<Subject: Perceptible, Member: ObservableState>(
+        _ subject: Subject,
+        keyPath: KeyPath<Subject, Member>,
+        _ member: inout Member
+      ) -> Member {
+        member._$willModify()
+        return member
+      }
+
+      @_disfavoredOverload
+      @inlinable
+      public func didModify<Subject: Perceptible, Member>(
+        _ subject: Subject,
+        keyPath: KeyPath<Subject, Member>,
+        _ member: inout Member,
+        _ oldValue: Member,
+        _ isIdentityEqual: (Member, Member) -> Bool
+      ) {
+        if !isIdentityEqual(oldValue, member) {
+          let newValue = member
+          member = oldValue
+          self.mutate(subject, keyPath: keyPath, &member, newValue, isIdentityEqual)
         }
       }
     }
-
-    @_disfavoredOverload
-    @inlinable
-    public func willModify<Subject: Perceptible, Member>(
-      _ subject: Subject,
-      keyPath: KeyPath<Subject, Member>,
-      _ member: inout Member
-    ) -> Member {
-      return member
-    }
-
-    @_disfavoredOverload
-    @inlinable
-    public func willModify<Subject: Perceptible, Member: ObservableState>(
-      _ subject: Subject,
-      keyPath: KeyPath<Subject, Member>,
-      _ member: inout Member
-    ) -> Member {
-      member._$willModify()
-      return member
-    }
-
-    @_disfavoredOverload
-    @inlinable
-    public func didModify<Subject: Perceptible, Member>(
-      _ subject: Subject,
-      keyPath: KeyPath<Subject, Member>,
-      _ member: inout Member,
-      _ oldValue: Member,
-      _ isIdentityEqual: (Member, Member) -> Bool
-    ) {
-      if !isIdentityEqual(oldValue, member) {
-        let newValue = member
-        member = oldValue
-        self.mutate(subject, keyPath: keyPath, &member, newValue, isIdentityEqual)
-      }
-    }
-  }
-#endif
+  #endif
 #endif

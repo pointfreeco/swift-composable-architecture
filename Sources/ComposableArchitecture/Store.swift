@@ -142,13 +142,13 @@ public final class Store<State, Action> {
   private let fromAction: (Action) -> Any
 
   #if canImport(Perception)
-  #if !os(visionOS)
-    let _$observationRegistrar = PerceptionRegistrar(
-      isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
-    )
-  #else
-  let _$observationRegistrar = ObservationRegistrar()
-  #endif
+    #if !os(visionOS)
+      let _$observationRegistrar = PerceptionRegistrar(
+        isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
+      )
+    #else
+      let _$observationRegistrar = ObservationRegistrar()
+    #endif
     private var parentCancellable: AnyCancellable?
   #else
     // NB: This dynamic member lookup is needed to support pre-Observation (<5.9) versions of Swift.

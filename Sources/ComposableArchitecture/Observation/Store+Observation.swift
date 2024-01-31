@@ -5,9 +5,9 @@
     import Observation
   #endif
 
-#if !os(visionOS)
-  extension Store: Perceptible {}
-#endif
+  #if !os(visionOS)
+    extension Store: Perceptible {}
+  #endif
 
   #if canImport(Observation)
     @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
