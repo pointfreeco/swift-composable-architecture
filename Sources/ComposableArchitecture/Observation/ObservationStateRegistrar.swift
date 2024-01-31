@@ -2,8 +2,13 @@
   /// Provides storage for tracking and access to data changes.
   public struct ObservationStateRegistrar: Sendable {
     public private(set) var id = ObservableStateID()
+    #if os(visionOS)
+    @usableFromInline
+    let registrar = ObservationRegistrar()
+    #else
     @usableFromInline
     let registrar = PerceptionRegistrar()
+    #endif
     public init() {}
     public mutating func _$willModify() { self.id._$willModify() }
   }
@@ -108,6 +113,7 @@
     }
   #endif
 
+#if !os(visionOS)
   extension ObservationStateRegistrar {
     @_disfavoredOverload
     @inlinable
@@ -173,4 +179,5 @@
       }
     }
   }
+#endif
 #endif

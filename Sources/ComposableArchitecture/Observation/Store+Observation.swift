@@ -5,7 +5,9 @@
     import Observation
   #endif
 
+#if !os(visionOS)
   extension Store: Perceptible {}
+#endif
 
   #if canImport(Observation)
     @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
@@ -282,10 +284,10 @@
     fileprivate subscript<ChildState, ChildAction>(
       state state: KeyPath<State, ChildState?>,
       action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
-      isInViewBody isInViewBody: Bool = _PerceptionLocals.isInPerceptionTracking
+      isInViewBody isInViewBody: Bool = _isInPerceptionTracking
     ) -> Store<ChildState, ChildAction>? {
       get {
-        #if DEBUG
+        #if DEBUG && !os(visionOS)
           _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
             self.scope(state: state, action: action.appending(path: \.presented))
           }

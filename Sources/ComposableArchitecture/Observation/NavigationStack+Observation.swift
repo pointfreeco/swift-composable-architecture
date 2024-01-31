@@ -265,10 +265,10 @@ import SwiftUI
     fileprivate subscript<ElementState, ElementAction>(
       state state: KeyPath<State, StackState<ElementState>>,
       action action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>,
-      isInViewBody isInViewBody: Bool = _PerceptionLocals.isInPerceptionTracking
+      isInViewBody isInViewBody: Bool = _isInPerceptionTracking
     ) -> Store<StackState<ElementState>, StackAction<ElementState, ElementAction>> {
       get {
-        #if DEBUG
+        #if DEBUG && !os(visionOS)
           _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
             self.scope(state: state, action: action)
           }
@@ -294,6 +294,14 @@ import SwiftUI
       }
     }
   }
+
+var _isInPerceptionTracking: Bool {
+  #if os(visionOS)
+  return false
+  #else
+  return _PerceptionLocals.isInPerceptionTracking
+  #endif
+}
 #endif
 
 extension StackState {
