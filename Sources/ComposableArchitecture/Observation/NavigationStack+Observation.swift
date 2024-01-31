@@ -30,7 +30,7 @@ import SwiftUI
     ///     }
     ///   }
     ///   @Reducer
-    ///   struct Path {
+    ///   enum Path {
     ///     // ...
     ///   }
     /// }
