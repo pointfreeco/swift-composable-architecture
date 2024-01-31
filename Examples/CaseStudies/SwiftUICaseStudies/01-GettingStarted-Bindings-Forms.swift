@@ -13,8 +13,6 @@ private let readMe = """
   It is instructive to compare this case study to the "Binding Basics" case study.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct BindingForm {
   @ObservableState
@@ -48,8 +46,6 @@ struct BindingForm {
     }
   }
 }
-
-// MARK: - Feature view
 
 struct BindingFormView: View {
   @Bindable var store = Store(initialState: BindingForm.State()) {
@@ -108,16 +104,12 @@ private func alternate(_ string: String) -> String {
     .joined()
 }
 
-// MARK: - SwiftUI previews
-
-struct BindingFormView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      BindingFormView(
-        store: Store(initialState: BindingForm.State()) {
-          BindingForm()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    BindingFormView(
+      store: Store(initialState: BindingForm.State()) {
+        BindingForm()
+      }
+    )
   }
 }

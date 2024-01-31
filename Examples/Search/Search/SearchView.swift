@@ -7,8 +7,6 @@ private let readMe = """
   locations. Then tapping on a location will load weather.
   """
 
-// MARK: - Search feature domain
-
 @Reducer
 struct Search {
   @ObservableState
@@ -113,8 +111,6 @@ struct Search {
   }
 }
 
-// MARK: - Search feature view
-
 struct SearchView: View {
   @Bindable var store: StoreOf<Search>
 
@@ -190,8 +186,6 @@ struct SearchView: View {
   }
 }
 
-// MARK: - Private helpers
-
 private func formattedWeather(day: Search.State.Weather.Day, isToday: Bool) -> String {
   let date =
     isToday
@@ -209,14 +203,10 @@ private let dateFormatter: DateFormatter = {
   return formatter
 }()
 
-// MARK: - SwiftUI previews
-
-struct SearchView_Previews: PreviewProvider {
-  static var previews: some View {
-    SearchView(
-      store: Store(initialState: Search.State()) {
-        Search()
-      }
-    )
-  }
+#Preview {
+  SearchView(
+    store: Store(initialState: Search.State()) {
+      Search()
+    }
+  )
 }

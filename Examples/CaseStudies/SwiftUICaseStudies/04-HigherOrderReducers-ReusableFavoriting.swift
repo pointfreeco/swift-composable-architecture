@@ -17,8 +17,6 @@ private let readMe = """
   favorite state and rendering an alert.
   """
 
-// MARK: - Reusable favorite component
-
 struct FavoritingState<ID: Hashable & Sendable>: Equatable {
   @PresentationState var alert: AlertState<FavoritingAction.Alert>?
   let id: ID
@@ -86,8 +84,6 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
   }
 }
 
-// MARK: - Feature domain
-
 @Reducer
 struct Episode {
   struct State: Equatable, Identifiable {
@@ -114,8 +110,6 @@ struct Episode {
     }
   }
 }
-
-// MARK: - Feature view
 
 struct EpisodeView: View {
   let store: StoreOf<Episode>
@@ -174,24 +168,6 @@ struct EpisodesView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct EpisodesView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      EpisodesView(
-        store: Store(
-          initialState: Episodes.State(
-            episodes: .mocks
-          )
-        ) {
-          Episodes(favorite: favorite(id:isFavorite:))
-        }
-      )
-    }
-  }
-}
-
 struct FavoriteError: LocalizedError, Equatable {
   var errorDescription: String? {
     "Favoriting failed."
@@ -216,4 +192,18 @@ extension IdentifiedArray where ID == Episode.State.ID, Element == Episode.State
     Episode.State(id: UUID(), isFavorite: false, title: "Parsers"),
     Episode.State(id: UUID(), isFavorite: false, title: "Composable Architecture"),
   ]
+}
+
+#Preview {
+  NavigationStack {
+    EpisodesView(
+      store: Store(
+        initialState: Episodes.State(
+          episodes: .mocks
+        )
+      ) {
+        Episodes(favorite: favorite(id:isFavorite:))
+      }
+    )
+  }
 }

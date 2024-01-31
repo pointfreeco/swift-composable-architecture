@@ -43,15 +43,13 @@ struct BasicsView: View {
   }
 }
 
-struct BasicsPreviews: PreviewProvider {
-  static var previews: some View {
-    let _ = Logger.shared.isEnabled = true
-    Form {
-      BasicsView(
-        store: Store(initialState: BasicsView.Feature.State()) {
-          BasicsView.Feature()
-        }
-      )
-    }
+#Preview {
+  Logger.shared.isEnabled = true
+  return Form {
+    BasicsView(
+      store: Store(initialState: BasicsView.Feature.State()) {
+        BasicsView.Feature()
+      }
+    )
   }
 }

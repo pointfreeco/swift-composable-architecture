@@ -7,8 +7,6 @@ private let readMe = """
   It reuses the domain of the counter screen and embeds it, twice, in a larger domain.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct TwoCounters {
   @ObservableState
@@ -31,8 +29,6 @@ struct TwoCounters {
     }
   }
 }
-
-// MARK: - Feature view
 
 struct TwoCountersView: View {
   var store = Store(initialState: TwoCounters.State()) {
@@ -62,16 +58,12 @@ struct TwoCountersView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct TwoCountersView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      TwoCountersView(
-        store: Store(initialState: TwoCounters.State()) {
-          TwoCounters()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    TwoCountersView(
+      store: Store(initialState: TwoCounters.State()) {
+        TwoCounters()
+      }
+    )
   }
 }

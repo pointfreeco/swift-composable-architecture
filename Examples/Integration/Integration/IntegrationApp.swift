@@ -284,12 +284,10 @@ struct RuntimeWarnings: View {
   }
 }
 
-struct ContentView_Previews: PreviewProvider {
-  static var previews: some View {
-    ContentView()
-  }
-}
-
 extension Notification.Name {
   static let clearLogs = Self("clear-logs")
+}
+
+#Preview {
+  ContentView()
 }

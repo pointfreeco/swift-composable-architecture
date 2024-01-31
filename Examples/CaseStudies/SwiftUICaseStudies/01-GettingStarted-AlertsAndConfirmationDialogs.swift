@@ -19,8 +19,6 @@ private let readMe = """
   alerts and dialogs in your application
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct AlertAndConfirmationDialog {
   @ObservableState
@@ -104,8 +102,6 @@ struct AlertAndConfirmationDialog {
   }
 }
 
-// MARK: - Feature view
-
 struct AlertAndConfirmationDialogView: View {
   @Bindable var store = Store(initialState: AlertAndConfirmationDialog.State()) {
     AlertAndConfirmationDialog()
@@ -127,16 +123,12 @@ struct AlertAndConfirmationDialogView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct AlertAndConfirmationDialog_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      AlertAndConfirmationDialogView(
-        store: Store(initialState: AlertAndConfirmationDialog.State()) {
-          AlertAndConfirmationDialog()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    AlertAndConfirmationDialogView(
+      store: Store(initialState: AlertAndConfirmationDialog.State()) {
+        AlertAndConfirmationDialog()
+      }
+    )
   }
 }

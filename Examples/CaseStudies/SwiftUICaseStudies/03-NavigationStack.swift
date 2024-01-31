@@ -476,18 +476,16 @@ struct ScreenCView: View {
 
 // MARK: - Previews
 
-struct NavigationStack_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationDemoView(
-      store: Store(
-        initialState: NavigationDemo.State(
-          path: StackState([
-            .screenA(ScreenA.State())
-          ])
-        )
-      ) {
-        NavigationDemo()
-      }
-    )
-  }
+#Preview {
+  NavigationDemoView(
+    store: Store(
+      initialState: NavigationDemo.State(
+        path: StackState([
+          .screenA(ScreenA.State())
+        ])
+      )
+    ) {
+      NavigationDemo()
+    }
+  )
 }

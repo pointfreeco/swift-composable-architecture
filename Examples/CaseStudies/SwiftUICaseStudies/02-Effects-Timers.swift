@@ -9,8 +9,6 @@ private let readMe = """
   dealing with times in asynchronous code.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct Timers {
   @ObservableState
@@ -51,8 +49,6 @@ struct Timers {
     }
   }
 }
-
-// MARK: - Feature view
 
 struct TimersView: View {
   var store = Store(initialState: Timers.State()) {
@@ -118,16 +114,12 @@ struct TimersView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct TimersView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      TimersView(
-        store: Store(initialState: Timers.State()) {
-          Timers()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    TimersView(
+      store: Store(initialState: Timers.State()) {
+        Timers()
+      }
+    )
   }
 }

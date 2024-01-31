@@ -12,8 +12,6 @@ private let readMe = """
   Tapping "Toggle counter state" will flip between the `nil` and non-`nil` counter states.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct OptionalBasics {
   @ObservableState
@@ -45,8 +43,6 @@ struct OptionalBasics {
   }
 }
 
-// MARK: - Feature view
-
 struct OptionalBasicsView: View {
   var store = Store(initialState: OptionalBasics.State()) {
     OptionalBasics()
@@ -75,28 +71,28 @@ struct OptionalBasicsView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct OptionalBasicsView_Previews: PreviewProvider {
-  static var previews: some View {
-    Group {
-      NavigationView {
-        OptionalBasicsView(
-          store: Store(initialState: OptionalBasics.State()) {
-            OptionalBasics()
-          }
-        )
+#Preview {
+  NavigationStack {
+    OptionalBasicsView(
+      store: Store(initialState: OptionalBasics.State()) {
+        OptionalBasics()
       }
+    )
+  }
+}
 
-      NavigationView {
-        OptionalBasicsView(
-          store: Store(
-            initialState: OptionalBasics.State(optionalCounter: Counter.State(count: 42))
-          ) {
-            OptionalBasics()
-          }
+#Preview("Deep-linked") {
+  NavigationStack {
+    OptionalBasicsView(
+      store: Store(
+        initialState: OptionalBasics.State(
+          optionalCounter: Counter.State(
+            count: 42
+          )
         )
+      ) {
+        OptionalBasics()
       }
-    }
+    )
   }
 }

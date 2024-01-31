@@ -18,8 +18,6 @@ private let readMe = """
   toggle at the bottom of the screen.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct Animations {
   @ObservableState
@@ -99,8 +97,6 @@ struct Animations {
   }
 }
 
-// MARK: - Feature view
-
 struct AnimationsView: View {
   @Bindable var store = Store(initialState: Animations.State()) {
     Animations()
@@ -151,27 +147,23 @@ struct AnimationsView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct AnimationsView_Previews: PreviewProvider {
-  static var previews: some View {
-    Group {
-      NavigationView {
-        AnimationsView(
-          store: Store(initialState: Animations.State()) {
-            Animations()
-          }
-        )
+#Preview {
+  NavigationStack {
+    AnimationsView(
+      store: Store(initialState: Animations.State()) {
+        Animations()
       }
-
-      NavigationView {
-        AnimationsView(
-          store: Store(initialState: Animations.State()) {
-            Animations()
-          }
-        )
-      }
-      .environment(\.colorScheme, .dark)
-    }
+    )
   }
+}
+
+#Preview("Dark mode") {
+  NavigationStack {
+    AnimationsView(
+      store: Store(initialState: Animations.State()) {
+        Animations()
+      }
+    )
+  }
+  .environment(\.colorScheme, .dark)
 }

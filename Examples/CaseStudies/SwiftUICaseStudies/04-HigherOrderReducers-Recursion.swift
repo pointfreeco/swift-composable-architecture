@@ -8,8 +8,6 @@ private let readMe = """
   its name, or tap the right-hand side of a row to navigate to its own associated list of rows.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct Nested {
   @ObservableState
@@ -53,8 +51,6 @@ struct Nested {
   }
 }
 
-// MARK: - Feature view
-
 struct NestedView: View {
   @Bindable var store = Store(initialState: Nested.State(id: UUID())) {
     Nested()
@@ -90,38 +86,35 @@ struct NestedView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct NestedView_Previews: PreviewProvider {
-  static var previews: some View {
-    let initialState = Nested.State(
-      id: UUID(),
-      name: "Foo",
-      rows: [
-        Nested.State(
+#Preview {
+  NavigationView {
+    NestedView(
+      store: Store(
+        initialState: Nested.State(
           id: UUID(),
-          name: "Bar",
+          name: "Foo",
           rows: [
-            Nested.State(id: UUID(), name: "", rows: [])
+            Nested.State(
+              id: UUID(),
+              name: "Bar",
+              rows: [
+                Nested.State(id: UUID(), name: "", rows: [])
+              ]
+            ),
+            Nested.State(
+              id: UUID(),
+              name: "Baz",
+              rows: [
+                Nested.State(id: UUID(), name: "Fizz", rows: []),
+                Nested.State(id: UUID(), name: "Buzz", rows: []),
+              ]
+            ),
+            Nested.State(id: UUID(), name: "", rows: []),
           ]
-        ),
-        Nested.State(
-          id: UUID(),
-          name: "Baz",
-          rows: [
-            Nested.State(id: UUID(), name: "Fizz", rows: []),
-            Nested.State(id: UUID(), name: "Buzz", rows: []),
-          ]
-        ),
-        Nested.State(id: UUID(), name: "", rows: []),
-      ]
+        )
+      ) {
+        Nested()
+      }
     )
-    NavigationView {
-      NestedView(
-        store: Store(initialState: initialState) {
-          Nested()
-        }
-      )
-    }
   }
 }

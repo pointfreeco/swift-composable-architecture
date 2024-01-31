@@ -7,8 +7,6 @@ private let readMe = """
   focus will be changed to that field.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct FocusDemo {
   @ObservableState
@@ -46,8 +44,6 @@ struct FocusDemo {
   }
 }
 
-// MARK: - Feature view
-
 struct FocusDemoView: View {
   @Bindable var store = Store(initialState: FocusDemo.State()) {
     FocusDemo()
@@ -76,16 +72,12 @@ struct FocusDemoView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct FocusDemo_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      FocusDemoView(
-        store: Store(initialState: FocusDemo.State()) {
-          FocusDemo()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    FocusDemoView(
+      store: Store(initialState: FocusDemo.State()) {
+        FocusDemo()
+      }
+    )
   }
 }

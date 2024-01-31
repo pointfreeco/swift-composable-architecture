@@ -8,8 +8,6 @@ private let readMe = """
   state and fires off an effect that will load this state a second later.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct PresentAndLoad {
   @ObservableState
@@ -57,8 +55,6 @@ struct PresentAndLoad {
   }
 }
 
-// MARK: - Feature view
-
 struct PresentAndLoadView: View {
   @Bindable var store = Store(initialState: PresentAndLoad.State()) {
     PresentAndLoad()
@@ -84,16 +80,12 @@ struct PresentAndLoadView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct PresentAndLoadView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      PresentAndLoadView(
-        store: Store(initialState: PresentAndLoad.State()) {
-          PresentAndLoad()
-        }
-      )
-    }
+#Preview {
+  NavigationView {
+    PresentAndLoadView(
+      store: Store(initialState: PresentAndLoad.State()) {
+        PresentAndLoad()
+      }
+    )
   }
 }

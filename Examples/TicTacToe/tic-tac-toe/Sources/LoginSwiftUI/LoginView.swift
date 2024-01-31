@@ -67,21 +67,19 @@ extension Login.State {
   fileprivate var isLoginButtonDisabled: Bool { !self.isFormValid }
 }
 
-struct LoginView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      LoginView(
-        store: Store(initialState: Login.State()) {
-          Login()
-        } withDependencies: {
-          $0.authenticationClient.login = { @Sendable _, _ in
-            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-          }
-          $0.authenticationClient.twoFactor = { @Sendable _, _ in
-            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-          }
+#Preview {
+  NavigationStack {
+    LoginView(
+      store: Store(initialState: Login.State()) {
+        Login()
+      } withDependencies: {
+        $0.authenticationClient.login = { @Sendable _, _ in
+          AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
         }
-      )
-    }
+        $0.authenticationClient.twoFactor = { @Sendable _, _ in
+          AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+        }
+      }
+    )
   }
 }

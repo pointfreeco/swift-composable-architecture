@@ -14,8 +14,6 @@ private let readMe = """
   the screen, and restarted when entering the screen.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct LongLivingEffects {
   @ObservableState
@@ -66,8 +64,6 @@ private enum ScreenshotsKey: DependencyKey {
   }
 }
 
-// MARK: - Feature view
-
 struct LongLivingEffectsView: View {
   var store = Store(initialState: LongLivingEffects.State()) {
     LongLivingEffects()
@@ -106,19 +102,12 @@ struct LongLivingEffectsView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct EffectsLongLiving_Previews: PreviewProvider {
-  static var previews: some View {
-    let appView = LongLivingEffectsView(
+#Preview {
+  NavigationStack {
+    LongLivingEffectsView(
       store: Store(initialState: LongLivingEffects.State()) {
         LongLivingEffects()
       }
     )
-
-    return Group {
-      NavigationView { appView }
-      NavigationView { appView.detailView }
-    }
   }
 }

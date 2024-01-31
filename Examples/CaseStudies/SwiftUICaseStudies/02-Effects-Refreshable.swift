@@ -11,8 +11,6 @@ private let readMe = """
   currently fetching data so that it knows to continue showing the loading indicator.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct Refreshable {
   @ObservableState
@@ -68,8 +66,6 @@ struct Refreshable {
   }
 }
 
-// MARK: - Feature view
-
 struct RefreshableView: View {
   var store = Store(initialState: Refreshable.State()) {
     Refreshable()
@@ -119,14 +115,10 @@ struct RefreshableView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct Refreshable_Previews: PreviewProvider {
-  static var previews: some View {
-    RefreshableView(
-      store: Store(initialState: Refreshable.State()) {
-        Refreshable()
-      }
-    )
-  }
+#Preview {
+  RefreshableView(
+    store: Store(initialState: Refreshable.State()) {
+      Refreshable()
+    }
+  )
 }

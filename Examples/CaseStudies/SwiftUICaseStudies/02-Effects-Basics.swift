@@ -18,8 +18,6 @@ private let readMe = """
   suite is written to confirm that the effect behaves in the way we expect.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct EffectsBasics {
   @ObservableState
@@ -92,8 +90,6 @@ struct EffectsBasics {
   }
 }
 
-// MARK: - Feature view
-
 struct EffectsBasicsView: View {
   var store = Store(initialState: EffectsBasics.State()) {
     EffectsBasics()
@@ -154,16 +150,12 @@ struct EffectsBasicsView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct EffectsBasicsView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      EffectsBasicsView(
-        store: Store(initialState: EffectsBasics.State()) {
-          EffectsBasics()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    EffectsBasicsView(
+      store: Store(initialState: EffectsBasics.State()) {
+        EffectsBasics()
+      }
+    )
   }
 }

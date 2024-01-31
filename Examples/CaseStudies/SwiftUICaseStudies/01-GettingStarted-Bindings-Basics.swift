@@ -18,8 +18,6 @@ private let readMe = """
   component changes, which means you can keep using a unidirectional style for your feature.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct BindingBasics {
   @ObservableState
@@ -60,8 +58,6 @@ struct BindingBasics {
     }
   }
 }
-
-// MARK: - Feature view
 
 struct BindingBasicsView: View {
   @Bindable var store = Store(initialState: BindingBasics.State()) {
@@ -120,16 +116,12 @@ private func alternate(_ string: String) -> String {
     .joined()
 }
 
-// MARK: - SwiftUI previews
-
-struct BindingBasicsView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      BindingBasicsView(
-        store: Store(initialState: BindingBasics.State()) {
-          BindingBasics()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    BindingBasicsView(
+      store: Store(initialState: BindingBasics.State()) {
+        BindingBasics()
+      }
+    )
   }
 }

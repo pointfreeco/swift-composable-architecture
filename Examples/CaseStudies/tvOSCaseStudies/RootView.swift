@@ -17,14 +17,12 @@ struct RootView: View {
   }
 }
 
-struct ContentView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      RootView(
-        store: Store(initialState: Root.State()) {
-          Root()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    RootView(
+      store: Store(initialState: Root.State()) {
+        Root()
+      }
+    )
   }
 }

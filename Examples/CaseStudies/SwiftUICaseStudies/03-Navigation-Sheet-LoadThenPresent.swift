@@ -9,8 +9,6 @@ private let readMe = """
   depends on this data.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct LoadThenPresent {
   @ObservableState
@@ -53,8 +51,6 @@ struct LoadThenPresent {
   }
 }
 
-// MARK: - Feature view
-
 struct LoadThenPresentView: View {
   @Bindable var store = Store(initialState: LoadThenPresent.State()) {
     LoadThenPresent()
@@ -84,16 +80,12 @@ struct LoadThenPresentView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct LoadThenPresentView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      LoadThenPresentView(
-        store: Store(initialState: LoadThenPresent.State()) {
-          LoadThenPresent()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    LoadThenPresentView(
+      store: Store(initialState: LoadThenPresent.State()) {
+        LoadThenPresent()
+      }
+    )
   }
 }
