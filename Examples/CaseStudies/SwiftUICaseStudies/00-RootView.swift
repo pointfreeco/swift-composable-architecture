@@ -9,67 +9,53 @@ struct RootView: View {
       Form {
         Section {
           NavigationLink("Basics") {
-            CounterDemoView(
-              store: Store(initialState: Counter.State()) {
-                Counter()
-              }
-            )
+            Demo(store: Store(initialState: Counter.State()) { Counter() }) { store in
+              CounterDemoView(store: store)
+            }
           }
           NavigationLink("Combining reducers") {
-            TwoCountersView(
-              store: Store(initialState: TwoCounters.State()) {
-                TwoCounters()
-              }
-            )
+            Demo(store: Store(initialState: TwoCounters.State()) { TwoCounters() }) { store in
+              TwoCountersView(store: store)
+            }
           }
           NavigationLink("Bindings") {
-            BindingBasicsView(
-              store: Store(initialState: BindingBasics.State()) {
-                BindingBasics()
-              }
-            )
+            Demo(store: Store(initialState: BindingBasics.State()) { BindingBasics() }) { store in
+              BindingBasicsView(store: store)
+            }
           }
           NavigationLink("Form bindings") {
-            BindingFormView(
-              store: Store(initialState: BindingForm.State()) {
-                BindingForm()
-              }
-            )
+            Demo(store: Store(initialState: BindingForm.State()) { BindingForm() }) { store in
+              BindingFormView(store: store)
+            }
           }
           NavigationLink("Optional state") {
-            OptionalBasicsView(
-              store: Store(initialState: OptionalBasics.State()) {
-                OptionalBasics()
-              }
-            )
+            Demo(store: Store(initialState: OptionalBasics.State()) { OptionalBasics() }) { store in
+              OptionalBasicsView(store: store)
+            }
           }
           NavigationLink("Shared state") {
-            SharedStateView(
-              store: Store(initialState: SharedState.State()) {
-                SharedState()
-              }
-            )
+            Demo(store: Store(initialState: SharedState.State()) { SharedState() }) { store in
+              SharedStateView(store: store)
+            }
           }
           NavigationLink("Alerts and Confirmation Dialogs") {
-            AlertAndConfirmationDialogView(
+            Demo(
               store: Store(initialState: AlertAndConfirmationDialog.State()) {
                 AlertAndConfirmationDialog()
               }
-            )
+            ) { store in
+              AlertAndConfirmationDialogView(store: store)
+            }
           }
           NavigationLink("Focus State") {
-            FocusDemoView(
-              store: Store(initialState: FocusDemo.State()) {
-                FocusDemo()
-              }
-            )
+            Demo(store: Store(initialState: FocusDemo.State()) { FocusDemo() }) { store in
+              FocusDemoView(store: store)
+            }
           }
           NavigationLink("Animations") {
-            AnimationsView(
-              store: Store(initialState: Animations.State()) {
-                Animations()
-              }
-            )
+            Demo(store: Store(initialState: Animations.State()) { Animations() }) { store in
+              AnimationsView(store: store)
+            }
           }
         } header: {
           Text("Getting started")
@@ -77,46 +63,38 @@ struct RootView: View {
 
         Section {
           NavigationLink("Basics") {
-            EffectsBasicsView(
-              store: Store(initialState: EffectsBasics.State()) {
-                EffectsBasics()
-              }
-            )
+            Demo(store: Store(initialState: EffectsBasics.State()) { EffectsBasics() }) { store in
+              EffectsBasicsView(store: store)
+            }
           }
           NavigationLink("Cancellation") {
-            EffectsCancellationView(
-              store: Store(initialState: EffectsCancellation.State()) {
-                EffectsCancellation()
-              }
-            )
+            Demo(
+              store: Store(initialState: EffectsCancellation.State()) { EffectsCancellation() }
+            ) { store in
+              EffectsCancellationView(store: store)
+            }
           }
           NavigationLink("Long-living effects") {
-            LongLivingEffectsView(
-              store: Store(initialState: LongLivingEffects.State()) {
-                LongLivingEffects()
-              }
-            )
+            Demo(
+              store: Store(initialState: LongLivingEffects.State()) { LongLivingEffects() }
+            ) { store in
+              LongLivingEffectsView(store: store)
+            }
           }
           NavigationLink("Refreshable") {
-            RefreshableView(
-              store: Store(initialState: Refreshable.State()) {
-                Refreshable()
-              }
-            )
+            Demo(store: Store(initialState: Refreshable.State()) { Refreshable() }) { store in
+              RefreshableView(store: store)
+            }
           }
           NavigationLink("Timers") {
-            TimersView(
-              store: Store(initialState: Timers.State()) {
-                Timers()
-              }
-            )
+            Demo(store: Store(initialState: Timers.State()) { Timers() }) { store in
+              TimersView(store: store)
+            }
           }
           NavigationLink("Web socket") {
-            WebSocketView(
-              store: Store(initialState: WebSocket.State()) {
-                WebSocket()
-              }
-            )
+            Demo(store: Store(initialState: WebSocket.State()) { WebSocket() }) { store in
+              WebSocketView(store: store)
+            }
           }
         } header: {
           Text("Effects")
@@ -129,40 +107,38 @@ struct RootView: View {
           .buttonStyle(.plain)
 
           NavigationLink("Navigate and load data") {
-            NavigateAndLoadView(
-              store: Store(initialState: NavigateAndLoad.State()) {
-                NavigateAndLoad()
-              }
-            )
+            Demo(
+              store: Store(initialState: NavigateAndLoad.State()) { NavigateAndLoad() }
+            ) { store in
+              NavigateAndLoadView(store: store)
+            }
           }
 
           NavigationLink("Lists: Navigate and load data") {
-            NavigateAndLoadListView(
-              store: Store(initialState: NavigateAndLoadList.State()) {
-                NavigateAndLoadList()
-              }
-            )
+            Demo(
+              store: Store(initialState: NavigateAndLoadList.State()) { NavigateAndLoadList() }
+            ) { store in
+              NavigateAndLoadListView(store: store)
+            }
           }
           NavigationLink("Sheets: Present and load data") {
-            PresentAndLoadView(
-              store: Store(initialState: PresentAndLoad.State()) {
-                PresentAndLoad()
-              }
-            )
+            Demo(store: Store(initialState: PresentAndLoad.State()) { PresentAndLoad() }) { store in
+              PresentAndLoadView(store: store)
+            }
           }
           NavigationLink("Sheets: Load data then present") {
-            LoadThenPresentView(
-              store: Store(initialState: LoadThenPresent.State()) {
-                LoadThenPresent()
-              }
-            )
+            Demo(
+              store: Store(initialState: LoadThenPresent.State()) { LoadThenPresent() }
+            ) { store in
+              LoadThenPresentView(store: store)
+            }
           }
           NavigationLink("Multiple destinations") {
-            MultipleDestinationsView(
-              store: Store(initialState: MultipleDestinations.State()) {
-                MultipleDestinations()
-              }
-            )
+            Demo(
+              store: Store(initialState: MultipleDestinations.State()) { MultipleDestinations() }
+            ) { store in
+              MultipleDestinationsView(store: store)
+            }
           }
         } header: {
           Text("Navigation")
@@ -170,25 +146,19 @@ struct RootView: View {
 
         Section {
           NavigationLink("Reusable favoriting component") {
-            EpisodesView(
-              store: Store(initialState: Episodes.State()) {
-                Episodes()
-              }
-            )
+            Demo(store: Store(initialState: Episodes.State()) { Episodes() }) { store in
+              EpisodesView(store: store)
+            }
           }
           NavigationLink("Reusable offline download component") {
-            CitiesView(
-              store: Store(initialState: MapApp.State()) {
-                MapApp()
-              }
-            )
+            Demo(store: Store(initialState: MapApp.State()) { MapApp() }) { store in
+              CitiesView(store: store)
+            }
           }
           NavigationLink("Recursive state and actions") {
-            NestedView(
-              store: Store(initialState: Nested.State()) {
-                Nested()
-              }
-            )
+            Demo(store: Store(initialState: Nested.State()) { Nested() }) { store in
+              NestedView(store: store)
+            }
           }
         } header: {
           Text("Higher-order reducers")
@@ -196,13 +166,29 @@ struct RootView: View {
       }
       .navigationTitle("Case Studies")
       .sheet(isPresented: self.$isNavigationStackCaseStudyPresented) {
-        NavigationDemoView(
-          store: Store(initialState: NavigationDemo.State()) {
-            NavigationDemo()
-          }
-        )
+        Demo(store: Store(initialState: NavigationDemo.State()) { NavigationDemo() }) { store in
+          NavigationDemoView(store: store)
+        }
       }
     }
+  }
+}
+
+/// This wrapper provides an "entry" point into an individual demo that can own a store.
+struct Demo<State, Action, Content: View>: View {
+  @SwiftUI.State var store: Store<State, Action>
+  let content: Content
+
+  init(
+    store: Store<State, Action>,
+    @ViewBuilder content: (Store<State, Action>) -> Content
+  ) {
+    self.store = store
+    self.content = content(store)
+  }
+
+  var body: some View {
+    self.content
   }
 }
 
