@@ -296,10 +296,10 @@ import SwiftUI
   }
 
 var _isInPerceptionTracking: Bool {
-  #if os(visionOS)
-  return false
-  #else
+  #if !os(visionOS)
   return _PerceptionLocals.isInPerceptionTracking
+  #else
+  return false
   #endif
 }
 #endif
