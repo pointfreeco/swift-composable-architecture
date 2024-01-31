@@ -173,8 +173,8 @@ This gives us compile-time proof that only one single destination can be active 
 In order to utilize this style of domain modeling you must take a few extra steps. First you model a
 "destination" reducer that encapsulates the domains and behavior of all of the features that you can
 navigate to. Typically it's best to nest this reducer inside the feature that can perform the
-navigation, and the ``Reducer(state:action:)`` macro can do most of the heavy lifting for us by
-implementing the entire reducer from a simple description of the features that can be navigated to:
+navigation, and the ``Reducer()`` macro can do most of the heavy lifting for us by implementing the
+entire reducer from a simple description of the features that can be navigated to:
 
 ```swift
 @Reducer
@@ -190,10 +190,9 @@ struct InventoryFeature {
 }
 ```
 
-> Note: The ``Reducer(state:action:)`` macro takes this simple enum description of destination 
-features and expands it into a fully composed feature that operates on enum state with a case
-for each feature's state. You can expand the macro code in Xcode to see everything that is written
-for you.
+> Note: The ``Reducer()`` macro takes this simple enum description of destination features and
+> expands it into a fully composed feature that operates on enum state with a case for each
+> feature's state. You can expand the macro code in Xcode to see everything that is written for you.
 
 With that done we can now hold onto a _single_ piece of optional state in our feature, using the
 ``PresentationState`` property wrapper, and we hold onto the destination actions using the
@@ -233,9 +232,9 @@ struct InventoryFeature {
 }
 ```
 
-> Note: It's not necessary to specify `Destination` in a trialing closure of `ifLet` because it
-can automatically be inferred due to how the `Destination` enum was defined with the 
-``Reducer(state:action:)`` macro.
+> Note: It's not necessary to specify `Destination` in a trialing closure of `ifLet` because it can
+> automatically be inferred due to how the `Destination` enum was defined with the ``Reducer()``
+> macro.
 
 That completes the steps for integrating the child and parent features together.
 

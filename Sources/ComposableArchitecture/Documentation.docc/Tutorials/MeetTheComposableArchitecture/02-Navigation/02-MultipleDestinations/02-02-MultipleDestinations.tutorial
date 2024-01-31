@@ -204,9 +204,9 @@
       
       @Step {
         Replace the two `ifLet`s that were used at the bottom of the reducer with a single one that
-        is focused on the `Destination` domain. It is not even necessary to specify the 
-        `Destination` type in this expression because it can be inferred from how the
-        ``Reducer(state:action:)`` macro was applied to the `Destination` enum.
+        is focused on the `Destination` domain. It is not even necessary to specify the
+        `Destination` type in this expression because it can be inferred from how the ``Reducer()``
+        macro was applied to the `Destination` enum.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0010.swift)
       }

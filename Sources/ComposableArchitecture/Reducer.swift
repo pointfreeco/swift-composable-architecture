@@ -2,8 +2,7 @@
 /// given an action, and describes what ``Effect``s should be executed later by the store, if any.
 ///
 /// Types that conform to this protocol represent the domain, logic and behavior for a feature.
-/// Rather than defining a conformance directly, it is more common to use the
-/// ``Reducer(state:action:)`` macro:
+/// Rather than defining a conformance directly, it is more common to use the ``Reducer()`` macro:
 ///
 /// ```swift
 /// @Reducer

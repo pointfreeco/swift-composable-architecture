@@ -1,20 +1,20 @@
 # Migrating to 1.8
 
-Update your code to make use of the new capabilities of the ``Reducer(state:action:)`` macro,
-including automatic fulfillment of requirements for destination reducers and path reducers.
+Update your code to make use of the new capabilities of the ``Reducer()`` macro, including automatic
+fulfillment of requirements for destination reducers and path reducers.
 
 ## Overview
 
 The Composable Architecture is under constant development, and we are always looking for ways to
 simplify the library, and make it more powerful. This version of the library only introduced new 
 APIs and did not deprecate any existing APIs. However, to make use of these tools your features
-must already be integrated with the ``Reducer(state:action:)`` macro from version 1.4. See 
-<doc:MigratingTo1.4> for more information.
+must already be integrated with the ``Reducer()`` macro from version 1.4. See <doc:MigratingTo1.4>
+for more information.
 
 ## Automatic fulfillment of reducer requirements
 
-The ``Reducer(state:action:)`` macro is now capable of automatically filling in the ``Reducer`` 
-protocol's requirements for you. For example, even something as simple as this:
+The ``Reducer()`` macro is now capable of automatically filling in the ``Reducer`` protocol's
+requirements for you. For example, even something as simple as this:
 
 ```swift
 @Reducer
@@ -77,8 +77,8 @@ It's not the worst code in the world, but it is 24 lines with a lot of repetitio
 to add a new destination we must add a case to the ``Reducer/State`` enum, a case to the 
 ``Reducer/Action`` enum, and a ``Scope`` to the ``Reducer/body-swift.property``. 
 
-The ``Reducer(state:action:)`` macro is now capable of generating all of this code for you from
-the following simple declaration
+The ``Reducer()`` macro is now capable of generating all of this code for you from the following
+simple declaration
 
 ```swift
 @Reducer
