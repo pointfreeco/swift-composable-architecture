@@ -196,7 +196,7 @@
   /// See <doc:Reducer()#Circular-reference-errors> below for more info on this error.
   ///
   /// So, to work around this compiler bug the `@Reducer` macro takes two
-  /// ``_SynthesizedConformance`` arguments that allow you to describe which
+  /// ``ComposableArchitecture/_SynthesizedConformance`` arguments that allow you to describe which
   /// protocols you want to attach to the `State` or `Action` types:
   ///
   /// ```swift
@@ -206,8 +206,13 @@
   /// }
   /// ```
   ///
-  /// You can provide any combination of `.codable`, `.decodable`, `.encodable`, `.equatable`,
-  /// `.hashable`, or `.sendable`.
+  /// You can provide any combination of
+/// ``ComposableArchitecture/_SynthesizedConformance/codable``,
+/// ``ComposableArchitecture/_SynthesizedConformance/decodable``,
+/// ``ComposableArchitecture/_SynthesizedConformance/encodable``,
+/// ``ComposableArchitecture/_SynthesizedConformance/equatable``,
+/// ``ComposableArchitecture/_SynthesizedConformance/hashable``, or
+/// ``ComposableArchitecture/_SynthesizedConformance/sendable``.
   ///
   /// ## Gotchas
   ///
@@ -328,14 +333,26 @@
   #else
     public struct _SynthesizedConformance {}
   #endif
-  extension _SynthesizedConformance {
-    public static let codable = Self()
-    public static let decodable = Self()
-    public static let encodable = Self()
-    public static let equatable = Self()
-    public static let hashable = Self()
-    public static let sendable = Self()
-  }
+    extension _SynthesizedConformance {
+        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
+        /// `Codable` protocol.
+        public static let codable = Self()
+        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
+        /// `Decodable` protocol.
+        public static let decodable = Self()
+        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
+        /// `Encodable` protocol.
+        public static let encodable = Self()
+        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
+        /// `Equatable` protocol.
+        public static let equatable = Self()
+        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
+        /// `Hashable` protocol.
+        public static let hashable = Self()
+        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
+        /// `Sendable` protocol.
+        public static let sendable = Self()
+      }
 
   /// Marks the case of an enum reducer as holding onto "ephemeral" state.
   ///
