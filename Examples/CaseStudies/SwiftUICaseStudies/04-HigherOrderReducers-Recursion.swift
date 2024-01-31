@@ -15,6 +15,13 @@ struct Nested {
     let id: UUID
     var name: String = ""
     var rows: IdentifiedArrayOf<State> = []
+
+    init(id: UUID? = nil, name: String = "", rows: IdentifiedArrayOf<State> = []) {
+      @Dependency(\.uuid) var uuid
+      self.id = id ?? uuid()
+      self.name = name
+      self.rows = rows
+    }
   }
 
   enum Action {
@@ -52,9 +59,7 @@ struct Nested {
 }
 
 struct NestedView: View {
-  @Bindable var store = Store(initialState: Nested.State(id: UUID())) {
-    Nested()
-  }
+  @Bindable var store: StoreOf<Nested>
 
   var body: some View {
     Form {
@@ -91,25 +96,22 @@ struct NestedView: View {
     NestedView(
       store: Store(
         initialState: Nested.State(
-          id: UUID(),
           name: "Foo",
           rows: [
             Nested.State(
-              id: UUID(),
               name: "Bar",
               rows: [
-                Nested.State(id: UUID(), name: "", rows: [])
+                Nested.State()
               ]
             ),
             Nested.State(
-              id: UUID(),
               name: "Baz",
               rows: [
-                Nested.State(id: UUID(), name: "Fizz", rows: []),
-                Nested.State(id: UUID(), name: "Buzz", rows: []),
+                Nested.State(name: "Fizz"),
+                Nested.State(name: "Buzz"),
               ]
             ),
-            Nested.State(id: UUID(), name: "", rows: []),
+            Nested.State(),
           ]
         )
       ) {

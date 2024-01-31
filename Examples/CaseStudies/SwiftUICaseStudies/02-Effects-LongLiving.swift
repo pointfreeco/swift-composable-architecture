@@ -65,9 +65,7 @@ private enum ScreenshotsKey: DependencyKey {
 }
 
 struct LongLivingEffectsView: View {
-  var store = Store(initialState: LongLivingEffects.State()) {
-    LongLivingEffects()
-  }
+  let store: StoreOf<LongLivingEffects>
 
   var body: some View {
     Form {

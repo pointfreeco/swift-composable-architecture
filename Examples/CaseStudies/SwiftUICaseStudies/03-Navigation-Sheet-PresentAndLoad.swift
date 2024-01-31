@@ -56,9 +56,7 @@ struct PresentAndLoad {
 }
 
 struct PresentAndLoadView: View {
-  @Bindable var store = Store(initialState: PresentAndLoad.State()) {
-    PresentAndLoad()
-  }
+  @Bindable var store: StoreOf<PresentAndLoad>
 
   var body: some View {
     Form {

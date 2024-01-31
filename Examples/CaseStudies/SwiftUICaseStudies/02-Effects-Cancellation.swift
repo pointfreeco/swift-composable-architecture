@@ -67,9 +67,7 @@ struct EffectsCancellation {
 }
 
 struct EffectsCancellationView: View {
-  @Bindable var store = Store(initialState: EffectsCancellation.State()) {
-    EffectsCancellation()
-  }
+  @Bindable var store: StoreOf<EffectsCancellation>
   @Environment(\.openURL) var openURL
 
   var body: some View {

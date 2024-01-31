@@ -70,9 +70,7 @@ struct NavigateAndLoadList {
 }
 
 struct NavigateAndLoadListView: View {
-  @Bindable var store = Store(initialState: NavigateAndLoadList.State()) {
-    NavigateAndLoadList()
-  }
+  @Bindable var store: StoreOf<NavigateAndLoadList>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in

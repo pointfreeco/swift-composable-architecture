@@ -98,9 +98,7 @@ struct Animations {
 }
 
 struct AnimationsView: View {
-  @Bindable var store = Store(initialState: Animations.State()) {
-    Animations()
-  }
+  @Bindable var store: StoreOf<Animations>
 
   var body: some View {
     VStack(alignment: .leading) {

@@ -48,9 +48,7 @@ struct BindingForm {
 }
 
 struct BindingFormView: View {
-  @Bindable var store = Store(initialState: BindingForm.State()) {
-    BindingForm()
-  }
+  @Bindable var store: StoreOf<BindingForm>
 
   var body: some View {
     Form {

@@ -59,9 +59,7 @@ struct CounterView: View {
 }
 
 struct CounterDemoView: View {
-  var store = Store(initialState: Counter.State()) {
-    Counter()
-  }
+  let store: StoreOf<Counter>
 
   var body: some View {
     Form {

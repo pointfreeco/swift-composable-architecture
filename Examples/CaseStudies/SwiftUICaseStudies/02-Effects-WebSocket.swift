@@ -137,9 +137,7 @@ struct WebSocket {
 }
 
 struct WebSocketView: View {
-  @Bindable var store = Store(initialState: WebSocket.State()) {
-    WebSocket()
-  }
+  @Bindable var store: StoreOf<WebSocket>
 
   var body: some View {
     Form {

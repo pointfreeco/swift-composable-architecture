@@ -56,9 +56,7 @@ struct NavigateAndLoad {
 }
 
 struct NavigateAndLoadView: View {
-  @Bindable var store = Store(initialState: NavigateAndLoad.State()) {
-    NavigateAndLoad()
-  }
+  @Bindable var store: StoreOf<NavigateAndLoad>
 
   var body: some View {
     Form {

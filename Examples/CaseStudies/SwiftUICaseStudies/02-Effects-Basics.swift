@@ -91,9 +91,7 @@ struct EffectsBasics {
 }
 
 struct EffectsBasicsView: View {
-  var store = Store(initialState: EffectsBasics.State()) {
-    EffectsBasics()
-  }
+  let store: StoreOf<EffectsBasics>
   @Environment(\.openURL) var openURL
 
   var body: some View {

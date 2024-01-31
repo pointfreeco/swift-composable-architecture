@@ -44,9 +44,7 @@ struct OptionalBasics {
 }
 
 struct OptionalBasicsView: View {
-  var store = Store(initialState: OptionalBasics.State()) {
-    OptionalBasics()
-  }
+  let store: StoreOf<OptionalBasics>
 
   var body: some View {
     Form {

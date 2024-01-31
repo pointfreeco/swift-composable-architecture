@@ -197,9 +197,7 @@ struct SharedState {
 }
 
 struct SharedStateView: View {
-  @State var store = Store(initialState: SharedState.State()) {
-    SharedState()
-  }
+  @Bindable var store: StoreOf<SharedState>
 
   var body: some View {
     TabView(selection: $store.currentTab.sending(\.selectTab)) {
@@ -253,5 +251,9 @@ private func isPrime(_ p: Int) -> Bool {
 }
 
 #Preview {
-  SharedStateView()
+  SharedStateView(
+    store: Store(initialState: SharedState.State()) {
+      SharedState()
+    }
+  )
 }

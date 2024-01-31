@@ -137,7 +137,7 @@ struct Episodes {
     case episodes(IdentifiedActionOf<Episode>)
   }
 
-  let favorite: @Sendable (UUID, Bool) async throws -> Bool
+  var favorite: @Sendable (UUID, Bool) async throws -> Bool = favoriteRequest
 
   var body: some Reducer<State, Action> {
     Reduce { state, action in
@@ -150,9 +150,7 @@ struct Episodes {
 }
 
 struct EpisodesView: View {
-  var store = Store(initialState: Episodes.State(episodes: .mocks)) {
-    Episodes(favorite: favorite(id:isFavorite:))
-  }
+  let store: StoreOf<Episodes>
 
   var body: some View {
     Form {
@@ -174,7 +172,7 @@ struct FavoriteError: LocalizedError, Equatable {
   }
 }
 
-@Sendable func favorite<ID>(id: ID, isFavorite: Bool) async throws -> Bool {
+@Sendable private func favoriteRequest<ID>(id: ID, isFavorite: Bool) async throws -> Bool {
   try await Task.sleep(for: .seconds(1))
   if .random(in: 0...1) > 0.25 {
     return isFavorite
@@ -197,12 +195,8 @@ extension IdentifiedArray where ID == Episode.State.ID, Element == Episode.State
 #Preview {
   NavigationStack {
     EpisodesView(
-      store: Store(
-        initialState: Episodes.State(
-          episodes: .mocks
-        )
-      ) {
-        Episodes(favorite: favorite(id:isFavorite:))
+      store: Store(initialState: Episodes.State()) {
+        Episodes()
       }
     )
   }

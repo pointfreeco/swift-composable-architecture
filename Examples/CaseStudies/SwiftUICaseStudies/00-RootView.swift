@@ -9,31 +9,67 @@ struct RootView: View {
       Form {
         Section {
           NavigationLink("Basics") {
-            CounterDemoView()
+            CounterDemoView(
+              store: Store(initialState: Counter.State()) {
+                Counter()
+              }
+            )
           }
           NavigationLink("Combining reducers") {
-            TwoCountersView()
+            TwoCountersView(
+              store: Store(initialState: TwoCounters.State()) {
+                TwoCounters()
+              }
+            )
           }
           NavigationLink("Bindings") {
-            BindingBasicsView()
+            BindingBasicsView(
+              store: Store(initialState: BindingBasics.State()) {
+                BindingBasics()
+              }
+            )
           }
           NavigationLink("Form bindings") {
-            BindingFormView()
+            BindingFormView(
+              store: Store(initialState: BindingForm.State()) {
+                BindingForm()
+              }
+            )
           }
           NavigationLink("Optional state") {
-            OptionalBasicsView()
+            OptionalBasicsView(
+              store: Store(initialState: OptionalBasics.State()) {
+                OptionalBasics()
+              }
+            )
           }
           NavigationLink("Shared state") {
-            SharedStateView()
+            SharedStateView(
+              store: Store(initialState: SharedState.State()) {
+                SharedState()
+              }
+            )
           }
           NavigationLink("Alerts and Confirmation Dialogs") {
-            AlertAndConfirmationDialogView()
+            AlertAndConfirmationDialogView(
+              store: Store(initialState: AlertAndConfirmationDialog.State()) {
+                AlertAndConfirmationDialog()
+              }
+            )
           }
           NavigationLink("Focus State") {
-            FocusDemoView()
+            FocusDemoView(
+              store: Store(initialState: FocusDemo.State()) {
+                FocusDemo()
+              }
+            )
           }
           NavigationLink("Animations") {
-            AnimationsView()
+            AnimationsView(
+              store: Store(initialState: Animations.State()) {
+                Animations()
+              }
+            )
           }
         } header: {
           Text("Getting started")
@@ -41,22 +77,46 @@ struct RootView: View {
 
         Section {
           NavigationLink("Basics") {
-            EffectsBasicsView()
+            EffectsBasicsView(
+              store: Store(initialState: EffectsBasics.State()) {
+                EffectsBasics()
+              }
+            )
           }
           NavigationLink("Cancellation") {
-            EffectsCancellationView()
+            EffectsCancellationView(
+              store: Store(initialState: EffectsCancellation.State()) {
+                EffectsCancellation()
+              }
+            )
           }
           NavigationLink("Long-living effects") {
-            LongLivingEffectsView()
+            LongLivingEffectsView(
+              store: Store(initialState: LongLivingEffects.State()) {
+                LongLivingEffects()
+              }
+            )
           }
           NavigationLink("Refreshable") {
-            RefreshableView()
+            RefreshableView(
+              store: Store(initialState: Refreshable.State()) {
+                Refreshable()
+              }
+            )
           }
           NavigationLink("Timers") {
-            TimersView()
+            TimersView(
+              store: Store(initialState: Timers.State()) {
+                Timers()
+              }
+            )
           }
           NavigationLink("Web socket") {
-            WebSocketView()
+            WebSocketView(
+              store: Store(initialState: WebSocket.State()) {
+                WebSocket()
+              }
+            )
           }
         } header: {
           Text("Effects")
@@ -69,20 +129,40 @@ struct RootView: View {
           .buttonStyle(.plain)
 
           NavigationLink("Navigate and load data") {
-            NavigateAndLoadView()
+            NavigateAndLoadView(
+              store: Store(initialState: NavigateAndLoad.State()) {
+                NavigateAndLoad()
+              }
+            )
           }
 
           NavigationLink("Lists: Navigate and load data") {
-            NavigateAndLoadListView()
+            NavigateAndLoadListView(
+              store: Store(initialState: NavigateAndLoadList.State()) {
+                NavigateAndLoadList()
+              }
+            )
           }
           NavigationLink("Sheets: Present and load data") {
-            PresentAndLoadView()
+            PresentAndLoadView(
+              store: Store(initialState: PresentAndLoad.State()) {
+                PresentAndLoad()
+              }
+            )
           }
           NavigationLink("Sheets: Load data then present") {
-            LoadThenPresentView()
+            LoadThenPresentView(
+              store: Store(initialState: LoadThenPresent.State()) {
+                LoadThenPresent()
+              }
+            )
           }
           NavigationLink("Multiple destinations") {
-            MultipleDestinationsView()
+            MultipleDestinationsView(
+              store: Store(initialState: MultipleDestinations.State()) {
+                MultipleDestinations()
+              }
+            )
           }
         } header: {
           Text("Navigation")
@@ -90,13 +170,25 @@ struct RootView: View {
 
         Section {
           NavigationLink("Reusable favoriting component") {
-            EpisodesView()
+            EpisodesView(
+              store: Store(initialState: Episodes.State()) {
+                Episodes()
+              }
+            )
           }
           NavigationLink("Reusable offline download component") {
-            CitiesView()
+            CitiesView(
+              store: Store(initialState: MapApp.State()) {
+                MapApp()
+              }
+            )
           }
           NavigationLink("Recursive state and actions") {
-            NestedView()
+            NestedView(
+              store: Store(initialState: Nested.State()) {
+                Nested()
+              }
+            )
           }
         } header: {
           Text("Higher-order reducers")
@@ -104,7 +196,11 @@ struct RootView: View {
       }
       .navigationTitle("Case Studies")
       .sheet(isPresented: self.$isNavigationStackCaseStudyPresented) {
-        NavigationDemoView()
+        NavigationDemoView(
+          store: Store(initialState: NavigationDemo.State()) {
+            NavigationDemo()
+          }
+        )
       }
     }
   }

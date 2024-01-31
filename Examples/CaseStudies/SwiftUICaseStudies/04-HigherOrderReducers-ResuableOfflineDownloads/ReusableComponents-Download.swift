@@ -138,7 +138,7 @@ struct CityMapDetailView: View {
 @Reducer
 struct MapApp {
   struct State: Equatable {
-    var cityMaps: IdentifiedArrayOf<CityMap.State>
+    var cityMaps: IdentifiedArrayOf<CityMap.State> = .mocks
   }
 
   enum Action {
@@ -153,9 +153,7 @@ struct MapApp {
 }
 
 struct CitiesView: View {
-  var store = Store(initialState: MapApp.State(cityMaps: .mocks)) {
-    MapApp()
-  }
+  let store: StoreOf<MapApp>
 
   var body: some View {
     Form {

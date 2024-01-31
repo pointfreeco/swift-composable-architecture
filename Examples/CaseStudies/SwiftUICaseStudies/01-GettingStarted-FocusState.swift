@@ -45,9 +45,7 @@ struct FocusDemo {
 }
 
 struct FocusDemoView: View {
-  @Bindable var store = Store(initialState: FocusDemo.State()) {
-    FocusDemo()
-  }
+  @Bindable var store: StoreOf<FocusDemo>
   @FocusState var focusedField: FocusDemo.State.Field?
 
   var body: some View {

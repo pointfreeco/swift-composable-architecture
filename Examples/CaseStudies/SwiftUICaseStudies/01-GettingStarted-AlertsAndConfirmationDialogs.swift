@@ -103,9 +103,7 @@ struct AlertAndConfirmationDialog {
 }
 
 struct AlertAndConfirmationDialogView: View {
-  @Bindable var store = Store(initialState: AlertAndConfirmationDialog.State()) {
-    AlertAndConfirmationDialog()
-  }
+  @Bindable var store: StoreOf<AlertAndConfirmationDialog>
 
   var body: some View {
     Form {

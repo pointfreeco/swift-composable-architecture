@@ -60,9 +60,7 @@ struct BindingBasics {
 }
 
 struct BindingBasicsView: View {
-  @Bindable var store = Store(initialState: BindingBasics.State()) {
-    BindingBasics()
-  }
+  @Bindable var store: StoreOf<BindingBasics>
 
   var body: some View {
     Form {

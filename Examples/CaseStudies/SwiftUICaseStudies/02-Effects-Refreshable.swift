@@ -67,9 +67,7 @@ struct Refreshable {
 }
 
 struct RefreshableView: View {
-  var store = Store(initialState: Refreshable.State()) {
-    Refreshable()
-  }
+  let store: StoreOf<Refreshable>
   @State var isLoading = false
 
   var body: some View {

@@ -52,9 +52,7 @@ struct LoadThenPresent {
 }
 
 struct LoadThenPresentView: View {
-  @Bindable var store = Store(initialState: LoadThenPresent.State()) {
-    LoadThenPresent()
-  }
+  @Bindable var store: StoreOf<LoadThenPresent>
 
   var body: some View {
     Form {

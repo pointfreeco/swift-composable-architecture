@@ -51,9 +51,7 @@ struct Timers {
 }
 
 struct TimersView: View {
-  var store = Store(initialState: Timers.State()) {
-    Timers()
-  }
+  var store: StoreOf<Timers>
 
   var body: some View {
     Form {

@@ -90,9 +90,7 @@ struct NavigationDemo {
 }
 
 struct NavigationDemoView: View {
-  @Bindable var store = Store(initialState: NavigationDemo.State()) {
-    NavigationDemo()
-  }
+  @Bindable var store: StoreOf<NavigationDemo>
 
   var body: some View {
     NavigationStack(path: $store.scope(state: \.path, action: \.path)) {

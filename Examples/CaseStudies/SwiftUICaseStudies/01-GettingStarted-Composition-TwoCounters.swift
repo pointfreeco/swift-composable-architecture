@@ -31,9 +31,7 @@ struct TwoCounters {
 }
 
 struct TwoCountersView: View {
-  var store = Store(initialState: TwoCounters.State()) {
-    TwoCounters()
-  }
+  let store: StoreOf<TwoCounters>
 
   var body: some View {
     Form {
