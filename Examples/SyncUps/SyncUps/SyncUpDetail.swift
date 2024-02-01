@@ -277,14 +277,12 @@ extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
   }
 }
 
-struct SyncUpDetail_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      SyncUpDetailView(
-        store: Store(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
-          SyncUpDetail()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    SyncUpDetailView(
+      store: Store(initialState: SyncUpDetail.State(syncUp: .mock)) {
+        SyncUpDetail()
+      }
+    )
   }
 }

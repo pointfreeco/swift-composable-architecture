@@ -35,7 +35,7 @@ public struct LoginView: View {
       Button {
         // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected" if
         //     you disable a text field while it is focused. This hack will force all fields to
-        //     unfocus before we send the action to the view store.
+        //     unfocus before we send the action to the store.
         // CF: https://stackoverflow.com/a/69653555
         _ = UIApplication.shared.sendAction(
           #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
@@ -67,21 +67,19 @@ extension Login.State {
   fileprivate var isLoginButtonDisabled: Bool { !self.isFormValid }
 }
 
-struct LoginView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      LoginView(
-        store: Store(initialState: Login.State()) {
-          Login()
-        } withDependencies: {
-          $0.authenticationClient.login = { @Sendable _, _ in
-            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-          }
-          $0.authenticationClient.twoFactor = { @Sendable _, _ in
-            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-          }
+#Preview {
+  NavigationStack {
+    LoginView(
+      store: Store(initialState: Login.State()) {
+        Login()
+      } withDependencies: {
+        $0.authenticationClient.login = { @Sendable _, _ in
+          AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
         }
-      )
-    }
+        $0.authenticationClient.twoFactor = { @Sendable _, _ in
+          AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+        }
+      }
+    )
   }
 }

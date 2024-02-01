@@ -82,14 +82,12 @@ extension Game.State {
   }
 }
 
-struct Game_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      GameView(
-        store: Store(initialState: Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")) {
-          Game()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    GameView(
+      store: Store(initialState: Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")) {
+        Game()
+      }
+    )
   }
 }

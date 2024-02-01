@@ -160,12 +160,10 @@ extension IdentifiedArray where ID == Todo.State.ID, Element == Todo.State {
   ]
 }
 
-struct AppView_Previews: PreviewProvider {
-  static var previews: some View {
-    AppView(
-      store: Store(initialState: Todos.State(todos: .mock)) {
-        Todos()
-      }
-    )
-  }
+#Preview {
+  AppView(
+    store: Store(initialState: Todos.State(todos: .mock)) {
+      Todos()
+    }
+  )
 }

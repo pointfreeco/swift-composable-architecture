@@ -80,7 +80,7 @@ extension SpeechClient: DependencyKey {
       requestAuthorization: { .authorized },
       startTask: { request in
         AsyncThrowingStream { continuation in
-          Task { @MainActor in
+          Task {
             let start = ContinuousClock.now
             do {
               for try await result in await Self.previewValue.startTask(request) {

@@ -9,8 +9,6 @@ private let readMe = """
   state of the application and any actions that can affect that state or the outside world.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct Counter {
   @ObservableState
@@ -37,8 +35,6 @@ struct Counter {
   }
 }
 
-// MARK: - Feature view
-
 struct CounterView: View {
   let store: StoreOf<Counter>
 
@@ -63,9 +59,7 @@ struct CounterView: View {
 }
 
 struct CounterDemoView: View {
-  var store = Store(initialState: Counter.State()) {
-    Counter()
-  }
+  let store: StoreOf<Counter>
 
   var body: some View {
     Form {
@@ -83,16 +77,12 @@ struct CounterDemoView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct CounterView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      CounterDemoView(
-        store: Store(initialState: Counter.State()) {
-          Counter()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    CounterDemoView(
+      store: Store(initialState: Counter.State()) {
+        Counter()
+      }
+    )
   }
 }

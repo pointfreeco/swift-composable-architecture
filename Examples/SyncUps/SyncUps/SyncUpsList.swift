@@ -188,22 +188,7 @@ struct SyncUpsList_Previews: PreviewProvider {
   }
 }
 
-#Preview {
-  List {
-    CardView(
-      syncUp: SyncUp(
-        id: SyncUp.ID(),
-        attendees: [],
-        duration: .seconds(60),
-        meetings: [],
-        theme: .bubblegum,
-        title: "Point-Free Morning Sync"
-      )
-    )
-  }
-}
-
-#Preview {
+#Preview("Card") {
   CardView(
     syncUp: SyncUp(
       id: SyncUp.ID(),

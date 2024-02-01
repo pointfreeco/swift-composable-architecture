@@ -8,8 +8,6 @@ private let readMe = """
   counter state and fires off an effect that will load this state a second later.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct NavigateAndLoad {
   @ObservableState
@@ -57,12 +55,8 @@ struct NavigateAndLoad {
   }
 }
 
-// MARK: - Feature view
-
 struct NavigateAndLoadView: View {
-  @Bindable var store = Store(initialState: NavigateAndLoad.State()) {
-    NavigateAndLoad()
-  }
+  @Bindable var store: StoreOf<NavigateAndLoad>
 
   var body: some View {
     Form {
@@ -84,17 +78,13 @@ struct NavigateAndLoadView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct NavigateAndLoadView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      NavigateAndLoadView(
-        store: Store(initialState: NavigateAndLoad.State()) {
-          NavigateAndLoad()
-        }
-      )
-    }
-    .navigationViewStyle(.stack)
+#Preview {
+  NavigationView {
+    NavigateAndLoadView(
+      store: Store(initialState: NavigateAndLoad.State()) {
+        NavigateAndLoad()
+      }
+    )
   }
+  .navigationViewStyle(.stack)
 }

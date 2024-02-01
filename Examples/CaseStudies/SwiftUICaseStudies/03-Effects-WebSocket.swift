@@ -9,8 +9,6 @@ private let readMe = """
   message. The socket server should immediately reply with the exact message you sent in.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct WebSocket {
   @ObservableState
@@ -138,12 +136,8 @@ struct WebSocket {
   }
 }
 
-// MARK: - Feature view
-
 struct WebSocketView: View {
-  @Bindable var store = Store(initialState: WebSocket.State()) {
-    WebSocket()
-  }
+  @Bindable var store: StoreOf<WebSocket>
 
   var body: some View {
     Form {
@@ -192,8 +186,6 @@ struct WebSocketView: View {
     .navigationTitle("Web Socket")
   }
 }
-
-// MARK: - WebSocketClient
 
 @DependencyClient
 struct WebSocketClient {
@@ -357,16 +349,12 @@ extension DependencyValues {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct WebSocketView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      WebSocketView(
-        store: Store(initialState: WebSocket.State(receivedMessages: ["Hi"])) {
-          WebSocket()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    WebSocketView(
+      store: Store(initialState: WebSocket.State(receivedMessages: ["Hi"])) {
+        WebSocket()
+      }
+    )
   }
 }

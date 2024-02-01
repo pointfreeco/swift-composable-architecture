@@ -3,17 +3,14 @@ import SwiftUI
 
 private let readMe = """
   This file demonstrates how to handle two-way bindings in the Composable Architecture using \
-  binding state and actions.
+  bindable actions and binding reducers.
 
-  Binding state and actions allow you to safely eliminate the boilerplate caused by needing to \
-  have a unique action for every UI control. Instead, all UI bindings can be consolidated into a \
-  single `binding` action that holds onto a `BindingAction` value, and all binding state can be \
-  safeguarded with the `BindingState` property wrapper.
+  Bindable actions allow you to safely eliminate the boilerplate caused by needing to have a \
+  unique action for every UI control. Instead, all UI bindings can be consolidated into a single \
+  `binding` action, which the `BindingReducer` can automatically apply to state.
 
   It is instructive to compare this case study to the "Binding Basics" case study.
   """
-
-// MARK: - Feature domain
 
 @Reducer
 struct BindingForm {
@@ -49,12 +46,8 @@ struct BindingForm {
   }
 }
 
-// MARK: - Feature view
-
 struct BindingFormView: View {
-  @Bindable var store = Store(initialState: BindingForm.State()) {
-    BindingForm()
-  }
+  @Bindable var store: StoreOf<BindingForm>
 
   var body: some View {
     Form {
@@ -108,16 +101,12 @@ private func alternate(_ string: String) -> String {
     .joined()
 }
 
-// MARK: - SwiftUI previews
-
-struct BindingFormView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      BindingFormView(
-        store: Store(initialState: BindingForm.State()) {
-          BindingForm()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    BindingFormView(
+      store: Store(initialState: BindingForm.State()) {
+        BindingForm()
+      }
+    )
   }
 }

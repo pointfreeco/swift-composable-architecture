@@ -90,9 +90,7 @@ struct NavigationDemo {
 }
 
 struct NavigationDemoView: View {
-  @Bindable var store = Store(initialState: NavigationDemo.State()) {
-    NavigationDemo()
-  }
+  @Bindable var store: StoreOf<NavigationDemo>
 
   var body: some View {
     NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
@@ -476,18 +474,16 @@ struct ScreenCView: View {
 
 // MARK: - Previews
 
-struct NavigationStack_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationDemoView(
-      store: Store(
-        initialState: NavigationDemo.State(
-          path: StackState([
-            .screenA(ScreenA.State())
-          ])
-        )
-      ) {
-        NavigationDemo()
-      }
-    )
-  }
+#Preview {
+  NavigationDemoView(
+    store: Store(
+      initialState: NavigationDemo.State(
+        path: StackState([
+          .screenA(ScreenA.State())
+        ])
+      )
+    ) {
+      NavigationDemo()
+    }
+  )
 }
