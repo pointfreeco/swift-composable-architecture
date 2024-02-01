@@ -143,16 +143,7 @@ struct EnumView: View {
   }
 }
 
-struct EnumTestCase_Previews: PreviewProvider {
-  static var previews: some View {
-    let _ = Logger.shared.isEnabled = true
-    EnumView()
-  }
-}
-
-struct EnumPreviews: PreviewProvider {
-  static var previews: some View {
-    let _ = Logger.shared.isEnabled = true
-    EnumView()
-  }
+#Preview {
+  Logger.shared.isEnabled = true
+  return EnumView()
 }

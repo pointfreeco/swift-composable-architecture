@@ -3,22 +3,21 @@ import SwiftUI
 
 private let readMe = """
   This screen demonstrates how changes to application state can drive animations. Because the \
-  `Store` processes actions sent to it synchronously you can typically perform animations \
-  in the Composable Architecture just as you would in regular SwiftUI.
+  `Store` processes actions sent to it synchronously you can typically perform animations in the \
+  Composable Architecture just as you would in regular SwiftUI.
 
-  To animate the changes made to state when an action is sent to the store you can pass along an \
-  explicit animation, as well, or you can call `viewStore.send` in a `withAnimation` block.
+  To animate the changes made to state when an action is sent to the store, you can also pass \
+  along an explicit animation, or you can call `store.send` in a `withAnimation` block.
 
-  To animate changes made to state through a binding, use the `.animation` method on `Binding`.
+  To animate changes made to state through a binding, you can call the `animation` method on \
+  `Binding`.
 
-  To animate asynchronous changes made to state via effects, use `Effect.run` style of effects \
-  which allows you to send actions with animations.
+  To animate asynchronous changes made to state via effects, use the `Effect.run` style of \
+  effects, which allows you to send actions with animations.
 
-  Try it out by tapping or dragging anywhere on the screen to move the dot, and by flipping the \
-  toggle at the bottom of the screen.
+  Try out the demo by tapping or dragging anywhere on the screen to move the dot, and by flipping \
+  the toggle at the bottom of the screen.
   """
-
-// MARK: - Feature domain
 
 @Reducer
 struct Animations {
@@ -99,12 +98,8 @@ struct Animations {
   }
 }
 
-// MARK: - Feature view
-
 struct AnimationsView: View {
-  @Bindable var store = Store(initialState: Animations.State()) {
-    Animations()
-  }
+  @Bindable var store: StoreOf<Animations>
 
   var body: some View {
     VStack(alignment: .leading) {
@@ -151,27 +146,23 @@ struct AnimationsView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct AnimationsView_Previews: PreviewProvider {
-  static var previews: some View {
-    Group {
-      NavigationView {
-        AnimationsView(
-          store: Store(initialState: Animations.State()) {
-            Animations()
-          }
-        )
+#Preview {
+  NavigationStack {
+    AnimationsView(
+      store: Store(initialState: Animations.State()) {
+        Animations()
       }
-
-      NavigationView {
-        AnimationsView(
-          store: Store(initialState: Animations.State()) {
-            Animations()
-          }
-        )
-      }
-      .environment(\.colorScheme, .dark)
-    }
+    )
   }
+}
+
+#Preview("Dark mode") {
+  NavigationStack {
+    AnimationsView(
+      store: Store(initialState: Animations.State()) {
+        Animations()
+      }
+    )
+  }
+  .environment(\.colorScheme, .dark)
 }

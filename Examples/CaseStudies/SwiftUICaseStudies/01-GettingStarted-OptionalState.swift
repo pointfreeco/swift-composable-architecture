@@ -5,14 +5,12 @@ private let readMe = """
   This screen demonstrates how to show and hide views based on the presence of some optional child \
   state.
 
-  The parent state holds a `Counter.State?` value. When it is `nil` we will default to a plain text \
-  view. But when it is non-`nil` we will show a view fragment for a counter that operates on the \
-  non-optional counter state.
+  The parent state holds a `Counter.State?` value. When it is `nil` we will default to a plain \
+  text view. But when it is non-`nil` we will show a view fragment for a counter that operates on \
+  the non-optional counter state.
 
   Tapping "Toggle counter state" will flip between the `nil` and non-`nil` counter states.
   """
-
-// MARK: - Feature domain
 
 @Reducer
 struct OptionalBasics {
@@ -45,12 +43,8 @@ struct OptionalBasics {
   }
 }
 
-// MARK: - Feature view
-
 struct OptionalBasicsView: View {
-  var store = Store(initialState: OptionalBasics.State()) {
-    OptionalBasics()
-  }
+  let store: StoreOf<OptionalBasics>
 
   var body: some View {
     Form {
@@ -75,28 +69,28 @@ struct OptionalBasicsView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct OptionalBasicsView_Previews: PreviewProvider {
-  static var previews: some View {
-    Group {
-      NavigationView {
-        OptionalBasicsView(
-          store: Store(initialState: OptionalBasics.State()) {
-            OptionalBasics()
-          }
-        )
+#Preview {
+  NavigationStack {
+    OptionalBasicsView(
+      store: Store(initialState: OptionalBasics.State()) {
+        OptionalBasics()
       }
+    )
+  }
+}
 
-      NavigationView {
-        OptionalBasicsView(
-          store: Store(
-            initialState: OptionalBasics.State(optionalCounter: Counter.State(count: 42))
-          ) {
-            OptionalBasics()
-          }
+#Preview("Deep-linked") {
+  NavigationStack {
+    OptionalBasicsView(
+      store: Store(
+        initialState: OptionalBasics.State(
+          optionalCounter: Counter.State(
+            count: 42
+          )
         )
+      ) {
+        OptionalBasics()
       }
-    }
+    )
   }
 }

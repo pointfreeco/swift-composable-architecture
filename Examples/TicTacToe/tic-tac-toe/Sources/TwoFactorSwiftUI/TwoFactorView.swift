@@ -24,7 +24,7 @@ public struct TwoFactorView: View {
         Button("Submit") {
           // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected"
           //     if you disable a text field while it is focused. This hack will force all
-          //     fields to unfocus before we send the action to the view store.
+          //     fields to unfocus before we send the action to the store.
           // CF: https://stackoverflow.com/a/69653555
           UIApplication.shared.sendAction(
             #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
@@ -51,21 +51,19 @@ extension TwoFactor.State {
   fileprivate var isSubmitButtonDisabled: Bool { !self.isFormValid }
 }
 
-struct TwoFactorView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      TwoFactorView(
-        store: Store(initialState: TwoFactor.State(token: "deadbeef")) {
-          TwoFactor()
-        } withDependencies: {
-          $0.authenticationClient.login = { @Sendable _, _ in
-            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-          }
-          $0.authenticationClient.twoFactor = { @Sendable _, _ in
-            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-          }
+#Preview {
+  NavigationStack {
+    TwoFactorView(
+      store: Store(initialState: TwoFactor.State(token: "deadbeef")) {
+        TwoFactor()
+      } withDependencies: {
+        $0.authenticationClient.login = { @Sendable _, _ in
+          AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
         }
-      )
-    }
+        $0.authenticationClient.twoFactor = { @Sendable _, _ in
+          AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+        }
+      }
+    )
   }
 }

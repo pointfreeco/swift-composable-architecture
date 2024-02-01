@@ -190,8 +190,6 @@ private struct AnimatedFromBindingWithObservation {
   }
 }
 
-private struct BindingsAnimationsTestBench_Previews: PreviewProvider {
-  static var previews: some View {
-    BindingsAnimationsTestBench()
-  }
+#Preview {
+  BindingsAnimationsTestBench()
 }

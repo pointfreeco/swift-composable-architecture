@@ -2,12 +2,11 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how to take small features and compose them into bigger ones using reducer builders and the `Scope` reducer, as well as the `scope` operator on stores.
+  This screen demonstrates how to take small features and compose them into bigger ones using \
+  reducer builders and the `Scope` reducer, as well as the `scope` operator on stores.
 
   It reuses the domain of the counter screen and embeds it, twice, in a larger domain.
   """
-
-// MARK: - Feature domain
 
 @Reducer
 struct TwoCounters {
@@ -32,12 +31,8 @@ struct TwoCounters {
   }
 }
 
-// MARK: - Feature view
-
 struct TwoCountersView: View {
-  var store = Store(initialState: TwoCounters.State()) {
-    TwoCounters()
-  }
+  let store: StoreOf<TwoCounters>
 
   var body: some View {
     Form {
@@ -62,16 +57,12 @@ struct TwoCountersView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct TwoCountersView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      TwoCountersView(
-        store: Store(initialState: TwoCounters.State()) {
-          TwoCounters()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    TwoCountersView(
+      store: Store(initialState: TwoCounters.State()) {
+        TwoCounters()
+      }
+    )
   }
 }
