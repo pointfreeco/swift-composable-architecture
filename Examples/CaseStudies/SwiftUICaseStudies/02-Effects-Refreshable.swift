@@ -1,17 +1,16 @@
 import ComposableArchitecture
-@preconcurrency import SwiftUI
+import SwiftUI
 
 private let readMe = """
   This application demonstrates how to make use of SwiftUI's `refreshable` API in the Composable \
   Architecture. Use the "-" and "+" buttons to count up and down, and then pull down to request \
   a fact about that number.
 
-  There is an overload of the `.send` method that allows you to suspend and await while a piece \
-  of state is true. You can use this method to communicate to SwiftUI that you are \
-  currently fetching data so that it knows to continue showing the loading indicator.
+  There is a discardable task that is returned from the store's `.send` method representing any \
+  effects kicked off by the reducer. You can `await` this task using its `.finish` method, which \
+  will suspend while the effects remain in flight. This suspension communicates to SwiftUI that \
+  you are currently fetching data so that it knows to continue showing the loading indicator.
   """
-
-// MARK: - Feature domain
 
 @Reducer
 struct Refreshable {
@@ -68,12 +67,8 @@ struct Refreshable {
   }
 }
 
-// MARK: - Feature view
-
 struct RefreshableView: View {
-  var store = Store(initialState: Refreshable.State()) {
-    Refreshable()
-  }
+  let store: StoreOf<Refreshable>
   @State var isLoading = false
 
   var body: some View {
@@ -119,14 +114,10 @@ struct RefreshableView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct Refreshable_Previews: PreviewProvider {
-  static var previews: some View {
-    RefreshableView(
-      store: Store(initialState: Refreshable.State()) {
-        Refreshable()
-      }
-    )
-  }
+#Preview {
+  RefreshableView(
+    store: Store(initialState: Refreshable.State()) {
+      Refreshable()
+    }
+  )
 }

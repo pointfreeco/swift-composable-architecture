@@ -201,31 +201,29 @@ struct RecordButton: View {
   }
 }
 
-struct VoiceMemos_Previews: PreviewProvider {
-  static var previews: some View {
-    VoiceMemosView(
-      store: Store(
-        initialState: VoiceMemos.State(
-          voiceMemos: [
-            VoiceMemo.State(
-              date: Date(),
-              duration: 5,
-              mode: .notPlaying,
-              title: "Functions",
-              url: URL(string: "https://www.pointfree.co/functions")!
-            ),
-            VoiceMemo.State(
-              date: Date(),
-              duration: 5,
-              mode: .notPlaying,
-              title: "",
-              url: URL(string: "https://www.pointfree.co/untitled")!
-            ),
-          ]
-        )
-      ) {
-        VoiceMemos()
-      }
-    )
-  }
+#Preview {
+  VoiceMemosView(
+    store: Store(
+      initialState: VoiceMemos.State(
+        voiceMemos: [
+          VoiceMemo.State(
+            date: Date(),
+            duration: 5,
+            mode: .notPlaying,
+            title: "Functions",
+            url: URL(string: "https://www.pointfree.co/functions")!
+          ),
+          VoiceMemo.State(
+            date: Date(),
+            duration: 5,
+            mode: .notPlaying,
+            title: "",
+            url: URL(string: "https://www.pointfree.co/untitled")!
+          ),
+        ]
+      )
+    ) {
+      VoiceMemos()
+    }
+  )
 }

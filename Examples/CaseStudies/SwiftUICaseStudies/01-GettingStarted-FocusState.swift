@@ -4,10 +4,8 @@ import SwiftUI
 private let readMe = """
   This demonstrates how to make use of SwiftUI's `@FocusState` in the Composable Architecture with \
   the library's `bind` view modifier. If you tap the "Sign in" button while a field is empty, the \
-  focus will be changed to that field.
+  focus will be changed to the first empty field.
   """
-
-// MARK: - Feature domain
 
 @Reducer
 struct FocusDemo {
@@ -46,12 +44,8 @@ struct FocusDemo {
   }
 }
 
-// MARK: - Feature view
-
 struct FocusDemoView: View {
-  @Bindable var store = Store(initialState: FocusDemo.State()) {
-    FocusDemo()
-  }
+  @Bindable var store: StoreOf<FocusDemo>
   @FocusState var focusedField: FocusDemo.State.Field?
 
   var body: some View {
@@ -76,16 +70,12 @@ struct FocusDemoView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct FocusDemo_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      FocusDemoView(
-        store: Store(initialState: FocusDemo.State()) {
-          FocusDemo()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    FocusDemoView(
+      store: Store(initialState: FocusDemo.State()) {
+        FocusDemo()
+      }
+    )
   }
 }

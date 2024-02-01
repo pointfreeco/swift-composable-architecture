@@ -378,14 +378,12 @@ struct MeetingFooterView: View {
   }
 }
 
-struct RecordMeeting_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      RecordMeetingView(
-        store: Store(initialState: RecordMeeting.State(syncUp: .mock)) {
-          RecordMeeting()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    RecordMeetingView(
+      store: Store(initialState: RecordMeeting.State(syncUp: .mock)) {
+        RecordMeeting()
+      }
+    )
   }
 }

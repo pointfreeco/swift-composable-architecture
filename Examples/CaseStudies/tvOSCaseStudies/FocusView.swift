@@ -68,17 +68,7 @@ struct FocusView: View {
       // Update the view's focus when the state tells us the focus changed.
       resetFocus(in: namespace)
     }
-    .focusScope(self.namespace)
-  }
-}
-
-struct FocusView_Previews: PreviewProvider {
-  static var previews: some View {
-    FocusView(
-      store: Store(initialState: Focus.State()) {
-        Focus()
-      }
-    )
+    .focusScope(namespace)
   }
 }
 
@@ -95,3 +85,11 @@ private let numbers = [
   "Nine",
   "Ten",
 ]
+
+#Preview {
+  FocusView(
+    store: Store(initialState: Focus.State()) {
+      Focus()
+    }
+  )
+}

@@ -11,14 +11,12 @@ private let readMe = """
 
   Many things we do in our applications involve side effects, such as timers, database requests, \
   file access, socket connections, and anytime a clock is involved (such as debouncing, \
-  throttling and delaying), and they are typically difficult to test.
+  throttling, and delaying), and they are typically difficult to test.
 
   This application has a simple side effect: tapping "Number fact" will trigger an API request to \
   load a piece of trivia about that number. This effect is handled by the reducer, and a full test \
   suite is written to confirm that the effect behaves in the way we expect.
   """
-
-// MARK: - Feature domain
 
 @Reducer
 struct EffectsBasics {
@@ -92,12 +90,8 @@ struct EffectsBasics {
   }
 }
 
-// MARK: - Feature view
-
 struct EffectsBasicsView: View {
-  var store = Store(initialState: EffectsBasics.State()) {
-    EffectsBasics()
-  }
+  let store: StoreOf<EffectsBasics>
   @Environment(\.openURL) var openURL
 
   var body: some View {
@@ -154,16 +148,12 @@ struct EffectsBasicsView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct EffectsBasicsView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      EffectsBasicsView(
-        store: Store(initialState: EffectsBasics.State()) {
-          EffectsBasics()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    EffectsBasicsView(
+      store: Store(initialState: EffectsBasics.State()) {
+        EffectsBasics()
+      }
+    )
   }
 }

@@ -12,8 +12,6 @@ private let readMe = """
   request is in-flight will also cancel it.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct EffectsCancellation {
   @ObservableState
@@ -68,12 +66,8 @@ struct EffectsCancellation {
   }
 }
 
-// MARK: - Feature view
-
 struct EffectsCancellationView: View {
-  @Bindable var store = Store(initialState: EffectsCancellation.State()) {
-    EffectsCancellation()
-  }
+  @Bindable var store: StoreOf<EffectsCancellation>
   @Environment(\.openURL) var openURL
 
   var body: some View {
@@ -117,16 +111,12 @@ struct EffectsCancellationView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct EffectsCancellation_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      EffectsCancellationView(
-        store: Store(initialState: EffectsCancellation.State()) {
-          EffectsCancellation()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    EffectsCancellationView(
+      store: Store(initialState: EffectsCancellation.State()) {
+        EffectsCancellation()
+      }
+    )
   }
 }
