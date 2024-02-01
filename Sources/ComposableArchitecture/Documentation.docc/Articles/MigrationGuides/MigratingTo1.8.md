@@ -164,9 +164,9 @@ case the state is in, and then further scoping the store down to a particular ca
 `Path.State` enum. And since such extraction is failable, we have to `if let` unwrap the scoped
 store, and only then can we pass it to the child view being navigated to.
 
-The new super powers of the `@Reducer` macro greatly improve this code. The macro adds a `case`
-computed property to the store so that you can switch on the `Path.State` enum _and_ extract out
-a store in one step:
+The new super powers of the `@Reducer` macro greatly improve this code. The macro adds a
+``Store/case`` computed property to the store so that you can switch on the `Path.State` enum _and_
+extract out a store in one step:
 
 ```swift
 NavigationStack(path: $store.scope(state: \.path, action: \.path)) {

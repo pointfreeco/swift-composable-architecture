@@ -2,7 +2,7 @@
 
 Learn about one of the most fundamental tools in the Composable Architecture: the reducer. It is
 responsible for evolving the state of your application forward when an action is sent, and 
-constructing effects that are exected in the outside world.
+constructing effects that are executed in the outside world.
 
 ## Overview
 
@@ -26,14 +26,13 @@ more concise and more powerful.
 
 ## Conforming to the Reducer protocol
 
-The bare minimum of conforming to the ``Reducer`` protocol is to provide a ``Reducer/State`` type 
-that represents the state your feature needs to do its job, a ``Reducer/Action`` type that 
+The bare minimum of conforming to the ``Reducer`` protocol is to provide a ``Reducer/State`` type
+that represents the state your feature needs to do its job, a ``Reducer/Action`` type that
 represents the actions users can perform in your feature (as well as actions that effects can
-feed back into the system), and a ``Reducer/body-8lumc`` property that compose your feature 
+feed back into the system), and a ``Reducer/body-8lumc`` property that compose your feature
 together with any other features that are needed (such as for navigation).
 
-As a very simple example, a "counter" feature could model its state as a struct holding an 
-integer:
+As a very simple example, a "counter" feature could model its state as a struct holding an integer:
 
 ```swift
 struct CounterFeature: Reducer {
@@ -45,8 +44,8 @@ struct CounterFeature: Reducer {
 ```
 
 > Note: We have added the ``ObservableState()`` to `State` here so that the view can automatically
-observe state changes. In future versions of the library this macro will be automatically applied
-by the ``Reducer()`` macro.
+> observe state changes. In future versions of the library this macro will be automatically applied
+> by the ``Reducer()`` macro.
 
 The actions would be just two cases for tapping an increment or decrement button:
 
@@ -83,17 +82,16 @@ struct CounterFeature: Reducer {
 ```
 
 The ``Reduce`` reducer's first responsibility is to mutate the feature's current state given an
-action. Its second responsibility is to return effects that will be executed asynchronously
-and feed their data back into the system. Currently `Feature` does not need to run any effects,
-and so ``Effect/none`` is returned.
+action. Its second responsibility is to return effects that will be executed asynchronously and feed
+their data back into the system. Currently `Feature` does not need to run any effects, and so
+``Effect/none`` is returned.
 
-If the feature does need to do effectful work, then more would need to be done. For example,
-suppose the feature has the ability to start and stop a timer, and with each tick of the timer
-the `count` will be incremented. That could be done like so:
+If the feature does need to do effectful work, then more would need to be done. For example, suppose
+the feature has the ability to start and stop a timer, and with each tick of the timer the `count`
+will be incremented. That could be done like so:
 
 ```swift
-@Reducer
-struct Feature {
+struct CounterFeature: Reducer {
   @ObservableState
   struct State {
     var count = 0
@@ -139,11 +137,10 @@ struct Feature {
 }
 ```
 
-> Note: This sample emulates a timer by performing an infinite loop with a `Task.sleep`
-inside. This is simple to do, but is also inaccurate since small imprecisions can accumulate.
-It would be better to inject a clock into the feature so that you could use its `timer`
-method. Read the <doc:DependencyManagement> and <doc:Testing> articles for more
-information.
+> Note: This sample emulates a timer by performing an infinite loop with a `Task.sleep` inside. This
+> is simple to do, but is also inaccurate since small imprecisions can accumulate. It would be
+> better to inject a clock into the feature so that you could use its `timer` method. Read the
+> <doc:DependencyManagement> and <doc:Testing> articles for more information.
 
 That is the basics of implementing a feature as a conformance to ``Reducer``. 
 
@@ -195,7 +192,7 @@ The `@Reducer` macro automatically applies the [`@CasePathable`][casepathable-do
  }
 ```
 
-[Case paths][casepaths-gh] are a tool that bring the power and ergonomics of key paths to enum 
+[Case paths][casepaths-gh] are a tool that bring the power and ergonomics of key paths to enum
 cases, and they are a vital tool for composing reducers together.
 
 In particular, having this macro applied to your `Action` enum will allow you to use key path
@@ -203,9 +200,9 @@ syntax for specifying enum cases in various APIs in the library, such as
 ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``,
 ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``, ``Scope``, and more.
 
-Further, if the ``Reducer/State`` of your feature is an enum, which is useful for modeling a
-feature that can be one of multiple mutually exclusive values, the ``Reducer()`` will apply
-the `@CasePathable` macro, as well as `@dynamicMemberLookup`:
+Further, if the ``Reducer/State`` of your feature is an enum, which is useful for modeling a feature
+that can be one of multiple mutually exclusive values, the ``Reducer()`` will apply the
+`@CasePathable` macro, as well as `@dynamicMemberLookup`:
 
 ```diff
 +@CasePathable
@@ -215,10 +212,10 @@ the `@CasePathable` macro, as well as `@dynamicMemberLookup`:
  }
 ```
 
-This will allow you to use key path syntax for specifying case paths to the `State`'s cases,
-as well as allow you to use dot-chaining syntax for optionally extracting a case from the
-state. This can be useful when using the operators that come with the library that allow for
-driving navigation from an enum of options:
+This will allow you to use key path syntax for specifying case paths to the `State`'s cases, as well
+as allow you to use dot-chaining syntax for optionally extracting a case from the state. This can be
+useful when using the operators that come with the library that allow for driving navigation from an
+enum of options:
 
 ```swift
 .sheet(
@@ -233,8 +230,8 @@ The syntax `state: \.destination?.editForm` is only possible due to both `@dynam
 
 #### Automatic fulfillment of reducer requirements
 
-The ``Reducer()`` macro will automatically fill in any ``Reducer`` protocol requirements
-that you leave off. For example, something as simple as this compiles:
+The ``Reducer()`` macro will automatically fill in any ``Reducer`` protocol requirements that you
+leave off. For example, something as simple as this compiles:
 
 ```swift
 @Reducer
@@ -242,25 +239,24 @@ struct Feature {}
 ```
 
 The `@Reducer` macro will automatically insert an empty ``Reducer/State`` struct, an empty
-``Reducer/Action`` enum, and an empty ``Reducer/body-swift.property``. This effectively means
-that `Feature` is a logicless, behaviorless, inert reducer.
+``Reducer/Action`` enum, and an empty ``Reducer/body-swift.property``. This effectively means that
+`Feature` is a logicless, behaviorless, inert reducer.
 
-Having these requirements automatically fulfilled for you can be handy for slowly
-filling them in with their real implementations. For example, this `Feature` reducer could be
-integrated in a parent domain using the library's navigation tools, all without having
-implemented any of the domain yet. Then, once we are ready we can start implementing the real
-logic and behavior of the feature.
+Having these requirements automatically fulfilled for you can be handy for slowly filling them in
+with their real implementations. For example, this `Feature` reducer could be integrated in a parent
+domain using the library's navigation tools, all without having implemented any of the domain yet.
+Then, once we are ready we can start implementing the real logic and behavior of the feature.
 
 #### Destination and path reducers
 
-There is a common pattern in the Composable Architecture of representing destinations a 
-feature can navigate to as a reducer that operates on enum state, with a case for each
-feature that can be navigated to. This is explained in great detail in the
-<doc:TreeBasedNavigation> and <doc:StackBasedNavigation> articles.
+There is a common pattern in the Composable Architecture of representing destinations a feature can
+navigate to as a reducer that operates on enum state, with a case for each feature that can be
+navigated to. This is explained in great detail in the <doc:TreeBasedNavigation> and
+<doc:StackBasedNavigation> articles.
 
-This form of domain modeling can be very powerful, but also incur a bit of boilerplate. For 
-example, if a feature can navigate to 3 other features, then one might have a `Destination`
-reducer like the following:
+This form of domain modeling can be very powerful, but also incur a bit of boilerplate. For example,
+if a feature can navigate to 3 other features, then one might have a `Destination` reducer like the
+following:
 
 ```swift
 @Reducer
@@ -290,12 +286,12 @@ struct Destination {
 }
 ```
 
-It's not the worst code in the world, but it is 24 lines with a lot of repetition, and if we 
-need to add a new destination we must add a case to the ``Reducer/State`` enum, a case to the
+It's not the worst code in the world, but it is 24 lines with a lot of repetition, and if we need to
+add a new destination we must add a case to the ``Reducer/State`` enum, a case to the
 ``Reducer/Action`` enum, and a ``Scope`` to the ``Reducer/body-swift.property``.
 
-The ``Reducer()`` macro is now capable of generating all of this code for you from the
-following simple declaration
+The ``Reducer()`` macro is now capable of generating all of this code for you from the following
+simple declaration
 
 ```swift
 @Reducer
@@ -306,10 +302,10 @@ enum Destination {
 }
 ```
 
-24 lines of code has become 6. The `@Reducer` macro can now be applied to an _enum_ where each
-case holds onto the reducer that governs the logic and behavior for that case. Further, when
-using the ``Reducer/ifLet(_:action:)`` operator with this style of `Destination` enum reducer
-you can completely leave off the trailing closure as it can be automatically inferred:
+24 lines of code has become 6. The `@Reducer` macro can now be applied to an _enum_ where each case
+holds onto the reducer that governs the logic and behavior for that case. Further, when using the
+``Reducer/ifLet(_:action:)`` operator with this style of `Destination` enum reducer you can
+completely leave off the trailing closure as it can be automatically inferred:
 
 ```diff
  Reduce { state, action in
@@ -337,9 +333,9 @@ Reduce { state, action in
 
 Further, for `Path` reducers in particular, the ``Reducer()`` macro also helps you reduce
 boilerplate when using the initializer 
-``SwiftUI/NavigationStack/init(path:root:destination:)`` that comes with the library. In the
-last trailing closure you can use the ``Store/case`` computed property to switch on the
-`Path.State` enum and extract out a store for each case:
+``SwiftUI/NavigationStack/init(path:root:destination:)`` that comes with the library. In the last
+trailing closure you can use the ``Store/case`` computed property to switch on the `Path.State` enum
+and extract out a store for each case:
 
 ```swift
 NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
@@ -358,21 +354,21 @@ NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
 
 #### Navigating to non-reducer features
 
-There are many times that you want to present or navigate to a feature that is not modeled
-with a Composable Architecture redcuer. This can happen with legacy features that are not
-built with the Composable Architecture, or with features that are very simple and do not need
-a fully built reducer.
+There are many times that you want to present or navigate to a feature that is not modeled with a
+Composable Architecture reducer. This can happen with legacy features that are not built with the
+Composable Architecture, or with features that are very simple and do not need a fully built
+reducer.
 
-In those cases you can use the ``ReducerCaseIgnored()`` and ``ReducerCaseEphemeral()`` macros
-to annotate cases that are not powered by reducers. See the documentation for those macros
-for more details.
+In those cases you can use the ``ReducerCaseIgnored()`` and ``ReducerCaseEphemeral()`` macros to
+annotate cases that are not powered by reducers. See the documentation for those macros for more
+details.
 
 #### Synthesizing protocol conformances on State and Action
 
-Since the `State` and `Action` types are generated automatically for you when using `@Reducer`
-on an enum, it's not possible to directly synthesize conformances of `Equatable`, `Hashable`,
-etc. on those types. And further, due to a bug in the Swift compiler you cannot currently
-do this:
+Since the `State` and `Action` types are generated automatically for you when using `@Reducer` on an
+enum, it's not possible to directly synthesize conformances of `Equatable`, `Hashable`,
+_etc._, on those types. And further, due to a bug in the Swift compiler you cannot currently do
+this:
 
 ```swift
 @Reducer
@@ -431,9 +427,9 @@ providing additional type hints to the compiler:
 
 #### Circular reference errors
 
-There is currently a bug in the Swift compiler and macros that prevents you from extending
-types that are inside other types with macros applied in the same file. For example, if you
-wanted to extend a reducer's `State` with some extra functionality:
+There is currently a bug in the Swift compiler and macros that prevents you from extending types
+that are inside other types with macros applied in the same file. For example, if you wanted to
+extend a reducer's `State` with some extra functionality:
 
 ```swift
 @Reducer
@@ -449,9 +445,9 @@ extension Feature.State {  // 🛑 Circular reference
 ```
 
 This unfortunately does not work. It is a
-[known issue](https://github.com/apple/swift/issues/66450), and the only workaround is to
-either move the extension to a separate file, or move the code from the extension to be
-directly inside the `State` type.
+[known issue](https://github.com/apple/swift/issues/66450), and the only workaround is to either
+move the extension to a separate file, or move the code from the extension to be directly inside the
+`State` type.
 
 #### CI build failures
 
@@ -459,18 +455,18 @@ When testing your code on an external CI server you may run into errors such as 
 
 > Error: CasePathsMacros Target 'CasePathsMacros' must be enabled before it can be used.
 >
-> ComposableArchitectureMacros Target 'ComposableArchitectureMacros' must be enabled
-before it can be used.
+> ComposableArchitectureMacros Target 'ComposableArchitectureMacros' must be enabled before it can
+> be used.
 
-You can fix this in one of two ways. You can write a default to the CI machine that allows
-Xcode to skip macro validation:
+You can fix this in one of two ways. You can write a default to the CI machine that allows Xcode to
+skip macro validation:
 
 ```shell
 defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
 ```
 
 Or if you are invoking `xcodebuild` directly in your CI scripts, you can pass the
- `-skipMacroValidation` flag to `xcodebuild` when building your project:
+`-skipMacroValidation` flag to `xcodebuild` when building your project:
 
 ```shell
 xcodebuild -skipMacroValidation …

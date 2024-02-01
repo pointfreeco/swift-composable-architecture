@@ -12,3 +12,5 @@
 - ``ReducerCaseEphemeral()``
 - ``ReducerCaseIgnored()``
 - ``_SynthesizedConformance``
+- ``CaseReducer``
+- ``CaseReducerState``
