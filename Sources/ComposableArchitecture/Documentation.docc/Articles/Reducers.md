@@ -1,4 +1,4 @@
-# Reducer protocol and macro
+# Reducers
 
 Learn about one of the most fundamental tools in the Composable Architecture: the reducer. It is
 responsible for evolving the state of your application forward when an action is sent, and 
@@ -26,7 +26,6 @@ more concise and more powerful.
 
 ## Conforming to the Reducer protocol
 
-
 The bare minimum of conforming to the ``Reducer`` protocol is to provide a ``Reducer/State`` type 
 that represents the state your feature needs to do its job, a ``Reducer/Action`` type that 
 represents the actions users can perform in your feature (as well as actions that effects can
@@ -38,11 +37,16 @@ integer:
 
 ```swift
 struct CounterFeature: Reducer {
+  @ObservableState
   struct State {
     var count = 0
   }
 }
 ```
+
+> Note: We have added the ``ObservableState()`` to `State` here so that the view can automatically
+observe state changes. In future versions of the library this macro will be automatically applied
+by the ``Reducer()`` macro.
 
 The actions would be just two cases for tapping an increment or decrement button:
 
@@ -90,6 +94,7 @@ the `count` will be incremented. That could be done like so:
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State {
     var count = 0
   }
@@ -153,6 +158,7 @@ conformance:
 +@Reducer
 -struct CounterFeature: Reducer {
 +struct CounterFeature {
+   @ObservableState
    struct State {
      var count = 0
    }
@@ -376,7 +382,7 @@ enum Destination {
 extension Destination.State: Equatable {}  // ❌
 ```
 
-See <doc:ReducerProtocolAndMacro#Circular-reference-errors> below for more info on this error.
+See <doc:Reducers#Circular-reference-errors> below for more info on this error.
 
 So, to work around this compiler bug the `@Reducer` macro takes two
 ``ComposableArchitecture/_SynthesizedConformance`` arguments that allow you to describe which
@@ -432,6 +438,7 @@ wanted to extend a reducer's `State` with some extra functionality:
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State { /* ... */ }
   // ...
 }
@@ -471,3 +478,7 @@ xcodebuild -skipMacroValidation …
 
 [casepathable-docs]: https://swiftpackageindex.com/pointfreeco/swift-case-paths/main/documentation/casepaths/casepathable()
 [casepaths-gh]: http://github.com/pointfreeco/swift-case-paths
+
+## Topics
+
+- ``Reducer()``
