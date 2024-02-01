@@ -447,13 +447,7 @@ struct ScreenCView: View {
 
 #Preview {
   NavigationDemoView(
-    store: Store(
-      initialState: NavigationDemo.State(
-        path: StackState([
-          .screenA(ScreenA.State())
-        ])
-      )
-    ) {
+    store: Store(initialState: NavigationDemo.State()) {
       NavigationDemo()
     }
   )
