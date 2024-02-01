@@ -144,6 +144,10 @@ public final class Store<State, Action> {
   let _$observationRegistrar = PerceptionRegistrar()
   private var parentCancellable: AnyCancellable?
 
+  func run(_ effect: Effect<Action>) {
+    self.rootStore.continuation.yield(effect.map(self.fromAction))
+  }
+
   /// Initializes a store from an initial state and a reducer.
   ///
   /// - Parameters:

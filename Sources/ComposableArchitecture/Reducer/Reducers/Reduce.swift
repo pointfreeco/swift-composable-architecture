@@ -31,8 +31,7 @@ public struct Reduce<State, Action>: Reducer {
   }
 
   public func _reduce(into store: Store<State, Action>, action: Action) {
-    let effects = self.reduce(&store.currentState, action)
-    _ = effects  // TODO: handle effects
+    store.run(self.reduce(&store.currentState, action))
   }
 
 //  @inlinable
@@ -40,3 +39,17 @@ public struct Reduce<State, Action>: Reducer {
 //    self.reduce(&state, action)
 //  }
 }
+
+/*
+ protocol Reducer {
+   func _reduce(into store: StoreOf<Self>, action: Action)
+ }
+ extension Reducer {
+   func _reduce(into state: inout State, action: Action) -> Effect<Action>
+ }
+
+ Reduce { state, action in
+   let effect = Child().reduce(into: &state.child, action)
+   return effect.map(…)
+ }
+ */

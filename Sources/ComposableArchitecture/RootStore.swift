@@ -9,6 +9,7 @@ public final class RootStore {
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   private let reducer: any Reducer
+  let (effects, continuation) = AsyncStream.makeStream(of: Any.self)
   var state: Any {
     didSet {
       didSet.send(())
@@ -22,6 +23,31 @@ public final class RootStore {
     self.state = initialState
     self.reducer = reducer
     threadCheck(status: .`init`)
+    Task { @MainActor [weak self] in
+      if #available(iOS 17.0, *) {
+        await withDiscardingTaskGroup(returning: Void.self) { group in
+          guard let effects = self?.effects else { return }
+          for await case let effect as Effect<Any> in effects where self != nil {
+            switch effect.operation {
+            case .none:
+              break
+            case let .publisher(publisher):
+              group.addTask {
+                for await action in publisher.values {
+//                  self?.send(action)
+                }
+              }
+            case let .run(priority, operation):
+              group.addTask(priority: priority) {
+                await operation(Send(send: { _ = self?.send($0) }))
+              }
+            }
+          }
+        }
+      } else {
+        // Fallback on earlier versions
+      }
+    }
   }
 
   func send(_ action: Any, originatingFrom originatingAction: Any? = nil) -> Task<Void, Never>? {
@@ -42,12 +68,10 @@ public final class RootStore {
         //self.state = currentState
         self.isSending = false
         if !self.bufferedActions.isEmpty {
-          if let task = self.send(
+          self.send(
             self.bufferedActions.removeLast(),
             originatingFrom: originatingAction
-          ) {
-            tasks.wrappedValue.append(task)
-          }
+          )
         }
       }
 

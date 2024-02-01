@@ -9,8 +9,8 @@ struct CaseStudiesApp: App {
 
   var body: some Scene {
     WindowGroup {
-      //RootView()
-      FeatureView(store: store)
+      RootView()
+//      FeatureView(store: store)
     }
   }
 }
