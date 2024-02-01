@@ -53,12 +53,8 @@ struct SharedStateFileStorage {
   }
 }
 
-// MARK: - Feature view
-
 struct SharedStateFileStorageView: View {
-  @State private var store = Store(initialState: SharedStateFileStorage.State()) {
-    SharedStateFileStorage()
-  }
+  @Bindable var store: StoreOf<SharedStateFileStorage>
 
   var body: some View {
     TabView(selection: $store.currentTab.sending(\.selectTab)) {
@@ -231,14 +227,6 @@ extension URL {
   fileprivate static let stats = URL.documentsDirectory.appending(path: "stats.json")
 }
 
-// MARK: - SwiftUI previews
-
-struct SharedStateFileStorage_Previews: PreviewProvider {
-  static var previews: some View {
-    SharedStateFileStorageView()
-  }
-}
-
 /// Checks if a number is prime or not.
 private func isPrime(_ p: Int) -> Bool {
   if p <= 1 { return false }
@@ -250,9 +238,9 @@ private func isPrime(_ p: Int) -> Bool {
 }
 
 #Preview {
-  SharedStateView(
-    store: Store(initialState: SharedState.State()) {
-      SharedState()
+  SharedStateFileStorageView(
+    store: Store(initialState: SharedStateFileStorage.State()) {
+      SharedStateFileStorage()
     }
   )
 }

@@ -280,7 +280,7 @@ extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
 #Preview {
   NavigationStack {
     SyncUpDetailView(
-      store: Store(initialState: SyncUpDetail.State(syncUp: .mock)) {
+      store: Store(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
         SyncUpDetail()
       }
     )

@@ -11,8 +11,6 @@ private let readMe = """
   as well as an alert value that is set when asking if the current count is prime.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct SharedStateUserDefaults {
   enum Tab { case counter, profile }
@@ -51,12 +49,8 @@ struct SharedStateUserDefaults {
   }
 }
 
-// MARK: - Feature view
-
 struct SharedStateUserDefaultsView: View {
-  @State private var store = Store(initialState: SharedStateUserDefaults.State()) {
-    SharedStateUserDefaults()
-  }
+  @Bindable var store: StoreOf<SharedStateUserDefaults>
 
   var body: some View {
     TabView(selection: $store.currentTab.sending(\.selectTab)) {
@@ -205,15 +199,11 @@ private struct ProfileTabView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct SharedStateUserDefaults_Previews: PreviewProvider {
-  static var previews: some View {
-    SharedStateUserDefaultsView()
-  }
+#Preview {
+  SharedStateUserDefaultsView(
+    store: Store(initialState: SharedStateUserDefaults.State()) { SharedStateUserDefaults() }
+  )
 }
-
-// MARK: - Private helpers
 
 /// Checks if a number is prime or not.
 private func isPrime(_ p: Int) -> Bool {

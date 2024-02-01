@@ -14,8 +14,6 @@ private let readMe = """
   can be reset from the other tab.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct SharedStateInMemory {
   enum Tab { case counter, profile }
@@ -54,12 +52,8 @@ struct SharedStateInMemory {
   }
 }
 
-// MARK: - Feature view
-
 struct SharedStateInMemoryView: View {
-  @State private var store = Store(initialState: SharedStateInMemory.State()) {
-    SharedStateInMemory()
-  }
+  @Bindable var store: StoreOf<SharedStateInMemory>
 
   var body: some View {
     TabView(selection: $store.currentTab.sending(\.selectTab)) {
@@ -211,15 +205,11 @@ private struct ProfileTabView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct SharedStateInMemory_Previews: PreviewProvider {
-  static var previews: some View {
-    SharedStateInMemoryView()
-  }
+#Preview {
+  SharedStateInMemoryView(
+    store: Store(initialState: SharedStateInMemory.State()) { SharedStateInMemory() }
+  )
 }
-
-// MARK: - Private helpers
 
 extension _InMemory<Stats> {
   static let stats: Self = "stats"

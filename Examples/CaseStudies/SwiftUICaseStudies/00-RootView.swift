@@ -34,11 +34,6 @@ struct RootView: View {
               OptionalBasicsView(store: store)
             }
           }
-          NavigationLink("Shared state") {
-            Demo(store: Store(initialState: SharedState.State()) { SharedState() }) { store in
-              SharedStateView(store: store)
-            }
-          }
           NavigationLink("Alerts and Confirmation Dialogs") {
             Demo(
               store: Store(initialState: AlertAndConfirmationDialog.State()) {
@@ -64,13 +59,25 @@ struct RootView: View {
 
         Section {
           NavigationLink("In memory") {
-            SharedStateInMemoryView()
+            Demo(
+              store: Store(initialState: SharedStateInMemory.State()) { SharedStateInMemory() }
+            ) { store in
+              SharedStateInMemoryView(store: store)
+            }
           }
           NavigationLink("User defaults") {
-            SharedStateUserDefaultsView()
+            Demo(
+              store: Store(initialState: SharedStateUserDefaults.State()) { SharedStateUserDefaults() }
+            ) { store in
+              SharedStateUserDefaultsView(store: store)
+            }
           }
           NavigationLink("File storage") {
-            SharedStateFileStorageView()
+            Demo(
+              store: Store(initialState: SharedStateFileStorage.State()) { SharedStateFileStorage() }
+            ) { store in
+              SharedStateFileStorageView(store: store)
+            }
           }
           Button("Sign up flow") {
             isSignUpCaseStudyPresented = true
