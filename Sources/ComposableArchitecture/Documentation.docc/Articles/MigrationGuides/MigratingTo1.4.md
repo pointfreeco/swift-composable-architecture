@@ -44,7 +44,7 @@ You can also technically drop the ``Reducer`` conformance:
 ```
 
 However, there are some known issues in Xcode that cause autocomplete and type inference to break.
-See the documentation of <doc:Reducer(state:action:)#Gotchas> for more gotchas on using the `@Reducer` macro. 
+See the documentation of <doc:Reducers#Gotchas> for more gotchas on using the `@Reducer` macro. 
 
 
 ### Using case key paths

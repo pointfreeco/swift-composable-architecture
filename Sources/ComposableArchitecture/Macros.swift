@@ -3,7 +3,7 @@
 
   /// Helps implement the conformance to the ``Reducer`` protocol for a type.
   ///
-  /// See the article <doc:Reducers> for more information about the protocol and
+  /// See the article <doc:Reducers> for more information about the macro and
   /// ``Reducer`` protocol.
   @attached(
     member,
@@ -23,8 +23,9 @@
   /// An overload of ``Reducer()`` that takes a description of protocol conformances to synthesize
   /// on the State and Action types
   ///
-  /// See <doc:Reducers#Synthesizing-protocol-conformances-on-State-and-Action> for more
-  /// information.
+  /// See the article <doc:Reducers> for more information about the macro and
+  /// ``Reducer`` protocol, in particular the section
+  /// <doc:Reducers#Synthesizing-protocol-conformances-on-State-and-Action>
   @attached(
     member,
     names:
