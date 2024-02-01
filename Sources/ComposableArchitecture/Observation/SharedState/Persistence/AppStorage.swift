@@ -270,9 +270,7 @@
     }
 
     public func save(_ value: Value) {
-      SharedAppStorageLocals.$isSetting.withValue(true) {
-        self._save(value)
-      }
+      self._save(value)
     }
 
     private class Observer: NSObject {
@@ -287,9 +285,6 @@
         change: [NSKeyValueChangeKey: Any]?,
         context: UnsafeMutableRawPointer?
       ) {
-        guard
-          !SharedAppStorageLocals.isSetting
-        else { return }
         self.didChange(change?[.newKey] as? Value)
       }
     }
@@ -326,9 +321,5 @@
     static var liveValue: UncheckedSendable<UserDefaults> {
       UncheckedSendable(UserDefaults.standard)
     }
-  }
-
-  private enum SharedAppStorageLocals {
-    @TaskLocal static var isSetting = false
   }
 #endif
