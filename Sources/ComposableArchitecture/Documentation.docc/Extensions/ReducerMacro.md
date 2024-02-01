@@ -11,6 +11,6 @@
 - ``Reducer(state:action:)``
 - ``ReducerCaseEphemeral()``
 - ``ReducerCaseIgnored()``
-- ``_SynthesizedConformance``
 - ``CaseReducer``
 - ``CaseReducerState``
+- ``_SynthesizedConformance``
