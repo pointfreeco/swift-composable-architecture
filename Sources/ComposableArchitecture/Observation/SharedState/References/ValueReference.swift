@@ -18,7 +18,7 @@ extension Shared {
   }
 
   public init(
-    wrappedValue value: Value,
+    wrappedValue value: @autoclosure @escaping () -> Value,
     _ persistentValue: some Persistent<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -31,7 +31,7 @@ extension Shared {
             return reference
           } else {
             let reference = ValueReference(
-              value,
+              initialValue: value(),
               persistentValue: persistentValue,
               fileID: fileID,
               line: line
@@ -52,12 +52,12 @@ extension Shared {
     message: "Use '@Shared' with a value type or supported reference type"
   )
   public init(
-    wrappedValue value: Value,
+    wrappedValue value: @autoclosure @escaping () -> Value,
     _ persistentValue: some Persistent<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Value: AnyObject {
-    self.init(wrappedValue: value, persistentValue, fileID: fileID, line: line)
+    self.init(wrappedValue: value(), persistentValue, fileID: fileID, line: line)
   }
 }
 
@@ -73,18 +73,18 @@ private final class ValueReference<Value>: Reference {
   )
 
   init(
-    _ initialValue: Value,
+    initialValue: @autoclosure @escaping () -> Value,
     persistentValue: some Persistent<Value>,
     fileID: StaticString,
     line: UInt
   ) {
-    self._currentValue = persistentValue.load() ?? initialValue
+    self._currentValue = persistentValue.load() ?? initialValue()
     self.persistentValue = persistentValue
     self.fileID = fileID
     self.line = line
     Task { @MainActor[weak self, initialValue] in
       for try await value in persistentValue.updates {
-        self?.currentValue = value ?? initialValue
+        self?.currentValue = value ?? initialValue()
       }
     }
   }

@@ -1,12 +1,12 @@
 extension Shared {
   @_disfavoredOverload
   public init(
-    wrappedValue value: Value,
+    wrappedValue value: @autoclosure @escaping () -> Value,
     _ key: _InMemory<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
-    self.init(wrappedValue: value, key, fileID: fileID, line: line)
+    self.init(wrappedValue: value(), key, fileID: fileID, line: line)
   }
 
   @_disfavoredOverload
@@ -16,12 +16,12 @@ extension Shared {
     message: "Use '@Shared' with a value type or supported reference type"
   )
   public init(
-    wrappedValue value: Value,
+    wrappedValue value: @autoclosure @escaping () -> Value,
     _ key: _InMemory<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Value: AnyObject {
-    self.init(wrappedValue: value, key, fileID: fileID, line: line)
+    self.init(wrappedValue: value(), key, fileID: fileID, line: line)
   }
 }
 
