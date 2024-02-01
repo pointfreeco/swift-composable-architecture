@@ -36,6 +36,10 @@ import SwiftUI
     /// }
     /// ```
     ///
+    /// > Note: We are using the ``Reducer()`` macro on an enum to compose together all the features
+    /// that can be pushed onto the stack. See <doc:Reducers#Destination-and-path-reducers> for
+    /// more information.
+    ///
     /// Then in the view you can use this operator, with
     /// `NavigationStack` ``SwiftUI/NavigationStack/init(path:root:destination:)``, to
     /// derive a store for each element in the stack:

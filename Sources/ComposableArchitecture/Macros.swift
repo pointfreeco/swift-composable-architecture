@@ -11,10 +11,12 @@
       named(State),
       named(Action),
       named(init),
-      named(body)
+      named(body),
+      named(CaseScope),
+      named(scope)
   )
   @attached(memberAttribute)
-  @attached(extension, conformances: Reducer)
+  @attached(extension, conformances: Reducer, CaseReducer)
   public macro Reducer() =
     #externalMacro(
       module: "ComposableArchitectureMacros", type: "ReducerMacro"

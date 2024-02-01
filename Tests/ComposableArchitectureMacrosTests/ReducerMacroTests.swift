@@ -210,6 +210,51 @@
       }
     }
 
+    func testEmptyEnum() {
+      assertMacro {
+        """
+        @Reducer
+        enum Destination {}
+        """
+      } expansion: {
+        """
+        enum Destination {
+
+            @CasePathable
+            @dynamicMemberLookup
+            @ObservableState
+            enum State: ComposableArchitecture.CaseReducerState {
+                typealias StateReducer = Destination
+
+            }
+
+            @CasePathable
+            enum Action {
+
+            }
+
+            static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
+                ComposableArchitecture.CombineReducers {
+
+                }
+            }
+
+            enum CaseScope {
+
+            }
+
+            static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+                switch store.state {
+
+                }
+            }}
+
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
+        }
+        """
+      }
+    }
+
     func testEnum() {
       assertMacro {
         """
