@@ -104,9 +104,8 @@
   @Section(title: "Integrating with SwiftUI") {
     @ContentAndMedia {
       Now that we have a simple feature built as a reducer, we need to figure out how to power a 
-      SwiftUI view from that feature. This involves two new concepts: 
-      ``ComposableArchitecture/Store``, which represents the runtime of the feature, and 
-      ``ComposableArchitecture/ViewStore``, which represents the observation of the runtime.
+      SwiftUI view from that feature. This involves a new concept, the
+      ``ComposableArchitecture/Store``, which represents the runtime of the feature.
     }
     @Steps {
       @Step {

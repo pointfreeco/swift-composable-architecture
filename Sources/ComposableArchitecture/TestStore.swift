@@ -1007,7 +1007,7 @@ extension TestStore where State: Equatable {
     switch self.exhaustivity {
     case .on:
       var expectedWhenGivenPreviousState = expected
-      if let updateStateToExpectedResult = updateStateToExpectedResult {
+      if let updateStateToExpectedResult {
         try Dependencies.withDependencies {
           $0 = self.reducer.dependencies
         } operation: {
@@ -1024,7 +1024,7 @@ extension TestStore where State: Equatable {
 
     case .off:
       var expectedWhenGivenActualState = actual
-      if let updateStateToExpectedResult = updateStateToExpectedResult {
+      if let updateStateToExpectedResult {
         try Dependencies.withDependencies {
           $0 = self.reducer.dependencies
         } operation: {
@@ -1041,7 +1041,7 @@ extension TestStore where State: Equatable {
         && expectedWhenGivenActualState == actual
       {
         var expectedWhenGivenPreviousState = current
-        if let updateStateToExpectedResult = updateStateToExpectedResult {
+        if let updateStateToExpectedResult {
           XCTExpectFailure(strict: false) {
             do {
               try Dependencies.withDependencies {

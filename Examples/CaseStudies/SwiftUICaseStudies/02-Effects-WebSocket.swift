@@ -316,7 +316,7 @@ extension WebSocketClient: DependencyKey {
         let socket = try self.socket(id: id)
         return try await withCheckedThrowingContinuation { continuation in
           socket.sendPing { error in
-            if let error = error {
+            if let error {
               continuation.resume(throwing: error)
             } else {
               continuation.resume()

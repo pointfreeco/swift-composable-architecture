@@ -86,9 +86,9 @@ import SwiftUI
 /// ### Thread safety
 ///
 /// The `Store` class is not thread-safe, and so all interactions with an instance of ``Store``
-/// (including all of its scopes and derived ``ViewStore``s) must be done on the same thread the
-/// store was created on. Further, if the store is powering a SwiftUI or UIKit view, as is
-/// customary, then all interactions must be done on the _main_ thread.
+/// (including all of its child stores) must be done on the same thread the store was created on.
+/// Further, if the store is powering a SwiftUI or UIKit view, as is customary, then all
+/// interactions must be done on the _main_ thread.
 ///
 /// The reason stores are not thread-safe is due to the fact that when an action is sent to a store,
 /// a reducer is run on the current state, and this process cannot be done from multiple threads.
@@ -170,7 +170,7 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
-    if let prepareDependencies = prepareDependencies {
+    if let prepareDependencies {
       let (initialState, reducer, dependencies) = withDependencies(prepareDependencies) {
         @Dependency(\.self) var dependencies
         return (initialState(), reducer(), dependencies)
@@ -215,10 +215,23 @@ public final class Store<State, Action> {
 
   /// Sends an action to the store.
   ///
-  /// A lightweight way to send actions to the store when no view store is available. If a view
-  /// store is available, prefer ``ViewStore/send(_:)``.
+  /// This method returns a ``StoreTask``, which represents the lifecycle of the effect started from
+  /// sending an action. You can use this value to tie the effect's lifecycle _and_ cancellation to
+  /// an asynchronous context, such as SwiftUI's `task` view modifier:
+  ///
+  /// ```swift
+  /// .task { await store.send(.task).finish() }
+  /// ```
+  ///
+  /// > Important: The ``Store`` is not thread safe and you should only send actions to it from the
+  /// > main thread. If you want to send actions on background threads due to the fact that the
+  /// > reducer is performing computationally expensive work, then a better way to handle this is to
+  /// > wrap that work in an ``Effect`` that is performed on a background thread so that the
+  /// > result can be fed back into the store.
   ///
   /// - Parameter action: An action.
+  /// - Returns: A ``StoreTask`` that represents the lifecycle of the effect executed when
+  ///   sending the action.
   @discardableResult
   public func send(_ action: Action) -> StoreTask {
     .init(rawValue: self.send(action, originatingFrom: nil))
@@ -353,7 +366,7 @@ public final class Store<State, Action> {
         isInvalid?(self.currentState) == true || self._isInvalidated()
       }
       : { [weak self] in
-        guard let self = self else { return true }
+        guard let self else { return true }
         return isInvalid?(self.currentState) == true || self._isInvalidated()
       }
     childStore.canCacheChildren = self.canCacheChildren && id != nil

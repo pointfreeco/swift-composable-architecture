@@ -65,7 +65,7 @@ extension View {
       let alertState = store.withState { $0.wrappedValue.flatMap(toDestinationState) }
       self.alert(item: $item) { _ in
         Alert(alertState!) { action in
-          if let action = action {
+          if let action {
             store.send(.presented(fromDestinationAction(action)))
           } else {
             store.send(.dismiss)

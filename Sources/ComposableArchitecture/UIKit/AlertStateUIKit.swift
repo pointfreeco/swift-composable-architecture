@@ -12,25 +12,23 @@
     /// ```swift
     /// class ParentViewController: UIViewController {
     ///   let store: Store<ParentState, ParentAction>
-    ///   let viewStore: ViewStore<ViewState, ViewAction>
     ///   private var cancellables: Set<AnyCancellable> = []
-    ///   private weak var alertController: UIAlertController?
     ///   // ...
     ///   func viewDidLoad() {
     ///     // ...
-    ///     viewStore.publisher
+    ///     var alertController: UIAlertController?
+    ///     store.publisher
     ///       .settingsAlert
     ///       .sink { [weak self] alert in
-    ///         guard let self = self else { return }
-    ///         if let alert = alert {
-    ///           let alertController = UIAlertController(state: alert, send: {
-    ///             self.viewStore.send(.settings($0))
-    ///           })
-    ///           self.present(alertController, animated: true, completion: nil)
-    ///           self.alertController = alertController
+    ///         guard let self else { return }
+    ///         if let alert {
+    ///           alertController = UIAlertController(state: alert) {
+    ///             store.send(.settings($0))
+    ///           }
+    ///           present(alertController!, animated: true, completion: nil)
     ///         } else {
-    ///           self.alertController?.dismiss(animated: true, completion: nil)
-    ///           self.alertController = nil
+    ///           alertController?.dismiss(animated: true, completion: nil)
+    ///           alertController = nil
     ///         }
     ///       }
     ///       .store(in: &cancellables)
