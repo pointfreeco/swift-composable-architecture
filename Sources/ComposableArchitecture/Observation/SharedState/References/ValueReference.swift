@@ -61,7 +61,7 @@ extension Shared {
   }
 }
 
-private final class ValueReference<Value>: Reference, Perceptible {
+private final class ValueReference<Value>: Reference {
   private var _currentValue: Value
   private var _snapshot: Value?
   fileprivate var persistentValue: (any Persistent<Value>)?  // TODO: Should this not be an `any`?
@@ -159,6 +159,10 @@ extension ValueReference: Equatable where Value: Equatable {
     }
   }
 }
+
+#if !os(visionOS)
+  extension ValueReference: Perceptible {}
+#endif
 
 #if canImport(Observation)
   extension ValueReference: Observable {}
