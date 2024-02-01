@@ -34,23 +34,23 @@ struct NavigationDemo {
         return .none
 
       case .goToABCButtonTapped:
-        state.path.append(.screenA(.init()))
-        state.path.append(.screenB(.init()))
-        state.path.append(.screenC(.init()))
+        state.path.append(.screenA(ScreenA.State()))
+        state.path.append(.screenB(ScreenB.State()))
+        state.path.append(.screenC(ScreenC.State()))
         return .none
 
       case let .path(action):
         switch action {
         case .element(id: _, action: .screenB(.screenAButtonTapped)):
-          state.path.append(.screenA(.init()))
+          state.path.append(.screenA(ScreenA.State()))
           return .none
 
         case .element(id: _, action: .screenB(.screenBButtonTapped)):
-          state.path.append(.screenB(.init()))
+          state.path.append(.screenB(ScreenB.State()))
           return .none
 
         case .element(id: _, action: .screenB(.screenCButtonTapped)):
-          state.path.append(.screenC(.init()))
+          state.path.append(.screenC(ScreenC.State()))
           return .none
 
         default:
@@ -77,15 +77,15 @@ struct NavigationDemoView: View {
         Section {
           NavigationLink(
             "Go to screen A",
-            state: NavigationDemo.Path.State.screenA(.init())
+            state: NavigationDemo.Path.State.screenA(ScreenA.State())
           )
           NavigationLink(
             "Go to screen B",
-            state: NavigationDemo.Path.State.screenB(.init())
+            state: NavigationDemo.Path.State.screenB(ScreenB.State())
           )
           NavigationLink(
             "Go to screen C",
-            state: NavigationDemo.Path.State.screenC(.init())
+            state: NavigationDemo.Path.State.screenC(ScreenC.State())
           )
         }
 
@@ -289,15 +289,15 @@ struct ScreenAView: View {
       Section {
         NavigationLink(
           "Go to screen A",
-          state: NavigationDemo.Path.State.screenA(.init(count: store.count))
+          state: NavigationDemo.Path.State.screenA(ScreenA.State(count: store.count))
         )
         NavigationLink(
           "Go to screen B",
-          state: NavigationDemo.Path.State.screenB(.init())
+          state: NavigationDemo.Path.State.screenB(ScreenB.State())
         )
         NavigationLink(
           "Go to screen C",
-          state: NavigationDemo.Path.State.screenC(.init(count: store.count))
+          state: NavigationDemo.Path.State.screenC(ScreenC.State(count: store.count))
         )
       }
     }
@@ -431,11 +431,11 @@ struct ScreenCView: View {
         )
         NavigationLink(
           "Go to screen B",
-          state: NavigationDemo.Path.State.screenB(.init())
+          state: NavigationDemo.Path.State.screenB(ScreenB.State())
         )
         NavigationLink(
           "Go to screen C",
-          state: NavigationDemo.Path.State.screenC(.init())
+          state: NavigationDemo.Path.State.screenC(ScreenC.State())
         )
       }
     }
