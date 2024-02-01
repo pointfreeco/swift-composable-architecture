@@ -110,7 +110,7 @@ public class LoginViewController: UIViewController {
       }
 
       if let store = store.scope(state: \.twoFactor, action: \.twoFactor.presented),
-         twoFactorController == nil
+        twoFactorController == nil
       {
         twoFactorController = TwoFactorViewController(store: store)
         navigationController?.pushViewController(
