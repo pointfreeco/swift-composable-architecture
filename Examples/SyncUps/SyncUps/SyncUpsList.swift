@@ -191,34 +191,34 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
   static var trailingIcon: Self { Self() }
 }
 
-struct SyncUpsList_Previews: PreviewProvider {
-  static var previews: some View {
-    SyncUpsListView(
-      store: Store(initialState: SyncUpsList.State()) {
-        SyncUpsList()
-      } withDependencies: {
-        $0.dataManager.load = { @Sendable _ in
-          try JSONEncoder().encode([
-            SyncUp.mock,
-            .designMock,
-            .engineeringMock,
-          ])
-        }
+#Preview {
+  SyncUpsListView(
+    store: Store(initialState: SyncUpsList.State()) {
+      SyncUpsList()
+    } withDependencies: {
+      $0.dataManager.load = { @Sendable _ in
+        try JSONEncoder().encode([
+          SyncUp.mock,
+          .designMock,
+          .engineeringMock,
+        ])
       }
-    )
-
-    SyncUpsListView(
-      store: Store(initialState: SyncUpsList.State()) {
-        SyncUpsList()
-      } withDependencies: {
-        $0.dataManager = .mock(initialData: Data("!@#$% bad data ^&*()".utf8))
-      }
-    )
-    .previewDisplayName("Load data failure")
-  }
+    }
+  )
 }
 
-#Preview {
+#Preview("Load data failure") {
+  SyncUpsListView(
+    store: Store(initialState: SyncUpsList.State()) {
+      SyncUpsList()
+    } withDependencies: {
+      $0.dataManager = .mock(initialData: Data("!@#$% bad data ^&*()".utf8))
+    }
+  )
+  .previewDisplayName("Load data failure")
+}
+
+#Preview("Card") {
   CardView(
     syncUp: SyncUp(
       id: SyncUp.ID(),

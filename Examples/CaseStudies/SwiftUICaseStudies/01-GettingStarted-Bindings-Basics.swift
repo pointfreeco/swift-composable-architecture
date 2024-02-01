@@ -12,13 +12,12 @@ private let readMe = """
   actions to the store, and this means there is only ever one place to see how the state of our \
   feature evolves, which is the reducer.
 
-  Any SwiftUI component that requires a Binding to do its job can be used in the Composable \
-  Architecture. You can derive a Binding from your ViewStore by using the `binding` method. This \
-  will allow you to specify what state renders the component, and what action to send when the \
-  component changes, which means you can keep using a unidirectional style for your feature.
+  Any SwiftUI component that requires a binding to do its job can be used in the Composable \
+  Architecture. You can derive a binding from a store by taking a bindable store, chaining into a \
+  property of state that renders the component, and calling the `sending` method with a key path \
+  to an action to send when the component changes, which means you can keep using a unidirectional \
+  style for your feature.
   """
-
-// MARK: - Feature domain
 
 @Reducer
 struct BindingBasics {
@@ -61,12 +60,8 @@ struct BindingBasics {
   }
 }
 
-// MARK: - Feature view
-
 struct BindingBasicsView: View {
-  @Bindable var store = Store(initialState: BindingBasics.State()) {
-    BindingBasics()
-  }
+  @Bindable var store: StoreOf<BindingBasics>
 
   var body: some View {
     Form {
@@ -120,16 +115,12 @@ private func alternate(_ string: String) -> String {
     .joined()
 }
 
-// MARK: - SwiftUI previews
-
-struct BindingBasicsView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      BindingBasicsView(
-        store: Store(initialState: BindingBasics.State()) {
-          BindingBasics()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    BindingBasicsView(
+      store: Store(initialState: BindingBasics.State()) {
+        BindingBasics()
+      }
+    )
   }
 }

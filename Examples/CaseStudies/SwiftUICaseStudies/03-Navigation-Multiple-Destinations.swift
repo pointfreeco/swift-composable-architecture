@@ -48,9 +48,7 @@ struct MultipleDestinations {
 }
 
 struct MultipleDestinationsView: View {
-  @Bindable var store = Store(initialState: MultipleDestinations.State()) {
-    MultipleDestinations()
-  }
+  @Bindable var store: StoreOf<MultipleDestinations>
 
   var body: some View {
     Form {

@@ -166,8 +166,14 @@ struct DownloadComponentView: View {
   }
 }
 
-struct DownloadComponent_Previews: PreviewProvider {
-  static var previews: some View {
-    DownloadList_Previews.previews
-  }
+#Preview {
+  DownloadComponentView(
+    store: Store(
+      initialState: DownloadComponent.State(
+        id: "deadbeef",
+        mode: .notDownloaded,
+        url: URL(fileURLWithPath: "/")
+      )
+    ) {}
+  )
 }

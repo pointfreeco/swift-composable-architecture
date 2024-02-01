@@ -14,8 +14,6 @@ private let readMe = """
   can be reset from the other tab.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct CounterTab {
   @ObservableState
@@ -199,9 +197,7 @@ struct SharedState {
 }
 
 struct SharedStateView: View {
-  @State var store = Store(initialState: SharedState.State()) {
-    SharedState()
-  }
+  @Bindable var store: StoreOf<SharedState>
 
   var body: some View {
     TabView(selection: $store.currentTab.sending(\.selectTab)) {
@@ -244,16 +240,6 @@ struct Stats: Equatable {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct SharedState_Previews: PreviewProvider {
-  static var previews: some View {
-    SharedStateView()
-  }
-}
-
-// MARK: - Private helpers
-
 /// Checks if a number is prime or not.
 private func isPrime(_ p: Int) -> Bool {
   if p <= 1 { return false }
@@ -262,4 +248,12 @@ private func isPrime(_ p: Int) -> Bool {
     if p % i == 0 { return false }
   }
   return true
+}
+
+#Preview {
+  SharedStateView(
+    store: Store(initialState: SharedState.State()) {
+      SharedState()
+    }
+  )
 }

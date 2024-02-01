@@ -127,14 +127,12 @@ extension Duration {
   }
 }
 
-struct EditSyncUp_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      SyncUpFormView(
-        store: Store(initialState: SyncUpForm.State(syncUp: .mock)) {
-          SyncUpForm()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    SyncUpFormView(
+      store: Store(initialState: SyncUpForm.State(syncUp: .mock)) {
+        SyncUpForm()
+      }
+    )
   }
 }

@@ -76,9 +76,7 @@ struct OptionalView: View {
   }
 }
 
-struct OptionalPreviews: PreviewProvider {
-  static var previews: some View {
-    let _ = Logger.shared.isEnabled = true
-    OptionalView()
-  }
+#Preview {
+  Logger.shared.isEnabled = true
+  return OptionalView()
 }
