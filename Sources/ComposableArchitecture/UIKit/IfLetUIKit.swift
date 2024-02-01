@@ -19,7 +19,7 @@ extension Store {
   ///   // ...
   ///   func viewDidLoad() {
   ///     // ...
-  ///     self.store
+  ///     store
   ///       .scope(state: \.optionalChild, action: \.child)
   ///       .ifLet(
   ///         then: { [weak self] childStore in
@@ -30,10 +30,10 @@ extension Store {
   ///         },
   ///         else: { [weak self] in
   ///           guard let self else { return }
-  ///           self.navigationController?.popToViewController(self, animated: true)
+  ///           navigationController?.popToViewController(self, animated: true)
   ///         }
   ///       )
-  ///       .store(in: &self.cancellables)
+  ///       .store(in: &cancellables)
   ///   }
   /// }
   /// ```
