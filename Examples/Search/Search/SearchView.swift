@@ -171,7 +171,7 @@ struct SearchView: View {
 
   @ViewBuilder
   func weatherView(locationWeather: Search.State.Weather?) -> some View {
-    if let locationWeather = locationWeather {
+    if let locationWeather {
       let days = locationWeather.days
         .enumerated()
         .map { idx, weather in formattedWeather(day: weather, isToday: idx == 0) }

@@ -170,7 +170,7 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
-    if let prepareDependencies = prepareDependencies {
+    if let prepareDependencies {
       let (initialState, reducer, dependencies) = withDependencies(prepareDependencies) {
         @Dependency(\.self) var dependencies
         return (initialState(), reducer(), dependencies)
@@ -353,7 +353,7 @@ public final class Store<State, Action> {
         isInvalid?(self.currentState) == true || self._isInvalidated()
       }
       : { [weak self] in
-        guard let self = self else { return true }
+        guard let self else { return true }
         return isInvalid?(self.currentState) == true || self._isInvalidated()
       }
     childStore.canCacheChildren = self.canCacheChildren && id != nil

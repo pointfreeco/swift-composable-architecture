@@ -97,7 +97,7 @@ extension Effect {
             } catch is CancellationError {
               return
             } catch {
-              guard let handler = handler else {
+              guard let handler else {
                 #if DEBUG
                   var errorDump = ""
                   customDump(error, to: &errorDump, indent: 4)
@@ -324,12 +324,12 @@ extension Effect {
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
       return Self(
         operation: .run { send in
-          if let lhsPriority = lhsPriority {
+          if let lhsPriority {
             await Task(priority: lhsPriority) { await lhsOperation(send) }.cancellableValue
           } else {
             await lhsOperation(send)
           }
-          if let rhsPriority = rhsPriority {
+          if let rhsPriority {
             await Task(priority: rhsPriority) { await rhsOperation(send) }.cancellableValue
           } else {
             await rhsOperation(send)

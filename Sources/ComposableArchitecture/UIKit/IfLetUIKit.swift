@@ -29,7 +29,7 @@ extension Store {
   ///           )
   ///         },
   ///         else: { [weak self] in
-  ///           guard let self = self else { return }
+  ///           guard let self else { return }
   ///           self.navigationController?.popToViewController(self, animated: true)
   ///         }
   ///       )

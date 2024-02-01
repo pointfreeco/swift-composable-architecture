@@ -21,11 +21,11 @@
     ///     viewStore.publisher
     ///       .settingsAlert
     ///       .sink { [weak self] alert in
-    ///         guard let self = self else { return }
-    ///         if let alert = alert {
-    ///           let alertController = UIAlertController(state: alert, send: {
+    ///         guard let self else { return }
+    ///         if let alert {
+    ///           let alertController = UIAlertController(state: alert) {
     ///             self.viewStore.send(.settings($0))
-    ///           })
+    ///           }
     ///           self.present(alertController, animated: true, completion: nil)
     ///           self.alertController = alertController
     ///         } else {
