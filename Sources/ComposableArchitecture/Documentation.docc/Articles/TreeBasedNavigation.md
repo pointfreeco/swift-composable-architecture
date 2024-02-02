@@ -382,29 +382,25 @@ project:
 
 ```swift
 extension View {
-  @available(iOS, introduced: 13, deprecated: 17)
-  @available(macOS, introduced: 10.15, deprecated: 14)
-  @available(tvOS, introduced: 13, deprecated: 17)
-  @available(watchOS, introduced: 6, deprecated: 10)
+  @available(iOS, introduced: 16, deprecated: 17)
+  @available(macOS, introduced: 13, deprecated: 14)
+  @available(tvOS, introduced: 16, deprecated: 17)
+  @available(watchOS, introduced: 9, deprecated: 10)
   @ViewBuilder
   func navigationDestinationWrapper<D: Hashable, C: View>(
     item: Binding<D?>,
     @ViewBuilder destination: @escaping (D) -> C
   ) -> some View {
-    navigationDestination(
-      isPresented: Binding(
-        get: { item.wrappedValue != nil },
-        set: { isPresented, transaction in
-          if !isPresented {
-            item.transaction(transaction).wrappedValue = nil
-          }
-        }
-      )
-    ) {
-      if let item = item.wrappedValue {
-        destination(item)
-      }
+    navigationDestination(isPresented: item.isPresented) {
+      item.wrappedValue.map(destination)
     }
+  }
+}
+
+fileprivate extension Optional where Wrapped: Hashable {
+  var isPresented: Bool {
+    get { self != nil }
+    set { if !newValue { self = nil } }
   }
 }
 ```
