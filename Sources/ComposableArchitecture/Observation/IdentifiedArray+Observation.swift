@@ -59,9 +59,19 @@
         if !self.canCacheChildren {
           runtimeWarn(
             """
-            Scoping from uncached \(self) is not compatible with observation. Ensure that all \
-            parent store scoping operations take key paths and case key paths instead of transform \
-            functions, which have been deprecated.
+            Scoping from uncached \(self) is not compatible with observation.
+
+            This typically happens for a few reasons:
+
+            • A parent view scopes on a store using transform functions, which has been deprecated \
+            instead of with key paths and case paths. Read the migration guide for 1.5 to update \
+            these scopes: https://pointfreeco.github.io/swift-composable-architecture/main\
+            /documentation/composablearchitecture/migratingto1.5
+
+            • A parent feature is using deprecated navigation APIs, such as SwitchStore, \
+            ForEachStore, or any navigation view modifiers taking stores instead of bindings. \
+            Read the migration guide for 1.7 to update those APIs: https://pointfreeco.github.io\
+            /swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7
             """
           )
         }
