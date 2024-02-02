@@ -84,23 +84,7 @@
     ) -> Store<ChildState, ChildAction>? {
       #if DEBUG
         if !self.canCacheChildren {
-          runtimeWarn(
-            """
-            Scoping from uncached \(self) is not compatible with observation.
-
-            This typically happens for a few reasons:
-
-            • A parent view scopes on a store using transform functions, which has been deprecated \
-            instead of with key paths and case paths. Read the migration guide for 1.5 to update \
-            these scopes: https://pointfreeco.github.io/swift-composable-architecture/main\
-            /documentation/composablearchitecture/migratingto1.5
-
-            • A parent feature is using deprecated navigation APIs, such as SwitchStore, \
-            ForEachStore, or any navigation view modifiers taking stores instead of bindings. \
-            Read the migration guide for 1.7 to update those APIs: https://pointfreeco.github.io\
-            /swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7
-            """
-          )
+          runtimeWarn(uncachedStoreWarning(self))
         }
       #endif
       guard var childState = self.state[keyPath: state]
@@ -312,4 +296,24 @@
       }
     }
   }
+
+  func uncachedStoreWarning<State, Action>(_ store: Store<State, Action>) -> String {
+    """
+    Scoping from uncached \(store) is not compatible with observation.
+
+    This can happen for one of two reasons:
+
+    • A parent view scopes on a store using transform functions, which has been \
+    deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
+    to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
+    main/documentation/composablearchitecture/migratingto1.5
+
+    • A parent feature is using deprecated navigation APIs, such as IfLetStore, \
+    SwitchStore, ForEachStore, or any navigation view modifiers taking stores instead of \
+    bindings. Read the migration guide for 1.7 to update those APIs: \
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
+    composablearchitecture/migratingto1.7
+    """
+  }
+
 #endif
