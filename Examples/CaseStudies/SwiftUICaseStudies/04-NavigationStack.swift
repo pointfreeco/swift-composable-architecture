@@ -63,7 +63,7 @@ struct NavigationDemo {
   @Reducer
   struct Path {
     @ObservableState
-    enum State: Codable, Equatable, Hashable {
+    enum State: Equatable {
       case screenA(ScreenA.State = .init())
       case screenB(ScreenB.State = .init())
       case screenC(ScreenC.State = .init())
@@ -208,7 +208,7 @@ struct FloatingMenuView: View {
 @Reducer
 struct ScreenA {
   @ObservableState
-  struct State: Codable, Equatable, Hashable {
+  struct State: Equatable {
     var count = 0
     var fact: String?
     var isLoading = false
@@ -339,7 +339,7 @@ struct ScreenAView: View {
 @Reducer
 struct ScreenB {
   @ObservableState
-  struct State: Codable, Equatable, Hashable {}
+  struct State: Equatable {}
 
   enum Action {
     case screenAButtonTapped
@@ -394,7 +394,7 @@ struct ScreenBView: View {
 @Reducer
 struct ScreenC {
   @ObservableState
-  struct State: Codable, Equatable, Hashable {
+  struct State: Equatable {
     var count = 0
     var isTimerRunning = false
   }

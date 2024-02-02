@@ -88,10 +88,10 @@ public class LoginViewController: UIViewController {
     ])
 
     var alertController: UIAlertController?
-    var twoFactorViewController: TwoFactorViewController?
+    var twoFactorController: TwoFactorViewController?
 
     observe { [weak self] in
-      guard let self = self else { return }
+      guard let self else { return }
       emailTextField.text = store.email
       emailTextField.isEnabled = store.isEmailTextFieldEnabled
       passwordTextField.text = store.password
@@ -110,16 +110,16 @@ public class LoginViewController: UIViewController {
       }
 
       if let store = store.scope(state: \.twoFactor, action: \.twoFactor.presented),
-        twoFactorViewController == nil
+        twoFactorController == nil
       {
-        twoFactorViewController = TwoFactorViewController(store: store)
+        twoFactorController = TwoFactorViewController(store: store)
         navigationController?.pushViewController(
-          twoFactorViewController!,
+          twoFactorController!,
           animated: true
         )
-      } else if store.alert == nil, twoFactorViewController != nil {
-        twoFactorViewController?.dismiss(animated: true)
-        twoFactorViewController = nil
+      } else if store.twoFactor == nil, twoFactorController != nil {
+        navigationController?.popToViewController(self, animated: true)
+        twoFactorController = nil
       }
     }
   }

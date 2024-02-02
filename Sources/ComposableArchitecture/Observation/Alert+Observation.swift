@@ -15,11 +15,11 @@ extension View {
           Button(role: button.role.map(ButtonRole.init)) {
             switch button.action.type {
             case let .send(action):
-              if let action = action {
+              if let action {
                 store?.send(action)
               }
             case let .animatedSend(action, animation):
-              if let action = action {
+              if let action {
                 store?.send(action, animation: animation)
               }
             }
@@ -54,11 +54,11 @@ extension View {
           Button(role: button.role.map(ButtonRole.init)) {
             switch button.action.type {
             case let .send(action):
-              if let action = action {
+              if let action {
                 store?.send(action)
               }
             case let .animatedSend(action, animation):
-              if let action = action {
+              if let action {
                 store?.send(action, animation: animation)
               }
             }

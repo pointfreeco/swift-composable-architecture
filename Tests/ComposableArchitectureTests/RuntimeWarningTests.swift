@@ -88,7 +88,7 @@
       uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
         $0.compactDescription == """
-          "ViewStore.send" was called on a non-main thread with: () …
+          "Store.send" was called on a non-main thread with: () …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
           "Store" (including all of its scopes and derived view stores) must be done on the main \

@@ -60,7 +60,7 @@ public final class TwoFactorViewController: UIViewController {
     var alertController: UIAlertController?
 
     observe { [weak self] in
-      guard let self = self else { return }
+      guard let self else { return }
       activityIndicator.isHidden = store.isActivityIndicatorHidden
       codeTextField.text = store.code
       loginButton.isEnabled = store.isLoginButtonEnabled
