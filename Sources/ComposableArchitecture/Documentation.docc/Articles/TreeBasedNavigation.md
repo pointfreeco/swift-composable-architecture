@@ -392,7 +392,9 @@ extension View {
     @ViewBuilder destination: @escaping (D) -> C
   ) -> some View {
     navigationDestination(isPresented: item.isPresented) {
-      item.wrappedValue.map(destination)
+      if let item = item.wrappedValue
+        destination(item)
+      }
     }
   }
 }
