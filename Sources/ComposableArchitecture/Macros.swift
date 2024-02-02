@@ -57,23 +57,23 @@
     public struct _SynthesizedConformance {}
   #endif
     extension _SynthesizedConformance {
-        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
-        /// `Codable` protocol.
+        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Codable`
+        /// protocol.
         public static let codable = Self()
-        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
-        /// `Decodable` protocol.
+        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Decodable`
+        /// protocol.
         public static let decodable = Self()
-        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
-        /// `Encodable` protocol.
+        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Encodable`
+        /// protocol.
         public static let encodable = Self()
-        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
-        /// `Equatable` protocol.
+        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Equatable`
+        /// protocol.
         public static let equatable = Self()
-        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
-        /// `Hashable` protocol.
+        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Hashable`
+        /// protocol.
         public static let hashable = Self()
-        /// Extends the `State` or `Action` types that ``Reducer(state:action:)`` creates with the
-        /// `Sendable` protocol.
+        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Sendable`
+        /// protocol.
         public static let sendable = Self()
       }
 

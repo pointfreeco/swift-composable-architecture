@@ -7,11 +7,11 @@
   @Section(title: "Create a reducer") {
     @ContentAndMedia {
       The fundamental unit that features are built with in the Composable Architecture is the
-      ``ComposableArchitecture/Reducer(state:action:)`` macro and ``ComposableArchitecture/Reducer`` 
-      protocol. A conformance to that protocol represents the logic and behavior for a feature in 
-      your application. This includes how to evolve the current state to the next state when an 
-      action is sent into the system, and how effects communicate with the outside world and feed 
-      data back into the system.
+      ``ComposableArchitecture/Reducer()`` macro and ``ComposableArchitecture/Reducer`` protocol. A
+      conformance to that protocol represents the logic and behavior for a feature in your
+      application. This includes how to evolve the current state to the next state when an action is
+      sent into the system, and how effects communicate with the outside world and feed data back
+      into the system.
       
       And most importantly, the feature's core logic and behavior can be built in full isolation
       with no mention of a SwiftUI view, which makes it easier to develop in isolation, easier
@@ -31,10 +31,10 @@
       
       @Step {
         Define a new struct called `CounterFeature`, and annotate it with the
-        ``ComposableArchitecture/Reducer(state:action:)`` macro.
+        ``ComposableArchitecture/Reducer()`` macro.
         
-        > Note: The ``ComposableArchitecture/Reducer(state:action:)`` macro does a few things for 
-        > you, but at this point you only need to know that it extends your type to conform to the 
+        > Note: The ``ComposableArchitecture/Reducer()`` macro does a few things for you, but at
+        > this point you only need to know that it extends your type to conform to the 
         > ``ComposableArchitecture/Reducer`` protocol.
         
         @Code(name: "CounterFeature.swift", file: 01-01-01-code-0002.swift)
