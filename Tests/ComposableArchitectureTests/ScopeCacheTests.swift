@@ -27,8 +27,8 @@
           to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
           main/documentation/composablearchitecture/migratingto1.5
 
-          • A parent feature is using deprecated navigation APIs, such as IfLetStore, \
-          SwitchStore, ForEachStore, or any navigation view modifiers taking stores instead of \
+          • A parent feature is using deprecated navigation APIs, such as 'IfLetStore', \
+          'SwitchStore', 'ForEachStore', or any navigation view modifiers taking stores instead of \
           bindings. Read the migration guide for 1.7 to update those APIs: \
           https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
           composablearchitecture/migratingto1.7
@@ -88,8 +88,8 @@
           to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
           main/documentation/composablearchitecture/migratingto1.5
 
-          • A parent feature is using deprecated navigation APIs, such as IfLetStore, \
-          SwitchStore, ForEachStore, or any navigation view modifiers taking stores instead of \
+          • A parent feature is using deprecated navigation APIs, such as 'IfLetStore', \
+          'SwitchStore', 'ForEachStore', or any navigation view modifiers taking stores instead of \
           bindings. Read the migration guide for 1.7 to update those APIs: \
           https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
           composablearchitecture/migratingto1.7
@@ -135,8 +135,8 @@
           to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
           main/documentation/composablearchitecture/migratingto1.5
 
-          • A parent feature is using deprecated navigation APIs, such as IfLetStore, \
-          SwitchStore, ForEachStore, or any navigation view modifiers taking stores instead of \
+          • A parent feature is using deprecated navigation APIs, such as 'IfLetStore', \
+          'SwitchStore', 'ForEachStore', or any navigation view modifiers taking stores instead of \
           bindings. Read the migration guide for 1.7 to update those APIs: \
           https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
           composablearchitecture/migratingto1.7
