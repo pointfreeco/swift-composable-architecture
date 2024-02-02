@@ -86,22 +86,22 @@ import SwiftUI
 @available(
   iOS, deprecated: 9999,
   message:
-    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
 )
 @available(
   macOS, deprecated: 9999,
   message:
-    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
 )
 @available(
   tvOS, deprecated: 9999,
   message:
-    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
 )
 @available(
   watchOS, deprecated: 9999,
   message:
-    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
 )
 public struct ForEachStore<
   EachState, EachAction, Data: Collection, ID: Hashable, Content: View
@@ -154,25 +154,25 @@ public struct ForEachStore<
     iOS,
     deprecated: 9999,
     message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
   )
   @available(
     macOS,
     deprecated: 9999,
     message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
   )
   @available(
     tvOS,
     deprecated: 9999,
     message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
   )
   @available(
     watchOS,
     deprecated: 9999,
     message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
   )
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
