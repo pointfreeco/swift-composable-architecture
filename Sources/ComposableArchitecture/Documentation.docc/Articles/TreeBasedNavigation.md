@@ -18,10 +18,10 @@ the rest.
 
 ## Basics
 
-The tools for this style of navigation include the ``PresentationState`` property wrapper,
-``PresentationAction``, the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator, and 
-a bunch of APIs that mimic SwiftUI's regular tools, such as `.sheet`, `.popover`, etc., but tuned 
-specifically for the Composable Architecture.
+The tools for this style of navigation include the ``Presents()`` macro,
+``PresentationAction``, the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator, 
+and that is all. Once your feature is properly integrated with those tools you can use all of 
+SwiftUI's normal navigation view modifiers, such as `sheet(item:)`, `popover(item:)`, etc.
 
 The process of integrating two features together for navigation largely consists of 2 steps:
 integrating the features' domains together and integrating the features' views together. One
