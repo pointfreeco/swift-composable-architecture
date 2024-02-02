@@ -57,13 +57,7 @@
     ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
       #if DEBUG
         if !self.canCacheChildren {
-          runtimeWarn(
-            """
-            Scoping from uncached \(self) is not compatible with observation. Ensure that all \
-            parent store scoping operations take key paths and case key paths instead of transform \
-            functions, which have been deprecated.
-            """
-          )
+          runtimeWarn(uncachedStoreWarning(self))
         }
       #endif
       return _StoreCollection(self.scope(state: state, action: action))
