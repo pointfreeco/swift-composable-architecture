@@ -76,7 +76,7 @@ extension View {
       let actionSheetState = store.withState { $0.wrappedValue.flatMap(toDestinationState) }
       self.actionSheet(item: $item) { _ in
         ActionSheet(actionSheetState!) { action in
-          if let action = action {
+          if let action {
             store.send(.presented(fromDestinationAction(action)))
           } else {
             store.send(.dismiss)

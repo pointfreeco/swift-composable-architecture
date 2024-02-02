@@ -87,7 +87,7 @@ public class NewGameViewController: UIViewController {
     var gameController: GameViewController?
 
     observe { [weak self] in
-      guard let self = self else { return }
+      guard let self else { return }
       playerOTextField.text = store.oPlayerName
       playerXTextField.text = store.xPlayerName
       letsPlayButton.isEnabled = store.isLetsPlayButtonEnabled
@@ -97,8 +97,8 @@ public class NewGameViewController: UIViewController {
       {
         gameController = GameViewController(store: store)
         navigationController?.pushViewController(gameController!, animated: true)
-      } else if gameController != nil {
-        gameController?.dismiss(animated: true)
+      } else if store.game == nil, gameController != nil {
+        navigationController?.popToViewController(self, animated: true)
         gameController = nil
       }
     }
