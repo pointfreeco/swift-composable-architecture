@@ -31,7 +31,7 @@ into the parent.
 
 For example, suppose you have a list of items and you want to be able to show a sheet to display a
 form for adding a new item. We can integrate state and actions together by utilizing the 
-``PresentationState`` and ``PresentationAction`` types:
+``Presents()`` macro and ``PresentationAction`` type:
 
 ```swift
 @Reducer
@@ -214,7 +214,7 @@ struct InventoryFeature {
 > enums.
 
 With that done we can now hold onto a _single_ piece of optional state in our feature, using the
-``PresentationState`` property wrapper, and we hold onto the destination actions using the
+``Presents()`` macro, and we hold onto the destination actions using the
 ``PresentationAction`` type:
 
 ```swift
@@ -594,8 +594,9 @@ struct CounterFeature {
 }
 ```
 
-And then let's embed that feature into a parent feature using ``PresentationState``, 
-``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``:
+And then let's embed that feature into a parent feature using the ``Presents()`` macro, 
+``PresentationAction`` type and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``
+operator:
 
 ```swift
 @Reducer
