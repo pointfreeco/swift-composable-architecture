@@ -18,21 +18,21 @@
             .send(.show)
         } issueMatcher: {
           $0.compactDescription == """
-          Scoping from uncached StoreOf<Feature> is not compatible with observation.
+            Scoping from uncached StoreOf<Feature> is not compatible with observation.
 
-          This can happen for one of two reasons:
+            This can happen for one of two reasons:
 
-          • A parent view scopes on a store using transform functions, which has been \
-          deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
-          to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
-          main/documentation/composablearchitecture/migratingto1.5
+            • A parent view scopes on a store using transform functions, which has been \
+            deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
+            to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
+            main/documentation/composablearchitecture/migratingto1.5
 
-          • A parent feature is using deprecated navigation APIs, such as 'IfLetStore', \
-          'SwitchStore', 'ForEachStore', or any navigation view modifiers taking stores instead of \
-          bindings. Read the migration guide for 1.7 to update those APIs: \
-          https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
-          composablearchitecture/migratingto1.7
-          """
+            • A parent feature is using deprecated navigation APIs, such as 'IfLetStore', \
+            'SwitchStore', 'ForEachStore', or any navigation view modifiers taking stores instead of \
+            bindings. Read the migration guide for 1.7 to update those APIs: \
+            https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
+            composablearchitecture/migratingto1.7
+            """
         }
         store.send(.child(.dismiss))
       #endif
@@ -79,21 +79,21 @@
           _ = cancellable
         } issueMatcher: {
           $0.compactDescription == """
-          Scoping from uncached StoreOf<Feature> is not compatible with observation.
+            Scoping from uncached StoreOf<Feature> is not compatible with observation.
 
-          This can happen for one of two reasons:
+            This can happen for one of two reasons:
 
-          • A parent view scopes on a store using transform functions, which has been \
-          deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
-          to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
-          main/documentation/composablearchitecture/migratingto1.5
+            • A parent view scopes on a store using transform functions, which has been \
+            deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
+            to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
+            main/documentation/composablearchitecture/migratingto1.5
 
-          • A parent feature is using deprecated navigation APIs, such as 'IfLetStore', \
-          'SwitchStore', 'ForEachStore', or any navigation view modifiers taking stores instead of \
-          bindings. Read the migration guide for 1.7 to update those APIs: \
-          https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
-          composablearchitecture/migratingto1.7
-          """
+            • A parent feature is using deprecated navigation APIs, such as 'IfLetStore', \
+            'SwitchStore', 'ForEachStore', or any navigation view modifiers taking stores instead of \
+            bindings. Read the migration guide for 1.7 to update those APIs: \
+            https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
+            composablearchitecture/migratingto1.7
+            """
         }
       #endif
     }
@@ -126,21 +126,21 @@
           )
         } issueMatcher: {
           $0.compactDescription == """
-          Scoping from uncached StoreOf<Feature> is not compatible with observation.
+            Scoping from uncached StoreOf<Feature> is not compatible with observation.
 
-          This can happen for one of two reasons:
+            This can happen for one of two reasons:
 
-          • A parent view scopes on a store using transform functions, which has been \
-          deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
-          to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
-          main/documentation/composablearchitecture/migratingto1.5
+            • A parent view scopes on a store using transform functions, which has been \
+            deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
+            to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
+            main/documentation/composablearchitecture/migratingto1.5
 
-          • A parent feature is using deprecated navigation APIs, such as 'IfLetStore', \
-          'SwitchStore', 'ForEachStore', or any navigation view modifiers taking stores instead of \
-          bindings. Read the migration guide for 1.7 to update those APIs: \
-          https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
-          composablearchitecture/migratingto1.7
-          """
+            • A parent feature is using deprecated navigation APIs, such as 'IfLetStore', \
+            'SwitchStore', 'ForEachStore', or any navigation view modifiers taking stores instead of \
+            bindings. Read the migration guide for 1.7 to update those APIs: \
+            https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
+            composablearchitecture/migratingto1.7
+            """
         }
       #endif
     }
