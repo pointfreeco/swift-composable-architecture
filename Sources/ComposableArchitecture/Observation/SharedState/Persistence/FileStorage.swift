@@ -107,7 +107,7 @@ extension _FileStorage: Hashable {
 }
 
 @_spi(Internals)
-public protocol PersistenceQueue: Sendable {
+public protocol FileStorageQueue: Sendable {
   func async(execute workItem: DispatchWorkItem)
   func asyncAfter(interval: DispatchTimeInterval, execute: DispatchWorkItem)
   func isSetting() -> Bool?
@@ -122,7 +122,7 @@ public protocol PersistenceQueue: Sendable {
 }
 
 @_spi(Internals)
-extension DispatchQueue: PersistenceQueue {
+extension DispatchQueue: FileStorageQueue {
   private static let isSettingKey = DispatchSpecificKey<Bool>()
 
   public func asyncAfter(interval: DispatchTimeInterval, execute workItem: DispatchWorkItem) {
@@ -167,7 +167,7 @@ extension DispatchQueue: PersistenceQueue {
 }
 
 @_spi(Internals)
-public final class TestPersistenceQueue: PersistenceQueue, Sendable {
+public final class TestPersistenceQueue: FileStorageQueue, Sendable {
   private let _isSetting = LockIsolated<Bool?>(nil)
   public let fileSystem = LockIsolated<[URL: Data]>([:])
   private let scheduler: AnySchedulerOf<DispatchQueue>
@@ -222,13 +222,13 @@ public final class TestPersistenceQueue: PersistenceQueue, Sendable {
 }
 
 private enum PersistenceQueueKey: DependencyKey {
-  static var liveValue: any PersistenceQueue {
+  static var liveValue: any FileStorageQueue {
     DispatchQueue(label: "co.pointfree.ComposableArchitecture._FileStorage")
   }
-  static var previewValue: any PersistenceQueue {
+  static var previewValue: any FileStorageQueue {
     TestPersistenceQueue()
   }
-  static var testValue: any PersistenceQueue {
+  static var testValue: any FileStorageQueue {
     TestPersistenceQueue()
   }
 }
@@ -236,7 +236,7 @@ private enum PersistenceQueueKey: DependencyKey {
 extension DependencyValues {
   // TODO: should this be public? allows you to run app in simulator with mock persistence queue
   @_spi(Internals)
-  public var _fileStoragePersistenceQueue: any PersistenceQueue {
+  public var _fileStoragePersistenceQueue: any FileStorageQueue {
     get { self[PersistenceQueueKey.self] }
     set { self[PersistenceQueueKey.self] = newValue }
   }
