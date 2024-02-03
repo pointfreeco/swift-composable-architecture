@@ -597,8 +597,10 @@ community-supported libraries available to enhance your applications:
 
 * [Composable Architecture Extras](https://github.com/Ryu0118/swift-composable-architecture-extras):
   A companion library to the Composable Architecture.
+* [TCAComposer](https://github.com/mentalflux/tca-composer): A macro framework for generating
+  boiler-plate code in the Composable Architecture.
 * [TCACoordinators](https://github.com/johnpatrickmorgan/TCACoordinators): The coordinator pattern
-  in the Composable Architecture
+  in the Composable Architecture.
 
 If you'd like to contribute a library, please [open a
 PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link
