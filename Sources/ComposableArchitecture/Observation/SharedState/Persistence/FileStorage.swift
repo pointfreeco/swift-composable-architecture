@@ -170,7 +170,7 @@ extension DispatchQueue: FileStorageQueue {
 }
 
 @_spi(Internals)
-public final class TestPersistenceQueue: FileStorageQueue, Sendable {
+public final class TestFileStorageQueue: FileStorageQueue, Sendable {
   private let _isSetting = LockIsolated<Bool?>(nil)
   public let fileSystem = LockIsolated<[URL: Data]>([:])
   private let scheduler: AnySchedulerOf<DispatchQueue>
@@ -224,15 +224,15 @@ public final class TestPersistenceQueue: FileStorageQueue, Sendable {
   }
 }
 
-private enum PersistenceQueueKey: DependencyKey {
+private enum FileStorageQueueKey: DependencyKey {
   static var liveValue: any FileStorageQueue {
     DispatchQueue(label: "co.pointfree.ComposableArchitecture._FileStorage")
   }
   static var previewValue: any FileStorageQueue {
-    TestPersistenceQueue()
+    TestFileStorageQueue()
   }
   static var testValue: any FileStorageQueue {
-    TestPersistenceQueue()
+    TestFileStorageQueue()
   }
 }
 
@@ -240,8 +240,8 @@ extension DependencyValues {
   // TODO: should this be public? allows you to run app in simulator with mock persistence queue
   @_spi(Internals)
   public var _fileStoragePersistenceQueue: any FileStorageQueue {
-    get { self[PersistenceQueueKey.self] }
-    set { self[PersistenceQueueKey.self] = newValue }
+    get { self[FileStorageQueueKey.self] }
+    set { self[FileStorageQueueKey.self] = newValue }
   }
 }
 

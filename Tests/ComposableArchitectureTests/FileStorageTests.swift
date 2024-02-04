@@ -5,7 +5,7 @@ import XCTest
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 final class FileStorageTests: XCTestCase {
   func testBasics() throws {
-    let testQueue = TestPersistenceQueue(scheduler: .immediate)
+    let testQueue = TestFileStorageQueue(scheduler: .immediate)
     try withDependencies {
       $0._fileStoragePersistenceQueue = testQueue
     } operation: {
@@ -18,7 +18,7 @@ final class FileStorageTests: XCTestCase {
 
   func testDebounce() throws {
     let testScheduler = DispatchQueue.test
-    let testQueue = TestPersistenceQueue(scheduler: testScheduler.eraseToAnyScheduler())
+    let testQueue = TestFileStorageQueue(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0._fileStoragePersistenceQueue = testQueue
     } operation: {
@@ -38,7 +38,7 @@ final class FileStorageTests: XCTestCase {
 
   func testCancelInFlight() throws {
     let testScheduler = DispatchQueue.test
-    let testQueue = TestPersistenceQueue(scheduler: testScheduler.eraseToAnyScheduler())
+    let testQueue = TestFileStorageQueue(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0._fileStoragePersistenceQueue = testQueue
     } operation: {
@@ -65,7 +65,7 @@ final class FileStorageTests: XCTestCase {
 
   func testWillResign() throws {
     let testScheduler = DispatchQueue.test
-    let testQueue = TestPersistenceQueue(scheduler: testScheduler.eraseToAnyScheduler())
+    let testQueue = TestFileStorageQueue(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0._fileStoragePersistenceQueue = testQueue
     } operation: {
@@ -83,7 +83,7 @@ final class FileStorageTests: XCTestCase {
 
   func testWillResignAndDebounce() throws {
     let testScheduler = DispatchQueue.test
-    let testQueue = TestPersistenceQueue(scheduler: testScheduler.eraseToAnyScheduler())
+    let testQueue = TestFileStorageQueue(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0._fileStoragePersistenceQueue = testQueue
     } operation: {
@@ -107,7 +107,7 @@ final class FileStorageTests: XCTestCase {
   }
 
   func testMultipleFiles() throws {
-    let testQueue = TestPersistenceQueue()
+    let testQueue = TestFileStorageQueue()
     try withDependencies {
       $0._fileStoragePersistenceQueue = testQueue
     } operation: {
@@ -147,7 +147,7 @@ final class FileStorageTests: XCTestCase {
 
   func testInitialValue() async throws {
     try await withMainSerialExecutor {
-      let testQueue = TestPersistenceQueue()
+      let testQueue = TestFileStorageQueue()
       try testQueue.save(JSONEncoder().encode([User.blob]), to: .fileURL)
       try await withDependencies {
         $0._fileStoragePersistenceQueue = testQueue
@@ -203,7 +203,7 @@ final class FileStorageTests: XCTestCase {
   func testWriteFileWhileDebouncing() async throws {
     try await withMainSerialExecutor {
       let scheduler = DispatchQueue.test
-      let testQueue = TestPersistenceQueue(scheduler: scheduler.eraseToAnyScheduler())
+      let testQueue = TestFileStorageQueue(scheduler: scheduler.eraseToAnyScheduler())
 
       try await withDependencies {
         $0._fileStoragePersistenceQueue = testQueue
