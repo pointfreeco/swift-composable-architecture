@@ -87,7 +87,6 @@ public class LoginViewController: UIViewController {
       divider.heightAnchor.constraint(equalToConstant: 1),
     ])
 
-    var alertController: UIAlertController?
     var twoFactorController: TwoFactorViewController?
 
     observe { [weak self] in
@@ -98,16 +97,6 @@ public class LoginViewController: UIViewController {
       passwordTextField.isEnabled = store.isPasswordTextFieldEnabled
       loginButton.isEnabled = store.isLoginButtonEnabled
       activityIndicator.isHidden = store.isActivityIndicatorHidden
-
-      if let store = store.scope(state: \.alert, action: \.alert),
-        alertController == nil
-      {
-        alertController = UIAlertController(store: store)
-        present(alertController!, animated: true, completion: nil)
-      } else if store.alert == nil, alertController != nil {
-        alertController?.dismiss(animated: true)
-        alertController = nil
-      }
 
       if let store = store.scope(state: \.twoFactor, action: \.twoFactor.presented),
         twoFactorController == nil
@@ -126,6 +115,24 @@ public class LoginViewController: UIViewController {
 
   public override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
+
+    var alertController: UIAlertController?
+
+    // Modal views can only be presented after self has been
+    // added to the navigation stack
+    observe { [weak self] in
+      guard let self else { return }
+
+      if let store = store.scope(state: \.alert, action: \.alert),
+        alertController == nil
+      {
+        alertController = UIAlertController(store: store)
+        present(alertController!, animated: true, completion: nil)
+      } else if store.alert == nil, alertController != nil {
+        alertController?.dismiss(animated: true)
+        alertController = nil
+      }
+    }
 
     if !isMovingToParent {
       store.twoFactorDismissed()
