@@ -38,7 +38,10 @@ public final class _FileStorage<Value: Codable & Sendable>: Persistent, @uncheck
           let workItem = self.workItem
         else { return }
         self.queue.async(execute: workItem)
-        self.workItem = nil
+        self.queue.async(execute: DispatchWorkItem {
+          self.workItem?.cancel()
+          self.workItem = nil
+        })
       }
     #endif
   }
