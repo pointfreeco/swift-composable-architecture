@@ -212,7 +212,7 @@ private struct ProfileTabView: View {
 }
 
 extension _InMemory<Stats> {
-  static let stats: Self = "stats"
+  static let stats = Self.inMemory("stats")
 }
 
 /// Checks if a number is prime or not.

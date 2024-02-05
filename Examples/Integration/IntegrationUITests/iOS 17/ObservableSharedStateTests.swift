@@ -47,6 +47,7 @@ final class iOS17_ObservableSharedStateTests: BaseIntegrationTests {
     self.assertLogs {
       """
       ObservableSharedStateView.body
+      ObservableSharedStateView.body
       """
     }
   }
@@ -82,6 +83,44 @@ final class iOS17_ObservableSharedStateTests: BaseIntegrationTests {
     self.app.buttons["Delete file"].tap()
     XCTAssertEqual(self.app.staticTexts["File Storage #1 ❌"].exists, true)
     XCTAssertEqual(self.app.staticTexts["File Storage #2 ❌"].exists, true)
+    self.assertLogs {
+      """
+      ObservableSharedStateView.body
+      """
+    }
+  }
+
+  func testInMemory() {
+    self.app.buttons["isInMemoryOn1"].tap()
+    XCTAssertEqual(self.app.staticTexts["In-memory Storage #1 ✅"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["In-memory Storage #2 ✅"].exists, true)
+    self.assertLogs {
+      """
+      ObservableSharedStateView.body
+      """
+    }
+
+    self.app.buttons["isInMemoryOn2"].tap()
+    XCTAssertEqual(self.app.staticTexts["In-memory Storage #1 ❌"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["In-memory Storage #2 ❌"].exists, true)
+    self.assertLogs {
+      """
+      ObservableSharedStateView.body
+      """
+    }
+  }
+
+  func testFileStorage_DeleteFileThenMutate() {
+    self.app.buttons["Delete file"].tap()
+    self.clearLogs()
+
+    self.app.buttons["Write directly to file system"].tap()
+    XCTTODO("""
+      This should pass, but does not currently because deleting a file breaks the dispatch
+      source.
+      """)
+    XCTAssertEqual(self.app.staticTexts["File Storage #1 ✅"].exists, true)
+    XCTAssertEqual(self.app.staticTexts["File Storage #2 ✅"].exists, true)
     self.assertLogs {
       """
       ObservableSharedStateView.body

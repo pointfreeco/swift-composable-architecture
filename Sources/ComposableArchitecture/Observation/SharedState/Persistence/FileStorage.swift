@@ -20,7 +20,7 @@ extension Persistent {
 
 // TODO: Audit unchecked sendable
 public final class _FileStorage<Value: Codable & Sendable>: Persistent, @unchecked Sendable {
-  @Dependency(\._fileStoragePersistenceQueue) fileprivate var queue
+  @Dependency(\._fileStorageQueue) fileprivate var queue
   let url: URL
   var workItem: DispatchWorkItem?
   var notificationListener: Any!
@@ -239,7 +239,7 @@ private enum FileStorageQueueKey: DependencyKey {
 extension DependencyValues {
   // TODO: should this be public? allows you to run app in simulator with mock persistence queue
   @_spi(Internals)
-  public var _fileStoragePersistenceQueue: any FileStorageQueue {
+  public var _fileStorageQueue: any FileStorageQueue {
     get { self[FileStorageQueueKey.self] }
     set { self[FileStorageQueueKey.self] = newValue }
   }

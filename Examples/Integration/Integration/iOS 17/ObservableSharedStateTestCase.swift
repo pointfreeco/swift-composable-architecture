@@ -1,4 +1,4 @@
-@_spi(Logging) import ComposableArchitecture
+@_spi(Internals) @_spi(Logging) import ComposableArchitecture
 import SwiftUI
 
 struct ObservableSharedStateView: View {
@@ -53,6 +53,21 @@ struct ObservableSharedStateView: View {
         }
 
         Section {
+          HStack {
+            Button("Toggle") { store.isInMemoryOn1.toggle() }
+              .accessibilityIdentifier("isInMemoryOn1")
+            Text("In-memory Storage #1 " + (store.isInMemoryOn1 ? "✅" : "❌"))
+          }
+          HStack {
+            Button("Toggle") { store.isInMemoryOn2.toggle() }
+              .accessibilityIdentifier("isInMemoryOn2")
+            Text("In-memory Storage #2 " + (store.isInMemoryOn2 ? "✅" : "❌"))
+          }
+        } header: {
+          Text("In-memory")
+        }
+
+        Section {
           Button("Reset") {
             store.send(.resetButtonTapped)
           }
@@ -68,6 +83,8 @@ private struct Feature {
   struct State {
     @Shared(.appStorage("isOn")) var isAppStorageOn1 = false
     @Shared(.appStorage("isOn")) var isAppStorageOn2 = false
+    @Shared(.inMemory("isOn")) var isInMemoryOn1 = false
+    @Shared(.inMemory("isOn")) var isInMemoryOn2 = false
     @Shared(.fileStorage(storageURL)) var fileStorage1 = Settings()
     @Shared(.fileStorage(storageURL)) var fileStorage2 = Settings()
   }
@@ -79,6 +96,7 @@ private struct Feature {
     case writeToFileStorageButtonTapped
     case writeToUserDefaultsButtonTapped
   }
+  @Dependency(\.defaultAppStorage) var defaults
   var body: some ReducerOf<Self> {
     BindingReducer()
     Reduce<State, Action> { state, action in
@@ -91,7 +109,6 @@ private struct Feature {
         }
       case .deleteUserDefaultButtonTapped:
         return .run { _ in
-          @Dependency(\.defaultAppStorage) var defaults
           defaults.removeObject(forKey: "isOn")
         }
       case .resetButtonTapped:
@@ -99,6 +116,8 @@ private struct Feature {
         state.isAppStorageOn2 = false
         state.fileStorage1.isOn = false
         state.fileStorage2.isOn = false
+        state.isInMemoryOn1 = false
+        state.isInMemoryOn2 = false
         return .none
       case .writeToFileStorageButtonTapped:
         return .run { [isOn = state.fileStorage1.isOn] _ in
@@ -106,7 +125,6 @@ private struct Feature {
         }
       case .writeToUserDefaultsButtonTapped:
         return .run { [isOn = state.isAppStorageOn1] _ in
-          @Dependency(\.defaultAppStorage) var defaults
           defaults.setValue(!isOn, forKey: "isOn")
         }
       }
