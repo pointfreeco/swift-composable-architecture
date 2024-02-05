@@ -12,13 +12,15 @@ shared. Because the Composable Architecture highly prefers modeling domains with
 than reference types, sharing state can be tricky.
 
 This is why the library comes with a few tools for sharing state with many parts of your
-application. There are 3 main strategies shipped with the library: in-memory sharing, user defaults
-persistence, and file storage persistence. You can also implement your own persistence strategy if
+application. There are two main kinds of shared state in the library: explicitly passed state and
+persisted state. And there are 3 persistent strategies shipped with the library: in-memory, 
+user defaults, and file storage. You can also implement your own persistence strategy if
 you want to use something other than user defaults or the file system, such as SQLite.
 
 * ["Source of truth"](#Source-of-truth)
-* [In-memory shared state](#In-memory-shared-state)
+* [Explicit shared state](#Explicit-shared-state)
 * [Persisted shared state](#Persisted-shared-state)
+  * [In-memory](#In-memory)
   * [User defaults](#User-defaults)
   * [File storage](#File-storage)
   * [Custom persistence](#Custom-persistence)
@@ -49,10 +51,11 @@ Then there is a second source of "truth" in an application, which is the data th
 external system and needs to be loaded into the application. Such state is best modeled as a 
 dependency or using the shared state tools discussed in this article.
 
-## In-memory shared state
+## Explicit shared state
 
-This strategy allows you to share state amongst many features without any persistence. The data is
-only held in memory, and will be cleared out the next time the application is run.
+This is the simplest kind of shared state to get start with. It allows you to share state amongst
+many features without any persistence. The data is only held in memory, and will be cleared out the
+next time the application is run.
 
 To share data in this style, use the ``Shared`` property wrapper with no arguments. For example,
 suppose you have a feature that holds a count and you want to be able to hand a shared reference to
@@ -71,7 +74,7 @@ struct ParentFeature {
 }
 ```
 
-> Important: It is not possible to provide a default to an in-memory `@Shared` value. It must be
+> Important: It is not possible to provide a default to a `@Shared` value. It must be
 > passed to the feature's state from the outside.
 
 Then suppose that this feature can present a child feature that wants access to this shared `count`
@@ -103,11 +106,39 @@ Now any mutation the `ChildFeature` makes to its `count` will be instantly made 
 
 ## Persisted shared state
 
-In-memory shared state discussed above is a nice, lightweight way to share a piece of data with many
-parts of your application. However, sometimes you want to share state _and_ persist any changes to
-that state to some external system. The library comes with two persistence strategies
-(<doc:SharingState#User-defaults> and <doc:SharingState#File-storage>) as well as the ability to
-create custom persistence strategies.
+Explicitly shared state discussed above is a nice, lightweight way to share a piece of data with
+many parts of your application. However, sometimes you want to share state with the entire 
+application without having to pass it around expicitly. One can do this by passing a 
+``Persistent`` value to the `@Shared` property wrapper, and the library comes with three
+persistence strategies, as well as the ability to create custom persistence strategies.
+
+#### In-memory
+
+This is the simplest persistence strategy in that it doesn't actually persist at all. It keeps
+the data in memory and makes it available to every part of the application, but when the app is
+relaunched the data will be reset back to its default.
+
+It can be used by passing ``Persistent/inMemory(_:)`` to the `@Shared` property wrapper. For 
+example, suppose you want to share an integer count value with the entire application so that any
+feature can read from and write to the integer. This can be done like so:
+
+```swift
+@Reducer
+struct ChildFeature {
+  @ObservableState
+  struct State {
+    @Shared(.inMemory("count")) var count = 0
+    // Other properties
+  }
+  // ...
+}
+```
+
+> Note: When using a persistence strategy with `@Shared` you must provide a default value, which is
+> used for the first access of the shared state.
+
+Now any part of the application can read from and write to this state, and features will never
+get out of sync.
 
 #### User defaults
 

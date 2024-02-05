@@ -37,9 +37,3 @@ public struct _InMemory<Value>: Hashable, Persistent, Sendable {
   public func load() -> Value? { nil }
   public func save(_ value: Value) {}
 }
-
-extension _InMemory: ExpressibleByStringLiteral {
-  public init(stringLiteral value: StringLiteralType) {
-    self.init(key: value)
-  }
-}
