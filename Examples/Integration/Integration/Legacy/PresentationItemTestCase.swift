@@ -1,24 +1,38 @@
 import ComposableArchitecture
 import SwiftUI
 
-enum PresentationItemTestCase {
+fileprivate enum PresentationItemTestCase {
   @Reducer
   struct Feature {
-    @Reducer(state: .equatable)
-    enum Destination {
-      case childA(Child)
-      case childB(Child)
+    @Reducer
+    struct Destination {
+      enum State: Equatable {
+        case childA(Child.State)
+        case childB(Child.State)
+      }
+      enum Action: Equatable {
+        case childA(Child.Action)
+        case childB(Child.Action)
+      }
+      var body: some Reducer<State, Action> {
+        Scope(state: \.childA, action: \.childA) {
+          Child()
+        }
+        Scope(state: \.childB, action: \.childB) {
+          Child()
+        }
+      }
     }
     struct State: Equatable {
       @PresentationState var destination: Destination.State?
     }
-    enum Action {
+    enum Action: Equatable {
       case childAButtonTapped
       case childBButtonTapped
       case destination(PresentationAction<Destination.Action>)
     }
     var body: some ReducerOf<Self> {
-      Reduce<State, Action> { state, action in
+      Reduce { state, action in
         switch action {
         case .childAButtonTapped, .destination(.presented(.childB(.swapButtonTapped))):
           state.destination = .childA(Child.State())
@@ -30,7 +44,9 @@ enum PresentationItemTestCase {
           return .none
         }
       }
-      .ifLet(\.$destination, action: \.destination)
+      .ifLet(\.$destination, action: \.destination) {
+        Destination()
+      }
     }
   }
 
