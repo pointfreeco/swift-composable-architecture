@@ -18,10 +18,10 @@ the rest.
 
 ## Basics
 
-The tools for this style of navigation include the ``PresentationState`` property wrapper,
-``PresentationAction``, the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator, and 
-a bunch of APIs that mimic SwiftUI's regular tools, such as `.sheet`, `.popover`, etc., but tuned 
-specifically for the Composable Architecture.
+The tools for this style of navigation include the ``Presents()`` macro,
+``PresentationAction``, the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator, 
+and that is all. Once your feature is properly integrated with those tools you can use all of 
+SwiftUI's normal navigation view modifiers, such as `sheet(item:)`, `popover(item:)`, etc.
 
 The process of integrating two features together for navigation largely consists of 2 steps:
 integrating the features' domains together and integrating the features' views together. One
@@ -31,7 +31,7 @@ into the parent.
 
 For example, suppose you have a list of items and you want to be able to show a sheet to display a
 form for adding a new item. We can integrate state and actions together by utilizing the 
-``PresentationState`` and ``PresentationAction`` types:
+``Presents()`` macro and ``PresentationAction`` type:
 
 ```swift
 @Reducer
@@ -195,7 +195,7 @@ struct InventoryFeature {
 > feature's state. You can expand the macro code in Xcode to see everything that is written for you.
 
 With that done we can now hold onto a _single_ piece of optional state in our feature, using the
-``PresentationState`` property wrapper, and we hold onto the destination actions using the
+``Presents()`` macro, and we hold onto the destination actions using the
 ``PresentationAction`` type:
 
 ```swift
@@ -365,33 +365,27 @@ project:
 
 ```swift
 extension View {
-  @available(iOS, introduced: 13, deprecated: 16)
-  @available(macOS, introduced: 10.15, deprecated: 13)
-  @available(tvOS, introduced: 13, deprecated: 16)
-  @available(watchOS, introduced: 6, deprecated: 9)
+  @available(iOS, introduced: 16, deprecated: 17)
+  @available(macOS, introduced: 13, deprecated: 14)
+  @available(tvOS, introduced: 16, deprecated: 17)
+  @available(watchOS, introduced: 9, deprecated: 10)
   @ViewBuilder
   func navigationDestinationWrapper<D: Hashable, C: View>(
     item: Binding<D?>,
     @ViewBuilder destination: @escaping (D) -> C
   ) -> some View {
-    if #available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *) {
-      navigationDestination(item: item, destination: destination)
-    } else {
-      navigationDestination(
-        isPresented: Binding(
-          get: { item.wrappedValue != nil },
-          set: { isPresented, transaction in
-            if !isPresented {
-              item.transaction(transaction).wrappedValue = nil
-            }
-          }
-        )
-      ) {
-        if let item = item.wrappedValue {
-          destination(item)
-        }
+    navigationDestination(isPresented: item.isPresented) {
+      if let item = item.wrappedValue
+        destination(item)
       }
     }
+  }
+}
+
+fileprivate extension Optional where Wrapped: Hashable {
+  var isPresented: Bool {
+    get { self != nil }
+    set { if !newValue { self = nil } }
   }
 }
 ```
@@ -583,8 +577,9 @@ struct CounterFeature {
 }
 ```
 
-And then let's embed that feature into a parent feature using ``PresentationState``, 
-``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``:
+And then let's embed that feature into a parent feature using the ``Presents()`` macro, 
+``PresentationAction`` type and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``
+operator:
 
 ```swift
 @Reducer
