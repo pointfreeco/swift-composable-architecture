@@ -216,8 +216,8 @@ extension Shared: CustomDumpRepresentable {
 extension Shared
 where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable & Sendable {
   public var elements: some RandomAccessCollection<Shared<Value.Element>> {
-    self.wrappedValue.indices.lazy.map { index in
-      self[index]
+    zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
+      self[index, default: DefaultSubscript(element)]
     }
   }
 }
@@ -272,6 +272,18 @@ extension Optional {
     set {
       defaultSubscript.value = newValue
       if self != nil { self = newValue }
+    }
+  }
+}
+
+extension RandomAccessCollection where Self: MutableCollection {
+  fileprivate subscript(
+    position: Index, default defaultSubscript: DefaultSubscript<Element>
+  ) -> Element {
+    get { self.indices.contains(position) ? self[position] : defaultSubscript.value }
+    set {
+      defaultSubscript.value = newValue
+      if self.indices.contains(position) { self[position] = newValue }
     }
   }
 }
