@@ -23,6 +23,12 @@
 - ``forEach(_:action:element:fileID:line:)-247po``
 - <doc:Navigation>
 
+### Sharing state
+
+- ``Shared``
+- ``Persistent``
+- <doc:SharingState>
+
 ### Supporting reducers
 
 - ``EmptyReducer``

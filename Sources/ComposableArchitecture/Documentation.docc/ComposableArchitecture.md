@@ -64,10 +64,12 @@ day-to-day when building applications, such as:
 - ``Reducer()``
 - ``Effect``
 - ``Store``
+- <doc:SharingState>
 
 ### Testing
 
 - ``TestStore``
+- <doc:Testing>
 
 ### Integrations
 
