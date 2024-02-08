@@ -592,6 +592,7 @@
 
       store.send(())
 
+      XCTTODO("Should this eventually be observed by default?")
       self.wait(for: [onChangeExpectation], timeout: 0)
     }
   }
