@@ -635,7 +635,7 @@
     case inert(Int)
   }
   @ObservableState
-  fileprivate enum EnumState: Equatable {
+  private enum EnumState: Equatable {
     case count(Count)
     case anotherCount(Count)
     case int(Int)
