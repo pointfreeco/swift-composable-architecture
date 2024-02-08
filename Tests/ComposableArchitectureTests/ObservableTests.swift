@@ -537,6 +537,39 @@
 
       state.children[0].count += 1
     }
+
+    func testEnumStateWithInertCases() {
+      let store = Store<EnumState, Void>(initialState: EnumState.count(.one)) {
+        Reduce { state, _ in
+          state = .count(.two)
+          return .none
+        }
+      }
+      let onChangeExpectation = self.expectation(description: "onChange")
+      withPerceptionTracking {
+        _ = store.state
+      } onChange: {
+        onChangeExpectation.fulfill()
+      }
+
+      store.send(())
+
+      self.wait(for: [onChangeExpectation], timeout: 0)
+    }
+
+    func testEnumStateWithIntCase() {
+      var state = EnumState.int(0)
+      let onChangeExpectation = self.expectation(description: "onChange")
+      withPerceptionTracking {
+        _ = state
+      } onChange: {
+        onChangeExpectation.fulfill()
+      }
+
+      state = .int(1)
+
+      self.wait(for: [onChangeExpectation], timeout: 0)
+    }
   }
 
   @ObservableState
@@ -575,5 +608,14 @@
     case child1(ChildState)
     case child2(ChildState)
     case inert(Int)
+  }
+  @ObservableState
+  fileprivate enum EnumState: Equatable {
+    case count(Count)
+    case int(Int)
+    @ObservableState
+    enum Count: String {
+      case one, two
+    }
   }
 #endif

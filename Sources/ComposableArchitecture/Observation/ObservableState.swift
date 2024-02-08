@@ -74,7 +74,10 @@
 
     @inlinable
     public func _$tag(_ tag: Int?) -> Self {
-      Self(location: self.location, tag: tag)
+      Self(
+        location: self.location,
+        tag: self.tag ?? tag
+      )
     }
 
     @inlinable
