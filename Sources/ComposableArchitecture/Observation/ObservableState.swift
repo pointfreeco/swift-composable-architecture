@@ -23,41 +23,31 @@
   public struct ObservableStateID: Equatable, Hashable, Sendable {
     @usableFromInline
     var location: UUID {
-      get { self.storage.location }
+      get { self.storage.id.location }
       set {
-        if isKnownUniquelyReferenced(&self.storage) {
-          self.storage.location = newValue
-        } else {
-          self.storage = Storage(location: newValue, tag: self.tag)
+        if !isKnownUniquelyReferenced(&self.storage) {
+          self.storage = Storage(id: self.storage.id)
         }
+        self.storage.id.location = newValue
       }
-    }
-
-    @usableFromInline
-    var tag: Int? {
-      self.storage.tag
     }
 
     private var storage: Storage
 
-    @usableFromInline
-    init(location: UUID, tag: Int? = nil) {
-      self.storage = Storage(location: location, tag: tag)
+    private init(storage: Storage) {
+      self.storage = storage
     }
 
     public init() {
-      self.init(location: UUID())
+      self.init(storage: Storage(id: .location(UUID())))
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
-      lhs.storage === rhs.storage
-        || lhs.storage.location == rhs.storage.location
-          && lhs.storage.tag == rhs.storage.tag
+      lhs.storage === rhs.storage || lhs.storage.id == rhs.storage.id
     }
 
     public func hash(into hasher: inout Hasher) {
-      hasher.combine(self.location)
-      hasher.combine(self.tag)
+      hasher.combine(self.storage.id)
     }
 
     @inlinable
@@ -72,12 +62,8 @@
 
     public static let _$inert = Self()
 
-    @inlinable
-    public func _$tag(_ tag: Int?) -> Self {
-      Self(
-        location: self.location,
-        tag: self.tag ?? tag
-      )
+    public func _$tag(_ tag: Int) -> Self {
+      Self(storage: Storage(id: .tag(tag, self.storage.id)))
     }
 
     @inlinable
@@ -86,12 +72,35 @@
     }
 
     private final class Storage: @unchecked Sendable {
-      fileprivate var location: UUID
-      fileprivate let tag: Int?
+      fileprivate var id: ID
 
-      init(location: UUID = UUID(), tag: Int? = nil) {
-        self.location = location
-        self.tag = tag
+      init(id: ID = .location(UUID())) {
+        self.id = id
+      }
+
+      enum ID: Equatable, Hashable, Sendable {
+        case location(UUID)
+        indirect case tag(Int, ID)
+
+        var location: UUID {
+          get {
+            switch self {
+            case let .location(location):
+              return location
+            case let .tag(_, id):
+              return id.location
+            }
+          }
+          set {
+            switch self {
+            case .location:
+              self = .location(newValue)
+            case .tag(let tag, var id):
+              id.location = newValue
+              self = .tag(tag, id)
+            }
+          }
+        }
       }
     }
   }
