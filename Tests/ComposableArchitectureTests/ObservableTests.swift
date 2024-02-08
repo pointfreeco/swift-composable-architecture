@@ -557,6 +557,25 @@
       self.wait(for: [onChangeExpectation], timeout: 0)
     }
 
+    func testEnumStateWithInertCasesTricky() {
+      let store = Store<EnumState, Void>(initialState: EnumState.count(.one)) {
+        Reduce { state, _ in
+          state = .anotherCount(.one)
+          return .none
+        }
+      }
+      let onChangeExpectation = self.expectation(description: "onChange")
+      withPerceptionTracking {
+        _ = store.state
+      } onChange: {
+        onChangeExpectation.fulfill()
+      }
+
+      store.send(())
+
+      self.wait(for: [onChangeExpectation], timeout: 0)
+    }
+
     func testEnumStateWithIntCase() {
       var state = EnumState.int(0)
       let onChangeExpectation = self.expectation(description: "onChange")
@@ -612,6 +631,7 @@
   @ObservableState
   fileprivate enum EnumState: Equatable {
     case count(Count)
+    case anotherCount(Count)
     case int(Int)
     @ObservableState
     enum Count: String {
