@@ -438,5 +438,33 @@
         """
       }
     }
+
+    func testAvailability() {
+      assertMacro {
+        """
+        @available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+        @ViewAction(for: Feature.self)
+        struct FeatureView: View {
+          @State var store: StoreOf<Feature>
+          var body: some View {
+            EmptyView()
+          }
+        }
+        """
+      } expansion: {
+        """
+        @available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+        struct FeatureView: View {
+          @State var store: StoreOf<Feature>
+          var body: some View {
+            EmptyView()
+          }
+        }
+
+        @available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *) extension FeatureView: ComposableArchitecture.ViewActionSending {
+        }
+        """
+      }
+    }
   }
 #endif
