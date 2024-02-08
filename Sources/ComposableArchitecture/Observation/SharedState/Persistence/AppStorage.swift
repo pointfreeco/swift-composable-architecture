@@ -247,6 +247,9 @@
         switch self.key {
         case let .keyPath(key):
           let observer = self.store.observe(key, options: .new) { _, change in
+            guard
+              !SharedAppStorageLocals.isSetting
+            else { return }
             continuation.yield(change.newValue)
           }
           _ = self.store[keyPath: key]
@@ -255,6 +258,9 @@
           }
         case let .string(key):
           let observer = Observer { value in
+            guard
+              !SharedAppStorageLocals.isSetting
+            else { return }
             continuation.yield(value)
           }
           self.store.addObserver(observer, forKeyPath: key, options: .new, context: nil)
@@ -270,7 +276,9 @@
     }
 
     public func save(_ value: Value) {
-      self._save(value)
+      SharedAppStorageLocals.$isSetting.withValue(true) {
+        self._save(value)
+      }
     }
 
     private class Observer: NSObject {
@@ -321,5 +329,10 @@
     static var liveValue: UncheckedSendable<UserDefaults> {
       UncheckedSendable(UserDefaults.standard)
     }
+  }
+
+  // NB: This is mainly used for tests, where observer notifications can bleed across cases.
+  private enum SharedAppStorageLocals {
+    @TaskLocal static var isSetting = false
   }
 #endif

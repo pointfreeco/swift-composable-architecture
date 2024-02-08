@@ -114,7 +114,6 @@ private struct Feature {
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in
-
       switch action {
       case .incrementButtonTapped:
         state.count += 1
