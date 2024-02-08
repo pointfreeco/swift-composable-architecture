@@ -21,7 +21,6 @@ struct SyncUpDetail {
 
     @CasePathable
     enum Delegate {
-      case deleteSyncUp
       case startMeeting
     }
   }
@@ -77,12 +76,13 @@ struct SyncUpDetail {
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
-          return .run { send in
-            await send(.delegate(.deleteSyncUp), animation: .default)
-            await self.dismiss()
-          }
+          @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
+          syncUps.remove(id: state.syncUp.id)
+          return .run { _ in await self.dismiss() }
+
         case .continueWithoutRecording:
           return .send(.delegate(.startMeeting))
+          
         case .openSettings:
           return .run { _ in
             await self.openSettings()

@@ -35,13 +35,6 @@
     @TutorialReference(tutorial: "doc:TestingSyncUpForm")
   }
   
-  @Chapter(name: "Persisting sync ups to disk") {
-    Applications typically need to persist data across application launches. The Composable 
-    Architecture comes with all the tools you need to persist your application's data.
-    
-    @TutorialReference(tutorial: "doc:PersistingSyncUps")
-  }
-  
   @Chapter(name: "Presenting the sync up form") {
     We now have two features built, the sync ups list and the sync up form. These features do not
     exist in isolation, but rather are meant to be integrated in a deep way. One should be able
@@ -50,6 +43,13 @@
     
     @TutorialReference(tutorial: "doc:PresentingSyncUpForm")
     @TutorialReference(tutorial: "doc:TestingSyncUpFormPresentation")
+  }
+  
+  @Chapter(name: "Persisting sync ups to disk") {
+    Applications typically need to persist data across application launches. The Composable 
+    Architecture comes with all the tools you need to persist your application's data.
+    
+    @TutorialReference(tutorial: "doc:PersistingSyncUps")
   }
   
   @Chapter(name: "Sync up detail") {

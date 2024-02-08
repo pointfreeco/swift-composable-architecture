@@ -5,7 +5,7 @@ struct SyncUpDetail {
   @ObservableState
   struct State {
     @Presents var destination: Destination.State?
-    var syncUp: SyncUp
+    @Shared var syncUp: SyncUp
   }
 
   enum Action {

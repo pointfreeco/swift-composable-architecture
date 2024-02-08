@@ -6,13 +6,12 @@ struct SyncUpDetail {
   struct State {
     @Presents var alert: AlertState<Action.Alert>?
     @Presents var editSyncUp: SyncUpForm.State?
-    var syncUp: SyncUp
+    @Shared var syncUp: SyncUp
   }
 
   enum Action {
     case alert(PresentationAction<Alert>)
     case cancelEditButtonTapped
-    case delegate(Delegate)
     case deleteButtonTapped
     case doneEditingButtonTapped
     case editButtonTapped
@@ -22,24 +21,23 @@ struct SyncUpDetail {
     enum Alert {
       case confirmButtonTapped
     }
-    enum Delegate {
-      case deleteSyncUp(id: SyncUp.ID)
-    }
   }
+
+  @Dependency(\.dismiss) var dismiss
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .alert(.presented(.confirmButtonTapped)):
-        
+        @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
+        syncUps.remove(id: state.syncUp.id)
+        return .run { _ in await dismiss() }
+
       case .alert(.dismiss):
         return .none
 
       case .cancelEditButtonTapped:
         state.editSyncUp = nil
-        return .none
-
-      case .delegate:
         return .none
 
       case .deleteButtonTapped:
@@ -88,3 +86,4 @@ extension AlertState where Action == SyncUpDetail.Action.Alert {
 struct SyncUpDetailView: View {
   // ...
 }
+

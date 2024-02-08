@@ -2,90 +2,123 @@ import ComposableArchitecture
 
 @Reducer
 struct SyncUpDetail {
-  @ObservableState
-  struct State {
-    @Presents var alert: AlertState<Action.Alert>?
-    @Presents var editSyncUp: SyncUpForm.State?
-    var syncUp: SyncUp
-  }
-
-  enum Action {
-    case alert(PresentationAction<Alert>)
-    case cancelEditButtonTapped
-    case delegate(Delegate)
-    case deleteButtonTapped
-    case doneEditingButtonTapped
-    case editButtonTapped
-    case editSyncUp(PresentationAction<SycnUpForm.Action>)
-    case startMeetingButtonTapped
-    case meetingTapped(id: Meeting.ID)
-    enum Alert {
-      case confirmButtonTapped
-    }
-    enum Delegate {
-      case deleteSyncUp(id: SyncUp.ID)
-    }
-  }
-
-  var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
-      case .alert(.presented(.confirmButtonTapped)):
-        return .send(.delegate(.deleteSyncUp(id: state.syncUp.id)))
-        
-      case .alert(.dismiss):
-        return .none
-
-      case .cancelEditButtonTapped:
-        state.editSyncUp = nil
-        return .none
-
-      case .delegate:
-        return .none
-
-      case .deleteButtonTapped:
-        state.alert = .deleteSyncUp
-        return .none
-
-      case .doneEditingButtonTapped:
-        guard let editedSyncUp = state.editSyncUp?.syncUp
-        else { return .none }
-        state.syncUp = editedSyncUp
-        return .none
-
-      case .editButtonTapped:
-        state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
-        return .none
-
-      case .startMeetingButtonTapped:
-        return .none
-
-      case let .meetingTapped(id: id):
-        return .none
-      }
-    }
-    .ifLet(\.$editSyncUp, action: \.editSyncUp) {
-      SyncUpForm()
-    }
-    .ifLet(\.$alert, action: \.alert) 
-  }
-}
-
-extension AlertState where Action == SyncUpDetail.Action.Alert {
-  static let deleteSyncUp = Self {
-    TextState("Delete?")
-  } actions: {
-    ButtonState(role: .destructive, action: .confirmButtonTapped) {
-      TextState("Yes")
-    }
-    ButtonState(role: .cancel) {
-      TextState("Nevermind")
-    }
-  } message: {
-    TextState("Are you sure you want to delete this meeting?")
-  }
+  // ...
 }
 
 struct SyncUpDetailView: View {
-  // ...
+  @Bindable var store: StoreOf<SyncUpDetail>
+
+  var body: some View {
+    Form {
+      Section {
+        Button {
+          store.send(.startMeetingButtonTapped)
+        } label: {
+          Label("Start Meeting", systemImage: "timer")
+            .font(.headline)
+            .foregroundColor(.accentColor)
+        }
+        HStack {
+          Label("Length", systemImage: "clock")
+          Spacer()
+          Text(store.syncUp.duration.formatted(.units()))
+        }
+
+        HStack {
+          Label("Theme", systemImage: "paintpalette")
+          Spacer()
+          Text(store.syncUp.theme.name)
+            .padding(4)
+            .foregroundColor(store.syncUp.theme.accentColor)
+            .background(store.syncUp.theme.mainColor)
+            .cornerRadius(4)
+        }
+      } header: {
+        Text("Sync-up Info")
+      }
+
+      if !store.syncUp.meetings.isEmpty {
+        Section {
+          ForEach(store.syncUp.meetings) { meeting in
+            Button {
+              store.send(.meetingTapped(id: meeting.id))
+            } label: {
+              HStack {
+                Image(systemName: "calendar")
+                Text(meeting.date, style: .date)
+                Text(meeting.date, style: .time)
+              }
+            }
+          }
+          .onDelete { indices in
+            store.send(.deleteMeetings(atOffsets: indices))
+          }
+        } header: {
+          Text("Past meetings")
+        }
+      }
+
+      Section {
+        ForEach(store.syncUp.attendees) { attendee in
+          Label(attendee.name, systemImage: "person")
+        }
+      } header: {
+        Text("Attendees")
+      }
+
+      Section {
+        Button("Delete") {
+          store.send(.deleteButtonTapped)
+        }
+        .foregroundColor(.red)
+        .frame(maxWidth: .infinity)
+      }
+    }
+    .toolbar {
+      Button("Edit") {
+        store.send(.editButtonTapped)
+      }
+    }
+    .alert($store.scope(state: \.alert, action: \.alert))
+    .sheet(item: $store.scope(state: \.editSyncUp, action: \.editSyncUp)) { store in
+      NavigationStack {
+        SyncUpFormView(store: store)
+          .navigationTitle(store.syncUp.title)
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Cancel") {
+                store.send(.cancelEditButtonTapped)
+              }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+              Button("Done") {
+                store.send(.doneEditingButtonTapped)
+              }
+            }
+          }
+      }
+    }
+  }
+}
+
+#Preview {
+  SyncUpDetailView(
+    store: Store(
+      initialState: SyncUpDetail.State(
+        syncUp: SyncUp(
+          syncUp: SyncUp(
+            id: SyncUp.ID(),
+            attendees: [
+              Attendee(id: Attendee.ID(), name: "Blob"),
+              Attendee(id: Attendee.ID(), name: "Blob Jr."),
+              Attendee(id: Attendee.ID(), name: "Blob Sr."),
+            ],
+            title: "Point-Free Morning Sync"
+          )
+        )
+      )
+    ) {
+      SyncUpDetail()
+    }
+  )
 }

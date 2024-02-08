@@ -218,11 +218,31 @@
       which is an enum of all the possible destinations that can be navigated to.
       
       @Step {
-        Provide the `.detail` state to `NavigationLink` so that when the link is tapped the 
-        detail state will be appended to the ``ComposableArchitecture/StackState`` powering the
-        navigation stack.
+        Provide `Path.State.detail` to the `NavigationLink` to indicate that we want to 
+        navigate to the detail feature.
         
         @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0002.swift)
+      }
+      
+      However, to construct `SyncUpDetail.State` we need to provide a `Shared<SyncUp>` value.
+      This needs to be derived from the shared sync ups held in `SyncUpsList.State` so that the
+      detail feature can be allowed to make edits to the state have those edits be automatically
+      made to `SyncUpsList.State`.
+      
+      One can use the projected value of ``ComposableArchitecture/Shared`` along with the 
+      ``ComposableArchitecture/Shared/elements`` property defined on shared collections in order to
+      derive a `Shared` value for each element in the collection.
+      
+      @Step {
+        Use the ``ComposableArchitecture/Shared/elements`` property in the `ForEach` to derive a
+        `Shared<SyncUp>` for each element in the `Shared<IdentifiedArrayOf<SyncUp>>`.
+        @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0003.swift)
+      }
+      
+      @Step {
+        Pass the projected value `$syncUp` to `SyncUpDetail.State`.
+        
+        @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0004.swift)
       }
       
       That is all it takes to perform a navigation from the list feature to the detail feature.
@@ -240,8 +260,27 @@
       state to its `path`. This fully decouples the features from one another, and only the `App`
       feature needs to have knowledge about all of the child features.
       
-      We will not do that refactor now, but it would be instructive for the reader to try 
+      We will not do that refactor now, but it would be instructive for the reader to try it 
       themselves.
+      
+      Before moving on let's make sure that the deletion and editing logic that we implemented in
+      the detail screens properly works now that we can navigate to the detail screen from the 
+      sync ups list screen.
+      
+      @Step {
+        Navigate to the detail screen of a sync up and delete it to confirm that it works as 
+        expected.
+        
+        @Video(source: SyncUpDetailNavigation-03-video-0005.mov)
+      }
+      
+      @Step {
+        Navigate to the detail screen of a sync up, edit it, and then navigate back to the list
+        screen to verify that changes were made. Also relaunch the app to confirm that the data
+        was persisted to disk.
+        
+        @Video(source: SyncUpDetailNavigation-03-video-0006.mov)
+      }
     }
   }
 }

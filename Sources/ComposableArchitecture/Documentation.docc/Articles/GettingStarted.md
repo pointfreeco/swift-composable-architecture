@@ -34,7 +34,7 @@ let package = Package(
 ## Writing your first feature
 
 > Note: For a step-by-step interactive tutorial, be sure to check out 
-> <doc:MeetComposableArchitecture>
+> <doc:MeetComposableArchitecture>.
 
 To build a feature using the Composable Architecture you define some types and values that model
 your domain:

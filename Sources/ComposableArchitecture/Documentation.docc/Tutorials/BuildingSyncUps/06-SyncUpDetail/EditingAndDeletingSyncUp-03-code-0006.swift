@@ -7,7 +7,7 @@ struct SyncUpDetail {
     // @Presents var alert: AlertState<Action.Alert>?
     // @Presents var editSyncUp: SyncUpForm.State?
     @Presents var destination: Destination.State?
-    var syncUp: SyncUp
+    @Shared var syncUp: SyncUp
   }
 
   enum Action {

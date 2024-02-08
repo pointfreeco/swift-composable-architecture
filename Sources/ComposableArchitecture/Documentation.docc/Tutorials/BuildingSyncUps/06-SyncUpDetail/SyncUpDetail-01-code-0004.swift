@@ -4,7 +4,7 @@ import ComposableArchitecture
 struct SyncUpDetail {
   @ObservableState
   struct State {
-    var syncUp: SyncUp
+    @Shared var syncUp: SyncUp
   }
 
   enum Action {

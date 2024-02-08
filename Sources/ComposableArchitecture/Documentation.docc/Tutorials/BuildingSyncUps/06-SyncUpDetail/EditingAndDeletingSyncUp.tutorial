@@ -19,7 +19,7 @@
     @Steps {
       We want to present the `SyncUpFormView` from the `SyncUpDetailView` in a sheet, and so we
       will need to use the presentation tools of the library just as we did in the 
-      `SyncUpListsView`/
+      `SyncUpListsView`.
       
       @Step {
         Go to the SyncUpDetail.swift file and update the `State` of the feature so that it holds
@@ -241,70 +241,40 @@
       }
       
       The `.alert(.presented)` case is more subtle, though. This action is sent when the user 
-      confirms that they want to delete the sync up, and so somehow we want to communicate to
-      the `SyncUpsList` that it needs to delete the value from its array. We haven't even 
-      integrated the features yet so that we can navigate from the sync ups list to the detail
-      of a particular sync up, so how can we communicate between the features?
+      confirms that they want to delete the sync up, and so somehow we to remove the `syncUp` we
+      have in state from the collection of sync ups that in the `SyncUpsList` feature.
       
-      There is a pattern that we like to call the "delegate action" pattern that makes it easy
-      and very clear for a child feature to communicate to a parent feature. You simply puts all
-      messages you want to send to the parent in a dedicated enum, and use effects to send those
-      actions from the child. 
-      
-      This is similar, in spirit, to the delegate protocol pattern on Apple platforms where a child
-      feature models messages it wants to send to the parent as a protocol, and it holds onto a 
-      weak conformance of that protocol.
+      However, remember that in <doc:PersistingSyncUps> we showed to how to persist the collection
+      of sync ups using the ``ComposableArchitecture/Shared`` property wrapper with the
+      ``ComposableArchitecture/Persistent/fileStorage(_:)`` persistence strategy. This gives the
+      app _global_ access to that state, and we can make edits to it from anywhere. We can even
+      do it directly inline in the `.confirmButtonTapped` action.
       
       @Step {
-        Add another nested enum, this time for delegate actions that the `SyncUpDetail` wants to
-        communicate to a parent feature.
+        Use the ``Shared`` property wrapper with the 
+        ``ComposableArchitecture/Persistent/fileStorage(_:)`` persistence strategy to get a 
+        reference to the sync ups loaded from disk.
+        
+        > Note: This does not actually load data from disk. The data has already been loaded from
+        disk and cached in the ``ComposableArchitecture/Shared`` reference. This is only giving us
+        access to that reference.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0010.swift)
       }
       
       @Step {
-        We currently only have one message we want to communicate to the parent, and that is to
-        delete a particular sync up. We only need to supply the ID of the sync up, and the parent
-        feature should be able to delete it from that information alone.
+        Use the `id` of the sync up held in the detail's state to remove it from the `syncUps`
+        collection persisted to disk.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0011.swift)
       }
       
-      @Step {
-        Add a case for delegate actions to the the `Action` enum.
-        
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0012.swift)
-      }
-      
-      @Step {
-        Handle this new `delegate` case in the reducer by performing no logic and returning the 
-        ``ComposableArchitecture/Effect/none`` effect.
-        
-        > Important: As a general rule the child feature should **never** perform any logic in 
-        its `.delegate` case. Delegate actions should only be used to communicate to the parent.
-        If you have logic you want to execute when delegate actions are sent, then move that logic
-        to the place where you send the actions.
-        
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0013.swift)
-      }
-      
-      @Step {
-        Now we can implement the logic for the `.alert(.presented)` case. We will use effects for
-        the first time in <doc:BuildingSyncUps> to send a delegate action by using the 
-        ``ComposableArchitecture/Effect/send(_:)`` effect.
-        
-        > Note: Generally speaking, effects in the Composable architecture are operations that
-        are executed and feed actions back into the system. They are typically asynchronous and 
-        typically interact with outside systems, such as networks, databases.
-        
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0014.swift)
-      }
-      
-      > Important: Here we are using effects as a lightweight way to send a new action into the
-      system as a communication mechanism, but this is one of the only valid uses of
-      ``ComposableArchitecture/Effect/send(_:)``. It is not recommended to use these kinds of
-      effects invoking other reducers in your application. See the performance gotchas of this in
-      <doc:Performance#Sharing-logic-with-actions>, as well as alternatives.
+      That's all it takes to delete the sync up from the persisted array of sync ups. It may trouble
+      you that we are reaching out to a seemingly global `syncUps` variable and mutating it. 
+      However, this is no different than making an API request to delete data on some external
+      server. Typcailly for that situation we use dependencies to make the API operation testable,
+      but we don't need to do that with ``ComposableArchitecture/Shared``. It is testable by
+      default.
       
       There is one more addition we want to make to the deletion functionality before moving on.
       When the user confirms deletion of the sync up we should dismiss the detail view from being
@@ -322,7 +292,7 @@
         Add a dependency on ``ComposableArchitecture/DismissEffect`` to the `SyncUpDetail` feature
         by using the `@Dependency` property wrapper.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0015.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0012.swift)
       }
       
       To dismiss a child feature with the ``ComposableArchitecture/DismissEffect`` dependency you
@@ -337,7 +307,7 @@
         Return a `.run` effect to send the delegate action and invoke `dismiss` in one single
         effect.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0016.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0013.swift)
       }
       
       Next we need to integrate the alert into the view layer so that an alert actually shows
@@ -348,16 +318,15 @@
         modifier that comes with the library. This will cause an alert to be presented when the
         `alert` state is populated.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0017.swift, previousFile: EditingAndDeletingSyncUp-02-code-0017-previous.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0014.swift, previousFile: EditingAndDeletingSyncUp-02-code-0014-previous.swift)
       }
       
-      We have now finished the sync up deletion functionality in the detail screen. At least, as 
-      much as we can implement right now. The actual deletion logic will happen in a parent
-      feature once we actually integrate all of the features together and can navigate between 
-      screen.
+      We have now finished the sync up deletion functionality in the detail screen. Unfortunately
+      we can't yet test deletion because we still have no way to navigate to the detail screen
+      from the sync ups list screen.
       
-      But before doing that, let's take a moment to drastically improve the domain modeling of 
-      the `SyncUpDetail` feature.
+      But, before getting to that, let's take a quick side excursion to clean up our domain
+      modeling in this feature.
     }
   }
   

@@ -11,7 +11,7 @@ struct SyncUpsListView: View {
 
   var body: some View {
     List {
-      ForEach(store.syncUps) { syncUp in
+      ForEach(store.$syncUps.elements) { $syncUp in
         NavigationLink(
           state: App.Path.State.detail(SyncUpDetail.State(syncUp: <#Shared<SyncUp>#>))
         ) {

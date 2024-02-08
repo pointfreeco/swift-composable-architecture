@@ -6,7 +6,7 @@ struct SyncUpDetail {
   struct State {
     @Presents var alert: AlertState<Action.Alert>?
     @Presents var editSyncUp: SyncUpForm.State?
-    var syncUp: SyncUp
+    @Shared var syncUp: SyncUp
   }
 
   enum Action {
@@ -21,16 +21,14 @@ struct SyncUpDetail {
     enum Alert {
       case confirmButtonTapped
     }
-    enum Delegate {
-      
-    }
   }
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .alert(.presented(.confirmButtonTapped)):
-        
+        @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
+
       case .alert(.dismiss):
         return .none
 
