@@ -351,7 +351,7 @@ Another example is scoping to some collection of a child domain in order to use 
 ``ForEachStore``:
 
 ```swift
-ForEachStore(store.scope(state: \.rows, action: \.rows) { store in
+ForEachStore(store.scope(state: \.rows, action: \.rows)) { store in
   RowView(store: store)
 }
 ```

@@ -204,27 +204,33 @@ struct Feature {
 Then you would have made use of ``ForEachStore`` in the view like this:
 
 ```swift
-ForEachStore(store.scope(state: \.rows, action: \.rows)) { childStore in
+ForEachStore(
+  store.scope(state: \.rows, action: \.rows)
+) { childStore in
   ChildView(store: childStore)
 }
 ```
 
 This can now be updated to use the vanilla `ForEach` view in SwiftUI, along with 
-``Store/scope(state:action:)-1nelp``:
+``Store/scope(state:action:)-1nelp``, identified by the state of each row:
 
 ```swift
-ForEach(store.scope(state: \.rows, action: \.rows)) { childStore in
+ForEach(
+  store.scope(state: \.rows, action: \.rows), id: \.state.id
+) { childStore in
   ChildView(store: childStore)
 }
 ```
 
-If your usage of `ForEachStore` relied on the identity of the state of each row (_e.g._, the state's
-`id` is also associated with a selection binding), you must explicitly use the `id` parameter:
+If your usage of `ForEachStore` did not depend on the identity of the state of each row (_e.g._, the
+state's `id` is not associated with a selection binding), you can omit the `id` parameter, as the
+`Store` type is identifiable by its object identity:
 
 ```diff
  ForEach(
-   store.scope(state: \.rows, action: \.rows),
-+  id: \.state.id
+-  store.scope(state: \.rows, action: \.rows),
+-  id: \.state.id,
++  store.scope(state: \.rows, action: \.rows)
  ) { childStore in
    ChildView(store: childStore)
  }
