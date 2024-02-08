@@ -41,7 +41,6 @@ struct SyncUpDetailView: View {
         Section {
           ForEach(store.syncUp.meetings) { meeting in
             Button {
-              store.send(.meetingTapped(id: meeting.id))
             } label: {
               HStack {
                 Image(systemName: "calendar")

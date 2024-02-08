@@ -32,10 +32,6 @@ struct AppFeature {
         else { return .none }
 
         switch delegateAction {
-        case .deleteSyncUp:
-          state.syncUpsList.syncUps.remove(id: detailState.syncUp.id)
-          return .none
-
         case .startMeeting:
           state.path.append(.record(RecordMeeting.State(syncUp: detailState.$syncUp)))
           return .none

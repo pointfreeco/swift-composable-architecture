@@ -11,7 +11,6 @@ struct SyncUpDetail {
     case deleteButtonTapped
     case editButtonTapped
     case startMeetingButtonTapped
-    case meetingTapped(id: Meeting.ID)
   }
 
   var body: some ReducerOf<Self> {

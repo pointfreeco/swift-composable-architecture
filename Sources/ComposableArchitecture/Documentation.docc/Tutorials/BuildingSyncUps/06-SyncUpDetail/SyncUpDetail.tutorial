@@ -40,9 +40,8 @@
       Currently there are 4 buttons, and so we will have an action for each.
       
       @Step {
-        Add an action for each of the buttons in the UI, including  tapping the "Delete" button,
-        the "Edit" button, the "Start meeting" button, and a meeting. The meeting action needs the
-        ID of the meeting that was tapped.
+        Add an action for each of the buttons in the UI, including tapping the "Delete" button,
+        the "Edit" button, the "Start meeting" button.
         
         @Code(name: "SyncUpDetail.swift", file: SyncUpDetail-01-code-0003.swift)
       }

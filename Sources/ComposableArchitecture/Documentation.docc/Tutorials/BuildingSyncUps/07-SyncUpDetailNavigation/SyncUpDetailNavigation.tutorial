@@ -1,5 +1,5 @@
 @Tutorial(time: 10) {
-  @Intro(title: "Sync up detail navigation") {
+  @Intro(title: "Navigating to a sync up detail") {
     We will wrap the application built so far in a `NavigationStack` so that we can navigate to
     the detail screen. To do this we will create a new root-level feature that will be responsible
     for implementing the logic of the stack and integrating all of the features together.

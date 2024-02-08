@@ -125,6 +125,5 @@ final class SyncUpDetailTests: XCTestCase {
     await store.send(.destination(.presented(.alert(.confirmDeletion)))) {
       $0.destination = nil
     }
-    await store.receive(\.delegate.deleteSyncUp)
   }
 }

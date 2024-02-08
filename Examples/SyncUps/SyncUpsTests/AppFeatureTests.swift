@@ -35,11 +35,9 @@ final class AppFeatureTests: XCTestCase {
       .path(.element(id: 0, action: .detail(.destination(.presented(.alert(.confirmDeletion))))))
     ) {
       $0.path[id: 0, case: \.detail]?.destination = nil
-    }
-
-    await store.receive(\.path[id:0].detail.delegate.deleteSyncUp) {
       $0.syncUpsList.syncUps = []
     }
+
     await store.receive(\.path.popFrom) {
       $0.path = StackState()
     }
@@ -47,7 +45,6 @@ final class AppFeatureTests: XCTestCase {
 
   func testDetailEdit() async throws {
     var syncUp = SyncUp.mock
-    let savedData = LockIsolated(Data?.none)
 
     let store = TestStore(
       initialState: AppFeature.State(syncUpsList: SyncUpsList.State(syncUps: [syncUp]))

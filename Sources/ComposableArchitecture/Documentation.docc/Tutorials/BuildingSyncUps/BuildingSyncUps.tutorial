@@ -10,10 +10,6 @@
     Let's start with a tour of the application we will be building. It's called SyncUps, and it's
     a recreation of the Apple's Scrumdinger demo application. 
     
-    It features multiple different navigation patterns, has interesting side effects such as a 
-    timer and speech recognizer, and it's complex enough that it warrants a test suite to be
-    confident it works the way we expect.
-    
     @TutorialReference(tutorial: "doc:WhatIsSyncUps")
   }
   
@@ -67,12 +63,15 @@
     app. We want to be able to drill-down to the detail screen from the list screen.
     
     @TutorialReference(tutorial: "doc:SyncUpDetailNavigation")
-    @TutorialReference(tutorial: "doc:IntegratingSyncUpDetailAndList")
     @TutorialReference(tutorial: "doc:MeetingNavigation")
     @TutorialReference(tutorial: "doc:TestingNavigation")
   }
   
   @Chapter(name: "Record meeting") {
+    The app is almost complete! But we have saved the most difficult feature for last: recording
+    a new meeting. This requires interfacing with two complex dependencies, a speech recognizer
+    and timer, and requires some subtle behavior that we are definitely going to want to get 
+    test coverage on.
    
     @TutorialReference(tutorial: "doc:RecordMeeting")
   }
@@ -83,5 +82,4 @@
 TODO: other things to consider
 * analytics
 * 
-
 -->

@@ -19,7 +19,6 @@ struct SyncUpDetail {
     case editButtonTapped
     case editSyncUp(PresentationAction<SycnUpForm.Action>)
     case startMeetingButtonTapped
-    case meetingTapped(id: Meeting.ID)
     enum Alert {
       case confirmButtonTapped
     }
@@ -64,9 +63,6 @@ struct SyncUpDetail {
         return .none
 
       case .startMeetingButtonTapped:
-        return .none
-
-      case let .meetingTapped(id: id):
         return .none
       }
     }
