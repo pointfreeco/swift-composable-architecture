@@ -7,7 +7,7 @@ final class FileStorageTests: XCTestCase {
   func testBasics() throws {
     let testQueue = TestFileStorageQueue(scheduler: .immediate)
     try withDependencies {
-      $0._fileStoragePersistenceQueue = testQueue
+      $0._fileStorageQueue = testQueue
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(testQueue.fileSystem.value, [:])
@@ -20,7 +20,7 @@ final class FileStorageTests: XCTestCase {
     let testScheduler = DispatchQueue.test
     let testQueue = TestFileStorageQueue(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
-      $0._fileStoragePersistenceQueue = testQueue
+      $0._fileStorageQueue = testQueue
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(testQueue.fileSystem.value, [:])
@@ -40,7 +40,7 @@ final class FileStorageTests: XCTestCase {
     let testScheduler = DispatchQueue.test
     let testQueue = TestFileStorageQueue(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
-      $0._fileStoragePersistenceQueue = testQueue
+      $0._fileStorageQueue = testQueue
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(testQueue.fileSystem.value, [:])
@@ -64,10 +64,11 @@ final class FileStorageTests: XCTestCase {
   }
 
   func testWillResign() throws {
+    guard let willResignNotificationName else { return }
     let testScheduler = DispatchQueue.test
     let testQueue = TestFileStorageQueue(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
-      $0._fileStoragePersistenceQueue = testQueue
+      $0._fileStorageQueue = testQueue
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(testQueue.fileSystem.value, [:])
@@ -75,17 +76,18 @@ final class FileStorageTests: XCTestCase {
       users.append(.blob)
       XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
-      NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
+      NotificationCenter.default.post(name: willResignNotificationName, object: nil)
       testScheduler.advance()
       try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
     }
   }
 
   func testWillResignAndDebounce() throws {
+    guard let willResignNotificationName else { return }
     let testScheduler = DispatchQueue.test
     let testQueue = TestFileStorageQueue(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
-      $0._fileStoragePersistenceQueue = testQueue
+      $0._fileStorageQueue = testQueue
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(testQueue.fileSystem.value, [:])
@@ -96,7 +98,7 @@ final class FileStorageTests: XCTestCase {
       testScheduler.advance(by: .seconds(3))
       XCTAssertNoDifference(testQueue.fileSystem.value, [:])
 
-      NotificationCenter.default.post(name: UIApplication.willResignActiveNotification, object: nil)
+      NotificationCenter.default.post(name: willResignNotificationName, object: nil)
       testScheduler.advance()
       try XCTAssertNoDifference(testQueue.fileSystem.value.users(for: .fileURL), [.blob])
 
@@ -109,7 +111,7 @@ final class FileStorageTests: XCTestCase {
   func testMultipleFiles() throws {
     let testQueue = TestFileStorageQueue()
     try withDependencies {
-      $0._fileStoragePersistenceQueue = testQueue
+      $0._fileStorageQueue = testQueue
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       @Shared(.fileStorage(.anotherFileURL)) var otherUsers = [User]()
@@ -126,16 +128,17 @@ final class FileStorageTests: XCTestCase {
 
   @MainActor
   func testLivePersistence() async throws {
+    guard let willResignNotificationName else { return }
     try? FileManager.default.removeItem(at: .fileURL)
 
     try await withDependencies {
-      $0._fileStoragePersistenceQueue = DispatchQueue.main
+      $0._fileStorageQueue = DispatchQueue.main
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
 
       users.append(.blob)
       NotificationCenter.default
-        .post(name: UIApplication.willResignActiveNotification, object: nil)
+        .post(name: willResignNotificationName, object: nil)
       await Task.yield()
 
       try XCTAssertNoDifference(
@@ -150,7 +153,7 @@ final class FileStorageTests: XCTestCase {
       let testQueue = TestFileStorageQueue()
       try testQueue.save(JSONEncoder().encode([User.blob]), to: .fileURL)
       try await withDependencies {
-        $0._fileStoragePersistenceQueue = testQueue
+        $0._fileStorageQueue = testQueue
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         _ = users
@@ -166,7 +169,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0._fileStoragePersistenceQueue = DispatchQueue.main
+        $0._fileStorageQueue = DispatchQueue.main
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         _ = users
@@ -186,7 +189,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0._fileStoragePersistenceQueue = DispatchQueue.main
+        $0._fileStorageQueue = DispatchQueue.main
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -206,7 +209,7 @@ final class FileStorageTests: XCTestCase {
       let testQueue = TestFileStorageQueue(scheduler: scheduler.eraseToAnyScheduler())
 
       try await withDependencies {
-        $0._fileStoragePersistenceQueue = testQueue
+        $0._fileStorageQueue = testQueue
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -227,7 +230,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0._fileStoragePersistenceQueue = DispatchQueue.main
+        $0._fileStorageQueue = DispatchQueue.main
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -248,7 +251,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0._fileStoragePersistenceQueue = DispatchQueue.main
+        $0._fileStorageQueue = DispatchQueue.main
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -268,7 +271,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0._fileStoragePersistenceQueue = DispatchQueue.main
+        $0._fileStorageQueue = DispatchQueue.main
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()

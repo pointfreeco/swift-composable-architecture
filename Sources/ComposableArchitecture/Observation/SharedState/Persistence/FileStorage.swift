@@ -245,7 +245,8 @@ extension DependencyValues {
   }
 }
 
-private var willResignNotificationName: Notification.Name? {
+@_spi(Internals)
+public var willResignNotificationName: Notification.Name? {
   #if os(iOS) || os(tvOS) || os(visionOS)
     return UIApplication.willResignActiveNotification
   #elseif os(macOS)
