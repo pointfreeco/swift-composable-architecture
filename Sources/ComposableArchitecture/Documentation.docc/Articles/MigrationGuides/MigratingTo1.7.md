@@ -97,7 +97,7 @@ code in the following way:
 -  }
  
    var body: some View {
--    WithViewStore(store, observe: ViewState.init) { store in
+-    WithViewStore(store, observe: ViewState.init) { viewStore in
 +    WithPerceptionTracking {
        Form {
 -        Text(viewStore.count.description)
@@ -125,7 +125,7 @@ apply all of the updates above, but with one additional simplification to the `b
 
 ```diff
  var body: some View {
--  WithViewStore(store, observe: ViewState.init) { store in
+-  WithViewStore(store, observe: ViewState.init) { viewStore in
      Form {
 -      Text(viewStore.count.description)
 -      Button("+") { viewStore.send(.incrementButtonTapped) }
