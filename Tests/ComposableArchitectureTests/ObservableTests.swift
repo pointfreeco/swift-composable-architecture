@@ -577,15 +577,20 @@
     }
 
     func testEnumStateWithIntCase() {
-      var state = EnumState.int(0)
+      let store = Store<EnumState, Void>(initialState: EnumState.int(0)) {
+        Reduce { state, _ in
+          state = .int(1)
+          return .none
+        }
+      }
       let onChangeExpectation = self.expectation(description: "onChange")
       withPerceptionTracking {
-        _ = state
+        _ = store.state
       } onChange: {
         onChangeExpectation.fulfill()
       }
 
-      state = .int(1)
+      store.send(())
 
       self.wait(for: [onChangeExpectation], timeout: 0)
     }
