@@ -537,6 +537,64 @@
 
       state.children[0].count += 1
     }
+
+    func testEnumStateWithInertCases() {
+      let store = Store<EnumState, Void>(initialState: EnumState.count(.one)) {
+        Reduce { state, _ in
+          state = .count(.two)
+          return .none
+        }
+      }
+      let onChangeExpectation = self.expectation(description: "onChange")
+      withPerceptionTracking {
+        _ = store.state
+      } onChange: {
+        onChangeExpectation.fulfill()
+      }
+
+      store.send(())
+
+      self.wait(for: [onChangeExpectation], timeout: 0)
+    }
+
+    func testEnumStateWithInertCasesTricky() {
+      let store = Store<EnumState, Void>(initialState: EnumState.count(.one)) {
+        Reduce { state, _ in
+          state = .anotherCount(.one)
+          return .none
+        }
+      }
+      let onChangeExpectation = self.expectation(description: "onChange")
+      withPerceptionTracking {
+        _ = store.state
+      } onChange: {
+        onChangeExpectation.fulfill()
+      }
+
+      store.send(())
+
+      self.wait(for: [onChangeExpectation], timeout: 0)
+    }
+
+    func testEnumStateWithIntCase() {
+      let store = Store<EnumState, Void>(initialState: EnumState.int(0)) {
+        Reduce { state, _ in
+          state = .int(1)
+          return .none
+        }
+      }
+      let onChangeExpectation = self.expectation(description: "onChange")
+      withPerceptionTracking {
+        _ = store.state
+      } onChange: {
+        onChangeExpectation.fulfill()
+      }
+
+      store.send(())
+
+      XCTTODO("Should this eventually be observed by default?")
+      self.wait(for: [onChangeExpectation], timeout: 0)
+    }
   }
 
   @ObservableState
@@ -575,5 +633,15 @@
     case child1(ChildState)
     case child2(ChildState)
     case inert(Int)
+  }
+  @ObservableState
+  private enum EnumState: Equatable {
+    case count(Count)
+    case anotherCount(Count)
+    case int(Int)
+    @ObservableState
+    enum Count: String {
+      case one, two
+    }
   }
 #endif
