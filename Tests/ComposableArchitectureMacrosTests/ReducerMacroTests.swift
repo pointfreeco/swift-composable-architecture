@@ -752,5 +752,34 @@
         """
       }
     }
+
+    func testAvailability() {
+      assertMacro {
+        """
+        @available(iOS, unavailable)
+        @Reducer
+        struct Feature {}
+        """
+      } expansion: {
+        """
+        @available(iOS, unavailable)
+        struct Feature {
+
+            @ObservableState
+            struct State: Codable, Equatable, Hashable, Sendable {
+                init() {
+                }
+            }
+
+            enum Action: Equatable, Hashable, Sendable {
+            }
+
+            let body = ComposableArchitecture.EmptyReducer<State, Action>()}
+
+        @available(iOS, unavailable) extension Feature: ComposableArchitecture.Reducer {
+        }
+        """
+      }
+    }
   }
 #endif

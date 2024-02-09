@@ -30,7 +30,7 @@ extension ReducerMacro: ExtensionMacro {
       : "ComposableArchitecture.Reducer"
     let ext: DeclSyntax =
       """
-      extension \(type.trimmed): \(raw: proto) {}
+      \(declaration.attributes.availability)extension \(type.trimmed): \(raw: proto) {}
       """
     return [ext.cast(ExtensionDeclSyntax.self)]
   }
