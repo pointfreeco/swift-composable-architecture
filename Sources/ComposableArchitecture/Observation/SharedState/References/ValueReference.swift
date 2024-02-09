@@ -106,25 +106,26 @@ private final class ValueReference<Value>: Reference {
 
   var currentValue: Value {
     _read {
+      // TODO: write test for deadlock, unit test and UI test
+      self._$perceptionRegistrar.access(self, keyPath: \.currentValue)
       self.lock.lock()
       defer { self.lock.unlock() }
-      self._$perceptionRegistrar.access(self, keyPath: \.currentValue)
       yield self._currentValue
     }
     _modify {
+      self._$perceptionRegistrar.willSet(self, keyPath: \.currentValue)
+      defer { self._$perceptionRegistrar.didSet(self, keyPath: \.currentValue) }
       self.lock.lock()
       defer { self.lock.unlock() }
-      self._$perceptionRegistrar.willSet(self, keyPath: \.currentValue)
       yield &self._currentValue
-      self._$perceptionRegistrar.didSet(self, keyPath: \.currentValue)
       self.persistentValue?.save(self._currentValue)
     }
     set {
-      self.lock.withLock {
-        self._$perceptionRegistrar.withMutation(of: self, keyPath: \.currentValue) {
+      self._$perceptionRegistrar.withMutation(of: self, keyPath: \.currentValue) {
+        self.lock.withLock {
           self._currentValue = newValue
+          self.persistentValue?.save(newValue)
         }
-        self.persistentValue?.save(newValue)
       }
     }
   }

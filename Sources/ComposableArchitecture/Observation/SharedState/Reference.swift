@@ -10,6 +10,11 @@ protocol Reference<Value>:
 
   func takeSnapshot()
   func clearSnapshot()
+
+  // TODO: add publisher
+//  #if canImport(Combine)
+//  var publisher: AnyPublisher<Value, Never> { get }
+//  #endif
 }
 
 extension Reference {
