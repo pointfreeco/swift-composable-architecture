@@ -102,56 +102,56 @@
 
     public init(_ keyPath: ReferenceWritableKeyPath<UserDefaults, Value>) {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store[keyPath: keyPath] }
-      self._save = { store[keyPath: keyPath] = $0 }
+      self._load = { [store] in store[keyPath: keyPath] }
+      self._save = { [store] in store[keyPath: keyPath] = $0 }
       self.key = .keyPath(keyPath)
       self.store = store
     }
 
     public init(_ key: String) where Value == Bool {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
 
     public init(_ key: String) where Value == Int {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
 
     public init(_ key: String) where Value == Double {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
 
     public init(_ key: String) where Value == String {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
 
     public init(_ key: String) where Value == URL {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
 
     public init(_ key: String) where Value == Data {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -159,8 +159,10 @@
     public init(_ key: String)
     where Value: RawRepresentable, Value.RawValue == Int {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:)) }
-      self._save = { store.set($0.rawValue, forKey: key) }
+      self._load = { [store] in
+        (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:))
+      }
+      self._save = { [store] in store.set($0.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -168,56 +170,58 @@
     public init(_ key: String)
     where Value: RawRepresentable, Value.RawValue == String {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:)) }
-      self._save = { store.set($0.rawValue, forKey: key) }
+      self._load = { [store] in
+        (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:))
+      }
+      self._save = { [store] in store.set($0.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
 
     public init(_ key: String) where Value == Bool? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
 
     public init(_ key: String) where Value == Int? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
 
     public init(_ key: String) where Value == Double? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
 
     public init(_ key: String) where Value == String? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
 
     public init(_ key: String) where Value == URL? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
 
     public init(_ key: String) where Value == Data? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { store.object(forKey: key) as? Value }
-      self._save = { store.set($0, forKey: key) }
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -225,8 +229,10 @@
     public init<R: RawRepresentable>(_ key: String)
     where R.RawValue == Int, Value == R? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:)) }
-      self._save = { store.set($0?.rawValue, forKey: key) }
+      self._load = { [store] in
+        (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:))
+      }
+      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -234,8 +240,10 @@
     public init<R: RawRepresentable>(_ key: String)
     where R.RawValue == String, Value == R? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:)) }
-      self._save = { store.set($0?.rawValue, forKey: key) }
+      self._load = { [store] in
+        (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:))
+      }
+      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -252,7 +260,6 @@
             else { return }
             continuation.yield(change.newValue)
           }
-          _ = self.store[keyPath: key]
           continuation.onTermination = { _ in
             observer.invalidate()
           }

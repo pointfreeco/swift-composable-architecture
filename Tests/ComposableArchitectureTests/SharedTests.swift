@@ -13,10 +13,6 @@ final class SharedTests: XCTestCase {
     ) {
       SharedFeature()
     }
-//    await store.send(.noop)
-//    await store.send(.increment) {
-//      $0.count = 1
-//    }
     await store.send(.sharedIncrement) {
       $0.sharedCount = 1
     }
@@ -396,7 +392,7 @@ final class SharedTests: XCTestCase {
     await store.send(.incrementInReducer)
   }
 
-  func testObsevation() {
+  func testObservation() {
     @Shared var count: Int
     _count = Shared(0)
     let countDidChange = self.expectation(description: "countDidChange")
