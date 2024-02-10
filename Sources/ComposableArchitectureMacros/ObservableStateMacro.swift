@@ -56,19 +56,19 @@ public struct ObservableStateMacro {
       """
   }
 
-  static func idVariable(_ access: DeclModifierListSyntax.Element?) -> DeclSyntax {
+  static func idVariable() -> DeclSyntax {
     return
       """
-      \(access)var _$id: \(raw: qualifiedIDName) {
+      public var _$id: \(raw: qualifiedIDName) {
       \(raw: registrarVariableName).id
       }
       """
   }
 
-  static func willModifyFunction(_ access: DeclModifierListSyntax.Element?) -> DeclSyntax {
+  static func willModifyFunction() -> DeclSyntax {
     return
       """
-      \(access)mutating func _$willModify() {
+      public mutating func _$willModify() {
       \(raw: registrarVariableName)._$willModify()
       }
       """
@@ -253,8 +253,8 @@ extension ObservableStateMacro: MemberMacro {
     }
     declaration.addIfNeeded(
       ObservableStateMacro.registrarVariable(observableType), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.idVariable(access), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.willModifyFunction(access), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.idVariable(), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.willModifyFunction(), to: &declarations)
 
     return declarations
   }
@@ -269,10 +269,6 @@ extension ObservableStateMacro {
     providingMembersOf declaration: Declaration,
     in context: Context
   ) throws -> [DeclSyntax] {
-    let access = declaration.modifiers.first {
-      $0.name.tokenKind == .keyword(.public) || $0.name.tokenKind == .keyword(.package)
-    }
-
     let enumCaseDecls = declaration.memberBlock.members
       .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
     var getCases: [String] = []
@@ -314,14 +310,14 @@ extension ObservableStateMacro {
 
     return [
       """
-      \(access)var _$id: \(raw: qualifiedIDName) {
+      public var _$id: \(raw: qualifiedIDName) {
       switch self {
       \(raw: getCases.joined(separator: "\n"))
       }
       }
       """,
       """
-      \(access)mutating func _$willModify() {
+      public mutating func _$willModify() {
       switch self {
       \(raw: willModifyCases.joined(separator: "\n"))
       }

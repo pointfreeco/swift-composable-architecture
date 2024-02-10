@@ -168,11 +168,11 @@
 
           var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
-          var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: ComposableArchitecture.ObservableStateID {
             _$observationRegistrar.id
           }
 
-          mutating func _$willModify() {
+          public mutating func _$willModify() {
             _$observationRegistrar._$willModify()
           }
         }
