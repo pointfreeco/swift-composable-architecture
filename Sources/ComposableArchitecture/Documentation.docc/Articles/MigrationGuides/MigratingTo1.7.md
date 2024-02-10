@@ -804,7 +804,7 @@ First, you must make your `View` action enum conform to the ``ViewAction`` proto
 
 ```swift
 @Reducer
-struct Feature
+struct Feature {
   // ...
   enum Action: ViewAction {  // 👈
     // ...
