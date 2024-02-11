@@ -29,11 +29,4 @@
       LockIsolated([:])
     }
   }
-
-  extension DependencyValues {
-    var persistentReferences: LockIsolated<[AnyHashable: any Reference]> {
-      get { self[PersistentReferencesKey.self] }
-      set { self[PersistentReferencesKey.self] = newValue }
-    }
-  }
 #endif

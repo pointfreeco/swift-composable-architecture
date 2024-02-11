@@ -25,7 +25,7 @@ extension Shared {
   ) {
     self.init(
       reference: {
-        @Dependency(\.persistentReferences) var references
+        @Dependency(PersistentReferencesKey.self) var references
         return references.withValue {
           if let reference = $0[persistentValue] {
             return reference
