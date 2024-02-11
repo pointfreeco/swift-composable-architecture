@@ -20,7 +20,7 @@ extension Persistent {
 
 // TODO: Audit unchecked sendable
 public final class _FileStorage<Value: Codable & Sendable>: Persistent, @unchecked Sendable {
-  @Dependency(\._fileStorageQueue) fileprivate var queue
+  @Dependency(\.defaultFileStorage) fileprivate var queue
   let url: URL
   var workItem: DispatchWorkItem?
   var notificationListener: Any!
@@ -109,8 +109,7 @@ extension _FileStorage: Hashable {
   }
 }
 
-@_spi(Internals)
-public protocol FileStorageQueue: Sendable {
+public protocol FileStorage: Sendable {
   func async(execute workItem: DispatchWorkItem)
   func asyncAfter(interval: DispatchTimeInterval, execute: DispatchWorkItem)
   func isSetting() -> Bool?
@@ -124,8 +123,7 @@ public protocol FileStorageQueue: Sendable {
   func setIsSetting(_ isSetting: Bool)
 }
 
-@_spi(Internals)
-extension DispatchQueue: FileStorageQueue {
+extension DispatchQueue: FileStorage {
   private static let isSettingKey = DispatchSpecificKey<Bool>()
 
   public func asyncAfter(interval: DispatchTimeInterval, execute workItem: DispatchWorkItem) {
@@ -169,8 +167,7 @@ extension DispatchQueue: FileStorageQueue {
   }
 }
 
-@_spi(Internals)
-public final class TestFileStorageQueue: FileStorageQueue, Sendable {
+public final class TestFileStorage: FileStorage, Sendable {
   private let _isSetting = LockIsolated<Bool?>(nil)
   public let fileSystem = LockIsolated<[URL: Data]>([:])
   private let scheduler: AnySchedulerOf<DispatchQueue>
@@ -225,21 +222,19 @@ public final class TestFileStorageQueue: FileStorageQueue, Sendable {
 }
 
 private enum FileStorageQueueKey: DependencyKey {
-  static var liveValue: any FileStorageQueue {
+  static var liveValue: any FileStorage {
     DispatchQueue(label: "co.pointfree.ComposableArchitecture._FileStorage")
   }
-  static var previewValue: any FileStorageQueue {
-    TestFileStorageQueue()
+  static var previewValue: any FileStorage {
+    TestFileStorage()
   }
-  static var testValue: any FileStorageQueue {
-    TestFileStorageQueue()
+  static var testValue: any FileStorage {
+    TestFileStorage()
   }
 }
 
 extension DependencyValues {
-  // TODO: should this be public? allows you to run app in simulator with mock persistence queue
-  @_spi(Internals)
-  public var _fileStorageQueue: any FileStorageQueue {
+  public var defaultFileStorage: any FileStorage {
     get { self[FileStorageQueueKey.self] }
     set { self[FileStorageQueueKey.self] = newValue }
   }
