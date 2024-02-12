@@ -9,7 +9,7 @@ import XCTest
 @MainActor
 final class AppCoreTests: XCTestCase {
   func testIntegration() async {
-    let store = TestStore(initialState: TicTacToe.State.logitusn(Login.State())) {
+    let store = TestStore(initialState: TicTacToe.State.login(Login.State())) {
       TicTacToe.body
     } withDependencies: {
       $0.authenticationClient.login = { @Sendable _, _ in
