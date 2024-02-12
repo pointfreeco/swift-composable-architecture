@@ -94,6 +94,7 @@
       XCTAssertEqual(values, [0, 1])
     }
 
+    @available(*, deprecated)
     func testScopeCallCount_OneLevel_NoSubscription() {
       var numCalls1 = 0
       let store = Store<Int, Void>(initialState: 0) {}
@@ -110,6 +111,7 @@
       XCTAssertEqual(numCalls1, 0)
     }
 
+    @available(*, deprecated)
     func testScopeCallCount_OneLevel_Subscribing() {
       var numCalls1 = 0
       let store = Store<Int, Void>(initialState: 0) {}
@@ -127,6 +129,7 @@
       XCTAssertEqual(numCalls1, 1)
     }
 
+    @available(*, deprecated)
     func testScopeCallCount_TwoLevels_Subscribing() {
       var numCalls1 = 0
       var numCalls2 = 0
@@ -154,6 +157,7 @@
       XCTAssertEqual(numCalls2, 1)
     }
 
+    @available(*, deprecated)
     func testScopeCallCount_ThreeLevels_ViewStoreSubscribing() {
       var numCalls1 = 0
       var numCalls2 = 0
