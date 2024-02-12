@@ -2,7 +2,7 @@
 ///
 /// You should not conform to this protocol directly. Instead, the ``Reducer()`` macro will add a
 /// conformance to enums.
-public protocol CaseReducer<State,Action>: Reducer
+public protocol CaseReducer<State, Action>: Reducer
 where State: CaseReducerState, Body: Reducer, Body.State == State, Body.Action == Action {
   associatedtype State = State
   associatedtype Action = Action

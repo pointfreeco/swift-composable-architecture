@@ -9,11 +9,11 @@
     member,
     names:
       named(State),
-      named(Action),
-      named(init),
-      named(body),
-      named(CaseScope),
-      named(scope)
+    named(Action),
+    named(init),
+    named(body),
+    named(CaseScope),
+    named(scope)
   )
   @attached(memberAttribute)
   @attached(extension, conformances: Reducer, CaseReducer)
@@ -32,11 +32,11 @@
     member,
     names:
       named(State),
-      named(Action),
-      named(init),
-      named(body),
-      named(CaseScope),
-      named(scope)
+    named(Action),
+    named(init),
+    named(body),
+    named(CaseScope),
+    named(scope)
   )
   @attached(memberAttribute)
   @attached(extension, conformances: Reducer, CaseReducer)
@@ -51,31 +51,31 @@
     ///
     /// See <doc:Reducers#Synthesizing-protocol-conformances-on-State-and-Action> for more
     /// information.
-    @_documentation(visibility: public)
+    @_documentation(visibility:public)
     public struct _SynthesizedConformance {}
   #else
     public struct _SynthesizedConformance {}
   #endif
-    extension _SynthesizedConformance {
-        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Codable`
-        /// protocol.
-        public static let codable = Self()
-        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Decodable`
-        /// protocol.
-        public static let decodable = Self()
-        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Encodable`
-        /// protocol.
-        public static let encodable = Self()
-        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Equatable`
-        /// protocol.
-        public static let equatable = Self()
-        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Hashable`
-        /// protocol.
-        public static let hashable = Self()
-        /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Sendable`
-        /// protocol.
-        public static let sendable = Self()
-      }
+  extension _SynthesizedConformance {
+    /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Codable`
+    /// protocol.
+    public static let codable = Self()
+    /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Decodable`
+    /// protocol.
+    public static let decodable = Self()
+    /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Encodable`
+    /// protocol.
+    public static let encodable = Self()
+    /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Equatable`
+    /// protocol.
+    public static let equatable = Self()
+    /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Hashable`
+    /// protocol.
+    public static let hashable = Self()
+    /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Sendable`
+    /// protocol.
+    public static let sendable = Self()
+  }
 
   /// Marks the case of an enum reducer as holding onto "ephemeral" state.
   ///
@@ -201,4 +201,3 @@
       module: "ComposableArchitectureMacros", type: "ViewActionMacro"
     ) where R.Action: ViewAction
 #endif
-

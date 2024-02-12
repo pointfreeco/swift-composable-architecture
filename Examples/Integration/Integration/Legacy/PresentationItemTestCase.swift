@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import SwiftUI
 
-fileprivate enum PresentationItemTestCase {
+private enum PresentationItemTestCase {
   @Reducer
   struct Feature {
     @Reducer

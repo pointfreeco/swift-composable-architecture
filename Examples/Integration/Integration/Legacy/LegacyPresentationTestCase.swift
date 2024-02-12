@@ -2,7 +2,7 @@
 import SwiftUI
 import SwiftUINavigation
 
-fileprivate enum PresentationTestCase {
+private enum PresentationTestCase {
   @Reducer
   struct Feature {
     struct State: Equatable {
@@ -86,8 +86,8 @@ fileprivate enum PresentationTestCase {
           return .none
 
         case .destination(.presented(.fullScreenCover(.parentSendDismissActionButtonTapped))),
-            .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
-            .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
+          .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
+          .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
           return .send(.destination(.dismiss))
 
         case let .destination(.presented(.alert(alertAction))):
@@ -141,9 +141,9 @@ fileprivate enum PresentationTestCase {
           }
 
         case .destination(.presented(.fullScreenCover(.dismissAndAlert))),
-            .destination(.presented(.popover(.dismissAndAlert))),
-            .destination(.presented(.navigationDestination(.dismissAndAlert))),
-            .destination(.presented(.sheet(.dismissAndAlert))):
+          .destination(.presented(.popover(.dismissAndAlert))),
+          .destination(.presented(.navigationDestination(.dismissAndAlert))),
+          .destination(.presented(.sheet(.dismissAndAlert))):
           state.destination = .alert(
             AlertState {
               TextState("Hello!")

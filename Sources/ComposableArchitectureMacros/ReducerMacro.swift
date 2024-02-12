@@ -25,7 +25,8 @@ extension ReducerMacro: ExtensionMacro {
     {
       return []
     }
-    let proto = declaration.isEnum
+    let proto =
+      declaration.isEnum
       ? "ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer"
       : "ComposableArchitecture.Reducer"
     let ext: DeclSyntax =
@@ -132,7 +133,8 @@ extension ReducerMacro: MemberAttributeMacro {
           !attributeName.starts(with: "ComposableArchitecture.ReducerBuilder")
         else { return [] }
       }
-      let genericArguments = genericArguments.count == 1
+      let genericArguments =
+        genericArguments.count == 1
         ? "\(genericArguments.description).State, \(genericArguments.description).Action"
         : "\(genericArguments)"
       return [
@@ -176,8 +178,8 @@ extension ReducerMacro: MemberAttributeMacro {
   }
 }
 
-private extension IdentifierTypeSyntax {
-  var isEphemeral: Bool {
+extension IdentifierTypeSyntax {
+  fileprivate var isEphemeral: Bool {
     self.name.text == "AlertState" || self.name.text == "ConfirmationDialogState"
   }
 }
@@ -215,20 +217,23 @@ extension ReducerMacro: MemberMacro {
       }
       return true
     }
-    let hasExplicitReducerBody = bindings.contains {
-      guard $0.initializer == nil
-      else { return true }
-      guard let name = $0.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self)?.constraint
-        .as(IdentifierTypeSyntax.self)?.name.text
-      else {
-        return false
-      }
-      return ["Reducer", "ReducerOf"].withQualified.contains(name)
-    } || hasReduceMethod
-    let hasBody = bindings.contains {
-      $0.as(PatternBindingSyntax.self)?.pattern
-        .as(IdentifierPatternSyntax.self)?.identifier.text == "body"
-    } || hasReduceMethod
+    let hasExplicitReducerBody =
+      bindings.contains {
+        guard $0.initializer == nil
+        else { return true }
+        guard
+          let name = $0.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self)?.constraint
+            .as(IdentifierTypeSyntax.self)?.name.text
+        else {
+          return false
+        }
+        return ["Reducer", "ReducerOf"].withQualified.contains(name)
+      } || hasReduceMethod
+    let hasBody =
+      bindings.contains {
+        $0.as(PatternBindingSyntax.self)?.pattern
+          .as(IdentifierPatternSyntax.self)?.identifier.text == "body"
+      } || hasReduceMethod
     var decls: [DeclSyntax] = []
     if let enumDecl = declaration.as(EnumDeclSyntax.self) {
       let enumCaseElements = enumDecl.memberBlock
@@ -257,7 +262,8 @@ extension ReducerMacro: MemberMacro {
           parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
         {
           let type = parameter.type
-          let stateCase = enumCaseElement.attribute == .ephemeral
+          let stateCase =
+            enumCaseElement.attribute == .ephemeral
             ? element
             : element.suffixed("State")
           stateCaseDecls.append("case \(stateCase.trimmedDescription)")
@@ -311,7 +317,8 @@ extension ReducerMacro: MemberMacro {
         if case let .argumentList(arguments) = node.arguments,
           let startIndex = arguments.firstIndex(where: { $0.label?.text == "state" })
         {
-          let endIndex = arguments.firstIndex(where: { $0.label?.text == "action" })
+          let endIndex =
+            arguments.firstIndex(where: { $0.label?.text == "action" })
             ?? arguments.endIndex
           conformances.append(
             contentsOf: arguments[startIndex..<endIndex].compactMap {
@@ -400,7 +407,8 @@ extension ReducerMacro: MemberMacro {
             fixIt: .replace(
               message: MacroExpansionFixItMessage("Remove '(\(arguments))'"),
               oldNode: node,
-              newNode: node
+              newNode:
+                node
                 .with(\.leftParen, nil)
                 .with(\.arguments, nil)
                 .with(\.rightParen, nil)
@@ -487,8 +495,8 @@ private final class ReduceVisitor: SyntaxVisitor {
   }
 }
 
-private extension EnumCaseDeclSyntax {
-  var attribute: ReducerCase.Attribute? {
+extension EnumCaseDeclSyntax {
+  fileprivate var attribute: ReducerCase.Attribute? {
     if self.isIgnored {
       return .ignored
     } else if self.isEphemeral {
@@ -498,12 +506,12 @@ private extension EnumCaseDeclSyntax {
     }
   }
 
-  var isIgnored: Bool {
+  fileprivate var isIgnored: Bool {
     self.attributes.contains("ReducerCaseIgnored")
       || self.elements.contains { $0.parameterClause?.parameters.count != 1 }
   }
 
-  var isEphemeral: Bool {
+  fileprivate var isEphemeral: Bool {
     self.attributes.contains("ReducerCaseEphemeral")
       || self.elements.contains {
         guard
@@ -517,8 +525,8 @@ private extension EnumCaseDeclSyntax {
   }
 }
 
-private extension EnumCaseElementSyntax {
-  func suffixed(_ suffix: TokenSyntax) -> Self {
+extension EnumCaseElementSyntax {
+  fileprivate func suffixed(_ suffix: TokenSyntax) -> Self {
     var element = self
     if var parameterClause = element.parameterClause,
       let type = parameterClause.parameters.first?.type
@@ -531,8 +539,8 @@ private extension EnumCaseElementSyntax {
   }
 }
 
-private extension AttributeListSyntax {
-  func contains(_ name: TokenSyntax) -> Bool {
+extension AttributeListSyntax {
+  fileprivate func contains(_ name: TokenSyntax) -> Bool {
     self.contains {
       guard
         case let .attribute(attribute) = $0,
