@@ -37,5 +37,4 @@
   class Model {
     var count = 0
   }
-
 #endif

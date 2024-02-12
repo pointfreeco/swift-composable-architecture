@@ -123,66 +123,44 @@
       @Step {
         Define a new reducer, called `Destination`, nested inside the `ContactsFeature`. This 
         reducer will hold the domain and logic for every feature that can be navigated to from
-        the contacts feature.
+        the contacts feature, and as such it will be an enum.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0000.swift)
       }
       
       @Step {
-        Implement the `State` requirement as an enum because we want to express the fact that only
-        one single destination can be active at a time, and enums are perfect for that.
+        Add a case for for the "Add contact" feature. Note that we are holding onto the actual
+        `AddContactFeature` reducer in the case, not the state. The
+        ``ComposableArchitecture/Reducer()`` will fill in all the requirements for the reducer
+        protocol for us automatically.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0001.swift)
       }
       
       @Step {
-        Add a case to the `State` enum for each destination feature that can be navigated to, and
-        hold onto that feature's state. Right now this includes the `AddContactFeature` and the 
-        alert.
+        Add another case to the `Destination` for the alert state that can be displayed in the
+        feature.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0002.swift)
       }
       
-      @Step {
-        Implement the `Action` requirement as an enum. 
-        
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0003.swift)
-      }
-      
-      @Step {
-        Add a case to the `Action` enum for each destination feature that can be navigated to, and
-        hold onto that feature's action.
-        
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0004.swift)
-      }
-      
-      @Step {
-        Implement the ``ComposableArchitecture/Reducer/body-swift.property`` of the reducer.
-        
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0005.swift)
-      }
-      
-      @Step {
-        Compose all of the destination features together by using the 
-        ``ComposableArchitecture/Scope`` reducer to focus on the domain of a reducer. Typically
-        you will need one ``ComposableArchitecture/Scope`` reducer for each destination except for
-        alerts and confirmation dialogs since they do not have a reducer of their own.
-        
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0006.swift)
-      }
+      That is all it takes to define a single reducer that comes multiple mutually exclusive
+      reducers together. You can expand the macro code in Xcode to see all the code that is
+      being written for you. And if in the future this feature can navigate to another feature,
+      you will only have to add a single case to the `Destination` enum.
       
       @Step {
         Replace the two pieces of optional ``ComposableArchitecture/Presents()`` with a single
         optional pointed at `Destination.State`.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0007.swift, previousFile: 02-02-02-code-0007-previous.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0003.swift, previousFile: 02-02-02-code-0003-previous.swift)
       }
       
       @Step {
         Replace the two action cases that held onto ``ComposableArchitecture/PresentationAction``
         with a single case that holds onto `Destination.Action`.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0008.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0004.swift)
       }
       
       Now our model is more concisely defined, and we have compile time guarantees that only 
@@ -193,7 +171,7 @@
         Instead of populating a piece of `addContact` optional state in order to drive navigation
         to that feature, we will now mutate `destination` to point it to the `addContact` case.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0009.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0005.swift)
       }
       
       @Step {
@@ -201,34 +179,36 @@
         `.destination(.presented(_))` case, such as when the "Add Contact" feature tells us to 
         save the contact.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0010.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0006.swift)
       }
       
       @Step {
         And when the alert confirms deletion of the contact.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0011.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0007.swift)
       }
       
       @Step {
         We can handle all other destination actions by simply returning a `.none` effect to 
         represent there is no other work to perform.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0008.swift)
       }
       
       @Step {
         Update the state mutation for showing an alert to instead point the `destination` to the
         `alert` case.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0013.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0009.swift)
       }
       
       @Step {
         Replace the two `ifLet`s that were used at the bottom of the reducer with a single one that
-        runs the `Destination` reducer whenever the `destination` state is non-`nil`.
+        is focused on the `Destination` domain. It is not even necessary to specify the
+        `Destination` type in this expression because it can be inferred from how the ``Reducer()``
+        macro was applied to the `Destination` enum.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0014.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0010.swift)
       }
       
       That's all it takes to convert two independent, imprecisely modeled optional values into a 
@@ -240,16 +220,16 @@
         When you model all of your destinations in a single optional values, you start by scoping to
         the destination domain and then you further scope into the the state and action cases
         associated with the specific destination using familiar key path dot-chaining syntax. This 
-        can be done with familiar dot syntax because the ``ComposableArchitecture/Reducer()`` 
-        macro applies the `@CasePathable` macro to each enum.
+        can be done with familiar dot syntax because the 
+        ``ComposableArchitecture/Reducer()`` macro applies the `@CasePathable` macro to each enum.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0015.swift, previousFile: 02-02-02-code-0015-previous.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0011.swift, previousFile: 02-02-02-code-0011-previous.swift)
       }
 
       @Step {
         The same can be done for the `alert` view modifier.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0016.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012.swift)
       }
 
       That completes the refactor of the reducer and view to use a single piece of optional enum

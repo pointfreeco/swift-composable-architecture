@@ -25,6 +25,7 @@
 - ``scope(state:action:)-90255``
 - ``scope(state:action:)-36e72``
 - ``scope(state:action:)-1nelp``
+- ``case``
 
 ### Scoping store bindings
 

@@ -436,8 +436,8 @@ extension ObservableStateMacro: ExtensionMacro {
 
     return [
       ("""
-      extension \(raw: type.trimmedDescription): \(raw: qualifiedConformanceName), \
-      Observation.Observable {}
+      \(declaration.attributes.availability)extension \(raw: type.trimmedDescription): \
+      \(raw: qualifiedConformanceName), Observation.Observable {}
       """ as DeclSyntax)
       .cast(ExtensionDeclSyntax.self)
     ]

@@ -13,6 +13,7 @@ designed with SwiftUI in mind, and comes with many powerful tools to integrate i
 
 - ``SwiftUI/View/alert(_:)``
 - ``SwiftUI/View/confirmationDialog(_:)``
+- ``_EphemeralState``
 
 ### Presentation
 

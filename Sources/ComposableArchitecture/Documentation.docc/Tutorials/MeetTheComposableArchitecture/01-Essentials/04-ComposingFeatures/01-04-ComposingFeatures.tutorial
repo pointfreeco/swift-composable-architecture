@@ -74,8 +74,7 @@
       our features get too big, and then we will split the reducer and view into their own files.
       
       @Step {
-        Create a new `AppFeature` struct and apply the ``ComposableArchitecture/Reducer()``
-        macro.
+        Create a new `AppFeature` struct and apply the ``ComposableArchitecture/Reducer()`` macro.
         
         @Code(name: "AppFeature.swift", file: 01-04-02-code-0001.swift)
       }

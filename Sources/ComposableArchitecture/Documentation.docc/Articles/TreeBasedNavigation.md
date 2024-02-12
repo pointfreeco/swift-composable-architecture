@@ -172,8 +172,9 @@ This gives us compile-time proof that only one single destination can be active 
 
 In order to utilize this style of domain modeling you must take a few extra steps. First you model a
 "destination" reducer that encapsulates the domains and behavior of all of the features that you can
-navigate to. And typically it's best to nest this reducer inside the feature that can perform the
-navigation:
+navigate to. Typically it's best to nest this reducer inside the feature that can perform the
+navigation, and the ``Reducer()`` macro can do most of the heavy lifting for us by implementing the
+entire reducer from a simple description of the features that can be navigated to:
 
 ```swift
 @Reducer
@@ -181,37 +182,17 @@ struct InventoryFeature {
   // ...
 
   @Reducer
-  struct Destination {
-    @ObservableState
-    enum State {
-      case addItem(AddFeature.State)
-      case detailItem(DetailFeature.State)
-      case editItem(EditFeature.State)
-    }
-    enum Action {
-      case addItem(AddFeature.Action)
-      case detailItem(DetailFeature.Action)
-      case editItem(EditFeature.Action)
-    }
-    var body: some ReducerOf<Self> {
-      Scope(state: \.addItem, action: \.addItem) { 
-        AddFeature()
-      }
-      Scope(state: \.editItem, action: \.editItem) { 
-        EditFeature()
-      }
-      Scope(state: \.detailItem, action: \.detailItem) { 
-        DetailFeature()
-      }
-    }
+  enum Destination {
+    case addItem(AddFeature)
+    case detailItem(DetailFeature)
+    case editItem(EditFeature)
   }
 }
 ```
 
-> Note: Both the `State` and `Action` types nested in the reducer are enums, with a case for each
-> screen that can be navigated to. Further, the `body` computed property has a ``Scope`` reducer for
-> each feature, and uses case paths for focusing in on the specific case of the state and action
-> enums.
+> Note: The ``Reducer()`` macro takes this simple enum description of destination features and
+> expands it into a fully composed feature that operates on enum state with a case for each
+> feature's state. You can expand the macro code in Xcode to see everything that is written for you.
 
 With that done we can now hold onto a _single_ piece of optional state in our feature, using the
 ``Presents()`` macro, and we hold onto the destination actions using the
@@ -234,7 +215,7 @@ struct InventoryFeature {
 }
 ```
 
-And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator
+And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)-8qzye`` operator
 to integrate the domain of the destination with the domain of the parent feature:
 
 ```swift
@@ -246,12 +227,14 @@ struct InventoryFeature {
     Reduce { state, action in 
       // ...
     }
-    .ifLet(\.$destination, action: \.destination) { 
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination) 
   }
 }
 ```
+
+> Note: It's not necessary to specify `Destination` in a trialing closure of `ifLet` because it can
+> automatically be inferred due to how the `Destination` enum was defined with the ``Reducer()``
+> macro.
 
 That completes the steps for integrating the child and parent features together.
 
