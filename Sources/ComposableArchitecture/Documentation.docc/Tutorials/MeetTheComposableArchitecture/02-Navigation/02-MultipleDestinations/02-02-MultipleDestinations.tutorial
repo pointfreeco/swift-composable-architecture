@@ -217,8 +217,8 @@
       enum drives the sheet and alert.
       
       @Step {
-        When you model all of your destinations in a single optional values, you start by scoping to
-        the destination domain and then you further scope into the the state and action cases
+        When you model all of your destinations in a single optional value, you start by scoping to
+        the destination domain and then you further scope into the state and action cases
         associated with the specific destination using familiar key path dot-chaining syntax. This 
         can be done with familiar dot syntax because the 
         ``ComposableArchitecture/Reducer()`` macro applies the `@CasePathable` macro to each enum.
