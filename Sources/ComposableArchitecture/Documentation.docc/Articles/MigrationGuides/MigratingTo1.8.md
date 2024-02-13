@@ -92,7 +92,7 @@ enum Destination {
 24 lines of code has become 6. The `@Reducer` macro can now be applied to an _enum_ where each
 case holds onto the reducer that governs the logic and behavior for that case.
 
-> Note: If the parent feature has equatable state, you must extend the the generated `State` of the
+> Note: If the parent feature has equatable state, you must extend the generated `State` of the
 > enum reducer to be `Equatable` as well. Due to a bug in Swift 5.9 that prevents this from being
 > done in the same file with an explicit extension, we provide the following configuration options,
 > ``Reducer(state:action:)``, instead, which can be told which synthesized conformances to apply:
