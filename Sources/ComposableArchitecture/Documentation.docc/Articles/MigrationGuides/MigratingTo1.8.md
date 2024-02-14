@@ -78,7 +78,7 @@ to add a new destination we must add a case to the ``Reducer/State`` enum, a cas
 ``Reducer/Action`` enum, and a ``Scope`` to the ``Reducer/body-swift.property``. 
 
 The ``Reducer()`` macro is now capable of generating all of this code for you from the following
-simple declaration
+simple declaration:
 
 ```swift
 @Reducer
