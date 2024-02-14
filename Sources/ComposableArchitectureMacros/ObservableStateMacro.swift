@@ -248,9 +248,6 @@ extension ObservableStateMacro: MemberMacro {
 
     var declarations = [DeclSyntax]()
 
-    let access = declaration.modifiers.first {
-      $0.name.tokenKind == .keyword(.public) || $0.name.tokenKind == .keyword(.package)
-    }
     declaration.addIfNeeded(
       ObservableStateMacro.registrarVariable(observableType), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.idVariable(), to: &declarations)
