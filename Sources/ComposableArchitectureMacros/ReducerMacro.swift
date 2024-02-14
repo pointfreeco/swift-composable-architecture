@@ -236,15 +236,7 @@ extension ReducerMacro: MemberMacro {
       } || hasReduceMethod
     var decls: [DeclSyntax] = []
     if let enumDecl = declaration.as(EnumDeclSyntax.self) {
-      let enumCaseElements = enumDecl.memberBlock
-        .members
-        .flatMap { member -> [ReducerCase] in
-          guard let decl = member.decl.as(EnumCaseDeclSyntax.self) else { return [] }
-          return decl.elements.map {
-            ReducerCase(element: $0, attribute: decl.attribute)
-          }
-        }
-
+      let enumCaseElements = [ReducerCase](members: enumDecl.memberBlock.members)
       var stateCaseDecls: [String] = []
       var actionCaseDecls: [String] = []
       var reducerScopes: [String] = []
@@ -252,65 +244,15 @@ extension ReducerMacro: MemberMacro {
       var storeScopes: [String] = []
 
       for enumCaseElement in enumCaseElements {
-        let element = enumCaseElement.element
-        let name = element.name.text
-
-        if enumCaseElement.attribute != .ignored,
-          let parameterClause = element.parameterClause,
-          parameterClause.parameters.count == 1,
-          let parameter = parameterClause.parameters.first,
-          parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
-        {
-          let type = parameter.type
-          let stateCase =
-            enumCaseElement.attribute == .ephemeral
-            ? element
-            : element.suffixed("State")
-          stateCaseDecls.append("case \(stateCase.trimmedDescription)")
-          actionCaseDecls.append("case \(element.suffixed("Action").trimmedDescription)")
-          if enumCaseElement.attribute == nil {
-            reducerScopes.append(
-              """
-              ComposableArchitecture.Scope(\
-              state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
-              ) {
-              \(type.trimmed)()
-              }
-              """
-            )
-            storeCases.append("case \(name)(ComposableArchitecture.StoreOf<\(type.trimmed)>)")
-            storeScopes.append(
-              """
-              case .\(name):
-              return .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
-              """
-            )
-          }
-        } else {
-          stateCaseDecls.append("case \(element.trimmedDescription)")
+        stateCaseDecls.append(enumCaseElement.stateCaseDecl)
+        if let actionCaseDecl = enumCaseElement.actionCaseDecl {
+          actionCaseDecls.append(actionCaseDecl)
         }
-        if enumCaseElement.attribute != nil {
-          storeCases.append("case \(element.trimmedDescription)")
-          if let parameters = element.parameterClause?.parameters {
-            let bindingNames = (0..<parameters.count).map { "v\($0)" }.joined(separator: ", ")
-            let returnNames = parameters.enumerated()
-              .map { "\($1.firstName.map { "\($0.text): " } ?? "")v\($0)" }
-              .joined(separator: ", ")
-            storeScopes.append(
-              """
-              case let .\(name)(\(bindingNames)):
-              return .\(name)(\(returnNames))
-              """
-            )
-          } else {
-            storeScopes.append(
-              """
-              case .\(name):
-              return .\(name)
-              """
-            )
-          }
+        if let reducerScope = enumCaseElement.reducerScope {
+          reducerScopes.append(reducerScope)
         }
+        storeCases.append(enumCaseElement.storeCase)
+        storeScopes.append(enumCaseElement.storeScope)
       }
       if !hasState {
         var conformances: [String] = []
@@ -437,13 +379,203 @@ extension ReducerMacro: MemberMacro {
   }
 }
 
-private struct ReducerCase {
-  let element: EnumCaseElementSyntax
-  let attribute: Attribute?
+private enum ReducerCase {
+  case element(EnumCaseElementSyntax, attribute: Attribute? = nil)
+  indirect case ifConfig([IfConfig])
 
   enum Attribute {
     case ephemeral
     case ignored
+  }
+
+  struct IfConfig {
+    let poundKeyword: TokenSyntax
+    let condition: ExprSyntax?
+    let cases: [ReducerCase]
+  }
+
+  var stateCaseDecl: String {
+    switch self {
+    case let .element(element, attribute):
+      if attribute != .ignored,
+        let parameterClause = element.parameterClause,
+        parameterClause.parameters.count == 1,
+        let parameter = parameterClause.parameters.first,
+        parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
+      {
+        let stateCase = attribute == .ephemeral ? element : element.suffixed("State")
+        return "case \(stateCase.trimmedDescription)"
+      } else {
+        return "case \(element.trimmedDescription)"
+      }
+
+    case let .ifConfig(configs):
+      return configs
+        .map {
+          """
+          \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
+          \($0.cases.map(\.stateCaseDecl).joined(separator: "\n"))
+          """
+        }
+        .joined(separator: "\n") + "#endif\n"
+    }
+  }
+
+  var actionCaseDecl: String? {
+    switch self {
+    case let .element(element, attribute):
+      if attribute != .ignored,
+        let parameterClause = element.parameterClause,
+        parameterClause.parameters.count == 1,
+        let parameter = parameterClause.parameters.first,
+        parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
+      {
+        return "case \(element.suffixed("Action").trimmedDescription)"
+      } else {
+        return nil
+      }
+
+    case let .ifConfig(configs):
+      return configs
+        .map {
+          let actionCaseDecls = $0.cases.compactMap(\.actionCaseDecl)
+          return """
+            \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
+            \(actionCaseDecls.joined(separator: "\n"))
+            """
+        }
+        .joined(separator: "\n") + "#endif\n"
+    }
+  }
+
+  var reducerScope: String? {
+    switch self {
+    case let .element(element, attribute):
+      if attribute == nil,
+        let parameterClause = element.parameterClause,
+        parameterClause.parameters.count == 1,
+        let parameter = parameterClause.parameters.first,
+        parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
+      {
+        let name = element.name.text
+        let type = parameter.type
+        return """
+          ComposableArchitecture.Scope(\
+          state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
+          ) {
+          \(type.trimmed)()
+          }
+          """
+      } else {
+        return nil
+      }
+
+    case let .ifConfig(configs):
+      return configs
+        .map {
+          let reduceScopes = $0.cases.compactMap(\.reducerScope)
+          return """
+            \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
+            \(reduceScopes.joined(separator: "\n"))
+            """
+        }
+        .joined(separator: "\n") + "#endif\n"
+    }
+  }
+
+  var storeCase: String {
+    switch self {
+    case let .element(element, attribute):
+      if attribute == nil,
+        let parameterClause = element.parameterClause,
+        parameterClause.parameters.count == 1,
+        let parameter = parameterClause.parameters.first,
+        parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
+      {
+        let name = element.name.text
+        let type = parameter.type
+        return "case \(name)(ComposableArchitecture.StoreOf<\(type.trimmed)>)"
+      } else {
+        return "case \(element.trimmedDescription)"
+      }
+    case let .ifConfig(configs):
+      return configs
+        .map {
+          """
+          \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
+          \($0.cases.map(\.storeCase).joined(separator: "\n"))
+          """
+        }
+        .joined(separator: "\n") + "#endif\n"
+    }
+  }
+
+  var storeScope: String {
+    switch self {
+    case let .element(element, attribute):
+      let name = element.name.text
+      if attribute == nil,
+        let parameterClause = element.parameterClause,
+        parameterClause.parameters.count == 1,
+        let parameter = parameterClause.parameters.first,
+        parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
+      {
+        return """
+          case .\(name):
+          return .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
+          """
+      } else if let parameters = element.parameterClause?.parameters {
+        let bindingNames = (0..<parameters.count).map { "v\($0)" }.joined(separator: ", ")
+        let returnNames = parameters.enumerated()
+          .map { "\($1.firstName.map { "\($0.text): " } ?? "")v\($0)" }
+          .joined(separator: ", ")
+        return """
+          case let .\(name)(\(bindingNames)):
+          return .\(name)(\(returnNames))
+          """
+      } else {
+        return """
+          case .\(name):
+          return .\(name)
+          """
+      }
+    case let .ifConfig(configs):
+      return configs
+        .map {
+          """
+          \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
+          \($0.cases.map(\.storeScope).joined(separator: "\n"))
+          """
+        }
+        .joined(separator: "\n") + "#endif\n"
+    }
+  }
+}
+
+extension Array where Element == ReducerCase {
+  init(members: MemberBlockItemListSyntax) {
+    self = members.flatMap {
+      if let enumCaseDecl = $0.decl.as(EnumCaseDeclSyntax.self) {
+        return enumCaseDecl.elements.map {
+          ReducerCase.element($0, attribute: enumCaseDecl.attribute)
+        }
+      }
+      if let ifConfigDecl = $0.decl.as(IfConfigDeclSyntax.self) {
+        let configs = ifConfigDecl.clauses.flatMap { decl -> [ReducerCase.IfConfig] in
+          guard let elements = decl.elements?.as(MemberBlockItemListSyntax.self)
+          else { return [] }
+          return [
+            ReducerCase.IfConfig(
+              poundKeyword: decl.poundKeyword,
+              condition: decl.condition,
+              cases: Array(members: elements)
+            )
+          ]
+        }
+        return [.ifConfig(configs)]
+      }
+      return []
+    }
   }
 }
 
