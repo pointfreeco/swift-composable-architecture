@@ -518,7 +518,6 @@ public final class TestStore<State, Action> {
     let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
       Dependencies.withDependencies {
         $0[SharedChangeTracker.self] = SharedChangeTracker()
-        $0[PersistentReferencesKey.self] = LockIsolated([:])
         prepareDependencies(&$0)
       } operation: {
         TestReducer(Reduce(reducer()), initialState: initialState())

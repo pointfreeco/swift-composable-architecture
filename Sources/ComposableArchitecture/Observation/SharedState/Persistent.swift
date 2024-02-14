@@ -24,7 +24,9 @@
   }
 
   enum PersistentReferencesKey: DependencyKey {
-    static let liveValue = LockIsolated<[AnyHashable: any Reference]>([:])
+    static var liveValue: LockIsolated<[AnyHashable: any Reference]> {
+      LockIsolated([:])
+    }
     static var testValue: LockIsolated<[AnyHashable: any Reference]> {
       LockIsolated([:])
     }
