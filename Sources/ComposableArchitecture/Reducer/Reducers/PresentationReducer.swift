@@ -408,25 +408,6 @@ extension Reducer {
     )
   }
 
-  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` for alerts
-  /// and confirmation dialogs that does not require a child reducer.
-  @warn_unqualified_access
-  @inlinable
-  public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
-    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
-    action toPresentationAction: CaseKeyPath<Action, PresentationAction<DestinationAction>>,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
-    self.ifLet(
-      toPresentationState,
-      action: toPresentationAction,
-      destination: {},
-      fileID: fileID,
-      line: line
-    )
-  }
-
   @available(
     iOS,
     deprecated: 9999,
