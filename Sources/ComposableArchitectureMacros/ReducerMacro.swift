@@ -268,13 +268,13 @@ extension ReducerMacro: MemberMacro {
             : element.suffixed("State")
           stateCaseDecls.append("case \(stateCase.trimmedDescription)")
           actionCaseDecls.append("case \(element.suffixed("Action").trimmedDescription)")
-          if enumCaseElement.attribute == nil {
+          if enumCaseElement.attribute == nil || enumCaseElement.attribute == .static {
             reducerScopes.append(
               """
               ComposableArchitecture.Scope(\
               state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
               ) {
-              \(type.trimmed)()
+              \(type.trimmed)\(enumCaseElement.attribute == .static ? ".body" : "()")
               }
               """
             )
@@ -289,7 +289,7 @@ extension ReducerMacro: MemberMacro {
         } else {
           stateCaseDecls.append("case \(element.trimmedDescription)")
         }
-        if enumCaseElement.attribute != nil {
+        if enumCaseElement.attribute != nil && enumCaseElement.attribute != .static {
           storeCases.append("case \(element.trimmedDescription)")
           if let parameters = element.parameterClause?.parameters {
             let bindingNames = (0..<parameters.count).map { "v\($0)" }.joined(separator: ", ")
@@ -444,6 +444,7 @@ private struct ReducerCase {
   enum Attribute {
     case ephemeral
     case ignored
+    case `static`
   }
 }
 
@@ -501,6 +502,8 @@ extension EnumCaseDeclSyntax {
       return .ignored
     } else if self.isEphemeral {
       return .ephemeral
+    } else if self.isStatic {
+      return .static
     } else {
       return nil
     }
@@ -522,6 +525,10 @@ extension EnumCaseDeclSyntax {
         else { return false }
         return true
       }
+  }
+    
+  fileprivate var isStatic: Bool {
+    self.attributes.contains("ReducerCaseStatic")
   }
 }
 
@@ -562,6 +569,16 @@ enum ReducerCaseEphemeralMacro: PeerMacro {
 }
 
 enum ReducerCaseIgnoredMacro: PeerMacro {
+  static func expansion(
+    of node: AttributeSyntax,
+    providingPeersOf declaration: some DeclSyntaxProtocol,
+    in context: some MacroExpansionContext
+  ) throws -> [DeclSyntax] {
+    []
+  }
+}
+
+enum ReducerCaseStaticMacro: PeerMacro {
   static func expansion(
     of node: AttributeSyntax,
     providingPeersOf declaration: some DeclSyntaxProtocol,
