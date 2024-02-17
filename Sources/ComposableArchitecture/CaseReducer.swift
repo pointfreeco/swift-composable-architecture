@@ -61,3 +61,21 @@ extension Store where State: CaseReducerState, State.StateReducer.Action == Acti
     State.StateReducer.scope(self)
   }
 }
+
+extension Scope {
+    
+    /// A special overload of ``Scope/init(state:action:child:)`` for enum reducers.
+    @inlinable
+    public init<ChildState: CaseReducerState, ChildAction>(
+        state toChildState: WritableKeyPath<ParentState, ChildState>,
+        action toChildAction: CaseKeyPath<ParentAction, ChildAction>
+    )
+    where
+    ChildState == Child.State,
+    ChildAction == Child.Action,
+    ChildState.StateReducer.Body == Child {
+        self.init(state: toChildState, action: toChildAction) {
+            ChildState.StateReducer.body
+        }
+    }
+}
