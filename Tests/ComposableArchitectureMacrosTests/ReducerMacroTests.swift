@@ -341,6 +341,67 @@
       }
     }
 
+    func testEnum_TwoCases() {
+      assertMacro {
+        """
+        @Reducer
+        enum Destination {
+          case activity(Activity)
+          case timeline(Timeline)
+        }
+        """
+      } expansion: {
+        #"""
+        enum Destination {
+          case activity(Activity)
+          case timeline(Timeline)
+
+          @CasePathable
+          @dynamicMemberLookup
+          @ObservableState
+          enum State: ComposableArchitecture.CaseReducerState {
+            typealias StateReducer = Destination
+            case activity(Activity.State)
+            case timeline(Timeline.State)
+          }
+
+          @CasePathable
+          enum Action {
+            case activity(Activity.Action)
+            case timeline(Timeline.Action)
+          }
+
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          static var body: ReducerBuilder<Self.State, Self.Action>._Sequence<Scope<Self.State, Self.Action, Activity>, Scope<Self.State, Self.Action, Timeline>> {
+            ComposableArchitecture.Scope(state: \Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
+              Activity()
+            }
+            ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+              Timeline()
+            }
+          }
+
+          enum CaseScope {
+            case activity(ComposableArchitecture.StoreOf<Activity>)
+            case timeline(ComposableArchitecture.StoreOf<Timeline>)
+          }
+
+          static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            switch store.state {
+            case .activity:
+              return .activity(store.scope(state: \.activity, action: \.activity)!)
+            case .timeline:
+              return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
+            }
+          }
+        }
+
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
+        }
+        """#
+      }
+    }
+
     func testEnum_CaseIgnored() {
       assertMacro {
         """

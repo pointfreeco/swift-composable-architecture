@@ -58,8 +58,26 @@
   enum TestEnumReducer_Basics {
     @Reducer struct Feature {}
     @Reducer
-    enum Destination {
-      case feature(Feature)
+    enum Destination1 {
+      case feature1(Feature)
+    }
+    @Reducer
+    enum Destination2 {
+      case feature1(Feature)
+      case feature2(Feature)
+    }
+    @Reducer
+    enum Destination3 {
+      case feature1(Feature)
+      case feature2(Feature)
+      case feature3(Feature)
+    }
+    @Reducer
+    enum Destination4 {
+      case feature1(Feature)
+      case feature2(Feature)
+      case feature3(Feature)
+      case feature4(Feature)
     }
   }
 
