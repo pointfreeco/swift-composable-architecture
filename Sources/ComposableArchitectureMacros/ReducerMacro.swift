@@ -288,7 +288,7 @@ extension ReducerMacro: MemberMacro {
             )
             reducerTypeScopes.append(
               """
-              Scope<Self.State, Self.Action, \(type.trimmed)>
+              ComposableArchitecture.Scope<Self.State, Self.Action, \(type.trimmed)>
               """
             )
           }
