@@ -394,14 +394,16 @@ extension ReducerMacro: MemberMacro {
           """
         )
         if reducerScopes.isEmpty {
-          decls.append("""
-          ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
-          """)
+          decls.append(
+            """
+            ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+            """)
         } else {
-          decls.append("""
-          \(raw: reducerScopes.joined(separator: "\n"))
-          
-          """)
+          decls.append(
+            """
+            \(raw: reducerScopes.joined(separator: "\n"))
+
+            """)
         }
         decls.append("}")
       }
