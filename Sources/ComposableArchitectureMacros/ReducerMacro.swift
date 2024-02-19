@@ -391,7 +391,6 @@ extension ReducerMacro: MemberMacro {
           """
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
           \(access)static var body: \(raw: staticVarBody) {
-
           """
         )
         if reducerScopes.isEmpty {
@@ -401,7 +400,7 @@ extension ReducerMacro: MemberMacro {
         } else {
           decls.append("""
           \(raw: reducerScopes.joined(separator: "\n"))
-
+          
           """)
         }
         decls.append("}")
