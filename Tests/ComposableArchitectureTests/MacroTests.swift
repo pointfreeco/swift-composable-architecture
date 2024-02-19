@@ -79,6 +79,12 @@
       case feature3(Feature)
       case feature4(Feature)
     }
+    @Reducer
+    public enum Destination5 {
+      case alert(AlertState<Never>)
+    }
+    @Reducer
+    public enum Destination6 {}
   }
 
   enum TestEnumReducer_SynthesizedConformances {
