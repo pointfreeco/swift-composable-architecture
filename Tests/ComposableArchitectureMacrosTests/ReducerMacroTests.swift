@@ -233,10 +233,9 @@
 
             }
 
-            static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
-                ComposableArchitecture.CombineReducers {
+            @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+            static var body: EmptyReducer<Self.State, Self.Action> {
 
-                }
             }
 
             enum CaseScope {
@@ -260,6 +259,7 @@
         """
         @Reducer
         enum Destination {
+          case activity(Activity)
           case timeline(Timeline)
           case tweet(Tweet)
           case alert(AlertState<Alert>)
@@ -272,6 +272,7 @@
       } expansion: {
         #"""
         enum Destination {
+          case activity(Activity)
           case timeline(Timeline)
           case tweet(Tweet)
           @ReducerCaseEphemeral
@@ -286,6 +287,7 @@
           @ObservableState
           enum State: ComposableArchitecture.CaseReducerState {
             typealias StateReducer = Destination
+            case activity(Activity.State)
             case timeline(Timeline.State)
             case tweet(Tweet.State)
             case alert(AlertState<Alert>)
@@ -293,23 +295,27 @@
 
           @CasePathable
           enum Action {
+            case activity(Activity.Action)
             case timeline(Timeline.Action)
             case tweet(Tweet.Action)
             case alert(AlertState<Alert>.Action)
           }
 
-          static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
-            ComposableArchitecture.CombineReducers {
-              ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
-                Timeline()
-              }
-              ComposableArchitecture.Scope(state: \Self.State.Cases.tweet, action: \Self.Action.Cases.tweet) {
-                Tweet()
-              }
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          static var body: ReducerBuilder<Self.State, Self.Action>._Sequence<ReducerBuilder<Self.State, Self.Action>._Sequence<Scope<Self.State, Self.Action, Activity>, Scope<Self.State, Self.Action, Timeline>>, Scope<Self.State, Self.Action, Tweet>> {
+            ComposableArchitecture.Scope(state: \Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
+              Activity()
+            }
+            ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+              Timeline()
+            }
+            ComposableArchitecture.Scope(state: \Self.State.Cases.tweet, action: \Self.Action.Cases.tweet) {
+              Tweet()
             }
           }
 
           enum CaseScope {
+            case activity(ComposableArchitecture.StoreOf<Activity>)
             case timeline(ComposableArchitecture.StoreOf<Timeline>)
             case tweet(ComposableArchitecture.StoreOf<Tweet>)
             case alert(AlertState<Alert>)
@@ -317,12 +323,75 @@
 
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
+            case .activity:
+              return .activity(store.scope(state: \.activity, action: \.activity)!)
             case .timeline:
               return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
             case .tweet:
               return .tweet(store.scope(state: \.tweet, action: \.tweet)!)
             case let .alert(v0):
               return .alert(v0)
+            }
+          }
+        }
+
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
+        }
+        """#
+      }
+    }
+
+    func testEnum_TwoCases() {
+      assertMacro {
+        """
+        @Reducer
+        enum Destination {
+          case activity(Activity)
+          case timeline(Timeline)
+        }
+        """
+      } expansion: {
+        #"""
+        enum Destination {
+          case activity(Activity)
+          case timeline(Timeline)
+
+          @CasePathable
+          @dynamicMemberLookup
+          @ObservableState
+          enum State: ComposableArchitecture.CaseReducerState {
+            typealias StateReducer = Destination
+            case activity(Activity.State)
+            case timeline(Timeline.State)
+          }
+
+          @CasePathable
+          enum Action {
+            case activity(Activity.Action)
+            case timeline(Timeline.Action)
+          }
+
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          static var body: ReducerBuilder<Self.State, Self.Action>._Sequence<Scope<Self.State, Self.Action, Activity>, Scope<Self.State, Self.Action, Timeline>> {
+            ComposableArchitecture.Scope(state: \Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
+              Activity()
+            }
+            ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+              Timeline()
+            }
+          }
+
+          enum CaseScope {
+            case activity(ComposableArchitecture.StoreOf<Activity>)
+            case timeline(ComposableArchitecture.StoreOf<Timeline>)
+          }
+
+          static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            switch store.state {
+            case .activity:
+              return .activity(store.scope(state: \.activity, action: \.activity)!)
+            case .timeline:
+              return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
             }
           }
         }
@@ -364,11 +433,10 @@
             case timeline(Timeline.Action)
           }
 
-          static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
-            ComposableArchitecture.CombineReducers {
-              ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
-                Timeline()
-              }
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          static var body: Scope<Self.State, Self.Action, Timeline> {
+            ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+              Timeline()
             }
           }
 
@@ -429,10 +497,9 @@
             case dialog(ConfirmationDialogState<Dialog>.Action)
           }
 
-          static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
-            ComposableArchitecture.CombineReducers {
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          static var body: EmptyReducer<Self.State, Self.Action> {
 
-            }
           }
 
           enum CaseScope {
@@ -493,17 +560,16 @@
             case sheet(Counter.Action)
           }
 
-          static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
-            ComposableArchitecture.CombineReducers {
-              ComposableArchitecture.Scope(state: \Self.State.Cases.drillDown, action: \Self.Action.Cases.drillDown) {
-                Counter()
-              }
-              ComposableArchitecture.Scope(state: \Self.State.Cases.popover, action: \Self.Action.Cases.popover) {
-                Counter()
-              }
-              ComposableArchitecture.Scope(state: \Self.State.Cases.sheet, action: \Self.Action.Cases.sheet) {
-                Counter()
-              }
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          static var body: ReducerBuilder<Self.State, Self.Action>._Sequence<ReducerBuilder<Self.State, Self.Action>._Sequence<Scope<Self.State, Self.Action, Counter>, Scope<Self.State, Self.Action, Counter>>, Scope<Self.State, Self.Action, Counter>> {
+            ComposableArchitecture.Scope(state: \Self.State.Cases.drillDown, action: \Self.Action.Cases.drillDown) {
+              Counter()
+            }
+            ComposableArchitecture.Scope(state: \Self.State.Cases.popover, action: \Self.Action.Cases.popover) {
+              Counter()
+            }
+            ComposableArchitecture.Scope(state: \Self.State.Cases.sheet, action: \Self.Action.Cases.sheet) {
+              Counter()
             }
           }
 
@@ -557,11 +623,10 @@
             case feature(Nested.Feature.Action)
           }
 
-          static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
-            ComposableArchitecture.CombineReducers {
-              ComposableArchitecture.Scope(state: \Self.State.Cases.feature, action: \Self.Action.Cases.feature) {
-                Nested.Feature()
-              }
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          static var body: Scope<Self.State, Self.Action, Nested.Feature> {
+            ComposableArchitecture.Scope(state: \Self.State.Cases.feature, action: \Self.Action.Cases.feature) {
+              Nested.Feature()
             }
           }
 

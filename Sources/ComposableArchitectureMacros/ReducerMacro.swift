@@ -250,6 +250,7 @@ extension ReducerMacro: MemberMacro {
       var reducerScopes: [String] = []
       var storeCases: [String] = []
       var storeScopes: [String] = []
+      var reducerTypeScopes: [String] = []
 
       for enumCaseElement in enumCaseElements {
         let element = enumCaseElement.element
@@ -283,6 +284,11 @@ extension ReducerMacro: MemberMacro {
               """
               case .\(name):
               return .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
+              """
+            )
+            reducerTypeScopes.append(
+              """
+              Scope<Self.State, Self.Action, \(type.trimmed)>
               """
             )
           }
@@ -361,12 +367,29 @@ extension ReducerMacro: MemberMacro {
         )
       }
       if !hasBody {
+        var staticVarBody = ""
+        if reducerTypeScopes.isEmpty {
+          staticVarBody = "EmptyReducer<Self.State, Self.Action>"
+        } else if reducerTypeScopes.count == 1 {
+          staticVarBody = reducerTypeScopes[0]
+        } else {
+          for _ in 1...(reducerTypeScopes.count - 1) {
+            staticVarBody.append("ReducerBuilder<Self.State, Self.Action>._Sequence<")
+          }
+          staticVarBody.append(reducerTypeScopes[0])
+          staticVarBody.append(", ")
+          for type in reducerTypeScopes.dropFirst() {
+            staticVarBody.append(type)
+            staticVarBody.append(">, ")
+          }
+          staticVarBody.removeLast(2)
+        }
+
         decls.append(
           """
-          \(access)static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
-          ComposableArchitecture.CombineReducers {
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          \(access)static var body: \(raw: staticVarBody) {
           \(raw: reducerScopes.joined(separator: "\n"))
-          }
           }
           """
         )
