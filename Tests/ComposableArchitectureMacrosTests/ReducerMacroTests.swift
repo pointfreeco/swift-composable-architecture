@@ -302,7 +302,7 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ReducerBuilder<Self.State, Self.Action>._Sequence<ReducerBuilder<Self.State, Self.Action>._Sequence<Scope<Self.State, Self.Action, Activity>, Scope<Self.State, Self.Action, Timeline>>, Scope<Self.State, Self.Action, Tweet>> {
+          static var body: ReducerBuilder<Self.State, Self.Action>._Sequence<ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Activity>, ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>>, ComposableArchitecture.Scope<Self.State, Self.Action, Tweet>> {
             ComposableArchitecture.Scope(state: \Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
               Activity()
             }
@@ -372,7 +372,7 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ReducerBuilder<Self.State, Self.Action>._Sequence<Scope<Self.State, Self.Action, Activity>, Scope<Self.State, Self.Action, Timeline>> {
+          static var body: ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Activity>, ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>> {
             ComposableArchitecture.Scope(state: \Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
               Activity()
             }
@@ -434,7 +434,7 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: Scope<Self.State, Self.Action, Timeline> {
+          static var body: ComposableArchitecture.Scope<Self.State, Self.Action, Timeline> {
             ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
               Timeline()
             }
@@ -561,7 +561,7 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ReducerBuilder<Self.State, Self.Action>._Sequence<ReducerBuilder<Self.State, Self.Action>._Sequence<Scope<Self.State, Self.Action, Counter>, Scope<Self.State, Self.Action, Counter>>, Scope<Self.State, Self.Action, Counter>> {
+          static var body: ReducerBuilder<Self.State, Self.Action>._Sequence<ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Counter>, ComposableArchitecture.Scope<Self.State, Self.Action, Counter>>, ComposableArchitecture.Scope<Self.State, Self.Action, Counter>> {
             ComposableArchitecture.Scope(state: \Self.State.Cases.drillDown, action: \Self.Action.Cases.drillDown) {
               Counter()
             }
@@ -624,7 +624,7 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: Scope<Self.State, Self.Action, Nested.Feature> {
+          static var body: ComposableArchitecture.Scope<Self.State, Self.Action, Nested.Feature> {
             ComposableArchitecture.Scope(state: \Self.State.Cases.feature, action: \Self.Action.Cases.feature) {
               Nested.Feature()
             }
