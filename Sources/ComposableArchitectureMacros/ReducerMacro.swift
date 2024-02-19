@@ -391,10 +391,20 @@ extension ReducerMacro: MemberMacro {
           """
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
           \(access)static var body: \(raw: staticVarBody) {
-          \(raw: reducerScopes.joined(separator: "\n"))
-          }
+
           """
         )
+        if reducerScopes.isEmpty {
+          decls.append("""
+          ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+          """)
+        } else {
+          decls.append("""
+          \(raw: reducerScopes.joined(separator: "\n"))
+
+          """)
+        }
+        decls.append("}")
       }
       if !typeNames.contains("CaseScope") {
         decls.append(
