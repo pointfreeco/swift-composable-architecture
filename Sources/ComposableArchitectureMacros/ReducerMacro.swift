@@ -369,12 +369,14 @@ extension ReducerMacro: MemberMacro {
       if !hasBody {
         var staticVarBody = ""
         if reducerTypeScopes.isEmpty {
-          staticVarBody = "EmptyReducer<Self.State, Self.Action>"
+          staticVarBody = "ComposableArchitecture.EmptyReducer<Self.State, Self.Action>"
         } else if reducerTypeScopes.count == 1 {
           staticVarBody = reducerTypeScopes[0]
         } else {
           for _ in 1...(reducerTypeScopes.count - 1) {
-            staticVarBody.append("ReducerBuilder<Self.State, Self.Action>._Sequence<")
+            staticVarBody.append(
+              "ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<"
+            )
           }
           staticVarBody.append(reducerTypeScopes[0])
           staticVarBody.append(", ")
