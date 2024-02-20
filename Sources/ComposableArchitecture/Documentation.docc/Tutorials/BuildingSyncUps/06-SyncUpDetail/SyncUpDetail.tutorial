@@ -25,7 +25,7 @@
         Add a `syncUp` field to the `State` struct since we need that data to populate the UI.
         There will be more state in this feature later, but we only need a `SyncUp` for now.
         
-        Further, this field will be annotated with the ``ComposableArchitecture/Shared`` property
+        Further, this field will be annotated with the [`@Shared`](<doc:Shared>) property
         wrapper in order to indicate that state is shared with another feature, in particular
         the `SyncUpsList` feature. This will make it possible for this feature to make edits
         to the state, and for the data to automatically be updated in `SyncUpsList.State`.
@@ -37,7 +37,7 @@
       }
       
       Next we add a case to the `Action` enum for each action the user can perform in the view.
-      Currently there are 4 buttons, and so we will have an action for each.
+      Currently there are 3 buttons, and so we will have an action for each.
       
       @Step {
         Add an action for each of the buttons in the UI, including tapping the "Delete" button,

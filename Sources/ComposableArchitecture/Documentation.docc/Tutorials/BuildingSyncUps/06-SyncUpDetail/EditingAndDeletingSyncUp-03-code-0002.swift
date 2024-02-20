@@ -7,10 +7,11 @@ struct SyncUpDetail {
 
 extension SyncUpDetail {
   @Reducer
-  struct Destination {
-    @ObservableState
-    enum State {
-
+  enum Destination {
+    case alert(AlertState<Alert>)
+    case edit(SyncUpForm)
+    enum Alert {
+      case confirmButtonTapped
     }
   }
 }

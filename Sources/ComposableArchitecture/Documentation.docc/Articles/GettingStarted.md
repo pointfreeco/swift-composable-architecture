@@ -58,7 +58,7 @@ and decrement the number. To make things interesting, suppose there is also a bu
 tapped makes an API request to fetch a random fact about that number and displays it in the view.
 
 To implement this feature we create a new type that will house the domain and behavior of the 
-feature, and it will be annotated with the `@Reducer` macro:
+feature, and it will be annotated with the [`@Reducer`](<doc:Reducer()>) macro:
 
 ```swift
 import ComposableArchitecture

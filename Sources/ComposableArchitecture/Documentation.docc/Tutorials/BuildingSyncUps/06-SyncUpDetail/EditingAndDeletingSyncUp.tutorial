@@ -57,7 +57,7 @@
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0004.swift)
       }
       
-      That is the basics of presenting the "Edit sync-up" sheet from the sycn up detail view. There
+      That is the basics of presenting the "Edit sync-up" sheet from the sync up detail view. There
       will be more to do in this reducer in a moment, but we can leave it here for now and 
       concrentrate on the view layer for a moment.
       
@@ -124,7 +124,7 @@
       }
       
       @Step {
-        Run the preview to see that you can tap the "Edit" button to bring up the sycn up form
+        Run the preview to see that you can tap the "Edit" button to bring up the sync up form
         sheet. Then make some changes to the sync up, and see that tapping "Done" causes those
         changes to be comitted to the sync up in the detail screen.
         
@@ -245,7 +245,7 @@
       have in state from the collection of sync ups that in the `SyncUpsList` feature.
       
       However, remember that in <doc:PersistingSyncUps> we showed to how to persist the collection
-      of sync ups using the ``ComposableArchitecture/Shared`` property wrapper with the
+      of sync ups using the [`@Shared`](<doc:Shared>) property wrapper with the
       ``ComposableArchitecture/Persistent/fileStorage(_:)`` persistence strategy. This gives the
       app _global_ access to that state, and we can make edits to it from anywhere. We can even
       do it directly inline in the `.confirmButtonTapped` action.
@@ -256,7 +256,7 @@
         reference to the sync ups loaded from disk.
         
         > Note: This does not actually load data from disk. The data has already been loaded from
-        disk and cached in the ``ComposableArchitecture/Shared`` reference. This is only giving us
+        disk and cached in the [`@Shared`](<doc:Shared>) reference. This is only giving us
         access to that reference.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0010.swift)
@@ -273,7 +273,7 @@
       you that we are reaching out to a seemingly global `syncUps` variable and mutating it. 
       However, this is no different than making an API request to delete data on some external
       server. Typcailly for that situation we use dependencies to make the API operation testable,
-      but we don't need to do that with ``ComposableArchitecture/Shared``. It is testable by
+      but we don't need to do that with [`@Shared`](<doc:Shared>). It is testable by
       default.
       
       There is one more addition we want to make to the deletion functionality before moving on.
@@ -351,6 +351,11 @@
         Create a whole new reducer nested inside the `SyncUpDetail` called `Destination`. This
         reducer will represent all of the places one can navigate to from the detail screen,
         and that will give us a single piece of state to drive navigation rather than having 
+        multiple optional values.
+        
+        _Further_, the `Destination` type will be an _enum_. This is different than other reudcers
+        we have encountered so far. The [`@Reducer`](<doc:Reducer()>) has special behavior when
+        applied to enums that allows one to compose multiple reducers into a single package.
         
         > Note: We have collapsed the implementation of `SyncUpDetail` and `SyncUpDetailView` in
         this code snippet.
@@ -359,46 +364,22 @@
       }
       
       @Step {
-        The `State` of this reducer is going to be an enum rather than a struct, so that we can
-        represent all of the destinations as a mutually exclusive selection.
+        Add a case for each destination that can be navigated to from this feature. Each case will
+        hold onto the _reducer_ type of the feature being navigated to, except for the `alert` case.
+        It will simply hold onto `AlertState`.
         
-        > Note: We still have to annotate `State` with the 
-        ``ComposableArchitecture/ObservableState()`` macro for observation to work, even though
-        `State` is an enum.
+        We will also move the `Alert` action enum from the `SyncUpDetail.Action` type to be nested 
+        inside `Destination`.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0002.swift)
       }
       
-      @Step {
-        Add a case to the `State` enum for each destination that can be navigated to. The cases
-        will hold onto the state for the feature that can be presented.
-        
-        > Note: The `Alert.Action` will not compile right now, but we will fix that soon.
-        
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0003.swift)
-      }
-      
-      @Step {
-        Add an `Action` enum that has a case for each destination that can be navigated to. The
-        cases will hold onto the actions for the feature that can be presented.
-        
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0004.swift)
-      }
-      
-      @Step {
-        Implement the ``ComposableArchitecture/Reducer/body-8lumc`` of the `Destination` reducer
-        by composing each destination's reducer using the ``Scope`` reducer.
-        
-        > Note: There is nothing to compose for the alert because it has no internal logic of
-        its own. This is why we did not need to specify a reducer for alerts when using the 
-        ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator too.
-        
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0005.swift)
-      }
-      
       That is all it takes to define a dedicated `Destination` reducer that encapsulates all of the
-      logic and behavior of the features that can be navigated to. Next we need to integrate the
-      `Destination` reducer into the main `SyncUpDetail` reducer.
+      logic and behavior of the features that can be navigated to. You can right click on the 
+      [`@Reducer`](<doc:Reducer()>) macro and select "Expand macro" in Xcode to see all of the code
+      that is being written for you.
+      
+      Next we need to integrate this new `Destination` reducer into the main `SyncUpDetail` reducer.
       
       @Step {
         Replace the two independent pieces of optional state in `SyncUpDetail.State` for a single
@@ -423,6 +404,9 @@
       @Step {
         Replace the two `ifLet` operators at the bottom of `SyncUpDetail` with a single one that
         composes the `Destination` reducer.
+        
+        > Note: Due to the expanded code from the [`@Reducer`](<doc:Reducer()>) macro we don't
+        even need to provide a trailing closure to `ifLet`. It can be inferred automatically.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0008.swift)
       }

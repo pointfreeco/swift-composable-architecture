@@ -67,9 +67,7 @@ struct SyncUpDetail {
     //   SyncUpForm()
     // }
     // .ifLet(\.$alert, action: \.alert)
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
   }
 }
 

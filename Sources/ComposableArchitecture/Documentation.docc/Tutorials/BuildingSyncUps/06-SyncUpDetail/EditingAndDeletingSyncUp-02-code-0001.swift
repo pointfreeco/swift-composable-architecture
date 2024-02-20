@@ -13,7 +13,7 @@ struct SyncUpDetail {
     case deleteButtonTapped
     case doneEditingButtonTapped
     case editButtonTapped
-    case editSyncUp(PresentationAction<SycnUpForm.Action>)
+    case editSyncUp(PresentationAction<SyncUpForm.Action>)
     case startMeetingButtonTapped
     enum Alert {
       case confirmButtonTapped

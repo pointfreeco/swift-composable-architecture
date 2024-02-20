@@ -1,20 +1,20 @@
 @Tutorial(time: 10) {
   @Intro(title: "Persisting sync ups") {
-    Now that we have the ability to add sync ups to the application, let's add some persistence.
-    This will involve using the "shared state" tools from the library, such as 
-    ``ComposableArchitecture/Shared`` and ``ComposableArchitecture/Persistent/fileStorage(_:)``.
+    Now that we have the ability to add and remove sync ups from the application, let's add some 
+    persistence. This will involve using the "shared state" tools from the library, such as 
+    [`@Shared`](<doc:Shared>) and ``ComposableArchitecture/Persistent/fileStorage(_:)``.
   }
     
   @Section(title: "Persisting data to disk") {
     @ContentAndMedia {
       To persist state to an external system you must make use of the 
-      ``ComposableArchitecture/Shared`` property wrapper with a persistence strategy.
+      [`@Shared`](<doc:Shared>) property wrapper with a persistence strategy.
     }
       
     @Steps {
       @Step {
         Go back to the SyncUpsList.swift file, and start by applying the
-        ``ComposableArchitecture/Shared`` property wrapper to the `sycnUps` field.
+        [`@Shared`](<doc:Shared>) property wrapper to the `syncUps` field.
         
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0001.swift, previousFile: PersistingSyncUps-01-code-0001-previous.swift)
       }
@@ -25,17 +25,17 @@
       information on all of the various strategies.
       
       @Step {
-        Further customize the `@Shared` property wrapper with a persistence strategy. The library
-        comes with a few strategies you can use, but the most appropriate here is 
-        ``ComposableArchitecture/Persistent/fileStorage(_:)`` since we are trying to save a complex
-        data structure.
+        Further customize the [`@Shared`](<doc:Shared>) property wrapper with a persistence 
+        strategy. The library comes with a few strategies you can use, but the most appropriate here 
+        is ``ComposableArchitecture/Persistent/fileStorage(_:)`` since we are trying to save a 
+        complex data structure.
         
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0002.swift)
       }
       
       The ``ComposableArchitecture/Persistent/fileStorage(_:)`` persistence strategy saves data
-      to disk anytime the value in `@Shared` changes, but it spaces the saves out a bit so as to
-      not thrash the file system with every single change.
+      to disk anytime the value in [`@Shared`](<doc:Shared>) changes, but it spaces the saves out a 
+      bit so as to not thrash the file system with every single change.
       
       @Step {
         The ``ComposableArchitecture/Persistent/fileStorage(_:)`` persistence strategy needs to be
@@ -61,9 +61,9 @@
   
   @Section(title: "Testing persistence") {
     @ContentAndMedia {
-      Testing state that is held in `@Shared` with `.fileStorage` persistence works exactly
-      like regular state without `@Shared`. The ``ComposableArchitecture/TestStore`` forces you
-      to exhaustively prove how all state changes.
+      Testing state that is held in [`@Shared`](<doc:Shared>) with `.fileStorage` persistence works 
+      exactly like regular state without [`@Shared`](<doc:Shared>). The 
+      ``ComposableArchitecture/TestStore`` forces you to exhaustively prove how all state changes.
     }
     
     @Steps {

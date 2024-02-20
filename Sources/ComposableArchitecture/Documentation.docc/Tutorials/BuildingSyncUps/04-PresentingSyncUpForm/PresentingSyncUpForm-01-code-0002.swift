@@ -20,9 +20,6 @@ struct SyncUpsList {
       case .addButtonTapped:
         return .none
 
-      case .addSyncUp:
-        return .none
-
       case let .onDelete(indexSet):
         state.syncUps.remove(atOffsets: indexSet)
         return .none

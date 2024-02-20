@@ -29,7 +29,7 @@
       @Step {
         Construct a ``ComposableArchitecture/TestStore`` much like you would a regular `Store`, by 
         providing the initial state for the feature to begin in as well as the reducer you want
-        to test. We'll start the feature with on sycnup already in its array so that we have 
+        to test. We'll start the feature with on syncup already in its array so that we have 
         something to delete.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingListOfSyncUps-01-code-0002.swift)

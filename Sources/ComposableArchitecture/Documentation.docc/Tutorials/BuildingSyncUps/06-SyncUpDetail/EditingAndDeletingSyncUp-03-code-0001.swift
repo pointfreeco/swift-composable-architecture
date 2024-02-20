@@ -7,7 +7,7 @@ struct SyncUpDetail {
 
 extension SyncUpDetail {
   @Reducer
-  struct Destination {
+  enum Destination {
   }
 }
 

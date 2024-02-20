@@ -65,13 +65,11 @@ struct SyncUpDetail {
         return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
   }
 }
 
-extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
+extension AlertState where Action == SyncUpDetail.Destination.Alert {
   static let deleteSyncUp = Self {
     TextState("Delete?")
   } actions: {

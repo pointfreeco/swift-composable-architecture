@@ -229,7 +229,7 @@
       detail feature can be allowed to make edits to the state have those edits be automatically
       made to `SyncUpsList.State`.
       
-      One can use the projected value of ``ComposableArchitecture/Shared`` along with the 
+      One can use the projected value of [`@Shared`](<doc:Shared>) along with the 
       ``ComposableArchitecture/Shared/elements`` property defined on shared collections in order to
       derive a `Shared` value for each element in the collection.
       
