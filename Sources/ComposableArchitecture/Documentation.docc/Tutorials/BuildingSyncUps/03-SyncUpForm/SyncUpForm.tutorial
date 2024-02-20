@@ -101,7 +101,7 @@
         
         > Note: The `@Bindable` property wrapper is iOS 17+, and so if you are supporting older
         platforms you can use the `@Perception.Bindable` property wrapper that comes with the
-        library.
+        library. See <doc:ObservationBackport> for more information.
         
         @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0008.swift)
       }

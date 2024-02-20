@@ -148,7 +148,6 @@
   /// ```shell
   /// xcodebuild -skipMacroValidation …
   /// ```
-  @attached(memberAttribute)
   @attached(extension, conformances: Reducer)
   public macro Reducer() =
     #externalMacro(
