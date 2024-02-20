@@ -1,5 +1,4 @@
 import Foundation
-import IdentifiedCollections
 
 struct SyncUp: Equatable, Identifiable, Codable {
   let id: UUID

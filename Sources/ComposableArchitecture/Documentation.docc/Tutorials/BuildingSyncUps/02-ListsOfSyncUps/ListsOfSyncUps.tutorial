@@ -33,22 +33,25 @@
       While these models would work well enough in our SyncUps application, we can do better. First
       it is not ideal to hold onto plain arrays in our domain. This leads us to a situation of 
       referring to attendees and meetings by their positional index in the array, rather than
-      their inherit ID, as given by the `Identifiable` protocol. This becomes especially problematic
-      when performing asynchronous effects in which the position of a value can change while the
-      effect is being performed, making it possible to refer to the wrong value, leading to bugs,
-      or a non-existent value, leading to crashes.
+      their inherent ID, as given by the `Identifiable` protocol. This becomes especially 
+      problematic when performing asynchronous effects in which the position of a value can change 
+      while the effect is being performed, making it possible to refer to the wrong value, leading 
+      to bugs, or a non-existent value, leading to crashes.
       
       For this reason we recommend using our [`IdentifiedArray`][identified-array-gh] type, which
       behaves like an array, but allows you to refer to elements by their ID rather than their
       positional index in the collection.
       
-      [identified-array-gh]: http://github.com/pointfreeco/swift-identified-array
+      [identified-array-gh]: http://github.com/pointfreeco/swift-identified-collections
       
       @Step {
-        Import the `IdentifiedCollections` library, which comes automatically with the Composable
-        Architecture, and replace all plain arrays with an `IdentifiedArray`.
+        Replace all plain arrays with an `IdentifiedArray`. This type comes from our 
+        [IdentifiedCollections][identified-array-gh] library, which is automatically included with
+        the Composable Architecture.
         
         @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0003.swift)
+        
+        [identified-array-gh]: http://github.com/pointfreeco/swift-identified-collections
       }
       
       There's another improvement that can be made to our domain models, but this one is completely
@@ -168,9 +171,10 @@
         Add a `CardView` that represents a single row in the list of sync ups.  
         
         > Note: We are omitting the implementation of the `SyncUpsList` reducer to keep the code
-        snippet short.
+        snippet short. You are also free to put the reducer and view in separate files, but we
+        like to keep them in the same file until it becomes untenable.
         
-        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0006.swift, previousFile: 02-02-code-0006-previous.swift)
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0006.swift, previousFile: ListsOfSyncUps-02-code-0006-previous.swift)
       }
       
       @Step {

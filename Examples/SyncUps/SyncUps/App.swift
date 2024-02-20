@@ -15,7 +15,7 @@ struct SyncUpsApp: App {
         //     previews so that it doesn't interfere with previews.
         EmptyView()
       } else {
-        //AppView(store: store)
+        AppView(store: store)
       }
     }
   }

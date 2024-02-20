@@ -3,7 +3,6 @@
     The SyncUps application is a recreation of one of Apple's more interesting demo applications,
     the Scrumdinger. We recreate it from scratch using the Composable Architecture, with a focus
     on domain modeling, controlling dependencies, and testability.
-    
   }
   
   @Chapter(name: "What is SyncUps?") {

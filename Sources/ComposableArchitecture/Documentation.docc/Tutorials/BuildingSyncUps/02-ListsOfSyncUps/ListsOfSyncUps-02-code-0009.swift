@@ -19,6 +19,9 @@ struct SyncUpsListView: View {
         }
         .listRowBackground(syncUp.theme.mainColor)
       }
+      .onDelete { indexSet in
+        store.send(.onDelete(indexSet))
+      }
     }
     .toolbar {
       Button {
