@@ -216,7 +216,8 @@ This can now be updated to use the vanilla `ForEach` view in SwiftUI, along with
 
 ```swift
 ForEach(
-  store.scope(state: \.rows, action: \.rows), id: \.state.id
+  store.scope(state: \.rows, action: \.rows),
+  id: \.state.id
 ) { childStore in
   ChildView(store: childStore)
 }
