@@ -1,4 +1,7 @@
 #if canImport(Perception)
+  /// A type that can persist shared state to an external system.
+  ///
+  /// See the article <doc:SharingState> for more information.
   public protocol Persistent<Value>: Hashable {
     associatedtype Value
     associatedtype Updates: AsyncSequence = _Empty<Value?> where Updates.Element == Value?
