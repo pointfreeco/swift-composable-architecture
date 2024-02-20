@@ -19,9 +19,6 @@ struct SyncUpDetail {
     enum Alert {
       case confirmButtonTapped
     }
-    enum Delegate {
-      case deleteSyncUp(id: SyncUp.ID)
-    }
   }
 
   @Dependency(\.dismiss) var dismiss
@@ -29,47 +26,49 @@ struct SyncUpDetail {
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      // case .alert(.presented(.confirmButtonTapped)):
-      case .destination(.presented(.alert(.confirmButtonTapped))):
+      case .alert(.presented(.confirmButtonTapped)):
         return .run { send in
           await send(.delegate(.deleteSyncUp(id: state.syncUp.id)))
           await dismiss()
         }
 
-      case .destination(.dismiss):
+      case .alert(.dismiss):
         return .none
 
       case .cancelEditButtonTapped:
-        state.destination = nil
+        state.editSyncUp = nil
         return .none
 
       case .delegate:
         return .none
 
       case .deleteButtonTapped:
-        state.destination = .alert(.deleteSyncUp)
+        state.alert = .deleteSyncUp
         return .none
 
       case .doneEditingButtonTapped:
-        guard case let .edit(syncUpForm) = state.destination
+        guard let editedSyncUp = state.editSyncUp?.syncUp
         else { return .none }
-        state.syncUp = syncUpForm.syncUp
+        state.syncUp = editedSyncUp
         return .none
 
       case .editButtonTapped:
-        // state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
-        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp))
+        state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
         return .none
 
       case .startMeetingButtonTapped:
         return .none
       }
     }
+    // .ifLet(\.$editSyncUp, action: \.editSyncUp) {
+    //   SyncUpForm()
+    // }
+    // .ifLet(\.$alert, action: \.alert)
     .ifLet(\.$destination, action: \.destination)
   }
 }
 
-extension AlertState where Action == SyncUpDetail.Destination.Alert {
+extension AlertState where Action == SyncUpDetail.Action.Alert {
   static let deleteSyncUp = Self {
     TextState("Delete?")
   } actions: {

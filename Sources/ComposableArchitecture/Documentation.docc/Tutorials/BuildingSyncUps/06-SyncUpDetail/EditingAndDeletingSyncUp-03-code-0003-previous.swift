@@ -21,9 +21,6 @@ struct SyncUpDetail {
     enum Alert {
       case confirmButtonTapped
     }
-    enum Delegate {
-      case deleteSyncUp(id: SyncUp.ID)
-    }
   }
 
   @Dependency(\.dismiss) var dismiss

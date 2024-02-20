@@ -19,9 +19,6 @@ struct SyncUpDetail {
     enum Alert {
       case confirmButtonTapped
     }
-    enum Delegate {
-      case deleteSyncUp(id: SyncUp.ID)
-    }
   }
 
   @Dependency(\.dismiss) var dismiss
@@ -29,17 +26,18 @@ struct SyncUpDetail {
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      case .alert(.presented(.confirmButtonTapped)):
+      // case .alert(.presented(.confirmButtonTapped)):
+      case .destination(.presented(.alert(.confirmButtonTapped))):
         return .run { send in
           await send(.delegate(.deleteSyncUp(id: state.syncUp.id)))
           await dismiss()
         }
 
-      case .alert(.dismiss):
+      case .destination(.dismiss):
         return .none
 
       case .cancelEditButtonTapped:
-        state.editSyncUp = nil
+        state.destination = nil
         return .none
 
       case .delegate:
@@ -63,10 +61,6 @@ struct SyncUpDetail {
         return .none
       }
     }
-    // .ifLet(\.$editSyncUp, action: \.editSyncUp) {
-    //   SyncUpForm()
-    // }
-    // .ifLet(\.$alert, action: \.alert)
     .ifLet(\.$destination, action: \.destination)
   }
 }

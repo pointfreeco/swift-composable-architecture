@@ -9,20 +9,15 @@ struct SyncUpDetail {
   }
 
   enum Action {
-    // case alert(PresentationAction<Alert>)
     case cancelEditButtonTapped
     case delegate(Delegate)
     case deleteButtonTapped
     case destination(PresentationAction<Destination.Action>)
     case doneEditingButtonTapped
     case editButtonTapped
-    // case editSyncUp(PresentationAction<SyncUpForm.Action>)
     case startMeetingButtonTapped
     enum Alert {
       case confirmButtonTapped
-    }
-    enum Delegate {
-      case deleteSyncUp(id: SyncUp.ID)
     }
   }
 
@@ -31,13 +26,14 @@ struct SyncUpDetail {
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      case .alert(.presented(.confirmButtonTapped)):
+      // case .alert(.presented(.confirmButtonTapped)):
+      case .destination(.presented(.alert(.confirmButtonTapped))):
         return .run { send in
           await send(.delegate(.deleteSyncUp(id: state.syncUp.id)))
           await dismiss()
         }
 
-      case .alert(.dismiss):
+      case .destination(.dismiss):
         return .none
 
       case .cancelEditButtonTapped:
@@ -65,10 +61,7 @@ struct SyncUpDetail {
         return .none
       }
     }
-    .ifLet(\.$editSyncUp, action: \.editSyncUp) {
-      SyncUpForm()
-    }
-    .ifLet(\.$alert, action: \.alert) 
+    .ifLet(\.$destination, action: \.destination)
   }
 }
 

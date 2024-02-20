@@ -19,9 +19,6 @@ struct SyncUpDetail {
     enum Alert {
       case confirmButtonTapped
     }
-    enum Delegate {
-      case deleteSyncUp(id: SyncUp.ID)
-    }
   }
 
   @Dependency(\.dismiss) var dismiss
@@ -47,17 +44,18 @@ struct SyncUpDetail {
         return .none
 
       case .deleteButtonTapped:
-        state.alert = .deleteSyncUp
+        state.destination = .alert(.deleteSyncUp)
         return .none
 
       case .doneEditingButtonTapped:
-        guard let editedSyncUp = state.editSyncUp?.syncUp
+        guard case let .edit(syncUpForm) = state.destination
         else { return .none }
-        state.syncUp = editedSyncUp
+        state.syncUp = syncUpForm.syncUp
         return .none
 
       case .editButtonTapped:
-        state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
+        // state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
+        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp))
         return .none
 
       case .startMeetingButtonTapped:

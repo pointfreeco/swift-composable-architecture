@@ -19,9 +19,6 @@ struct SyncUpDetail {
     enum Alert {
       case confirmButtonTapped
     }
-    enum Delegate {
-      case deleteSyncUp(id: SyncUp.ID)
-    }
   }
 
   @Dependency(\.dismiss) var dismiss
@@ -36,18 +33,19 @@ struct SyncUpDetail {
           await dismiss()
         }
 
-      case .alert(.dismiss):
+      case .destination(.dismiss):
         return .none
 
       case .cancelEditButtonTapped:
-        state.editSyncUp = nil
+        state.destination = nil
         return .none
 
       case .delegate:
         return .none
 
       case .deleteButtonTapped:
-        state.alert = .deleteSyncUp
+        // state.alert = .deleteSyncUp
+        state.destination = .alert(.deleteSyncUp)
         return .none
 
       case .doneEditingButtonTapped:

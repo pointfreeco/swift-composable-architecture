@@ -272,9 +272,14 @@
       That's all it takes to delete the sync up from the persisted array of sync ups. It may trouble
       you that we are reaching out to a seemingly global `syncUps` variable and mutating it. 
       However, this is no different than making an API request to delete data on some external
-      server. Typcailly for that situation we use dependencies to make the API operation testable,
+      server. Typically for that situation we use dependencies to make the API operation testable,
       but we don't need to do that with [`@Shared`](<doc:Shared>). It is testable by
       default.
+      
+      If it truly bothers you to access the global `syncUps` state from within the detail feature,
+      then you can instead send a "delegate" action from the detail that the parent feature
+      intercepts and implements the deleting logic. That will allow the parent to handle deletion
+      while the child remains ignorant to those details.
       
       There is one more addition we want to make to the deletion functionality before moving on.
       When the user confirms deletion of the sync up we should dismiss the detail view from being
@@ -391,14 +396,14 @@
         > Note: There will be compiler errors after completing this step, but we will fix them
         in upcoming steps.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0006.swift, previousFile: EditingAndDeletingSyncUp-03-code-0006-previous.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0003.swift, previousFile: EditingAndDeletingSyncUp-03-code-0003-previous.swift)
       }
       
       @Step {
         Replace the two action cases for the alert and edit sheet with a single case that holds
         onto a ``ComposableArchitecture/PresentationAction`` of `Destination.Action`.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0007.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0004.swift)
       }
       
       @Step {
@@ -408,7 +413,7 @@
         > Note: Due to the expanded code from the [`@Reducer`](<doc:Reducer()>) macro we don't
         even need to provide a trailing closure to `ifLet`. It can be inferred automatically.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0008.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0005.swift)
       }
       
       That is all it takes to integrate the `Destination` reducer into the `SyncUpDetail` reducer.
@@ -419,46 +424,46 @@
         Update the pattern matching for the alert to go through the `.destination(.presented)` 
         case.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0009.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0006.swift)
       }
       
       @Step {
         Do the same for the dismiss action.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0010.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0007.swift)
       }
       
       @Step {
         Update where we `nil` out `editSyncUp` state to instead `nil` out the `destination` state.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0011.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0008.swift)
       }
       
       @Step {
         Update where we populate the `alert` state to instead point the `destination` state to
         the `.alert` case.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0012.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0009.swift)
       }
       
       @Step {
         Update where we pattern match on `editSyncUp` to instead pattern match on the `.edit` case
         of the `destination` state.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0013.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0010.swift)
       }
       
       @Step {
         Update where we previously populated the `editSyncUp` state to instead point the 
         `destination` enum to the `.edit` case with some `SyncUpForm` state.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0014.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0011.swift)
       }
       
       @Step {
         Update the extension on `AlertState` to point to the `Destination`'s alert action.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0015.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0012.swift)
       }
       
       That's all it takes to fully integrate the `Destination` reducer into the `SyncUpDetail`
@@ -469,7 +474,7 @@
         Update the ``SwiftUI/View/alert(_:)`` and `.sheet(item:)` modifiers at the bottom of the
         view so that the `$store.scope` further singles out the case for driving navigation.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0016.swift, previousFile: EditingAndDeletingSyncUp-03-code-0016-previous.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0013.swift, previousFile: EditingAndDeletingSyncUp-03-code-0013-previous.swift)
       }
       
       That is all it takes to finish the refactor to use an enum to drive navigation rather than
