@@ -176,11 +176,11 @@ struct SyncUpsList_Previews: PreviewProvider {
         SyncUpsList()
       }
       // TODO: Why is this necessary in previews? Works fine in simulator.
-      let _ = store.$syncUps.wrappedValue = [
-        .mock,
-        .designMock,
-        .engineeringMock,
-      ]
+//      let _ = store.$syncUps.wrappedValue = [
+//        .mock,
+//        .designMock,
+//        .engineeringMock,
+//      ]
       SyncUpsListView(
         store: store
       )

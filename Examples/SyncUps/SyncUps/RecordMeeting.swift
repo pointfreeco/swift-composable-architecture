@@ -34,9 +34,7 @@ struct RecordMeeting {
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.dismiss) var dismiss
-  @Dependency(\.date.now) var now
   @Dependency(\.speechClient) var speechClient
-  @Dependency(\.uuid) var uuid
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
