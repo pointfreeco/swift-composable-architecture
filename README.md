@@ -269,13 +269,13 @@ the store. The code is a bit longer than the SwiftUI version, so we have collaps
     }
 
     @objc private func incrementButtonTapped() {
-      self.viewStore.send(.incrementButtonTapped)
+      self.store.send(.incrementButtonTapped)
     }
     @objc private func decrementButtonTapped() {
-      self.viewStore.send(.decrementButtonTapped)
+      self.store.send(.decrementButtonTapped)
     }
     @objc private func factButtonTapped() {
-      self.viewStore.send(.numberFactButtonTapped)
+      self.store.send(.numberFactButtonTapped)
     }
   }
   ```
@@ -532,13 +532,14 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/)
-* [1.7.0](https://pointfreeco.github.io/swift-composable-architecture/1.7.0/documentation/composablearchitecture/)
+* [1.8.0](https://pointfreeco.github.io/swift-composable-architecture/1.8.0/documentation/composablearchitecture/)
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [1.7.0](https://pointfreeco.github.io/swift-composable-architecture/1.7.0/documentation/composablearchitecture/)
   * [1.6.0](https://pointfreeco.github.io/swift-composable-architecture/1.6.0/documentation/composablearchitecture/)
   * [1.5.0](https://pointfreeco.github.io/swift-composable-architecture/1.5.0/documentation/composablearchitecture/)
   * [1.4.0](https://pointfreeco.github.io/swift-composable-architecture/1.4.0/documentation/composablearchitecture/)
