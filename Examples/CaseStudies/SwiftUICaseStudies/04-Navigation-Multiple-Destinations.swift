@@ -8,32 +8,11 @@ private let readMe = """
 
 @Reducer
 struct MultipleDestinations {
-  @Reducer
-  public struct Destination {
-    @ObservableState
-    public enum State: Equatable {
-      case drillDown(Counter.State)
-      case popover(Counter.State)
-      case sheet(Counter.State)
-    }
-
-    public enum Action {
-      case drillDown(Counter.Action)
-      case popover(Counter.Action)
-      case sheet(Counter.Action)
-    }
-
-    public var body: some Reducer<State, Action> {
-      Scope(state: \.drillDown, action: \.drillDown) {
-        Counter()
-      }
-      Scope(state: \.sheet, action: \.sheet) {
-        Counter()
-      }
-      Scope(state: \.popover, action: \.popover) {
-        Counter()
-      }
-    }
+  @Reducer(state: .equatable)
+  enum Destination {
+    case drillDown(Counter)
+    case popover(Counter)
+    case sheet(Counter)
   }
 
   @ObservableState
@@ -64,9 +43,7 @@ struct MultipleDestinations {
         return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
   }
 }
 

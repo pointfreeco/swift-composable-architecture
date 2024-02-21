@@ -3,7 +3,7 @@ import SwiftUI
 
 @Reducer
 private struct EscapedWithViewStoreTestCase {
-  enum Action: Equatable, Sendable {
+  enum Action: Sendable {
     case incr
     case decr
   }

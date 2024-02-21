@@ -68,8 +68,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-custom-dump",
       "state" : {
-        "branch" : "diffable-object",
-        "revision" : "fccc2c331de069da64511bf736c2b5db6eed499c"
+        "revision" : "6ea3b1b6a4957806d72030a32360d4bcb155a0d2",
+        "version" : "1.2.0"
       }
     },
     {

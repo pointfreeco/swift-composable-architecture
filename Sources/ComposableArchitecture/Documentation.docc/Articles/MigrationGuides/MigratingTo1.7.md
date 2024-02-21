@@ -216,7 +216,8 @@ This can now be updated to use the vanilla `ForEach` view in SwiftUI, along with
 
 ```swift
 ForEach(
-  store.scope(state: \.rows, action: \.rows), id: \.state.id
+  store.scope(state: \.rows, action: \.rows),
+  id: \.state.id
 ) { childStore in
   ChildView(store: childStore)
 }
@@ -634,8 +635,8 @@ In the view you must start holding onto the `store` in a bindable manner, which 
 @Bindable var store: StoreOf<Feature>
 ```
 
-> Note: If targeting older Apple platorms where `@Bindable` is not available, you can use our
-backport of the property wrapper:
+> Note: If targeting older Apple platforms where `@Bindable` is not available, you can use our
+> backport of the property wrapper:
 >
 > ```swift
 > @Perception.Bindable var store: StoreOf<Feature>
@@ -804,7 +805,7 @@ First, you must make your `View` action enum conform to the ``ViewAction`` proto
 
 ```swift
 @Reducer
-struct Feature
+struct Feature {
   // ...
   enum Action: ViewAction {  // 👈
     // ...

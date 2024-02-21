@@ -78,7 +78,7 @@
 
       let store = Store<Int, Void>(initialState: 0) {}
       await Task.detached {
-        _ = store.scope(state: { $0 }, action: { $0 })
+        _ = store.scope(state: \.self, action: \.self)
       }
       .value
     }

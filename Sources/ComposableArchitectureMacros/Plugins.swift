@@ -9,6 +9,8 @@ struct MacrosPlugin: CompilerPlugin {
     ObservationStateIgnoredMacro.self,
     PresentsMacro.self,
     ReducerMacro.self,
+    ReducerCaseEphemeralMacro.self,
+    ReducerCaseIgnoredMacro.self,
     ViewActionMacro.self,
   ]
 }

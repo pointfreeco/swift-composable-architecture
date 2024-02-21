@@ -9,8 +9,8 @@ import XCTest
 @MainActor
 final class AppCoreTests: XCTestCase {
   func testIntegration() async {
-    let store = TestStore(initialState: TicTacToe.State()) {
-      TicTacToe()
+    let store = TestStore(initialState: TicTacToe.State.login(Login.State())) {
+      TicTacToe.body
     } withDependencies: {
       $0.authenticationClient.login = { @Sendable _, _ in
         AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
@@ -47,8 +47,8 @@ final class AppCoreTests: XCTestCase {
   }
 
   func testIntegration_TwoFactor() async {
-    let store = TestStore(initialState: TicTacToe.State()) {
-      TicTacToe()
+    let store = TestStore(initialState: TicTacToe.State.login(Login.State())) {
+      TicTacToe.body
     } withDependencies: {
       $0.authenticationClient.login = { @Sendable _, _ in
         AuthenticationResponse(token: "deadbeef", twoFactorRequired: true)

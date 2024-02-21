@@ -48,11 +48,11 @@
 
           var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
-          var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: ComposableArchitecture.ObservableStateID {
             _$observationRegistrar.id
           }
 
-          mutating func _$willModify() {
+          public mutating func _$willModify() {
             _$observationRegistrar._$willModify()
           }
         }
@@ -94,11 +94,11 @@
 
           var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
-          var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: ComposableArchitecture.ObservableStateID {
             _$observationRegistrar.id
           }
 
-          mutating func _$willModify() {
+          public mutating func _$willModify() {
             _$observationRegistrar._$willModify()
           }
         }
@@ -183,11 +183,11 @@
 
           var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
-          package var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: ComposableArchitecture.ObservableStateID {
             _$observationRegistrar.id
           }
 
-          package mutating func _$willModify() {
+          public mutating func _$willModify() {
             _$observationRegistrar._$willModify()
           }
         }
@@ -211,11 +211,11 @@
 
           var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
-          var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: ComposableArchitecture.ObservableStateID {
             _$observationRegistrar.id
           }
 
-          mutating func _$willModify() {
+          public mutating func _$willModify() {
             _$observationRegistrar._$willModify()
           }
         }
@@ -238,7 +238,7 @@
           case feature1(Feature1.State)
           case feature2(Feature2.State)
 
-          var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: ComposableArchitecture.ObservableStateID {
             switch self {
             case let .feature1(state):
               return ._$id(for: state)._$tag(0)
@@ -247,7 +247,7 @@
             }
           }
 
-          mutating func _$willModify() {
+          public mutating func _$willModify() {
             switch self {
             case var .feature1(state):
               ComposableArchitecture._$willModify(&state)
@@ -275,14 +275,14 @@
         enum Path {
           case feature1(state: String)
 
-          var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: ComposableArchitecture.ObservableStateID {
             switch self {
             case let .feature1(state):
               return ._$id(for: state)._$tag(0)
             }
           }
 
-          mutating func _$willModify() {
+          public mutating func _$willModify() {
             switch self {
             case var .feature1(state):
               ComposableArchitecture._$willModify(&state)
@@ -345,7 +345,7 @@
           case feature1(Feature1.State)
           case feature2(Feature2.State)
 
-          package var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: ComposableArchitecture.ObservableStateID {
             switch self {
             case let .feature1(state):
               return ._$id(for: state)._$tag(0)
@@ -354,7 +354,7 @@
             }
           }
 
-          package mutating func _$willModify() {
+          public mutating func _$willModify() {
             switch self {
             case var .feature1(state):
               ComposableArchitecture._$willModify(&state)
@@ -362,6 +362,89 @@
             case var .feature2(state):
               ComposableArchitecture._$willModify(&state)
               self = .feature2(state)
+            }
+          }
+        }
+        """
+      }
+    }
+
+    func testObservableState_Enum_AccessControl_WrappedByExtension() {
+      assertMacro {
+        """
+        public extension Feature {
+          @ObservableState
+          enum Path {
+            case feature1(Feature1.State)
+            case feature2(Feature2.State)
+          }
+        }
+        """
+      } expansion: {
+        """
+        public extension Feature {
+          enum Path {
+            case feature1(Feature1.State)
+            case feature2(Feature2.State)
+
+            public var _$id: ComposableArchitecture.ObservableStateID {
+              switch self {
+              case let .feature1(state):
+                return ._$id(for: state)._$tag(0)
+              case let .feature2(state):
+                return ._$id(for: state)._$tag(1)
+              }
+            }
+
+            public mutating func _$willModify() {
+              switch self {
+              case var .feature1(state):
+                ComposableArchitecture._$willModify(&state)
+                self = .feature1(state)
+              case var .feature2(state):
+                ComposableArchitecture._$willModify(&state)
+                self = .feature2(state)
+              }
+            }
+          }
+        }
+        """
+      }
+      assertMacro {
+        """
+        public extension Feature {
+          @ObservableState
+          package enum Path {
+            case feature1(Feature1.State)
+            case feature2(Feature2.State)
+          }
+        }
+        """
+      } expansion: {
+        """
+        public extension Feature {
+          package enum Path {
+            case feature1(Feature1.State)
+            case feature2(Feature2.State)
+
+            public var _$id: ComposableArchitecture.ObservableStateID {
+              switch self {
+              case let .feature1(state):
+                return ._$id(for: state)._$tag(0)
+              case let .feature2(state):
+                return ._$id(for: state)._$tag(1)
+              }
+            }
+
+            public mutating func _$willModify() {
+              switch self {
+              case var .feature1(state):
+                ComposableArchitecture._$willModify(&state)
+                self = .feature1(state)
+              case var .feature2(state):
+                ComposableArchitecture._$willModify(&state)
+                self = .feature2(state)
+              }
             }
           }
         }

@@ -11,4 +11,5 @@
 - ``StackState``
 - ``StackAction``
 - ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``
+- ``Reducer/forEach(_:action:)``
 - ``DismissEffect``

@@ -3,9 +3,26 @@ import SwiftUI
 
 @Reducer
 struct SyncUpsList {
+  @Reducer(state: .equatable)
+  enum Destination {
+    case add(SyncUpForm)
+    case alert(AlertState<Alert>)
+
+    enum Alert {
+      case confirmLoadMockData
+    }
+  }
+
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
+    var syncUps: IdentifiedArrayOf<SyncUp> = []
+
+    init(destination: Destination.State? = nil) {
+      self.destination = destination
+
+      do {
+        @Dependency(\.dataManager.load) var load
     @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
   }
 
@@ -15,24 +32,6 @@ struct SyncUpsList {
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
     case onDelete(IndexSet)
-  }
-
-  @Reducer
-  struct Destination {
-    @ObservableState
-    enum State: Equatable {
-      case add(SyncUpForm.State)
-    }
-
-    enum Action {
-      case add(SyncUpForm.Action)
-    }
-
-    var body: some ReducerOf<Self> {
-      Scope(state: \.add, action: \.add) {
-        SyncUpForm()
-      }
-    }
   }
 
   @Dependency(\.uuid) var uuid
@@ -77,9 +76,7 @@ struct SyncUpsList {
         return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
   }
 }
 

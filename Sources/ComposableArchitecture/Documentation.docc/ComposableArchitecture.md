@@ -61,7 +61,7 @@ day-to-day when building applications, such as:
 
 ### State management
 
-- ``Reducer()``
+- <doc:Reducers>
 - ``Effect``
 - ``Store``
 - <doc:SharingState>

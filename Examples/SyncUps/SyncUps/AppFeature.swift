@@ -3,6 +3,13 @@ import SwiftUI
 
 @Reducer
 struct AppFeature {
+  @Reducer(state: .equatable)
+  enum Path {
+    case detail(SyncUpDetail)
+    case meeting(Meeting, syncUp: SyncUp)
+    case record(RecordMeeting)
+  }
+
   @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
@@ -44,33 +51,7 @@ struct AppFeature {
         return .none
       }
     }
-    .forEach(\.path, action: \.path) {
-      Path()
-    }
-  }
-
-  @Reducer
-  struct Path {
-    @ObservableState
-    enum State: Equatable {
-      case detail(SyncUpDetail.State)
-      case meeting(Meeting, syncUp: SyncUp)
-      case record(RecordMeeting.State)
-    }
-
-    enum Action {
-      case detail(SyncUpDetail.Action)
-      case record(RecordMeeting.Action)
-    }
-
-    var body: some Reducer<State, Action> {
-      Scope(state: \.detail, action: \.detail) {
-        SyncUpDetail()
-      }
-      Scope(state: \.record, action: \.record) {
-        RecordMeeting()
-      }
-    }
+    .forEach(\.path, action: \.path)
   }
 }
 
@@ -83,17 +64,13 @@ struct AppView: View {
         store: store.scope(state: \.syncUpsList, action: \.syncUpsList)
       )
     } destination: { store in
-      switch store.state {
-      case .detail:
-        if let store = store.scope(state: \.detail, action: \.detail) {
-          SyncUpDetailView(store: store)
-        }
-      case let .meeting(meeting, syncUp: syncUp):
+      switch store.case {
+      case let .detail(store):
+        SyncUpDetailView(store: store)
+      case let .meeting(meeting, syncUp):
         MeetingView(meeting: meeting, syncUp: syncUp)
-      case .record:
-        if let store = store.scope(state: \.record, action: \.record) {
-          RecordMeetingView(store: store)
-        }
+      case let .record(store):
+        RecordMeetingView(store: store)
       }
     }
   }
