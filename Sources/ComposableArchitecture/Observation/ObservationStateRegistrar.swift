@@ -1,6 +1,8 @@
 #if canImport(Perception)
   /// Provides storage for tracking and access to data changes.
   public struct ObservationStateRegistrar: Sendable {
+    @TaskLocal public static var mutatedKeyPaths = LockIsolated<[String]>([])
+
     public private(set) var id = ObservableStateID()
     #if !os(visionOS)
       @usableFromInline
@@ -58,6 +60,16 @@
           value = newValue
         } else {
           self.registrar.withMutation(of: subject, keyPath: keyPath) {
+            var keyPathType = ""
+            dump(type(of: keyPath), to: &keyPathType)
+            let stateType = keyPathType
+              .split(separator: "<")[1]
+              .split(separator: ",")[0]
+              .split(separator: ".")
+              .dropFirst()
+              .joined(separator: ".")
+            let field = "\(keyPath)".split(separator: ".").dropFirst().joined(separator: ".")
+            Self.mutatedKeyPaths.withValue { $0.append("\\\(stateType).\(field)") }
             value = newValue
           }
         }

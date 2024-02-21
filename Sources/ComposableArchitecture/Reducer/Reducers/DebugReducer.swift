@@ -88,7 +88,15 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
     #if DEBUG
       if let printer = self.printer {
         let oldState = state
-        let effects = self.base.reduce(into: &state, action: action)
+        let mutations = LockIsolated<[String]>([])
+        let effects = ObservationStateRegistrar.$mutatedKeyPaths.withValue(mutations) {
+          self.base.reduce(into: &state, action: action)
+        }
+        mutations.withValue {
+          if !$0.isEmpty {
+            print("!!!", $0)
+          }
+        }
         return effects.merge(
           with: .publisher { [newState = state, queue = printer.queue] in
             Deferred<Empty<Action, Never>> {
