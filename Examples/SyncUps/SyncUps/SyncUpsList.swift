@@ -7,7 +7,6 @@ struct SyncUpsList {
   enum Destination {
     case add(SyncUpForm)
     case alert(AlertState<Alert>)
-
     enum Alert {
       case confirmLoadMockData
     }
@@ -16,13 +15,6 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    var syncUps: IdentifiedArrayOf<SyncUp> = []
-
-    init(destination: Destination.State? = nil) {
-      self.destination = destination
-
-      do {
-        @Dependency(\.dataManager.load) var load
     @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
   }
 
