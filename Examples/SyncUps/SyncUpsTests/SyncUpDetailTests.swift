@@ -6,7 +6,7 @@ import XCTest
 @MainActor
 final class SyncUpDetailTests: XCTestCase {
   func testSpeechRestricted() async {
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: .mock)) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
       SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = { .restricted }
@@ -18,7 +18,7 @@ final class SyncUpDetailTests: XCTestCase {
   }
 
   func testSpeechDenied() async throws {
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: .mock)) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
       SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = {
@@ -37,7 +37,7 @@ final class SyncUpDetailTests: XCTestCase {
     let store = TestStore(
       initialState: SyncUpDetail.State(
         destination: .alert(.speechRecognitionDenied),
-        syncUp: .mock
+        syncUp: Shared(.mock)
       )
     ) {
       SyncUpDetail()
@@ -56,7 +56,7 @@ final class SyncUpDetailTests: XCTestCase {
     let store = TestStore(
       initialState: SyncUpDetail.State(
         destination: .alert(.speechRecognitionDenied),
-        syncUp: .mock
+        syncUp: Shared(.mock)
       )
     ) {
       SyncUpDetail()
@@ -72,7 +72,7 @@ final class SyncUpDetailTests: XCTestCase {
   }
 
   func testSpeechAuthorized() async throws {
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: .mock)) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
       SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = { .authorized }
@@ -85,7 +85,7 @@ final class SyncUpDetailTests: XCTestCase {
 
   func testEdit() async {
     var syncUp = SyncUp.mock
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: syncUp)) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(syncUp))) {
       SyncUpDetail()
     } withDependencies: {
       $0.uuid = .incrementing
@@ -104,8 +104,6 @@ final class SyncUpDetailTests: XCTestCase {
       $0.destination = nil
       $0.syncUp.title = "Blob's Meeting"
     }
-
-    await store.receive(\.delegate.syncUpUpdated)
   }
 
   func testDelete() async {
@@ -113,7 +111,7 @@ final class SyncUpDetailTests: XCTestCase {
     defer { XCTAssertEqual(didDismiss.value, true) }
 
     let syncUp = SyncUp.mock
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: syncUp)) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(syncUp))) {
       SyncUpDetail()
     } withDependencies: {
       $0.dismiss = DismissEffect {
@@ -127,6 +125,5 @@ final class SyncUpDetailTests: XCTestCase {
     await store.send(.destination(.presented(.alert(.confirmDeletion)))) {
       $0.destination = nil
     }
-    await store.receive(\.delegate.deleteSyncUp)
   }
 }

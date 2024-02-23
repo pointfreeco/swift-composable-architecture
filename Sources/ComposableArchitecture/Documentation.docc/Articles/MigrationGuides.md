@@ -14,6 +14,7 @@ preceeding migration guides.
 
 ## Topics
 
+- <doc:MigratingTo1.9>
 - <doc:MigratingTo1.8>
 - <doc:MigratingTo1.7>
 - <doc:MigratingTo1.6>

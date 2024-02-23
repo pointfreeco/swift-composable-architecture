@@ -1,0 +1,95 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Persisting sync-ups") {
+    Now that we have the ability to add and remove sync-ups from the application, let's add some 
+    persistence. This will involve using the "shared state" tools from the library, such as 
+    [`@Shared`](<doc:Shared>) and ``ComposableArchitecture/PersistenceKey/fileStorage(_:)``.
+  }
+    
+  @Section(title: "Persisting data to disk") {
+    @ContentAndMedia {
+      To persist state to an external system you must make use of the 
+      [`@Shared`](<doc:Shared>) property wrapper with a persistence strategy.
+    }
+      
+    @Steps {
+      @Step {
+        Go back to the SyncUpsList.swift file, and start by applying the
+        [`@Shared`](<doc:Shared>) property wrapper to the `syncUps` field.
+        
+        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0001.swift, previousFile: PersistingSyncUps-01-code-0001-previous.swift)
+      }
+      
+      This signifies that this value will be shared with other parts of the application. There are
+      many ways to share state, such as explicitly passing it in from a parent feature, or 
+      persisting it to an external system. See the dedicated article <doc:SharingState> for more
+      information on all of the various strategies.
+      
+      @Step {
+        Further customize the [`@Shared`](<doc:Shared>) property wrapper with a persistence 
+        strategy. The library comes with a few strategies you can use, but the most appropriate here 
+        is ``ComposableArchitecture/PersistenceKey/fileStorage(_:)`` since we are trying to save a 
+        complex data structure.
+        
+        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0002.swift)
+      }
+      
+      The ``ComposableArchitecture/PersistenceKey/fileStorage(_:)`` persistence strategy saves data
+      to disk anytime the value in [`@Shared`](<doc:Shared>) changes, but it spaces the saves out a 
+      bit so as to not thrash the file system with every single change.
+      
+      @Step {
+        The ``ComposableArchitecture/PersistenceKey/fileStorage(_:)`` persistence strategy needs to
+        be provided a URL for where to save the data. Add an extension to `URL` at the bottom of the
+        file to define such a URL, and then provide it to the `.fileStorage` value.
+        
+        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0003.swift)
+        
+        > Note: It is possible to provide some type safety between the URL provided and the 
+        expected type of data to be stored on disk. See 
+        [type-safe keys](<doc:SharingState#Type-safe-keys>) for more information. 
+      }
+      
+      With that change the project should be compiling. It is worth noting that 
+      ``ComposableArchitecture/PersistenceKey/fileStorage(_:)`` only works with `Codable` data
+      types, and earlier in the tutorial when add models to Models.swift we made them codable from
+      the beginning.
+      
+      @Step {
+        Run the app in the simulator, add a sync-up, and then relaunch the application to see that
+        it restores the previously created sync-up. This shows that data is persisting.
+        
+        @Video(source: PersistingSyncUps-01-video-0004.mov)
+      }
+    }
+  }
+  
+  @Section(title: "Testing persistence") {
+    @ContentAndMedia {
+      Testing state that is held in [`@Shared`](<doc:Shared>) with `.fileStorage` persistence works 
+      exactly like regular state without [`@Shared`](<doc:Shared>). The 
+      ``ComposableArchitecture/TestStore`` forces you to exhaustively prove how all state changes.
+    }
+    
+    @Steps {
+      @Step {
+        Run the test suite to see that everything still passes. 
+      }
+      
+      @Step {
+        Go to SyncUpListsTests.swift and make a change to the `testAddSyncUp` test to make an
+        incorrect assertion.
+        
+        @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0001.swift, previousFile: PersistingSyncUps-02-code-0001-previous.swift)
+      }
+      
+      @Step {
+        Run the test suite again to see that you get a test failure with a message that tells you
+        exactly what went wrong.
+      }
+      
+      This shows that the exhaustive testing tools of the Composable Architecture continue to work
+      exactly the same, even when dealing with state that is persisted to disk. Be sure to read
+      the full article <doc:SharingState> for more information about shared state and persistence.
+    }
+  }
+}

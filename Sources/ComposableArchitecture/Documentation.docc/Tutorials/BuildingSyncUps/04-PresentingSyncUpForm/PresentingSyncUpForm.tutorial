@@ -1,0 +1,220 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Presenting the sync-up form") {
+    We now have two features built, the sync-ups list and the sync-up form. These features do not
+    exist in isolation, but rather are meant to be integrated in a deep way. One should be able
+    to navigate to the sync-up form from the list view, enter the details of a new sync-up,
+    and then add that sync-up to the root list.
+  }
+  
+  @Section(title: "Integrating the feature domains together") {
+    @ContentAndMedia {
+      To present the sync-up form from the sync-ups list we first need to integrate their domains
+      together. This means the sync-ups list domain will hold onto the state and actions of the
+      sync-up form.
+    }
+    
+    @Steps {
+      Go to the SyncUpsList.swift file, where the `SyncUpLists` reducer is. We are going to update
+      the `State` struct so that it holds onto the state of the child feature to be presented, 
+      which is `SyncUpForm.State`. We will do this by holding onto an optional of the child state,
+      where `nil` represents that the feature is not presented, and non-`nil` represents the feature 
+      is presented
+      
+      @Step {
+        Add a field to the `State` struct to hold onto `SyncUpForm.State` as an optional. We will
+        also need to use the ``ComposableArchitecture/Presents()`` macro so that the navigation
+        tools can accomplish certain things under the hood.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-01-code-0001.swift, previousFile: PresentingSyncUpForm-01-code-0001-previous.swift)
+      }
+      
+      @Step {
+        Add a case to the `Action` enum to hold onto a `SyncUpForm.Action`. We cannot do this 
+        directly, but instead will wrap it in the ``ComposableArchitecture/PresentationAction``
+        type, which enhances the child feature's action enum with an additional 
+        ``ComposableArchitecture/PresentationAction/dismiss`` action that is sent when the user
+        dismisses the feature from the UI, such as swiping down on a sheet.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-01-code-0002.swift)
+      }
+      
+      @Step {
+        Since a new case was added to the `Action` enum we have to handle it in the reducer.
+        Currently there is nothing to do, but there will be more to do here soon.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-01-code-0003.swift)
+      }
+      
+      The state and actions of the two features are now integrated together. Next we need to 
+      integrate the logic and behavior of the features by composing the reducers together.
+      
+      The way one integrates an optional child feature into a parent feature is via the 
+      ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``
+      reducer operator. It allows you to single out the presentation domain of a child feature
+      embedded in the parent feature, and then specify the child reducer to run on that domain.
+      It also takes care of a lot of logic for you under the hood, such as the ordering of when
+      the child and parent reducers run, automatically cancelling child effects when its dismissed,
+      and gives you access to the ``DismissEffect`` dependency that allows
+      a child feature to dismiss itself without communicating with the parent.
+      
+      @Step {
+        Use the `ifLet` operator by specifying key paths to the `addSyncUp` presentation state
+        and `addSyncUp` presentation action.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-01-code-0004.swift)
+      }
+      
+      @Step {
+        We can now properly implement the `addButtonTapped` action, which previously we left blank.
+        All we have to do is populate the `addSyncUp` state, and let the view take care of
+        observing that the state is non-`nil` and presenting the form.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-01-code-0005.swift)
+      }
+      
+      That is all it takes to integrate two features together using the tools from the 
+      Composable Architecture. Notice that we have not yet mentioned _how_ we want the 
+      `SyncUpFormView` is presented, e.g. as a sheet, popover, full-screen cover, or something else?
+      The reducer does not care about that detail. It only cares about the domain modeling of the
+      optional feature. You do not need to decide the _type_ of navigation until you implement
+      the view layer.
+    }
+  }
+  
+  @Section(title: "Integrating the feature views together") {
+    @ContentAndMedia {
+      Now that the `SyncUpsList` and `SyncUpForm` reducers are integrated together we need to
+      integrate the feature views together. This can be done using the various navigation view 
+      modifiers that SwiftUI ships with.
+    }
+    
+    @Steps {
+      Let's present the "Add sync-up" feature in a sheet. It could also be done in a full-screen
+      cover, and any number of navigation styles, but we will start with a sheet.
+      
+      @Step {
+        We would like to use the native SwiftUI navigation view modifier, `sheet(item:)`, but it
+        takes a binding to some optional identifiable state that represents if the sheet is being
+        shown.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-02-code-0001.swift, previousFile: PresentingSyncUpForm-02-code-0001-previous.swift)
+      }
+      
+      But, how do we derive this binding?
+      
+      Luckily the library comes with the tools necessary. Just as there is a scoping operation
+      on stores for focusing on sub-domains of a parent domain, there is also a scope on _bindings_
+      of stores for doing the same: ``SwiftUI/Binding/scope(state:action:)-4mj4d``. This tool can
+      be used to derive a binding that is appropriate to pass to `sheet(item:)`.
+      
+      @Step {
+        Since we want to derive bindings from the store we need to decorate the property in the view
+        with the `@Bindable` property wrapper.
+        
+        > Note: Remember that if the `@Bindable` property wrapper is not available to you due to
+        > platform restrictions you can instead use the library's ``@Perception.Bindable`` property
+        > wrapper.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-02-code-0002.swift)
+      }
+      
+      @Step {
+        Use the ``SwiftUI/Binding/scope(state:action:)-4mj4d`` operator on `$store` to focus the
+        binding to the presentation domain of the `SyncUpForm`. The `sheet(item:)` modifier will 
+        hand the trailing closure a `StoreOf<SyncUpForm>`, and that is exactly what can be handed
+        to the `SyncUpFormView`.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-02-code-0003.swift)
+      }
+      
+      That's all it takes in the view layer. It's a simple matter of annotating the store property
+      with `@Bindable`, using the `scope` operator on bindings to deriving stores for the child
+      domain, and hand that over to `sheet(item:)`.
+      
+      @Step {
+        Run the app in the preview or simulator to see that it basically works. If we tap the "+"
+        button to see that a sheet with the form comes up. And you can swipe down on the sheet
+        to dismiss it.
+        
+        @Video(source: PresentingSyncUpForm-02-video-0004.mov)
+      }
+      
+      We can also replace `sheet(item:)` with `popover(item:)`, `fullScreenCover(item:)`, and
+      any other SwiftUI view modifier that deals with bindings of optionals to drive navigation.
+    }
+  }
+    
+  @Section(title: "Adding a new sync-up to the list") {
+    @ContentAndMedia {
+      We have now integrated the `SyncUpsList` and `SyncUpForm` features together, both at the
+      domain level and the view layer. But there is more to their integration. We need to add a 
+      button to the form sheet that allows the user to actually create the sync-up and add it to the
+      root list.
+      
+      This can be done in a few ways. We could add the button directly in `SyncUpFormView`, but
+      that could complicate reusing the view, which we will be doing for the editing flow of a sync
+      up. Instead, we will make it the responsibility of the parent to adorn the child view with
+      toolbar buttons for saving and discarding the form data.
+    }
+    
+    @Steps {
+      @Step {
+        Go to the SyncUpsList.swift file, and wrap the `SyncUpFormView` in a navigation stack so 
+        that we can add toolbar buttons. Also add buttons for adding and discarding the new sync-up, 
+        as well as a title.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0001.swift, previousFile: PresentingSyncUpForm-03-code-0001-previous.swift)
+      }
+      
+      We can now more clearly see why we would want this view logic in the parent and not child.
+      The title "New sync-up" is domain specific to this situation right here, and would not be
+      appropriate when we start showing this view for editing an existing sync-up. So, we would
+      need extra logic in the child view to separately handle adding versus editing a sync-up.
+      By moving it to the parent we can simplify things.
+      
+      Right now the toolbar buttons don't do anything when tapped, so let's send actions to the
+      store.
+      
+      @Step {
+        Send an action to the store in each button of the toolbar.
+        
+        > Note: These actions are not added to the domain yet and will cause a compiler error.
+        > We will fix that next.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0002.swift)
+      }
+      
+      We are now sending new actions to the store, and so we have to add those actions to our
+      feature and implement their logic.
+      
+      @Step {
+        Add two cases to the `Action` enum of the `SyncUpsList` reducer that represents confirming
+        the addition of the new sync-up or discarding it.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0003.swift, previousFile: PresentingSyncUpForm-03-code-0003-previous.swift)
+      }
+      
+      @Step {
+        Implement the logic for the `confirmAddButtonTapped` action. We will unwrap the `addSyncUp`
+        optional state, and append its sync-up data to the `syncUps` array. We also need to `nil`
+        out the `addSyncUp` state in order to dismiss the sheet.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0004.swift)
+      }
+      
+      @Step {
+        Implement the logic for the `discardButtonTapped` action by simply `nil`'ing out the 
+        `addSyncUp` state to dismiss the sheet. Nothing else needs to be done.
+        
+        @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-03-code-0005.swift)
+      }
+      
+      @Step {
+        Run the feature in the preview to show that it is possible to complete the full flow of
+        bringing up the "Add sync-up" sheet and adding a sync-up to the root list.
+        
+        @Video(source: "PresentingSyncUpForm-03-code-0006.mov")
+      }
+    }
+  }
+}

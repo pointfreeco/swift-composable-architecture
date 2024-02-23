@@ -1,0 +1,182 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Testing the sync-up detail") {
+    The `SyncUpDetail` feature has slowly become quite complex. It now handles two forms of 
+    navigation (an alert and sheet), it models navigation state with a single enum, and it
+    communicates with a parent feature via delegate actions. It's about time we got some test
+    coverage on this feature so we can be sure it works as we expect, and so that we can make
+    future changes with confidence.
+  }
+  
+  @Section(title: "Testing the edit flow") {
+    @ContentAndMedia {
+      Let's start by testing the edit flow. We will exercise the full user flow of tapping the
+      "Edit" button, making some edits, and then committing the edits to the parent features.
+    }
+    
+    @Steps {
+      @Step {
+        Start by creating a new SyncUpDetailTests.swift file and pasting some basic scaffolding
+        for a new test.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-01-code-0001.swift)
+      }
+      
+      @Step {
+        Create a ``ComposableArchitecture/TestStore`` for the `SyncUpDetail` feature.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-01-code-0002.swift)
+      }
+      
+      @Step {
+        Emulate the user tapping on the "Edit" button and assert that the `destination` state
+        mutates to point to the `.edit` case.
+        
+        Run the test suite to confirm that so far everything passes.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-01-code-0003.swift)
+      }
+      
+      @Step {
+        Emulate the user changing the title of the sync-up by sending a deeply nested action for
+        the `.destination`, when it's `.presented`, in the `.edit` case, and then finally a 
+        ``ComposableArchitecture/BindableAction/binding-108e1`` action to set the sync-up.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-01-code-0004.swift)
+      }
+      
+      @Step {
+        Assert how the state changes after sending the action. In particular, the `syncUp` data
+        inside the `edit` case of the destination should change. We can use the special 
+        ``ComposableArchitecture/PresentationState/subscript(case:)-7uqte`` defined on 
+        `$destination` to modify the data in a particular case.
+        
+        Run the test suite again to confirm that everything still passes.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-01-code-0005.swift)
+      }
+      
+      @Step {
+        Finish the user flow by emulating the user tapping on the "Done" button. We expect the
+        `destination` state to be `nil`'d out, which will cause the sheet to be dismissed. And we
+        expect the parent feature's `syncUp` state to be updated with the edited sync-up.
+        
+        Run the test suite to confirm it still passes. 
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-01-code-0006.swift)
+      }
+      
+      We have now tested the full user flow of 
+      editing a sync-up, and because it passes we can be confident that there are no other state
+      changes happening.
+      
+      It is also possible to shorten this test quite a bit by using a non-exhaustive test store, 
+      as we did in <doc:PresentingSyncUpForm>, but we will leave that as an exercise for the reader.
+    }
+  }
+  
+  @Section(title: "Testing the delete flow") {
+    @ContentAndMedia {
+      Next we will test the flow of the user deleting the sync-up. This involves asserting that the
+      confirmation alert shows, and emulating the user interacting with the alert.
+    }
+      
+    @Steps {
+      @Step {
+        Create a new test method for testing the delete user flow. Also create a 
+        ``ComposableArchitecture/TestStore`` for the `SyncUpDetail` feature.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0001.swift, previousFile: TestingSyncUpDetail-02-code-0001-previous.swift)
+      }
+      
+      @Step {
+        Emulate the user tapping the "Delete" button and assert that the alert state is populated.
+        
+        Run the test suite to confirm that it passes.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0002.swift)
+      }
+      
+      @Step {
+        Emulate the user confirming deletion of the sync-up by sending a deeply nested action
+        to the `.destination`, when it is `.presented`, in the `.alert` case, and then finally
+        the `.confirmButtonTapped` action. Also assert that the alert will be dismissed by 
+        setting the `destination` state to `nil`.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0003.swift)
+      }
+      
+      @Step {
+        Run the test suite again to see that now it does _not_ pass. We actually have a few
+        failures.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0004.swift)
+      }
+      
+      These failures are happening because we are now making use of dependencies and effects, and
+      by default the ``ComposableArchitecture/TestStore`` forces us to assert on _everything_
+      happening in the feature. This is really great because it helps us catch potential problems
+      when new logic and behavior is added to our features.
+      
+      The first failure is letting us know that we are using the `\.dismiss` dependency but we 
+      haven't explicitly overridden that dependency in tests. This is a great failure to have 
+      because it forces us to prove that we know which dependencies are used and how they are 
+      used in our feature.
+      
+      The second failure is letting us know that the system received an action that we did not
+      assert again. This is also a great failure to have because it forces us to prove that we
+      know how effects execute and feed their data back in the system.
+      
+      Let's fix these test failures by asserting on more of what is happening in the system. Let's
+      start with the second failure, as it is the easier one to fix.
+      
+      @Step {
+        Use the ``ComposableArchitecture/TestStore/receive(_:_:timeout:assert:file:line:)-dkei``
+        method to assert that we expect to receive a delegate action to delete the sync-up.
+        
+        Run the test suite to see that one of the previous two test failures has now been fixed.
+        
+        > Note: We are using case key path composition in order to describe the deeply nested 
+        action that is being received.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0005.swift)
+      }
+      
+      To fix the dismissal test failure we need to override the `\.dismiss` dependency when
+      constructing the ``ComposableArchitecture/TestStore`` so that we prove that we know the
+      dependency is being used.
+      
+      @Step {
+        Override the `\.dismiss` dependency in the `withDependencies` trailing closure. We can
+        override it with a ``ComposableArchitecture/DismissEffect`` that simply does nothing.
+        
+        Run the test suite to see that everything now passes.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0006.swift)
+      }
+      
+      This test technically now passes, but it is not as strong as it could be. By overriding the
+      dependency we are proving that the dependency _may_ be called, but we are not proving that
+      it is definitely called. To do that we must manage a bit of local state that is mutated
+      inside ``ComposableArchitecture/DismissEffect``, and then we can assert on that mutation.
+      
+      @Step {
+        Create a mutable boolean that starts as `false` and is flipped to `true` inside the
+        ``ComposableArchitecture/DismissEffect``, and assert that the value is `true` at the
+        end of the test.
+        
+        Run the test suite to see that everything still passes.
+        
+        > Note: We are using a `LockIsolated<Bool>` value rather than a plain `Bool` because the
+        closure of ``ComposableArchitecture/DismissEffect`` is `@Sendable`, and therefore can only
+        capture sendable data. In particular, that means it cannot capture mutable data.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0007.swift)
+      }
+      
+      Now that this test passes we have definitively proven that the `dismiss` effect is invoked
+      and the `.deleteSyncUp` delegate action is sent when the user confirms deletion of the sync
+      up. That will communicate to the parent that it should finish deleting the sync-up _and_ it
+      should dismiss the presented sheet.
+    }
+  }
+}

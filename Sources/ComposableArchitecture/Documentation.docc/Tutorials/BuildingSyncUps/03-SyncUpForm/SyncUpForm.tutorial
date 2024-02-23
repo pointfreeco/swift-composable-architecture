@@ -1,0 +1,301 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Sync-up form") {
+    We will create a new feature with the Composable Architecture that is capable of editing the
+    details of a new sync-up. We will also add some nuanced logic around how focus moves through
+    the feature to make things a little more interesting.
+  }
+  
+  @Section(title: "Sync-up form basics") {
+    @ContentAndMedia {
+      Let's start by getting the basics of the new sync-up form feature into place. It will allow
+      you to edit all the various parts of a sync-up, and it will be a pretty simple feature to
+      start, but we will layer on some more interesting functionality later on.
+      
+      @Image(source: "SyncUpFormBasics-01-0000.png")
+    }
+    
+    @Steps {
+      @Step {
+        Create a new file named SyncUpForm.swift to hold the feature that will allow entering the
+        details of a sync-up. Let's also go ahead and create a stub of a new reducer.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0001.swift)
+      }
+      
+      @Step {
+        We can start with the domain modeling. In the state we only need a single, mutable `SyncUp`
+        value.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0002.swift)
+      }
+      
+      For the actions we technically need one action for every UI control in the form. That means
+      one action for the title text field, duration slider, theme picker, and attendee name text
+      field. That can be extremely verbose, and so the library comes with a tool to help streamline
+      this. We also have a dedicated article on the topic, <doc:Bindings>, for more detailed
+      information.
+      
+      To use the tools we must complete two steps.
+      
+      @Step {
+        First, rather than creating an action for every single UI control in the form, we will 
+        create one single action that is capable of deriving bindings for any data in the feature.
+        This is done by conforming the action to ``ComposableArchitecture/BindableAction`` and
+        providing a single case that holds a ``ComposableArchitecture/BindingAction``.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0003.swift)
+      }
+      
+      @Step {
+        And second, compose the ``ComposableArchitecture/BindingReducer`` into your feature's 
+        ``ComposableArchitecture/Reducer/body-8lumc``. This is our first time encountering reducer
+        composition in this tutorial, and it is done by simply listing all the reducers you want
+        to compose in the `body`. 
+        
+        > Note: In order for this composition to work all reducers must operate on the same state
+        > and actions. There are operators in the library that help you transform existing reducers
+        > into the right shape so that they can be composed with others.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0004.swift)
+      }
+      
+      There are a few other actions we need to represent in this view. We are going to allow
+      deleting attendees by swiping on their row, and we need a button for adding attendees.
+      
+      @Step {
+        Add an `onDeleteAttendees` action that we can send from the `onDelete` closure in the 
+        view. This is similar to what we did in the `SyncUpsList` reducer, but we have decided to
+        name it more explicitly as `onDeleteAttendees` since the "attendee" is not the core focus
+        of this feature.
+        
+        We have also added some additional logic to make sure that the collection of attendees is
+        not empty. This is the kind of logic we would like to get test coverage on eventually.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0005.swift)
+      }
+      
+      @Step {
+        Add an `addAttendeeButtonTapped` action that inserts a new element to the end of the 
+        `syncUp.attendees` collection.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0006.swift)
+      }
+      
+      That is all it takes to implement the basic functionality of the sync-up form. There will
+      be more to do in here too, but we can now move onto the view.
+      
+      @Step {
+        In the same file as the `SyncUpForm` reducer create a basic stub of a view that will hold
+        the UI for the form.
+        
+        > Note: We are collapsing the code in the `SyncUpForm` reducer to make it easier to read
+        > the view code.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0007.swift)
+      }
+      
+      @Step {
+        Add a `store` property to the view, just as we did in the `SyncUpsListView`, but this time
+        we have annotated the variable with the SwiftUI `@Bindable` property wrapper. That will
+        allow us to derive bindings from the store.
+        
+        > Note: The `@Bindable` property wrapper is iOS 17+, and so if you are supporting older
+        > platforms you can use the `@Perception.Bindable` property wrapper that comes with the
+        > library. See <doc:ObservationBackport> for more information.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0008.swift)
+      }
+      
+      @Step {
+        Implement the rest of the form view by deriving bindings from the store to hand to the 
+        various UI controls. This can be done by first getting a binding to the store via the 
+        `$store` syntax, and then dot-chaining onto that to derive bindings to any data inside
+        the store.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0009.swift)
+      }
+      
+      We now have the basics of the sync-up form view in place. We can edit any field, and even
+      add attendees to the sync-up. Before integrating this feature into the sync-ups list (so that
+      we can actually create new sync-ups and add them to the list), let's make this form feature
+      a bit more interesting by controlling how the focus flows through the view.
+    }
+  }
+  
+  @Section(title: "Form focus: an approach") {
+    @ContentAndMedia {
+      Right now there is a small user experience problem with our sync-up form. When the form first
+      appears nothing is focused, and so the user is forced to tap into the title text field to
+      begin entering the details of the new sync-up. Further, when an attendee is added the newly
+      added text field is not focused, forcing the user again to tap the text field.
+      
+      We can improve these small annoyances, and we will first star with an approach that puts
+      all the logic in the view, and then we will explore a better approach after.
+    }
+    
+    @Steps {
+      @Step {
+        Focus is handled in SwiftUI with the `@FocusState` property. Typically you start by modeling
+        all of the fields that can be focused in the view with an enum, and then you hold onto
+        some optional enum state to represent what is currently focused, or if `nil` that nothing
+        is focused.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-02-code-0001.swift, previousFile: SyncUpForm-02-code-0001-previous.swift)
+      }
+      
+      @Step {
+        And then you use the SwiftUI `.focused(_:equals:)` view modifier to annotate the UI 
+        controls that can be focused.   
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-02-code-0002.swift)
+      }
+      
+      With that little bit of work done we can now control focus in the view by simply mutating the
+      `focus` state in the view. However, all of the other logic of our feature is in the
+      `SyncUpForm` reducer. What if we need to implement complex and nuanced logic around how the
+      focus changes in the feature? Does that logic need to live in the view?
+      
+      Let's try it out and see how it goes.
+      
+      @Step {
+        We can start by introducing an `onAppear` view modifier that sets the focus to `.title`
+        when the view appears.
+        
+        It is not possible to give `@FocusState` a default, and so it is necessary to use
+        `onAppear`.
+        
+        > Important: The `onAppear` closure is called every time the view appears, not just the
+        > first time. So if we later added a feature that allowed you to drill-down to a child
+        > feature and then come back to the `SyncUpFormView`, the focus would reset back to the
+        > title. That is probably not the behavior you would want, and so you may need to create
+        > your own `onFirstAppear` view modifier to help with that situation.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-02-code-0003.swift)
+      }
+      
+      @Step {
+        Next we can implement the focusing logic for adding a new attendee by pointing the `focus`
+        state to the `.attendee` case with the ID of the newly created attendee.
+        
+        > Important: We are force unwrapping here because we "know" that an attendee will 
+        > definitely be added by the reducer. However, if the reducer logic changed some day so that
+        > in certain cases an attendee is not added, we would run the risk of a crash. That means we
+        > would need to beef up this logic more, and then we would want to get some test coverage on
+        > it. But unfortunately that's not really possible while the logic is trapped in the view.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-02-code-0004.swift)
+      }
+      
+      Next we can implement some focusing logic for removing an attendee. We are going to go the
+      extra distance to make this as user friendly as possible. We will make it so that if you 
+      delete an attendee that is focused, we will re-focus on the nearest attendee.
+      
+      @Step {
+        Implement the logic for re-focusing after deleting an attendee. We first get the attendee
+        that is being deleted. Then we send the `onDeleteAttendees` action to perform the actual
+        deletion logic. Then we check if the attendee deleted was focused, and if so we compute
+        the index of the closest attendee so that we can focus them.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-02-code-0005.swift)
+      }
+      
+      @Step {
+        The focusing logic is now implemented. Add a preview at the bottom of the file.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-02-code-0006.swift)
+      }
+      
+      @Step {
+        Run the preview to see that the logic works as we expect. The preview begins with the title
+        field focused. When adding an attendee the new field is automatically focused. And when
+        deleting an attendee the next attendee is automatically focused.
+        
+        @Video(source: SyncUpForm-02-video-0007.mp4)
+      }
+      
+      The focusing logic in the feature is now full implemented. But there are a few things to not 
+      like about how we have accomplished things so far.
+      
+      * We now have logic implemented in two distinct places in the feature. The logic of adding
+      and removing attendees is in the `SyncUpForm` reducer, and the logic of focus is in the view.
+      
+      * We are making assumptions in the view about how the reducer executes its logic, and those
+      assumptions may someday be wrong. 
+      
+      * The logic for focusing is complex. We are performing index juggling and subscripting 
+      directly into a collection. If we get any of the logic wrong we could potentially have a 
+      crash. For these reasons we would like to test this logic, but that is not possible to do
+      easily since it is trapped in the view.
+      
+      Let's see what it takes to move all of the focus logic into the reducer, where it belongs.
+    }
+  }
+  
+  @Section(title: "Form focus: a better approach") {
+    @ContentAndMedia {
+      A better approach to handling focus logic is to move it to the reducer. However, the 
+      `@FocusState` property cannot be used outside of SwiftUI views, and so we will need to do
+      a small amount of work to bridge those worlds.
+    }
+    
+    @Steps {
+      @Step {
+        Move the `Field` enum from the view to `SyncUpForm.State` and add an optional `focus` field
+        to the state. We are not using `@FocusState` because that can only be used in the view. 
+        That also means that we can give the focus a default, which wasn't possible when using
+        the `@FocusState` property wrapper.
+        
+        > Note: We have collapsed the view code to make it easier to read the reducer code.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-03-code-0001.swift, previousFile: SyncUpForm-03-code-0001-previous.swift)
+      }
+      
+      Next we start moving the focus logic from the view into the reducer.
+      
+      @Step {
+        Implement the logic of focusing a new added attendee. Now that we have immediate access
+        to the reducer's logic we no longer to do any force unwrapping or defensive programming
+        with `guard`s.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-03-code-0002.swift)
+      }
+      
+      @Step {
+        Implement the logic for focusing the nearest attendee when deleting an attendee. This logic
+        is very similar to what we wrote in the view, but we can implement it with more confidence
+        since we are doing it right next to the logic that removes the attendee from the collection.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-03-code-0003.swift)
+      }
+      
+      @Step {
+        Now that all of the focus logic is in the reducer, we can remove it from the view. Delete
+        that logic from the "Add attendee" and `onDelete` action closures, and delete the 
+        `onAppear` view modifier.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-03-code-0004.swift, previousFile: SyncUpForm-03-code-0004-previous.swift)
+      }
+      
+      This massively cleans up the view, and we now have one single place for all logic of the
+      feature. However, focus is now completely broken. The `SyncUpForm` reducer is managing its
+      own version of the `focus` state, and the view also has its own `focus` state. Those two
+      pieces of state are completely disconnected, and so the change of one has no influence on 
+      the other.
+      
+      Luckily this is easy to fix, using a tool that comes with the Composable Architecture called
+      `bind(_:to:)`. It allows you synchronize two bindings so that when one changes it immediately
+      changes the other. This is useful for dealing with SwiftUI property wrappers that only work
+      in the view, such as `@FocusState`.
+      
+      @Step {
+        At the bottom of the view use the `bind(_:to:)` view modifier to synchronize the focus
+        binding from the store, `$store.focus`, with the focus binding in the view, `$focus`.
+        
+        @Code(name: "SyncUpForm.swift", file: SyncUpForm-03-code-0005.swift)
+      }
+      
+      The preview is now back to working exactly as it did before, but now all logic is contained
+      in one single place. And best of all, it is all testable.
+    }
+  }
+}

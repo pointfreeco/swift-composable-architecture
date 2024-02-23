@@ -1,0 +1,84 @@
+@Tutorials(name: "Building SyncUps") {
+  @Intro(title: "Building SyncUps") {
+    The SyncUps application is a recreation of one of Apple's more interesting demo applications,
+    Scrumdinger. We recreate it from scratch using the Composable Architecture, with a focus on
+    domain modeling, controlling dependencies, and testability.
+  }
+  
+  @Chapter(name: "What is SyncUps?") {
+    Let's start with a tour of the application we will be building. It's called SyncUps, and it's a
+    recreation of the Apple's Scrumdinger demo application. 
+    
+    @TutorialReference(tutorial: "doc:WhatIsSyncUps")
+  }
+  
+  @Chapter(name: "Lists of sync-ups") {
+    We will begin building the SyncUps app from scratch by implementing the feature that powers the
+    list of sync-ups. It starts out as a simple feature, but it will become increasingly complex as
+    the app evolves.
+    
+    @TutorialReference(tutorial: "doc:ListsOfSyncUps")
+    @TutorialReference(tutorial: "doc:TestingListOfSyncUps")
+  }
+  
+  @Chapter(name: "New sync-up form") {
+    Let's build a new feature for editing the details of a sync-up in a form. This will allow us to
+    explore the binding tools the library provides, and we will add some complex logic around focus
+    in the form, and show how it is 100% testable.
+    
+    @TutorialReference(tutorial: "doc:SyncUpForm")
+    @TutorialReference(tutorial: "doc:TestingSyncUpForm")
+  }
+  
+  @Chapter(name: "Presenting the sync-up form") {
+    We now have two features built, the sync-ups list and the sync-up form. These features do not
+    exist in isolation, but rather are meant to be integrated in a deep way. One should be able to
+    navigate to the sync-up form from the list view, enter the details of a new sync-up, and then
+    add that sync-up to the root list.
+    
+    @TutorialReference(tutorial: "doc:PresentingSyncUpForm")
+    @TutorialReference(tutorial: "doc:TestingSyncUpFormPresentation")
+  }
+  
+  @Chapter(name: "Persisting sync-ups to disk") {
+    Applications typically need to persist data across application launches. The Composable 
+    Architecture comes with all the tools you need to persist your application's data.
+    
+    @TutorialReference(tutorial: "doc:PersistingSyncUps")
+  }
+  
+  @Chapter(name: "Sync-up detail") {
+    The next feature to build is the "detail" screen for a sync-up. This feature allows the user to
+    edit a sync-up, record a new meeting, see past recorded meetings, and even delete the 
+    sync-up.
+  
+    @TutorialReference(tutorial: "doc:SyncUpDetail")
+    @TutorialReference(tutorial: "doc:EditingAndDeletingSyncUp")
+    @TutorialReference(tutorial: "doc:TestingSyncUpDetail")
+  }
+  
+  @Chapter(name: "Navigating to sync-up detail") {
+    We now have a sync-up detail screen, but still no way to navigate to it from the rest of the
+    app. We want to be able to drill-down to the detail screen from the list screen.
+    
+    @TutorialReference(tutorial: "doc:SyncUpDetailNavigation")
+    @TutorialReference(tutorial: "doc:MeetingNavigation")
+    @TutorialReference(tutorial: "doc:TestingNavigation")
+  }
+  
+  @Chapter(name: "Record meeting") {
+    The app is almost complete! But we have saved the most difficult feature for last: recording
+    a new meeting. This requires interfacing with two complex dependencies, a speech recognizer
+    and timer, and requires some subtle behavior that we are definitely going to want to get 
+    test coverage on.
+   
+    @TutorialReference(tutorial: "doc:RecordMeeting")
+  }
+}
+
+<!--
+
+TODO: other things to consider
+* analytics
+* 
+-->

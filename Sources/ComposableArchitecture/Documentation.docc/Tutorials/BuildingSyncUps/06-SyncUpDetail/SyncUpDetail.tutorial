@@ -1,0 +1,85 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Sync-up detail") {
+    The "sync-up detail" screen shows all the information of a sync-up, and has many actions that
+    can take place in the screen. The user can edit the sync-up, or start a new meeting in the sync
+    up, or drill-down to a pass meeting, or even delete the meeting.
+  }
+  
+  @Section(title: "Create the sync-up detail") {
+    @ContentAndMedia {
+      Let's get the basics of a sync-up detail screen into place. It won't have much functionality
+      from the beginning, but we will slowly layer on the feature's full logic and behavior.
+      
+      @Image(source: "SyncUpDetail-cover.png")
+    }
+    
+    @Steps {
+      @Step {
+        Create a new file called SyncUpDetail.swift that will hold the reducer and view for the
+        feature. Paste in the basic scaffolding of a new `SyncUpDetail` reducer.
+
+        @Code(name: "SyncUpDetail.swift", file: SyncUpDetail-01-code-0001.swift)
+      }
+      
+      @Step {
+        Add a `syncUp` field to the `State` struct since we need that data to populate the UI.
+        There will be more state in this feature later, but we only need a `SyncUp` for now.
+        
+        Further, this field will be annotated with the [`@Shared`](<doc:Shared>) property
+        wrapper in order to indicate that state is shared with another feature, in particular
+        the `SyncUpsList` feature. This will make it possible for this feature to make edits
+        to the state, and for the data to automatically be updated in `SyncUpsList.State`.
+        
+        > Note: See the article <doc:SharingState> for more information about sharing state and
+        persistence strategies.
+        
+        @Code(name: "SyncUpDetail.swift", file: SyncUpDetail-01-code-0002.swift)
+      }
+      
+      Next we add a case to the `Action` enum for each action the user can perform in the view.
+      Currently there are 3 buttons, and so we will have an action for each.
+      
+      @Step {
+        Add an action for each of the buttons in the UI, including tapping the "Delete" button,
+        the "Edit" button, the "Start meeting" button.
+        
+        @Code(name: "SyncUpDetail.swift", file: SyncUpDetail-01-code-0003.swift)
+      }
+      
+      @Step {
+        Add each of the new action cases to the reducer. Currently we are not capable of 
+        implementing any of the logic for these actions. We will need to do more work later.
+        
+        @Code(name: "SyncUpDetail.swift", file: SyncUpDetail-01-code-0004.swift)
+      }
+      
+      @Step {
+        Add a new struct, `SyncUpDetailView`, that will hold the UI for the new detail feature.
+        It will hold onto a ``ComposableArchitecture/Store`` of the detail feature so that we can
+        read its state and send actions in the view.
+        
+        > Note: We have collapsed the implementation of the `SyncUpDetail` reducer in the 
+        snippets for now.
+        
+        @Code(name: "SyncUpDetail.swift", file: SyncUpDetail-01-code-0005.swift)
+      }
+      
+      @Step {
+        Paste in the body of the view. There is nothing too special in this view code, and it's 
+        mostly taken verbatim from Apple's Scrumdinger application. The most important lesson in
+        this code is that we only ever read data from the `store` and send actions to it. We should
+        not be performing any significant logic in the view. That should all go in the reducer.
+        
+        @Code(name: "SyncUpDetail.swift", file: SyncUpDetail-01-code-0006.swift)
+      }
+      
+      @Step {
+        At the bottom of the file add a preview to see that the view does look as we expect. 
+        
+        @Code(name: "SyncUpDetail.swift", file: SyncUpDetail-01-code-0007.swift) {
+          @Image(source: "SyncUpDetail-01-image-0007.png")
+        }
+      }
+    }
+  }
+}

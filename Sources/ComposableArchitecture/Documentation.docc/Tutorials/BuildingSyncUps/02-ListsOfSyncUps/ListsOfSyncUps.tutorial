@@ -1,0 +1,220 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Lists of sync-ups") {
+    We will begin building the SyncUps app from scratch by implementing the feature that powers
+    the list of sync-ups. It starts out as a simple feature, but it will become increasingly complex
+    as the app evolves.
+  }
+  
+  @Section(title: "Domain models") {
+    @ContentAndMedia {
+      In order to build a view that shows a list of sync-ups we need to first have some data models
+      that represent a `SyncUp`. So, let's get some models into place.
+    }
+    
+    @Steps {
+      @Step {
+        Create a Models.swift file where we will house all of the models the app needs to do its
+        job.
+        
+        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0001.swift)
+      }
+      
+      @Step {
+        Copy and paste the following models into Models.swift. This code comes mostly verbatim
+        from Apple's Scrumdinger project.
+        
+        The `SyncUp` type represents a recurring meeting for a set of attendees. The `Meeting` type
+        represents a past recorded meeting, and includes a transcript if we were able to transcribe
+        the meeting.
+        
+        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0002.swift)
+      }
+      
+      While these models would work well enough in our SyncUps application, we can do better. First
+      it is not ideal to hold onto plain arrays in our domain. This leads us to a situation of 
+      referring to attendees and meetings by their positional index in the array, rather than
+      their inherent ID, as given by the `Identifiable` protocol. This becomes especially 
+      problematic when performing asynchronous effects in which the position of a value can change 
+      while the effect is being performed, making it possible to refer to the wrong value, leading 
+      to bugs, or a non-existent value, leading to crashes.
+      
+      For this reason we recommend using our [`IdentifiedArray`][identified-array-gh] type, which
+      behaves like an array, but allows you to refer to elements by their ID rather than their
+      positional index in the collection.
+      
+      [identified-array-gh]: http://github.com/pointfreeco/swift-identified-collections
+      
+      @Step {
+        Replace all plain arrays with an `IdentifiedArray`. This type comes from our 
+        [IdentifiedCollections][identified-array-gh] library, which is automatically included with
+        the Composable Architecture.
+        
+        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0003.swift)
+        
+        [identified-array-gh]: http://github.com/pointfreeco/swift-identified-collections
+      }
+      
+      There's another improvement that can be made to our domain models, but this one is completely
+      optional.
+      
+      Right now all of the IDs of our models are `UUID`. This means it is technically possible to
+      do something non-sensical like check if a `syncUp.id` is equal to an `attendee.id`. That is
+      never a valid thing to do, and so it would be ideal if we could detect that at _compile time_,
+      rather than runtime.
+      
+      We can do this by leveraging one of our other libraries, [Tagged][tagged-gh]. This library
+      does not automatically come with the Composable Architecture, and so you will need to add it,
+      and these next steps are completely optional for the purpose of this tutorial.
+      
+      [tagged-gh]: http://github.com/pointfreeco/swift-tagged
+      
+      @Step {
+        Add the `Tagged` library to your project by navigating to the build settings, and then to
+        the package dependencies tab.
+        
+        @Image(source: syncups-02-package-dependencies-tagged.png)
+      }
+      
+      @Step {
+        Go back to Models.swift, and import the `Tagged` library, and upgrade all usages of a plain
+        `UUID` to be a tagged `UUID`.
+        
+        > Note: The tag can even just be `Self`, but you can also have multiple tagged values in
+        a model by created dedicated tagged types. See the [Tagged repo][tag-collisions-gh] for more
+        information.
+        
+        [tag-collisions-gh]: https://github.com/pointfreeco/swift-tagged#handling-tag-collisions
+        
+        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0004.swift)
+      }
+    }
+  }
+    
+  @Section(title: "SyncUpsList feature") {
+    @ContentAndMedia {
+      Now that the core domain types are added to the project we can start building out our first
+      feature: the SyncUps list. This is the feature that displays a list of all the sync-ups, and 
+      eventually it will contain quite a bit of functionality, such as creating new sync-ups and
+      drilling down to existing sync-ups.
+      
+      But for now we will concentrate on just two very basic forms of functionality: displaying
+      the list, and allowing the user to swipe to delete a sync-up.
+      
+      @Image(source: "ListsOfSyncUps-cover.png")
+    }
+    
+    @Steps {
+      @Step {
+        Create a new file for the feature called SyncUpsList.swift. We will also preemptively import
+        the Composable Architecture and SwiftUI since we know we will need access to those
+        libraries.
+        
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0001.swift)
+      }
+      
+      We will start with implementing the reducer for the feature. This isn't always necessary or
+      even preferred. It can also work well to start by sketching out the view hierarchy for your
+      view, and then implementing the reducer.
+      
+      @Step {
+        Add a struct called `SyncUpsList` and annotate it with the 
+        ``ComposableArchitecture/Reducer()`` macro. This type will encapsulate the domain of the 
+        feature and implement its logic and behavior.
+        
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0002.swift)
+      }
+      
+      @Step {
+        Add an inner `State` type to represent the data the feature needs to do its job. Right now
+        that can just be the collection of `SyncUp`s in the list. We will also mark the `State`
+        type with the ``ComposableArchitecture/ObservableState`` macro so that the view can 
+        automatically observe changes to state.
+        
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0003.swift)
+      }
+      
+      Next we add an `Action` enum to represent all of the actions the user can perform in the UI.
+      Right now there only 3 actions: they can tap the "+" button in the top-right of the nav 
+      toolbar, they can tap a sync-up in the list, or they can swipe-to-delete on a row.
+      
+      @Step {
+        Add an `Action` enum with a case for each action the user can perform in the UI.
+        
+        > Important: As we saw in <doc:MeetComposableArchitecture>, we prefer to name our actions
+        > after exactly what happens in the view rather than what logic we want to execute. So we
+        > prefer `addButtonTapped` over something like `showAddSheet`.
+        
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0004.swift)
+      }
+      
+      @Step {
+        Implement the ``ComposableArchitecture/Reducer/body-8lumc`` of the reducer by using the 
+        ``ComposableArchitecture/Reduce`` type to implement each action. We will leave the 
+        `addButtonTapped` and `syncUpTapped` actions unimplemented for now since it requires more
+        work to present a sheet and drill down to a sync-up.
+        
+        > Note: Due to a bug in the Swift compiler it can often happen that you lose type inference
+        > inside `Reduce`. If that happens you can specify the generics to restore inference and
+        > autocomplete: `Reduce<State, Action>`.
+        
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0005.swift)
+      }
+      
+      That is all that is necessary for the `SyncUpsList` reducer for now. Later we will compose
+      more reducers into this to handle more functionality.
+      
+      Next, let's implement the view that will be powered by the `SyncUpsList` reducer. We will
+      need some helpers to break down the list view since it's quite complex, and most of
+      these helpers we will be taking directly from Apple's Scrumdinger code with few modifications.
+      
+      @Step {
+        Add a `CardView` that represents a single row in the list of sync-ups.  
+        
+        > Note: We are omitting the implementation of the `SyncUpsList` reducer to keep the code
+        > snippet short. You are also free to put the reducer and view in separate files, but we
+        > like to keep them in the same file until it becomes untenable.
+        
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0006.swift, previousFile: ListsOfSyncUps-02-code-0006-previous.swift)
+      }
+      
+      @Step {
+        Add a `SyncUpsListView` that holds onto a ``ComposableArchitecture/Store`` of the 
+        `SyncUpsList` domain.
+        
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0007.swift)
+      }
+      
+      @Step {
+        Implement the `body` of the view as `List` with a `ForEach` that iterates over the
+        collection of sync-ups. We will also add a button to the tool bar that will eventually
+        present a sheet for adding a new sync-up. Since we marked the `State` type with the
+        ``ComposableArchitecture/ObservableState`` macro we can access state directly in the
+        `store` and send actions to it.
+        
+        > Note: In order to get the colors for each `Theme` value you will need to copy the 
+        > [Assets.xcassets][assets] directory into your project.
+        
+        [assets]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SyncUps/SyncUps
+        
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0008.swift)
+      }
+      
+      @Step {
+        With that done we can set up a preview. Add a `#Preview` down at the bottom of the file.
+        To construct a `SyncUpsListView` you need to construct a ``ComposableArchitecture/Store`` 
+        of the `SyncUpsList` feature. This is done by providing the initial state of the feature,
+        and we can even pre-populate it with a `SyncUp` in the array, as well as specifying the 
+        reducer that will power the feature.
+        
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0009.swift)
+      }
+      
+      @Step {
+        Run the preview to see that the list of sync-ups shows with one single sync-up already 
+        populated in the list. You can also swipe on the row to delete it.
+        
+        @Video(source: ListsOfSyncUps-02-code-0010.mp4)
+      }
+    }
+  }
+}

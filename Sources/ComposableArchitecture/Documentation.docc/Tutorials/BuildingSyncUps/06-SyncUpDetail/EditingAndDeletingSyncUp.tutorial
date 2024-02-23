@@ -1,0 +1,485 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Editing and deleting a sync-up") {
+    Let's implement two major pieces of functionality in the detail screen: editing the sync-up
+    and deleting the sync-up. This will force us to face a number of common problems in app 
+    development all at once, including view reuse, navigation, alerts, and parent-child 
+    communication patterns.
+  }
+  
+  @Section(title: "Editing the sync-up") {
+    @ContentAndMedia {
+      To edit the sync-up we will reuse the `SyncUpFormView` that we previously used for _adding_
+      a sync-up. This will allow us to see how easy it is to reuse views in the Composable 
+      Architecture, and it will allow us to explore how to communicate from the child feature
+      back to the parent.
+      
+      @Video(source: "EditingAndDeletingSyncUp-01-cover-480p.mov")
+    }
+    
+    @Steps {
+      We want to present the `SyncUpFormView` from the `SyncUpDetailView` in a sheet, and so we
+      will need to use the presentation tools of the library just as we did in the 
+      `SyncUpListsView`.
+      
+      @Step {
+        Go to the SyncUpDetail.swift file and update the `State` of the feature so that it holds
+        onto an optional piece of `SyncUpDetail.State` using the 
+        ``ComposableArchitecture/Presents()`` macro. When the state is non-`nil` the sheet will
+        be presented, and when it is `nil` it will be dismissed.
+        
+        > Note: We have collapsed the code in the `SyncUpDetailView` for now.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0001.swift, previousFile: EditingAndDeletingSyncUp-01-code-0001-previous.swift)
+      }
+      
+      @Step {
+        Add a case to the `Action` enum to represent the 
+        ``ComposableArchitecture/PresentationAction``s of the `SyncUpForm`.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0002.swift)
+      }
+      
+      @Step {
+        Integrate the `SyncUpForm` reducer into the `SyncUpDetail` reducer by using the 
+        ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0003.swift)
+      }
+      
+      The domains of the child and parent features are now fully integrated together. We can now
+      implement the logic that causes the edit sheet to be presented.
+      
+      @Step {
+        When the "Edit" button is tapped we can populate the `editSyncUp` state to represent the
+        sheet should be presented. We can pass long the local `syncUp` value to the `SyncUpForm`
+        so that it has the freshest data to edit.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0004.swift)
+      }
+      
+      That is the basics of presenting the "Edit sync-up" sheet from the sync-up detail view. There
+      will be more to do in this reducer in a moment, but we can leave it here for now and 
+      concrentrate on the view layer for a moment.
+      
+      @Step {
+        Update the `store` property in the view to be `@Bindable` since we will need to derive
+        bindings from the store for driving navigation from state.
+        
+        > Note: We have collapsed the implementation of the `SyncUpForm` view in this snippet.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0005.swift, previousFile: EditingAndDeletingSyncUp-01-code-0005-previous.swift)
+      }
+      
+      @Step {
+        At the very bottom of the view use the `sheet(item:)` by deriving a binding to the 
+        `SyncUpForm` domain using ``SwiftUI/Binding/scope(state:action:)-4mj4d``.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0006.swift)
+      }
+      
+      @Step {
+        Provide a navigation title and toolbar buttons to the sheet for saving and cancelling the
+        edits made to the sync-up.
+        
+        > Note: Just as we did in the `SyncUpsListView`, we decided to keep the navigation 
+        customizations (title and toolbar) in the parent domain rather than the child. This has
+        allowed us to provide domain specific versions of this UI for creating a new sync-up
+        versus editing an existing sync-up.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0007.swift)
+      }
+      
+      @Step {
+        Send actions to the store when each of the toolbar buttons is tapped.
+        
+        > Note: These actions do not exist yet. We will be creating them next.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0008.swift)
+      }
+      
+      We have now finished integrating the `SyncUpForm` and `SyncUpDetail` at the view layer, and
+      so all that is left is to finish integrating the features at the reducer level.
+      
+      @Step {
+        Add the new cases to the `Action` enum that are being sent from the view.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0009.swift, previousFile: EditingAndDeletingSyncUp-01-code-0009-previous.swift)
+      }
+      
+      @Step {
+        Implement the `cancelEditButtonTapped` action by simply clearing out the `editSyncUp`
+        state. This will cause the view to dismiss the sheet.
+        
+        > Note: Any changes the `SyncUpForm` made to its local `syncUp` state will be discarded
+        because that state is fully disconnected from the `syncUp` held in the `SyncUpDetail`.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0010.swift)
+      }
+      
+      @Step {
+        Implement the `doneEditingButtonTapped` action by grabbing the latest `syncUp` value from
+        the `editSyncUp` state, and replacing `SyncUpDetail`'s state with that value.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0011.swift)
+      }
+      
+      @Step {
+        Run the preview to see that you can tap the "Edit" button to bring up the sync-up form
+        sheet. Then make some changes to the sync-up, and see that tapping "Done" causes those
+        changes to be committed to the sync-up in the detail screen.
+        
+        @Video(source: "EditingAndDeletingSyncUp-01-cover-480p.mov")
+      }
+    }  
+  }
+  
+  @Section(title: "Deleting the sync-up") {
+    @ContentAndMedia {
+      Next we will implement the logic for deleting the sync-up from the detail screen. Because
+      deletion is performed by a simple button, we want to protect from accidental deletions by
+      asking the user for confirmation using an alert. This will give us an opportunity to explore
+      how one shows alerts in the Composable Architecture.
+      
+      @Video(source: "EditingAndDeletingSyncUp-02-cover-480p.mov")
+    }
+    
+    @Steps {
+      Technically, alerts can be shown in Composable Architecture features in exactly the same way
+      they are in vanilla SwiftUI by using the various `alert` view modifiers. However, the library
+      comes with some tools that can improve how alerts are shown, and can make the alerts more
+      easily testable. We will use those tools.
+      
+      @Step {
+        We start by modeling a new `Alert` enum nested _inside_ the `Action` enum that represents
+        all the actions the user can take in the alert. The user can only confirm deletion or 
+        cancel deletion, and we do not have to model the cancel action. That is automatically 
+        taken care of by the library's navigation tools.'
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0001.swift, previousFile: EditingAndDeletingSyncUp-02-code-0001-previous.swift)
+      }
+      
+      @Step {
+        Add another piece of optional state using the ``ComposableArchitecture/Presents()`` macro,
+        this time representing whether or not an alert is shown.
+        
+        > Note: We are using the [`AlertState`][alert-state-docs] from our 
+        [SwiftUINavigation][swiftui-nav-gh] library, which automatically comes with the Composable
+        Architecture. It is a pure data description of an alert that can be shown to the user, and
+        it is generic over the type of actions that can be sent from the alert. 
+        
+        [swiftui-nav-gh]: http://github.com/pointfreeco/swiftui-navigation
+        [alert-state-docs]: https://swiftpackageindex.com/pointfreeco/swiftui-navigation/1.2.0/documentation/swiftuinavigationcore/alertstate
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0002.swift)
+      }
+      
+      @Step {
+        Add another ``ComposableArchitecture/PresentationAction`` case to the `Action` enum 
+        that represents the actions the alert can send.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0003.swift)
+      }
+      
+      @Step {
+        Use the ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator
+        again to integrate the alert's logic into the `SyncUpDetail` reducer.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0004.swift)
+      }
+      
+      Integrating the logic of an alert into a feature is a bit different from integrating the 
+      logic of a fully fledged feature. This is because alerts are immediately dismissed when a 
+      button is tapped and has no internal logic or behavior of its own. For this reason there is
+      no reducer to specify in the trailing closure of `ifLet`, and in fact it can be removed.
+      
+      @Step {
+        Remove the trailing closure from the `ifLet` because the alert does not have any additional
+        behavior to execute.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0005.swift)
+      }
+      
+      We now have the alert integrated into the `SyncUpDetail`, but we aren't yet populating the
+      `alert` state to actually present the alert. This is done by constructing a value of 
+      `AlertState`, which is a data type that represents all of the properties of an alert, such
+      as its title, message and buttons. It's primary purpose is to be `Equatable`-friendly so that
+      alerts can be tested.
+      
+      @Step {
+        Populate the `alert` property by constructing `AlertState`. This is done by providing three
+        trailing closures: one for the title, one for the buttons to show in the alert, and another
+        for the message in the alert.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0006.swift)
+      }
+      
+      That's all it takes to create `AlertState`. It contains all of the information for the view
+      to display the alert, which we will do in a moment.
+      
+      However, constructing `AlertState` values can be quite long, and so sometimes you may want
+      to extract their creation to an extension on `AlertState`.
+      
+      @Step {
+        Extract the alert state to an extension on `AlertState`. 
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0007.swift)
+      }
+      
+      Next we need to handle the new alert actions in the reducer.
+      
+      @Step {
+        Destructure the new `.alert` actions in the `switch` statement of the core `Reduce`.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0008.swift)
+      }
+      
+      @Step {
+        There is nothing to do in the `.alert(.dismiss)` case because the `ifLet` operator will 
+        automatically clean up the state for you.
+      
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0009.swift)
+      }
+      
+      The `.alert(.presented)` case is more subtle, though. This action is sent when the user 
+      confirms that they want to delete the sync-up, and so somehow we to remove the `syncUp` we
+      have in state from the collection of sync-ups that in the `SyncUpsList` feature.
+      
+      However, remember that in <doc:PersistingSyncUps> we showed to how to persist the collection
+      of sync-ups using the [`@Shared`](<doc:Shared>) property wrapper with the
+      ``ComposableArchitecture/PersistenceKey/fileStorage(_:)`` persistence strategy. This gives the
+      app _global_ access to that state, and we can make edits to it from anywhere. We can even
+      do it directly inline in the `.confirmButtonTapped` action.
+      
+      @Step {
+        Use the ``Shared`` property wrapper with the 
+        ``ComposableArchitecture/PersistenceKey/fileStorage(_:)`` persistence strategy to get a
+        reference to the sync-ups loaded from disk.
+        
+        > Note: This does not actually load data from disk. The data has already been loaded from
+        disk and cached in the [`@Shared`](<doc:Shared>) reference. This is only giving us
+        access to that reference.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0010.swift)
+      }
+      
+      @Step {
+        Use the `id` of the sync-up held in the detail's state to remove it from the `syncUps`
+        collection persisted to disk.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0011.swift)
+      }
+      
+      That's all it takes to delete the sync-up from the persisted array of sync-ups. It may trouble
+      you that we are reaching out to a seemingly global `syncUps` variable and mutating it. 
+      However, this is no different than making an API request to delete data on some external
+      server. Typically for that situation we use dependencies to make the API operation testable,
+      but we don't need to do that with [`@Shared`](<doc:Shared>). It is testable by
+      default.
+      
+      If it truly bothers you to access the global `syncUps` state from within the detail feature,
+      then you can instead send a "delegate" action from the detail that the parent feature
+      intercepts and implements the deleting logic. That will allow the parent to handle deletion
+      while the child remains ignorant to those details.
+      
+      There is one more addition we want to make to the deletion functionality before moving on.
+      When the user confirms deletion of the sync-up we should dismiss the detail view from being
+      presented, as its no longer relevant. After all, the sync-up is being deleted!
+      
+      This allows us to demonstrate another superpower of the Composable Architecture. The library
+      comes with a powerful dependency called ``ComposableArchitecture/DismissEffect`` that allows
+      a feature to dismiss itself if it is being presented, and if the feature was integrated into
+      the parent using the library's navigation tools. This can be powerful because it allows the
+      child features to encapsulate as much of their logic as possible without having to explicitly
+      communicate with the parent. It works similarly to SwiftUI's `@Environment(\.dismiss)`, but
+      it is also distinct from it.
+      
+      @Step {
+        Add a dependency on ``ComposableArchitecture/DismissEffect`` to the `SyncUpDetail` feature
+        by using the `@Dependency` property wrapper.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0012.swift)
+      }
+      
+      To dismiss a child feature with the ``ComposableArchitecture/DismissEffect`` dependency you
+      just have to invoke it as if it's a function: `dismiss()`. However, the dismiss effect is an
+      asynchronous function, and therefore it cannot be invoked directly in the reducer. It can
+      only be invoked inside an effect, and so we must use the
+      ``ComposableArchitecture/Effect/run(priority:operation:catch:fileID:line:)`` effect, which
+      gives us an asynchronous context to execute in work in, as well as a handle on 
+      ``ComposableArchitecture/Send`` for sending actions back into the system.
+      
+      @Step {
+        Return a `.run` effect to send the delegate action and invoke `dismiss` in one single
+        effect.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0013.swift)
+      }
+      
+      Next we need to integrate the alert into the view layer so that an alert actually shows
+      when the `alert` state becomes non-`nil`.
+      
+      @Step {
+        In the `SyncUpDetailView`, go to the bottom and use the ``SwiftUI/View/alert(_:)`` view 
+        modifier that comes with the library. This will cause an alert to be presented when the
+        `alert` state is populated.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0014.swift, previousFile: EditingAndDeletingSyncUp-02-code-0014-previous.swift)
+      }
+      
+      We have now finished the sync-up deletion functionality in the detail screen. Unfortunately
+      we can't yet test deletion because we still have no way to navigate to the detail screen
+      from the sync-ups list screen.
+      
+      But, before getting to that, let's take a quick side excursion to clean up our domain
+      modeling in this feature.
+    }
+  }
+  
+  @Section(title: "More concise domain modeling") {
+    @ContentAndMedia {
+      The `SyncUpDetail` works well enough right now, but there is something not ideal about how its
+      domain is modeled. We are representing the alert and edit sheet using two independent optional
+      values, which allows for invalid states. We only expect that either the alert _or_ sheet is
+      shown at one time, but it is possible for both optionals to be non-`nil` at the same time.
+      
+      And this problem gets bigger with the most destinations you can navigate to from a feature.
+      For example, if there are 4 possible destinations one can navigate to, then modeling that 
+      with optionals leads to 2^4 = 16 possible states, only 5 of which are valid. Either all
+      optionals should be `nil` or exactly one should be non-`nil`.
+      
+      This kind of inconcise domain modeling can leak complexity into your features, and luckily
+      there is a better way.
+    }
+    
+    @Steps {
+      @Step {
+        Create a whole new reducer nested inside the `SyncUpDetail` called `Destination`. This
+        reducer will represent all of the places one can navigate to from the detail screen,
+        and that will give us a single piece of state to drive navigation rather than having 
+        multiple optional values.
+        
+        _Further_, the `Destination` type will be an _enum_. This is different than other reudcers
+        we have encountered so far. The [`@Reducer`](<doc:Reducer()>) has special behavior when
+        applied to enums that allows one to compose multiple reducers into a single package.
+        
+        > Note: We have collapsed the implementation of `SyncUpDetail` and `SyncUpDetailView` in
+        this code snippet.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0001.swift, previousFile: EditingAndDeletingSyncUp-03-code-0001-previous.swift)
+      }
+      
+      @Step {
+        Add a case for each destination that can be navigated to from this feature. Each case will
+        hold onto the _reducer_ type of the feature being navigated to, except for the `alert` case.
+        It will simply hold onto `AlertState`.
+        
+        We will also move the `Alert` action enum from the `SyncUpDetail.Action` type to be nested 
+        inside `Destination`.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0002.swift)
+      }
+      
+      That is all it takes to define a dedicated `Destination` reducer that encapsulates all of the
+      logic and behavior of the features that can be navigated to. You can right click on the 
+      [`@Reducer`](<doc:Reducer()>) macro and select "Expand macro" in Xcode to see all of the code
+      that is being written for you.
+      
+      Next we need to integrate this new `Destination` reducer into the main `SyncUpDetail` reducer.
+      
+      @Step {
+        Replace the two independent pieces of optional state in `SyncUpDetail.State` for a single
+        piece of optional `Destination.State`.
+        
+        We now have just one single piece of optional state that determines if navigation is active
+        and where we are being navigated to.
+        
+        > Note: There will be compiler errors after completing this step, but we will fix them
+        in upcoming steps.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0003.swift, previousFile: EditingAndDeletingSyncUp-03-code-0003-previous.swift)
+      }
+      
+      @Step {
+        Replace the two action cases for the alert and edit sheet with a single case that holds
+        onto a ``ComposableArchitecture/PresentationAction`` of `Destination.Action`.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0004.swift)
+      }
+      
+      @Step {
+        Replace the two `ifLet` operators at the bottom of `SyncUpDetail` with a single one that
+        composes the `Destination` reducer.
+        
+        > Note: Due to the expanded code from the [`@Reducer`](<doc:Reducer()>) macro we don't
+        even need to provide a trailing closure to `ifLet`. It can be inferred automatically.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0005.swift)
+      }
+      
+      That is all it takes to integrate the `Destination` reducer into the `SyncUpDetail` reducer.
+      Next we have to update the core `Reduce` to handle the new destination state and actions
+      properly.
+      
+      @Step {
+        Update the pattern matching for the alert to go through the `.destination(.presented)` 
+        case.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0006.swift)
+      }
+      
+      @Step {
+        Do the same for the dismiss action.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0007.swift)
+      }
+      
+      @Step {
+        Update where we `nil` out `editSyncUp` state to instead `nil` out the `destination` state.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0008.swift)
+      }
+      
+      @Step {
+        Update where we populate the `alert` state to instead point the `destination` state to
+        the `.alert` case.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0009.swift)
+      }
+      
+      @Step {
+        Update where we pattern match on `editSyncUp` to instead pattern match on the `.edit` case
+        of the `destination` state.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0010.swift)
+      }
+      
+      @Step {
+        Update where we previously populated the `editSyncUp` state to instead point the 
+        `destination` enum to the `.edit` case with some `SyncUpForm` state.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0011.swift)
+      }
+      
+      @Step {
+        Update the extension on `AlertState` to point to the `Destination`'s alert action.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0012.swift)
+      }
+      
+      That's all it takes to fully integrate the `Destination` reducer into the `SyncUpDetail`
+      reducer. Next we have to update the view so that we can drive the presentation of the alert
+      and sheet from the destination enum.
+      
+      @Step {
+        Update the ``SwiftUI/View/alert(_:)`` and `.sheet(item:)` modifiers at the bottom of the
+        view so that the `$store.scope` further singles out the case for driving navigation.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0013.swift, previousFile: EditingAndDeletingSyncUp-03-code-0013-previous.swift)
+      }
+      
+      That is all it takes to finish the refactor to use an enum to drive navigation rather than
+      multiple optionals. Our domain is more concisely modeled, and we can know precisely when
+      something is being presented. We merely have to check if `destination != nil`.
+    }
+  }
+}

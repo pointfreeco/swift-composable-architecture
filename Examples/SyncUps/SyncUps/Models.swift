@@ -102,7 +102,7 @@ extension SyncUp {
     title: "Engineering"
   )
 
-  static let designMock = Self(
+  static let productMock = Self(
     id: SyncUp.ID(),
     attendees: [
       Attendee(id: Attendee.ID(), name: "Blob Sr"),

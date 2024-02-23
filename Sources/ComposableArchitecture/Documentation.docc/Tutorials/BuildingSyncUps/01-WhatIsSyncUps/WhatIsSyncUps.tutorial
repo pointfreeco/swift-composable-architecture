@@ -1,0 +1,182 @@
+@Tutorial(time: 10) {
+  @Intro(title: "What is SyncUps?") {
+    Let's start with a tour of the application we will be building. It's called SyncUps, and it's a
+    recreation of Apple's Scrumdinger demo application. 
+    
+    It features multiple different navigation patterns, has interesting side effects such as a timer
+    and speech recognizer, and it's complex enough that it warrants a test suite to be confident it
+    works the way we expect.
+  }
+  
+  @Section(title: "A tour of SyncUps") {
+    @ContentAndMedia {
+      This very repo contains a [demo project][syncups] that shows how to build a moderately complex
+      application using the Composable Architecture. Let's go on a quick tour of the app so that we
+      can see what exactly we will be building in this tutorial.
+      
+      [syncups]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SyncUps
+    }
+    
+    @Steps {
+      @Step {
+        Start by cloning the Composable Architecture repo:
+        
+        `git clone https://www.github.com/pointfreeco/swift-composable-architecture`
+      }
+      @Step {
+        Navigate to the Examples/SyncUps directory and open the SyncUps.xcodeproj file.
+      }
+      @Step {
+        Press ⌘R to run the application in the simulator.
+        
+        > Note: You may need to enable macros that the library uses before you can run the app in
+        > the simulator.
+        
+        @Image(source: TourOfSyncUps-0003-image.png)
+      }
+      @Step {
+        Tap the "+" button in the top-right to bring up a sheet where you can enter the details of a
+        new sync-up.
+        
+        @Image(source: TourOfSyncUps-0004-image.png)
+      }
+      @Step {
+        Tap the "Add" button in the top-right to complete adding the sync-up. Notice that the sheet
+        dismisses and the new sync-up is added to the list.
+        
+        @Image(source: TourOfSyncUps-0005-image.png)
+      }
+      @Step {
+        Tap on the "Morning sync" row in the list in order to drill down to the details of the
+        sync-up.
+        
+        @Image(source: TourOfSyncUps-0006-image.png)
+      }
+      
+      From here there are a few actions you can perform. You can edit the sync-up's details, you can
+      record a new meeting in the sync-up, you can view past meetings (currently there aren't any),
+      and you can delete the sync-up.
+      
+      @Step {
+        Tap the "Edit" button in the top-right to bring up a sheet with all the info of the sync-up.
+        Edit the sync-up by adding a new attendee, "Blob Esq", and tap "Done" in the top-right to
+        commit that change. Notice that the sheet is dismissed and the change was applied to the
+        form in the detail screen.
+        
+        @Image(source: TourOfSyncUps-0007-image.png)
+      }
+      
+      @Step {
+        Tap the "Start meeting" button to start a meeting. Notice that you drill down to a new
+        screen and are immediately prompted asking for speech recognition permission.
+        
+        @Image(source: TourOfSyncUps-0008-image.png)
+      }
+      
+      @Step {
+        Either grant access or deny access in order to officially start the meeting. Once done you
+        will see that a timer begins and will automatically control which speaker is currently
+        active.
+        
+        > Note: You can choose to grant or deny, but currently the speech recognition APIs do not
+        > work in simulators and so it doesn't really matter which you choose.
+        
+        @Image(source: TourOfSyncUps-0009-image.png)
+      }
+      
+      The meeting will automatically end once the time runs out, but there is a faster way to end
+      the meeting too.
+      
+      @Step {
+        Tap the "End meeting" to bring up an alert showing your options for ending the meeting 
+        early.
+        
+        @Image(source: TourOfSyncUps-0010-image.png)
+      }
+      
+      You can either choose to end the meeting early by saving the meeting in the history or 
+      discarding the meeting, or you can cancel and go back to the meeting.
+      
+      @Step {
+        Tap "Save and end" in order to end the meeting early. Notice that you are popped back to
+        the detail screen, and that the "Past meetings" section has a new row for the meeting
+        that was just recorded.
+        
+        @Image(source: TourOfSyncUps-0011-image.png)
+      }
+      
+      @Step {
+        Tap the newly added meeting in order to drill down to the meeting details.
+        
+        > Note: Currently there is no transcript recorded for this meeting because the speech
+        recognition APIs do not work in the simulator.
+        
+        @Image(source: TourOfSyncUps-0012-image.png)
+      }
+      
+      @Step {
+        Go back to the detail of the sync-up and tap the "Delete" button to see an alert asking you
+        to confirm that you want to delete the sync-up.
+        
+        @Image(source: TourOfSyncUps-0013-image.png)
+      }
+      
+      @Step {
+        Tap "Yes" to confirm deleting the sync-up. You will be popped back to the root list of
+        sync-ups, which will be empty now that the sync-up was deleted.
+      }
+      
+      That completes the tour! Another feature of the app that was working behind the scenes without
+      you noticing was automatic persistence of the data. Every change made to the sync-up, from
+      adding a new attendee to recording a new meeting, was automatically persisted to a JSON file
+      on disk. This means that when you quit the app and re-open it will have all of your data
+      immediately loaded from disk.
+    }
+  }
+  
+  @Section(title: "Create the SyncUps project") {
+    @ContentAndMedia {
+      Let's create a brand new project so that we can rebuild the SyncUps app from scratch. This
+      will give us the opportunity to explore how to solve various problems with the Composable
+      Architecture, such as domain modeling, navigation, state sharing, persistence, effects, 
+      testing, and more!
+    }
+    
+    @Steps {
+      @Step {
+        Start by creating a brand new Xcode project. For the purpose of this tutorial we will target
+        the newest version of iOS (17.4 at the time of writing this), but do know that it is 
+        possible to build apps with the Composable Architecture that target older versions of
+        iOS (see <doc:ObservationBackport> for more information on this).
+        
+        @Image(source: CreateProject-0001-image.png)
+      }
+      
+      @Step {
+        Import the Composable Architecture. Currently your project does not depend on the Composable
+        Architecture and so it will not compile yet.
+        
+        @Image(source: CreateProject-0002-image.png)
+      }
+      
+      @Step {
+        Click on the "Search..." button to search the Swift Package Index for our library. Add
+        the library to your project. Be sure to target the newest version of the library (at least
+        1.8.2).
+        
+        @Image(source: CreateProject-0003-image.png)
+      }
+      
+      @Step {
+        Navigate to the project settings and turn "Strict Concurrency Checking" to "Complete". This
+        will force us to handle any potentially problematic concurrency code as we progress
+        through the tutorial.
+        
+        @Image(source: CreateProject-0004-image)
+      }
+      
+      That is all it takes to set up the project for our SyncUps recreation. We can now start
+      building our first feature in <doc:ListsOfSyncUps>.
+    }
+  }
+}
