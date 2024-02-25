@@ -65,67 +65,67 @@
           ]
         )
       }
+
+      func testStoreDeinit_RunningEffect() async {
+        XCTTODO(
+          "We would like for this to pass, but it requires full deprecation of uncached child stores"
+        )
+        Logger.shared.isEnabled = true
+        let effectFinished = self.expectation(description: "Effect finished")
+        do {
+          let store = Store<Void, Void>(initialState: ()) {
+            Reduce { state, _ in
+              .run { _ in
+                try? await Task.never()
+                effectFinished.fulfill()
+              }
+            }
+          }
+          store.send(())
+          _ = store
+        }
+
+        XCTAssertEqual(
+          Logger.shared.logs,
+          [
+            "Store<(), ()>.init",
+            "Store<(), ()>.deinit",
+          ]
+        )
+        await self.fulfillment(of: [effectFinished], timeout: 0.5)
+      }
+
+      func testStoreDeinit_RunningCombineEffect() async {
+        XCTTODO(
+          "We would like for this to pass, but it requires full deprecation of uncached child stores"
+        )
+        Logger.shared.isEnabled = true
+        let effectFinished = self.expectation(description: "Effect finished")
+        do {
+          let store = Store<Void, Void>(initialState: ()) {
+            Reduce { state, _ in
+              .publisher {
+                Empty(completeImmediately: false)
+                  .handleEvents(receiveCancel: {
+                    effectFinished.fulfill()
+                  })
+              }
+            }
+          }
+          store.send(())
+          _ = store
+        }
+
+        XCTAssertEqual(
+          Logger.shared.logs,
+          [
+            "Store<(), ()>.init",
+            "Store<(), ()>.deinit",
+          ]
+        )
+        await self.fulfillment(of: [effectFinished], timeout: 0.5)
+      }
     #endif
-
-    func testStoreDeinit_RunningEffect() async {
-      XCTTODO(
-        "We would like for this to pass, but it requires full deprecation of uncached child stores"
-      )
-      Logger.shared.isEnabled = true
-      let effectFinished = self.expectation(description: "Effect finished")
-      do {
-        let store = Store<Void, Void>(initialState: ()) {
-          Reduce { state, _ in
-            .run { _ in
-              try? await Task.never()
-              effectFinished.fulfill()
-            }
-          }
-        }
-        store.send(())
-        _ = store
-      }
-
-      XCTAssertEqual(
-        Logger.shared.logs,
-        [
-          "Store<(), ()>.init",
-          "Store<(), ()>.deinit",
-        ]
-      )
-      await self.fulfillment(of: [effectFinished], timeout: 0.5)
-    }
-
-    func testStoreDeinit_RunningCombineEffect() async {
-      XCTTODO(
-        "We would like for this to pass, but it requires full deprecation of uncached child stores"
-      )
-      Logger.shared.isEnabled = true
-      let effectFinished = self.expectation(description: "Effect finished")
-      do {
-        let store = Store<Void, Void>(initialState: ()) {
-          Reduce { state, _ in
-            .publisher {
-              Empty(completeImmediately: false)
-                .handleEvents(receiveCancel: {
-                  effectFinished.fulfill()
-                })
-            }
-          }
-        }
-        store.send(())
-        _ = store
-      }
-
-      XCTAssertEqual(
-        Logger.shared.logs,
-        [
-          "Store<(), ()>.init",
-          "Store<(), ()>.deinit",
-        ]
-      )
-      await self.fulfillment(of: [effectFinished], timeout: 0.5)
-    }
   }
 
   @Reducer

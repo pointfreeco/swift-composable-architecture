@@ -2475,7 +2475,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     await store.send(.tapAfter)
   }
 
-#if DEBUG
   func testPresentation_leaveAlertPresentedForNonAlertActions() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -2578,18 +2577,19 @@ final class PresentationReducerTests: BaseTCATestCase {
         )
       }
 
-      XCTExpectFailure {
-        $0.compactDescription.hasPrefix(
-          """
-          A "Scope" at "\(#fileID):\(line)" received a child action when child state was set to a \
-          different case. …
-          """
-        )
-      }
+      #if DEBUG
+        XCTExpectFailure {
+          $0.compactDescription.hasPrefix(
+            """
+            A "Scope" at "\(#fileID):\(line)" received a child action when child state was set to a \
+            different case. …
+            """
+          )
+        }
+      #endif
       await store.send(.destination(.presented(.child(.decrementButtonTapped))))
     }
   }
-  #endif
 
   func testFastPathEquality() {
     struct State: Equatable {

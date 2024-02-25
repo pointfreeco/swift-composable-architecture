@@ -4,9 +4,9 @@
 
   @MainActor
   final class ScopeCacheTests: BaseTCATestCase {
-    #if DEBUG
-      @available(*, deprecated)
-      func testOptionalScope_UncachedStore() {
+    @available(*, deprecated)
+    func testOptionalScope_UncachedStore() {
+      #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
         }
 
@@ -35,34 +35,38 @@
             """
         }
         store.send(.child(.dismiss))
-      }
-    #endif
+      #endif
+    }
 
     func testOptionalScope_CachedStore() {
-      let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
-      }
-      store
-        .scope(state: \.self, action: \.self)
-        .scope(state: \.child, action: \.child.presented)?
-        .send(.show)
+      #if DEBUG
+        let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
+        }
+        store
+          .scope(state: \.self, action: \.self)
+          .scope(state: \.child, action: \.child.presented)?
+          .send(.show)
+      #endif
     }
 
     func testOptionalScope_StoreIfLet() {
-      let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
-        Feature()
-      }
-      let cancellable =
-        store
-        .scope(state: \.child, action: \.child.presented)
-        .ifLet { store in
-          store.scope(state: \.child, action: \.child.presented)?.send(.show)
+      #if DEBUG
+        let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
+          Feature()
         }
-      _ = cancellable
+        let cancellable =
+          store
+          .scope(state: \.child, action: \.child.presented)
+          .ifLet { store in
+            store.scope(state: \.child, action: \.child.presented)?.send(.show)
+          }
+        _ = cancellable
+      #endif
     }
 
-    #if DEBUG
-      @available(*, deprecated)
-      func testOptionalScope_StoreIfLet_UncachedStore() {
+    @available(*, deprecated)
+    func testOptionalScope_StoreIfLet_UncachedStore() {
+      #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
         }
         XCTExpectFailure {
@@ -91,24 +95,26 @@
             composablearchitecture/migratingto1.7
             """
         }
-      }
-    #endif
-
-    func testIdentifiedArrayScope_CachedStore() {
-      let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
-      }
-
-      let rowsStore = Array(
-        store
-          .scope(state: \.self, action: \.self)
-          .scope(state: \.rows, action: \.rows)
-      )
-      rowsStore[0].send(.show)
+      #endif
     }
 
-    #if DEBUG
-      @available(*, deprecated)
-      func testIdentifiedArrayScope_UncachedStore() {
+    func testIdentifiedArrayScope_CachedStore() {
+      #if DEBUG
+        let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
+        }
+
+        let rowsStore = Array(
+          store
+            .scope(state: \.self, action: \.self)
+            .scope(state: \.rows, action: \.rows)
+        )
+        rowsStore[0].send(.show)
+      #endif
+    }
+
+    @available(*, deprecated)
+    func testIdentifiedArrayScope_UncachedStore() {
+      #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
           Feature()
         }
@@ -136,8 +142,8 @@
             composablearchitecture/migratingto1.7
             """
         }
-      }
-    #endif
+      #endif
+    }
   }
 
   @Reducer
