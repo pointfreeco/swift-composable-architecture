@@ -341,7 +341,7 @@ extension Reducer {
   /// @Reducer
   /// struct Parent {
   ///   struct State {
-  ///     @PresentationState var child: Child.State?
+  ///     @Presents var child: Child.State?
   ///     // ...
   ///   }
   ///   enum Action {
