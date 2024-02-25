@@ -101,34 +101,30 @@ public final class RootStore {
           withEscapedDependencies { continuation in
             tasks.wrappedValue.append(
               Task(priority: priority) { @MainActor in
-                #if DEBUG
-                  let isCompleted = LockIsolated(false)
-                  defer { isCompleted.setValue(true) }
-                #endif
+                let isCompleted = LockIsolated(false)
+                defer { isCompleted.setValue(true) }
                 await operation(
                   Send { effectAction in
-                    #if DEBUG
-                      if isCompleted.value {
-                        runtimeWarn(
-                          """
-                          An action was sent from a completed effect:
+                    if isCompleted.value {
+                      runtimeWarn(
+                        """
+                        An action was sent from a completed effect:
 
-                            Action:
-                              \(debugCaseOutput(effectAction))
+                          Action:
+                            \(debugCaseOutput(effectAction))
 
-                            Effect returned from:
-                              \(debugCaseOutput(action))
+                          Effect returned from:
+                            \(debugCaseOutput(action))
 
-                          Avoid sending actions using the 'send' argument from 'Effect.run' after \
-                          the effect has completed. This can happen if you escape the 'send' \
-                          argument in an unstructured context.
+                        Avoid sending actions using the 'send' argument from 'Effect.run' after \
+                        the effect has completed. This can happen if you escape the 'send' \
+                        argument in an unstructured context.
 
-                          To fix this, make sure that your 'run' closure does not return until \
-                          you're done calling 'send'.
-                          """
-                        )
-                      }
-                    #endif
+                        To fix this, make sure that your 'run' closure does not return until \
+                        you're done calling 'send'.
+                        """
+                      )
+                    }
                     if let task = continuation.yield({
                       self.send(effectAction, originatingFrom: action)
                     }) {

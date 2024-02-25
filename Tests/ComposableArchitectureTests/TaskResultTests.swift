@@ -2,7 +2,6 @@ import ComposableArchitecture
 import XCTest
 
 final class TaskResultTests: BaseTCATestCase {
-  #if DEBUG
     func testEqualityNonEquatableError() {
       struct Failure: Error {
         let message: String
@@ -41,38 +40,37 @@ final class TaskResultTests: BaseTCATestCase {
         )
       } issueMatcher: {
         $0.compactDescription == """
-          XCTAssertNoDifference failed: …
+        XCTAssertNoDifference failed: …
 
-              TaskResult.failure(
-            −   TaskResultTests.Failure1(message: "Something went wrong")
-            +   TaskResultTests.Failure2(message: "Something went wrong")
-              )
+            TaskResult.failure(
+          −   TaskResultTests.Failure1(message: "Something went wrong")
+          +   TaskResultTests.Failure2(message: "Something went wrong")
+            )
 
-          (First: −, Second: +)
-          """
+        (First: −, Second: +)
+        """
       }
     }
 
-    func testHashabilityNonHashableError() {
-      struct Failure: Error {
-        let message: String
-      }
-
-      XCTExpectFailure {
-        _ = TaskResult<Never>.failure(Failure(message: "Something went wrong")).hashValue
-      } issueMatcher: {
-        $0.compactDescription == """
-          "TaskResultTests.Failure" is not hashable. …
-
-          To hash a value of this type, it must conform to the "Hashable" protocol. For example:
-
-              extension TaskResultTests.Failure: Hashable {}
-
-          See the documentation of "TaskResult" for more information.
-          """
-      }
+  func testHashabilityNonHashableError() {
+    struct Failure: Error {
+      let message: String
     }
-  #endif
+
+    XCTExpectFailure {
+      _ = TaskResult<Never>.failure(Failure(message: "Something went wrong")).hashValue
+    } issueMatcher: {
+      $0.compactDescription == """
+        "TaskResultTests.Failure" is not hashable. …
+
+        To hash a value of this type, it must conform to the "Hashable" protocol. For example:
+
+            extension TaskResultTests.Failure: Hashable {}
+
+        See the documentation of "TaskResult" for more information.
+        """
+    }
+  }
 
   func testEquality_EquatableError() {
     enum Failure: Error, Equatable {

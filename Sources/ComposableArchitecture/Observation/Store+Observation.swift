@@ -82,11 +82,9 @@
       state: KeyPath<State, ChildState?>,
       action: CaseKeyPath<Action, ChildAction>
     ) -> Store<ChildState, ChildAction>? {
-      #if DEBUG
-        if !self.canCacheChildren {
-          runtimeWarn(uncachedStoreWarning(self))
-        }
-      #endif
+      if !self.canCacheChildren {
+        runtimeWarn(uncachedStoreWarning(self))
+      }
       guard var childState = self.state[keyPath: state]
       else { return nil }
       return self.scope(

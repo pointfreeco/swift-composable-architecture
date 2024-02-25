@@ -43,39 +43,37 @@ final class EffectRunTests: BaseTCATestCase {
     await store.receive(.response)
   }
 
-  #if DEBUG
-    func testRunUnhandledFailure() async {
-      var line: UInt!
-      XCTExpectFailure(nil, enabled: nil, strict: nil) {
-        $0.compactDescription == """
-          An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
+  func testRunUnhandledFailure() async {
+    var line: UInt!
+    XCTExpectFailure(nil, enabled: nil, strict: nil) {
+      $0.compactDescription == """
+        An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
 
-              EffectRunTests.Failure()
+            EffectRunTests.Failure()
 
-          All non-cancellation errors must be explicitly handled via the "catch" parameter on \
-          "Effect.run", or via a "do" block.
-          """
-      }
-      struct State: Equatable {}
-      enum Action: Equatable { case tapped, response }
-      let store = TestStore(initialState: State()) {
-        Reduce<State, Action> { state, action in
-          switch action {
-          case .tapped:
-            line = #line
-            return .run { send in
-              struct Failure: Error {}
-              throw Failure()
-            }
-          case .response:
-            return .none
+        All non-cancellation errors must be explicitly handled via the "catch" parameter on \
+        "Effect.run", or via a "do" block.
+        """
+    }
+    struct State: Equatable {}
+    enum Action: Equatable { case tapped, response }
+    let store = TestStore(initialState: State()) {
+      Reduce<State, Action> { state, action in
+        switch action {
+        case .tapped:
+          line = #line
+          return .run { send in
+            struct Failure: Error {}
+            throw Failure()
           }
+        case .response:
+          return .none
         }
       }
-      // NB: We wait a long time here because XCTest failures take a long time to generate
-      await store.send(.tapped).finish(timeout: 5 * NSEC_PER_SEC)
     }
-  #endif
+    // NB: We wait a long time here because XCTest failures take a long time to generate
+    await store.send(.tapped).finish(timeout: 5 * NSEC_PER_SEC)
+  }
 
   func testRunCancellation() async {
     enum CancelID { case response }
@@ -123,49 +121,47 @@ final class EffectRunTests: BaseTCATestCase {
     await store.send(.tapped).finish()
   }
 
-  #if DEBUG
-    func testRunEscapeFailure() async {
-      XCTExpectFailure {
-        $0.compactDescription == """
-          An action was sent from a completed effect:
+  func testRunEscapeFailure() async {
+    XCTExpectFailure {
+      $0.compactDescription == """
+        An action was sent from a completed effect:
 
-            Action:
-              EffectRunTests.Action.response
+          Action:
+            EffectRunTests.Action.response
 
-            Effect returned from:
-              EffectRunTests.Action.tap
+          Effect returned from:
+            EffectRunTests.Action.tap
 
-          Avoid sending actions using the 'send' argument from 'Effect.run' after the effect has \
-          completed. This can happen if you escape the 'send' argument in an unstructured context.
+        Avoid sending actions using the 'send' argument from 'Effect.run' after the effect has \
+        completed. This can happen if you escape the 'send' argument in an unstructured context.
 
-          To fix this, make sure that your 'run' closure does not return until you're done \
-          calling 'send'.
-          """
-      }
+        To fix this, make sure that your 'run' closure does not return until you're done \
+        calling 'send'.
+        """
+    }
 
-      enum Action { case tap, response }
+    enum Action { case tap, response }
 
-      let queue = DispatchQueue.test
+    let queue = DispatchQueue.test
 
-      let store = Store(initialState: 0) {
-        Reduce<Int, Action> { _, action in
-          switch action {
-          case .tap:
-            return .run { send in
-              Task(priority: .userInitiated) {
-                try await queue.sleep(for: .seconds(1))
-                await send(.response)
-              }
+    let store = Store(initialState: 0) {
+      Reduce<Int, Action> { _, action in
+        switch action {
+        case .tap:
+          return .run { send in
+            Task(priority: .userInitiated) {
+              try await queue.sleep(for: .seconds(1))
+              await send(.response)
             }
-          case .response:
-            return .none
           }
+        case .response:
+          return .none
         }
       }
-
-      let viewStore = ViewStore(store, observe: { $0 })
-      await viewStore.send(.tap).finish()
-      await queue.advance(by: .seconds(1))
     }
-  #endif
+
+    let viewStore = ViewStore(store, observe: { $0 })
+    await viewStore.send(.tap).finish()
+    await queue.advance(by: .seconds(1))
+  }
 }
