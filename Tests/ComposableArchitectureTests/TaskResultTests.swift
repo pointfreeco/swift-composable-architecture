@@ -2,6 +2,7 @@ import ComposableArchitecture
 import XCTest
 
 final class TaskResultTests: BaseTCATestCase {
+  #if DEBUG
     func testEqualityNonEquatableError() {
       struct Failure: Error {
         let message: String
@@ -24,22 +25,23 @@ final class TaskResultTests: BaseTCATestCase {
           """
       }
     }
+  #endif
 
-    func testEqualityMismatchingError() {
-      struct Failure1: Error {
-        let message: String
-      }
-      struct Failure2: Error {
-        let message: String
-      }
+  func testEqualityMismatchingError() {
+    struct Failure1: Error {
+      let message: String
+    }
+    struct Failure2: Error {
+      let message: String
+    }
 
-      XCTExpectFailure {
-        XCTAssertNoDifference(
-          TaskResult<Never>.failure(Failure1(message: "Something went wrong")),
-          TaskResult<Never>.failure(Failure2(message: "Something went wrong"))
-        )
-      } issueMatcher: {
-        $0.compactDescription == """
+    XCTExpectFailure {
+      XCTAssertNoDifference(
+        TaskResult<Never>.failure(Failure1(message: "Something went wrong")),
+        TaskResult<Never>.failure(Failure2(message: "Something went wrong"))
+      )
+    } issueMatcher: {
+      $0.compactDescription == """
         XCTAssertNoDifference failed: …
 
             TaskResult.failure(
@@ -49,28 +51,30 @@ final class TaskResultTests: BaseTCATestCase {
 
         (First: −, Second: +)
         """
-      }
-    }
-
-  func testHashabilityNonHashableError() {
-    struct Failure: Error {
-      let message: String
-    }
-
-    XCTExpectFailure {
-      _ = TaskResult<Never>.failure(Failure(message: "Something went wrong")).hashValue
-    } issueMatcher: {
-      $0.compactDescription == """
-        "TaskResultTests.Failure" is not hashable. …
-
-        To hash a value of this type, it must conform to the "Hashable" protocol. For example:
-
-            extension TaskResultTests.Failure: Hashable {}
-
-        See the documentation of "TaskResult" for more information.
-        """
     }
   }
+
+  #if DEBUG
+    func testHashabilityNonHashableError() {
+      struct Failure: Error {
+        let message: String
+      }
+
+      XCTExpectFailure {
+        _ = TaskResult<Never>.failure(Failure(message: "Something went wrong")).hashValue
+      } issueMatcher: {
+        $0.compactDescription == """
+          "TaskResultTests.Failure" is not hashable. …
+
+          To hash a value of this type, it must conform to the "Hashable" protocol. For example:
+
+              extension TaskResultTests.Failure: Hashable {}
+
+          See the documentation of "TaskResult" for more information.
+          """
+      }
+    }
+  #endif
 
   func testEquality_EquatableError() {
     enum Failure: Error, Equatable {

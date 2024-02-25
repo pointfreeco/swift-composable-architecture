@@ -18,6 +18,7 @@
       XCTAssertTrue(stack.isEmpty)
     }
 
+#if DEBUG
     func testStackStateSubscriptCase_Unexpected() {
       enum Element: Equatable {
         case int(Int)
@@ -44,6 +45,7 @@
 
       XCTAssertEqual(Array(stack), [.int(42)])
     }
+    #endif
 
     func testCustomDebugStringConvertible() {
       @Dependency(\.stackElementID) var stackElementID
@@ -758,6 +760,7 @@
       }
     }
 
+#if DEBUG
     func testSendActionWithIDThatDoesNotExist() async {
       struct Parent: Reducer {
         struct State: Equatable {
@@ -805,7 +808,9 @@
       }
       await store.send(.path(.element(id: 999, action: ())))
     }
+    #endif
 
+#if DEBUG
     func testPopIDThatDoesNotExist() async {
       struct Parent: Reducer {
         struct State: Equatable {
@@ -838,7 +843,9 @@
       }
       await store.send(.path(.popFrom(id: 999)))
     }
+    #endif
 
+#if DEBUG
     func testChildWithInFlightEffect() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -896,6 +903,7 @@
           """
       }
     }
+    #endif
 
     func testMultipleChildEffects() async {
       struct Child: Reducer {
@@ -1052,6 +1060,7 @@
       }
     }
 
+#if DEBUG
     func testPushReusedID() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -1095,7 +1104,9 @@
       }
       await store.send(.child(.push(id: 0, state: Child.State())))
     }
+    #endif
 
+#if DEBUG
     func testPushIDGreaterThanNextGeneration() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -1138,7 +1149,8 @@
         $0.children[id: 1] = Child.State()
       }
     }
-
+    #endif
+    
     func testMismatchedIDFailure() async {
       struct Child: Reducer {
         struct State: Equatable {}

@@ -49,21 +49,23 @@
       XCTAssertEqual(4, childStore.withState(\.count))
     }
 
-    func testStoreDeinit() {
-      Logger.shared.isEnabled = true
-      do {
-        let store = Store<Void, Void>(initialState: ()) {}
-        _ = store
-      }
+    #if DEBUG
+      func testStoreDeinit() {
+        Logger.shared.isEnabled = true
+        do {
+          let store = Store<Void, Void>(initialState: ()) {}
+          _ = store
+        }
 
-      XCTAssertEqual(
-        Logger.shared.logs,
-        [
-          "Store<(), ()>.init",
-          "Store<(), ()>.deinit",
-        ]
-      )
-    }
+        XCTAssertEqual(
+          Logger.shared.logs,
+          [
+            "Store<(), ()>.init",
+            "Store<(), ()>.deinit",
+          ]
+        )
+      }
+    #endif
 
     func testStoreDeinit_RunningEffect() async {
       XCTTODO(

@@ -23,36 +23,38 @@ final class PresentationReducerTests: BaseTCATestCase {
     XCTAssertNil(parent.child)
   }
 
-  func testPresentationStateSubscriptCase_Unexpected() {
-    enum Child: Equatable {
-      case int(Int)
-      case text(String)
+  #if DEBUG
+    func testPresentationStateSubscriptCase_Unexpected() {
+      enum Child: Equatable {
+        case int(Int)
+        case text(String)
+      }
+
+      struct Parent: Equatable {
+        @PresentationState var child: Child?
+      }
+
+      var parent = Parent(child: .int(42))
+
+      XCTExpectFailure {
+        parent.$child[case: /Child.text]?.append("!")
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTExpectFailure {
+        parent.$child[case: /Child.text] = nil
+      } issueMatcher: {
+        $0.compactDescription == """
+          Can't modify unrelated case "int"
+          """
+      }
+
+      XCTAssertEqual(parent.child, .int(42))
     }
-
-    struct Parent: Equatable {
-      @PresentationState var child: Child?
-    }
-
-    var parent = Parent(child: .int(42))
-
-    XCTExpectFailure {
-      parent.$child[case: /Child.text]?.append("!")
-    } issueMatcher: {
-      $0.compactDescription == """
-        Can't modify unrelated case "int"
-        """
-    }
-
-    XCTExpectFailure {
-      parent.$child[case: /Child.text] = nil
-    } issueMatcher: {
-      $0.compactDescription == """
-        Can't modify unrelated case "int"
-        """
-    }
-
-    XCTAssertEqual(parent.child, .int(42))
-  }
+  #endif
 
   func testPresentation_parentDismissal() async {
     struct Child: Reducer {
@@ -813,7 +815,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       @Dependency(\.dismiss) var dismiss
       var body: some Reducer<State, Action> {
         Reduce { _, action in
-            .run { _ in await dismiss() }
+          .run { _ in await dismiss() }
         }
       }
     }
@@ -1694,117 +1696,121 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  func testRuntimeWarn_NilChild_SendDismissAction() async {
-    struct Child: Reducer {
-      struct State: Equatable {}
-      enum Action: Equatable {}
-      var body: some Reducer<State, Action> {
-        EmptyReducer()
+  #if DEBUG
+    func testRuntimeWarn_NilChild_SendDismissAction() async {
+      struct Child: Reducer {
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        var body: some Reducer<State, Action> {
+          EmptyReducer()
+        }
       }
-    }
 
-    struct Parent: Reducer {
-      struct State: Equatable {
-        @PresentationState var child: Child.State?
-      }
-      enum Action: Equatable {
-        case child(PresentationAction<Child.Action>)
-      }
-      var body: some Reducer<State, Action> {
-        Reduce { state, action in
+      struct Parent: Reducer {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+        }
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
             .none
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
         }
-        .ifLet(\.$child, action: /Action.child) {
-          Child()
+      }
+
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          An "ifLet" at \
+          "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
+          presentation action when destination state was absent. …
+
+            Action:
+              PresentationReducerTests.Parent.Action.child(.dismiss)
+
+          This is generally considered an application logic error, and can happen for a few reasons:
+
+          • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+          must run before any other reducer sets destination state to "nil". This ensures that \
+          destination reducers can handle their actions while their state is still present.
+
+          • This action was sent to the store while destination state was "nil". Make sure that \
+          actions for this reducer can only be sent from a view store when state is present, or \
+          from effects that start from this reducer. In SwiftUI applications, use a Composable \
+          Architecture view modifier like "sheet(store:…)".
+          """
+      }
+
+      await store.send(.child(.dismiss))
+    }
+  #endif
+
+  #if DEBUG
+    func testRuntimeWarn_NilChild_SendChildAction() async {
+      struct Child: Reducer {
+        struct State: Equatable {}
+        enum Action: Equatable {
+          case tap
+        }
+        var body: some Reducer<State, Action> {
+          EmptyReducer()
         }
       }
-    }
 
-    let store = TestStore(initialState: Parent.State()) {
-      Parent()
-    }
-
-    XCTExpectFailure {
-      $0.compactDescription == """
-        An "ifLet" at \
-        "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
-        presentation action when destination state was absent. …
-
-          Action:
-            PresentationReducerTests.Parent.Action.child(.dismiss)
-
-        This is generally considered an application logic error, and can happen for a few reasons:
-
-        • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
-        must run before any other reducer sets destination state to "nil". This ensures that \
-        destination reducers can handle their actions while their state is still present.
-
-        • This action was sent to the store while destination state was "nil". Make sure that \
-        actions for this reducer can only be sent from a view store when state is present, or \
-        from effects that start from this reducer. In SwiftUI applications, use a Composable \
-        Architecture view modifier like "sheet(store:…)".
-        """
-    }
-
-    await store.send(.child(.dismiss))
-  }
-
-  func testRuntimeWarn_NilChild_SendChildAction() async {
-    struct Child: Reducer {
-      struct State: Equatable {}
-      enum Action: Equatable {
-        case tap
-      }
-      var body: some Reducer<State, Action> {
-        EmptyReducer()
-      }
-    }
-
-    struct Parent: Reducer {
-      struct State: Equatable {
-        @PresentationState var child: Child.State?
-      }
-      enum Action: Equatable {
-        case child(PresentationAction<Child.Action>)
-      }
-      var body: some ReducerOf<Self> {
-        Reduce { state, action in
+      struct Parent: Reducer {
+        struct State: Equatable {
+          @PresentationState var child: Child.State?
+        }
+        enum Action: Equatable {
+          case child(PresentationAction<Child.Action>)
+        }
+        var body: some ReducerOf<Self> {
+          Reduce { state, action in
             .none
-        }
-        .ifLet(\.$child, action: /Action.child) {
-          Child()
+          }
+          .ifLet(\.$child, action: /Action.child) {
+            Child()
+          }
         }
       }
+
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          An "ifLet" at \
+          "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
+          presentation action when destination state was absent. …
+
+            Action:
+              PresentationReducerTests.Parent.Action.child(.presented(.tap))
+
+          This is generally considered an application logic error, and can happen for a few reasons:
+
+          • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+          must run before any other reducer sets destination state to "nil". This ensures that \
+          destination reducers can handle their actions while their state is still present.
+
+          • This action was sent to the store while destination state was "nil". Make sure that \
+          actions for this reducer can only be sent from a view store when state is present, or \
+          from effects that start from this reducer. In SwiftUI applications, use a Composable \
+          Architecture view modifier like "sheet(store:…)".
+          """
+      }
+
+      await store.send(.child(.presented(.tap)))
     }
-
-    let store = TestStore(initialState: Parent.State()) {
-      Parent()
-    }
-
-    XCTExpectFailure {
-      $0.compactDescription == """
-        An "ifLet" at \
-        "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
-        presentation action when destination state was absent. …
-
-          Action:
-            PresentationReducerTests.Parent.Action.child(.presented(.tap))
-
-        This is generally considered an application logic error, and can happen for a few reasons:
-
-        • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
-        must run before any other reducer sets destination state to "nil". This ensures that \
-        destination reducers can handle their actions while their state is still present.
-
-        • This action was sent to the store while destination state was "nil". Make sure that \
-        actions for this reducer can only be sent from a view store when state is present, or \
-        from effects that start from this reducer. In SwiftUI applications, use a Composable \
-        Architecture view modifier like "sheet(store:…)".
-        """
-    }
-
-    await store.send(.child(.presented(.tap)))
-  }
+  #endif
 
   func testRehydrateSameChild_SendDismissAction() async {
     struct Child: Reducer {
@@ -2221,7 +2227,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       enum Action: Equatable { case tap }
       var body: some Reducer<State, Action> {
         Reduce { state, action in
-            .run { _ in try await Task.never() }
+          .run { _ in try await Task.never() }
         }
       }
     }
@@ -2262,28 +2268,28 @@ final class PresentationReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
-      || $0.sourceCodeContext.location?.lineNumber == line + 1
-      && $0.compactDescription == """
-              An effect returned for this action is still running. It must complete before the end \
-              of the test. …
+        || $0.sourceCodeContext.location?.lineNumber == line + 1
+          && $0.compactDescription == """
+            An effect returned for this action is still running. It must complete before the end \
+            of the test. …
 
-              To fix, inspect any effects the reducer returns for this action and ensure that all \
-              of them complete by the end of the test. There are a few reasons why an effect may \
-              not have completed:
+            To fix, inspect any effects the reducer returns for this action and ensure that all \
+            of them complete by the end of the test. There are a few reasons why an effect may \
+            not have completed:
 
-              • If using async/await in your effect, it may need a little bit of time to properly \
-              finish. To fix you can simply perform "await store.finish()" at the end of your test.
+            • If using async/await in your effect, it may need a little bit of time to properly \
+            finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
-              • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", \
-              etc.), make sure that you wait enough time for it to perform the effect. If you are \
-              using a test clock/scheduler, advance it so that the effects may complete, or \
-              consider using an immediate clock/scheduler to immediately perform the effect instead.
+            • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", \
+            etc.), make sure that you wait enough time for it to perform the effect. If you are \
+            using a test clock/scheduler, advance it so that the effects may complete, or \
+            consider using an immediate clock/scheduler to immediately perform the effect instead.
 
-              • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
-              then make sure those effects are torn down by marking the effect ".cancellable" and \
-              returning a corresponding cancellation effect ("Effect.cancel") from another action, \
-              or, if your effect is driven by a Combine subject, send it a completion.
-              """
+            • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+            then make sure those effects are torn down by marking the effect ".cancellable" and \
+            returning a corresponding cancellation effect ("Effect.cancel") from another action, \
+            or, if your effect is driven by a Combine subject, send it a completion.
+            """
     }
   }
 
@@ -2381,9 +2387,9 @@ final class PresentationReducerTests: BaseTCATestCase {
       enum Action: Equatable { case onAppear }
       var body: some ReducerOf<Self> {
         Reduce { state, action in
-            .run { _ in
-              try await Task.never()
-            }
+          .run { _ in
+            try await Task.never()
+          }
         }
       }
     }
@@ -2469,6 +2475,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     await store.send(.tapAfter)
   }
 
+#if DEBUG
   func testPresentation_leaveAlertPresentedForNonAlertActions() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -2582,6 +2589,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       await store.send(.destination(.presented(.child(.decrementButtonTapped))))
     }
   }
+  #endif
 
   func testFastPathEquality() {
     struct State: Equatable {
