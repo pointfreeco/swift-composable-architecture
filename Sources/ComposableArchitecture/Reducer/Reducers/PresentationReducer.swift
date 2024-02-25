@@ -340,8 +340,9 @@ extension Reducer {
   /// ```swift
   /// @Reducer
   /// struct Parent {
+  ///   @ObservableState
   ///   struct State {
-  ///     @PresentationState var child: Child.State?
+  ///     @Presents var child: Child.State?
   ///     // ...
   ///   }
   ///   enum Action {
