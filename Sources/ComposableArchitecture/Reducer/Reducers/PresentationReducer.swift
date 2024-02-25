@@ -340,6 +340,7 @@ extension Reducer {
   /// ```swift
   /// @Reducer
   /// struct Parent {
+  ///   @ObservableState
   ///   struct State {
   ///     @Presents var child: Child.State?
   ///     // ...
