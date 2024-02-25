@@ -455,7 +455,7 @@ move the extension to a separate file, or move the code from the extension to be
 The `#Preview` macro is not capable of seeing the expansion of any macros since it is a macro 
 itself. This means that when using destination and path reducers (see
 <doc:Reducers#Destination-and-path-reducers> above) you cannot construct the cases of the state 
-enums inside `#Preview`:
+enum inside `#Preview`:
 
 ```swift
 #Preview {
