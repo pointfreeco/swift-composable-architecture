@@ -76,86 +76,86 @@
       }
     }
 
-      func testExpectedStateEquality() async {
-        struct State: Equatable {
-          var count: Int = 0
-          var isChanging: Bool = false
-        }
+    func testExpectedStateEquality() async {
+      struct State: Equatable {
+        var count: Int = 0
+        var isChanging: Bool = false
+      }
 
-        enum Action: Equatable {
-          case increment
-          case changed(from: Int, to: Int)
-        }
+      enum Action: Equatable {
+        case increment
+        case changed(from: Int, to: Int)
+      }
 
-        let store = TestStore(initialState: State()) {
-          Reduce<State, Action> { state, action in
-            switch action {
-            case .increment:
-              state.isChanging = true
-              return .send(.changed(from: state.count, to: state.count + 1))
-            case let .changed(from, to):
-              state.isChanging = false
-              if state.count == from {
-                state.count = to
-              }
-              return .none
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
+          switch action {
+          case .increment:
+            state.isChanging = true
+            return .send(.changed(from: state.count, to: state.count + 1))
+          case let .changed(from, to):
+            state.isChanging = false
+            if state.count == from {
+              state.count = to
             }
+            return .none
           }
-        }
-
-        await store.send(.increment) {
-          $0.isChanging = true
-        }
-        await store.receive(.changed(from: 0, to: 1)) {
-          $0.isChanging = false
-          $0.count = 1
-        }
-
-        XCTExpectFailure()
-        await store.send(.increment) {
-          $0.isChanging = false
-        }
-
-        XCTExpectFailure()
-        await store.receive(.changed(from: 1, to: 2)) {
-          $0.isChanging = true
-          $0.count = 1100
         }
       }
 
-      func testExpectedStateEqualityMustModify() async {
-        struct State: Equatable {
-          var count: Int = 0
-        }
+      await store.send(.increment) {
+        $0.isChanging = true
+      }
+      await store.receive(.changed(from: 0, to: 1)) {
+        $0.isChanging = false
+        $0.count = 1
+      }
 
-        enum Action: Equatable {
-          case noop, finished
-        }
+      XCTExpectFailure()
+      await store.send(.increment) {
+        $0.isChanging = false
+      }
 
-        let store = TestStore(initialState: State()) {
-          Reduce<State, Action> { state, action in
-            switch action {
-            case .noop:
-              return .send(.finished)
-            case .finished:
-              return .none
-            }
+      XCTExpectFailure()
+      await store.receive(.changed(from: 1, to: 2)) {
+        $0.isChanging = true
+        $0.count = 1100
+      }
+    }
+
+    func testExpectedStateEqualityMustModify() async {
+      struct State: Equatable {
+        var count: Int = 0
+      }
+
+      enum Action: Equatable {
+        case noop, finished
+      }
+
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
+          switch action {
+          case .noop:
+            return .send(.finished)
+          case .finished:
+            return .none
           }
         }
-
-        await store.send(.noop)
-        await store.receive(.finished)
-
-        XCTExpectFailure()
-        await store.send(.noop) {
-          $0.count = 0
-        }
-
-        XCTExpectFailure()
-        await store.receive(.finished) {
-          $0.count = 0
-        }
       }
+
+      await store.send(.noop)
+      await store.receive(.finished)
+
+      XCTExpectFailure()
+      await store.send(.noop) {
+        $0.count = 0
+      }
+
+      XCTExpectFailure()
+      await store.receive(.finished) {
+        $0.count = 0
+      }
+    }
 
     func testReceiveActionMatchingPredicate() async {
       enum Action: Equatable {
