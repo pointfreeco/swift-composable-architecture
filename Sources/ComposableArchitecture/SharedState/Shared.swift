@@ -259,9 +259,11 @@ final class SharedChangeTracker {
   private let lock = NSRecursiveLock()
   private var _changes: [ObjectIdentifier: any Reference] = [:]
 
-  func track<Value>(_ shared: Shared<Value>) {
-    self.changes[ObjectIdentifier(shared.reference)] = shared.reference
-  }
+  #if canImport(Perception)
+    func track<Value>(_ shared: Shared<Value>) {
+      self.changes[ObjectIdentifier(shared.reference)] = shared.reference
+    }
+  #endif
   func clearChanges() {
     for change in self.changes.values {
       change.clearSnapshot()
