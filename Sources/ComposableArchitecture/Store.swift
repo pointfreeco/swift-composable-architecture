@@ -210,7 +210,11 @@ public final class Store<State, Action> {
   ///   it conforms to ``ObservableState``.
   /// - Returns: The return value, if any, of the `body` closure.
   public func withState<R>(_ body: (_ state: State) -> R) -> R {
-    body(self.currentState)
+    #if canImport(Perception)
+      _withoutPerceptionChecking { body(self.currentState) }
+    #else
+      body(self.currentState)
+    #endif
   }
 
   /// Sends an action to the store.

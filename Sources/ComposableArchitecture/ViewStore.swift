@@ -156,9 +156,9 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       action: fromViewAction,
       isInvalid: nil
     )
-    self._state = CurrentValueRelay(self.store.currentState)
+    self._state = CurrentValueRelay(self.store.withState { $0 })
     self.viewCancellable = self.store.rootStore.didSet
-      .compactMap { [weak self] in self?.store.currentState }
+      .compactMap { [weak self] in self?.store.withState { $0 } }
       .removeDuplicates(by: isDuplicate)
       .dropFirst()
       .sink { [weak self] in
