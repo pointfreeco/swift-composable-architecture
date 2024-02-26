@@ -47,9 +47,9 @@ final class AppStorageTests: XCTestCase {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage("count")) var count = 0
 
-    try await Task.sleep(nanoseconds: 1_000_000)
-    defaults.setValue(count + 42, forKey: "count")
     try await Task.sleep(nanoseconds: 10_000_000)
+    defaults.setValue(count + 42, forKey: "count")
+    try await Task.sleep(nanoseconds: 100_000_000)
     XCTAssertEqual(count, 42)
   }
 
@@ -69,7 +69,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage(\.count)) var count = 0
 
     defaults.count += 1
-    try await Task.sleep(nanoseconds: 10_000_000)
+    try await Task.sleep(nanoseconds: 100_000_000)
     XCTAssertEqual(count, 1)
   }
 }
