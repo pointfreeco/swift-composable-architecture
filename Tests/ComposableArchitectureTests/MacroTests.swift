@@ -55,7 +55,7 @@
     }
   }
 
-  enum TestEnumReducer_Basics {
+  private enum TestEnumReducer_Basics {
     @Reducer struct Feature {}
     @Reducer
     enum Destination1 {
@@ -87,7 +87,7 @@
     public enum Destination6 {}
   }
 
-  enum TestEnumReducer_SynthesizedConformances {
+  private enum TestEnumReducer_SynthesizedConformances {
     @Reducer
     struct Feature {
     }
