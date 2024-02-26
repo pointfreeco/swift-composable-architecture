@@ -67,6 +67,7 @@ final class AppStorageTests: XCTestCase {
   func testKeyPath() async throws {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage(\.count)) var count = 0
+    _ = count
 
     defaults.count += 1
     try await Task.sleep(nanoseconds: 100_000_000)
