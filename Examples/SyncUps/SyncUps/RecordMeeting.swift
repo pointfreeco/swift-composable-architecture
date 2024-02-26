@@ -40,15 +40,11 @@ struct RecordMeeting {
     Reduce { state, action in
       switch action {
       case .alert(.presented(.confirmDiscard)):
-        return .run { _ in
-          await self.dismiss()
-        }
+        return .run { _ in await self.dismiss() }
 
       case .alert(.presented(.confirmSave)):
         state.syncUp.insert(transcript: state.transcript)
-        return .run { _ in
-          await self.dismiss()
-        }
+        return .run { _ in await self.dismiss() }
 
       case .alert:
         return .none
@@ -97,9 +93,7 @@ struct RecordMeeting {
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.speakerIndex == state.syncUp.attendees.count - 1 {
             state.syncUp.insert(transcript: state.transcript)
-            return .run { _ in
-              await self.dismiss()
-            }
+            return .run { _ in await self.dismiss() }
           }
           state.speakerIndex += 1
         }

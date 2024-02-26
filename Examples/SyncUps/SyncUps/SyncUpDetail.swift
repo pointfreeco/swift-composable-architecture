@@ -70,9 +70,7 @@ struct SyncUpDetail {
           return .send(.delegate(.startMeeting))
 
         case .openSettings:
-          return .run { _ in
-            await self.openSettings()
-          }
+          return .run { _ in await self.openSettings() }
         }
 
       case .destination:

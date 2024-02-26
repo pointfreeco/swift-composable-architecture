@@ -175,10 +175,12 @@ public final class Store<State, Action> {
       let originalPrepareDependencies = prepareDependencies
       var prepareDependencies = prepareDependencies
       if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-        prepareDependencies = {
-          $0[PersistentReferencesKey.self] = LockIsolated([:])
-          originalPrepareDependencies?(&$0)
-        }
+        #if canImport(Perception)
+          prepareDependencies = {
+            $0[PersistentReferencesKey.self] = LockIsolated([:])
+            originalPrepareDependencies?(&$0)
+          }
+        #endif
       }
     #endif
     if let prepareDependencies {
