@@ -30,12 +30,14 @@
   /// Use ``PersistenceKey/fileStorage(_:)`` to create values of this type.
   public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @unchecked Sendable
   {
-    @Dependency(\.defaultFileStorage) fileprivate var queue
+    let storage: any FileStorage
     let url: URL
     var workItem: DispatchWorkItem?
     var notificationListener: Any!
 
     public init(url: URL) {
+      @Dependency(\.defaultFileStorage) var storage
+      self.storage = storage
       self.url = url
       #if canImport(AppKit) || canImport(UIKit)
         self.notificationListener = NotificationCenter.default.addObserver(
@@ -47,8 +49,8 @@
             let self,
             let workItem = self.workItem
           else { return }
-          self.queue.async(execute: workItem)
-          self.queue.async(
+          self.storage.async(execute: workItem)
+          self.storage.async(
             execute: DispatchWorkItem {
               self.workItem?.cancel()
               self.workItem = nil
@@ -62,22 +64,22 @@
     }
 
     public func load() -> Value? {
-      try? JSONDecoder().decode(Value.self, from: self.queue.load(from: self.url))
+      try? JSONDecoder().decode(Value.self, from: self.storage.load(from: self.url))
     }
 
     public func save(_ value: Value) {
       self.workItem?.cancel()
       let workItem = DispatchWorkItem { [weak self] in
         guard let self else { return }
-        self.queue.setIsSetting(true)
-        try? self.queue.save(JSONEncoder().encode(value), to: self.url)
+        self.storage.setIsSetting(true)
+        try? self.storage.save(JSONEncoder().encode(value), to: self.url)
         self.workItem = nil
       }
       self.workItem = workItem
       if canListenForResignActive {
-        self.queue.asyncAfter(interval: .seconds(5), execute: workItem)
+        self.storage.asyncAfter(interval: .seconds(5), execute: workItem)
       } else {
-        self.queue.async(execute: workItem)
+        self.storage.async(execute: workItem)
       }
     }
 
@@ -88,16 +90,16 @@
           try? FileManager.default
             .createDirectory(
               at: self.url.deletingLastPathComponent(), withIntermediateDirectories: true)
-          try? self.queue.save(Data(), to: self.url)
+          try? self.storage.save(Data(), to: self.url)
         }
 
         // TODO: detect deletion separately and restart source
-        let cancellable = self.queue.fileSystemSource(
+        let cancellable = self.storage.fileSystemSource(
           url: self.url,
           eventMask: [.write, .delete, .rename]
         ) {
-          if self.queue.isSetting() == true {
-            self.queue.setIsSetting(false)
+          if self.storage.isSetting() == true {
+            self.storage.setIsSetting(false)
           } else {
             continuation.yield(self.load())
           }
@@ -111,17 +113,18 @@
 
   extension FileStorageKey: Hashable {
     public static func == (lhs: FileStorageKey, rhs: FileStorageKey) -> Bool {
-      lhs.url == rhs.url
+      lhs.url == rhs.url && lhs.storage === rhs.storage
     }
 
     public func hash(into hasher: inout Hasher) {
       hasher.combine(self.url)
+      hasher.combine(ObjectIdentifier(self.storage))
     }
   }
 
   // TODO: hide this thing from the public
   /// A type that encapsulates saving and loading data from disk.
-  public protocol FileStorage: Sendable {
+  public protocol FileStorage: Sendable, AnyObject {
     func async(execute workItem: DispatchWorkItem)
     func asyncAfter(interval: DispatchTimeInterval, execute: DispatchWorkItem)
     func isSetting() -> Bool?
@@ -140,7 +143,7 @@
   ///
   /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency that
   /// is used by default when running your app in the simulator or on device.
-  public struct LiveFileStorage: FileStorage {
+  final public class LiveFileStorage: FileStorage {
     private let queue: DispatchQueue
     public init(queue: DispatchQueue) {
       self.queue = queue

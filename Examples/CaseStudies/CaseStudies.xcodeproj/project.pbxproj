@@ -23,6 +23,7 @@
 		CA6AC2672451135C00C71CB3 /* DownloadClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6AC2632451135C00C71CB3 /* DownloadClient.swift */; };
 		CA78F0CD28DA47D70026C4AD /* 04-HigherOrderReducers-RecursionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA78F0CC28DA47D70026C4AD /* 04-HigherOrderReducers-RecursionTests.swift */; };
 		CA7BC8EE245CCFE4001FB69F /* 02-SharedState-UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7BC8ED245CCFE4001FB69F /* 02-SharedState-UserDefaults.swift */; };
+		CAA0CC3E2B8D3B4A00D7AF54 /* 02-SharedState-Sandboxing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA0CC3D2B8D3B4A00D7AF54 /* 02-SharedState-Sandboxing.swift */; };
 		CAA9ADC22446587C0003A984 /* 03-Effects-Basics.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC12446587C0003A984 /* 03-Effects-Basics.swift */; };
 		CAA9ADC424465AB00003A984 /* 02-Effects-BasicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC324465AB00003A984 /* 02-Effects-BasicsTests.swift */; };
 		CAA9ADC624465C810003A984 /* 03-Effects-Cancellation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC524465C810003A984 /* 03-Effects-Cancellation.swift */; };
@@ -167,6 +168,7 @@
 		CA6AC2632451135C00C71CB3 /* DownloadClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DownloadClient.swift; sourceTree = "<group>"; };
 		CA78F0CC28DA47D70026C4AD /* 04-HigherOrderReducers-RecursionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-HigherOrderReducers-RecursionTests.swift"; sourceTree = "<group>"; };
 		CA7BC8ED245CCFE4001FB69F /* 02-SharedState-UserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-SharedState-UserDefaults.swift"; sourceTree = "<group>"; };
+		CAA0CC3D2B8D3B4A00D7AF54 /* 02-SharedState-Sandboxing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-SharedState-Sandboxing.swift"; sourceTree = "<group>"; };
 		CAA9ADC12446587C0003A984 /* 03-Effects-Basics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-Basics.swift"; sourceTree = "<group>"; };
 		CAA9ADC324465AB00003A984 /* 02-Effects-BasicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-Effects-BasicsTests.swift"; sourceTree = "<group>"; };
 		CAA9ADC524465C810003A984 /* 03-Effects-Cancellation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-Cancellation.swift"; sourceTree = "<group>"; };
@@ -404,6 +406,7 @@
 				CADECDB72B5CA425009DC881 /* 02-SharedState-FileStorage.swift */,
 				CADECDB52B5CA228009DC881 /* 02-SharedState-InMemory.swift */,
 				CADECDBF2B5DE7C1009DC881 /* 02-SharedState-Onboarding.swift */,
+				CAA0CC3D2B8D3B4A00D7AF54 /* 02-SharedState-Sandboxing.swift */,
 				CA7BC8ED245CCFE4001FB69F /* 02-SharedState-UserDefaults.swift */,
 				CAA9ADC12446587C0003A984 /* 03-Effects-Basics.swift */,
 				CAA9ADC524465C810003A984 /* 03-Effects-Cancellation.swift */,
@@ -770,6 +773,7 @@
 				433B8B762A49C9AF0035DEE4 /* 04-Navigation-Multiple-Destinations.swift in Sources */,
 				CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift in Sources */,
 				CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */,
+				CAA0CC3E2B8D3B4A00D7AF54 /* 02-SharedState-Sandboxing.swift in Sources */,
 				DC88D8A6245341EC0077F427 /* 01-GettingStarted-Animations.swift in Sources */,
 				DC89C44D244621A5006900B9 /* 04-Navigation-NavigateAndLoad.swift in Sources */,
 				DC89C4442446111B006900B9 /* 01-GettingStarted-Counter.swift in Sources */,

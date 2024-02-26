@@ -79,6 +79,13 @@ struct RootView: View {
               SharedStateFileStorageView(store: store)
             }
           }
+          NavigationLink("Sandboxed shared state") {
+            Demo(
+              store: Store(initialState: SharedStateSandboxing.State()) { SharedStateSandboxing() }
+            ) { store in
+              SharedStateSandboxingView(store: store)
+            }
+          }
           Button("Sign up flow") {
             isSignUpCaseStudyPresented = true
           }
