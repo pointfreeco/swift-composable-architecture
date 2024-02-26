@@ -479,7 +479,7 @@ inside the macro:
 
 ```swift
 #Preview {
-  private
+  preview
 }
 private var preview: some View {
   FeatureView(
