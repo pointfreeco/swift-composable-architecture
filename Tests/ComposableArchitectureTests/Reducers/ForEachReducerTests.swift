@@ -23,7 +23,7 @@
       await store.send(.rows(.element(id: 2, action: ""))) {
         $0.rows[id: 2]?.value = ""
       }
-      await store.receive(\.rows[id:2]) {
+      await store.receive(\.rows[id: 2]) {
         $0.rows[id: 2]?.value = "Empty"
       }
     }
