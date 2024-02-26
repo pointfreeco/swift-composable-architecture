@@ -65,7 +65,6 @@ would typically use the `@Bindable` property wrapper that comes with SwiftUI:
 ```swift
 struct MyView: View {
   @Bindable var store: StoreOf<MyFeature>
-
   // ...
 }
 ```
@@ -77,7 +76,6 @@ its place until you can target iOS 17 and later. You just have to qualify `@Bind
 ```swift
 struct MyView: View {
   @Perception.Bindable var store: StoreOf<MyFeature>
-
   // ...
 }
 ```
