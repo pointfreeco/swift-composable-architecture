@@ -503,7 +503,7 @@ struct Feature_Previews: PreviewProvider {
     FeatureView(
       store: Store(
         initialState: Feature.State(
-          destination: .edit(EditFeature.State())  // 🛑
+          destination: .edit(EditFeature.State())
         )
       ) {
         Feature()
