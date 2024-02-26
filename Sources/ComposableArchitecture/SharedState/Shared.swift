@@ -1,10 +1,11 @@
-#if canImport(Perception)
-  import CustomDump
-  import Foundation
-  #if canImport(Combine)
-    import Combine
-  #endif
+import CustomDump
+import Foundation
 
+#if canImport(Combine)
+  import Combine
+#endif
+
+#if canImport(Perception)
   /// A property wrapper type that shares a value with multiple parts of an application.
   ///
   /// See the <doc:SharingState> article for more detailed information on how to use this property
@@ -234,7 +235,6 @@
       }
     }
   }
-
 #endif
 
 enum SharedLocals {
