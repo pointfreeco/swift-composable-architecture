@@ -235,82 +235,83 @@
     }
   }
 
-  enum SharedLocals {
-    @TaskLocal static var exhaustivity: Exhaustivity?
-    static var isProcessingChanges: Bool { Self.exhaustivity != nil }
-  }
-
-  final class SharedChangeTracker {
-    var hasChanges: Bool { !self.changes.isEmpty }
-    private var changes: [ObjectIdentifier: any Reference] {
-      _read {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        yield self._changes
-      }
-      _modify {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        yield &self._changes
-      }
-    }
-    private let lock = NSRecursiveLock()
-    private var _changes: [ObjectIdentifier: any Reference] = [:]
-
-    func track<Value>(_ shared: Shared<Value>) {
-      self.changes[ObjectIdentifier(shared.reference)] = shared.reference
-    }
-    func clearChanges() {
-      for change in self.changes.values {
-        change.clearSnapshot()
-      }
-      self.changes.removeAll()
-    }
-    func assertUnchanged() {
-      for change in self.changes.values {
-        change.assertUnchanged()
-      }
-      self.changes.removeAll()
-    }
-  }
-
-  extension SharedChangeTracker: DependencyKey {
-    static let liveValue: SharedChangeTracker? = nil
-    static let testValue: SharedChangeTracker? = nil
-  }
-
-  extension Optional {
-    fileprivate subscript(default defaultSubscript: DefaultSubscript<Wrapped>) -> Wrapped {
-      get { self ?? defaultSubscript.value }
-      set {
-        defaultSubscript.value = newValue
-        if self != nil { self = newValue }
-      }
-    }
-  }
-
-  extension RandomAccessCollection where Self: MutableCollection {
-    fileprivate subscript(
-      position: Index, default defaultSubscript: DefaultSubscript<Element>
-    ) -> Element {
-      get { self.indices.contains(position) ? self[position] : defaultSubscript.value }
-      set {
-        defaultSubscript.value = newValue
-        if self.indices.contains(position) { self[position] = newValue }
-      }
-    }
-  }
-
-  private final class DefaultSubscript<Value>: Hashable {
-    var value: Value
-    init(_ value: Value) {
-      self.value = value
-    }
-    static func == (lhs: DefaultSubscript, rhs: DefaultSubscript) -> Bool {
-      lhs === rhs
-    }
-    func hash(into hasher: inout Hasher) {
-      hasher.combine(ObjectIdentifier(self))
-    }
-  }
 #endif
+
+enum SharedLocals {
+  @TaskLocal static var exhaustivity: Exhaustivity?
+  static var isProcessingChanges: Bool { Self.exhaustivity != nil }
+}
+
+final class SharedChangeTracker {
+  var hasChanges: Bool { !self.changes.isEmpty }
+  private var changes: [ObjectIdentifier: any Reference] {
+    _read {
+      self.lock.lock()
+      defer { self.lock.unlock() }
+      yield self._changes
+    }
+    _modify {
+      self.lock.lock()
+      defer { self.lock.unlock() }
+      yield &self._changes
+    }
+  }
+  private let lock = NSRecursiveLock()
+  private var _changes: [ObjectIdentifier: any Reference] = [:]
+
+  func track<Value>(_ shared: Shared<Value>) {
+    self.changes[ObjectIdentifier(shared.reference)] = shared.reference
+  }
+  func clearChanges() {
+    for change in self.changes.values {
+      change.clearSnapshot()
+    }
+    self.changes.removeAll()
+  }
+  func assertUnchanged() {
+    for change in self.changes.values {
+      change.assertUnchanged()
+    }
+    self.changes.removeAll()
+  }
+}
+
+extension SharedChangeTracker: DependencyKey {
+  static let liveValue: SharedChangeTracker? = nil
+  static let testValue: SharedChangeTracker? = nil
+}
+
+extension Optional {
+  fileprivate subscript(default defaultSubscript: DefaultSubscript<Wrapped>) -> Wrapped {
+    get { self ?? defaultSubscript.value }
+    set {
+      defaultSubscript.value = newValue
+      if self != nil { self = newValue }
+    }
+  }
+}
+
+extension RandomAccessCollection where Self: MutableCollection {
+  fileprivate subscript(
+    position: Index, default defaultSubscript: DefaultSubscript<Element>
+  ) -> Element {
+    get { self.indices.contains(position) ? self[position] : defaultSubscript.value }
+    set {
+      defaultSubscript.value = newValue
+      if self.indices.contains(position) { self[position] = newValue }
+    }
+  }
+}
+
+private final class DefaultSubscript<Value>: Hashable {
+  var value: Value
+  init(_ value: Value) {
+    self.value = value
+  }
+  static func == (lhs: DefaultSubscript, rhs: DefaultSubscript) -> Bool {
+    lhs === rhs
+  }
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(ObjectIdentifier(self))
+  }
+}
