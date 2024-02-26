@@ -215,12 +215,12 @@ With those steps done you can make use of the strategy in the same way one does 
 Shared state behaves quite a bit different from the regular state held in Composable Architecture
 features. It is capable of being changed by any part of the application, not just when an action is
 sent to the store, and it has reference semantics rather than value semantics. Typically references
-cause series problems with testing, especially exhaustive testing that the library prefers (see
+cause serious problems with testing, especially exhaustive testing that the library prefers (see
 <doc:Testing>), because references cannot be copied and so one cannot inspect the changes before and
 after an action is sent.
 
-For this reason, the ``Shared`` does extra working during testing to preserve a previous snapshot of
-the state so that one can still exhaustive assert on shared state, even though it is a reference.
+For this reason, the ``Shared`` macro does extra work during testing to preserve a previous snapshot of
+the state so that one can still exhaustively assert on shared state, even though it is a reference.
 
 For the most part, shared state can be tested just like any regular state held in your features. For
 example, consider the following simple counter feature that uses in-memory shared state for the
@@ -430,7 +430,7 @@ to add a static variable for describing the details of your persistence:
 ```swift
 extension PersistenceKey where Self == FileStorageKey<IdentifiedArrayOf<User>> {
   static let users: Self {
-    filStorage(URL(/* ... */))
+    fileStorage(URL(/* ... */))
   }
 }
 ```
@@ -447,7 +447,7 @@ And now that the type is baked into the key you can drop any type annotations fr
 @Shared(.users) var users = []
 ```
 
-And if you ever use the wrong type you will get an immediately compiler error:
+And if you ever use the wrong type you will get an immediate compiler error:
 
 ```swift
 @Shared(.users) var users = [User]()
