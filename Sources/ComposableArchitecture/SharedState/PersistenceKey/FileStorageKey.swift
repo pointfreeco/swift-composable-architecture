@@ -36,7 +36,7 @@
     var workItem: DispatchWorkItem?
     var notificationListener: Any!
 
-    init(url: URL) {
+    public init(url: URL) {
       self.url = url
       #if canImport(AppKit) || canImport(UIKit)
         self.notificationListener = NotificationCenter.default.addObserver(

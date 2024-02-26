@@ -14,7 +14,7 @@
     /// - Returns: An in-memory persistence key.
     public static func inMemory<Value>(_ key: String) -> Self
     where Self == InMemoryKey<Value> {
-      InMemoryKey(key: key)
+      InMemoryKey(key)
     }
   }
 
@@ -23,6 +23,9 @@
   /// See ``PersistenceKey/inMemory(_:)`` to create values of this type.
   public struct InMemoryKey<Value>: Hashable, PersistenceKey, Sendable {
     let key: String
+    public init(_ key: String) {
+      self.key = key
+    }
     public func load() -> Value? { nil }
     public func save(_ value: Value) {}
   }
