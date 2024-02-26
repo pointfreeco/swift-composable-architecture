@@ -485,7 +485,7 @@ private var preview: some View {
   FeatureView(
     store: Store(
       initialState: Feature.State(
-        destination: .edit(EditFeature.State())  // 🛑
+        destination: .edit(EditFeature.State())
       )
     ) {
       Feature()
