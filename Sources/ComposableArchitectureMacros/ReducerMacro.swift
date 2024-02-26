@@ -475,7 +475,8 @@ private enum ReducerCase {
       }
 
     case let .ifConfig(configs):
-      return configs
+      return
+        configs
         .map {
           """
           \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
@@ -501,7 +502,8 @@ private enum ReducerCase {
       }
 
     case let .ifConfig(configs):
-      return configs
+      return
+        configs
         .map {
           let actionCaseDecls = $0.cases.compactMap(\.actionCaseDecl)
           return """
@@ -554,7 +556,8 @@ private enum ReducerCase {
         return nil
       }
     case let .ifConfig(configs):
-      return configs
+      return
+        configs
         .map {
           let reduceScopes = $0.cases.compactMap(\.reducerScope)
           return """
@@ -583,7 +586,8 @@ private enum ReducerCase {
         return "case \(element.trimmedDescription)"
       }
     case let .ifConfig(configs):
-      return configs
+      return
+        configs
         .map {
           """
           \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
@@ -624,7 +628,8 @@ private enum ReducerCase {
           """
       }
     case let .ifConfig(configs):
-      return configs
+      return
+        configs
         .map {
           """
           \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
