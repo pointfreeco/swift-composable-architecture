@@ -64,14 +64,18 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(count, 0)
   }
 
+  @MainActor
   func testKeyPath() async throws {
-    @Dependency(\.defaultAppStorage) var defaults
-    @Shared(.appStorage(\.count)) var count = 0
-    _ = count
+    try await withMainSerialExecutor {
+      @Dependency(\.defaultAppStorage) var defaults
+      @Shared(.appStorage(\.count)) var count = 0
+      _ = count
+      await Task.yield()
 
-    defaults.count += 1
-    try await Task.sleep(nanoseconds: 100_000_000)
-    XCTAssertEqual(count, 1)
+      defaults.count += 1
+      try await Task.sleep(nanoseconds: 1_000_000)
+      XCTAssertEqual(count, 1)
+    }
   }
 }
 
