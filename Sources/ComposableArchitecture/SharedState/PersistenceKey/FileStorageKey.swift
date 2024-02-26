@@ -24,7 +24,6 @@
   }
 
   // TODO: Audit unchecked sendable
-  // TODO: Should this be a struct wrapped around a class?
 
   /// A type defining a file persistence strategy
   ///
@@ -76,7 +75,6 @@
       }
       self.workItem = workItem
       if canListenForResignActive {
-        // TODO: Configurable debounce? Should this be shorter, at least in DEBUG/simulators?
         self.queue.asyncAfter(interval: .seconds(5), execute: workItem)
       } else {
         self.queue.async(execute: workItem)
@@ -93,11 +91,11 @@
           try? self.queue.save(Data(), to: self.url)
         }
 
+        // TODO: detect deletion separately and restart source
         let cancellable = self.queue.fileSystemSource(
           url: self.url,
           eventMask: [.write, .delete, .rename]
         ) {
-          // TODO: Do we need to do weak self?
           if self.queue.isSetting() == true {
             self.queue.setIsSetting(false)
           } else {
@@ -121,9 +119,9 @@
     }
   }
 
+  // TODO: hide this thing from the public
   /// A type that encapsulates saving and loading data from disk.
   public protocol FileStorage: Sendable {
-    // TODO: replace these two async endpoints with an `AnyScheduler` property?
     func async(execute workItem: DispatchWorkItem)
     func asyncAfter(interval: DispatchTimeInterval, execute: DispatchWorkItem)
     func isSetting() -> Bool?

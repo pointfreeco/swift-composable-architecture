@@ -83,7 +83,6 @@ import Foundation
       else { return nil }
       return Shared<Member>(
         reference: self.reference,
-        // TODO: Can this crash?
         keyPath: self.keyPath.appending(
           path: keyPath.appending(path: \.[default: DefaultSubscript(initialValue)])
         )!
@@ -117,6 +116,7 @@ import Foundation
       self.snapshot = nil
     }
 
+    #if canImport(Combine)
     public var publisher: AnyPublisher<Value, Never> {
       func open<R: Reference>(_ reference: R) -> AnyPublisher<Value, Never> {
         return reference.publisher
@@ -125,6 +125,7 @@ import Foundation
       }
       return open(self.reference)
     }
+    #endif
 
     private var currentValue: Value {
       get {
