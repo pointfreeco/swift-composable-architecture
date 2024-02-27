@@ -19,12 +19,12 @@ final class AppFeatureTests: XCTestCase {
         .push(
           id: 0,
           state: .detail(
-            SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[id: syncUp.id]!)
+            SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])
           )
         )
       )
     ) {
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: $0.syncUpsList.$syncUps[id: syncUp.id]!))
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.deleteButtonTapped)))) {
@@ -57,12 +57,12 @@ final class AppFeatureTests: XCTestCase {
         .push(
           id: 0,
           state: .detail(
-            SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[id: syncUp.id]!)
+            SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])
           )
         )
       )
     ) {
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: $0.syncUpsList.$syncUps[id: syncUp.id]!))
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
     }
 
     await store.send(.path(.element(id: 0, action: .detail(.editButtonTapped)))) {
