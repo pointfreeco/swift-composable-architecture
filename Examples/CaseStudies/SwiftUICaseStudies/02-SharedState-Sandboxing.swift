@@ -47,9 +47,7 @@ struct SharedStateSandboxing {
           $0.defaultAppStorage = defaultAppStorage
           $0.defaultFileStorage = MockFileStorage()
         } operation: {
-          var s = SharedStateSandboxing.State()
-//          s.$fileStorageCount = Shared(wrappedValue: 0, .fileStorage(URL(filePath: "/file.json")))
-          return s
+          SharedStateSandboxing.State()
         }
         return .none
       case .sandboxed:
