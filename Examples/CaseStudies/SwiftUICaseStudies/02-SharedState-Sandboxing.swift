@@ -45,7 +45,7 @@ struct SharedStateSandboxing {
           let defaultAppStorage = UserDefaults(suiteName: suiteName)!
           defaultAppStorage.removePersistentDomain(forName: suiteName)
           $0.defaultAppStorage = defaultAppStorage
-          $0.defaultFileStorage = MockFileStorage()
+          $0.defaultFileStorage = EphemeralFileStorage()
         } operation: {
           SharedStateSandboxing.State()
         }
@@ -56,7 +56,7 @@ struct SharedStateSandboxing {
     }
     .ifLet(\.$sandboxed, action: \.sandboxed) {
       SharedStateSandboxing()
-        .transformDependency {
+        .transformDependency(\.self) {
           _ = $0 // TODO
         }
     }
