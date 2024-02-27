@@ -79,6 +79,10 @@ extension Reducer {
     _DependencyKeyWritingReducer(base: self) { $0[keyPath: keyPath] = value }
   }
 
+  /// Places a value in the reducer's dependencies.
+  ///
+  /// - Parameter value: The value to set for this value's type in the dependencies.
+  /// - Returns: A reducer that has the given value set in its dependencies.
   @inlinable
   @warn_unqualified_access
   public func dependency<Value: TestDependencyKey>(

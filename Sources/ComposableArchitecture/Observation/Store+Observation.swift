@@ -15,10 +15,14 @@
   #endif
 
   extension Store where State: ObservableState {
-    /// Direct access to state in the store when `State` conforms to ``ObservableState``.
-    public var state: State {
+    var observableState: State {
       self._$observationRegistrar.access(self, keyPath: \.currentState)
       return self.currentState
+    }
+
+    /// Direct access to state in the store when `State` conforms to ``ObservableState``.
+    public var state: State {
+      self.observableState
     }
 
     public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
