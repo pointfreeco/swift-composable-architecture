@@ -11,6 +11,10 @@ private let readMe = """
   the app. This can be handy for demo'ing parts of your application, such as in onboarding, \
   without the external storage system being changed.
   """
+private let sheetReadMe = """
+  In this sheet the user defaults and file system have been sandboxed from the parent view. Any \
+  changes made to this state will not be saved to the real user defaults or file system.
+  """
 
 @Reducer
 struct SharedStateSandboxing {
@@ -59,6 +63,7 @@ struct SharedStateSandboxing {
 }
 
 struct SharedStateSandboxingView: View {
+  @Environment(\.dismiss) private var dismiss
   var isPresented = false
   @Bindable var store = Store(initialState: SharedStateSandboxing.State()) {
     SharedStateSandboxing()
@@ -68,18 +73,26 @@ struct SharedStateSandboxingView: View {
     Form {
       if !isPresented {
         Text(template: readMe, .caption)
+      } else {
+        Text(template: sheetReadMe, .caption)
       }
 
       Section {
-        Text(store.appStorageCount.description)
-        Button("Increment") { store.send(.incrementAppStorage) }
+        HStack {
+          Text(store.appStorageCount.description)
+          Spacer()
+          Button("Increment") { store.send(.incrementAppStorage) }
+        }
       } header: {
         Text("App storage")
       }
 
       Section {
-        Text(store.fileStorageCount.description)
-        Button("Increment") { store.send(.incrementFileStorage) }
+        HStack {
+          Text(store.fileStorageCount.description)
+          Spacer()
+          Button("Increment") { store.send(.incrementFileStorage) }
+        }
       } header: {
         Text("File storage")
       }
@@ -89,7 +102,16 @@ struct SharedStateSandboxingView: View {
           Button("Present sandbox") { store.send(.presentButtonTapped) }
         }
         .sheet(item: $store.scope(state: \.sandboxed, action: \.sandboxed)) { store in
-          SharedStateSandboxingView(isPresented: true, store: store)
+          NavigationStack {
+            SharedStateSandboxingView(isPresented: true, store: store)
+          }
+        }
+      }
+    }
+    .toolbar {
+      if isPresented {
+        ToolbarItem {
+          Button("Dismiss") { dismiss() }
         }
       }
     }
