@@ -6,6 +6,10 @@ struct SyncUpsApp: App {
   let store = Store(initialState: AppFeature.State()) {
     AppFeature()
       ._printChanges()
+  } withDependencies: {
+    if ProcessInfo.processInfo.environment["UITesting"] == "true" {
+      $0.defaultFileStorage = EphemeralFileStorage()
+    }
   }
 
   var body: some Scene {

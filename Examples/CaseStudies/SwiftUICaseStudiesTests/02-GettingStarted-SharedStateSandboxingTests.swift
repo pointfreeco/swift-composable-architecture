@@ -22,7 +22,7 @@ final class SharedStateSandboxingTests: XCTestCase {
         let defaultAppStorage = UserDefaults(suiteName: suiteName)!
         defaultAppStorage.removePersistentDomain(forName: suiteName)
         $0.defaultAppStorage = defaultAppStorage
-        $0.defaultFileStorage = MockFileStorage()
+        $0.defaultFileStorage = EphemeralFileStorage()
       } operation: {
         SharedStateSandboxing.State()
       }
