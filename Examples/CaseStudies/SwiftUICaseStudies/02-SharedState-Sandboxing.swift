@@ -19,7 +19,7 @@ private let sheetReadMe = """
 @Reducer
 struct SharedStateSandboxing {
   @ObservableState
-  struct State {
+  struct State: Equatable {
     @Shared(.appStorageCount) var appStorageCount = 0
     @Shared(.fileStorageCount) var fileStorageCount = 0
     @Presents var sandboxed: SharedStateSandboxing.State?
