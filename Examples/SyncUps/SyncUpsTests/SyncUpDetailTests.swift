@@ -96,7 +96,7 @@ final class SyncUpDetailTests: XCTestCase {
     }
 
     syncUp.title = "Blob's Meeting"
-    await store.send(\.destination.edit.binding.syncUp, syncUp) {
+    await store.send(\.destination.edit.syncUp, syncUp) {
       $0.$destination[case: \.edit]?.syncUp.title = "Blob's Meeting"
     }
 

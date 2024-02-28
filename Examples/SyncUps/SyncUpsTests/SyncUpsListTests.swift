@@ -25,7 +25,7 @@ final class SyncUpsListTests: XCTestCase {
     }
 
     syncUp.title = "Engineering"
-    await store.send(\.destination.add.binding.syncUp, syncUp) {
+    await store.send(\.destination.add.syncUp, syncUp) {
       $0.$destination[case: \.add]?.syncUp.title = "Engineering"
     }
 

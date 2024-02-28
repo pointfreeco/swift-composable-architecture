@@ -65,7 +65,7 @@ final class AppFeatureTests: XCTestCase {
     }
 
     syncUp.title = "Blob"
-    await store.send(\.path[id:0].detail.destination.edit.binding.syncUp, syncUp) {
+    await store.send(\.path[id:0].detail.destination.edit.syncUp, syncUp) {
       $0.path[id: 0, case: \.detail]?.$destination[case: \.edit]?.syncUp.title = "Blob"
     }
 
