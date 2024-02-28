@@ -622,7 +622,7 @@ Then we can send the `.incrementButtonTapped` action in the counter child featur
 that the count goes up by one:
 
 ```swift
-await store.send(.counter(.presented(.incrementButtonTapped))) {
+await store.send(\.counter.incrementButtonTapped) {
   $0.counter?.count = 4
 }
 ```
@@ -630,7 +630,7 @@ await store.send(.counter(.presented(.incrementButtonTapped))) {
 And then we can send it one more time to see that the count goes up to 5:
 
 ```swift 
-await store.send(.counter(.presented(.incrementButtonTapped))) {
+await store.send(\.counter.incrementButtonTapped) {
   $0.counter?.count = 5
 }
 ```
@@ -672,8 +672,8 @@ func testDismissal() {
   }
   store.exhaustivity = .off
 
-  await store.send(.counter(.presented(.incrementButtonTapped)))
-  await store.send(.counter(.presented(.incrementButtonTapped)))
+  await store.send(\.counter.incrementButtonTapped)
+  await store.send(\.counter.incrementButtonTapped)
   await store.receive(\.counter.dismiss) 
 }
 ```
@@ -692,7 +692,7 @@ The library provides a tool to perform these steps in a single step. It's the
 modify the data inside a case of the destination enum:
 
 ```swift
-await store.send(.destination(.presented(.counter(.incrementButtonTapped)))) {
+await store.send(\.destination.counter.incrementButtonTapped) {
   $0.$destination[case: \.counter]?.count = 4
 }
 ```

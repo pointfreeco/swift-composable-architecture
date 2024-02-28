@@ -305,7 +305,8 @@ import XCTestDynamicOverlay
 /// }
 ///
 /// // 1️⃣ Emulate user tapping on submit button.
-/// await store.send(.login(.submitButtonTapped)) {
+/// //    (You can use case key path syntax to send actions to deeply nested features.)
+/// await store.send(\.login.submitButtonTapped) {
 ///   // 2️⃣ Assert how all state changes in the login feature
 ///   $0.login?.isLoading = true
 ///   …
@@ -353,7 +354,7 @@ import XCTestDynamicOverlay
 /// }
 /// store.exhaustivity = .off  // ⬅️
 ///
-/// await store.send(.login(.submitButtonTapped))
+/// await store.send(\.login.submitButtonTapped)
 /// await store.receive(\.login.delegate.didLogin) {
 ///   $0.selectedTab = .activity
 /// }
@@ -375,7 +376,7 @@ import XCTestDynamicOverlay
 /// }
 /// store.exhaustivity = .off(showSkippedAssertions: true)  // ⬅️
 ///
-/// await store.send(.login(.submitButtonTapped))
+/// await store.send(\.login.submitButtonTapped)
 /// await store.receive(\.login.delegate.didLogin) {
 ///   $0.selectedTab = .profile
 /// }
@@ -939,7 +940,7 @@ extension TestStore where State: Equatable {
   ///
   /// ```swift
   /// store.exhaustivity = .off
-  /// await store.send(.child(.closeButtonTapped))
+  /// await store.send(\.child.closeButtonTapped)
   /// await store.finish()
   /// await store.skipReceivedActions()
   /// store.assert {
@@ -1937,23 +1938,22 @@ extension TestStore where State: Equatable {
 extension TestStore where State: Equatable {
   /// Sends an action to the store and asserts when state changes.
   ///
-  /// This method is similar to ``send(_:assert:file:line:)-2co21``, except it allows
-  /// you to specify a `CaseKeyPath` of an action with no associated value to be sent to the store.
-  ///
-  /// It can be useful when sending nested action.  For example::
+  /// This method is similar to ``send(_:assert:file:line:)-2co21``, except it allows you to specify
+  /// a case key path to an action, which can be useful when testing the integration of features and
+  /// sending deeply nested actions. For example:
   ///
   /// ```swift
-  /// await store.send(.view(.tap))
+  /// await store.send(.destination(.presented(.child(.tap))))
   /// ```
   ///
   /// Can be simplified to:
   ///
   /// ```swift
-  ///  await store.send(\.view.tap)
+  /// await store.send(\.destination.child.tap)
   /// ```
   ///
   /// - Parameters:
-  ///   - action: A `CaseKeyPath` to an action.
+  ///   - action: A case key path to an action.
   ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
@@ -1980,18 +1980,18 @@ extension TestStore where State: Equatable {
   /// It can be useful when sending nested action.  For example::
   ///
   /// ```swift
-  /// await store.send(.view(.delete([19, 23]))
+  /// await store.send(.destination(.presented(.child(.emailChanged("blob@pointfree.co")))))
   /// ```
   ///
   /// Can be simplified to:
   ///
   /// ```swift
-  ///  await store.send(\.view.delete, [19, 23])
+  /// await store.send(\.destination.child.emailChanged, "blob@pointfree.co")
   /// ```
   ///
   /// - Parameters:
-  ///   - action: A `CaseKeyPath` to an action with an associated value.
-  ///   - value: A value for the associated value specified in `action`.
+  ///   - action: A case key path to an action.
+  ///   - value: A value to embed in `action`.
   ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is

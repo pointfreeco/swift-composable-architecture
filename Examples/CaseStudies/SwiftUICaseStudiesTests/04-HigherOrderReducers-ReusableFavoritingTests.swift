@@ -34,16 +34,16 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       )
     }
 
-    await store.send(.episodes(.element(id: episodes[0].id, action: .favorite(.buttonTapped)))) {
+    await store.send(\.episodes[id: episodes[0].id].favorite.buttonTapped) {
       $0.episodes[id: episodes[0].id]?.isFavorite = true
     }
     await clock.advance(by: .seconds(1))
     await store.receive(\.episodes[id:episodes[0].id].favorite.response.success)
 
-    await store.send(.episodes(.element(id: episodes[1].id, action: .favorite(.buttonTapped)))) {
+    await store.send(\.episodes[id:episodes[1].id].favorite.buttonTapped) {
       $0.episodes[id: episodes[1].id]?.isFavorite = true
     }
-    await store.send(.episodes(.element(id: episodes[1].id, action: .favorite(.buttonTapped)))) {
+    await store.send(\.episodes[id:episodes[1].id].favorite.buttonTapped) {
       $0.episodes[id: episodes[1].id]?.isFavorite = false
     }
     await clock.advance(by: .seconds(1))
@@ -62,7 +62,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       Episodes(favorite: { _, _ in throw FavoriteError() })
     }
 
-    await store.send(.episodes(.element(id: episodes[0].id, action: .favorite(.buttonTapped)))) {
+    await store.send(\.episodes[id: episodes[0].id].favorite.buttonTapped) {
       $0.episodes[id: episodes[0].id]?.isFavorite = true
     }
 
@@ -72,7 +72,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       }
     }
 
-    await store.send(.episodes(.element(id: episodes[0].id, action: .favorite(.alert(.dismiss))))) {
+    await store.send(\.episodes[id: episodes[0].id].favorite.alert.dismiss) {
       $0.episodes[id: episodes[0].id]?.alert = nil
       $0.episodes[id: episodes[0].id]?.isFavorite = false
     }

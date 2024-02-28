@@ -8,6 +8,7 @@ struct SyncUpDetail {
     case alert(AlertState<Alert>)
     case edit(SyncUpForm)
 
+    @CasePathable
     enum Alert {
       case confirmDeletion
       case continueWithoutRecording

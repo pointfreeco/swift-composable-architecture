@@ -43,8 +43,8 @@ final class VoiceMemosTests: XCTestCase {
         url: deadbeefURL
       )
     }
-    await store.send(.recordingMemo(.presented(.onTask)))
-    await store.send(.recordingMemo(.presented(.stopButtonTapped))) {
+    await store.send(\.recordingMemo.onTask)
+    await store.send(\.recordingMemo.stopButtonTapped) {
       $0.recordingMemo?.mode = .encoding
     }
     await store.receive(\.recordingMemo.finalRecordingTime) {
@@ -63,7 +63,7 @@ final class VoiceMemosTests: XCTestCase {
         )
       ]
     }
-    await store.send(.voiceMemos(.element(id: deadbeefURL, action: .playButtonTapped))) {
+    await store.send(\.voiceMemos[id:deadbeefURL].playButtonTapped) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0)
     }
     await store.receive(\.voiceMemos[id:deadbeefURL].delegate.playbackStarted)
@@ -117,7 +117,7 @@ final class VoiceMemosTests: XCTestCase {
         url: URL(fileURLWithPath: "/tmp/DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF.m4a")
       )
     }
-    let recordingMemoTask = await store.send(.recordingMemo(.presented(.onTask)))
+    let recordingMemoTask = await store.send(\.recordingMemo.onTask)
     await self.clock.advance(by: .seconds(1))
     await store.receive(\.recordingMemo.timerUpdated) {
       $0.recordingMemo?.duration = 1
@@ -127,7 +127,7 @@ final class VoiceMemosTests: XCTestCase {
       $0.recordingMemo?.duration = 2
     }
     await self.clock.advance(by: .milliseconds(500))
-    await store.send(.recordingMemo(.presented(.stopButtonTapped))) {
+    await store.send(\.recordingMemo.stopButtonTapped) {
       $0.recordingMemo?.mode = .encoding
     }
     await store.receive(\.recordingMemo.finalRecordingTime) {
@@ -163,7 +163,7 @@ final class VoiceMemosTests: XCTestCase {
       $0.alert = AlertState { TextState("Permission is required to record voice memos.") }
       $0.audioRecorderPermission = .denied
     }
-    await store.send(.alert(.dismiss)) {
+    await store.send(\.alert.dismiss) {
       $0.alert = nil
     }
     await store.send(.openSettingsButtonTapped).finish()
@@ -196,7 +196,7 @@ final class VoiceMemosTests: XCTestCase {
         url: deadbeefURL
       )
     }
-    await store.send(.recordingMemo(.presented(.onTask)))
+    await store.send(\.recordingMemo.onTask)
 
     didFinish.continuation.finish(throwing: SomeError())
     await store.receive(\.recordingMemo.audioRecorderDidFinish.failure)
@@ -228,7 +228,7 @@ final class VoiceMemosTests: XCTestCase {
     store.exhaustivity = .off(showSkippedAssertions: true)
 
     await store.send(.recordButtonTapped)
-    await store.send(.recordingMemo(.presented(.onTask)))
+    await store.send(\.recordingMemo.onTask)
     didFinish.continuation.finish(throwing: SomeError())
     await store.receive(\.recordingMemo.delegate.didFinish.failure) {
       $0.alert = AlertState { TextState("Voice memo recording failed.") }
@@ -260,7 +260,7 @@ final class VoiceMemosTests: XCTestCase {
       $0.continuousClock = self.clock
     }
 
-    await store.send(.voiceMemos(.element(id: url, action: .playButtonTapped))) {
+    await store.send(\.voiceMemos[id:url].playButtonTapped) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
     await store.receive(\.voiceMemos[id:url].delegate.playbackStarted)
@@ -301,7 +301,7 @@ final class VoiceMemosTests: XCTestCase {
       $0.continuousClock = self.clock
     }
 
-    let task = await store.send(.voiceMemos(.element(id: url, action: .playButtonTapped))) {
+    let task = await store.send(\.voiceMemos[id:url].playButtonTapped) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
     await store.receive(\.voiceMemos[id:url].delegate.playbackStarted)
@@ -332,7 +332,7 @@ final class VoiceMemosTests: XCTestCase {
       VoiceMemos()
     }
 
-    await store.send(.voiceMemos(.element(id: url, action: .playButtonTapped))) {
+    await store.send(\.voiceMemos[id:url].playButtonTapped) {
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
   }
@@ -434,7 +434,7 @@ final class VoiceMemosTests: XCTestCase {
       $0.continuousClock = self.clock
     }
 
-    await store.send(.voiceMemos(.element(id: url, action: .playButtonTapped))) {
+    await store.send(\.voiceMemos[id:url].playButtonTapped) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
     await store.receive(\.voiceMemos[id:url].delegate.playbackStarted)

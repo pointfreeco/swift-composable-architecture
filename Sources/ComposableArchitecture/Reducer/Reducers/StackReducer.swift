@@ -280,6 +280,23 @@ public enum StackAction<State, Action>: CasePathable {
         }
       )
     }
+
+    @_disfavoredOverload
+    public subscript(id id: StackElementID) -> AnyCasePath<StackAction, State?> {
+      AnyCasePath(
+        embed: { $0.map { StackAction.push(id: id, state: $0) } ?? .popFrom(id: id) },
+        extract: {
+          switch $0 {
+          case .popFrom(id):
+            return .some(nil)
+          case .push(id, let state):
+            return .some(state)
+          default:
+            return .none
+          }
+        }
+      )
+    }
   }
 }
 

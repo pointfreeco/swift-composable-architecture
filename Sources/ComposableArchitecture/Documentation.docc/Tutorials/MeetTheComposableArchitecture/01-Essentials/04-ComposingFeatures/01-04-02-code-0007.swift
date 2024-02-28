@@ -8,6 +8,6 @@ final class AppFeatureTests: XCTestCase {
       AppFeature()
     }
     
-    await store.send(.tab1(.incrementButtonTapped))
+    await store.send(\.tab1.incrementButtonTapped)
   }
 }

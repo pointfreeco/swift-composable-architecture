@@ -23,15 +23,15 @@ final class SharedStateTests: XCTestCase {
       SharedState()
     }
 
-    await store.send(.counter(.incrementButtonTapped)) {
+    await store.send(\.counter.incrementButtonTapped) {
       $0.counter.stats.increment()
       $0.profile.stats.increment()
     }
-    await store.send(.counter(.decrementButtonTapped)) {
+    await store.send(\.counter.decrementButtonTapped) {
       $0.counter.stats.decrement()
       $0.profile.stats.decrement()
     }
-    await store.send(.profile(.resetStatsButtonTapped)) {
+    await store.send(\.profile.resetStatsButtonTapped) {
       $0.counter.stats = Stats()
       $0.profile.stats = Stats()
     }
@@ -42,7 +42,7 @@ final class SharedStateTests: XCTestCase {
       SharedState()
     }
 
-    await store.send(.counter(.isPrimeButtonTapped)) {
+    await store.send(\.counter.isPrimeButtonTapped) {
       $0.counter.alert = AlertState {
         TextState("👎 The number 0 is not prime :(")
       }

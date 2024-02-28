@@ -149,11 +149,13 @@
       
       @Step {
         Send an action into the test store to emulate the user tapping on the increment button
-        in the first tab. 
+        in the first tab.
+        
+        > Tip: Use case key path syntax when sending actions through multiple layers of features.
         
         > Note: The nesting of the action enums of the features gives us a natural way to 
-        distinguish between actions in different tabs. Sending `.tab1(.incrementButtonTapped)` is 
-        very different from sending  `.tab2(.incrementButtonTapped)`.
+        distinguish between actions in different tabs. Sending `\.tab1.incrementButtonTapped` is 
+        very different from sending  `\.tab2.incrementButtonTapped`.
         
         @Code(name: "AppFeatureTests.swift", file: 01-04-02-code-0007.swift)
       }
