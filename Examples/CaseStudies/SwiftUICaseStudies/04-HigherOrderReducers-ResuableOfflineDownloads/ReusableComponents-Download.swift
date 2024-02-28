@@ -138,7 +138,7 @@ struct CityMapDetailView: View {
 @Reducer
 struct MapApp {
   struct State: Equatable {
-    var cityMaps: IdentifiedArrayOf<CityMap.State>
+    var cityMaps: IdentifiedArrayOf<CityMap.State> = .mocks
   }
 
   enum Action {
@@ -153,9 +153,7 @@ struct MapApp {
 }
 
 struct CitiesView: View {
-  @State var store = Store(initialState: MapApp.State(cityMaps: .mocks)) {
-    MapApp()
-  }
+  let store: StoreOf<MapApp>
 
   var body: some View {
     Form {
@@ -168,26 +166,6 @@ struct CitiesView: View {
       }
     }
     .navigationTitle("Offline Downloads")
-  }
-}
-
-struct DownloadList_Previews: PreviewProvider {
-  static var previews: some View {
-    Group {
-      NavigationView {
-        CitiesView(
-          store: Store(initialState: MapApp.State(cityMaps: .mocks)) {
-            MapApp()
-          }
-        )
-      }
-
-      NavigationView {
-        CityMapDetailView(
-          store: Store(initialState: IdentifiedArrayOf<CityMap.State>.mocks.first!) {}
-        )
-      }
-    }
   }
 }
 
@@ -269,4 +247,22 @@ extension IdentifiedArray where ID == CityMap.State.ID, Element == CityMap.State
       downloadMode: .notDownloaded
     ),
   ]
+}
+
+#Preview("List") {
+  NavigationStack {
+    CitiesView(
+      store: Store(initialState: MapApp.State(cityMaps: .mocks)) {
+        MapApp()
+      }
+    )
+  }
+}
+
+#Preview("Detail") {
+  NavigationView {
+    CityMapDetailView(
+      store: Store(initialState: IdentifiedArrayOf<CityMap.State>.mocks[0]) {}
+    )
+  }
 }

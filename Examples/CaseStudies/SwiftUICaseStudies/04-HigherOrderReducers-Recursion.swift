@@ -8,14 +8,20 @@ private let readMe = """
   its name, or tap the right-hand side of a row to navigate to its own associated list of rows.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct Nested {
+  @ObservableState
   struct State: Equatable, Identifiable {
     let id: UUID
     var name: String = ""
     var rows: IdentifiedArrayOf<State> = []
+
+    init(id: UUID? = nil, name: String = "", rows: IdentifiedArrayOf<State> = []) {
+      @Dependency(\.uuid) var uuid
+      self.id = id ?? uuid()
+      self.name = name
+      self.rows = rows
+    }
   }
 
   enum Action {
@@ -52,81 +58,65 @@ struct Nested {
   }
 }
 
-// MARK: - Feature view
-
 struct NestedView: View {
-  @State var store = Store(initialState: Nested.State(id: UUID())) {
-    Nested()
-  }
+  @Bindable var store: StoreOf<Nested>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.name) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
 
-        ForEachStore(self.store.scope(state: \.rows, action: \.rows)) { rowStore in
-          WithViewStore(rowStore, observe: \.name) { rowViewStore in
-            NavigationLink(
-              destination: NestedView(store: rowStore)
-            ) {
-              HStack {
-                TextField(
-                  "Untitled",
-                  text: rowViewStore.binding(send: { .nameTextFieldChanged($0) })
-                )
-                Text("Next")
-                  .font(.callout)
-                  .foregroundStyle(.secondary)
-              }
-            }
+      ForEach(store.scope(state: \.rows, action: \.rows)) { rowStore in
+        @Bindable var rowStore = rowStore
+        NavigationLink {
+          NestedView(store: rowStore)
+        } label: {
+          HStack {
+            TextField("Untitled", text: $rowStore.name.sending(\.nameTextFieldChanged))
+            Text("Next")
+              .font(.callout)
+              .foregroundStyle(.secondary)
           }
         }
-        .onDelete { viewStore.send(.onDelete($0)) }
       }
-      .navigationTitle(viewStore.state.isEmpty ? "Untitled" : viewStore.state)
-      .toolbar {
-        ToolbarItem(placement: .navigationBarTrailing) {
-          Button("Add row") { viewStore.send(.addRowButtonTapped) }
-        }
+      .onDelete { store.send(.onDelete($0)) }
+    }
+    .navigationTitle(store.name.isEmpty ? "Untitled" : store.name)
+    .toolbar {
+      ToolbarItem(placement: .navigationBarTrailing) {
+        Button("Add row") { store.send(.addRowButtonTapped) }
       }
     }
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct NestedView_Previews: PreviewProvider {
-  static var previews: some View {
-    let initialState = Nested.State(
-      id: UUID(),
-      name: "Foo",
-      rows: [
-        Nested.State(
-          id: UUID(),
-          name: "Bar",
+#Preview {
+  NavigationView {
+    NestedView(
+      store: Store(
+        initialState: Nested.State(
+          name: "Foo",
           rows: [
-            Nested.State(id: UUID(), name: "", rows: [])
+            Nested.State(
+              name: "Bar",
+              rows: [
+                Nested.State()
+              ]
+            ),
+            Nested.State(
+              name: "Baz",
+              rows: [
+                Nested.State(name: "Fizz"),
+                Nested.State(name: "Buzz"),
+              ]
+            ),
+            Nested.State(),
           ]
-        ),
-        Nested.State(
-          id: UUID(),
-          name: "Baz",
-          rows: [
-            Nested.State(id: UUID(), name: "Fizz", rows: []),
-            Nested.State(id: UUID(), name: "Buzz", rows: []),
-          ]
-        ),
-        Nested.State(id: UUID(), name: "", rows: []),
-      ]
+        )
+      ) {
+        Nested()
+      }
     )
-    NavigationView {
-      NestedView(
-        store: Store(initialState: initialState) {
-          Nested()
-        }
-      )
-    }
   }
 }

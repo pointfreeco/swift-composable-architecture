@@ -8,35 +8,16 @@ private let readMe = """
 
 @Reducer
 struct MultipleDestinations {
-  @Reducer
-  public struct Destination {
-    public enum State: Equatable {
-      case drillDown(Counter.State)
-      case popover(Counter.State)
-      case sheet(Counter.State)
-    }
-
-    public enum Action {
-      case drillDown(Counter.Action)
-      case popover(Counter.Action)
-      case sheet(Counter.Action)
-    }
-
-    public var body: some Reducer<State, Action> {
-      Scope(state: \.drillDown, action: \.drillDown) {
-        Counter()
-      }
-      Scope(state: \.sheet, action: \.sheet) {
-        Counter()
-      }
-      Scope(state: \.popover, action: \.popover) {
-        Counter()
-      }
-    }
+  @Reducer(state: .equatable)
+  enum Destination {
+    case drillDown(Counter)
+    case popover(Counter)
+    case sheet(Counter)
   }
 
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var destination: Destination.State?
+    @Presents var destination: Destination.State?
   }
 
   enum Action {
@@ -62,48 +43,42 @@ struct MultipleDestinations {
         return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
   }
 }
 
 struct MultipleDestinationsView: View {
-  @State var store = Store(initialState: MultipleDestinations.State()) {
-    MultipleDestinations()
-  }
+  @Bindable var store: StoreOf<MultipleDestinations>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        Button("Show drill-down") {
-          viewStore.send(.showDrillDown)
-        }
-        Button("Show popover") {
-          viewStore.send(.showPopover)
-        }
-        Button("Show sheet") {
-          viewStore.send(.showSheet)
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
       }
-      .navigationDestination(
-        store: self.store.scope(state: \.$destination.drillDown, action: \.destination.drillDown)
-      ) { store in
-        CounterView(store: store)
+      Button("Show drill-down") {
+        store.send(.showDrillDown)
       }
-      .popover(
-        store: self.store.scope(state: \.$destination.popover, action: \.destination.popover)
-      ) { store in
-        CounterView(store: store)
+      Button("Show popover") {
+        store.send(.showPopover)
       }
-      .sheet(
-        store: self.store.scope(state: \.$destination.sheet, action: \.destination.sheet)
-      ) { store in
-        CounterView(store: store)
+      Button("Show sheet") {
+        store.send(.showSheet)
       }
+    }
+    .navigationDestination(
+      item: $store.scope(state: \.destination?.drillDown, action: \.destination.drillDown)
+    ) { store in
+      CounterView(store: store)
+    }
+    .popover(
+      item: $store.scope(state: \.destination?.popover, action: \.destination.popover)
+    ) { store in
+      CounterView(store: store)
+    }
+    .sheet(
+      item: $store.scope(state: \.destination?.sheet, action: \.destination.sheet)
+    ) { store in
+      CounterView(store: store)
     }
   }
 }

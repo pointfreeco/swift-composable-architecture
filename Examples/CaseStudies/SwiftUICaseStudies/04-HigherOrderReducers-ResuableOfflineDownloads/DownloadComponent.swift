@@ -27,13 +27,11 @@ struct DownloadComponent {
     Reduce { state, action in
       switch action {
       case .alert(.presented(.deleteButtonTapped)):
-        state.alert = nil
         state.mode = .notDownloaded
         return .none
 
       case .alert(.presented(.stopButtonTapped)):
         state.mode = .notDownloaded
-        state.alert = nil
         return .cancel(id: state.id)
 
       case .alert:
@@ -168,8 +166,14 @@ struct DownloadComponentView: View {
   }
 }
 
-struct DownloadComponent_Previews: PreviewProvider {
-  static var previews: some View {
-    DownloadList_Previews.previews
-  }
+#Preview {
+  DownloadComponentView(
+    store: Store(
+      initialState: DownloadComponent.State(
+        id: "deadbeef",
+        mode: .notDownloaded,
+        url: URL(fileURLWithPath: "/")
+      )
+    ) {}
+  )
 }

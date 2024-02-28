@@ -10,19 +10,16 @@ such communication with your application's store.
 
 ### Ad hoc bindings
 
-The simplest tool for creating bindings that communicate with your store is 
-``ViewStore/binding(get:send:)-65xes``, which is handed two closures: one that describes how to
-transform state into the binding's value, and one that describes how to transform the binding's
-value into an action that can be fed back into the store.
-
-For example, a reducer may have a domain that tracks if user has enabled haptic feedback. First, it
-can define a boolean property on state:
+The simplest tool for creating bindings that communicate with your store is to create a dedicated
+action that can change a piece of state in your feature. For example, a reducer may have a domain
+that tracks if the user has enabled haptic feedback. First, it can define a boolean property on
+state:
 
 ```swift
 @Reducer
 struct Settings {
   struct State: Equatable {
-    var isHapticFeedbackEnabled = true
+    var isHapticsEnabled = true
     // ...
   }
 
@@ -39,7 +36,7 @@ struct Settings {
   struct State: Equatable { /* ... */ }
 
   enum Action { 
-    case isHapticFeedbackEnabledChanged(Bool)
+    case isHapticsEnabledChanged(Bool)
     // ...
   }
 
@@ -58,8 +55,8 @@ struct Settings {
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .isHapticFeedbackEnabledChanged(isEnabled):
-        state.isHapticFeedbackEnabled = isEnabled
+      case let .isHapticsEnabledChanged(isEnabled):
+        state.isHapticsEnabled = isEnabled
         return .none
       // ...
       }
@@ -68,43 +65,54 @@ struct Settings {
 }
 ```
 
-And finally, in the view, we can derive a binding from the domain that allows a toggle to
-communicate with our Composable Architecture feature:
+And finally, in the view, we can derive a binding from the domain that allows a toggle to 
+communicate with our Composable Architecture feature. First you must hold onto the store in a 
+bindable way, which can be done using the `@Bindable` property wrapper from SwiftUI:
 
 ```swift
 struct SettingsView: View {
-  let store: StoreOf<Settings>
-  
-  var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Toggle(
-          "Haptic feedback",
-          isOn: viewStore.binding(
-            get: \.isHapticFeedbackEnabled,
-            send: { .isHapticFeedbackEnabledChanged($0) }
-          )
-        )
+  @Bindable var store: StoreOf<Settings>
+  // ...
+}
+```
 
-        // ...
-      }
-    }
+> Important: If you are targeting older Apple platforms (iOS 16, macOS 13, tvOS 16, watchOS 9, or
+> less), then you must use our backport of the `@Bindable` property wrapper:
+>
+> ```diff
+> -@Bindable var store: StoreOf<Settings>
+> +@Perception.Bindable var store: StoreOf<Settings>
+> ```
+
+Once that is done you can derive a binding to a piece of state that sends an action when the 
+binding is mutated:
+
+```swift
+var body: some View {
+  Form {
+    Toggle(
+      "Haptic feedback",
+      isOn: $store.isHapticsEnabled.sending(\.isHapticsEnabledChanged)
+    )
+
+    // ...
   }
 }
 ```
 
-### Binding state, actions, and reducers
+### Binding actions and reducers
 
 Deriving ad hoc bindings requires many manual steps that can feel tedious, especially for screens
 with many controls driven by many bindings. Because of this, the Composable Architecture comes with
-a collection of tools that can be applied to a reducer's domain and logic to make this easier.
+tools that can be applied to a reducer's domain and logic to make this easier.
 
 For example, a settings screen may model its state with the following struct:
 
 ```swift
 @Reducer
 struct Settings {
-  struct State: Equatable {
+  @ObservableState
+  struct State {
     var digest = Digest.daily
     var displayName = ""
     var enableNotifications = false
@@ -125,7 +133,8 @@ comes in the form of an enum with a case per field:
 ```swift
 @Reducer
 struct Settings {
-  struct State: Equatable { /* ... */ }
+  @ObservableState
+  struct State { /* ... */ }
 
   enum Action {
     case digestChanged(Digest)
@@ -146,7 +155,8 @@ the state at each field with a new value:
 ```swift
 @Reducer
 struct Settings {
-  struct State: Equatable { /* ... */ }
+  @ObservableState
+  struct State { /* ... */ }
   enum Action { /* ... */ }
 
   var body: some Reducer<State, Action> {
@@ -182,39 +192,17 @@ struct Settings {
 ```
 
 This is a _lot_ of boilerplate for something that should be simple. Luckily, we can dramatically
-eliminate this boilerplate using ``BindingState``, ``BindableAction``, and ``BindingReducer``.
+eliminate this boilerplate using ``BindableAction`` and ``BindingReducer``.
 
-First, we can annotate each bindable value of state with the ``BindingState`` property wrapper:
-
-```swift
-@Reducer
-struct Settings {
-  struct State: Equatable {
-    @BindingState var digest = Digest.daily
-    @BindingState var displayName = ""
-    @BindingState var enableNotifications = false
-    var isLoading = false
-    @BindingState var protectMyPosts = false
-    @BindingState var sendEmailNotifications = false
-    @BindingState var sendMobileNotifications = false
-  }
-
-  // ...
-}
-```
-
-Each annotated field is directly bindable to SwiftUI controls, like pickers, toggles, and text
-fields. Notably, the `isLoading` property is _not_ annotated as being bindable, which prevents the
-view from mutating this value directly.
-
-Next, we can conform the action type to ``BindableAction`` by collapsing all of the individual,
-field-mutating actions into a single case that holds a ``BindingAction`` generic over the reducer's
-state:
+First, we can conform the action type to ``BindableAction`` by collapsing all of the individual,
+field-mutating actions into a single case that holds a ``BindingAction`` that is generic over the
+reducer's state:
 
 ```swift
 @Reducer
 struct Settings {
-  struct State: Equatable { /* ... */ }
+  @ObservableState
+  struct State { /* ... */ }
 
   enum Action: BindableAction {
     case binding(BindingAction<State>)
@@ -224,13 +212,14 @@ struct Settings {
 }
 ```
 
-And then, we can simplify the settings reducer by allowing the ``BindingReducer`` to handle these
+And then, we can simplify the settings reducer by adding a ``BindingReducer`` that handles these
 field mutations for us:
 
 ```swift
 @Reducer
 struct Settings {
-  struct State: Equatable { /* ... */ }
+  @ObservableState
+  struct State { /* ... */ }
   enum Action: BindableAction { /* ... */ }
 
   var body: some Reducer<State, Action> {
@@ -239,14 +228,27 @@ struct Settings {
 }
 ```
 
-Binding actions are constructed and sent to the store by invoking dynamic member lookup on the view:
+Then in the view you must hold onto the store in a bindable manner, which can be done using the
+`@Bindable` property wrapper (or the backported tool `@Perception.Bindable` if targeting older
+Apple platforms):
 
 ```swift
-TextField("Display name", text: viewStore.$displayName)
+struct SettingsView: View {
+  @Bindable var store: StoreOf<Settings>
+  // ...
+}
 ```
 
-Should you need to layer additional functionality over these bindings, your reducer can pattern
-match the action for a given key path:
+Then bindings can be derived from the store using familiar `$` syntax:
+
+```swift
+TextField("Display name", text: $store.displayName)
+Toggle("Notifications", text: $store.enableNotifications)
+// ...
+```
+
+Should you need to layer additional functionality over these bindings, your can pattern match the
+action for a given key path in the reducer:
 
 ```swift
 var body: some Reducer<State, Action> {
@@ -254,133 +256,49 @@ var body: some Reducer<State, Action> {
 
   Reduce { state, action in
     switch action
-    case .binding(\.$displayName):
+    case .binding(\.displayName):
       // Validate display name
   
-    case .binding(\.$enableNotifications):
-      // Return an authorization request effect
+    case .binding(\.enableNotifications):
+      // Return an effect to request authorization from UNUserNotificationCenter
   
     // ...
     }
   }
+}
+```
+
+Or you can apply ``Reducer/onChange(of:_:)`` to the ``BindingReducer`` to react to changes to
+particular fields:
+
+```swift
+var body: some Reducer<State, Action> {
+  BindingReducer()
+    .onChange(of: \.displayName) { oldValue, newValue in
+      // Validate display name
+    }
+    .onChange(of: \.enableNotifications) { oldValue, newValue in
+      // Return an authorization request effect
+    }
+
+  // ...
 }
 ```
 
 Binding actions can also be tested in much the same way regular actions are tested. Rather than send
 a specific action describing how a binding changed, such as `.displayNameChanged("Blob")`, you will
 send a ``BindingAction`` action that describes which key path is being set to what value, such as
-`.set(\.$displayName, "Blob")`:
+`.set(\.displayName, "Blob")`:
 
 ```swift
 let store = TestStore(initialState: Settings.State()) {
   Settings()
 }
 
-store.send(.set(\.$displayName, "Blob")) {
+store.send(.set(\.displayName, "Blob")) {
   $0.displayName = "Blob"
 }
-store.send(.set(\.$protectMyPosts, true)) {
+store.send(.set(\.protectMyPosts, true)) {
   $0.protectMyPosts = true
 )
-```
-
-> Tip: If you use `@BindingState` on a larger struct and would like to observe changes to smaller
-> fields, apply the ``Reducer/onChange(of:_:)`` modifier to the ``BindingReducer``:
->
-> ```swift
-> @Reducer
-> struct Settings {
->   struct State {
->     @BindingState var developerSettings: DeveloperSettings
->     // ...
->   }
->   // ...
->   var body: some Reducer<State, Action> {
->     BindingReducer()
->       .onChange(of: \.developerSettings.showDiagnostics) { oldValue, newValue in
->         // Logic for when `showDiagnostics` changes...
->       }
-> 
->     // ...
->   }
-> }
-> ```
-
-### Binding view state and binding view stores
-
-When a view store observes state bundled up in a "view state" struct (as described in
-<doc:Performance#View-stores>), a couple additional tools are required. First, the `ViewState`
-struct must annotate the fields it will hold onto with the ``BindingViewState`` property wrapper:
-
-```swift
-struct NotificationSettingsView: View {
-  let store: StoreOf<Settings>
-
-  struct ViewState: Equatable {
-    @BindingViewState var enableNotifications: Bool
-    @BindingViewState var sendEmailNotifications: Bool
-    @BindingViewState var sendMobileNotifications: Bool
-  }
-
-  // ...
-}
-```
-
-And then, when the view store is constructed, we can invoke the
-``WithViewStore/init(_:observe:content:file:line:)-4gpoj`` initializer, which is handed a
-``BindingViewStore`` that can produce ``BindingViewState`` values from a store:
-
-```swift
-struct NotificationSettingsView: View {
-  // ...
-
-  var body: some View {
-    WithViewStore(
-      self.store,
-      observe: { bindingViewStore in
-        ViewState(
-          enableNotifications: bindingViewStore.$enableNotifications,
-          sendEmailNotifications: bindingViewStore.$sendEmailNotifications,
-          sendMobileNotifications: bindingViewStore.$sendMobileNotifications
-        )
-      }
-    ) {
-      // ...
-    }
-  }
-}
-```
-
-We recommend extracting this work to simplify the call site, _e.g._ with an initializer on your
-`ViewState` struct:
-
-```swift
-struct NotificationSettingsView: View {
-  // ...
-  struct ViewState: Equatable {
-    // ...
-
-    init(bindingViewStore: BindingViewStore<Settings.State>) {
-      self._enableNotifications = bindingViewStore.$enableNotifications
-      self._sendEmailNotifications = bindingViewStore.$sendEmailNotifications
-      self._sendMobileNotifications = bindingViewStore.$sendMobileNotifications
-    }
-  }
-
-  var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      // ...
-    }
-  }
-}
-```
-
-Finally, you can use dynamic member lookup on the view store to pluck out any view state bindings:
-
-```swift
-Form {
-  Toggle("Enable notifications", isOn: viewStore.$enableNotifications)
-
-  // ...
-}
 ```

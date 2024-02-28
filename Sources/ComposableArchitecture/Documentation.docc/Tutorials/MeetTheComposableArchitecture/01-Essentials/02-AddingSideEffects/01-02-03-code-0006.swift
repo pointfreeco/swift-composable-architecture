@@ -2,13 +2,14 @@ import ComposableArchitecture
 
 @Reducer
 struct CounterFeature {
+  @ObservableState
   struct State: Equatable {
     var count = 0
     var fact: String?
     var isLoading = false
     var isTimerRunning = false
   }
-
+  
   enum Action {
     case decrementButtonTapped
     case factButtonTapped
@@ -17,9 +18,9 @@ struct CounterFeature {
     case timerTick
     case toggleTimerButtonTapped
   }
-
+  
   enum CancelID { case timer }
-
+  
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {

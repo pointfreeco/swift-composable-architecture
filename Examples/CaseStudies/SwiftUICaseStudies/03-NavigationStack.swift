@@ -7,6 +7,14 @@ private let readMe = """
 
 @Reducer
 struct NavigationDemo {
+  @Reducer(state: .equatable)
+  enum Path {
+    case screenA(ScreenA)
+    case screenB(ScreenB)
+    case screenC(ScreenC)
+  }
+
+  @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
   }
@@ -26,23 +34,23 @@ struct NavigationDemo {
         return .none
 
       case .goToABCButtonTapped:
-        state.path.append(.screenA())
-        state.path.append(.screenB())
-        state.path.append(.screenC())
+        state.path.append(.screenA(ScreenA.State()))
+        state.path.append(.screenB(ScreenB.State()))
+        state.path.append(.screenC(ScreenC.State()))
         return .none
 
       case let .path(action):
         switch action {
         case .element(id: _, action: .screenB(.screenAButtonTapped)):
-          state.path.append(.screenA())
+          state.path.append(.screenA(ScreenA.State()))
           return .none
 
         case .element(id: _, action: .screenB(.screenBButtonTapped)):
-          state.path.append(.screenB())
+          state.path.append(.screenB(ScreenB.State()))
           return .none
 
         case .element(id: _, action: .screenB(.screenCButtonTapped)):
-          state.path.append(.screenC())
+          state.path.append(.screenC(ScreenC.State()))
           return .none
 
         default:
@@ -54,95 +62,52 @@ struct NavigationDemo {
         return .none
       }
     }
-    .forEach(\.path, action: \.path) {
-      Path()
-    }
-  }
-
-  @Reducer
-  struct Path {
-    enum State: Codable, Equatable, Hashable {
-      case screenA(ScreenA.State = .init())
-      case screenB(ScreenB.State = .init())
-      case screenC(ScreenC.State = .init())
-    }
-
-    enum Action {
-      case screenA(ScreenA.Action)
-      case screenB(ScreenB.Action)
-      case screenC(ScreenC.Action)
-    }
-
-    var body: some Reducer<State, Action> {
-      Scope(state: \.screenA, action: \.screenA) {
-        ScreenA()
-      }
-      Scope(state: \.screenB, action: \.screenB) {
-        ScreenB()
-      }
-      Scope(state: \.screenC, action: \.screenC) {
-        ScreenC()
-      }
-    }
+    .forEach(\.path, action: \.path)
   }
 }
 
 struct NavigationDemoView: View {
-  @State var store = Store(initialState: NavigationDemo.State()) {
-    NavigationDemo()
-  }
+  @Bindable var store: StoreOf<NavigationDemo>
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
+    NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
       Form {
         Section { Text(template: readMe) }
 
         Section {
           NavigationLink(
             "Go to screen A",
-            state: NavigationDemo.Path.State.screenA()
+            state: NavigationDemo.Path.State.screenA(ScreenA.State())
           )
           NavigationLink(
             "Go to screen B",
-            state: NavigationDemo.Path.State.screenB()
+            state: NavigationDemo.Path.State.screenB(ScreenB.State())
           )
           NavigationLink(
             "Go to screen C",
-            state: NavigationDemo.Path.State.screenC()
+            state: NavigationDemo.Path.State.screenC(ScreenC.State())
           )
         }
 
         Section {
           Button("Go to A → B → C") {
-            self.store.send(.goToABCButtonTapped)
+            store.send(.goToABCButtonTapped)
           }
         }
       }
       .navigationTitle("Root")
-    } destination: {
-      switch $0 {
-      case .screenA:
-        CaseLet(
-          \NavigationDemo.Path.State.screenA,
-          action: NavigationDemo.Path.Action.screenA,
-          then: ScreenAView.init(store:)
-        )
-      case .screenB:
-        CaseLet(
-          \NavigationDemo.Path.State.screenB,
-          action: NavigationDemo.Path.Action.screenB,
-          then: ScreenBView.init(store:)
-        )
-      case .screenC:
-        CaseLet(
-          \NavigationDemo.Path.State.screenC,
-          action: NavigationDemo.Path.Action.screenC,
-          then: ScreenCView.init(store:)
-        )
+    } destination: { store in
+      switch store.case {
+      case let .screenA(store):
+        ScreenAView(store: store)
+      case let .screenB(store):
+        ScreenBView(store: store)
+      case let .screenC(store):
+        ScreenCView(store: store)
       }
     }
     .safeAreaInset(edge: .bottom) {
-      FloatingMenuView(store: self.store)
+      FloatingMenuView(store: store)
     }
     .navigationTitle("Navigation Stack")
   }
@@ -180,32 +145,31 @@ struct FloatingMenuView: View {
   }
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      if viewStore.currentStack.count > 0 {
-        VStack(alignment: .center) {
-          Text("Total count: \(viewStore.total)")
-          Button("Pop to root") {
-            viewStore.send(.popToRoot, animation: .default)
+    let viewState = ViewState(state: store.state)
+    if viewState.currentStack.count > 0 {
+      VStack(alignment: .center) {
+        Text("Total count: \(viewState.total)")
+        Button("Pop to root") {
+          store.send(.popToRoot, animation: .default)
+        }
+        Menu("Current stack") {
+          ForEach(viewState.currentStack) { screen in
+            Button("\(String(describing: screen.id))) \(screen.name)") {
+              store.send(.goBackToScreen(id: screen.id))
+            }
+            .disabled(screen == viewState.currentStack.first)
           }
-          Menu("Current stack") {
-            ForEach(viewStore.currentStack) { screen in
-              Button("\(String(describing: screen.id))) \(screen.name)") {
-                viewStore.send(.goBackToScreen(id: screen.id))
-              }
-              .disabled(screen == viewStore.currentStack.first)
-            }
-            Button("Root") {
-              viewStore.send(.popToRoot, animation: .default)
-            }
+          Button("Root") {
+            store.send(.popToRoot, animation: .default)
           }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .padding(.bottom, 1)
-        .transition(.opacity.animation(.default))
-        .clipped()
-        .shadow(color: .black.opacity(0.2), radius: 5, y: 5)
       }
+      .padding()
+      .background(Color(.systemBackground))
+      .padding(.bottom, 1)
+      .transition(.opacity.animation(.default))
+      .clipped()
+      .shadow(color: .black.opacity(0.2), radius: 5, y: 5)
     }
   }
 }
@@ -214,7 +178,8 @@ struct FloatingMenuView: View {
 
 @Reducer
 struct ScreenA {
-  struct State: Codable, Equatable, Hashable {
+  @ObservableState
+  struct State: Equatable {
     var count = 0
     var fact: String?
     var isLoading = false
@@ -271,71 +236,69 @@ struct ScreenAView: View {
   let store: StoreOf<ScreenA>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Text(
-          """
-          This screen demonstrates a basic feature hosted in a navigation stack.
+    Form {
+      Text(
+        """
+        This screen demonstrates a basic feature hosted in a navigation stack.
 
-          You can also have the child feature dismiss itself, which will communicate back to the \
-          root stack view to pop the feature off the stack.
-          """
-        )
+        You can also have the child feature dismiss itself, which will communicate back to the \
+        root stack view to pop the feature off the stack.
+        """
+      )
 
-        Section {
-          HStack {
-            Text("\(viewStore.count)")
-            Spacer()
-            Button {
-              viewStore.send(.decrementButtonTapped)
-            } label: {
-              Image(systemName: "minus")
-            }
-            Button {
-              viewStore.send(.incrementButtonTapped)
-            } label: {
-              Image(systemName: "plus")
-            }
-          }
-          .buttonStyle(.borderless)
-
+      Section {
+        HStack {
+          Text("\(store.count)")
+          Spacer()
           Button {
-            viewStore.send(.factButtonTapped)
+            store.send(.decrementButtonTapped)
           } label: {
-            HStack {
-              Text("Get fact")
-              if viewStore.isLoading {
-                Spacer()
-                ProgressView()
-              }
+            Image(systemName: "minus")
+          }
+          Button {
+            store.send(.incrementButtonTapped)
+          } label: {
+            Image(systemName: "plus")
+          }
+        }
+        .buttonStyle(.borderless)
+
+        Button {
+          store.send(.factButtonTapped)
+        } label: {
+          HStack {
+            Text("Get fact")
+            if store.isLoading {
+              Spacer()
+              ProgressView()
             }
           }
-
-          if let fact = viewStore.fact {
-            Text(fact)
-          }
         }
 
-        Section {
-          Button("Dismiss") {
-            viewStore.send(.dismissButtonTapped)
-          }
+        if let fact = store.fact {
+          Text(fact)
         }
+      }
 
-        Section {
-          NavigationLink(
-            "Go to screen A",
-            state: NavigationDemo.Path.State.screenA(.init(count: viewStore.count))
-          )
-          NavigationLink(
-            "Go to screen B",
-            state: NavigationDemo.Path.State.screenB()
-          )
-          NavigationLink(
-            "Go to screen C",
-            state: NavigationDemo.Path.State.screenC(.init(count: viewStore.count))
-          )
+      Section {
+        Button("Dismiss") {
+          store.send(.dismissButtonTapped)
         }
+      }
+
+      Section {
+        NavigationLink(
+          "Go to screen A",
+          state: NavigationDemo.Path.State.screenA(ScreenA.State(count: store.count))
+        )
+        NavigationLink(
+          "Go to screen B",
+          state: NavigationDemo.Path.State.screenB(ScreenB.State())
+        )
+        NavigationLink(
+          "Go to screen C",
+          state: NavigationDemo.Path.State.screenC(ScreenC.State(count: store.count))
+        )
       }
     }
     .navigationTitle("Screen A")
@@ -346,7 +309,8 @@ struct ScreenAView: View {
 
 @Reducer
 struct ScreenB {
-  struct State: Codable, Equatable, Hashable {}
+  @ObservableState
+  struct State: Equatable {}
 
   enum Action {
     case screenAButtonTapped
@@ -383,13 +347,13 @@ struct ScreenBView: View {
         )
       }
       Button("Decoupled navigation to screen A") {
-        self.store.send(.screenAButtonTapped)
+        store.send(.screenAButtonTapped)
       }
       Button("Decoupled navigation to screen B") {
-        self.store.send(.screenBButtonTapped)
+        store.send(.screenBButtonTapped)
       }
       Button("Decoupled navigation to screen C") {
-        self.store.send(.screenCButtonTapped)
+        store.send(.screenCButtonTapped)
       }
     }
     .navigationTitle("Screen B")
@@ -400,7 +364,8 @@ struct ScreenBView: View {
 
 @Reducer
 struct ScreenC {
-  struct State: Codable, Equatable, Hashable {
+  @ObservableState
+  struct State: Equatable {
     var count = 0
     var isTimerRunning = false
   }
@@ -443,57 +408,47 @@ struct ScreenCView: View {
   let store: StoreOf<ScreenC>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Text(
-          """
-          This screen demonstrates that if you start a long-living effects in a stack, then it \
-          will automatically be torn down when the screen is dismissed.
-          """
-        )
-        Section {
-          Text("\(viewStore.count)")
-          if viewStore.isTimerRunning {
-            Button("Stop timer") { viewStore.send(.stopButtonTapped) }
-          } else {
-            Button("Start timer") { viewStore.send(.startButtonTapped) }
-          }
-        }
-
-        Section {
-          NavigationLink(
-            "Go to screen A",
-            state: NavigationDemo.Path.State.screenA(ScreenA.State(count: viewStore.count))
-          )
-          NavigationLink(
-            "Go to screen B",
-            state: NavigationDemo.Path.State.screenB()
-          )
-          NavigationLink(
-            "Go to screen C",
-            state: NavigationDemo.Path.State.screenC()
-          )
+    Form {
+      Text(
+        """
+        This screen demonstrates that if you start a long-living effects in a stack, then it \
+        will automatically be torn down when the screen is dismissed.
+        """
+      )
+      Section {
+        Text("\(store.count)")
+        if store.isTimerRunning {
+          Button("Stop timer") { store.send(.stopButtonTapped) }
+        } else {
+          Button("Start timer") { store.send(.startButtonTapped) }
         }
       }
-      .navigationTitle("Screen C")
+
+      Section {
+        NavigationLink(
+          "Go to screen A",
+          state: NavigationDemo.Path.State.screenA(ScreenA.State(count: store.count))
+        )
+        NavigationLink(
+          "Go to screen B",
+          state: NavigationDemo.Path.State.screenB(ScreenB.State())
+        )
+        NavigationLink(
+          "Go to screen C",
+          state: NavigationDemo.Path.State.screenC(ScreenC.State())
+        )
+      }
     }
+    .navigationTitle("Screen C")
   }
 }
 
 // MARK: - Previews
 
-struct NavigationStack_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationDemoView(
-      store: Store(
-        initialState: NavigationDemo.State(
-          path: StackState([
-            .screenA(ScreenA.State())
-          ])
-        )
-      ) {
-        NavigationDemo()
-      }
-    )
-  }
+#Preview {
+  NavigationDemoView(
+    store: Store(initialState: NavigationDemo.State()) {
+      NavigationDemo()
+    }
+  )
 }

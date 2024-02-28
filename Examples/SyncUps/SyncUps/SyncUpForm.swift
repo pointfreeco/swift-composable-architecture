@@ -4,9 +4,10 @@ import SwiftUINavigation
 
 @Reducer
 struct SyncUpForm {
+  @ObservableState
   struct State: Equatable, Sendable {
-    @BindingState var focus: Field? = .title
-    @BindingState var syncUp: SyncUp
+    var focus: Field? = .title
+    var syncUp: SyncUp
 
     init(focus: Field? = .title, syncUp: SyncUp) {
       self.focus = focus
@@ -60,44 +61,42 @@ struct SyncUpForm {
 }
 
 struct SyncUpFormView: View {
-  let store: StoreOf<SyncUpForm>
+  @Bindable var store: StoreOf<SyncUpForm>
   @FocusState var focus: SyncUpForm.State.Field?
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          TextField("Title", text: viewStore.$syncUp.title)
-            .focused(self.$focus, equals: .title)
-          HStack {
-            Slider(value: viewStore.$syncUp.duration.minutes, in: 5...30, step: 1) {
-              Text("Length")
-            }
-            Spacer()
-            Text(viewStore.syncUp.duration.formatted(.units()))
+    Form {
+      Section {
+        TextField("Title", text: $store.syncUp.title)
+          .focused($focus, equals: .title)
+        HStack {
+          Slider(value: $store.syncUp.duration.minutes, in: 5...30, step: 1) {
+            Text("Length")
           }
-          ThemePicker(selection: viewStore.$syncUp.theme)
-        } header: {
-          Text("Sync-up Info")
+          Spacer()
+          Text(store.syncUp.duration.formatted(.units()))
         }
-        Section {
-          ForEach(viewStore.$syncUp.attendees) { $attendee in
-            TextField("Name", text: $attendee.name)
-              .focused(self.$focus, equals: .attendee(attendee.id))
-          }
-          .onDelete { indices in
-            viewStore.send(.deleteAttendees(atOffsets: indices))
-          }
-
-          Button("New attendee") {
-            viewStore.send(.addAttendeeButtonTapped)
-          }
-        } header: {
-          Text("Attendees")
-        }
+        ThemePicker(selection: $store.syncUp.theme)
+      } header: {
+        Text("Sync-up Info")
       }
-      .bind(viewStore.$focus, to: self.$focus)
+      Section {
+        ForEach($store.syncUp.attendees) { $attendee in
+          TextField("Name", text: $attendee.name)
+            .focused($focus, equals: .attendee(attendee.id))
+        }
+        .onDelete { indices in
+          store.send(.deleteAttendees(atOffsets: indices))
+        }
+
+        Button("New attendee") {
+          store.send(.addAttendeeButtonTapped)
+        }
+      } header: {
+        Text("Attendees")
+      }
     }
+    .bind($store.focus, to: $focus)
   }
 }
 
@@ -128,14 +127,12 @@ extension Duration {
   }
 }
 
-struct EditSyncUp_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      SyncUpFormView(
-        store: Store(initialState: SyncUpForm.State(syncUp: .mock)) {
-          SyncUpForm()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    SyncUpFormView(
+      store: Store(initialState: SyncUpForm.State(syncUp: .mock)) {
+        SyncUpForm()
+      }
+    )
   }
 }

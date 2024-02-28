@@ -933,13 +933,15 @@ extension TestStore where State: Equatable {
   /// <doc:Testing#Non-exhaustive-testing>), which allow you to assert on a subset of the things
   /// happening inside your features. For example, you can send an action in a child feature
   /// without asserting on how many changes in the system, and then tell the test store to
-  /// ``finish(timeout:file:line:)-53gi5`` by executing all of its effects and receiving all
-  /// actions. After that is done you can assert on the final state of the store:
+  /// ``finish(timeout:file:line:)-53gi5`` by executing all of its effects, and finally to
+  /// ``skipReceivedActions(strict:file:line:)-a4ri`` to receive all actions. After that is done you
+  /// can assert on the final state of the store:
   ///
   /// ```swift
   /// store.exhaustivity = .off
   /// await store.send(.child(.closeButtonTapped))
   /// await store.finish()
+  /// await store.skipReceivedActions()
   /// store.assert {
   ///   $0.child = nil
   /// }
@@ -1005,7 +1007,7 @@ extension TestStore where State: Equatable {
     switch self.exhaustivity {
     case .on:
       var expectedWhenGivenPreviousState = expected
-      if let updateStateToExpectedResult = updateStateToExpectedResult {
+      if let updateStateToExpectedResult {
         try Dependencies.withDependencies {
           $0 = self.reducer.dependencies
         } operation: {
@@ -1022,7 +1024,7 @@ extension TestStore where State: Equatable {
 
     case .off:
       var expectedWhenGivenActualState = actual
-      if let updateStateToExpectedResult = updateStateToExpectedResult {
+      if let updateStateToExpectedResult {
         try Dependencies.withDependencies {
           $0 = self.reducer.dependencies
         } operation: {
@@ -1039,8 +1041,8 @@ extension TestStore where State: Equatable {
         && expectedWhenGivenActualState == actual
       {
         var expectedWhenGivenPreviousState = current
-        if let updateStateToExpectedResult = updateStateToExpectedResult {
-          _XCTExpectFailure(strict: false) {
+        if let updateStateToExpectedResult {
+          XCTExpectFailure(strict: false) {
             do {
               try Dependencies.withDependencies {
                 $0 = self.reducer.dependencies
@@ -1305,6 +1307,39 @@ extension TestStore where State: Equatable {
     )
   }
 
+  private func _receive<Value: Equatable>(
+    _ actionCase: AnyCasePath<Action, Value>,
+    _ value: Value,
+    assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
+    file: StaticString = #file,
+    line: UInt = #line
+  ) {
+    self.receiveAction(
+      matching: { actionCase.extract(from: $0) == value },
+      failureMessage: "Expected to receive an action matching case path, but didn't get one.",
+      unexpectedActionDescription: { receivedAction in
+        var action = ""
+        if actionCase.extract(from: receivedAction) != nil,
+          let difference = diff(actionCase.embed(value), receivedAction, format: .proportional)
+        {
+          action.append(
+            """
+            \(difference.indent(by: 2))
+
+            (Expected: −, Actual: +)
+            """
+          )
+        } else {
+          customDump(receivedAction, to: &action, indent: 2)
+        }
+        return action
+      },
+      updateStateToExpectedResult,
+      file: file,
+      line: line
+    )
+  }
+
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
@@ -1500,43 +1535,55 @@ extension TestStore where State: Equatable {
     line: UInt = #line
   ) async
   where Action: CasePathable {
-    await self.receive(
-      AnyCasePath(
-        embed: { actionCase($0) },
-        extract: { action in
-          action[case: actionCase].flatMap { $0 == value ? $0 : nil }
-        }
-      ),
-      timeout: nanoseconds,
-      assert: updateStateToExpectedResult,
-      file: file,
-      line: line
-    )
+    let actionCase = AnyCasePath(actionCase)
+    await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+      guard !self.reducer.inFlightEffects.isEmpty
+      else {
+        _ = {
+          self._receive(
+            actionCase, value, assert: updateStateToExpectedResult, file: file, line: line
+          )
+        }()
+        return
+      }
+      await self.receiveAction(
+        matching: { actionCase.extract(from: $0) != nil },
+        timeout: nanoseconds,
+        file: file,
+        line: line
+      )
+      _ = {
+        self._receive(
+          actionCase, value, assert: updateStateToExpectedResult, file: file, line: line
+        )
+      }()
+      await Task.megaYield()
+    }
   }
 
   @available(
     iOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     macOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     tvOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     watchOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @MainActor
   @_disfavoredOverload
@@ -1676,28 +1723,28 @@ extension TestStore where State: Equatable {
       introduced: 16,
       deprecated: 9999,
       message:
-        "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
     )
     @available(
       macOS,
       introduced: 13,
       deprecated: 9999,
       message:
-        "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
     )
     @available(
       tvOS,
       introduced: 16,
       deprecated: 9999,
       message:
-        "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
     )
     @available(
       watchOS,
       introduced: 9,
       deprecated: 9999,
       message:
-        "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
     )
     public func receive<Value>(
       _ actionCase: AnyCasePath<Action, Value>,
@@ -2108,7 +2155,7 @@ extension TestStore {
     case .on:
       XCTFail(message, file: file, line: line)
     case .off(showSkippedAssertions: true):
-      _XCTExpectFailure {
+      XCTExpectFailure {
         XCTFail(
           """
           Skipped assertions: …
@@ -2169,25 +2216,25 @@ extension TestStore {
     iOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     macOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     tvOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     watchOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   public func bindings<ViewAction: BindableAction>(
     action toViewAction: AnyCasePath<Action, ViewAction>
@@ -2196,7 +2243,12 @@ extension TestStore {
       store: Store(initialState: self.state) {
         BindingReducer(action: toViewAction.extract(from:))
       }
-      .scope(state: { $0 }, action: toViewAction.embed)
+      .scope(
+        id: nil,
+        state: ToState(\.self),
+        action: toViewAction.embed,
+        isInvalid: nil
+      )
     )
   }
 }
@@ -2503,33 +2555,6 @@ public enum Exhaustivity: Equatable, Sendable {
 
   /// Non-exhaustive assertions.
   public static let off = Self.off(showSkippedAssertions: false)
-}
-
-@_transparent
-private func _XCTExpectFailure(
-  _ failureReason: String? = nil,
-  strict: Bool = true,
-  failingBlock: () -> Void
-) {
-  #if DEBUG
-    guard
-      let XCTExpectedFailureOptions = NSClassFromString("XCTExpectedFailureOptions")
-        as Any as? NSObjectProtocol,
-      let options = strict
-        ? XCTExpectedFailureOptions
-          .perform(NSSelectorFromString("alloc"))?.takeUnretainedValue()
-          .perform(NSSelectorFromString("init"))?.takeUnretainedValue()
-        : XCTExpectedFailureOptions
-          .perform(NSSelectorFromString("nonStrictOptions"))?.takeUnretainedValue()
-    else { return }
-
-    let XCTExpectFailureWithOptionsInBlock = unsafeBitCast(
-      dlsym(dlopen(nil, RTLD_LAZY), "XCTExpectFailureWithOptionsInBlock"),
-      to: (@convention(c) (String?, AnyObject, () -> Void) -> Void).self
-    )
-
-    XCTExpectFailureWithOptionsInBlock(failureReason, options, failingBlock)
-  #endif
 }
 
 extension TestStore {

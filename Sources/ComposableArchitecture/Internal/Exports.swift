@@ -7,6 +7,12 @@
 @_exported import IdentifiedCollections
 @_exported import SwiftUINavigationCore
 
-#if swift(>=5.9)
+#if canImport(DependenciesMacros)
   @_exported import DependenciesMacros
+#endif
+#if canImport(Observation)
+  @_exported import Observation
+#endif
+#if canImport(Perception)
+  @_exported import Perception
 #endif

@@ -3,27 +3,27 @@ import SwiftUI
 
 private let readMe = """
   This screen demonstrates how changes to application state can drive animations. Because the \
-  `Store` processes actions sent to it synchronously you can typically perform animations \
-  in the Composable Architecture just as you would in regular SwiftUI.
+  `Store` processes actions sent to it synchronously you can typically perform animations in the \
+  Composable Architecture just as you would in regular SwiftUI.
 
-  To animate the changes made to state when an action is sent to the store you can pass along an \
-  explicit animation, as well, or you can call `viewStore.send` in a `withAnimation` block.
+  To animate the changes made to state when an action is sent to the store, you can also pass \
+  along an explicit animation, or you can call `store.send` in a `withAnimation` block.
 
-  To animate changes made to state through a binding, use the `.animation` method on `Binding`.
+  To animate changes made to state through a binding, you can call the `animation` method on \
+  `Binding`.
 
-  To animate asynchronous changes made to state via effects, use `Effect.run` style of effects \
-  which allows you to send actions with animations.
+  To animate asynchronous changes made to state via effects, use the `Effect.run` style of \
+  effects, which allows you to send actions with animations.
 
-  Try it out by tapping or dragging anywhere on the screen to move the dot, and by flipping the \
-  toggle at the bottom of the screen.
+  Try out the demo by tapping or dragging anywhere on the screen to move the dot, and by flipping \
+  the toggle at the bottom of the screen.
   """
-
-// MARK: - Feature domain
 
 @Reducer
 struct Animations {
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Action.Alert>?
+    @Presents var alert: AlertState<Action.Alert>?
     var circleCenter: CGPoint?
     var circleColor = Color.black
     var isCircleScaled = false
@@ -98,82 +98,71 @@ struct Animations {
   }
 }
 
-// MARK: - Feature view
-
 struct AnimationsView: View {
-  @State var store = Store(initialState: Animations.State()) {
-    Animations()
-  }
+  @Bindable var store: StoreOf<Animations>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(alignment: .leading) {
-        Text(template: readMe, .body)
-          .padding()
-          .gesture(
-            DragGesture(minimumDistance: 0).onChanged { gesture in
-              viewStore.send(
-                .tapped(gesture.location),
-                animation: .interactiveSpring(response: 0.25, dampingFraction: 0.1)
-              )
-            }
-          )
-          .overlay {
-            GeometryReader { proxy in
-              Circle()
-                .fill(viewStore.circleColor)
-                .colorInvert()
-                .blendMode(.difference)
-                .frame(width: 50, height: 50)
-                .scaleEffect(viewStore.isCircleScaled ? 2 : 1)
-                .position(
-                  x: viewStore.circleCenter?.x ?? proxy.size.width / 2,
-                  y: viewStore.circleCenter?.y ?? proxy.size.height / 2
-                )
-                .offset(y: viewStore.circleCenter == nil ? 0 : -44)
-            }
-            .allowsHitTesting(false)
-          }
-        Toggle(
-          "Big mode",
-          isOn:
-            viewStore
-            .binding(get: \.isCircleScaled, send: { .circleScaleToggleChanged($0) })
-            .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
-        )
+    VStack(alignment: .leading) {
+      Text(template: readMe, .body)
         .padding()
-        Button("Rainbow") { viewStore.send(.rainbowButtonTapped, animation: .linear) }
-          .padding([.horizontal, .bottom])
-        Button("Reset") { viewStore.send(.resetButtonTapped) }
-          .padding([.horizontal, .bottom])
-      }
-      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
-      .navigationBarTitleDisplayMode(.inline)
+        .gesture(
+          DragGesture(minimumDistance: 0).onChanged { gesture in
+            store.send(
+              .tapped(gesture.location),
+              animation: .interactiveSpring(response: 0.25, dampingFraction: 0.1)
+            )
+          }
+        )
+        .overlay {
+          GeometryReader { proxy in
+            Circle()
+              .fill(store.circleColor)
+              .colorInvert()
+              .blendMode(.difference)
+              .frame(width: 50, height: 50)
+              .scaleEffect(store.isCircleScaled ? 2 : 1)
+              .position(
+                x: store.circleCenter?.x ?? proxy.size.width / 2,
+                y: store.circleCenter?.y ?? proxy.size.height / 2
+              )
+              .offset(y: store.circleCenter == nil ? 0 : -44)
+          }
+          .allowsHitTesting(false)
+        }
+      Toggle(
+        "Big mode",
+        isOn:
+          $store.isCircleScaled.sending(\.circleScaleToggleChanged)
+          .animation(.interactiveSpring(response: 0.25, dampingFraction: 0.1))
+      )
+      .padding()
+      Button("Rainbow") { store.send(.rainbowButtonTapped, animation: .linear) }
+        .padding([.horizontal, .bottom])
+      Button("Reset") { store.send(.resetButtonTapped) }
+        .padding([.horizontal, .bottom])
     }
+    .alert($store.scope(state: \.alert, action: \.alert))
+    .navigationBarTitleDisplayMode(.inline)
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct AnimationsView_Previews: PreviewProvider {
-  static var previews: some View {
-    Group {
-      NavigationView {
-        AnimationsView(
-          store: Store(initialState: Animations.State()) {
-            Animations()
-          }
-        )
+#Preview {
+  NavigationStack {
+    AnimationsView(
+      store: Store(initialState: Animations.State()) {
+        Animations()
       }
-
-      NavigationView {
-        AnimationsView(
-          store: Store(initialState: Animations.State()) {
-            Animations()
-          }
-        )
-      }
-      .environment(\.colorScheme, .dark)
-    }
+    )
   }
+}
+
+#Preview("Dark mode") {
+  NavigationStack {
+    AnimationsView(
+      store: Store(initialState: Animations.State()) {
+        Animations()
+      }
+    )
+  }
+  .environment(\.colorScheme, .dark)
 }

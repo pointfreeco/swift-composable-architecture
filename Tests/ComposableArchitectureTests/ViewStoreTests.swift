@@ -30,6 +30,7 @@ final class ViewStoreTests: BaseTCATestCase {
     XCTAssertEqual(emissionCount, 1)
   }
 
+  @available(*, deprecated)
   func testEqualityChecks() {
     let store = Store<State, Void>(initialState: State()) {}
 

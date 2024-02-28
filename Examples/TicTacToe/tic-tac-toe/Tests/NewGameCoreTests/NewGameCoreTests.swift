@@ -10,10 +10,10 @@ final class NewGameCoreTests: XCTestCase {
   }
 
   func testFlow_NewGame_Integration() async {
-    await self.store.send(.oPlayerNameChanged("Blob Sr.")) {
+    await self.store.send(.set(\.oPlayerName, "Blob Sr.")) {
       $0.oPlayerName = "Blob Sr."
     }
-    await self.store.send(.xPlayerNameChanged("Blob Jr.")) {
+    await self.store.send(.set(\.xPlayerName, "Blob Jr.")) {
       $0.xPlayerName = "Blob Jr."
     }
     await self.store.send(.letsPlayButtonTapped) {

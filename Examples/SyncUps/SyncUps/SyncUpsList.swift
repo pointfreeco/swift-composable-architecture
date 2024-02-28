@@ -3,13 +3,22 @@ import SwiftUI
 
 @Reducer
 struct SyncUpsList {
+  @Reducer(state: .equatable)
+  enum Destination {
+    case add(SyncUpForm)
+    case alert(AlertState<Alert>)
+
+    enum Alert {
+      case confirmLoadMockData
+    }
+  }
+
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var destination: Destination.State?
+    @Presents var destination: Destination.State?
     var syncUps: IdentifiedArrayOf<SyncUp> = []
 
-    init(
-      destination: Destination.State? = nil
-    ) {
+    init(destination: Destination.State? = nil) {
       self.destination = destination
 
       do {
@@ -27,29 +36,7 @@ struct SyncUpsList {
     case confirmAddSyncUpButtonTapped
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
-  }
-
-  @Reducer
-  struct Destination {
-    enum State: Equatable {
-      case add(SyncUpForm.State)
-      case alert(AlertState<Action.Alert>)
-    }
-
-    enum Action {
-      case add(SyncUpForm.Action)
-      case alert(Alert)
-
-      enum Alert {
-        case confirmLoadMockData
-      }
-    }
-
-    var body: some ReducerOf<Self> {
-      Scope(state: \.add, action: \.add) {
-        SyncUpForm()
-      }
-    }
+    case onDelete(IndexSet)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -93,63 +80,64 @@ struct SyncUpsList {
       case .dismissAddSyncUpButtonTapped:
         state.destination = nil
         return .none
+
+      case let .onDelete(indexSet):
+        state.syncUps.remove(atOffsets: indexSet)
+        return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
   }
 }
 
 struct SyncUpsListView: View {
-  let store: StoreOf<SyncUpsList>
+  @Bindable var store: StoreOf<SyncUpsList>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.syncUps) { viewStore in
-      List {
-        ForEach(viewStore.state) { syncUp in
-          NavigationLink(
-            state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
-          ) {
-            CardView(syncUp: syncUp)
-          }
-          .listRowBackground(syncUp.theme.mainColor)
+    List {
+      ForEach(store.syncUps) { syncUp in
+        NavigationLink(
+          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
+        ) {
+          CardView(syncUp: syncUp)
         }
+        .listRowBackground(syncUp.theme.mainColor)
       }
-      .toolbar {
-        Button {
-          viewStore.send(.addSyncUpButtonTapped)
-        } label: {
-          Image(systemName: "plus")
-        }
+      .onDelete { indexSet in
+        store.send(.onDelete(indexSet))
       }
-      .navigationTitle("Daily Sync-ups")
-      .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
-      .sheet(
-        store: self.store.scope(state: \.$destination.add, action: \.destination.add)
-      ) { store in
-        NavigationStack {
-          SyncUpFormView(store: store)
-            .navigationTitle("New sync-up")
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button("Dismiss") {
-                  viewStore.send(.dismissAddSyncUpButtonTapped)
-                }
-              }
-              ToolbarItem(placement: .confirmationAction) {
-                Button("Add") {
-                  viewStore.send(.confirmAddSyncUpButtonTapped)
-                }
+    }
+    .toolbar {
+      Button {
+        store.send(.addSyncUpButtonTapped)
+      } label: {
+        Image(systemName: "plus")
+      }
+    }
+    .navigationTitle("Daily Sync-ups")
+    .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
+    .sheet(item: $store.scope(state: \.destination?.add, action: \.destination.add)) { store in
+      NavigationStack {
+        SyncUpFormView(store: store)
+          .navigationTitle("New sync-up")
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Dismiss") {
+                self.store.send(.dismissAddSyncUpButtonTapped)
               }
             }
-        }
+            ToolbarItem(placement: .confirmationAction) {
+              Button("Add") {
+                self.store.send(.confirmAddSyncUpButtonTapped)
+              }
+            }
+          }
       }
     }
   }
 }
 
-extension AlertState where Action == SyncUpsList.Destination.Action.Alert {
+extension AlertState where Action == SyncUpsList.Destination.Alert {
   static let dataFailedToLoad = Self {
     TextState("Data failed to load")
   } actions: {
@@ -203,29 +191,42 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
   static var trailingIcon: Self { Self() }
 }
 
-struct SyncUpsList_Previews: PreviewProvider {
-  static var previews: some View {
-    SyncUpsListView(
-      store: Store(initialState: SyncUpsList.State()) {
-        SyncUpsList()
-      } withDependencies: {
-        $0.dataManager.load = { @Sendable _ in
-          try JSONEncoder().encode([
-            SyncUp.mock,
-            .designMock,
-            .engineeringMock,
-          ])
-        }
+#Preview {
+  SyncUpsListView(
+    store: Store(initialState: SyncUpsList.State()) {
+      SyncUpsList()
+    } withDependencies: {
+      $0.dataManager.load = { @Sendable _ in
+        try JSONEncoder().encode([
+          SyncUp.mock,
+          .designMock,
+          .engineeringMock,
+        ])
       }
-    )
+    }
+  )
+}
 
-    SyncUpsListView(
-      store: Store(initialState: SyncUpsList.State()) {
-        SyncUpsList()
-      } withDependencies: {
-        $0.dataManager = .mock(initialData: Data("!@#$% bad data ^&*()".utf8))
-      }
+#Preview("Load data failure") {
+  SyncUpsListView(
+    store: Store(initialState: SyncUpsList.State()) {
+      SyncUpsList()
+    } withDependencies: {
+      $0.dataManager = .mock(initialData: Data("!@#$% bad data ^&*()".utf8))
+    }
+  )
+  .previewDisplayName("Load data failure")
+}
+
+#Preview("Card") {
+  CardView(
+    syncUp: SyncUp(
+      id: SyncUp.ID(),
+      attendees: [],
+      duration: .seconds(60),
+      meetings: [],
+      theme: .bubblegum,
+      title: "Point-Free Morning Sync"
     )
-    .previewDisplayName("Load data failure")
-  }
+  )
 }

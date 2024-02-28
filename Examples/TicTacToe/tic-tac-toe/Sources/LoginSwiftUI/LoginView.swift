@@ -5,99 +5,81 @@ import SwiftUI
 import TwoFactorCore
 import TwoFactorSwiftUI
 
+@ViewAction(for: Login.self)
 public struct LoginView: View {
-  let store: StoreOf<Login>
-
-  struct ViewState: Equatable {
-    @BindingViewState var email: String
-    var isActivityIndicatorVisible: Bool
-    var isFormDisabled: Bool
-    var isLoginButtonDisabled: Bool
-    @BindingViewState var password: String
-  }
+  @Bindable public var store: StoreOf<Login>
 
   public init(store: StoreOf<Login>) {
     self.store = store
   }
 
   public var body: some View {
-    WithViewStore(self.store, observe: \.view, send: { .view($0) }) { viewStore in
-      Form {
-        Text(
-          """
-          To login use any email and "password" for the password. If your email contains the \
-          characters "2fa" you will be taken to a two-factor flow, and on that screen you can \
-          use "1234" for the code.
-          """
+    Form {
+      Text(
+        """
+        To login use any email and "password" for the password. If your email contains the \
+        characters "2fa" you will be taken to a two-factor flow, and on that screen you can \
+        use "1234" for the code.
+        """
+      )
+
+      Section {
+        TextField("blob@pointfree.co", text: $store.email)
+          .autocapitalization(.none)
+          .keyboardType(.emailAddress)
+          .textContentType(.emailAddress)
+
+        SecureField("••••••••", text: $store.password)
+      }
+
+      Button {
+        // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected" if
+        //     you disable a text field while it is focused. This hack will force all fields to
+        //     unfocus before we send the action to the store.
+        // CF: https://stackoverflow.com/a/69653555
+        _ = UIApplication.shared.sendAction(
+          #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
         )
-
-        Section {
-          TextField("blob@pointfree.co", text: viewStore.$email)
-            .autocapitalization(.none)
-            .keyboardType(.emailAddress)
-            .textContentType(.emailAddress)
-
-          SecureField("••••••••", text: viewStore.$password)
-        }
-
-        Button {
-          // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected" if
-          //     you disable a text field while it is focused. This hack will force all fields to
-          //     unfocus before we send the action to the view store.
-          // CF: https://stackoverflow.com/a/69653555
-          _ = UIApplication.shared.sendAction(
-            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
-          )
-          viewStore.send(.loginButtonTapped)
-        } label: {
-          HStack {
-            Text("Log in")
-            if viewStore.isActivityIndicatorVisible {
-              Spacer()
-              ProgressView()
-            }
+        send(.loginButtonTapped)
+      } label: {
+        HStack {
+          Text("Log in")
+          if store.isActivityIndicatorVisible {
+            Spacer()
+            ProgressView()
           }
         }
-        .disabled(viewStore.isLoginButtonDisabled)
       }
-      .disabled(viewStore.isFormDisabled)
-      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
-      .navigationDestination(
-        store: self.store.scope(state: \.$twoFactor, action: \.twoFactor),
-        destination: TwoFactorView.init
-      )
+      .disabled(store.isLoginButtonDisabled)
+    }
+    .disabled(store.isFormDisabled)
+    .alert($store.scope(state: \.alert, action: \.alert))
+    .navigationDestination(item: $store.scope(state: \.twoFactor, action: \.twoFactor)) { store in
+      TwoFactorView(store: store)
     }
     .navigationTitle("Login")
   }
 }
 
-extension BindingViewStore<Login.State> {
-  var view: LoginView.ViewState {
-    LoginView.ViewState(
-      email: self.$email,
-      isActivityIndicatorVisible: self.isLoginRequestInFlight,
-      isFormDisabled: self.isLoginRequestInFlight,
-      isLoginButtonDisabled: !self.isFormValid,
-      password: self.$password
-    )
-  }
+extension Login.State {
+  fileprivate var isActivityIndicatorVisible: Bool { self.isLoginRequestInFlight }
+  fileprivate var isFormDisabled: Bool { self.isLoginRequestInFlight }
+  fileprivate var isLoginButtonDisabled: Bool { !self.isFormValid }
 }
 
-struct LoginView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      LoginView(
-        store: Store(initialState: Login.State()) {
-          Login()
-        } withDependencies: {
-          $0.authenticationClient.login = { @Sendable _, _ in
-            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-          }
-          $0.authenticationClient.twoFactor = { @Sendable _, _ in
-            AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
-          }
+#Preview {
+  NavigationStack {
+    LoginView(
+      store: Store(initialState: Login.State()) {
+        Login()
+      } withDependencies: {
+        $0.authenticationClient.login = { @Sendable _, _ in
+          AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
         }
-      )
-    }
+        $0.authenticationClient.twoFactor = { @Sendable _, _ in
+          AuthenticationResponse(token: "deadbeef", twoFactorRequired: false)
+        }
+      }
+    )
   }
 }

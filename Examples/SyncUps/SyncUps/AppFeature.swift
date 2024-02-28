@@ -3,6 +3,14 @@ import SwiftUI
 
 @Reducer
 struct AppFeature {
+  @Reducer(state: .equatable)
+  enum Path {
+    case detail(SyncUpDetail)
+    case meeting(Meeting, syncUp: SyncUp)
+    case record(RecordMeeting)
+  }
+
+  @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
     var syncUpsList = SyncUpsList.State()
@@ -80,9 +88,7 @@ struct AppFeature {
         return .none
       }
     }
-    .forEach(\.path, action: \.path) {
-      Path()
-    }
+    .forEach(\.path, action: \.path)
 
     Reduce { state, action in
       return .run { [syncUps = state.syncUpsList.syncUps] _ in
@@ -94,55 +100,24 @@ struct AppFeature {
       }
     }
   }
-
-  @Reducer
-  struct Path {
-    enum State: Equatable {
-      case detail(SyncUpDetail.State)
-      case meeting(Meeting, syncUp: SyncUp)
-      case record(RecordMeeting.State)
-    }
-
-    enum Action {
-      case detail(SyncUpDetail.Action)
-      case record(RecordMeeting.Action)
-    }
-
-    var body: some Reducer<State, Action> {
-      Scope(state: \.detail, action: \.detail) {
-        SyncUpDetail()
-      }
-      Scope(state: \.record, action: \.record) {
-        RecordMeeting()
-      }
-    }
-  }
 }
 
 struct AppView: View {
-  let store: StoreOf<AppFeature>
+  @Bindable var store: StoreOf<AppFeature>
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
+    NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
       SyncUpsListView(
-        store: self.store.scope(state: \.syncUpsList, action: \.syncUpsList)
+        store: store.scope(state: \.syncUpsList, action: \.syncUpsList)
       )
-    } destination: {
-      switch $0 {
-      case .detail:
-        CaseLet(
-          \AppFeature.Path.State.detail,
-          action: AppFeature.Path.Action.detail,
-          then: SyncUpDetailView.init(store:)
-        )
-      case let .meeting(meeting, syncUp: syncUp):
+    } destination: { store in
+      switch store.case {
+      case let .detail(store):
+        SyncUpDetailView(store: store)
+      case let .meeting(meeting, syncUp):
         MeetingView(meeting: meeting, syncUp: syncUp)
-      case .record:
-        CaseLet(
-          \AppFeature.Path.State.record,
-          action: AppFeature.Path.Action.record,
-          then: RecordMeetingView.init(store:)
-        )
+      case let .record(store):
+        RecordMeetingView(store: store)
       }
     }
   }

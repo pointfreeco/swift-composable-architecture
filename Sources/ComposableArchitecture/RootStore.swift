@@ -78,7 +78,7 @@ public final class RootStore {
                   self?.effectCancellables[uuid] = nil
                 },
                 receiveValue: { [weak self] effectAction in
-                  guard let self = self else { return }
+                  guard let self else { return }
                   if let task = continuation.yield({
                     self.send(effectAction, originatingFrom: action)
                   }) {
@@ -101,39 +101,32 @@ public final class RootStore {
           withEscapedDependencies { continuation in
             tasks.wrappedValue.append(
               Task(priority: priority) { @MainActor in
-                #if DEBUG
-                  let isCompleted = LockIsolated(false)
-                  defer { isCompleted.setValue(true) }
-                #endif
+                let isCompleted = LockIsolated(false)
+                defer { isCompleted.setValue(true) }
                 await operation(
                   Send { effectAction in
-                    #if DEBUG
-                      if isCompleted.value {
-                        runtimeWarn(
-                          """
-                          An action was sent from a completed effect:
+                    if isCompleted.value {
+                      runtimeWarn(
+                        """
+                        An action was sent from a completed effect:
 
-                            Action:
-                              \(debugCaseOutput(effectAction))
+                          Action:
+                            \(debugCaseOutput(effectAction))
 
-                            Effect returned from:
-                              \(debugCaseOutput(action))
+                          Effect returned from:
+                            \(debugCaseOutput(action))
 
-                          Avoid sending actions using the 'send' argument from 'Effect.run' after \
-                          the effect has completed. This can happen if you escape the 'send' \
-                          argument in an unstructured context.
+                        Avoid sending actions using the 'send' argument from 'Effect.run' after \
+                        the effect has completed. This can happen if you escape the 'send' \
+                        argument in an unstructured context.
 
-                          To fix this, make sure that your 'run' closure does not return until \
-                          you're done calling 'send'.
-                          """
-                        )
-                      }
-                    #endif
-                    if let task = continuation.yield({
-                      self.send(
-                        effectAction
-                        //, originatingFrom: action
+                        To fix this, make sure that your 'run' closure does not return until \
+                        you're done calling 'send'.
+                        """
                       )
+                    }
+                    if let task = continuation.yield({
+                      self.send(effectAction, originatingFrom: action)
                     }) {
                       tasks.wrappedValue.append(task)
                     }
@@ -162,7 +155,13 @@ public final class RootStore {
         }
       }
     }
-    return open(reducer: self.reducer)
+    #if canImport(Perception)
+      return _withoutPerceptionChecking {
+        open(reducer: self.reducer)
+      }
+    #else
+      return open(reducer: self.reducer)
+    #endif
   }
 }
 
@@ -215,7 +214,7 @@ public final class RootStore {
     case let .send(action, originatingAction: nil):
       runtimeWarn(
         """
-        "ViewStore.send" was called on a non-main thread with: \(debugCaseOutput(action)) …
+        "Store.send" was called on a non-main thread with: \(debugCaseOutput(action)) …
 
         The "Store" class is not thread-safe, and so all interactions with an instance of \
         "Store" (including all of its scopes and derived view stores) must be done on the main \

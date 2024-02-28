@@ -71,7 +71,7 @@ final class AppFeatureTests: XCTestCase {
       .path(
         .element(
           id: 0,
-          action: .detail(.destination(.presented(.edit(.set(\.$syncUp, syncUp)))))
+          action: .detail(.destination(.presented(.edit(.set(\.syncUp, syncUp)))))
         )
       )
     ) {

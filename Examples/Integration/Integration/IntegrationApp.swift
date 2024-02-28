@@ -73,10 +73,73 @@ struct ContentView: View {
   @State var isBindingLocalTestCasePresented = false
   @State var isNavigationStackTestCasePresented = false
   @State var isNavigationTestCasePresented = false
+  @State var isObservableBindingLocalTestCasePresented = false
+  @State var isObservableNavigationTestCasePresented = false
 
   var body: some View {
     NavigationStack {
       List {
+        NavigationLink("iOS 17") {
+          List {
+            Section {
+              NavigationLink("Basics") {
+                Form {
+                  ObservableBasicsView(showExtraButtons: true)
+                }
+              }
+              Button("Binding local") {
+                self.isObservableBindingLocalTestCasePresented.toggle()
+              }
+              .sheet(isPresented: self.$isObservableBindingLocalTestCasePresented) {
+                ObservableBindingLocalTestCaseView()
+              }
+              NavigationLink("Enum") {
+                ObservableEnumView()
+              }
+              NavigationLink("Optional") {
+                ObservableOptionalView()
+              }
+              NavigationLink("Identified list") {
+                ObservableIdentifiedListView()
+              }
+              Button("Navigation") {
+                self.isObservableNavigationTestCasePresented = true
+              }
+              .sheet(isPresented: self.$isObservableNavigationTestCasePresented) {
+                ObservableNavigationTestCaseView()
+              }
+              NavigationLink("Siblings") {
+                ObservableSiblingFeaturesView()
+              }
+              NavigationLink("Presentation") {
+                ObservablePresentationView()
+              }
+            }
+          }
+          .navigationTitle("iOS 17")
+        }
+
+        NavigationLink("iOS 16 + 17") {
+          List {
+            NavigationLink("New containing old") {
+              NewContainsOldTestCase()
+            }
+            NavigationLink("Siblings") {
+              NewOldSiblingsView()
+            }
+            NavigationLink("New presents old") {
+              NewPresentsOldTestCase()
+            }
+            NavigationLink("Old containing new") {
+              OldContainsNewTestCase()
+            }
+            NavigationLink("Old presents new") {
+              OldPresentsNewTestCase()
+            }
+          }
+          .navigationTitle(Text("iOS 16 + 17"))
+        }
+
         NavigationLink("iOS 16") {
           List {
             Section {
@@ -213,7 +276,7 @@ struct RuntimeWarnings: View {
         .transition(.opacity.animation(.default))
       }
     }
-    .onReceive(NotificationCenter.default.publisher(for: .runtimeWarning)) { notification in
+    .onReceive(NotificationCenter.default.publisher(for: ._runtimeWarning)) { notification in
       if let message = notification.userInfo?["message"] as? String {
         self.runtimeWarnings.append(message)
       }
@@ -221,12 +284,10 @@ struct RuntimeWarnings: View {
   }
 }
 
-struct ContentView_Previews: PreviewProvider {
-  static var previews: some View {
-    ContentView()
-  }
-}
-
 extension Notification.Name {
   static let clearLogs = Self("clear-logs")
+}
+
+#Preview {
+  ContentView()
 }

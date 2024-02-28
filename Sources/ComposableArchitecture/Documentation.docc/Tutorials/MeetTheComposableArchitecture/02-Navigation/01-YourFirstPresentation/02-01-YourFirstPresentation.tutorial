@@ -22,8 +22,7 @@
         data type, and a simple reducer with a collection of contacts, and a single action for when
         the "+" button is tapped. Currently that action is not yet implemented.
         
-        > Note: We conform `State` and `Action` to the `Equatable` protocol in order to test this 
-        > feature later.
+        > Note: We conform `State` to the `Equatable` protocol in order to test this feature later.
 
         @Code(name: "ContactsFeature.swift", file: 02-01-01-code-0000.swift)
       }
@@ -50,20 +49,46 @@
         button for dismissing, and a "Save" button that when tapped should dismiss the feature
         _and_ add the contact to the list of contacts in the parent.
         
+        > Note: There is nothing to do in the `cancelButtonTapped` and `saveButtonTapped` actions
+        > right now. They will be implemented later.
+        
         @Code(name: "AddContactFeature.swift", file: 02-01-01-code-0003.swift, reset: true)
       }
       
       @Step {
-        Add a view that holds onto a ``ComposableArchitecture/Store`` of the `AddContactFeature`
-        and observes the state in order to show a text field for the contact name and send actions. 
+        Add a view that holds onto a ``ComposableArchitecture/Store`` of the `AddContactFeature`.
+        Since our view is going to have a text field, we will need to be able to derive bindings
+        from the store. To do this we use the `@Bindable` property wrapper from SwiftUI.
         
+        > Note: If you are targeting older platforms and do not have access to `@Bindable`, you can
+        > instead use `@Perception.Bindable`, which comes with the library.
+
         @Code(name: "AddContactFeature.swift", file: 02-01-01-code-0004.swift, reset: true)
+      }
+      
+      @Step {
+        Add a form to the view with a text fielid for editing the name of the contact. We can
+        use the dynamic member lookup on `$store` to describe what piece of state you want to
+        drive the binding, and then you can use the `sending` method to describe which action 
+        you want to send when the binding is written to.
+        
+        > Note: See <doc:Bindings> for more information on using bindings in the Composable 
+        Architecture.
+        
+        @Code(name: "AddContactFeature.swift", file: 02-01-01-code-0005.swift)
+      }
+      
+      @Step {
+        Add a "Save" and "Cancel" button to the view and send the corresponding actions when those
+        buttons are tapped.
+        
+        @Code(name: "AddContactFeature.swift", file: 02-01-01-code-0006.swift)
       }
       
       @Step {
         Add a preview so that we can see what the feature looks like. 
         
-        @Code(name: "AddContactFeature.swift", file: 02-01-01-code-0005.swift, reset: true) {
+        @Code(name: "AddContactFeature.swift", file: 02-01-01-code-0007.swift, reset: true) {
           @Image(source: "ch02-sub01-sec01-image-0002")
         }
       }
@@ -74,8 +99,8 @@
     @ContentAndMedia {
       Now that we have our two isolated features built, it is time to integrate them together so
       that you can navigate to the "Add Contact" screen from the contacts list screen. To do this we
-      will first integrate the features' reducers, which consists of utilizing 
-      ``ComposableArchitecture/PresentationState`` and ``ComposableArchitecture/PresentationAction``
+      will first integrate the features' reducers, which consists of utilizing
+      ``ComposableArchitecture/Presents()`` and ``ComposableArchitecture/PresentationAction``
       to integrate the domains, and the reducer operator
       ``ComposableArchitecture/Reducer/ifLet(_:action:fileID:line:)-2eczg`` to
       integrate the reducers.
@@ -91,9 +116,8 @@
       }
        
       @Step {
-        Integrate the features' states together by using the 
-        ``ComposableArchitecture/PresentationState`` property wrapper to hold onto an optional 
-        value. 
+        Integrate the features' states together by using the ``ComposableArchitecture/Presents()``
+        macro to hold onto an optional value.
         
         A `nil` value represents that the "Add Contacts" feature is not presented, and a non-`nil`
         value represents that it is presented.
@@ -182,7 +206,7 @@
         and we have a navigation title and toolbar. We need to figure out how to present a sheet
         in this view whenever the `addContact` state flips to non-`nil`.
         
-        @Code(name: "ContactsFeature.swift", file: 02-01-02-code-0008.swift, reset: true)        
+        @Code(name: "ContactsFeature.swift", file: 02-01-02-code-0008.swift, reset: true)
       }
       
       The library comes with a variety of tools that mimic SwiftUI's native navigation tools (such
@@ -190,12 +214,16 @@
       ``ComposableArchitecture/Store``s instead of bindings.
       
       @Step {
-        Use the `sheet(store:)` view modifier by scoping your store down to just the presentation 
-        domain of the `addContact` feature. When the `addContact` state becomes non-`nil`, a new
-        store will be derived focused only on the `AddContactFeature` domain, which is what you can
-        pass to the `AddContactView`.
+        Use the `@Bindable` property wrapper to derive a binding to a store, which can be scoped
+        down to just the presentation domain of the `addContact` feature, and passed to the
+        `sheet(item:)` view modifier. When the `addContact` state becomes non-`nil`, a new store
+        will be derived focused only on the `AddContactFeature` domain, which is what you can pass
+        to the `AddContactView`.
         
-        @Code(name: "ContactsFeature.swift", file: 02-01-02-code-0009.swift)        
+        > Note: If you are targeting older platforms and do not have access to `@Bindable`, you can
+        > instead use `@Perception.Bindable``, which comes with the library.
+        
+        @Code(name: "ContactsFeature.swift", file: 02-01-02-code-0009.swift)
       }
       
       @Step {

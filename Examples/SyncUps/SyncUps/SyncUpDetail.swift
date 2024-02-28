@@ -3,8 +3,21 @@ import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
+  @Reducer(state: .equatable)
+  enum Destination {
+    case alert(AlertState<Alert>)
+    case edit(SyncUpForm)
+
+    enum Alert {
+      case confirmDeletion
+      case continueWithoutRecording
+      case openSettings
+    }
+  }
+
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var destination: Destination.State?
+    @Presents var destination: Destination.State?
     var syncUp: SyncUp
   }
 
@@ -29,31 +42,6 @@ struct SyncUpDetail {
   @Dependency(\.dismiss) var dismiss
   @Dependency(\.openSettings) var openSettings
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
-
-  @Reducer
-  struct Destination {
-    enum State: Equatable {
-      case alert(AlertState<Action.Alert>)
-      case edit(SyncUpForm.State)
-    }
-
-    enum Action: Sendable {
-      case alert(Alert)
-      case edit(SyncUpForm.Action)
-
-      enum Alert {
-        case confirmDeletion
-        case continueWithoutRecording
-        case openSettings
-      }
-    }
-
-    var body: some ReducerOf<Self> {
-      Scope(state: \.edit, action: \.edit) {
-        SyncUpForm()
-      }
-    }
-  }
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -120,9 +108,7 @@ struct SyncUpDetail {
         }
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
     .onChange(of: \.syncUp) { oldValue, newValue in
       Reduce { state, action in
         .send(.delegate(.syncUpUpdated(newValue)))
@@ -132,114 +118,103 @@ struct SyncUpDetail {
 }
 
 struct SyncUpDetailView: View {
-  let store: StoreOf<SyncUpDetail>
-
-  struct ViewState: Equatable {
-    let syncUp: SyncUp
-    init(state: SyncUpDetail.State) {
-      self.syncUp = state.syncUp
-    }
-  }
+  @Bindable var store: StoreOf<SyncUpDetail>
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      List {
-        Section {
-          Button {
-            viewStore.send(.startMeetingButtonTapped)
-          } label: {
-            Label("Start Meeting", systemImage: "timer")
-              .font(.headline)
-              .foregroundColor(.accentColor)
-          }
-          HStack {
-            Label("Length", systemImage: "clock")
-            Spacer()
-            Text(viewStore.syncUp.duration.formatted(.units()))
-          }
+    Form {
+      Section {
+        Button {
+          store.send(.startMeetingButtonTapped)
+        } label: {
+          Label("Start Meeting", systemImage: "timer")
+            .font(.headline)
+            .foregroundColor(.accentColor)
+        }
+        HStack {
+          Label("Length", systemImage: "clock")
+          Spacer()
+          Text(store.syncUp.duration.formatted(.units()))
+        }
 
-          HStack {
-            Label("Theme", systemImage: "paintpalette")
-            Spacer()
-            Text(viewStore.syncUp.theme.name)
-              .padding(4)
-              .foregroundColor(viewStore.syncUp.theme.accentColor)
-              .background(viewStore.syncUp.theme.mainColor)
-              .cornerRadius(4)
+        HStack {
+          Label("Theme", systemImage: "paintpalette")
+          Spacer()
+          Text(store.syncUp.theme.name)
+            .padding(4)
+            .foregroundColor(store.syncUp.theme.accentColor)
+            .background(store.syncUp.theme.mainColor)
+            .cornerRadius(4)
+        }
+      } header: {
+        Text("Sync-up Info")
+      }
+
+      if !store.syncUp.meetings.isEmpty {
+        Section {
+          ForEach(store.syncUp.meetings) { meeting in
+            NavigationLink(
+              state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
+            ) {
+              HStack {
+                Image(systemName: "calendar")
+                Text(meeting.date, style: .date)
+                Text(meeting.date, style: .time)
+              }
+            }
+          }
+          .onDelete { indices in
+            store.send(.deleteMeetings(atOffsets: indices))
           }
         } header: {
-          Text("Sync-up Info")
-        }
-
-        if !viewStore.syncUp.meetings.isEmpty {
-          Section {
-            ForEach(viewStore.syncUp.meetings) { meeting in
-              NavigationLink(
-                state: AppFeature.Path.State.meeting(meeting, syncUp: viewStore.syncUp)
-              ) {
-                HStack {
-                  Image(systemName: "calendar")
-                  Text(meeting.date, style: .date)
-                  Text(meeting.date, style: .time)
-                }
-              }
-            }
-            .onDelete { indices in
-              viewStore.send(.deleteMeetings(atOffsets: indices))
-            }
-          } header: {
-            Text("Past meetings")
-          }
-        }
-
-        Section {
-          ForEach(viewStore.syncUp.attendees) { attendee in
-            Label(attendee.name, systemImage: "person")
-          }
-        } header: {
-          Text("Attendees")
-        }
-
-        Section {
-          Button("Delete") {
-            viewStore.send(.deleteButtonTapped)
-          }
-          .foregroundColor(.red)
-          .frame(maxWidth: .infinity)
+          Text("Past meetings")
         }
       }
-      .navigationTitle(viewStore.syncUp.title)
-      .toolbar {
-        Button("Edit") {
-          viewStore.send(.editButtonTapped)
+
+      Section {
+        ForEach(store.syncUp.attendees) { attendee in
+          Label(attendee.name, systemImage: "person")
         }
+      } header: {
+        Text("Attendees")
       }
-      .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
-      .sheet(
-        store: self.store.scope(state: \.$destination.edit, action: \.destination.edit)
-      ) { store in
-        NavigationStack {
-          SyncUpFormView(store: store)
-            .navigationTitle(viewStore.syncUp.title)
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                  viewStore.send(.cancelEditButtonTapped)
-                }
-              }
-              ToolbarItem(placement: .confirmationAction) {
-                Button("Done") {
-                  viewStore.send(.doneEditingButtonTapped)
-                }
+
+      Section {
+        Button("Delete") {
+          store.send(.deleteButtonTapped)
+        }
+        .foregroundColor(.red)
+        .frame(maxWidth: .infinity)
+      }
+    }
+    .toolbar {
+      Button("Edit") {
+        store.send(.editButtonTapped)
+      }
+    }
+    .navigationTitle(store.syncUp.title)
+    .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
+    .sheet(item: $store.scope(state: \.destination?.edit, action: \.destination.edit)) { store in
+      NavigationStack {
+        SyncUpFormView(store: store)
+          .navigationTitle(self.store.syncUp.title)
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Cancel") {
+                self.store.send(.cancelEditButtonTapped)
               }
             }
-        }
+            ToolbarItem(placement: .confirmationAction) {
+              Button("Done") {
+                self.store.send(.doneEditingButtonTapped)
+              }
+            }
+          }
       }
     }
   }
 }
 
-extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
+extension AlertState where Action == SyncUpDetail.Destination.Alert {
   static let deleteSyncUp = Self {
     TextState("Delete?")
   } actions: {
@@ -292,14 +267,12 @@ extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
   }
 }
 
-struct SyncUpDetail_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      SyncUpDetailView(
-        store: Store(initialState: SyncUpDetail.State(syncUp: .mock)) {
-          SyncUpDetail()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    SyncUpDetailView(
+      store: Store(initialState: SyncUpDetail.State(syncUp: .mock)) {
+        SyncUpDetail()
+      }
+    )
   }
 }

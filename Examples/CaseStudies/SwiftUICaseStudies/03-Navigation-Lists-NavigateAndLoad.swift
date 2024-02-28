@@ -8,8 +8,6 @@ private let readMe = """
   and fires off an effect that will load this state a second later.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct NavigateAndLoadList {
   struct State: Equatable {
@@ -71,12 +69,8 @@ struct NavigateAndLoadList {
   }
 }
 
-// MARK: - Feature view
-
 struct NavigateAndLoadListView: View {
-  @State var store = Store(initialState: NavigateAndLoadList.State()) {
-    NavigateAndLoadList()
-  }
+  @Bindable var store: StoreOf<NavigateAndLoadList>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -106,25 +100,21 @@ struct NavigateAndLoadListView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct NavigateAndLoadListView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      NavigateAndLoadListView(
-        store: Store(
-          initialState: NavigateAndLoadList.State(
-            rows: [
-              NavigateAndLoadList.State.Row(count: 1, id: UUID()),
-              NavigateAndLoadList.State.Row(count: 42, id: UUID()),
-              NavigateAndLoadList.State.Row(count: 100, id: UUID()),
-            ]
-          )
-        ) {
-          NavigateAndLoadList()
-        }
-      )
-    }
-    .navigationViewStyle(.stack)
+#Preview {
+  NavigationView {
+    NavigateAndLoadListView(
+      store: Store(
+        initialState: NavigateAndLoadList.State(
+          rows: [
+            NavigateAndLoadList.State.Row(count: 1, id: UUID()),
+            NavigateAndLoadList.State.Row(count: 42, id: UUID()),
+            NavigateAndLoadList.State.Row(count: 100, id: UUID()),
+          ]
+        )
+      ) {
+        NavigateAndLoadList()
+      }
+    )
   }
+  .navigationViewStyle(.stack)
 }

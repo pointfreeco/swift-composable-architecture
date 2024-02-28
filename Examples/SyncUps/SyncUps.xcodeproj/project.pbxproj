@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CA0934B62A12A9680020DEF5 /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = CA0934B52A12A9680020DEF5 /* SwiftUINavigation */; };
+		CA14FF052B361C7400104A70 /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = CA14FF042B361C7400104A70 /* SwiftUINavigation */; };
 		DC7CE4E729E9E6E4006B6263 /* ding.wav in Resources */ = {isa = PBXBuildFile; fileRef = DC7CE4E629E9E6E4006B6263 /* ding.wav */; };
 		DC808D7329E9C3AC0072B4A9 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D7229E9C3AC0072B4A9 /* App.swift */; };
 		DC808D7729E9C3AD0072B4A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC808D7629E9C3AD0072B4A9 /* Assets.xcassets */; };
@@ -82,7 +82,7 @@
 			files = (
 				DC808DB629E9C58F0072B4A9 /* Tagged in Frameworks */,
 				DC808DA329E9C4490072B4A9 /* ComposableArchitecture in Frameworks */,
-				CA0934B62A12A9680020DEF5 /* SwiftUINavigation in Frameworks */,
+				CA14FF052B361C7400104A70 /* SwiftUINavigation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,7 +208,7 @@
 			packageProductDependencies = (
 				DC808DA229E9C4490072B4A9 /* ComposableArchitecture */,
 				DC808DB529E9C58F0072B4A9 /* Tagged */,
-				CA0934B52A12A9680020DEF5 /* SwiftUINavigation */,
+				CA14FF042B361C7400104A70 /* SwiftUINavigation */,
 			);
 			productName = SyncUps;
 			productReference = DC808D6F29E9C3AC0072B4A9 /* SyncUps.app */;
@@ -258,7 +258,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1430;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 1520;
 				TargetAttributes = {
 					DC808D6E29E9C3AC0072B4A9 = {
 						CreatedOnToolsVersion = 14.3;
@@ -284,7 +284,7 @@
 			mainGroup = DC808D6629E9C3AC0072B4A9;
 			packageReferences = (
 				DC808DB429E9C58F0072B4A9 /* XCRemoteSwiftPackageReference "swift-tagged" */,
-				CA0934B42A12A9680020DEF5 /* XCRemoteSwiftPackageReference "swiftui-navigation" */,
+				CA14FF032B361C7400104A70 /* XCRemoteSwiftPackageReference "swiftui-navigation" */,
 			);
 			productRefGroup = DC808D7029E9C3AC0072B4A9 /* Products */;
 			projectDirPath = "";
@@ -414,6 +414,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -428,7 +429,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -475,6 +475,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -483,7 +484,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -561,7 +561,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = VFRXY8HC3H;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.SyncUpsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -581,7 +580,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = VFRXY8HC3H;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.SyncUpsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -670,12 +668,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		CA0934B42A12A9680020DEF5 /* XCRemoteSwiftPackageReference "swiftui-navigation" */ = {
+		CA14FF032B361C7400104A70 /* XCRemoteSwiftPackageReference "swiftui-navigation" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swiftui-navigation.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.0;
+				minimumVersion = 1.2.0;
 			};
 		};
 		DC808DB429E9C58F0072B4A9 /* XCRemoteSwiftPackageReference "swift-tagged" */ = {
@@ -689,9 +687,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		CA0934B52A12A9680020DEF5 /* SwiftUINavigation */ = {
+		CA14FF042B361C7400104A70 /* SwiftUINavigation */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = CA0934B42A12A9680020DEF5 /* XCRemoteSwiftPackageReference "swiftui-navigation" */;
+			package = CA14FF032B361C7400104A70 /* XCRemoteSwiftPackageReference "swiftui-navigation" */;
 			productName = SwiftUINavigation;
 		};
 		DC808DA229E9C4490072B4A9 /* ComposableArchitecture */ = {

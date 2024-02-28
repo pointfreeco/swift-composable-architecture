@@ -9,11 +9,11 @@ final class ContactsFeatureTests: XCTestCase {
     let store = TestStore(initialState: ContactsFeature.State()) {
       ContactsFeature()
     }
-
+    
     await store.send(.addButtonTapped) {
       $0.destination = .addContact(
         AddContactFeature.State(
-          Contact(id: ???, name: "")
+          contact: Contact(id: ???, name: "")
         )
       )
     }

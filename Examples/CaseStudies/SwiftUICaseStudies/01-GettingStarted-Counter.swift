@@ -9,10 +9,9 @@ private let readMe = """
   state of the application and any actions that can affect that state or the outside world.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct Counter {
+  @ObservableState
   struct State: Equatable {
     var count = 0
   }
@@ -36,37 +35,31 @@ struct Counter {
   }
 }
 
-// MARK: - Feature view
-
 struct CounterView: View {
   let store: StoreOf<Counter>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      HStack {
-        Button {
-          viewStore.send(.decrementButtonTapped)
-        } label: {
-          Image(systemName: "minus")
-        }
+    HStack {
+      Button {
+        store.send(.decrementButtonTapped)
+      } label: {
+        Image(systemName: "minus")
+      }
 
-        Text("\(viewStore.count)")
-          .monospacedDigit()
+      Text("\(store.count)")
+        .monospacedDigit()
 
-        Button {
-          viewStore.send(.incrementButtonTapped)
-        } label: {
-          Image(systemName: "plus")
-        }
+      Button {
+        store.send(.incrementButtonTapped)
+      } label: {
+        Image(systemName: "plus")
       }
     }
   }
 }
 
 struct CounterDemoView: View {
-  @State var store = Store(initialState: Counter.State()) {
-    Counter()
-  }
+  let store: StoreOf<Counter>
 
   var body: some View {
     Form {
@@ -75,7 +68,7 @@ struct CounterDemoView: View {
       }
 
       Section {
-        CounterView(store: self.store)
+        CounterView(store: store)
           .frame(maxWidth: .infinity)
       }
     }
@@ -84,16 +77,12 @@ struct CounterDemoView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct CounterView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      CounterDemoView(
-        store: Store(initialState: Counter.State()) {
-          Counter()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    CounterDemoView(
+      store: Store(initialState: Counter.State()) {
+        Counter()
+      }
+    )
   }
 }

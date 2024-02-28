@@ -15,6 +15,7 @@
 - ``cancellable(id:cancelInFlight:)``
 - ``cancel(id:)``
 - ``withTaskCancellation(id:cancelInFlight:operation:)``
+- ``_Concurrency/Task/cancel(id:)``
 
 ### Composition
 

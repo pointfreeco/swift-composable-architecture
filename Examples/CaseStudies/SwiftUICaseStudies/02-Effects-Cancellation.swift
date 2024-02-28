@@ -12,10 +12,9 @@ private let readMe = """
   request is in-flight will also cancel it.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct EffectsCancellation {
+  @ObservableState
   struct State: Equatable {
     var count = 0
     var currentFact: String?
@@ -67,70 +66,57 @@ struct EffectsCancellation {
   }
 }
 
-// MARK: - Feature view
-
 struct EffectsCancellationView: View {
-  @State var store = Store(initialState: EffectsCancellation.State()) {
-    EffectsCancellation()
-  }
+  @Bindable var store: StoreOf<EffectsCancellation>
   @Environment(\.openURL) var openURL
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
+
+      Section {
+        Stepper("\(store.count)", value: $store.count.sending(\.stepperChanged))
+
+        if store.isFactRequestInFlight {
+          HStack {
+            Button("Cancel") { store.send(.cancelButtonTapped) }
+            Spacer()
+            ProgressView()
+              // NB: There seems to be a bug in SwiftUI where the progress view does not show
+              // a second time unless it is given a new identity.
+              .id(UUID())
+          }
+        } else {
+          Button("Number fact") { store.send(.factButtonTapped) }
+            .disabled(store.isFactRequestInFlight)
         }
 
-        Section {
-          Stepper(
-            "\(viewStore.count)",
-            value: viewStore.binding(get: \.count, send: { .stepperChanged($0) })
-          )
-
-          if viewStore.isFactRequestInFlight {
-            HStack {
-              Button("Cancel") { viewStore.send(.cancelButtonTapped) }
-              Spacer()
-              ProgressView()
-                // NB: There seems to be a bug in SwiftUI where the progress view does not show
-                // a second time unless it is given a new identity.
-                .id(UUID())
-            }
-          } else {
-            Button("Number fact") { viewStore.send(.factButtonTapped) }
-              .disabled(viewStore.isFactRequestInFlight)
-          }
-
-          viewStore.currentFact.map {
-            Text($0).padding(.vertical, 8)
-          }
-        }
-
-        Section {
-          Button("Number facts provided by numbersapi.com") {
-            self.openURL(URL(string: "http://numbersapi.com")!)
-          }
-          .foregroundStyle(.secondary)
-          .frame(maxWidth: .infinity)
+        if let fact = store.currentFact {
+          Text(fact).padding(.vertical, 8)
         }
       }
-      .buttonStyle(.borderless)
+
+      Section {
+        Button("Number facts provided by numbersapi.com") {
+          self.openURL(URL(string: "http://numbersapi.com")!)
+        }
+        .foregroundStyle(.secondary)
+        .frame(maxWidth: .infinity)
+      }
     }
+    .buttonStyle(.borderless)
     .navigationTitle("Effect cancellation")
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct EffectsCancellation_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      EffectsCancellationView(
-        store: Store(initialState: EffectsCancellation.State()) {
-          EffectsCancellation()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    EffectsCancellationView(
+      store: Store(initialState: EffectsCancellation.State()) {
+        EffectsCancellation()
+      }
+    )
   }
 }

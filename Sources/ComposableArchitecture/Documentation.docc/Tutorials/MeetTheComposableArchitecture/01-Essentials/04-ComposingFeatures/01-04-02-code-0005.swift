@@ -1,8 +1,9 @@
 import ComposableArchitecture
 import XCTest
 
-class AppFeatureTests: XCTestCase {
-  func testIncrementInFirstTab() {
-  
+@MainActor
+final class AppFeatureTests: XCTestCase {
+  func testIncrementInFirstTab() async {
+    
   }
 }

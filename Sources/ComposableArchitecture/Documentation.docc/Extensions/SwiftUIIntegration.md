@@ -9,33 +9,28 @@ designed with SwiftUI in mind, and comes with many powerful tools to integrate i
 
 ## Topics
 
-### View containers
+### Alerts and dialogs
 
-- ``WithViewStore``
-- ``IfLetStore``
-- ``ForEachStore``
-- ``SwitchStore``
-- ``NavigationStackStore``
+- ``SwiftUI/View/alert(_:)``
+- ``SwiftUI/View/confirmationDialog(_:)``
+- ``_EphemeralState``
+
+### Presentation
+
+- ``SwiftUI/Binding/scope(state:action:)-4mj4d``
+
+### Navigation stacks and links
+
+- ``SwiftUI/Binding/scope(state:action:)-35r82``
+- ``SwiftUI/NavigationStack/init(path:root:destination:)``
+- ``SwiftUI/NavigationLink/init(state:label:fileID:line:)``
 
 ### Bindings
 
 - <doc:Bindings>
-- ``ViewStore/binding(get:send:)-65xes``
-- ``BindingState``
 - ``BindableAction``
 - ``BindingAction``
 - ``BindingReducer``
-- ``BindingViewState``
-- ``BindingViewStore``
-
-### View Modifiers
-
-- ``SwiftUI/View/alert(store:)``
-- ``SwiftUI/View/confirmationDialog(store:)``
-- ``SwiftUI/View/fullScreenCover(store:onDismiss:content:)``
-- ``SwiftUI/View/navigationDestination(store:destination:)``
-- ``SwiftUI/View/popover(store:attachmentAnchor:arrowEdge:content:)``
-- ``SwiftUI/View/sheet(store:onDismiss:content:)``
 
 ### Deprecations
 

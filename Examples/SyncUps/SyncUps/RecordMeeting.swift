@@ -4,8 +4,9 @@ import SwiftUI
 
 @Reducer
 struct RecordMeeting {
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Action.Alert>?
+    @Presents var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
     var syncUp: SyncUp
@@ -147,60 +148,45 @@ struct RecordMeeting {
 }
 
 struct RecordMeetingView: View {
-  let store: StoreOf<RecordMeeting>
-
-  struct ViewState: Equatable {
-    let durationRemaining: Duration
-    let secondsElapsed: Int
-    let speakerIndex: Int
-    let syncUp: SyncUp
-    init(state: RecordMeeting.State) {
-      self.durationRemaining = state.durationRemaining
-      self.secondsElapsed = state.secondsElapsed
-      self.syncUp = state.syncUp
-      self.speakerIndex = state.speakerIndex
-    }
-  }
+  @Bindable var store: StoreOf<RecordMeeting>
 
   var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in
-      ZStack {
-        RoundedRectangle(cornerRadius: 16)
-          .fill(viewStore.syncUp.theme.mainColor)
+    ZStack {
+      RoundedRectangle(cornerRadius: 16)
+        .fill(store.syncUp.theme.mainColor)
 
-        VStack {
-          MeetingHeaderView(
-            secondsElapsed: viewStore.secondsElapsed,
-            durationRemaining: viewStore.durationRemaining,
-            theme: viewStore.syncUp.theme
-          )
-          MeetingTimerView(
-            syncUp: viewStore.syncUp,
-            speakerIndex: viewStore.speakerIndex
-          )
-          MeetingFooterView(
-            syncUp: viewStore.syncUp,
-            nextButtonTapped: {
-              viewStore.send(.nextButtonTapped)
-            },
-            speakerIndex: viewStore.speakerIndex
-          )
-        }
+      VStack {
+        MeetingHeaderView(
+          secondsElapsed: store.secondsElapsed,
+          durationRemaining: store.durationRemaining,
+          theme: store.syncUp.theme
+        )
+        MeetingTimerView(
+          syncUp: store.syncUp,
+          speakerIndex: store.speakerIndex
+        )
+        MeetingFooterView(
+          syncUp: store.syncUp,
+          nextButtonTapped: {
+            store.send(.nextButtonTapped)
+          },
+          speakerIndex: store.speakerIndex
+        )
       }
-      .padding()
-      .foregroundColor(viewStore.syncUp.theme.accentColor)
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("End meeting") {
-            viewStore.send(.endMeetingButtonTapped)
-          }
-        }
-      }
-      .navigationBarBackButtonHidden(true)
-      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
-      .task { await viewStore.send(.onTask).finish() }
     }
+    .padding()
+    .foregroundColor(store.syncUp.theme.accentColor)
+    .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .cancellationAction) {
+        Button("End meeting") {
+          store.send(.endMeetingButtonTapped)
+        }
+      }
+    }
+    .navigationBarBackButtonHidden(true)
+    .alert($store.scope(state: \.alert, action: \.alert))
+    .task { await store.send(.onTask).finish() }
   }
 }
 
@@ -392,14 +378,12 @@ struct MeetingFooterView: View {
   }
 }
 
-struct RecordMeeting_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      RecordMeetingView(
-        store: Store(initialState: RecordMeeting.State(syncUp: .mock)) {
-          RecordMeeting()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    RecordMeetingView(
+      store: Store(initialState: RecordMeeting.State(syncUp: .mock)) {
+        RecordMeeting()
+      }
+    )
   }
 }

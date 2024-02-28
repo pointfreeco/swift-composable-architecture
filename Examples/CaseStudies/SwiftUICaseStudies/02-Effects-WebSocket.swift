@@ -9,12 +9,11 @@ private let readMe = """
   message. The socket server should immediately reply with the exact message you sent in.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct WebSocket {
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Action.Alert>?
+    @Presents var alert: AlertState<Action.Alert>?
     var connectivityState = ConnectivityState.disconnected
     var messageToSend = ""
     var receivedMessages: [String] = []
@@ -137,64 +136,56 @@ struct WebSocket {
   }
 }
 
-// MARK: - Feature view
-
 struct WebSocketView: View {
-  @State var store = Store(initialState: WebSocket.State()) {
-    WebSocket()
-  }
+  @Bindable var store: StoreOf<WebSocket>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
 
-        Section {
-          VStack(alignment: .leading) {
-            Button(
-              viewStore.connectivityState == .connected
-                ? "Disconnect"
-                : viewStore.connectivityState == .disconnected
-                  ? "Connect"
-                  : "Connecting..."
-            ) {
-              viewStore.send(.connectButtonTapped)
+      Section {
+        VStack(alignment: .leading) {
+          Button(
+            store.connectivityState == .connected
+              ? "Disconnect"
+              : store.connectivityState == .disconnected
+                ? "Connect"
+                : "Connecting..."
+          ) {
+            store.send(.connectButtonTapped)
+          }
+          .buttonStyle(.bordered)
+          .tint(store.connectivityState == .connected ? .red : .green)
+
+          HStack {
+            TextField(
+              "Type message here",
+              text: $store.messageToSend.sending(\.messageToSendChanged)
+            )
+            .textFieldStyle(.roundedBorder)
+
+            Button("Send") {
+              store.send(.sendButtonTapped)
             }
-            .buttonStyle(.bordered)
-            .tint(viewStore.connectivityState == .connected ? .red : .green)
-
-            HStack {
-              TextField(
-                "Type message here",
-                text: viewStore.binding(get: \.messageToSend, send: { .messageToSendChanged($0) })
-              )
-              .textFieldStyle(.roundedBorder)
-
-              Button("Send") {
-                viewStore.send(.sendButtonTapped)
-              }
-              .buttonStyle(.borderless)
-            }
+            .buttonStyle(.borderless)
           }
         }
-
-        Section {
-          Text("Status: \(viewStore.connectivityState.rawValue)")
-            .foregroundStyle(.secondary)
-          Text(viewStore.receivedMessages.reversed().joined(separator: "\n"))
-        } header: {
-          Text("Received messages")
-        }
       }
-      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
-      .navigationTitle("Web Socket")
+
+      Section {
+        Text("Status: \(store.connectivityState.rawValue)")
+          .foregroundStyle(.secondary)
+        Text(store.receivedMessages.reversed().joined(separator: "\n"))
+      } header: {
+        Text("Received messages")
+      }
     }
+    .alert($store.scope(state: \.alert, action: \.alert))
+    .navigationTitle("Web Socket")
   }
 }
-
-// MARK: - WebSocketClient
 
 @DependencyClient
 struct WebSocketClient {
@@ -325,7 +316,7 @@ extension WebSocketClient: DependencyKey {
         let socket = try self.socket(id: id)
         return try await withCheckedThrowingContinuation { continuation in
           socket.sendPing { error in
-            if let error = error {
+            if let error {
               continuation.resume(throwing: error)
             } else {
               continuation.resume()
@@ -358,16 +349,12 @@ extension DependencyValues {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct WebSocketView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      WebSocketView(
-        store: Store(initialState: WebSocket.State(receivedMessages: ["Hi"])) {
-          WebSocket()
-        }
-      )
-    }
+#Preview {
+  NavigationStack {
+    WebSocketView(
+      store: Store(initialState: WebSocket.State(receivedMessages: ["Hi"])) {
+        WebSocket()
+      }
+    )
   }
 }

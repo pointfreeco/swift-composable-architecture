@@ -256,21 +256,17 @@ public struct PresentationStore<
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
     )
-    let viewStore = ViewStore(
-      store,
-      observe: { $0 },
-      removeDuplicates: {
-        toID($0) == toID($1)
-      }
-    )
+    let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
 
     self.store = store
     self.toDestinationState = toDestinationState
     self.toID = toID
     self.fromDestinationAction = fromDestinationAction
     self.destinationStore = store.scope(
-      state: { $0.wrappedValue.flatMap(toDestinationState) },
-      action: { .presented(fromDestinationAction($0)) }
+      id: nil,
+      state: ToState { $0.wrappedValue.flatMap(toDestinationState) },
+      action: { .presented(fromDestinationAction($0)) },
+      isInvalid: nil
     )
     self.content = content
     self.viewStore = viewStore
@@ -285,11 +281,12 @@ public struct PresentationStore<
             ? toID($0).map { AnyIdentifiable(Identified($0) { $0 }) }
             : nil
         },
-        compactSend: {
+        compactSend: { [weak viewStore = self.viewStore] in
           guard
+            let viewStore = viewStore,
             $0 == nil,
-            self.viewStore.wrappedValue != nil,
-            id == nil || self.toID(self.viewStore.state) == id
+            viewStore.wrappedValue != nil,
+            id == nil || self.toID(viewStore.state) == id
           else { return nil }
           return .dismiss
         }

@@ -8,10 +8,9 @@ private let readMe = """
   state and fires off an effect that will load this state a second later.
   """
 
-// MARK: - Feature domain
-
 @Reducer
 struct PresentAndLoad {
+  @ObservableState
   struct State: Equatable {
     var optionalCounter: Counter.State?
     var isSheetPresented = false
@@ -56,50 +55,35 @@ struct PresentAndLoad {
   }
 }
 
-// MARK: - Feature view
-
 struct PresentAndLoadView: View {
-  @State var store = Store(initialState: PresentAndLoad.State()) {
-    PresentAndLoad()
-  }
+  @Bindable var store: StoreOf<PresentAndLoad>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        Button("Load optional counter") {
-          viewStore.send(.setSheet(isPresented: true))
-        }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
       }
-      .sheet(
-        isPresented: viewStore.binding(
-          get: \.isSheetPresented,
-          send: { .setSheet(isPresented: $0) }
-        )
-      ) {
-        IfLetStore(self.store.scope(state: \.optionalCounter, action: \.optionalCounter)) {
-          CounterView(store: $0)
-        } else: {
-          ProgressView()
-        }
+      Button("Load optional counter") {
+        store.send(.setSheet(isPresented: true))
       }
-      .navigationTitle("Present and load")
     }
+    .sheet(isPresented: $store.isSheetPresented.sending(\.setSheet)) {
+      if let store = store.scope(state: \.optionalCounter, action: \.optionalCounter) {
+        CounterView(store: store)
+      } else {
+        ProgressView()
+      }
+    }
+    .navigationTitle("Present and load")
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct PresentAndLoadView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      PresentAndLoadView(
-        store: Store(initialState: PresentAndLoad.State()) {
-          PresentAndLoad()
-        }
-      )
-    }
+#Preview {
+  NavigationView {
+    PresentAndLoadView(
+      store: Store(initialState: PresentAndLoad.State()) {
+        PresentAndLoad()
+      }
+    )
   }
 }

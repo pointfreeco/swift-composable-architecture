@@ -7,12 +7,11 @@ final class SwitchStoreTests: BaseIntegrationTests {
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
+    app.collectionViews.buttons[TestCase.switchStore.rawValue].tap()
   }
 
   func testExample() async throws {
     self.expectRuntimeWarnings()
-
-    app.collectionViews.buttons[TestCase.switchStore.rawValue].tap()
 
     XCTAssertFalse(
       app.staticTexts

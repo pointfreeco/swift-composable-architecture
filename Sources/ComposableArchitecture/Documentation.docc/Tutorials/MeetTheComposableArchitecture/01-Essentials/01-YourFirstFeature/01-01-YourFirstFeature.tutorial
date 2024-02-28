@@ -7,10 +7,10 @@
   @Section(title: "Create a reducer") {
     @ContentAndMedia {
       The fundamental unit that features are built with in the Composable Architecture is the
-      ``ComposableArchitecture/Reducer()`` macro and ``ComposableArchitecture/Reducer`` protocol.
-      A conformance to that protocol represents the logic and behavior for a feature in your
-      application. This includes how to evolve the current state to the next state when an action is 
-      sent into the system, and how effects communicate with the outside world and feed data back 
+      ``ComposableArchitecture/Reducer()`` macro and ``ComposableArchitecture/Reducer`` protocol. A
+      conformance to that protocol represents the logic and behavior for a feature in your
+      application. This includes how to evolve the current state to the next state when an action is
+      sent into the system, and how effects communicate with the outside world and feed data back
       into the system.
       
       And most importantly, the feature's core logic and behavior can be built in full isolation
@@ -46,9 +46,13 @@
         to do its job, typically a struct. Then you will create an `Action` type that holds all 
         the actions the user can perform in the feature, typically an enum. 
         
+        Further, if your feature is to be observed by SwiftUI, which is usually the case, you must
+        annotate its state with the ``ComposableArchitecture/ObservableState()`` macro. It is the
+        Composable Architecture's version of `@Observable`, but tuned to value types.
+
         @Code(name: "CounterFeature.swift", file: 01-01-01-code-0003.swift)
       }
-      
+            
       @Step {
         For the purpose of a simple counter feature, the state consists of just a single integer,
         the current count, and the actions consist of tapping buttons to either increment or 
@@ -100,16 +104,15 @@
   @Section(title: "Integrating with SwiftUI") {
     @ContentAndMedia {
       Now that we have a simple feature built as a reducer, we need to figure out how to power a 
-      SwiftUI view from that feature. This involves two new concepts: 
-      ``ComposableArchitecture/Store``, which represents the runtime of the feature, and 
-      ``ComposableArchitecture/ViewStore``, which represents the observation of the runtime.
+      SwiftUI view from that feature. This involves a new concept, the
+      ``ComposableArchitecture/Store``, which represents the runtime of the feature.
     }
     @Steps {
       @Step {
         It is our personal preference to keep the reducer and view in the same file until it is
         untenable, but others prefer to split the types into their own files. For this tutorial
         we will continue putting everything in CounterFeature.swift, and we will now import SwiftUI
-        and get a basic view into place:
+        and get a basic view into place.
         
         @Code(name: "CounterFeature.swift", file: 01-01-02-code-0001.swift)
       }
@@ -120,7 +123,8 @@
         of your feature. That is, it is the object that can process actions in order to update
         state, and it can execute effects and feed data from those effects back into the system.
         
-        > Tip: The store can be held onto as a `let`. It does not need to be observed by the view.
+        > Tip: The store can be held onto as a `let`. Observation of the data in the store happens
+        > automatically with the ``ComposableArchitecture/ObservableState()`` macro.
         
         @Code(name: "CounterFeature.swift", file: 01-01-02-code-0002.swift)
       }
@@ -128,11 +132,7 @@
       @Step {
         Next, we can implement some basic view hierarchy for displaying the count and providing 
         buttons for incrementing and decrementing. 
-        
-        > Note: You cannot read state from a ``ComposableArchitecture/Store`` directly, nor can you 
-        send actions to it directly. So, for now we will provide stubs for that behavior, but once
-        a ``ComposableArchitecture/ViewStore`` is added we can provide the real implementations.
-        
+
         @Code(name: "CounterFeature.swift", file: 01-01-02-code-0003.swift) {
           @Image(
             source: "01-02-image-0003.png", 
@@ -141,22 +141,14 @@
         }
       }
       
-      With some basic view scaffolding in place we can now start actually observing state in the
-      `store`. This is done by constructing a ``ComposableArchitecture/ViewStore``, and for 
-      SwiftUI views there is a convenience view called a ``ComposableArchitecture/WithViewStore``
-      that provides a lightweight syntax for constructing a view store.
+      With some basic view scaffolding in place we can now start actually reading state from, and
+      sending actions to, the `store`.
       
       @Step {  
-        View stores require that `State` be `Equatable`, so we must do that first. Once the view 
-        store is constructed we can access the feature's state and send it actions when the user 
-        taps on buttons.
-        
-        > Tip: Currently we are observing _all_ state in the store by using `observe: { $0 }`, 
-        > but typically features hold onto a lot more state than what is needed in the view. See
-        > our article <doc:Performance> for more information on how to best observe only the bare
-        > essentials a view needs to do its job.
-        
-        @Code(name: "CounterFeature.swift", file: 01-01-02-code-0004.swift, previousFile: 01-01-02-code-0004-previous.swift)
+        We can read read a property of state directly from the `store` via dynamic member lookup,
+        and we can send actions to the `store` via ``ComposableArchitecture/Store/send(_:)``.
+
+        @Code(name: "CounterFeature.swift", file: 01-01-02-code-0004.swift)
       }
       
       @Step {
@@ -235,18 +227,17 @@
       }
       
       We can demonstrate another super power of the Composable Architecture. Reducers have a
-      method called ``ComposableArchitecture/Reducer/_printChanges(_:)`` that is similar
-      to a tool that SwiftUI provides. When used it will print every action that the reducer
-      processes to the console, and it will print how the state changed after processing the 
-      action. The method will also go through great lengths to collapse the state difference to a 
-      compact form. This includes not displaying nested state if it hasn't changed, and not showing 
-      elements in collections that haven't changed.
+      method called `_printChanges` that is similar to a tool that SwiftUI provides. When used it 
+      will print every action that the reducer processes to the console, and it will print how the
+      state changed after processing the  action. The method will also go through great lengths to
+      collapse the state difference to a compact form. This includes not displaying nested state if
+      it hasn't changed, and not showing elements in collections that haven't changed.
       
       @Step {
         Update the entry point of the application to invoke
-        ``ComposableArchitecture/Reducer/_printChanges(_:)`` on the reducer.
+        `_printChanges(_:)` on the reducer.
         
-        @Code(name: "App.swift", file: 01-01-03-code-0004.swift)  
+        @Code(name: "App.swift", file: 01-01-03-code-0004.swift)
       }
       @Step {
         Now when you run the application in the simulator and tap the "+" and "-" buttons a few

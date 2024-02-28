@@ -1,10 +1,9 @@
-import Combine
 import ComposableArchitecture
-import SwiftUI
 import UIKit
 
 @Reducer
 struct Counter {
+  @ObservableState
   struct State: Equatable, Identifiable {
     let id = UUID()
     var count = 0
@@ -31,7 +30,6 @@ struct Counter {
 
 final class CounterViewController: UIViewController {
   let store: StoreOf<Counter>
-  private var cancellables: Set<AnyCancellable> = []
 
   init(store: StoreOf<Counter>) {
     self.store = store
@@ -45,7 +43,7 @@ final class CounterViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    self.view.backgroundColor = .systemBackground
+    view.backgroundColor = .systemBackground
 
     let decrementButton = UIButton(type: .system)
     decrementButton.addTarget(self, action: #selector(decrementButtonTapped), for: .touchUpInside)
@@ -64,35 +62,32 @@ final class CounterViewController: UIViewController {
       incrementButton,
     ])
     rootStackView.translatesAutoresizingMaskIntoConstraints = false
-    self.view.addSubview(rootStackView)
+    view.addSubview(rootStackView)
 
     NSLayoutConstraint.activate([
-      rootStackView.centerXAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.centerXAnchor),
-      rootStackView.centerYAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.centerYAnchor),
+      rootStackView.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
+      rootStackView.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
     ])
 
-    self.store.publisher
-      .map { "\($0.count)" }
-      .assign(to: \.text, on: countLabel)
-      .store(in: &self.cancellables)
+    observe { [weak self] in
+      guard let self else { return }
+      countLabel.text = "\(store.count)"
+    }
   }
 
   @objc func decrementButtonTapped() {
-    self.store.send(.decrementButtonTapped)
+    store.send(.decrementButtonTapped)
   }
 
   @objc func incrementButtonTapped() {
-    self.store.send(.incrementButtonTapped)
+    store.send(.incrementButtonTapped)
   }
 }
 
-struct CounterViewController_Previews: PreviewProvider {
-  static var previews: some View {
-    let vc = CounterViewController(
-      store: Store(initialState: Counter.State()) {
-        Counter()
-      }
-    )
-    return UIViewRepresented(makeUIView: { _ in vc.view })
-  }
+#Preview {
+  CounterViewController(
+    store: Store(initialState: Counter.State()) {
+      Counter()
+    }
+  )
 }

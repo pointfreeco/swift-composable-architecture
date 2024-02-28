@@ -16,8 +16,6 @@ struct CircularProgressView: View {
   }
 }
 
-struct CircularProgressView_Previews: PreviewProvider {
-  static var previews: some View {
-    CircularProgressView(value: 0.3).frame(width: 44, height: 44)
-  }
+#Preview {
+  CircularProgressView(value: 0.3).frame(width: 44, height: 44)
 }

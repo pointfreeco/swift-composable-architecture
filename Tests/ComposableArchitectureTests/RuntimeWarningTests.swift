@@ -78,7 +78,7 @@
 
       let store = Store<Int, Void>(initialState: 0) {}
       await Task.detached {
-        _ = store.scope(state: { $0 }, action: { $0 })
+        _ = store.scope(state: \.self, action: \.self)
       }
       .value
     }
@@ -87,15 +87,13 @@
     func testViewStoreSendMainThread() async {
       uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
-        [
-          """
-          "ViewStore.send" was called on a non-main thread with: () …
+        $0.compactDescription == """
+          "Store.send" was called on a non-main thread with: () …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
           "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """
-        ].contains($0.compactDescription)
       }
 
       let store = Store<Int, Void>(initialState: 0) {}

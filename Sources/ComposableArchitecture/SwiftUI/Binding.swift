@@ -15,6 +15,30 @@ import SwiftUI
 /// > SwiftUI components.
 ///
 /// Read <doc:Bindings> for more information.
+@available(
+  iOS,
+  deprecated: 9999,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+@available(
+  macOS,
+  deprecated: 9999,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+@available(
+  tvOS,
+  deprecated: 9999,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+@available(
+  watchOS,
+  deprecated: 9999,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
 @propertyWrapper
 public struct BindingState<Value> {
   /// The underlying value wrapped by the binding state.
@@ -154,6 +178,17 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
 
   @dynamicMemberLookup
   public struct AllCasePaths {
+    #if canImport(Perception)
+      public subscript<Value: Equatable>(
+        dynamicMember keyPath: WritableKeyPath<Root, Value>
+      ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
+        AnyCasePath(
+          embed: { .set(keyPath, $0) },
+          extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
+        )
+      }
+    #endif
+
     public subscript<Value: Equatable>(
       dynamicMember keyPath: WritableKeyPath<Root, BindingState<Value>>
     ) -> AnyCasePath<BindingAction, Value> {
@@ -391,7 +426,12 @@ public struct BindingViewStore<State> {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Action.State == State {
-    self.store = store.scope(state: { $0 }, action: Action.binding)
+    self.store = store.scope(
+      id: nil,
+      state: ToState(\.self),
+      action: Action.binding,
+      isInvalid: nil
+    )
     #if DEBUG
       self.bindableActionType = type(of: Action.self)
       self.fileID = fileID
@@ -470,7 +510,16 @@ extension ViewStore {
     self.init(
       store,
       observe: { (_: State) in
-        toViewState(BindingViewStore(store: store.scope(state: { $0 }, action: fromViewAction)))
+        toViewState(
+          BindingViewStore(
+            store: store.scope(
+              id: nil,
+              state: ToState(\.self),
+              action: fromViewAction,
+              isInvalid: nil
+            )
+          )
+        )
       },
       send: fromViewAction,
       removeDuplicates: isDuplicate
@@ -578,7 +627,16 @@ extension WithViewStore where Content: View {
     self.init(
       store,
       observe: { (_: State) in
-        toViewState(BindingViewStore(store: store.scope(state: { $0 }, action: fromViewAction)))
+        toViewState(
+          BindingViewStore(
+            store: store.scope(
+              id: nil,
+              state: ToState(\.self),
+              action: fromViewAction,
+              isInvalid: nil
+            )
+          )
+        )
       },
       send: fromViewAction,
       removeDuplicates: isDuplicate,

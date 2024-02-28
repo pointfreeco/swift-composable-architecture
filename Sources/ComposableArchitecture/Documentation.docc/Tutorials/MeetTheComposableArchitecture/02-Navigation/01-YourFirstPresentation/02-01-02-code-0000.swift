@@ -1,5 +1,6 @@
 @Reducer
 struct ContactsFeature {
+  @ObservableState
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
   }

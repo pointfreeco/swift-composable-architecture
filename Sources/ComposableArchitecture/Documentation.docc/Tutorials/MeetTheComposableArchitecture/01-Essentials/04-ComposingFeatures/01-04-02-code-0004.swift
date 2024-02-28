@@ -2,7 +2,7 @@ import ComposableArchitecture
 
 @Reducer
 struct AppFeature {
-  struct State {
+  struct State: Equatable {
     var tab1 = CounterFeature.State()
     var tab2 = CounterFeature.State()
   }
@@ -17,7 +17,7 @@ struct AppFeature {
     Scope(state: \.tab2, action: \.tab2) {
       CounterFeature()
     }
-    Reduce { state, action in 
+    Reduce { state, action in
       // Core logic of the app feature
       return .none
     }

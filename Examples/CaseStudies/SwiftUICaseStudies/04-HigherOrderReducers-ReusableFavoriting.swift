@@ -17,8 +17,6 @@ private let readMe = """
   favorite state and rendering an alert.
   """
 
-// MARK: - Reusable favorite component
-
 struct FavoritingState<ID: Hashable & Sendable>: Equatable {
   @PresentationState var alert: AlertState<FavoritingAction.Alert>?
   let id: ID
@@ -86,8 +84,6 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
   }
 }
 
-// MARK: - Feature domain
-
 @Reducer
 struct Episode {
   struct State: Equatable, Identifiable {
@@ -115,8 +111,6 @@ struct Episode {
   }
 }
 
-// MARK: - Feature view
-
 struct EpisodeView: View {
   let store: StoreOf<Episode>
 
@@ -143,7 +137,7 @@ struct Episodes {
     case episodes(IdentifiedActionOf<Episode>)
   }
 
-  let favorite: @Sendable (UUID, Bool) async throws -> Bool
+  var favorite: @Sendable (UUID, Bool) async throws -> Bool = favoriteRequest
 
   var body: some Reducer<State, Action> {
     Reduce { state, action in
@@ -156,9 +150,7 @@ struct Episodes {
 }
 
 struct EpisodesView: View {
-  @State var store = Store(initialState: Episodes.State(episodes: .mocks)) {
-    Episodes(favorite: favorite(id:isFavorite:))
-  }
+  let store: StoreOf<Episodes>
 
   var body: some View {
     Form {
@@ -174,31 +166,13 @@ struct EpisodesView: View {
   }
 }
 
-// MARK: - SwiftUI previews
-
-struct EpisodesView_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationView {
-      EpisodesView(
-        store: Store(
-          initialState: Episodes.State(
-            episodes: .mocks
-          )
-        ) {
-          Episodes(favorite: favorite(id:isFavorite:))
-        }
-      )
-    }
-  }
-}
-
 struct FavoriteError: LocalizedError, Equatable {
   var errorDescription: String? {
     "Favoriting failed."
   }
 }
 
-@Sendable func favorite<ID>(id: ID, isFavorite: Bool) async throws -> Bool {
+@Sendable private func favoriteRequest<ID>(id: ID, isFavorite: Bool) async throws -> Bool {
   try await Task.sleep(for: .seconds(1))
   if .random(in: 0...1) > 0.25 {
     return isFavorite
@@ -216,4 +190,14 @@ extension IdentifiedArray where ID == Episode.State.ID, Element == Episode.State
     Episode.State(id: UUID(), isFavorite: false, title: "Parsers"),
     Episode.State(id: UUID(), isFavorite: false, title: "Composable Architecture"),
   ]
+}
+
+#Preview {
+  NavigationStack {
+    EpisodesView(
+      store: Store(initialState: Episodes.State()) {
+        Episodes()
+      }
+    )
+  }
 }

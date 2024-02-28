@@ -83,6 +83,26 @@ import SwiftUI
 /// }
 /// ```
 ///
+@available(
+  iOS, deprecated: 9999,
+  message:
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+)
+@available(
+  macOS, deprecated: 9999,
+  message:
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+)
+@available(
+  tvOS, deprecated: 9999,
+  message:
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+)
+@available(
+  watchOS, deprecated: 9999,
+  message:
+    "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
+)
 public struct ForEachStore<
   EachState, EachAction, Data: Collection, ID: Hashable, Content: View
 >: DynamicViewContent {
@@ -114,10 +134,14 @@ public struct ForEachStore<
     ) { viewStore in
       ForEach(viewStore.state, id: viewStore.state.id) { element in
         let id = element[keyPath: viewStore.state.id]
+        var element = element
         content(
           store.scope(
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
-            state: ToState(\.[id:id,default:SubscriptDefault(element)]),
+            state: ToState {
+              element = $0[id: id] ?? element
+              return element
+            },
             action: { .element(id: id, action: $0) },
             isInvalid: { !$0.ids.contains(id) }
           )
@@ -130,25 +154,25 @@ public struct ForEachStore<
     iOS,
     deprecated: 9999,
     message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
   )
   @available(
     macOS,
     deprecated: 9999,
     message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
   )
   @available(
     tvOS,
     deprecated: 9999,
     message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
   )
   @available(
     watchOS,
     deprecated: 9999,
     message:
-      "Use an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
+      "Use an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
   )
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
@@ -168,11 +192,15 @@ public struct ForEachStore<
       removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
     ) { viewStore in
       ForEach(viewStore.state, id: viewStore.state.id) { element in
+        var element = element
         let id = element[keyPath: viewStore.state.id]
         content(
           store.scope(
             id: store.id(state: \.[id:id]!, action: \.[id:id]),
-            state: ToState(\.[id:id,default:SubscriptDefault(element)]),
+            state: ToState {
+              element = $0[id: id] ?? element
+              return element
+            },
             action: { (id, $0) },
             isInvalid: { !$0.ids.contains(id) }
           )
@@ -183,13 +211,6 @@ public struct ForEachStore<
 
   public var body: some View {
     self.content
-  }
-}
-
-extension IdentifiedArray {
-  fileprivate subscript(id id: ID, default default: SubscriptDefault<Element>) -> Element {
-    `default`.wrappedValue = self[id: id] ?? `default`.wrappedValue
-    return `default`.wrappedValue
   }
 }
 

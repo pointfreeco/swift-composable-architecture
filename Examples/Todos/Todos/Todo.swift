@@ -3,10 +3,11 @@ import SwiftUI
 
 @Reducer
 struct Todo {
+  @ObservableState
   struct State: Equatable, Identifiable {
-    @BindingState var description = ""
+    var description = ""
     let id: UUID
-    @BindingState var isComplete = false
+    var isComplete = false
   }
 
   enum Action: BindableAction, Sendable {
@@ -19,21 +20,19 @@ struct Todo {
 }
 
 struct TodoView: View {
-  let store: StoreOf<Todo>
+  @Bindable var store: StoreOf<Todo>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      HStack {
-        Button {
-          viewStore.$isComplete.wrappedValue.toggle()
-        } label: {
-          Image(systemName: viewStore.isComplete ? "checkmark.square" : "square")
-        }
-        .buttonStyle(.plain)
-
-        TextField("Untitled Todo", text: viewStore.$description)
+    HStack {
+      Button {
+        store.isComplete.toggle()
+      } label: {
+        Image(systemName: store.isComplete ? "checkmark.square" : "square")
       }
-      .foregroundColor(viewStore.isComplete ? .gray : nil)
+      .buttonStyle(.plain)
+
+      TextField("Untitled Todo", text: $store.description)
     }
+    .foregroundColor(store.isComplete ? .gray : nil)
   }
 }

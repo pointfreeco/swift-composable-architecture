@@ -30,7 +30,7 @@ their type with `@Reducer`:
 ```
 
 No other changes to be made, and you can immediately start taking advantage of new capabilities of
-reducer composition, such as case key paths (see guides below). See the documentation of 
+reducer composition, such as case key paths (see guides below). See the documentation of
 ``Reducer()`` to see everything that macro adds to your feature's reducer.
 
 You can also technically drop the ``Reducer`` conformance:
@@ -44,7 +44,7 @@ You can also technically drop the ``Reducer`` conformance:
 ```
 
 However, there are some known issues in Xcode that cause autocomplete and type inference to break.
-See the documentation of <doc:Reducer()#Gotchas> for more gotchas on using the `@Reducer` macro. 
+See the documentation of <doc:Reducers#Gotchas> for more gotchas on using the `@Reducer` macro. 
 
 
 ### Using case key paths
@@ -147,7 +147,7 @@ store.receive(\.child.presented.response.success)
 > }
 > ```
 
-And in the case of ``PresentationAction`` you can even omit the ``PresentationAction/presented(_:)`` 
+And in the case of ``PresentationAction`` you can even omit the ``PresentationAction/presented(_:)``
 path component:
 
 ```swift

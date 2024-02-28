@@ -1,14 +1,14 @@
 @Reducer
 struct ContactsFeature {
+  @ObservableState
   struct State: Equatable {
     var contacts: IdentifiedArrayOf<Contact> = []
-    @PresentationState var destination: Destination.State?
+    @Presents var destination: Destination.State?
   }
   enum Action {
     case addButtonTapped
-    case addContact(PresentationAction<AddContactFeature.Action>)
-    case alert(PresentationAction<Alert>)
     case deleteButtonTapped(id: Contact.ID)
+    case destination(PresentationAction<Destination.Action>)
     enum Alert: Equatable {
       case confirmDeletion(id: Contact.ID)
     }
@@ -17,25 +17,21 @@ struct ContactsFeature {
     Reduce { state, action in
       switch action {
       case .addButtonTapped:
-        state.addContact = AddContactFeature.State(
-          contact: Contact(id: UUID(), name: "")
+        state.destination = .addContact(
+          AddContactFeature.State(
+            contact: Contact(id: UUID(), name: "")
+          )
         )
         return .none
-
-      case let .addContact(.presented(.delegate(.saveContact(contact)))):
+        
+      case let .destination(.presented(.addContact(.delegate(.saveContact(contact))))):
         state.contacts.append(contact)
         return .none
-
-      case .addContact:
-        return .none
-
-      case let .alert(.presented(.confirmDeletion(id: id))):
+        
+      case let .destination(.presented(.alert(.confirmDeletion(id: id)))):
         state.contacts.remove(id: id)
         return .none
-
-      case .alert:
-        return .none
-
+        
       case let .deleteButtonTapped(id: id):
         state.alert = AlertState {
           TextState("Are you sure?")

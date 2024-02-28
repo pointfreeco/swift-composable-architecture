@@ -7,214 +7,10 @@ becoming slow to execute, SwiftUI view bodies executing more often than expected
 article outlines a few common pitfalls when developing features in the library, and how to fix
 them.
 
-* [View stores](#View-stores)
 * [Sharing logic with actions](#Sharing-logic-with-actions)
 * [CPU-intensive calculations](#CPU-intensive-calculations)
 * [High-frequency actions](#High-frequency-actions)
 * [Store scoping](#Store-scoping)
-* [Compiler performance](#Compiler-performance)
-
-### View stores
-
-A common performance pitfall when using the library comes from constructing ``ViewStore``s, which
-is the object that observes changes to your feature's state. When constructed naively, using either 
-view store's initializer ``ViewStore/init(_:observe:)-3ak1y`` or the SwiftUI helper
-``WithViewStore``, it  will observe every change to state in the store:
-
-```swift
-WithViewStore(self.store, observe: { $0 }) { viewStore in 
-  // This is executed for every action sent into the system 
-  // that causes self.store.state to change. 
-}
-```
-
-Most of the time this observes far too much state. A typical feature in the Composable Architecture
-holds onto not only the state the view needs to present UI, but also state that the feature only
-needs internally, as well as state of child features embedded in the feature. Changes to the
-internal and child state should not cause the view's body to re-compute since that state is not
-needed in the view.
-
-For example, if the root of our application was a tab view, then we could model that in state as a
-struct that holds each tab's state as a property:
-
-```swift
-@Reducer
-struct AppFeature {
-  struct State {
-    var activity: Activity.State
-    var search: Search.State
-    var profile: Profile.State
-  }
-  // ...
-}
-```
-
-If the view only needs to construct the views for each tab, then no view store is even needed
-because we can pass scoped stores to each child feature view:
-
-```swift
-struct AppView: View {
-  let store: StoreOf<AppFeature>
-
-  var body: some View {
-    // No need to observe state changes because the view does
-    // not need access to the state.
-
-    TabView {
-      ActivityView(
-        store: self.store
-          .scope(state: \.activity, action: \.activity)
-      )
-      SearchView(
-        store: self.store
-          .scope(state: \.search, action: \.search)
-      )
-      ProfileView(
-        store: self.store
-          .scope(state: \.profile, action: \.profile)
-      )
-    }
-  }
-}
-```
-
-This means `AppView` does not actually need to observe any state changes. This view will only be
-created a single time, whereas if we observed the store then it would re-compute every time a single
-thing changed in either the activity, search or profile child features.
-
-If sometime in the future we do actually need some state from the store, we can start to observe
-only the bare essentials of state necessary for the view to do its job. For example, suppose that 
-we need access to the currently selected tab in state:
-
-```swift
-@Reducer
-struct AppFeature {
-  enum Tab { case activity, search, profile }
-  struct State {
-    var activity: Activity.State
-    var search: Search.State
-    var profile: Profile.State
-    var selectedTab: Tab
-  }
-  // ...
-}
-```
-
-Then we can observe this state so that we can construct a binding to `selectedTab` for the tab view:
-
-```swift
-struct AppView: View {
-  let store: StoreOf<AppFeature>
-
-  var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      TabView(
-        selection: viewStore.binding(get: \.selectedTab, send: { .tabSelected($0) })
-      ) {
-        ActivityView(
-          store: self.store.scope(state: \.activity, action: \.activity)
-        )
-        .tag(AppFeature.Tab.activity)
-        SearchView(
-          store: self.store.scope(state: \.search, action: \.search)
-        )
-        .tag(AppFeature.Tab.search)
-        ProfileView(
-          store: self.store.scope(state: \.profile, action: \.profile)
-        )
-        .tag(AppFeature.Tab.profile)
-      }
-    }
-  }
-}
-```
-
-However, this style of state observation is terribly inefficient since _every_ change to
-`AppFeature.State` will cause the view to re-compute even though the only piece of state we actually
-care about is the `selectedTab`. The reason we are observing too much state is because we use
-`observe: { $0 }` in the construction of the ``WithViewStore``, which means the view store will
-observe all of state.
-
-To chisel away at the observed state you can provide a closure for that argument that plucks out
-the state the view needs. In this case the view only needs a single field:
-
-```swift
-WithViewStore(self.store, observe: \.selectedTab) { viewStore in
-  TabView(selection: viewStore.binding(send: { .tabSelected($0) }) {
-    // ...
-  }
-}
-```
-
-In the future, the view may need access to more state. For example, suppose `Activity.State` holds
-onto an `unreadCount` integer to represent how many new activities you have. There's no need to
-observe _all_ of `Activity.State` to get access to this one field. You can observe just the one 
-field.
-
-Technically you can do this by mapping your state into a tuple, but because tuples are not 
-`Equatable` you will need to provide an explicit `removeDuplicates` argument:
-
-```swift
-WithViewStore(
-  self.store, 
-  observe: { (selectedTab: $0.selectedTab, unreadActivityCount: $0.activity.unreadCount) },
-  removeDuplicates: ==
-) { viewStore in 
-  TabView(selection: viewStore.binding(get: \.selectedTab, send: { .tabSelected($0) }) {
-    ActivityView(
-      store: self.store.scope(state: \.activity, action: \.activity)
-    )
-    .tag(AppFeature.Tab.activity)
-    .badge("\(viewStore.unreadActivityCount)")
-
-    // ...
-  }
-}
-```
-
-Alternatively, and recommended, you can introduce a lightweight, equatable `ViewState` struct
-nested inside your view whose purpose is to transform the `Store`'s full state into the bare
-essentials of what the view needs:
-
-```swift
-struct AppView: View {
-  let store: StoreOf<AppFeature>
-  
-  struct ViewState: Equatable {
-    let selectedTab: AppFeature.Tab
-    let unreadActivityCount: Int
-    init(state: AppFeature.State) {
-      self.selectedTab = state.selectedTab
-      self.unreadActivityCount = state.activity.unreadCount
-    }
-  }
-
-  var body: some View {
-    WithViewStore(self.store, observe: ViewState.init) { viewStore in 
-      TabView {
-        ActivityView(
-          store: self.store
-            .scope(state: \.activity, action: \.activity)
-        )
-        .badge("\(viewStore.unreadActivityCount)")
-
-        // ...
-      }
-    }
-  }
-}
-```
-
-This gives you maximum flexibility in the future for adding new fields to `ViewState` without making
-your view convoluted.
-
-This technique for reducing view re-computations is most effective towards the root of your app
-hierarchy and least effective towards the leaf nodes of your app. Root features tend to hold lots
-of state that its view does not need, such as child features, and leaf features tend to only hold
-what's necessary. If you are going to employ this technique you will get the most benefit by
-applying it to views closer to the root. At leaf features and views that need access to most
-of the state, it is fine to continue using `observe: { $0 }` to observe all of the state in the 
-store.
 
 ### Sharing logic with actions
 
@@ -236,6 +32,7 @@ each user action can return an effect that immediately emits that shared action:
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State { /* ... */ }
   enum Action { /* ... */ }
 
@@ -316,6 +113,7 @@ The above example can be refactored like so:
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State { /* ... */ }
   enum Action { /* ... */ }
 
@@ -553,7 +351,7 @@ Another example is scoping to some collection of a child domain in order to use 
 ``ForEachStore``:
 
 ```swift
-ForEachStore(store.scope(state: \.rows, action: \.rows) { store in
+ForEachStore(store.scope(state: \.rows, action: \.rows)) { store in
   RowView(store: store)
 }
 ```
@@ -613,54 +411,3 @@ performance. If you are using a computed property in a scope, then reconsider if
 be done along a plain, stored property and moving the computed logic into the child view. The 
 further you push the computation towards the leaf nodes of your application, the less performance
 problems you will see.
-
-### Compiler performance
-
-In very large SwiftUI applications you may experience degraded compiler performance causing long
-compile times, and possibly even compiler failures due to "complex expressions." The
-``WithViewStore``  helpers that come with the library can exacerbate that problem for very complex
-views. If you are running into issues using ``WithViewStore``, there are two options for fixing
-the problem.
-
-For example, if your view looks like this:
-
-```swift
-struct FeatureView: View {
-  let store: StoreOf<Feature>
-
-  var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      // A large, complex view inside here...
-    }
-  }
-}
-```
-
-…and you start running into compiler troubles, then you can explicitly specify the type of the
-view store in the closure:
-
-```swift
-WithViewStore(self.store, observe: { $0 }) { (viewStore: ViewStoreOf<Feature>) in
-  // A large, complex view inside here...
-}
-```
-
-Or you can refactor the view to use an `@ObservedObject`:
-
-```swift
-struct FeatureView: View {
-  let store: StoreOf<Feature>
-  @ObservedObject var viewStore: ViewStoreOf<Feature>
-
-  init(store: StoreOf<Feature>) {
-    self.store = store
-    self.viewStore = ViewStore(self.store, observe: { $0 })
-  }
-
-  var body: some View {
-    // A large, complex view inside here...
-  }
-}
-```
-
-Both of these options should greatly improve the compiler's ability to type-check your view.

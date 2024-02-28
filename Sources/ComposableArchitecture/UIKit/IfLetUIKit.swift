@@ -19,7 +19,7 @@ extension Store {
   ///   // ...
   ///   func viewDidLoad() {
   ///     // ...
-  ///     self.store
+  ///     store
   ///       .scope(state: \.optionalChild, action: \.child)
   ///       .ifLet(
   ///         then: { [weak self] childStore in
@@ -29,11 +29,11 @@ extension Store {
   ///           )
   ///         },
   ///         else: { [weak self] in
-  ///           guard let self = self else { return }
-  ///           self.navigationController?.popToViewController(self, animated: true)
+  ///           guard let self else { return }
+  ///           navigationController?.popToViewController(self, animated: true)
   ///         }
   ///       )
-  ///       .store(in: &self.cancellables)
+  ///       .store(in: &cancellables)
   ///   }
   /// }
   /// ```
@@ -49,15 +49,18 @@ extension Store {
     then unwrap: @escaping (_ store: Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void = {}
   ) -> Cancellable where State == Wrapped? {
-    self.rootStore.didSet
-      .map { self.currentState }
+    return self
+      .publisher
       .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
       .sink { state in
-        if let state = state {
+        if var state = state {
           unwrap(
             self.scope(
               id: self.id(state: \.!, action: \.self),
-              state: ToState(\.[default:SubscriptDefault(state)]),
+              state: ToState {
+                state = $0 ?? state
+                return state
+              },
               action: { $0 },
               isInvalid: { $0 == nil }
             )

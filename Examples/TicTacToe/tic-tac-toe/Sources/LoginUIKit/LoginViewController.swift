@@ -1,46 +1,14 @@
-import Combine
 import ComposableArchitecture
 import LoginCore
-import TwoFactorCore
 import TwoFactorUIKit
 import UIKit
 
+@ViewAction(for: Login.self)
 public class LoginViewController: UIViewController {
-  let store: StoreOf<Login>
-  let viewStore: ViewStore<ViewState, ViewAction>
-  private var cancellables: Set<AnyCancellable> = []
-
-  struct ViewState: Equatable {
-    let alert: AlertState<Login.Action.Alert>?
-    let email: String?
-    let isActivityIndicatorHidden: Bool
-    let isEmailTextFieldEnabled: Bool
-    let isLoginButtonEnabled: Bool
-    let isPasswordTextFieldEnabled: Bool
-    let password: String?
-
-    init(state: Login.State) {
-      self.alert = state.alert
-      self.email = state.email
-      self.isActivityIndicatorHidden = !state.isLoginRequestInFlight
-      self.isEmailTextFieldEnabled = !state.isLoginRequestInFlight
-      self.isLoginButtonEnabled = state.isFormValid && !state.isLoginRequestInFlight
-      self.isPasswordTextFieldEnabled = !state.isLoginRequestInFlight
-      self.password = state.password
-    }
-  }
-
-  enum ViewAction {
-    case alertDismissed
-    case emailChanged(String?)
-    case loginButtonTapped
-    case passwordChanged(String?)
-    case twoFactorDismissed
-  }
+  public let store: StoreOf<Login>
 
   public init(store: StoreOf<Login>) {
     self.store = store
-    self.viewStore = ViewStore(store, observe: ViewState.init, send: Login.Action.init)
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -51,8 +19,8 @@ public class LoginViewController: UIViewController {
   public override func viewDidLoad() {
     super.viewDidLoad()
 
-    self.navigationItem.title = "Login"
-    self.view.backgroundColor = .systemBackground
+    navigationItem.title = "Login"
+    view.backgroundColor = .systemBackground
 
     let disclaimerLabel = UILabel()
     disclaimerLabel.text = """
@@ -76,13 +44,15 @@ public class LoginViewController: UIViewController {
     emailTextField.borderStyle = .roundedRect
     emailTextField.autocapitalizationType = .none
     emailTextField.addTarget(
-      self, action: #selector(emailTextFieldChanged(sender:)), for: .editingChanged)
+      self, action: #selector(emailTextFieldChanged(sender:)), for: .editingChanged
+    )
 
     let passwordTextField = UITextField()
     passwordTextField.placeholder = "**********"
     passwordTextField.borderStyle = .roundedRect
     passwordTextField.addTarget(
-      self, action: #selector(passwordTextFieldChanged(sender:)), for: .editingChanged)
+      self, action: #selector(passwordTextFieldChanged(sender:)), for: .editingChanged
+    )
     passwordTextField.isSecureTextEntry = true
 
     let loginButton = UIButton(type: .system)
@@ -107,106 +77,82 @@ public class LoginViewController: UIViewController {
     rootStackView.axis = .vertical
     rootStackView.spacing = 24
 
-    self.view.addSubview(rootStackView)
+    view.addSubview(rootStackView)
 
     NSLayoutConstraint.activate([
-      rootStackView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-      rootStackView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-      rootStackView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+      rootStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      rootStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      rootStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
       divider.heightAnchor.constraint(equalToConstant: 1),
     ])
 
-    self.viewStore.publisher.isLoginButtonEnabled
-      .assign(to: \.isEnabled, on: loginButton)
-      .store(in: &self.cancellables)
+    var alertController: UIAlertController?
+    var twoFactorController: TwoFactorViewController?
 
-    self.viewStore.publisher.email
-      .assign(to: \.text, on: emailTextField)
-      .store(in: &self.cancellables)
+    observe { [weak self] in
+      guard let self else { return }
+      emailTextField.text = store.email
+      emailTextField.isEnabled = store.isEmailTextFieldEnabled
+      passwordTextField.text = store.password
+      passwordTextField.isEnabled = store.isPasswordTextFieldEnabled
+      loginButton.isEnabled = store.isLoginButtonEnabled
+      activityIndicator.isHidden = store.isActivityIndicatorHidden
 
-    self.viewStore.publisher.isEmailTextFieldEnabled
-      .assign(to: \.isEnabled, on: emailTextField)
-      .store(in: &self.cancellables)
-
-    self.viewStore.publisher.password
-      .assign(to: \.text, on: passwordTextField)
-      .store(in: &self.cancellables)
-
-    self.viewStore.publisher.isPasswordTextFieldEnabled
-      .assign(to: \.isEnabled, on: passwordTextField)
-      .store(in: &self.cancellables)
-
-    self.viewStore.publisher.isActivityIndicatorHidden
-      .assign(to: \.isHidden, on: activityIndicator)
-      .store(in: &self.cancellables)
-
-    self.viewStore.publisher.alert
-      .sink { [weak self] alert in
-        guard let self = self else { return }
-        guard let alert = alert else { return }
-
-        let alertController = UIAlertController(
-          title: String(state: alert.title), message: nil, preferredStyle: .alert)
-        alertController.addAction(
-          UIAlertAction(title: "Ok", style: .default) { _ in
-            self.viewStore.send(.alertDismissed)
-          }
-        )
-        self.present(alertController, animated: true, completion: nil)
+      if let store = store.scope(state: \.alert, action: \.alert),
+        alertController == nil
+      {
+        alertController = UIAlertController(store: store)
+        present(alertController!, animated: true, completion: nil)
+      } else if store.alert == nil, alertController != nil {
+        alertController?.dismiss(animated: true)
+        alertController = nil
       }
-      .store(in: &self.cancellables)
 
-    self.store
-      .scope(state: \.twoFactor, action: \.twoFactor.presented)
-      .ifLet(
-        then: { [weak self] twoFactorStore in
-          self?.navigationController?.pushViewController(
-            TwoFactorViewController(store: twoFactorStore),
-            animated: true
-          )
-        },
-        else: { [weak self] in
-          guard let self = self else { return }
-          self.navigationController?.popToViewController(self, animated: true)
-        }
-      )
-      .store(in: &self.cancellables)
+      if let store = store.scope(state: \.twoFactor, action: \.twoFactor.presented),
+        twoFactorController == nil
+      {
+        twoFactorController = TwoFactorViewController(store: store)
+        navigationController?.pushViewController(
+          twoFactorController!,
+          animated: true
+        )
+      } else if store.twoFactor == nil, twoFactorController != nil {
+        navigationController?.popToViewController(self, animated: true)
+        twoFactorController = nil
+      }
+    }
   }
 
   public override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
 
-    if !self.isMovingToParent {
-      self.viewStore.send(.twoFactorDismissed)
+    if !isMovingToParent {
+      store.twoFactorDismissed()
     }
   }
 
   @objc private func loginButtonTapped(sender: UIButton) {
-    self.viewStore.send(.loginButtonTapped)
+    send(.loginButtonTapped)
   }
 
   @objc private func emailTextFieldChanged(sender: UITextField) {
-    self.viewStore.send(.emailChanged(sender.text))
+    store.email = sender.text ?? ""
   }
 
   @objc private func passwordTextFieldChanged(sender: UITextField) {
-    self.viewStore.send(.passwordChanged(sender.text))
+    store.password = sender.text ?? ""
   }
 }
 
-extension Login.Action {
-  init(action: LoginViewController.ViewAction) {
-    switch action {
-    case .alertDismissed:
-      self = .alert(.dismiss)
-    case let .emailChanged(email):
-      self = .view(.set(\.$email, email ?? ""))
-    case .loginButtonTapped:
-      self = .view(.loginButtonTapped)
-    case let .passwordChanged(password):
-      self = .view(.set(\.$password, password ?? ""))
-    case .twoFactorDismissed:
-      self = .twoFactor(.dismiss)
-    }
+extension Login.State {
+  fileprivate var isActivityIndicatorHidden: Bool { !isLoginRequestInFlight }
+  fileprivate var isEmailTextFieldEnabled: Bool { !isLoginRequestInFlight }
+  fileprivate var isLoginButtonEnabled: Bool { isFormValid && !isLoginRequestInFlight }
+  fileprivate var isPasswordTextFieldEnabled: Bool { !isLoginRequestInFlight }
+}
+
+extension StoreOf<Login> {
+  fileprivate func twoFactorDismissed() {
+    send(.twoFactor(.dismiss))
   }
 }
