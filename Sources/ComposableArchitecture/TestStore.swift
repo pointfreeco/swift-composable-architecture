@@ -1969,7 +1969,7 @@ extension TestStore where State: Equatable {
     file: StaticString = #file,
     line: UInt = #line
   ) async -> TestStoreTask {
-      await self.send(action(), assert: updateStateToExpectedResult, file: file, line: line)
+    await self.send(action(), assert: updateStateToExpectedResult, file: file, line: line)
   }
 
   /// Sends an action to the store and asserts when state changes.
@@ -2008,7 +2008,7 @@ extension TestStore where State: Equatable {
     file: StaticString = #file,
     line: UInt = #line
   ) async -> TestStoreTask {
-      await self.send(action(value), assert: updateStateToExpectedResult, file: file, line: line)
+    await self.send(action(value), assert: updateStateToExpectedResult, file: file, line: line)
   }
 }
 
