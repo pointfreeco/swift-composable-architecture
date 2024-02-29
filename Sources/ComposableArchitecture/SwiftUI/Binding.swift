@@ -184,7 +184,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
       ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
         AnyCasePath(
           embed: { .set(keyPath, $0) },
-          extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
+          extract: { $0.keyPath == keyPath ? $0.value.base as? Value : nil }
         )
       }
     #endif

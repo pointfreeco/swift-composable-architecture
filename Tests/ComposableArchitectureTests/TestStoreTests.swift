@@ -604,8 +604,9 @@
       }
       await store.send(.onAppear)
       await store.receive(\.isOn)
-      XCTExpectFailure()
-      await store.receive(\.binding.isOn)
+      await store.receive(\.binding.isOn) {
+        $0.isOn = true
+      }
     }
   }
 
