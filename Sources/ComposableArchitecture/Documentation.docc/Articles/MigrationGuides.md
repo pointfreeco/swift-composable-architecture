@@ -10,10 +10,11 @@ in favor of newer ones. We recommend people update their code as quickly as poss
 APIs, and these guides contain tips to do so.
 
 > Important: Before following any particular migration guide be sure you have followed all the 
-preceeding migration guides.
+> preceding migration guides.
 
 ## Topics
 
+- <doc:MigratingTo1.9>
 - <doc:MigratingTo1.8>
 - <doc:MigratingTo1.7>
 - <doc:MigratingTo1.6>

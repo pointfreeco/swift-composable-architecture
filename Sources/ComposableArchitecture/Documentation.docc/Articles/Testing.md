@@ -452,7 +452,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 }
 
 // 1️⃣ Emulate user tapping on submit button.
-await store.send(.login(.submitButtonTapped)) {
+await store.send(\.login.submitButtonTapped) {
   // 2️⃣ Assert how all state changes in the login feature
   $0.login?.isLoading = true
   // ...
@@ -500,7 +500,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 }
 store.exhaustivity = .off  // ⬅️
 
-await store.send(.login(.submitButtonTapped))
+await store.send(\.login.submitButtonTapped)
 await store.receive(\.login.delegate.didLogin) {
   $0.selectedTab = .activity
 }
@@ -522,7 +522,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 }
 store.exhaustivity = .off(showSkippedAssertions: true)  // ⬅️
 
-await store.send(.login(.submitButtonTapped))
+await store.send(\.login.submitButtonTapped)
 await store.receive(\.login.delegate.didLogin) {
   $0.selectedTab = .activity
 }

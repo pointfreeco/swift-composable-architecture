@@ -550,5 +550,92 @@
         """
       }
     }
+
+    func testObservableState_Enum_IfConfig() {
+      assertMacro {
+        """
+        @ObservableState
+        public enum State {
+          case child(ChildFeature.State)
+          #if os(macOS)
+            case mac(MacFeature.State)
+          #elseif os(tvOS)
+            case tv(TVFeature.State)
+          #endif
+
+          #if DEBUG
+            #if INNER
+              case inner(InnerFeature.State)
+            #endif
+          #endif
+        }
+        """
+      } expansion: {
+        """
+        public enum State {
+          case child(ChildFeature.State)
+          #if os(macOS)
+            case mac(MacFeature.State)
+          #elseif os(tvOS)
+            case tv(TVFeature.State)
+          #endif
+
+          #if DEBUG
+            #if INNER
+              case inner(InnerFeature.State)
+            #endif
+          #endif
+
+          public var _$id: ComposableArchitecture.ObservableStateID {
+            switch self {
+            case let .child(state):
+              return ._$id(for: state)._$tag(0)
+            #if os(macOS)
+            case let .mac(state):
+              return ._$id(for: state)._$tag(1)
+            #elseif os(tvOS)
+            case let .tv(state):
+              return ._$id(for: state)._$tag(2)
+            #endif
+
+            #if DEBUG
+            #if INNER
+            case let .inner(state):
+              return ._$id(for: state)._$tag(3)
+            #endif
+            #endif
+
+            }
+          }
+
+          public mutating func _$willModify() {
+            switch self {
+            case var .child(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .child(state)
+            #if os(macOS)
+            case var .mac(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .mac(state)
+            #elseif os(tvOS)
+            case var .tv(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .tv(state)
+            #endif
+
+            #if DEBUG
+            #if INNER
+            case var .inner(state):
+              ComposableArchitecture._$willModify(&state)
+              self = .inner(state)
+            #endif
+            #endif
+
+            }
+          }
+        }
+        """
+      }
+    }
   }
 #endif

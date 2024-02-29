@@ -8,6 +8,7 @@ struct SyncUpsList {
     case add(SyncUpForm)
     case alert(AlertState<Alert>)
 
+    @CasePathable
     enum Alert {
       case confirmLoadMockData
     }

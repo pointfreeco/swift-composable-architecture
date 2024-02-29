@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:Sources/ComposableArchitecture/Documentation.docc/Articles/MigrationGuides/MigratingTo1.9.md">
+   </FileRef>
+   <FileRef
       location = "group:">
    </FileRef>
    <FileRef

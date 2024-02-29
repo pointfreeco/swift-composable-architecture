@@ -248,15 +248,114 @@ extension ObservableStateMacro: MemberMacro {
 
     var declarations = [DeclSyntax]()
 
-    let access = declaration.modifiers.first {
-      $0.name.tokenKind == .keyword(.public) || $0.name.tokenKind == .keyword(.package)
-    }
     declaration.addIfNeeded(
       ObservableStateMacro.registrarVariable(observableType), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.idVariable(), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.willModifyFunction(), to: &declarations)
 
     return declarations
+  }
+}
+
+extension Array where Element == ObservableStateCase {
+  init(members: MemberBlockItemListSyntax) {
+    var tag = 0
+    self.init(members: members, tag: &tag)
+  }
+
+  init(members: MemberBlockItemListSyntax, tag: inout Int) {
+    self = members.flatMap { member -> [ObservableStateCase] in
+      if let enumCaseDecl = member.decl.as(EnumCaseDeclSyntax.self) {
+        return enumCaseDecl.elements.map {
+          defer { tag += 1 }
+          return ObservableStateCase.element($0, tag: tag)
+        }
+      }
+      if let ifConfigDecl = member.decl.as(IfConfigDeclSyntax.self) {
+        let configs = ifConfigDecl.clauses.flatMap { decl -> [ObservableStateCase.IfConfig] in
+          guard let elements = decl.elements?.as(MemberBlockItemListSyntax.self)
+          else { return [] }
+          return [
+            ObservableStateCase.IfConfig(
+              poundKeyword: decl.poundKeyword,
+              condition: decl.condition,
+              cases: Array(members: elements, tag: &tag)
+            )
+          ]
+        }
+        return [.ifConfig(configs)]
+      }
+      return []
+    }
+  }
+}
+
+enum ObservableStateCase {
+  case element(EnumCaseElementSyntax, tag: Int)
+  indirect case ifConfig([IfConfig])
+
+  struct IfConfig {
+    let poundKeyword: TokenSyntax
+    let condition: ExprSyntax?
+    let cases: [ObservableStateCase]
+  }
+
+  var getCase: String {
+    switch self {
+    case let .element(element, tag):
+      if let parameters = element.parameterClause?.parameters, parameters.count == 1 {
+        return """
+          case let .\(element.name.text)(state):
+          return ._$id(for: state)._$tag(\(tag))
+          """
+      } else {
+        return """
+          case .\(element.name.text):
+          return ._$inert._$tag(\(tag))
+          """
+      }
+    case let .ifConfig(configs):
+      return
+        configs
+        .map {
+          """
+          \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
+          \($0.cases.map(\.getCase).joined(separator: "\n"))
+          """
+        }
+        .joined(separator: "\n") + "#endif\n"
+    }
+  }
+
+  var willModifyCase: String {
+    switch self {
+    case let .element(element, _):
+      if let parameters = element.parameterClause?.parameters,
+        parameters.count == 1,
+        let parameter = parameters.first
+      {
+        return """
+          case var .\(element.name.text)(state):
+          \(ObservableStateMacro.moduleName)._$willModify(&state)
+          self = .\(element.name.text)(\(parameter.firstName.map { "\($0): " } ?? "")state)
+          """
+      } else {
+        return """
+          case .\(element.name.text):
+          break
+          """
+      }
+    case let .ifConfig(configs):
+      return
+        configs
+        .map {
+          """
+          \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
+          \($0.cases.map(\.willModifyCase).joined(separator: "\n"))
+          """
+        }
+        .joined(separator: "\n") + "#endif\n"
+    }
   }
 }
 
@@ -269,43 +368,12 @@ extension ObservableStateMacro {
     providingMembersOf declaration: Declaration,
     in context: Context
   ) throws -> [DeclSyntax] {
-    let enumCaseDecls = declaration.memberBlock.members
-      .flatMap { $0.decl.as(EnumCaseDeclSyntax.self)?.elements ?? [] }
+    let cases = [ObservableStateCase](members: declaration.memberBlock.members)
     var getCases: [String] = []
     var willModifyCases: [String] = []
-    for (tag, enumCaseDecl) in enumCaseDecls.enumerated() {
-      // TODO: Support multiple parameters of observable state?
-      if let parameters = enumCaseDecl.parameterClause?.parameters,
-        parameters.count == 1,
-        let parameter = parameters.first
-      {
-        getCases.append(
-          """
-          case let .\(enumCaseDecl.name.text)(state):
-          return ._$id(for: state)._$tag(\(tag))
-          """
-        )
-        willModifyCases.append(
-          """
-          case var .\(enumCaseDecl.name.text)(state):
-          \(moduleName)._$willModify(&state)
-          self = .\(enumCaseDecl.name.text)(\(parameter.firstName.map { "\($0): " } ?? "")state)
-          """
-        )
-      } else {
-        getCases.append(
-          """
-          case .\(enumCaseDecl.name.text):
-          return ._$inert._$tag(\(tag))
-          """
-        )
-        willModifyCases.append(
-          """
-          case .\(enumCaseDecl.name.text):
-          break
-          """
-        )
-      }
+    for enumCase in cases {
+      getCases.append(enumCase.getCase)
+      willModifyCases.append(enumCase.willModifyCase)
     }
 
     return [

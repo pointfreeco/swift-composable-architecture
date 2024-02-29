@@ -1,4 +1,4 @@
-#if swift(>=5.9) && DEBUG
+#if swift(>=5.9)
   import ComposableArchitecture
   import XCTest
 
@@ -225,24 +225,22 @@
       }
       store.exhaustivity = .off(showSkippedAssertions: true)
 
-      #if DEBUG
-        XCTExpectFailure {
-          $0.compactDescription == """
-            A state change does not match expectation: …
+      XCTExpectFailure {
+        $0.compactDescription == """
+          A state change does not match expectation: …
 
-                  Counter.State(
-                −   count: 0,
-                +   count: 1,
-                    isEven: false
-                  )
+                Counter.State(
+              −   count: 0,
+              +   count: 1,
+                  isEven: false
+                )
 
-            (Expected: −, Actual: +)
-            """
-        }
-        await store.send(.increment) {
-          $0.count = 0
-        }
-      #endif
+          (Expected: −, Actual: +)
+          """
+      }
+      await store.send(.increment) {
+        $0.count = 0
+      }
     }
 
     // Confirms that you don't have to assert on all state changes in a non-exhaustive test store,

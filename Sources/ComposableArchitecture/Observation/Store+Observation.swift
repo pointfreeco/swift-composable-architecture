@@ -15,10 +15,14 @@
   #endif
 
   extension Store where State: ObservableState {
-    /// Direct access to state in the store when `State` conforms to ``ObservableState``.
-    public var state: State {
+    var observableState: State {
       self._$observationRegistrar.access(self, keyPath: \.currentState)
       return self.currentState
+    }
+
+    /// Direct access to state in the store when `State` conforms to ``ObservableState``.
+    public var state: State {
+      self.observableState
     }
 
     public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
@@ -82,11 +86,9 @@
       state: KeyPath<State, ChildState?>,
       action: CaseKeyPath<Action, ChildAction>
     ) -> Store<ChildState, ChildAction>? {
-      #if DEBUG
-        if !self.canCacheChildren {
-          runtimeWarn(uncachedStoreWarning(self))
-        }
-      #endif
+      if !self.canCacheChildren {
+        runtimeWarn(uncachedStoreWarning(self))
+      }
       guard var childState = self.state[keyPath: state]
       else { return nil }
       return self.scope(

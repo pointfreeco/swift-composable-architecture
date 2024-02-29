@@ -69,11 +69,9 @@
       state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
       action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>
     ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
-      #if DEBUG
-        if !self.canCacheChildren {
-          runtimeWarn(uncachedStoreWarning(self))
-        }
-      #endif
+      if !self.canCacheChildren {
+        runtimeWarn(uncachedStoreWarning(self))
+      }
       return _StoreCollection(self.scope(state: state, action: action))
     }
   }

@@ -236,53 +236,51 @@
       }
     }
 
-    #if DEBUG
-      func testDismissReceiveWrongAction() async {
-        struct Child: Reducer {
-          struct State: Equatable {}
-          enum Action: Equatable { case tap }
-          @Dependency(\.dismiss) var dismiss
-          var body: some Reducer<State, Action> {
-            Reduce { state, action in
-              .run { _ in await self.dismiss() }
-            }
+    func testDismissReceiveWrongAction() async {
+      struct Child: Reducer {
+        struct State: Equatable {}
+        enum Action: Equatable { case tap }
+        @Dependency(\.dismiss) var dismiss
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            .run { _ in await self.dismiss() }
           }
-        }
-        struct Parent: Reducer {
-          struct State: Equatable {
-            var children = StackState<Child.State>()
-          }
-          enum Action: Equatable {
-            case children(StackAction<Child.State, Child.Action>)
-          }
-          var body: some ReducerOf<Self> {
-            Reduce { _, _ in .none }.forEach(\.children, action: /Action.children) { Child() }
-          }
-        }
-
-        let store = TestStore(initialState: Parent.State(children: StackState([Child.State()]))) {
-          Parent()
-        }
-
-        XCTExpectFailure {
-          $0.compactDescription == """
-            Received unexpected action: …
-
-                  StackReducerTests.Parent.Action.children(
-                −   .popFrom(id: #1)
-                +   .popFrom(id: #0)
-                  )
-
-            (Expected: −, Received: +)
-            """
-        }
-
-        await store.send(.children(.element(id: 0, action: .tap)))
-        await store.receive(.children(.popFrom(id: 1))) {
-          $0.children = StackState()
         }
       }
-    #endif
+      struct Parent: Reducer {
+        struct State: Equatable {
+          var children = StackState<Child.State>()
+        }
+        enum Action: Equatable {
+          case children(StackAction<Child.State, Child.Action>)
+        }
+        var body: some ReducerOf<Self> {
+          Reduce { _, _ in .none }.forEach(\.children, action: /Action.children) { Child() }
+        }
+      }
+
+      let store = TestStore(initialState: Parent.State(children: StackState([Child.State()]))) {
+        Parent()
+      }
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          Received unexpected action: …
+
+                StackReducerTests.Parent.Action.children(
+              −   .popFrom(id: #1)
+              +   .popFrom(id: #0)
+                )
+
+          (Expected: −, Received: +)
+          """
+      }
+
+      await store.send(.children(.element(id: 0, action: .tap)))
+      await store.receive(.children(.popFrom(id: 1))) {
+        $0.children = StackState()
+      }
+    }
 
     func testDismissFromIntermediateChild() async {
       struct Child: Reducer {
@@ -1151,50 +1149,50 @@
           $0.children[id: 1] = Child.State()
         }
       }
+    #endif
 
-      func testMismatchedIDFailure() async {
-        struct Child: Reducer {
-          struct State: Equatable {}
-          enum Action: Equatable {}
-          var body: some Reducer<State, Action> {
-            EmptyReducer()
-          }
-        }
-        struct Parent: Reducer {
-          struct State: Equatable {
-            var children = StackState<Child.State>()
-          }
-          enum Action: Equatable {
-            case child(StackAction<Child.State, Child.Action>)
-          }
-          var body: some ReducerOf<Self> {
-            Reduce { _, _ in .none }.forEach(\.children, action: /Action.child) { Child() }
-          }
-        }
-
-        let store = TestStore(initialState: Parent.State()) {
-          Parent()
-        }
-
-        XCTExpectFailure {
-          $0.compactDescription == """
-            A state change does not match expectation: …
-
-                  StackReducerTests.Parent.State(
-                    children: [
-                −     #1: StackReducerTests.Child.State()
-                +     #0: StackReducerTests.Child.State()
-                    ]
-                  )
-
-            (Expected: −, Actual: +)
-            """
-        }
-        await store.send(.child(.push(id: 0, state: Child.State()))) {
-          $0.children[id: 1] = Child.State()
+    func testMismatchedIDFailure() async {
+      struct Child: Reducer {
+        struct State: Equatable {}
+        enum Action: Equatable {}
+        var body: some Reducer<State, Action> {
+          EmptyReducer()
         }
       }
-    #endif
+      struct Parent: Reducer {
+        struct State: Equatable {
+          var children = StackState<Child.State>()
+        }
+        enum Action: Equatable {
+          case child(StackAction<Child.State, Child.Action>)
+        }
+        var body: some ReducerOf<Self> {
+          Reduce { _, _ in .none }.forEach(\.children, action: /Action.child) { Child() }
+        }
+      }
+
+      let store = TestStore(initialState: Parent.State()) {
+        Parent()
+      }
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          A state change does not match expectation: …
+
+                StackReducerTests.Parent.State(
+                  children: [
+              −     #1: StackReducerTests.Child.State()
+              +     #0: StackReducerTests.Child.State()
+                  ]
+                )
+
+          (Expected: −, Actual: +)
+          """
+      }
+      await store.send(.child(.push(id: 0, state: Child.State()))) {
+        $0.children[id: 1] = Child.State()
+      }
+    }
 
     func testSendCopiesStackElementIDGenerator() async {
       struct Feature: Reducer {
