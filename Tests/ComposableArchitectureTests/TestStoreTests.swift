@@ -560,7 +560,7 @@
       await store.send(.tap)
       await store.receive(\.delegate.success, 43)
     }
-    
+
     func testSendCaseKeyPath() async {
       let store = TestStore<Int, Action>(initialState: 0) {
         Reduce { state, action in
