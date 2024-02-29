@@ -118,23 +118,6 @@
   public macro ReducerCaseIgnored() =
     #externalMacro(module: "ComposableArchitectureMacros", type: "ReducerCaseIgnoredMacro")
 
-  /// Marks the case of an enum reducer as holding onto enum reducer.
-  ///
-  /// Apply this reducer to any cases of an enum reducer that holds onto enum reducer which has
-  /// static body property.
-  ///
-  /// ```swift
-  /// @Reducer
-  /// enum Destination {
-  ///   @ReducerCaseStatic
-  ///   case enumReducer(EnumReducer)
-  ///   // ...
-  /// }
-  /// ```
-  @attached(peer, names: named(_))
-  public macro ReducerCaseStatic() =
-    #externalMacro(module: "ComposableArchitectureMacros", type: "ReducerCaseStaticMacro")
-
   /// Defines and implements conformance of the Observable protocol.
   @attached(extension, conformances: Observable, ObservableState)
   @attached(member, names: named(_$id), named(_$observationRegistrar), named(_$willModify))

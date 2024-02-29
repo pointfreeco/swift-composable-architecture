@@ -252,7 +252,7 @@ extension ReducerMacro: MemberMacro {
       var storeScopes: [String] = []
 
       for enumCaseElement in enumCaseElements {
-        let element = enumCaseElement.element
+        let (isBody, element) = enumCaseElement.element.dropSuffix(".Body")
         let name = element.name.text
 
         if enumCaseElement.attribute != .ignored,
@@ -268,13 +268,13 @@ extension ReducerMacro: MemberMacro {
             : element.suffixed("State")
           stateCaseDecls.append("case \(stateCase.trimmedDescription)")
           actionCaseDecls.append("case \(element.suffixed("Action").trimmedDescription)")
-          if enumCaseElement.attribute == nil || enumCaseElement.attribute == .static {
+          if enumCaseElement.attribute == nil {
             reducerScopes.append(
               """
               ComposableArchitecture.Scope(\
               state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
               ) {
-              \(type.trimmed)\(enumCaseElement.attribute == .static ? ".body" : "()")
+              \(type.trimmed)\(isBody ? ".body" : "()")
               }
               """
             )
@@ -289,7 +289,7 @@ extension ReducerMacro: MemberMacro {
         } else {
           stateCaseDecls.append("case \(element.trimmedDescription)")
         }
-        if enumCaseElement.attribute != nil && enumCaseElement.attribute != .static {
+        if enumCaseElement.attribute != nil {
           storeCases.append("case \(element.trimmedDescription)")
           if let parameters = element.parameterClause?.parameters {
             let bindingNames = (0..<parameters.count).map { "v\($0)" }.joined(separator: ", ")
@@ -444,7 +444,6 @@ private struct ReducerCase {
   enum Attribute {
     case ephemeral
     case ignored
-    case `static`
   }
 }
 
@@ -502,8 +501,6 @@ extension EnumCaseDeclSyntax {
       return .ignored
     } else if self.isEphemeral {
       return .ephemeral
-    } else if self.isStatic {
-      return .static
     } else {
       return nil
     }
@@ -526,10 +523,6 @@ extension EnumCaseDeclSyntax {
         return true
       }
   }
-    
-  fileprivate var isStatic: Bool {
-    self.attributes.contains("ReducerCaseStatic")
-  }
 }
 
 extension EnumCaseElementSyntax {
@@ -543,6 +536,19 @@ extension EnumCaseElementSyntax {
       element.parameterClause = parameterClause
     }
     return element
+  }
+
+  fileprivate func dropSuffix(_ suffix: String) -> (Bool, Self) {
+    var element = self
+    guard var parameterClause = element.parameterClause,
+      let type = parameterClause.parameters.first?.type,
+      type.trimmedDescription.hasSuffix(suffix)
+    else {
+      return (false, element)
+    }
+    parameterClause.parameters[parameterClause.parameters.startIndex].type = "\(raw: type.trimmedDescription.dropLast(suffix.count))"
+    element.parameterClause = parameterClause
+    return (true, element)
   }
 }
 
@@ -569,16 +575,6 @@ enum ReducerCaseEphemeralMacro: PeerMacro {
 }
 
 enum ReducerCaseIgnoredMacro: PeerMacro {
-  static func expansion(
-    of node: AttributeSyntax,
-    providingPeersOf declaration: some DeclSyntaxProtocol,
-    in context: some MacroExpansionContext
-  ) throws -> [DeclSyntax] {
-    []
-  }
-}
-
-enum ReducerCaseStaticMacro: PeerMacro {
   static func expansion(
     of node: AttributeSyntax,
     providingPeersOf declaration: some DeclSyntaxProtocol,

@@ -11,7 +11,6 @@ struct MacrosPlugin: CompilerPlugin {
     ReducerMacro.self,
     ReducerCaseEphemeralMacro.self,
     ReducerCaseIgnoredMacro.self,
-    ReducerCaseStaticMacro.self,
     ViewActionMacro.self,
   ]
 }
