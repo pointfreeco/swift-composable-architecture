@@ -117,11 +117,11 @@ final class TodosTests: XCTestCase {
       $0.continuousClock = self.clock
     }
 
-    await store.send(\.todos[id: UUID(0)].isComplete, true) {
+    await store.send(\.todos[id:UUID(0)].isComplete, true) {
       $0.todos[id: UUID(0)]?.isComplete = true
     }
     await self.clock.advance(by: .milliseconds(500))
-    await store.send(\.todos[id: UUID(0)].isComplete, false) {
+    await store.send(\.todos[id:UUID(0)].isComplete, false) {
       $0.todos[id: UUID(0)]?.isComplete = false
     }
     await self.clock.advance(by: .seconds(1))
@@ -337,7 +337,7 @@ final class TodosTests: XCTestCase {
     await store.send(\.filter, .completed) {
       $0.filter = .completed
     }
-    await store.send(\.todos[id: UUID(1)].description, "Did this already") {
+    await store.send(\.todos[id:UUID(1)].description, "Did this already") {
       $0.todos[id: UUID(1)]?.description = "Did this already"
     }
   }

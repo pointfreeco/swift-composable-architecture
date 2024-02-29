@@ -34,7 +34,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       )
     }
 
-    await store.send(\.episodes[id: UUID(0)].favorite.buttonTapped) {
+    await store.send(\.episodes[id:UUID(0)].favorite.buttonTapped) {
       $0.episodes[id: UUID(0)]?.isFavorite = true
     }
     await clock.advance(by: .seconds(1))
@@ -62,7 +62,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       Episodes(favorite: { _, _ in throw FavoriteError() })
     }
 
-    await store.send(\.episodes[id: UUID(0)].favorite.buttonTapped) {
+    await store.send(\.episodes[id:UUID(0)].favorite.buttonTapped) {
       $0.episodes[id: UUID(0)]?.isFavorite = true
     }
 
@@ -72,7 +72,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
       }
     }
 
-    await store.send(\.episodes[id: UUID(0)].favorite.alert.dismiss) {
+    await store.send(\.episodes[id:UUID(0)].favorite.alert.dismiss) {
       $0.episodes[id: UUID(0)]?.alert = nil
       $0.episodes[id: UUID(0)]?.isFavorite = false
     }

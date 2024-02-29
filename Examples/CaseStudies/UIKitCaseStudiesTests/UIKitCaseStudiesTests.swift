@@ -31,24 +31,24 @@ final class UIKitCaseStudiesTests: XCTestCase {
       CounterList()
     }
 
-    await store.send(\.counters[id: firstState.id].incrementButtonTapped) {
+    await store.send(\.counters[id:firstState.id].incrementButtonTapped) {
       $0.counters[id: firstState.id]?.count = 1
     }
-    await store.send(\.counters[id: firstState.id].decrementButtonTapped) {
+    await store.send(\.counters[id:firstState.id].decrementButtonTapped) {
       $0.counters[id: firstState.id]?.count = 0
     }
 
-    await store.send(\.counters[id: secondState.id].incrementButtonTapped) {
+    await store.send(\.counters[id:secondState.id].incrementButtonTapped) {
       $0.counters[id: secondState.id]?.count = 1
     }
-    await store.send(\.counters[id: secondState.id].decrementButtonTapped) {
+    await store.send(\.counters[id:secondState.id].decrementButtonTapped) {
       $0.counters[id: secondState.id]?.count = 0
     }
 
-    await store.send(\.counters[id: thirdState.id].incrementButtonTapped) {
+    await store.send(\.counters[id:thirdState.id].incrementButtonTapped) {
       $0.counters[id: thirdState.id]?.count = 1
     }
-    await store.send(\.counters[id: thirdState.id].decrementButtonTapped) {
+    await store.send(\.counters[id:thirdState.id].decrementButtonTapped) {
       $0.counters[id: thirdState.id]?.count = 0
     }
   }
