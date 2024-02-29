@@ -468,7 +468,7 @@ private enum ReducerCase {
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
-        let stateCase = attribute == .ephemeral ? element : element.suffixed("State")
+        let stateCase = attribute == .ephemeral ? element : element.dropBodySuffix.suffixed("State")
         return "case \(stateCase.trimmedDescription)"
       } else {
         return "case \(element.trimmedDescription)"
@@ -496,7 +496,7 @@ private enum ReducerCase {
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
-        return "case \(element.suffixed("Action").trimmedDescription)"
+        return "case \(element.dropBodySuffix.suffixed("Action").trimmedDescription)"
       } else {
         return nil
       }
@@ -519,13 +519,17 @@ private enum ReducerCase {
     switch self {
     case let .element(element, attribute):
       if attribute == nil,
-        let parameterClause = element.parameterClause,
+        let parameterClause = element.dropBodySuffix.parameterClause,
         parameterClause.parameters.count == 1,
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
         let type = parameter.type
-        return .scoped(["ComposableArchitecture.Scope<Self.State, Self.Action, \(type.trimmed)>"])
+        return .scoped([
+          element.hasBodySuffix ?
+          "ComposableArchitecture.Scope<Self.State, Self.Action, ComposableArchitecture.Reduce<\(type.trimmed).State, \(type.trimmed).Action>>" :
+          "ComposableArchitecture.Scope<Self.State, Self.Action, \(type.trimmed)>"
+        ])
       } else {
         return .scoped([])
       }
@@ -538,18 +542,23 @@ private enum ReducerCase {
     switch self {
     case let .element(element, attribute):
       if attribute == nil,
-        let parameterClause = element.parameterClause,
+        let parameterClause = element.dropBodySuffix.parameterClause,
         parameterClause.parameters.count == 1,
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
         let name = element.name.text
         let type = parameter.type
+        let reducer = element.hasBodySuffix ?
+        """
+        ComposableArchitecture.Reduce(\(type.trimmed).body.reduce)
+        """ :
+        "\(type.trimmed)()"
         return """
           ComposableArchitecture.Scope(\
           state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
           ) {
-          \(type.trimmed)()
+          \(reducer)
           }
           """
       } else {
@@ -574,7 +583,7 @@ private enum ReducerCase {
     switch self {
     case let .element(element, attribute):
       if attribute == nil,
-        let parameterClause = element.parameterClause,
+        let parameterClause = element.dropBodySuffix.parameterClause,
         parameterClause.parameters.count == 1,
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
@@ -747,6 +756,26 @@ extension EnumCaseDeclSyntax {
 }
 
 extension EnumCaseElementSyntax {
+  fileprivate static let bodySuffix = ".Body"
+  
+  fileprivate var hasBodySuffix: Bool {
+    parameterClause?.parameters.first?.type.trimmedDescription.hasSuffix(Self.bodySuffix) == true
+  }
+  
+  fileprivate var dropBodySuffix: Self {
+    guard hasBodySuffix else {
+      return self
+    }
+    var element = self
+    if var parameterClause = element.parameterClause,
+       let type = parameterClause.parameters.first?.type
+    {
+      parameterClause.parameters[parameterClause.parameters.startIndex].type = "\(raw: type.trimmedDescription.dropLast(Self.bodySuffix.count))"
+      element.parameterClause = parameterClause
+    }
+    return element
+  }
+  
   fileprivate func suffixed(_ suffix: TokenSyntax) -> Self {
     var element = self
     if var parameterClause = element.parameterClause,
@@ -757,19 +786,6 @@ extension EnumCaseElementSyntax {
       element.parameterClause = parameterClause
     }
     return element
-  }
-
-  fileprivate func dropSuffix(_ suffix: String) -> (Bool, Self) {
-    var element = self
-    guard var parameterClause = element.parameterClause,
-      let type = parameterClause.parameters.first?.type,
-      type.trimmedDescription.hasSuffix(suffix)
-    else {
-      return (false, element)
-    }
-    parameterClause.parameters[parameterClause.parameters.startIndex].type = "\(raw: type.trimmedDescription.dropLast(suffix.count))"
-    element.parameterClause = parameterClause
-    return (true, element)
   }
 }
 

@@ -371,14 +371,13 @@
             case meeting(Meeting.Action)
           }
 
-          static var body: some ComposableArchitecture.Reducer<Self.State, Self.Action> {
-            ComposableArchitecture.CombineReducers {
-              ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
-                Timeline()
-              }
-              ComposableArchitecture.Scope(state: \Self.State.Cases.meeting, action: \Self.Action.Cases.meeting) {
-                Meeting.body
-              }
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>, ComposableArchitecture.Scope<Self.State, Self.Action, ComposableArchitecture.Reduce<Meeting.State, Meeting.Action>>> {
+            ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+              Timeline()
+            }
+            ComposableArchitecture.Scope(state: \Self.State.Cases.meeting, action: \Self.Action.Cases.meeting) {
+              ComposableArchitecture.Reduce(Meeting.body.reduce)
             }
           }
 
