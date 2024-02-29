@@ -17,7 +17,7 @@ final class AppFeatureTests: XCTestCase {
       )
     }
 
-    await store.send(\.path[id:0], .detail(SyncUpDetail.State(syncUp: syncUp))) {
+    await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: syncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: syncUp))
     }
 
@@ -32,7 +32,7 @@ final class AppFeatureTests: XCTestCase {
     await store.receive(\.path[id:0].detail.delegate.deleteSyncUp) {
       $0.syncUpsList.syncUps = []
     }
-    await store.receive(\.path[id:0], nil) {
+    await store.receive(\.path.popFrom) {
       $0.path = StackState()
     }
   }
@@ -54,7 +54,7 @@ final class AppFeatureTests: XCTestCase {
       }
     }
 
-    await store.send(\.path[id:0], .detail(SyncUpDetail.State(syncUp: syncUp))) {
+    await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: syncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: syncUp))
     }
 
@@ -135,7 +135,7 @@ final class AppFeatureTests: XCTestCase {
         )
       ]
     }
-    await store.receive(\.path[id:1], nil) {
+    await store.receive(\.path.popFrom) {
       XCTAssertEqual($0.path.count, 1)
     }
   }
