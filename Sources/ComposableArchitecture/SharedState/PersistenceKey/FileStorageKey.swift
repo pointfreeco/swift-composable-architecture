@@ -83,29 +83,35 @@
       }
     }
 
+    public func subscribe(didSet: @escaping (Value?) -> Void) -> Shared<Value>.Subscription {
+      // NB: Make sure there is a file to create a source for.
+      if !FileManager.default.fileExists(atPath: self.url.path) {
+        try? FileManager.default
+          .createDirectory(
+            at: self.url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? self.storage.save(Data(), to: self.url)
+      }
+      // TODO: detect deletion separately and restart source
+      let cancellable = self.storage.fileSystemSource(
+        url: self.url,
+        eventMask: [.write, .delete, .rename]
+      ) {
+        if self.storage.isSetting() == true {
+          self.storage.setIsSetting(false)
+        } else {
+          didSet(self.load())
+        }
+      }
+      return Shared.Subscription {
+        cancellable.cancel()
+      }
+    }
+
     public var updates: AsyncStream<Value?> {
       AsyncStream { continuation in
-        // NB: Make sure there is a file to create a source for.
-        if !FileManager.default.fileExists(atPath: self.url.path) {
-          try? FileManager.default
-            .createDirectory(
-              at: self.url.deletingLastPathComponent(), withIntermediateDirectories: true)
-          try? self.storage.save(Data(), to: self.url)
-        }
-
-        // TODO: detect deletion separately and restart source
-        let cancellable = self.storage.fileSystemSource(
-          url: self.url,
-          eventMask: [.write, .delete, .rename]
-        ) {
-          if self.storage.isSetting() == true {
-            self.storage.setIsSetting(false)
-          } else {
-            continuation.yield(self.load())
-          }
-        }
-        continuation.onTermination = { [cancellable = UncheckedSendable(cancellable)] _ in
-          cancellable.wrappedValue.cancel()
+        let subscription = self.subscribe { continuation.yield($0) }
+        continuation.onTermination = { _ in
+          _ = subscription
         }
       }
     }

@@ -333,30 +333,37 @@
   }
 
   extension AppStorageKey: PersistenceKey {
+    public func subscribe(didSet: @escaping (_ newValue: Value?) -> Void) -> Shared<Value>.Subscription {
+      switch self.key {
+      case let .keyPath(key):
+        let observer = self.store.observe(key, options: .new) { _, change in
+          guard
+            !SharedAppStorageLocals.isSetting
+          else { return }
+          didSet(change.newValue)
+        }
+        return Shared.Subscription {
+          observer.invalidate()
+        }
+      case let .string(key):
+        let observer = Observer { value in
+          guard
+            !SharedAppStorageLocals.isSetting
+          else { return }
+          didSet(value)
+        }
+        self.store.addObserver(observer, forKeyPath: key, options: .new, context: nil)
+        return Shared.Subscription {
+          self.store.removeObserver(observer, forKeyPath: key)
+        }
+      }
+    }
+
     public var updates: AsyncStream<Value?> {
       AsyncStream { continuation in
-        switch self.key {
-        case let .keyPath(key):
-          let observer = self.store.observe(key, options: .new) { _, change in
-            guard
-              !SharedAppStorageLocals.isSetting
-            else { return }
-            continuation.yield(change.newValue)
-          }
-          continuation.onTermination = { _ in
-            observer.invalidate()
-          }
-        case let .string(key):
-          let observer = Observer { value in
-            guard
-              !SharedAppStorageLocals.isSetting
-            else { return }
-            continuation.yield(value)
-          }
-          self.store.addObserver(observer, forKeyPath: key, options: .new, context: nil)
-          continuation.onTermination = { _ in
-            observer.removeObserver(self.store, forKeyPath: key)
-          }
+        let subscription = self.subscribe { continuation.yield($0) }
+        continuation.onTermination = { _ in
+          _ = subscription
         }
       }
     }

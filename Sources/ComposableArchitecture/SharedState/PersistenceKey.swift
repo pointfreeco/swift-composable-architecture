@@ -19,15 +19,36 @@
     /// Saves a value to storage.
     func save(_ value: Value)
 
-    /// An async sequence that emits when the external storage is changed from the outisde.
+    /// An async sequence that emits when the external storage is changed from the outside.
     ///
     /// An "empty" sequence that does not emit and finishes immediately is provided by default.
     var updates: Updates { get }
+
+    func subscribe(didSet: @escaping (Value?) -> Void) -> Shared<Value>.Subscription
   }
 
   extension PersistenceKey where Updates == _Empty<Value?> {
     public var updates: _Empty<Value?> {
       _Empty()
+    }
+
+    public func subscribe(didSet: @escaping (Value?) -> Void) -> Shared<Value>.Subscription {
+      Shared.Subscription {}
+    }
+  }
+
+  extension Shared {
+    public class Subscription {
+      let onCancel: () -> Void
+      init(onCancel: @escaping () -> Void) {
+        self.onCancel = onCancel
+      }
+      deinit {
+        self.cancel()
+      }
+      func cancel() {
+        self.onCancel()
+      }
     }
   }
 

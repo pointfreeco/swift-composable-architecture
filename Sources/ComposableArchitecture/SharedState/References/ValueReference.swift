@@ -73,6 +73,7 @@
     }
     private var _snapshot: Value?
     fileprivate var persistenceKey: (any PersistenceKey<Value>)?  // TODO: Should this not be an `any`?
+    private var subscription: Shared<Value>.Subscription?
     private let fileID: StaticString
     private let line: UInt
     private let lock = NSRecursiveLock()
@@ -93,10 +94,8 @@
       self.persistenceKey = persistenceKey
       self.fileID = fileID
       self.line = line
-      Task { @MainActor [weak self, initialValue] in
-        for try await value in persistenceKey.updates {
-          self?.currentValue = value ?? initialValue()
-        }
+      self.subscription = persistenceKey.subscribe { [weak self, initialValue] value in
+        self?.currentValue = value ?? initialValue()
       }
     }
 
