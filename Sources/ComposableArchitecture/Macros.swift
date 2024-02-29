@@ -113,6 +113,16 @@
   ///   case meeting(id: Meeting.ID)
   ///   // ...
   /// }
+  ///
+  /// //in your view
+  /// .sheet(
+  ///    item: $store.scope(
+  ///      state: \.destination.meeting,
+  ///      action: \.destination
+  ///    )
+  /// ) { store in
+  ///   MeetingView(id: store.state)
+  /// }
   /// ```
   @attached(peer, names: named(_))
   public macro ReducerCaseIgnored() =
