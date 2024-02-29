@@ -604,6 +604,8 @@
       }
       await store.send(.onAppear)
       await store.receive(\.isOn)
+      XCTExpectFailure()
+      await store.receive(\.binding.isOn)
     }
   }
 
@@ -652,7 +654,7 @@
         case .onAppear:
           return .send(.isOn(true))
         case .isOn:
-          return .none
+          return .send(.set(\.isOn, true))
         }
       }
     }
