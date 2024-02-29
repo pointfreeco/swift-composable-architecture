@@ -121,15 +121,15 @@ public final class GameViewController: UIViewController {
     }
   }
 
-  @objc private func gridCell11Tapped() { self.store.send(.cellTapped(Cell(row: 0, column: 0))) }
-  @objc private func gridCell12Tapped() { self.store.send(.cellTapped(Cell(row: 0, column: 1))) }
-  @objc private func gridCell13Tapped() { self.store.send(.cellTapped(Cell(row: 0, column: 2))) }
-  @objc private func gridCell21Tapped() { self.store.send(.cellTapped(Cell(row: 1, column: 0))) }
-  @objc private func gridCell22Tapped() { self.store.send(.cellTapped(Cell(row: 1, column: 1))) }
-  @objc private func gridCell23Tapped() { self.store.send(.cellTapped(Cell(row: 1, column: 2))) }
-  @objc private func gridCell31Tapped() { self.store.send(.cellTapped(Cell(row: 2, column: 0))) }
-  @objc private func gridCell32Tapped() { self.store.send(.cellTapped(Cell(row: 2, column: 1))) }
-  @objc private func gridCell33Tapped() { self.store.send(.cellTapped(Cell(row: 2, column: 2))) }
+  @objc private func gridCell11Tapped() { self.store.send(.cellTapped(row: 0, column: 0)) }
+  @objc private func gridCell12Tapped() { self.store.send(.cellTapped(row: 0, column: 1)) }
+  @objc private func gridCell13Tapped() { self.store.send(.cellTapped(row: 0, column: 2)) }
+  @objc private func gridCell21Tapped() { self.store.send(.cellTapped(row: 1, column: 0)) }
+  @objc private func gridCell22Tapped() { self.store.send(.cellTapped(row: 1, column: 1)) }
+  @objc private func gridCell23Tapped() { self.store.send(.cellTapped(row: 1, column: 2)) }
+  @objc private func gridCell31Tapped() { self.store.send(.cellTapped(row: 2, column: 0)) }
+  @objc private func gridCell32Tapped() { self.store.send(.cellTapped(row: 2, column: 1)) }
+  @objc private func gridCell33Tapped() { self.store.send(.cellTapped(row: 2, column: 2)) }
 
   @objc private func quitButtonTapped() {
     self.store.send(.quitButtonTapped)

@@ -24,7 +24,7 @@ public struct Game: Sendable {
   }
 
   public enum Action: Sendable {
-    case cellTapped(Cell)
+    case cellTapped(row: Int, column: Int)
     case playAgainButtonTapped
     case quitButtonTapped
   }
@@ -36,13 +36,13 @@ public struct Game: Sendable {
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .cellTapped(cell):
+      case let .cellTapped(row, column):
         guard
-          state.board[cell.row][cell.column] == nil,
+          state.board[row][column] == nil,
           !state.board.hasWinner
         else { return .none }
 
-        state.board[cell.row][cell.column] = state.currentPlayer
+        state.board[row][column] = state.currentPlayer
 
         if !state.board.hasWinner {
           state.currentPlayer.toggle()
@@ -79,16 +79,6 @@ public enum Player: Equatable, Sendable {
     case .o: return "⭕️"
     case .x: return "❌"
     }
-  }
-}
-
-public struct Cell: Equatable, Sendable {
-  public var row: Int
-  public var column: Int
-
-  public init(row: Int, column: Int) {
-    self.row = row
-    self.column = column
   }
 }
 

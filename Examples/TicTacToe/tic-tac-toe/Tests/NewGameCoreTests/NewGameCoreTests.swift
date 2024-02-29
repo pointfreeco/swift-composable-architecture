@@ -19,7 +19,7 @@ final class NewGameCoreTests: XCTestCase {
     await self.store.send(.letsPlayButtonTapped) {
       $0.game = Game.State(oPlayerName: "Blob Sr.", xPlayerName: "Blob Jr.")
     }
-    await self.store.send(\.game.cellTapped, Cell(row: 0, column: 0)) {
+    await self.store.send(\.game.cellTapped, (row: 0, column: 0)) {
       $0.game!.board[0][0] = .x
       $0.game!.currentPlayer = .o
     }

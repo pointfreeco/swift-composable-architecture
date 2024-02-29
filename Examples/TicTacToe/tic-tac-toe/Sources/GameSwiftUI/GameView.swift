@@ -56,7 +56,7 @@ public struct GameView: View {
     proxy: GeometryProxy
   ) -> some View {
     Button {
-      store.send(.cellTapped(Cell(row: row, column: column)))
+      store.send(.cellTapped(row: row, column: column))
     } label: {
       Text(store.rows[row][column])
         .frame(width: proxy.size.width / 3, height: proxy.size.width / 3)
