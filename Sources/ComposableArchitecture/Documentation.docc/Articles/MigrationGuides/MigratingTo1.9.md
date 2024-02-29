@@ -29,8 +29,8 @@ store.receive(\.child.presented.success, "Hello")
 
 Version 1.9 introduces similar affordances for _sending_ actions to test stores via
 ``TestStore/send(_:assert:file:line:)-1oopl`` and ``TestStore/send(_:_:assert:file:line:)``. These
-methods can significantly simplify tests that send deeply-nested actions to child features, and
-provide symmetry to how actions are received:
+methods can significantly simplify integration-style tests that send deeply-nested actions to child
+features, and provide symmetry to how actions are received:
 
 ```diff
 -store.send(.path(.element(id: 0, action: .destination(.presented(.record(.startButtonTapped))))))
