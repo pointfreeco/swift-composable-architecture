@@ -1,7 +1,8 @@
 # Migrating to 1.9
 
-Update your code to make use of the new ``TestStore/send(_:assert:file:line:)-1oopl`` and
-``Reducer/dependency(_:)`` methods.
+Update your code to make use of the new ``TestStore/send(_:assert:file:line:)-1oopl`` method on 
+``TestStore`` which gives a succinct syntax for sending actions with case key paths, and the
+``Reducer/dependency(_:)`` method for overriding dependencies.
 
 ## Overview
 
@@ -82,3 +83,30 @@ features, and provide symmetry to how actions are received:
 > -)
 > +store.send(\.path[id: 0].destination.sheet.password, "blobisawesome")
 > ```
+
+### Overriding dependencies
+
+Version 1.2 of [swift-dependencies](http://github.com/pointfreeco/swift-dependencies) introduced an
+alternative syntax for referencing a dependency:
+
+```diff
+-@Dependency(\.apiClient) var apiClient
++@Dependency(APIClient.self) var apiClient
+```
+
+The primary benefit of this syntax is that you do not need to define a dedicated computed property
+on `DependencyValues`, which saves a small amount of boilerplate.
+
+There is now a similar API for overriding dependencies on a reducer, ``Reducer/dependency(_:)``, 
+which can be used like so:
+
+```swift
+MyFeature()
+  .dependency(mockAPIClient)
+```
+
+The type of `mockAPIClient` determines how the dependency is overridden.
+
+This style of accessing and overriding dependencies is really only approprirate for dependencies
+defined directly in your project. If you are shipping a dependency client that is used by others, 
+then still prefer adding a computed property to `DependencyValues` in order to be more discoverable.
