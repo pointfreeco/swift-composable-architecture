@@ -26,6 +26,7 @@ struct RecordMeeting {
     case speechFailure
     case speechResult(SpeechRecognitionResult)
 
+    @CasePathable
     enum Alert {
       case confirmDiscard
       case confirmSave

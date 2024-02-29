@@ -46,7 +46,7 @@ final class SyncUpDetailTests: XCTestCase {
       $0.speechClient.authorizationStatus = { .denied }
     }
 
-    await store.send(.destination(.presented(.alert(.openSettings)))) {
+    await store.send(\.destination.alert.openSettings) {
       $0.destination = nil
     }
     XCTAssertEqual(settingsOpened.value, true)
@@ -64,7 +64,7 @@ final class SyncUpDetailTests: XCTestCase {
       $0.speechClient.authorizationStatus = { .denied }
     }
 
-    await store.send(.destination(.presented(.alert(.continueWithoutRecording)))) {
+    await store.send(\.destination.alert.continueWithoutRecording) {
       $0.destination = nil
     }
 
@@ -96,7 +96,7 @@ final class SyncUpDetailTests: XCTestCase {
     }
 
     syncUp.title = "Blob's Meeting"
-    await store.send(.destination(.presented(.edit(.set(\.syncUp, syncUp))))) {
+    await store.send(\.destination.edit.syncUp, syncUp) {
       $0.$destination[case: \.edit]?.syncUp.title = "Blob's Meeting"
     }
 
@@ -122,7 +122,7 @@ final class SyncUpDetailTests: XCTestCase {
     await store.send(.deleteButtonTapped) {
       $0.destination = .alert(.deleteSyncUp)
     }
-    await store.send(.destination(.presented(.alert(.confirmDeletion)))) {
+    await store.send(\.destination.alert.confirmDeletion) {
       $0.destination = nil
     }
   }

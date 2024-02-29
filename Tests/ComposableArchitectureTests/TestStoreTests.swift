@@ -536,6 +536,8 @@
             return .send(.delegate(.success(42)))
           case .delegate:
             return .none
+          case .view:
+            return .none
           }
         }
       }
@@ -558,6 +560,43 @@
       await store.send(.tap)
       await store.receive(\.delegate.success, 43)
     }
+
+    func testSendCaseKeyPath() async {
+      let store = TestStore<Int, Action>(initialState: 0) {
+        Reduce { state, action in
+          switch action {
+          case .tap:
+            return .send(.delegate(.success(42)))
+          case .delegate:
+            return .none
+          case .view(.tap):
+            state = state + 1
+            return .send(.delegate(.success(42 * 42)))
+          case let .view(.delete(indexSet)):
+            let sum = indexSet.reduce(0, +)
+            if sum == 42 {
+              state = state + 1
+            }
+            return .send(.delegate(.success(sum)))
+          }
+        }
+      }
+      await store.send(\.tap)
+      await store.receive(\.delegate.success, 42)
+
+      await store.send(\.view.tap) {
+        $0 = 1
+      }
+      await store.receive(\.delegate.success, 42 * 42)
+
+      await store.send(\.view.delete, [0])
+      await store.receive(\.delegate.success, 0)
+
+      await store.send(\.view.delete, [19, 23]) {
+        $0 = 2
+      }
+      await store.receive(\.delegate.success, 42)
+    }
   }
 
   private struct Client: DependencyKey {
@@ -575,9 +614,15 @@
   private enum Action {
     case tap
     case delegate(Delegate)
+    case view(View)
     @CasePathable
     enum Delegate {
       case success(Int)
+    }
+    @CasePathable
+    enum View {
+      case tap
+      case delete(IndexSet)
     }
   }
 #endif

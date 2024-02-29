@@ -71,7 +71,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
       }
     }
 
-    await store.send(.alert(.presented(.stopButtonTapped))) {
+    await store.send(\.alert.stopButtonTapped) {
       $0.alert = nil
       $0.mode = .notDownloaded
     }
@@ -143,7 +143,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
       }
     }
 
-    await store.send(.alert(.presented(.deleteButtonTapped))) {
+    await store.send(\.alert.deleteButtonTapped) {
       $0.alert = nil
       $0.mode = .notDownloaded
     }

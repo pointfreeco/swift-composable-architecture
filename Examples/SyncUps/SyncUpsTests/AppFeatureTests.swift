@@ -15,25 +15,16 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(
-      .path(
-        .push(
-          id: 0,
-          state: .detail(
-            SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])
-          )
-        )
-      )
+      \.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])))
     ) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
     }
 
-    await store.send(.path(.element(id: 0, action: .detail(.deleteButtonTapped)))) {
+    await store.send(\.path[id:0].detail.deleteButtonTapped) {
       $0.path[id: 0, case: \.detail]?.destination = .alert(.deleteSyncUp)
     }
 
-    await store.send(
-      .path(.element(id: 0, action: .detail(.destination(.presented(.alert(.confirmDeletion))))))
-    ) {
+    await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
       $0.path[id: 0, case: \.detail]?.destination = nil
       $0.syncUpsList.syncUps = []
     }
@@ -53,37 +44,23 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(
-      .path(
-        .push(
-          id: 0,
-          state: .detail(
-            SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])
-          )
-        )
-      )
+      \.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])))
     ) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
     }
 
-    await store.send(.path(.element(id: 0, action: .detail(.editButtonTapped)))) {
+    await store.send(\.path[id:0].detail.editButtonTapped) {
       $0.path[id: 0, case: \.detail]?.destination = .edit(
         SyncUpForm.State(syncUp: syncUp)
       )
     }
 
     syncUp.title = "Blob"
-    await store.send(
-      .path(
-        .element(
-          id: 0,
-          action: .detail(.destination(.presented(.edit(.set(\.syncUp, syncUp)))))
-        )
-      )
-    ) {
+    await store.send(\.path[id:0].detail.destination.edit.syncUp, syncUp) {
       $0.path[id: 0, case: \.detail]?.$destination[case: \.edit]?.syncUp.title = "Blob"
     }
 
-    await store.send(.path(.element(id: 0, action: .detail(.doneEditingButtonTapped)))) {
+    await store.send(\.path[id:0].detail.doneEditingButtonTapped) {
       $0.path[id: 0, case: \.detail]?.destination = nil
       $0.path[id: 0, case: \.detail]?.syncUp.title = "Blob"
     }
@@ -129,7 +106,7 @@ final class AppFeatureTests: XCTestCase {
     }
     store.exhaustivity = .off
 
-    await store.send(.path(.element(id: 1, action: .record(.onTask))))
+    await store.send(\.path[id:1].record.onTask)
     await store.receive(\.path.popFrom) {
       XCTAssertEqual($0.path.count, 1)
     }

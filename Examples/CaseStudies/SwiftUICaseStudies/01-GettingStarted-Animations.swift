@@ -37,6 +37,7 @@ struct Animations {
     case setColor(Color)
     case tapped(CGPoint)
 
+    @CasePathable
     enum Alert: Sendable {
       case resetConfirmationButtonTapped
     }

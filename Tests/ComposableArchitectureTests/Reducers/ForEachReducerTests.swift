@@ -17,10 +17,10 @@
         Elements()
       }
 
-      await store.send(.rows(.element(id: 1, action: "Blob Esq."))) {
+      await store.send(\.rows[id:1], "Blob Esq.") {
         $0.rows[id: 1]?.value = "Blob Esq."
       }
-      await store.send(.rows(.element(id: 2, action: ""))) {
+      await store.send(\.rows[id:2], "") {
         $0.rows[id: 2]?.value = ""
       }
       await store.receive(\.rows[id:2]) {
@@ -66,7 +66,7 @@
             """
         }
 
-        await store.send(.rows(.element(id: 1, action: "Blob Esq.")))
+        await store.send(\.rows[id:1], "Blob Esq.")
       }
     #endif
 

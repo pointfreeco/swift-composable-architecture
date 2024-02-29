@@ -1,69 +1,112 @@
 # Migrating to 1.9
 
-Update your code to make use of the new state sharing tools in the library, such as the ``Shared``
-property wrapper, and the ``PersistenceKey/appStorage(_:)-9zd2f`` and 
-``PersistenceKey/fileStorage(_:)`` persistence strategies.
+Update your code to make use of the new ``TestStore/send(_:assert:file:line:)-1oopl`` method on 
+``TestStore`` which gives a succinct syntax for sending actions with case key paths, and the
+``Reducer/dependency(_:)`` method for overriding dependencies.
 
 ## Overview
 
 The Composable Architecture is under constant development, and we are always looking for ways to
-simplify the library, and make it more powerful. This version of the library only introduced new 
-APIs and did not deprecate any existing APIs.
+simplify the library, and make it more powerful. As such, we often need to deprecate certain APIs
+in favor of newer ones. We recommend people update their code as quickly as possible to the newest
+APIs, and this article contains some tips for doing so.
 
-> Important: Before following this migration guide be sure you have fully migrated to the newest
-tools of version 1.8. See <doc:MigrationGuides> for more information.
+### Sending test store actions
 
-## Sharing state
+Version 1.4 of the library introduced the ability to receive test store actions using case key path
+syntax, massively simplifying how one asserts on actions received in a test:
 
-The new tools added are concerned with allowing one to seamlessly share state with many parts of an 
-application that is easy to understand, and most importantly, testable. See the dedicated 
-<doc:SharingState> article for more information on how to use these new tools. 
-
-To share state in one feature with another feature, simply use the ``Shared`` property wrapper:
-
-```swift
-@ObservableState
-struct State {
-  @Shared var signUpData: SignUpData
-  // ...
-}
+```diff
+-store.receive(.child(.presented(.response(.success("Hello"))
++store.receive(\.child.response.success)
 ```
 
-This will require that `SignUpData` be passed in from the parent, and any changes made to this state
-will be instantly observed by all features holding onto it.
-
-Further, there are persistence strategies one can employ in `@Shared`. For example, if you want any
-changes of `signUpData` to be automatically persisted to the file system you can use the
-``PersistenceKey/fileStorage(_:)`` and specify a URL:
+While version 1.6 of the library introduced the ability to assert against the payload of a received
+action:
 
 ```swift
-@ObservableState
-struct State {
-  @Shared(.fileStorage(URL(/* ... */) var signUpData = SignUpData()
-  // ...
-}
+store.receive(\.child.presented.success, "Hello")
 ```
 
-Upon app launch the `signUpData` will be populated from disk, and any changes made to `signUpData`
-will automatically be persisted to disk. Further, if the disk version changes, all instances of 
-`signUpData` in the application will automatically update.
+Version 1.9 introduces similar affordances for _sending_ actions to test stores via
+``TestStore/send(_:assert:file:line:)-1oopl`` and ``TestStore/send(_:_:assert:file:line:)``. These
+methods can significantly simplify integration-style tests that send deeply-nested actions to child
+features, and provide symmetry to how actions are received:
 
-There is another persistence strategy for storing simple data types in user defaults, called
-``PersistenceKey/appStorage(_:)-9zd2f``. It can refer to a value in user defaults by a string
-key:
+```diff
+-store.send(.path(.element(id: 0, action: .destination(.presented(.record(.startButtonTapped))))))
++store.send(\.path[id: 0].destination.record.startButtonTapped)
+ store.receive(\.path[id: 0].destination.record.timerTick)
+```
+
+> Tip: Case key paths offer specialized syntax for many different action types.
+>
+>   * ``PresentationAction``'s `presented` case can be collapsed:
+>
+>     ```diff
+>     -store.send(.destination(.presented(.tap)))
+>     +store.send(\.destination.tap)
+>     ```
+>
+>   * ``IdentifiedAction`` and ``StackAction`` can be subscripted into:
+>
+>     ```diff
+>     -store.send(.path(.element(id: 0, action: .tap)))
+>     +store.send(\.path[id: 0].tap)
+>     ```
+>
+>   * And ``BindableAction``s can dynamically chain into a key path of state:
+>
+>     ```diff
+>     -store.send(.binding(.set(\.firstName, "Blob")))
+>     +store.send(\.firstName, "Blob")
+>     ```
+>
+> Together, these helpers can massively simplify asserting against nested actions:
+>
+> ```diff
+> -store.send(
+> -  .path(
+> -    .element(
+> -      id: 0,
+> -      action: .destination(
+> -        .presented(
+> -          .sheet(
+> -            .binding(
+> -              .set(\.password, "blobisawesome")
+> -            )
+> -          )
+> -        )
+> -      )
+> -    )
+> -  )
+> -)
+> +store.send(\.path[id: 0].destination.sheet.password, "blobisawesome")
+> ```
+
+### Overriding dependencies
+
+Version 1.2 of [swift-dependencies](http://github.com/pointfreeco/swift-dependencies) introduced an
+alternative syntax for referencing a dependency:
+
+```diff
+-@Dependency(\.apiClient) var apiClient
++@Dependency(APIClient.self) var apiClient
+```
+
+The primary benefit of this syntax is that you do not need to define a dedicated computed property
+on `DependencyValues`, which saves a small amount of boilerplate.
+
+There is now a similar API for overriding dependencies on a reducer, ``Reducer/dependency(_:)``, 
+which can be used like so:
 
 ```swift
-@ObservableState 
-struct State {
-  @Shared(.appStorage("isOn")) var isOn = false
-  // ...
-}
+MyFeature()
+  .dependency(mockAPIClient)
 ```
 
-Similar to ``PersistenceKey/fileStorage(_:)``, upon launch of the application the initial value
-of `isOn` will be populated from user defaults, and any change to `isOn` will be automatically 
-persisted to user defaults. Further, if the user defaults value changes, all instances of `isOn`
-in the application will automatically update.
+The type of `mockAPIClient` determines how the dependency is overridden.
 
-That is the basics of sharing data. Be sure to see the dedicated <doc:SharingState> article
-for more detailed information.
+This style of accessing and overriding dependencies is really only appropriate for dependencies
+defined directly in your project. If you are shipping a dependency client that is used by others, 
+then still prefer adding a computed property to `DependencyValues` in order to be more discoverable.
