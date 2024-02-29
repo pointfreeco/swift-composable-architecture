@@ -107,6 +107,6 @@ MyFeature()
 
 The type of `mockAPIClient` determines how the dependency is overridden.
 
-This style of accessing and overriding dependencies is really only approprirate for dependencies
+This style of accessing and overriding dependencies is really only appropriate for dependencies
 defined directly in your project. If you are shipping a dependency client that is used by others, 
 then still prefer adding a computed property to `DependencyValues` in order to be more discoverable.
