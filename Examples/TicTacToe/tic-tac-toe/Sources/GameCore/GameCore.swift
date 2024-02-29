@@ -63,7 +63,7 @@ public struct Game: Sendable {
   }
 }
 
-public enum Player: Equatable {
+public enum Player: Equatable, Sendable {
   case o
   case x
 

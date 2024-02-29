@@ -31,9 +31,11 @@ struct AlertAndConfirmationDialog {
     case confirmationDialog(PresentationAction<ConfirmationDialog>)
     case confirmationDialogButtonTapped
 
+    @CasePathable
     enum Alert {
       case incrementButtonTapped
     }
+    @CasePathable
     enum ConfirmationDialog {
       case incrementButtonTapped
       case decrementButtonTapped

@@ -160,7 +160,7 @@ final class RecordMeetingTests: XCTestCase {
     await store.receive(\.timerTick)
     await store.receive(\.timerTick)
 
-    await store.send(.alert(.presented(.confirmSave))) {
+    await store.send(\.alert.confirmSave) {
       $0.alert = nil
     }
 
@@ -188,7 +188,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.alert = .endMeeting(isDiscardable: true)
     }
 
-    await store.send(.alert(.presented(.confirmDiscard))) {
+    await store.send(\.alert.confirmDiscard) {
       $0.alert = nil
     }
 
@@ -236,7 +236,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.alert = .endMeeting(isDiscardable: false)
     }
 
-    await store.send(.alert(.presented(.confirmSave))) {
+    await store.send(\.alert.confirmSave) {
       $0.alert = nil
     }
 
@@ -292,7 +292,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.transcript = "I completed the project ❌"
     }
 
-    await store.send(.alert(.dismiss)) {
+    await store.send(\.alert.dismiss) {
       $0.alert = nil
     }
 
@@ -336,7 +336,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.alert = .speechRecognizerFailed
     }
 
-    await store.send(.alert(.presented(.confirmDiscard))) {
+    await store.send(\.alert.confirmDiscard) {
       $0.alert = nil
     }
 

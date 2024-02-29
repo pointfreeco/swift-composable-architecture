@@ -103,6 +103,9 @@
         Emulate the user typing into the name text field of the contact. The trailing closure is
         where we can assert on how state changed after sending the action.
         
+        > Tip: The payload of an action can be sent as a second argument when using case key path
+        > syntax.
+        
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0010.swift)
       }
       
