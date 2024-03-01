@@ -43,38 +43,26 @@ final class AppStorageTests: XCTestCase {
     self.wait(for: [countDidChange], timeout: 0)
   }
 
-  func testChangeUserDefaultsDirectly() async throws {
+  func testChangeUserDefaultsDirectly() {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage("count")) var count = 0
-
-    try await Task.sleep(nanoseconds: 10_000_000)
     defaults.setValue(count + 42, forKey: "count")
-    try await Task.sleep(nanoseconds: 100_000_000)
     XCTAssertEqual(count, 42)
   }
 
-  func testDeleteUserDefault() async throws {
+  func testDeleteUserDefault() {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage("count")) var count = 0
     count = 42
-
-    try await Task.sleep(nanoseconds: 1_000_000)
     defaults.removeObject(forKey: "count")
-    try await Task.sleep(nanoseconds: 1_000_000)
     XCTAssertEqual(count, 0)
   }
 
   func testKeyPath() async throws {
-    try await withMainSerialExecutor {
-      @Dependency(\.defaultAppStorage) var defaults
-      @Shared(.appStorage(\.count)) var count = 0
-      _ = count
-      await Task.yield()
-
-      defaults.count += 1
-      try await Task.sleep(nanoseconds: 1_000_000)
-      XCTAssertEqual(count, 1)
-    }
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage(\.count)) var count = 0
+    defaults.count += 1
+    XCTAssertEqual(count, 1)
   }
 }
 
