@@ -14,7 +14,6 @@ SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watch
 * [Examples](#examples)
 * [Basic usage](#basic-usage)
 * [Documentation](#documentation)
-  * [Migration Guides](#migration-guides)
 * [Community](#community)
 * [Installation](#installation)
 * [Translations](#translations)
