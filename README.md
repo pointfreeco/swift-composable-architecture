@@ -14,6 +14,7 @@ SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watch
 * [Examples](#examples)
 * [Basic usage](#basic-usage)
 * [Documentation](#documentation)
+* [Migration Guides](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides)
 * [Community](#community)
 * [Installation](#installation)
 * [Translations](#translations)
