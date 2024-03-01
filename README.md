@@ -14,7 +14,7 @@ SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watch
 * [Examples](#examples)
 * [Basic usage](#basic-usage)
 * [Documentation](#documentation)
-* [Migration Guides](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migrationguides)
+  * [Migration Guides](#migration-guides)
 * [Community](#community)
 * [Installation](#installation)
 * [Translations](#translations)
@@ -554,6 +554,17 @@ The documentation for releases and `main` are available here:
 </details>
 
 <br>
+
+#### Migration Guides
+
+* [1.9.0](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.9)
+* [1.8.0](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.8)
+* [1.7.0](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7)
+* [1.6.0](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6)
+* [1.5.0](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5)
+* [1.4.0](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4)
+
+#### Other Articles
 
 There are a number of articles in the documentation that you may find helpful as you become more 
 comfortable with the library:
