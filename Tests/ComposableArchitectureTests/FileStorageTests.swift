@@ -1,5 +1,5 @@
-import Perception
 @_spi(Internals) import ComposableArchitecture
+import Perception
 import XCTest
 
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
@@ -10,7 +10,7 @@ final class FileStorageTests: XCTestCase {
       $0.defaultFileStorage = fileStorage
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
       users.append(.blob)
       try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob])
     }
@@ -23,13 +23,13 @@ final class FileStorageTests: XCTestCase {
       $0.defaultFileStorage = fileStorage
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       users.append(.blob)
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       testScheduler.advance(by: .seconds(5) - .milliseconds(1))
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       testScheduler.advance(by: .milliseconds(1))
       try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob])
@@ -43,23 +43,24 @@ final class FileStorageTests: XCTestCase {
       $0.defaultFileStorage = fileStorage
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       users.append(.blob)
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       testScheduler.advance(by: .seconds(3))
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       users.append(.blobJr)
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       testScheduler.advance(by: .seconds(3))
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       testScheduler.advance(by: .seconds(2))
 
-      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+      try XCTAssertNoDifference(
+        fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
     }
   }
 
@@ -71,10 +72,10 @@ final class FileStorageTests: XCTestCase {
       $0.defaultFileStorage = fileStorage
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       users.append(.blob)
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       NotificationCenter.default.post(name: willResignNotificationName, object: nil)
       testScheduler.advance()
@@ -82,7 +83,7 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  func testWillResignAndDebounce() throws {
+  func testWillResignAndDebounce() async throws {
     guard let willResignNotificationName else { return }
     let testScheduler = DispatchQueue.test
     let fileStorage = EphemeralFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
@@ -90,13 +91,13 @@ final class FileStorageTests: XCTestCase {
       $0.defaultFileStorage = fileStorage
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       users.append(.blob)
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       testScheduler.advance(by: .seconds(3))
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [:])
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       NotificationCenter.default.post(name: willResignNotificationName, object: nil)
       testScheduler.advance()
@@ -104,8 +105,11 @@ final class FileStorageTests: XCTestCase {
 
       users.append(.blobJr)
       testScheduler.run()
-      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+      try XCTAssertNoDifference(
+        fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
     }
+
+    try await Task.sleep(nanoseconds: 1_000_000)
   }
 
   func testMultipleFiles() throws {
@@ -142,7 +146,7 @@ final class FileStorageTests: XCTestCase {
       await Task.yield()
 
       try XCTAssertNoDifference(
-        JSONDecoder().decode([User].self, from: Data(contentsOf: .fileURL)) ,
+        JSONDecoder().decode([User].self, from: Data(contentsOf: .fileURL)),
         [.blob]
       )
     }
@@ -196,7 +200,7 @@ final class FileStorageTests: XCTestCase {
         XCTAssertNoDifference(users, [.blob])
 
         try JSONEncoder().encode([User.blobJr]).write(to: .fileURL)
-        await Task.yield()
+        try await Task.sleep(nanoseconds: 1_000_000)
         XCTAssertNoDifference(users, [.blobJr])
       }
     }
@@ -283,7 +287,8 @@ final class FileStorageTests: XCTestCase {
 
         try JSONEncoder().encode([User.blobJr]).write(to: .fileURL)
         try await Task.sleep(nanoseconds: 1_000_000)
-        XCTTODO("""
+        XCTTODO(
+          """
           This fails but ideally it wouldn't. If you delete a file then you can't listen for writes
           to that file in the future. Perhaps we have to recreate the dispatch source?
           """)
@@ -321,6 +326,10 @@ private struct User: Codable, Equatable, Identifiable {
 
 extension [URL: Data] {
   fileprivate func users(for url: URL) throws -> [User]? {
-    try self[url].map { try JSONDecoder().decode([User].self, from: $0) }
+    guard
+      let data = self[url],
+      !data.isEmpty
+    else { return nil }
+    return try JSONDecoder().decode([User].self, from: data)
   }
 }
