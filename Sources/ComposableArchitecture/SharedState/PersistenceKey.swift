@@ -11,7 +11,6 @@
   /// <doc:SharingState#Custom-persistence> section.
   public protocol PersistenceKey<Value>: Hashable {
     associatedtype Value
-    associatedtype Updates: AsyncSequence = _Empty<Value?> where Updates.Element == Value?
 
     /// Loads the freshest value from storage. Returns `nil` if there is no value in storage.
     func load() -> Value?  // TODO: Should this be throwing?
@@ -19,19 +18,11 @@
     /// Saves a value to storage.
     func save(_ value: Value)
 
-    /// An async sequence that emits when the external storage is changed from the outside.
-    ///
-    /// An "empty" sequence that does not emit and finishes immediately is provided by default.
-    var updates: Updates { get }
-
+    /// Subscribes to external updates.
     func subscribe(didSet: @escaping (Value?) -> Void) -> Shared<Value>.Subscription
   }
 
-  extension PersistenceKey where Updates == _Empty<Value?> {
-    public var updates: _Empty<Value?> {
-      _Empty()
-    }
-
+  extension PersistenceKey {
     public func subscribe(didSet: @escaping (Value?) -> Void) -> Shared<Value>.Subscription {
       Shared.Subscription {}
     }
@@ -49,15 +40,6 @@
       func cancel() {
         self.onCancel()
       }
-    }
-  }
-
-  public struct _Empty<Element>: AsyncSequence {
-    public struct AsyncIterator: AsyncIteratorProtocol {
-      public func next() async throws -> Element? { nil }
-    }
-    public func makeAsyncIterator() -> AsyncIterator {
-      AsyncIterator()
     }
   }
 

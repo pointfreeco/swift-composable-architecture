@@ -107,15 +107,6 @@
         cancellable.cancel()
       }
     }
-
-    public var updates: AsyncStream<Value?> {
-      AsyncStream { continuation in
-        let subscription = self.subscribe { continuation.yield($0) }
-        continuation.onTermination = { _ in
-          _ = subscription
-        }
-      }
-    }
   }
 
   extension FileStorageKey: Hashable {
