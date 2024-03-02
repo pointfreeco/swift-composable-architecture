@@ -80,7 +80,7 @@
       isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
     )
     #if canImport(Combine)
-      private let _subject = PassthroughSubject<Value, Never>()
+      private let _subject: CurrentValueRelay<Value>
     #endif
 
     init(
@@ -90,6 +90,7 @@
       line: UInt
     ) {
       self._currentValue = persistenceKey.load() ?? initialValue()
+      self._subject = CurrentValueRelay(self._currentValue)
       self.persistenceKey = persistenceKey
       self.fileID = fileID
       self.line = line
@@ -106,6 +107,7 @@
       line: UInt
     ) {
       self._currentValue = value
+      self._subject = CurrentValueRelay(value)
       self.persistenceKey = nil
       self.fileID = fileID
       self.line = line
@@ -158,7 +160,7 @@
     }
 
     var publisher: AnyPublisher<Value, Never> {
-      self._subject.eraseToAnyPublisher()
+      self._subject.dropFirst().eraseToAnyPublisher()
     }
 
     var description: String {
