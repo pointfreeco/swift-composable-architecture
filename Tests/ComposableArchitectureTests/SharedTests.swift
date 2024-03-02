@@ -583,6 +583,13 @@ final class SharedTests: XCTestCase {
       $0.count = 42
     }
   }
+
+  func testPersistenceAutoclosure() {
+    @Dependency(\.defaultAppStorage) var storage
+    storage.set(1, forKey: "count")
+    @Shared(.appStorage("count")) var count = { () -> Int in fatalError() }()
+    XCTAssertEqual(count, 1)
+  }
 }
 
 @Reducer

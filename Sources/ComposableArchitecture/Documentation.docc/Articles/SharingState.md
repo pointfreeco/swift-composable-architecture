@@ -24,6 +24,7 @@ you want to use something other than user defaults or the file system, such as S
   * [User defaults](#User-defaults)
   * [File storage](#File-storage)
   * [Custom persistence](#Custom-persistence)
+* [Initialization rules](#Initialization-rules)
 * [Testing](#Testing)
 * [Type-safe keys](#Type-safe-keys)
 * [Shared state in pre-observation apps](#Shared-state-in-pre-observation-apps)
@@ -210,6 +211,91 @@ With those steps done you can make use of the strategy in the same way one does 
 @Shared(.custom(/* ... */)) var myValue: Value
 ```
 
+## Initialization rules
+
+Because the state sharing tools use property wrappers there are special rules that must be followed
+when writing custom initializers for your types. These rules apply to _any_ kind of property 
+wrapper, including those that ship with vanilla SwiftUI (e.g. `@State`, `@StateObject`, etc.),
+but the rules can be quite confusing and so below we describe the various ways to initialize
+shared state.
+
+It is common to need to provide a custom initialize to your feature's 
+``Reducer/State`` type, especially when modularizing. When using
+[`@Shared`](<doc:Shared>) in your `State` that can become complicated.
+Depending on your exact situation you can do what of the following:
+
+* You are using non-persisted shared state (i.e. no argument is passed to `@Shared`), and the 
+"source of truth" of the state lives with the parent feature. Then the initializer should take a 
+`Shared` value and you can assign through the underscored property:
+
+  ```swift
+  public struct State {
+    @Shared public var count: Int
+    // other fields
+
+    public init(count: Shared<Int>, /* other fields */) {
+      self._count = count
+      // other assignments
+    }
+  }
+  ```
+
+* You are using non-persisted shared state (i.e. no argument is passed to `@Shared`), and the 
+"source of truth" of the state lives within the feature you are initializing. Then the initializer
+should take a plain, non-`Shared` value and you construct the `Shared` value in the initializer:
+
+  ```swift
+  public struct State {
+    @Shared public var count: Int
+    // other fields
+
+    public init(count: Int, /* other fields */) {
+      self._count = Shared(count)
+      // other assignments
+    }
+  }
+  ```
+
+* You are using a persistence strategy with shared state (e.g. 
+``PersistenceKey/appStorage(_:)-6nc2t``, ``PersistenceKey/fileStorage(_:)``, etc.), then the
+initializer should take a plain, non-`Shared` value and you construct the `Shared` value in the
+initializer using ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` which takes a
+``PersistenceKey`` as the second argumnet:
+
+  ```swift
+  public struct State {
+    @Shared public var count: Int
+    // other fields
+
+    public init(count: Int, /* other fields */) {
+      self._count = Shared(wrappedValue: count, .appStorage("count"))
+      // other assignments
+    }
+  }
+  ```
+
+  The declaration of `count` can use `@Shared` without an argument because the persistence
+  strategy is specified in the initializer.
+
+  > Important: The value passed to this initializer is only used if the external storage does not
+  > already have a value. If a value exists in the storage then it is not used. In fact, the
+  > `wrappedValue` argument of ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` is an 
+  > `@autoclosure` so that it is not even evaluated if not used. For that reason you
+  > may prefer to make the argument to the initializer an `@autoclosure` so that it too is evaluated
+  > only if actually used:
+  > 
+  > ```swift
+  > public struct State {
+  >   @Shared public var count: Int
+  >   // other fields
+  > 
+  >   public init(count: @autoclosure () -> Int, /* other fields */) {
+  >     self._count = Shared(wrappedValue: count(), .appStorage("count"))
+  >     // other assignments
+  >   }
+  > }
+  > ```
+
 ## Testing
 
 Shared state behaves quite a bit different from the regular state held in Composable Architecture
@@ -219,8 +305,9 @@ cause serious problems with testing, especially exhaustive testing that the libr
 <doc:Testing>), because references cannot be copied and so one cannot inspect the changes before and
 after an action is sent.
 
-For this reason, the ``Shared`` macro does extra work during testing to preserve a previous snapshot of
-the state so that one can still exhaustively assert on shared state, even though it is a reference.
+For this reason, the ``Shared`` macro does extra work during testing to preserve a previous snapshot 
+of the state so that one can still exhaustively assert on shared state, even though it is a 
+reference.
 
 For the most part, shared state can be tested just like any regular state held in your features. For
 example, consider the following simple counter feature that uses in-memory shared state for the
