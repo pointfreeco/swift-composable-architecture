@@ -597,6 +597,17 @@
       }
       await store.receive(\.delegate.success, 42)
     }
+
+    func testBindingTestStore_WhenStateAndActionHaveSameName() async {
+      let store = TestStore(initialState: .init()) {
+        SameNameForStateAndAction()
+      }
+      await store.send(.onAppear)
+      await store.receive(\.isOn)
+      await store.receive(\.binding.isOn) {
+        $0.isOn = true
+      }
+    }
   }
 
   private struct Client: DependencyKey {
@@ -623,6 +634,30 @@
     enum View {
       case tap
       case delete(IndexSet)
+    }
+  }
+
+  @Reducer
+  struct SameNameForStateAndAction {
+    @ObservableState
+    struct State: Equatable { var isOn = false }
+    enum Action: BindableAction {
+      case binding(BindingAction<State>)
+      case onAppear
+      case isOn(Bool)
+    }
+    var body: some ReducerOf<Self> {
+      BindingReducer()
+      Reduce { state, action in
+        switch action {
+        case .binding:
+          return .none
+        case .onAppear:
+          return .send(.isOn(true))
+        case .isOn:
+          return .send(.set(\.isOn, true))
+        }
+      }
     }
   }
 #endif

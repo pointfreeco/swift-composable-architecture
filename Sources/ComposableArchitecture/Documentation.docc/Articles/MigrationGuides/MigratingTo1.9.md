@@ -17,7 +17,7 @@ Version 1.4 of the library introduced the ability to receive test store actions 
 syntax, massively simplifying how one asserts on actions received in a test:
 
 ```diff
--store.receive(.child(.presented(.response(.success("Hello"))
+-store.receive(.child(.presented(.response(.success("Hello")))))
 +store.receive(\.child.response.success)
 ```
 
