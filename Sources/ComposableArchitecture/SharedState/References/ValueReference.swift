@@ -65,6 +65,48 @@
     }
   }
 
+extension SharedReader {
+  @_disfavoredOverload
+  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
+    self.init(shared: Shared(value, fileID: fileID, line: line))
+  }
+
+  @_disfavoredOverload
+  @available(
+    *,
+     deprecated,
+     message: "Use '@Shared' with a value type or supported reference type"
+  )
+  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line)
+  where Value: AnyObject {
+    self.init(shared: Shared(value, fileID: fileID, line: line))
+  }
+
+  public init(
+    wrappedValue value: @autoclosure @escaping () -> Value,
+    _ persistenceKey: some PersistenceKey<Value>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.init(shared: Shared(wrappedValue: value(), persistenceKey, fileID: fileID, line: line))
+  }
+
+  @_disfavoredOverload
+  @available(
+    *,
+     deprecated,
+     message: "Use '@Shared' with a value type or supported reference type"
+  )
+  public init(
+    wrappedValue value: @autoclosure @escaping () -> Value,
+    _ persistenceKey: some PersistenceKey<Value>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Value: AnyObject {
+    self.init(wrappedValue: value(), persistenceKey, fileID: fileID, line: line)
+  }
+}
+
   private final class ValueReference<Value>: Reference {
     private var _currentValue: Value {
       didSet {

@@ -25,7 +25,7 @@ import Foundation
       self.init(reference: reference, keyPath: \Value.self)
     }
 
-    public init(projectedValue: Shared) {
+    public init(projectedValue: Self) {
       self = projectedValue
     }
 

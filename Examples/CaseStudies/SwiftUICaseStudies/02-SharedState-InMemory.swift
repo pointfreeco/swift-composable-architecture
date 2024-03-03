@@ -80,6 +80,8 @@ extension SharedStateInMemory {
     struct State: Equatable {
       @Presents var alert: AlertState<Action.Alert>?
       @Shared(.stats) var stats = Stats()
+      @ObservationStateIgnored
+      @SharedReader(.stats) var readOnlyStats = Stats()
     }
 
     enum Action {
@@ -169,6 +171,12 @@ private struct CounterTabView: View {
         }
 
         Button("Is this prime?") { store.send(.isPrimeButtonTapped) }
+
+        Section {
+          Text(store.readOnlyStats.count.description)
+        } header: {
+          Text("Read only")
+        }
       }
     }
     .buttonStyle(.borderless)
