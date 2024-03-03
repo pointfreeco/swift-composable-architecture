@@ -64,7 +64,30 @@ import Foundation
         }
       }
     }
-
+    
+    /// A projection of the shared value that returns a shared reference.
+    ///
+    /// Use the projected value to pass a shared value down to another feature. This is most
+    /// commonly done to share a value from one feature to another:
+    ///
+    /// ```swift
+    /// case .nextButtonTapped:
+    ///   state.path.append(
+    ///     PersonalInfoFeature(signUpData: state.$signUpData)
+    ///   )
+    /// ```
+    ///
+    /// Further you can use dot-chaining syntax to derive a smaller piece of shared state to hand
+    /// to another feature:
+    ///
+    /// ```swift
+    /// case .nextButtonTapped:
+    ///   state.path.append(
+    ///     PhoneNumberFeature(phoneNumber: state.$signUpData.phoneNumber)
+    ///   )
+    /// ```
+    ///
+    /// See <doc:SharingState#Deriving-shared-state> for more details.
     public var projectedValue: Self {
       get { self }
       set { self = newValue }

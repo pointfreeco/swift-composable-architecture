@@ -25,6 +25,7 @@ you want to use something other than user defaults or the file system, such as S
   * [File storage](#File-storage)
   * [Custom persistence](#Custom-persistence)
 * [Initialization rules](#Initialization-rules)
+* [Deriving shared state](#Deriving-shared-state)
 * [Testing](#Testing)
 * [Type-safe keys](#Type-safe-keys)
 * [Shared state in pre-observation apps](#Shared-state-in-pre-observation-apps)
@@ -60,10 +61,10 @@ This is the simplest kind of shared state to get start with. It allows you to sh
 many features without any persistence. The data is only held in memory, and will be cleared out the
 next time the application is run.
 
-To share data in this style, use the ``Shared`` property wrapper with no arguments. For example,
-suppose you have a feature that holds a count and you want to be able to hand a shared reference to
-that count to other features. You can do so by holding onto a `@Shared` property in the feature's
-state:
+To share data in this style, use the [`@Shared`](<doc:Shared>) property wrapper with no arguments.
+For example, suppose you have a feature that holds a count and you want to be able to hand a shared
+reference to that count to other features. You can do so by holding onto a `@Shared` property in
+the feature's state:
 
 ```swift
 @Reducer
@@ -96,7 +97,7 @@ struct ChildFeature {
 ```
 
 When the parent features creates the child feature's state, it can pass a _reference_ to the shared
-count rather than the actual count value by using the `$count` projected value:
+count rather than the actual count value by using the `$count` ``Shared/projectedValue``:
 
 ```swift
 case .presentButtonTapped:
@@ -109,7 +110,7 @@ Now any mutation the `ChildFeature` makes to its `count` will be instantly made 
 
 ## Persisted shared state
 
-Explicit shared state discussed above is a nice, lightweight way to share a piece of data with
+Explicitly shared state discussed above is a nice, lightweight way to share a piece of data with
 many parts of your application. However, sometimes you want to share state with the entire 
 application without having to pass it around explicitly. One can do this by passing a
 ``PersistenceKey`` to the `@Shared` property wrapper, and the library comes with three persistence
@@ -147,8 +148,8 @@ get out of sync.
 
 If you would like to persist your shared value across application launches, then you can use the
 ``PersistenceKey/appStorage(_:)-9zd2f`` strategy with `@Shared` in order to automatically persist
-any changes to the value to user defaults. It works similarly to in-memory sharing discussed above,
-but it requires a key to store the value in user defaults, as well as a default value that will be
+any changes to the value to user defaults. It works similarly to in-memory sharing discussed above.
+It requires a key to store the value in user defaults, as well as a default value that will be
 used when there is no value in the user defaults:
 
 ```swift
@@ -161,14 +162,14 @@ automatically loaded the next time the application launches.
 This form of persistence only works for simple data types because that is what works best with
 `UserDefaults`. This includes strings, booleans, integers, doubles, URLs, data, and more. If you
 need to store more complex data, such as custom data types serialized to JSON, then you will want
-to use the <doc:SharingState#File-storage> strategy or a <doc:SharingState#Custom-persistence>
-strategy.
+to use the [`.fileStorage`](<doc:SharingState#File-storage>) strategy or a 
+[custom persistence](<doc:SharingState#Custom-persistence>) strategy.
 
 #### File storage
 
 If you would like to persist your shared value across application launches, and your value is
 complex (such as a custom data type), then you can use the ``PersistenceKey/fileStorage(_:)``
-strategy with `@Shared`. It automatically persists any changes to the value to the file system.
+strategy with `@Shared`. It automatically persists any changes to the file system.
 
 It works similarly to the in-memory sharing discussed above, but it requires a URL to store the data
 on disk, as well as a default value that will be used when there is no data in the file system:
@@ -295,6 +296,84 @@ initializer using ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` which takes
   >   }
   > }
   > ```
+
+## Deriving shared state
+
+It is possible to derive shared state for sub-parts of an existing piece of shared state. For 
+example, suppose you have a multi-step signup flow that uses `Shared<SignUpData>` in order to share
+data between each screen. However, some screens may not need all of `SignUpData`, but instesad just
+a small part. The phone number confirmation screen may only need access to `signUpData.phoneNumber`,
+and so that feature can hold onto just `Shared<String>` to express this fact:
+
+```swift
+@Reducer 
+struct PhoneNumberFeature { 
+  struct State {
+    @Shared var phoneNumber: String
+  }
+  // ...
+}
+```
+
+Then, when the parent feature constructs the `PhoneNumberFeature` it can derive a small piece of
+shared state from `Shared<SignUpData>` to pass along:
+
+```swift
+case .nextButtonTapped:
+  state.path.append(
+    PhoneNumberFeature.State(phoneNumber: state.$signUpData.phoneNumber)
+  )
+```
+
+Here we are using the ``Shared/projectedValue`` value using `$` syntax, `$signUpData`, and then
+further dot-chaining onto that projection to derive a `Shared<String>`. This can be a powerful way
+for features to hold onto only the bare minimum of shared state it needs to do its job.
+
+It can be instructive to think of `@Shared` as the Composable Architecture analogue of `@Bindable`
+in vanilla SwiftUI. You use it to express that the actual "source of truth" of the value lies 
+elsewhere, but you want to be able to read its most current value and write to it.
+
+This also works for persistence strategies. If a parent feature holds onto a `@Shared` piece of 
+state with a persistence strategy:
+
+```swift
+@Reducer
+struct ParentFeature {
+  struct State {
+    @Shared(.fileStorage(.currentUser)) var currentUser
+  }
+  // ...
+}
+```
+
+…and a child feature wants access to just a shared _piece_ of `currentUser`, such as their name, 
+then they can do so by holding onto a simple, unadorned `@Shared`:
+
+```swift
+@Reducer
+struct ChildFeature {
+  struct State {
+    @Shared var currentUserName: String
+  }
+  // ...
+}
+```
+
+And then the parent can pass along `$currentUser.name` to the child feature when constructing its
+state:
+
+```swift
+case .editNameButtonTapped:
+  state.destination = .editName(
+    EditNameFeature(name: state.$currentUser.name)
+  )
+```
+
+Any changes the child feature makes to its shared `name` will be automatically made to the 
+parent's shared `currentUser`, and further those changes will be automatically persisted thanks
+to the `.fileStorage` persistence strategy used. This means the child feature gets to describe that
+it needs access to shared state without describing the persistence strategy, and the parent can
+be responsible for persisting and deriving shared state to pass to the child.
 
 ## Testing
 
