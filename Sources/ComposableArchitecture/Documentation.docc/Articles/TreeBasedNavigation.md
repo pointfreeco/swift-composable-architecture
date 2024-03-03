@@ -441,7 +441,7 @@ additional logic, such as closing the "edit" feature and saving the edited item 
 
 ```swift
 case .destination(.presented(.editItem(.saveButtonTapped))):
-  guard case let .editItem(editItemState) = self.destination
+  guard case let .editItem(editItemState) = state.destination
   else { return .none }
 
   state.destination = nil
