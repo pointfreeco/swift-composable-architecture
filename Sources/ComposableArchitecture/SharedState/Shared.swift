@@ -253,6 +253,29 @@ import Foundation
 
   extension Shared
   where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable & Sendable {
+    /// Derives a collection of shared elements from a shared collection of elements.
+    ///
+    /// This can be useful when used in conjunction with `ForEach` in order to derive a shared
+    /// reference for each element of a collection:
+    ///
+    /// ```swift
+    /// struct State {
+    ///   @Shared(.fileStorage(.todos)) var todos: IdentifiedArrayOf<Todo> = []
+    ///   // ...
+    /// }
+    ///
+    /// // ...
+    ///
+    /// ForEach(store.$todos.elements) { $todo in
+    ///   NavigationLink(
+    ///     // $todo: Shared<Todo>
+    ///     //  todo: Todo
+    ///     state: Path.State.todo(TodoFeature.State(todo: $todo))
+    ///   ) {
+    ///     Text(todo.title)
+    ///   }
+    /// }
+    /// ```
     public var elements: some RandomAccessCollection<Shared<Value.Element>> {
       zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
         self[index, default: DefaultSubscript(element)]

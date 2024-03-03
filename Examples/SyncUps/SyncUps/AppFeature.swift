@@ -24,10 +24,6 @@ struct AppFeature {
   @Dependency(\.date.now) var now
   @Dependency(\.uuid) var uuid
 
-  private enum CancelID {
-    case saveDebounce
-  }
-
   var body: some ReducerOf<Self> {
     Scope(state: \.syncUpsList, action: \.syncUpsList) {
       SyncUpsList()
@@ -35,11 +31,9 @@ struct AppFeature {
     Reduce { state, action in
       switch action {
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
-        guard case let .some(.detail(detailState)) = state.path[id: id]
-        else { return .none }
-
         switch delegateAction {
         case .startMeeting:
+          let detailState = state.path[id: id, case: \.detail]!
           state.path.append(.record(RecordMeeting.State(syncUp: detailState.$syncUp)))
           return .none
         }

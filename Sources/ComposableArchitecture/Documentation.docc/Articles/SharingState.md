@@ -375,6 +375,32 @@ to the `.fileStorage` persistence strategy used. This means the child feature ge
 it needs access to shared state without describing the persistence strategy, and the parent can
 be responsible for persisting and deriving shared state to pass to the child.
 
+There is another tool for deriving shared state, and it is the computed property ``Shared/elements``
+that is defined on shared collections. It derives a collection of shared elements so that you can
+get access to a shared reference of just one particular element in a collection. 
+
+This can be useful when used in conjunction with `ForEach` in order to derive a shared reference for 
+each element of a collection:
+
+```swift
+struct State {
+  @Shared(.fileStorage(.todos)) var todos: IdentifiedArrayOf<Todo> = []
+  // ...
+}
+
+// ...
+
+ForEach(store.$todos.elements) { $todo in
+  NavigationLink(
+    // $todo: Shared<Todo>
+    //  todo: Todo
+    state: Path.State.todo(TodoFeature.State(todo: $todo))
+  ) {
+    Text(todo.title)
+  }
+}
+```
+
 ## Testing
 
 Shared state behaves quite a bit different from the regular state held in Composable Architecture
