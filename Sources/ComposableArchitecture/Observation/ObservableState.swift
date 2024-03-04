@@ -19,41 +19,6 @@
     }
   #endif
 
-  extension ObservableState where Self: CasePathable {
-    public subscript<Value>(
-      dynamicMember keyPath: KeyPath<Self.AllCasePaths, AnyCasePath<Self, Value>>
-    ) -> Value? {
-      get { Self.allCasePaths[keyPath: keyPath].extract(from: self) }
-      @available(*, unavailable, message: "Optional cannot be assigned")
-      set {
-        let casePath = Self.allCasePaths[keyPath: keyPath]
-        guard casePath.extract(from: self) != nil else {
-          // TODO: Runtime warn?
-          return
-        }
-        if let newValue {
-          self = casePath.embed(newValue)
-        }
-      }
-    }
-
-    @_disfavoredOverload
-    public subscript<Value>(
-      dynamicMember keyPath: KeyPath<Self.AllCasePaths, AnyCasePath<Self, Value>>
-    ) -> Value {
-      @available(*, unavailable)
-      get { Self.allCasePaths[keyPath: keyPath].extract(from: self)! }
-      set {
-        let casePath = Self.allCasePaths[keyPath: keyPath]
-        guard casePath.extract(from: self) != nil else {
-          // TODO: Runtime warn?
-          return
-        }
-        self = casePath.embed(newValue)
-      }
-    }
-  }
-
   /// A unique identifier for a observed value.
   public struct ObservableStateID: Equatable, Hashable, Sendable {
     @usableFromInline
@@ -232,3 +197,28 @@
     value._$willModify()
   }
 #endif
+
+@CasePathable @dynamicMemberLookup enum Foo: Equatable {
+  case bar(Bar)
+  case baz(Baz)
+  case fizzBuzz
+  case blob(Blob)
+  case foo(String?)
+}
+@CasePathable @dynamicMemberLookup enum Bar: Equatable {
+  case int(Int)
+}
+@CasePathable @dynamicMemberLookup enum Baz: Equatable {
+  case string(String)
+}
+@CasePathable enum Blob: Equatable {
+}
+@CasePathable @dynamicMemberLookup enum Fizz: Equatable {
+  case buzz(Buzz?)
+}
+@CasePathable @dynamicMemberLookup enum Buzz: Equatable {
+  case fizzBuzz(FizzBuzz?)
+}
+@CasePathable @dynamicMemberLookup enum FizzBuzz: Equatable {
+  case int(Int)
+}
