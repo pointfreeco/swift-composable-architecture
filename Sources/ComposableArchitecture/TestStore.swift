@@ -529,43 +529,6 @@ public final class TestStore<State, Action> {
     self.useMainSerialExecutor = true
   }
 
-  /// Creates a test store with an initial state and a reducer powering its runtime.
-  ///
-  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
-  /// use a test store.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state the feature starts in.
-  ///   - reducer: The reducer that powers the runtime of the feature.
-  ///   - prepareDependencies: A closure that can be used to override dependencies that will be
-  ///     accessed during the test. These dependencies will be used when producing the initial
-  ///     state.
-  @available(*, deprecated, message: "State must be equatable to perform assertions.")
-  public init<R: Reducer>(
-    initialState: @autoclosure () -> R.State,
-    @ReducerBuilder<State, Action> reducer: () -> R,
-    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
-    },
-    file: StaticString = #file,
-    line: UInt = #line
-  )
-  where
-    R.State == State,
-    R.Action == Action
-  {
-    let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      Dependencies.withDependencies(prepareDependencies) {
-        TestReducer(Reduce(reducer()), initialState: initialState())
-      }
-    }
-    self.file = file
-    self.line = line
-    self.reducer = reducer
-    self.store = Store(initialState: reducer.state) { reducer }
-    self.timeout = 1 * NSEC_PER_SEC
-    self.useMainSerialExecutor = true
-  }
-
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
   // See: https://forums.swift.org/t/xcode-14-rc-cannot-specialize-protocol-type/60171/15
   #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
