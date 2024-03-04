@@ -30,7 +30,8 @@
   }
 
   private enum TestEnumReducer_DefaultInitializer {
-    @Reducer struct Feature {
+    @Reducer
+    struct Feature {
       let context: String
     }
     @Reducer

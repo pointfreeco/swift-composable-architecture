@@ -525,9 +525,7 @@ private enum ReducerCase {
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
         let type = parameter.type
-        return .scoped([
-          "ComposableArchitecture.Scope<Self.State, Self.Action, \(type.trimmed)>"
-        ])
+        return .scoped(["ComposableArchitecture.Scope<Self.State, Self.Action, \(type.trimmed)>"])
       } else {
         return .scoped([])
       }
