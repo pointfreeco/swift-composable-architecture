@@ -468,7 +468,7 @@ private enum ReducerCase {
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
-        let stateCase = attribute == .ephemeral ? element : element.dropBodySuffix.suffixed("State")
+        let stateCase = attribute == .ephemeral ? element : element.suffixed("State").type
         return "case \(stateCase.trimmedDescription)"
       } else {
         return "case \(element.trimmedDescription)"
@@ -496,7 +496,7 @@ private enum ReducerCase {
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
-        return "case \(element.dropBodySuffix.suffixed("Action").trimmedDescription)"
+        return "case \(element.suffixed("Action").type.trimmedDescription)"
       } else {
         return nil
       }
@@ -519,15 +519,13 @@ private enum ReducerCase {
     switch self {
     case let .element(element, attribute):
       if attribute == nil,
-        let parameterClause = element.dropBodySuffix.parameterClause,
+        let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
         let type = parameter.type
         return .scoped([
-          element.hasBodySuffix ?
-          "ComposableArchitecture.Scope<Self.State, Self.Action, ComposableArchitecture.Reduce<\(type.trimmed).State, \(type.trimmed).Action>>" :
           "ComposableArchitecture.Scope<Self.State, Self.Action, \(type.trimmed)>"
         ])
       } else {
@@ -542,18 +540,14 @@ private enum ReducerCase {
     switch self {
     case let .element(element, attribute):
       if attribute == nil,
-        let parameterClause = element.dropBodySuffix.parameterClause,
+        let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
         let name = element.name.text
         let type = parameter.type
-        let reducer = element.hasBodySuffix ?
-        """
-        ComposableArchitecture.Reduce(\(type.trimmed).body.reduce)
-        """ :
-        "\(type.trimmed)()"
+        let reducer = parameter.defaultValue?.value.trimmedDescription ?? "\(type.trimmed)()"
         return """
           ComposableArchitecture.Scope(\
           state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
@@ -583,7 +577,7 @@ private enum ReducerCase {
     switch self {
     case let .element(element, attribute):
       if attribute == nil,
-        let parameterClause = element.dropBodySuffix.parameterClause,
+        let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
@@ -756,33 +750,22 @@ extension EnumCaseDeclSyntax {
 }
 
 extension EnumCaseElementSyntax {
-  fileprivate static let bodySuffix = ".Body"
-  
-  fileprivate var hasBodySuffix: Bool {
-    parameterClause?.parameters.first?.type.trimmedDescription.hasSuffix(Self.bodySuffix) == true
-  }
-  
-  fileprivate var dropBodySuffix: Self {
-    guard hasBodySuffix else {
-      return self
-    }
-    var element = self
-    if var parameterClause = element.parameterClause,
-       let type = parameterClause.parameters.first?.type
-    {
-      parameterClause.parameters[parameterClause.parameters.startIndex].type = "\(raw: type.trimmedDescription.dropLast(Self.bodySuffix.count))"
-      element.parameterClause = parameterClause
-    }
-    return element
-  }
-  
   fileprivate func suffixed(_ suffix: TokenSyntax) -> Self {
     var element = self
     if var parameterClause = element.parameterClause,
       let type = parameterClause.parameters.first?.type
     {
-      let type = MemberTypeSyntax(baseType: type, name: suffix)
+      let type = MemberTypeSyntax(baseType: type.trimmed, name: suffix)
       parameterClause.parameters[parameterClause.parameters.startIndex].type = TypeSyntax(type)
+      element.parameterClause = parameterClause
+    }
+    return element
+  }
+  
+  fileprivate var type: Self {
+    var element = self
+    if var parameterClause = element.parameterClause {
+      parameterClause.parameters[parameterClause.parameters.startIndex].defaultValue = nil
       element.parameterClause = parameterClause
     }
     return element

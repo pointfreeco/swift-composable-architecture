@@ -341,20 +341,20 @@
       }
     }
     
-    func testEnum_Body() {
+    func testEnum_DefaultInitializer() {
       assertMacro {
         """
         @Reducer
         enum Destination {
           case timeline(Timeline)
-          case meeting(Meeting.Body)
+          case meeting(Meeting = Meeting(context: .sheet))
         }
         """
       } expansion: {
         #"""
         enum Destination {
           case timeline(Timeline)
-          case meeting(Meeting.Body)
+          case meeting(Meeting = Meeting(context: .sheet))
 
           @CasePathable
           @dynamicMemberLookup
@@ -372,12 +372,12 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>, ComposableArchitecture.Scope<Self.State, Self.Action, ComposableArchitecture.Reduce<Meeting.State, Meeting.Action>>> {
+          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>, ComposableArchitecture.Scope<Self.State, Self.Action, Meeting>> {
             ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
               Timeline()
             }
             ComposableArchitecture.Scope(state: \Self.State.Cases.meeting, action: \Self.Action.Cases.meeting) {
-              ComposableArchitecture.Reduce(Meeting.body.reduce)
+              Meeting(context: .sheet)
             }
           }
 
