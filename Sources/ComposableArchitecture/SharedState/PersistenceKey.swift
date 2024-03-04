@@ -31,7 +31,7 @@
   extension Shared {
     public class Subscription {
       let onCancel: () -> Void
-      init(onCancel: @escaping () -> Void) {
+      public init(onCancel: @escaping () -> Void) {
         self.onCancel = onCancel
       }
       deinit {
