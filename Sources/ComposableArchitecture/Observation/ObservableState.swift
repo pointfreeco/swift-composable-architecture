@@ -19,6 +19,41 @@
     }
   #endif
 
+  extension ObservableState where Self: CasePathable {
+    public subscript<Value>(
+      dynamicMember keyPath: KeyPath<Self.AllCasePaths, AnyCasePath<Self, Value>>
+    ) -> Value? {
+      get { Self.allCasePaths[keyPath: keyPath].extract(from: self) }
+      @available(*, unavailable, message: "Optional cannot be assigned")
+      set {
+        let casePath = Self.allCasePaths[keyPath: keyPath]
+        guard casePath.extract(from: self) != nil else {
+          // TODO: Runtime warn?
+          return
+        }
+        if let newValue {
+          self = casePath.embed(newValue)
+        }
+      }
+    }
+
+    @_disfavoredOverload
+    public subscript<Value>(
+      dynamicMember keyPath: KeyPath<Self.AllCasePaths, AnyCasePath<Self, Value>>
+    ) -> Value {
+      @available(*, unavailable)
+      get { Self.allCasePaths[keyPath: keyPath].extract(from: self)! }
+      set {
+        let casePath = Self.allCasePaths[keyPath: keyPath]
+        guard casePath.extract(from: self) != nil else {
+          // TODO: Runtime warn?
+          return
+        }
+        self = casePath.embed(newValue)
+      }
+    }
+  }
+
   /// A unique identifier for a observed value.
   public struct ObservableStateID: Equatable, Hashable, Sendable {
     @usableFromInline
