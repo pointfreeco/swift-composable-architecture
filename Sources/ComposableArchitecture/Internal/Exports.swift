@@ -1,4 +1,4 @@
-@_exported import CasePathsExtras
+@_exported import CasePaths
 @_exported import Clocks
 @_exported import CombineSchedulers
 @_exported import ConcurrencyExtras
