@@ -748,6 +748,15 @@ extension EnumCaseDeclSyntax {
 }
 
 extension EnumCaseElementSyntax {
+  fileprivate var type: Self {
+    var element = self
+    if var parameterClause = element.parameterClause {
+      parameterClause.parameters[parameterClause.parameters.startIndex].defaultValue = nil
+      element.parameterClause = parameterClause
+    }
+    return element
+  }
+  
   fileprivate func suffixed(_ suffix: TokenSyntax) -> Self {
     var element = self
     if var parameterClause = element.parameterClause,
@@ -755,15 +764,6 @@ extension EnumCaseElementSyntax {
     {
       let type = MemberTypeSyntax(baseType: type.trimmed, name: suffix)
       parameterClause.parameters[parameterClause.parameters.startIndex].type = TypeSyntax(type)
-      element.parameterClause = parameterClause
-    }
-    return element
-  }
-  
-  fileprivate var type: Self {
-    var element = self
-    if var parameterClause = element.parameterClause {
-      parameterClause.parameters[parameterClause.parameters.startIndex].defaultValue = nil
       element.parameterClause = parameterClause
     }
     return element
