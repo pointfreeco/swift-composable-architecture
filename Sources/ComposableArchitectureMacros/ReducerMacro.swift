@@ -231,8 +231,7 @@ extension ReducerMacro: MemberMacro {
       } || hasReduceMethod
     let hasBody =
       bindings.contains {
-        $0.as(PatternBindingSyntax.self)?.pattern
-          .as(IdentifierPatternSyntax.self)?.identifier.text == "body"
+        $0.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == "body"
       } || hasReduceMethod
     var decls: [DeclSyntax] = []
     if let enumDecl = declaration.as(EnumDeclSyntax.self) {
