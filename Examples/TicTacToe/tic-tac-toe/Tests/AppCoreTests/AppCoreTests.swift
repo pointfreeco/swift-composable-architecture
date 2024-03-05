@@ -17,10 +17,10 @@ final class AppCoreTests: XCTestCase {
       }
     }
 
-    await store.send(\.login.view.email, "blob@pointfree.co") {
+    await store.send(\.login.view.binding.email, "blob@pointfree.co") {
       $0.login?.email = "blob@pointfree.co"
     }
-    await store.send(\.login.view.password, "bl0bbl0b") {
+    await store.send(\.login.view.binding.password, "bl0bbl0b") {
       $0.login?.password = "bl0bbl0b"
       $0.login?.isFormValid = true
     }
@@ -30,7 +30,7 @@ final class AppCoreTests: XCTestCase {
     await store.receive(\.login.loginResponse.success) {
       $0 = .newGame(NewGame.State())
     }
-    await store.send(\.newGame.oPlayerName, "Blob Sr.") {
+    await store.send(\.newGame.binding.oPlayerName, "Blob Sr.") {
       $0.newGame?.oPlayerName = "Blob Sr."
     }
     await store.send(\.newGame.logoutButtonTapped) {
@@ -50,11 +50,11 @@ final class AppCoreTests: XCTestCase {
       }
     }
 
-    await store.send(\.login.view.email, "blob@pointfree.co") {
+    await store.send(\.login.view.binding.email, "blob@pointfree.co") {
       $0.login?.email = "blob@pointfree.co"
     }
 
-    await store.send(\.login.view.password, "bl0bbl0b") {
+    await store.send(\.login.view.binding.password, "bl0bbl0b") {
       $0.login?.password = "bl0bbl0b"
       $0.login?.isFormValid = true
     }
@@ -67,7 +67,7 @@ final class AppCoreTests: XCTestCase {
       $0.login?.twoFactor = TwoFactor.State(token: "deadbeef")
     }
 
-    await store.send(\.login.twoFactor.view.code, "1234") {
+    await store.send(\.login.twoFactor.view.binding.code, "1234") {
       $0.login?.twoFactor?.code = "1234"
       $0.login?.twoFactor?.isFormValid = true
     }

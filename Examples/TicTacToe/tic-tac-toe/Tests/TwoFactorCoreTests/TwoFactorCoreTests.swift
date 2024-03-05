@@ -14,16 +14,16 @@ final class TwoFactorCoreTests: XCTestCase {
       }
     }
 
-    await store.send(\.view.code, "1") {
+    await store.send(\.view.binding.code, "1") {
       $0.code = "1"
     }
-    await store.send(\.view.code, "12") {
+    await store.send(\.view.binding.code, "12") {
       $0.code = "12"
     }
-    await store.send(\.view.code, "123") {
+    await store.send(\.view.binding.code, "123") {
       $0.code = "123"
     }
-    await store.send(\.view.code, "1234") {
+    await store.send(\.view.binding.code, "1234") {
       $0.code = "1234"
       $0.isFormValid = true
     }
@@ -44,7 +44,7 @@ final class TwoFactorCoreTests: XCTestCase {
       }
     }
 
-    await store.send(\.view.code, "1234") {
+    await store.send(\.view.binding.code, "1234") {
       $0.code = "1234"
       $0.isFormValid = true
     }
