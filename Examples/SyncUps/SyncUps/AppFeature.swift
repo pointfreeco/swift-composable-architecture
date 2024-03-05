@@ -67,7 +67,7 @@ struct AppFeature {
             return .none
           }
 
-          state.path[id: id, case: \.detail]?.syncUp.meetings.insert(
+          state.path[id: id]?.detail?.syncUp.meetings.insert(
             Meeting(
               id: Meeting.ID(self.uuid()),
               date: self.now,
@@ -75,7 +75,7 @@ struct AppFeature {
             ),
             at: 0
           )
-          guard let syncUp = state.path[id: id, case: \.detail]?.syncUp
+          guard let syncUp = state.path[id: id]?.detail?.syncUp
           else { return .none }
           state.syncUpsList.syncUps[id: syncUp.id] = syncUp
           return .none
