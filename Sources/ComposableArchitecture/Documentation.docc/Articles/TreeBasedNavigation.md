@@ -684,18 +684,10 @@ lines and is more resilient to future changes in the features that we don't nece
 That is the basics of testing, but things get a little more complicated when you leverage the 
 concepts outlined in <doc:TreeBasedNavigation#Enum-state> in which you model multiple destinations
 as an enum instead of multiple optionals. In order to assert on state changes when using enum
-state you must be able to extract the associated state from the enum, make a mutation, and then
-embed the new state back into the enum.
-
-The library provides a tool to perform these steps in a single step. It's the
-``PresentationState/subscript(case:)-7uqte`` defined on ``PresentationState`` which allows you to
-modify the data inside a case of the destination enum:
+state you must chain into the particular case to make a mutation:
 
 ```swift
 await store.send(\.destination.counter.incrementButtonTapped) {
-  $0.$destination[case: \.counter]?.count = 4
+  $0.destination?.counter?.count = 4
 }
 ```
-
-Further, if `destination` is not of the `.counter` case when this test runs, then it will trigger
-a test failure letting you know that you cannot modify an unrelated case.
