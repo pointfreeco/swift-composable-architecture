@@ -222,16 +222,4 @@
       }
     }
   }
-
-  extension Case where Value: BindableAction, Value.State: ObservableState {
-    @_disfavoredOverload
-    public subscript<Member: Equatable & Sendable>(
-      dynamicMember keyPath: WritableKeyPath<Value.State, Member>
-    ) -> Case<Member> {
-      Case<Member>(
-        embed: { self.embed(.binding(.set(keyPath, $0))) },
-        extract: { self.extract(from: $0)?.binding?.value.base as? Member }
-      )
-    }
-  }
 #endif
