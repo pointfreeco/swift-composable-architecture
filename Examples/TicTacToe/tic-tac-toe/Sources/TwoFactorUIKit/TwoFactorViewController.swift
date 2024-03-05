@@ -77,6 +77,21 @@ public final class TwoFactorViewController: UIViewController {
     }
   }
 
+  public override func viewDidDisappear(_ animated: Bool) {
+    super.viewDidDisappear(animated)
+    if isMovingFromParent || isBeingDismissed {
+      // store.send(.dismiss)
+    }
+    print(
+      "isMovingToParent",
+      isMovingToParent,
+      "isMovingFromParent",
+      isMovingFromParent,
+      "isBeingDismissed",
+      isBeingDismissed
+    )
+  }
+
   @objc private func codeTextFieldChanged(sender: UITextField) {
     store.code = sender.text ?? ""
   }

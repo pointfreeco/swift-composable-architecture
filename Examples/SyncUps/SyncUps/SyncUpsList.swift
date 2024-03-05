@@ -38,6 +38,7 @@ struct SyncUpsList {
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
     case onDelete(IndexSet)
+    case syncUpTapped(SyncUp)
   }
 
   @Dependency(\.continuousClock) var clock
@@ -85,6 +86,9 @@ struct SyncUpsList {
       case let .onDelete(indexSet):
         state.syncUps.remove(atOffsets: indexSet)
         return .none
+
+      case .syncUpTapped:
+        return .none
       }
     }
     .ifLet(\.$destination, action: \.destination)
@@ -97,9 +101,12 @@ struct SyncUpsListView: View {
   var body: some View {
     List {
       ForEach(store.syncUps) { syncUp in
-        NavigationLink(
-          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
-        ) {
+//        NavigationLink(
+//          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
+//        ) {
+        Button {
+          store.send(.syncUpTapped(syncUp))
+        } label: {
           CardView(syncUp: syncUp)
         }
         .listRowBackground(syncUp.theme.mainColor)

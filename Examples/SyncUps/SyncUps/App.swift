@@ -3,7 +3,13 @@ import SwiftUI
 
 @main
 struct SyncUpsApp: App {
-  let store = Store(initialState: AppFeature.State()) {
+  let store = Store(
+    initialState: AppFeature.State(
+      path: StackState([
+        .syncUpsList(SyncUpsList.State.init())
+      ])
+    )
+  ) {
     AppFeature()
       ._printChanges()
   } withDependencies: {
@@ -22,7 +28,8 @@ struct SyncUpsApp: App {
         // NB: Don't run application when testing so that it doesn't interfere with tests.
         EmptyView()
       } else {
-        AppView(store: store)
+        //AppView(store: store)
+        AppViewRepresentable(store: store)
       }
     }
   }

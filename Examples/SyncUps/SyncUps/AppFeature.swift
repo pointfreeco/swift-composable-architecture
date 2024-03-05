@@ -8,6 +8,7 @@ struct AppFeature {
     case detail(SyncUpDetail)
     case meeting(Meeting, syncUp: SyncUp)
     case record(RecordMeeting)
+    case syncUpsList(SyncUpsList)
   }
 
   @ObservableState
@@ -34,8 +35,12 @@ struct AppFeature {
     Scope(state: \.syncUpsList, action: \.syncUpsList) {
       SyncUpsList()
     }
-    Reduce { state, action in
+    Reduce<State, Action> { state, action in
       switch action {
+      case let .path(.element(_, .syncUpsList(.syncUpTapped(syncUp)))):
+        state.path.append(.detail(SyncUpDetail.State.init(syncUp: syncUp)))
+        return .none
+
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
         guard case let .some(.detail(detailState)) = state.path[id: id]
         else { return .none }
@@ -118,6 +123,8 @@ struct AppView: View {
         MeetingView(meeting: meeting, syncUp: syncUp)
       case let .record(store):
         RecordMeetingView(store: store)
+      case .syncUpsList:
+        EmptyView()
       }
     }
   }
@@ -125,4 +132,45 @@ struct AppView: View {
 
 extension URL {
   static let syncUps = Self.documentsDirectory.appending(component: "sync-ups.json")
+}
+
+class AppViewController: StackNavigationControllerOf<AppFeature.Path> {
+}
+
+struct AppViewRepresentable: UIViewControllerRepresentable {
+  let store: StoreOf<AppFeature>
+
+  func makeUIViewController(context: Context) -> some UIViewController {
+    StackNavigationController(store: store.scope(state: \.path, action: \.path)) { store in
+      switch store.case {
+      case let .detail(store):
+        UIHostingController(rootView: SyncUpDetailView(store: store))
+      case let .meeting(meeting, syncUp: syncUp):
+        UIHostingController(rootView: MeetingView(meeting: meeting, syncUp: syncUp))
+      case let .record(store):
+        UIHostingController(rootView: RecordMeetingView(store: store))
+      case let .syncUpsList(store):
+        UIHostingController(rootView: SyncUpsListView(store: store))
+      }
+    }
+  }
+
+  func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+  }
+}
+
+@MainActor
+func foo(store: StoreOf<AppFeature>) {
+  let nav = StackNavigationController(store: store.scope(state: \.path, action: \.path)) { store in
+    switch store.case {
+    case let .detail(store):
+      UIHostingController(rootView: SyncUpDetailView(store: store))
+    case let .meeting(meeting, syncUp: syncUp):
+      UIHostingController(rootView: MeetingView(meeting: meeting, syncUp: syncUp))
+    case let .record(store):
+      UIHostingController(rootView: RecordMeetingView(store: store))
+    case let .syncUpsList(store):
+      UIHostingController(rootView: SyncUpsListView(store: store))
+    }
+  }
 }
