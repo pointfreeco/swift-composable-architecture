@@ -686,6 +686,10 @@ struct MacroExpansionNoteMessage: NoteMessage {
   }
 
   var fixItID: MessageID {
+    self.noteID
+  }
+
+  var noteID: MessageID {
     MessageID(domain: diagnosticDomain, id: "\(Self.self)")
   }
 }
