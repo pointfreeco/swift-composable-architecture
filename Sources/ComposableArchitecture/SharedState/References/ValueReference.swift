@@ -57,6 +57,19 @@
       self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
     }
 
+    @available(
+      *,
+      unavailable,
+      message: "'@Shared' must be initialized with a default value when using a persistence key"
+    )
+    public init(
+      _ persistenceKey: some PersistenceKey<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) {
+      fatalError()
+    }
+
     @_disfavoredOverload
     @available(
       *,
