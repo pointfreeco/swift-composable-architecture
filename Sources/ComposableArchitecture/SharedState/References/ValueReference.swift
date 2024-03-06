@@ -49,6 +49,14 @@
       )
     }
 
+    public init<Wrapped>(
+      _ persistenceKey: some PersistenceKey<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) where Value == Wrapped? {
+      self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
+    }
+
     @_disfavoredOverload
     @available(
       *,
