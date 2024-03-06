@@ -70,6 +70,14 @@
       fatalError()
     }
 
+    // public init(
+    //   _ persistenceKey: some PersistenceKey<Value>,
+    //   fileID: StaticString = #fileID,
+    //   line: UInt = #line
+    // ) throws {
+    //   fatalError("TODO")
+    // }
+
     @_disfavoredOverload
     @available(
       *,
