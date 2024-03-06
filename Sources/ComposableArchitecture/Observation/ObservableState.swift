@@ -60,7 +60,7 @@
       value._$id
     }
 
-    public static let _$inert = Self()
+    public static var _$inert: Self { Self() }
 
     public func _$tag(_ tag: Int) -> Self {
       Self(storage: Storage(id: .tag(tag, self.storage.id)))

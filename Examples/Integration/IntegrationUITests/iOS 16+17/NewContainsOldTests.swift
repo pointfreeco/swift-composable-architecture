@@ -66,7 +66,9 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     self.app.buttons["iOS 16 + 17"].tap()
     self.assertLogs {
       """
-
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
       """
     }
   }
