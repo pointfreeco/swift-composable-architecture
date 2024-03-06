@@ -14,7 +14,7 @@ class BaseIntegrationTests: XCTestCase {
   }
 
   override func setUp() async throws {
-    SnapshotTesting.isRecording = true
+    //SnapshotTesting.isRecording = true
     // self.continueAfterFailure = false
     self.app = XCUIApplication()
     self.app.launchEnvironment["UI_TEST"] = "true"
