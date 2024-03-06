@@ -159,12 +159,40 @@
         """
         @ObservableState
         struct State: Equatable {
-          @Presents
+          @Presents var destination: Destination.State?
         }
         """
       } expansion: {
-        """
+        #"""
         struct State: Equatable {
+          
+          var destination: Destination.State? {
+            @storageRestrictions(initializes: _destination)
+            init(initialValue) {
+              _destination = PresentationState(wrappedValue: initialValue)
+            }
+            get {
+              _$observationRegistrar.access(self, keyPath: \.destination)
+              return _destination.wrappedValue
+            }
+            set {
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.wrappedValue, newValue, _$isIdentityEqual)
+            }
+          }
+
+          var $destination: ComposableArchitecture.PresentationState<Destination.State> {
+            get {
+              _$observationRegistrar.access(self, keyPath: \.destination)
+              return _destination.projectedValue
+            }
+            set {
+              _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.projectedValue, newValue, _$isIdentityEqual)
+            }
+          }
+
+          
+
+          private var _destination = ComposableArchitecture.PresentationState<Destination.State>(wrappedValue: nil)
 
           var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 
@@ -176,7 +204,7 @@
             _$observationRegistrar._$willModify()
           }
         }
-        """
+        """#
       }
     }
   }

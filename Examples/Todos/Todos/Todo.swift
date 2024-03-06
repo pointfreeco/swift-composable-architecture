@@ -1,38 +1,49 @@
-import ComposableArchitecture
-import SwiftUI
+import Foundation
 
-@Reducer
-struct Todo {
-  @ObservableState
-  struct State: Equatable, Identifiable {
-    var description = ""
-    let id: UUID
-    var isComplete = false
-  }
-
-  enum Action: BindableAction, Sendable {
-    case binding(BindingAction<State>)
-  }
-
-  var body: some Reducer<State, Action> {
-    BindingReducer()
-  }
+struct Todo: Codable, Equatable, Identifiable {
+  var description = ""
+  let id: UUID
+  var isComplete = false
 }
 
+//import ComposableArchitecture
+//import SwiftUI
+//
+//@Reducer
+//struct Todo {
+//  @ObservableState
+//  struct State: Equatable, Identifiable {
+//    var description = ""
+//    let id: UUID
+//    var isComplete = false
+//  }
+//
+//  enum Action: BindableAction, Sendable {
+//    case binding(BindingAction<State>)
+//  }
+//
+//  var body: some Reducer<State, Action> {
+//    BindingReducer()
+//  }
+//}
+//
+
+import SwiftUI
+
 struct TodoView: View {
-  @Bindable var store: StoreOf<Todo>
+  @Binding var todo: Todo
 
   var body: some View {
     HStack {
       Button {
-        store.isComplete.toggle()
+        todo.isComplete.toggle()
       } label: {
-        Image(systemName: store.isComplete ? "checkmark.square" : "square")
+        Image(systemName: todo.isComplete ? "checkmark.square" : "square")
       }
       .buttonStyle(.plain)
 
-      TextField("Untitled Todo", text: $store.description)
+      TextField("Untitled Todo", text: $todo.description)
     }
-    .foregroundColor(store.isComplete ? .gray : nil)
+    .foregroundColor(todo.isComplete ? .gray : nil)
   }
 }

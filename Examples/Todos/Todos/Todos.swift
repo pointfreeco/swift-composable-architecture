@@ -13,13 +13,19 @@ struct Todos {
   struct State: Equatable {
     var editMode: EditMode = .inactive
     var filter: Filter = .all
-    var todos: IdentifiedArrayOf<Todo.State> = []
+    @Shared(.todos)
+    var todos: IdentifiedArrayOf<Todo> = []
 
-    var filteredTodos: IdentifiedArrayOf<Todo.State> {
-      switch filter {
-      case .active: return self.todos.filter { !$0.isComplete }
-      case .all: return self.todos
-      case .completed: return self.todos.filter(\.isComplete)
+    var filteredTodoIDs: [Todo.ID] {
+      zip(self.todos.ids, self.todos).compactMap { id, todo in
+        switch filter {
+        case .all:
+          return id
+        case .active:
+          return !todo.isComplete ? id : nil
+        case .completed:
+          return todo.isComplete ? id : nil
+        }
       }
     }
   }
@@ -30,8 +36,7 @@ struct Todos {
     case clearCompletedButtonTapped
     case delete(IndexSet)
     case move(IndexSet, Int)
-    case sortCompletedTodos
-    case todos(IdentifiedActionOf<Todo>)
+    case onAppear
   }
 
   @Dependency(\.continuousClock) var clock
@@ -43,7 +48,7 @@ struct Todos {
     Reduce { state, action in
       switch action {
       case .addTodoButtonTapped:
-        state.todos.insert(Todo.State(id: self.uuid()), at: 0)
+        state.todos.insert(Todo(id: self.uuid()), at: 0)
         return .none
 
       case .binding:
@@ -54,50 +59,38 @@ struct Todos {
         return .none
 
       case let .delete(indexSet):
-        let filteredTodos = state.filteredTodos
+        let filteredTodosIDs = state.filteredTodoIDs
         for index in indexSet {
-          state.todos.remove(id: filteredTodos[index].id)
+          state.todos.remove(id: filteredTodosIDs[index])
         }
         return .none
 
       case var .move(source, destination):
         if state.filter == .completed {
+          let filteredTodoIDs = state.filteredTodoIDs
           source = IndexSet(
             source
-              .map { state.filteredTodos[$0] }
-              .compactMap { state.todos.index(id: $0.id) }
+              .map { filteredTodoIDs[$0] }
+              .compactMap { state.todos.index(id: $0) }
           )
           destination =
-            (destination < state.filteredTodos.endIndex
-              ? state.todos.index(id: state.filteredTodos[destination].id)
+            (destination < filteredTodoIDs.endIndex
+              ? state.todos.index(id: filteredTodoIDs[destination])
               : state.todos.endIndex)
             ?? destination
         }
-
         state.todos.move(fromOffsets: source, toOffset: destination)
-
-        return .run { send in
-          try await self.clock.sleep(for: .milliseconds(100))
-          await send(.sortCompletedTodos)
-        }
-
-      case .sortCompletedTodos:
-        state.todos.sort { $1.isComplete && !$0.isComplete }
         return .none
 
-      case .todos(.element(id: _, action: .binding(\.isComplete))):
-        return .run { send in
-          try await self.clock.sleep(for: .seconds(1))
-          await send(.sortCompletedTodos, animation: .default)
+      case .onAppear:
+        return .run { @MainActor [todos = state.$todos] send in
+          for await _ in todos.publisher.removeDuplicates().values {
+            withAnimation(.default) {
+              todos.wrappedValue.sort { $1.isComplete && !$0.isComplete }
+            }
+          }
         }
-        .cancellable(id: CancelID.todoCompletion, cancelInFlight: true)
-
-      case .todos:
-        return .none
       }
-    }
-    .forEach(\.todos, action: \.todos) {
-      Todo()
     }
   }
 }
@@ -117,8 +110,9 @@ struct AppView: View {
         .padding(.horizontal)
 
         List {
-          ForEach(store.scope(state: \.filteredTodos, action: \.todos)) { store in
-            TodoView(store: store)
+          ForEach(store.filteredTodoIDs, id: \.self) { id in
+            let index = store.todos.ids.firstIndex(of: id)!
+            TodoView(todo: $store.todos[index])
           }
           .onDelete { store.send(.delete($0)) }
           .onMove { store.send(.move($0, $1)) }
@@ -136,23 +130,32 @@ struct AppView: View {
         }
       )
       .environment(\.editMode, $store.editMode)
+      .onAppear {
+        store.send(.onAppear)
+      }
     }
   }
 }
 
-extension IdentifiedArray where ID == Todo.State.ID, Element == Todo.State {
+extension PersistenceKey where Self == FileStorageKey<IdentifiedArrayOf<Todo>> {
+  static var todos: Self {
+    Self(url: URL.documentsDirectory.appending(path: "todos.json"))
+  }
+}
+
+extension IdentifiedArrayOf<Todo> {
   static let mock: Self = [
-    Todo.State(
+    Todo(
       description: "Check Mail",
       id: UUID(),
       isComplete: false
     ),
-    Todo.State(
+    Todo(
       description: "Buy Milk",
       id: UUID(),
       isComplete: false
     ),
-    Todo.State(
+    Todo(
       description: "Call Mom",
       id: UUID(),
       isComplete: true

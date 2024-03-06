@@ -531,6 +531,65 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(counts, [1, 2])
     XCTAssertEqual(defaults.integer(forKey: "count"), 2)
   }
+
+  func testMultiplePublisherSubscriptions() async {
+    let runCount = 1_000
+    for _ in 1...runCount {
+      let store = TestStore(initialState: ListFeature.State()) {
+        ListFeature()
+      } withDependencies: {
+        $0.uuid = .incrementing
+      }
+      await store.send(.children(.element(id: 0, action: .onAppear)))
+      await store.send(.children(.element(id: 1, action: .onAppear)))
+      await store.send(.children(.element(id: 2, action: .onAppear)))
+      await store.send(.children(.element(id: 3, action: .onAppear)))
+      await store.send(.incrementValue) {
+        $0.value = 1
+      }
+      await store.receive(\.children[id: 0].response) {
+        $0.children[id: 0]?.text = "1"
+      }
+      await store.receive(\.children[id: 1].response) {
+        $0.children[id: 1]?.text = "1"
+      }
+      await store.receive(\.children[id: 2].response) {
+        $0.children[id: 2]?.text = "1"
+      }
+      await store.receive(\.children[id: 3].response) {
+        $0.children[id: 3]?.text = "1"
+      }
+    }
+  }
+
+  func testEarlySharedStateMutation() async {
+    let store = TestStore(initialState: EarlySharedStateMutation.State(count: Shared(0))) {
+      EarlySharedStateMutation()
+    }
+
+    XCTTODO(
+      """
+      This currently fails because the effect returned from '.action' synchronously sends the
+      '.response' action, which then mutates the shared state. Because the TestStore processes
+      actions immediately the shared state mutation must be asserted in `store.send` rather than
+      store.receive.
+
+      We should update the TestStore so that effects suspend until one does 'store.receive'. That
+      would fix this test.
+      """
+    )
+    await store.send(.action)
+    await store.receive(.response) {
+      $0.count = 42
+    }
+  }
+
+  func testPersistenceAutoclosure() {
+    @Dependency(\.defaultAppStorage) var storage
+    storage.set(1, forKey: "count")
+    @Shared(.appStorage("count")) var count = { () -> Int in fatalError() }()
+    XCTAssertEqual(count, 1)
+  }
 }
 
 @Reducer
@@ -617,4 +676,98 @@ private struct SimpleFeature {
 @Perceptible
 class SharedObject {
   var count = 0
+}
+
+@Reducer
+private struct RowFeature {
+  @ObservableState
+  struct State: Equatable, Identifiable {
+    let id: Int
+    var text: String
+    @Shared var value: Int
+  }
+
+  enum Action: Equatable {
+    case onAppear
+    case response(Int)
+  }
+
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case let .response(newValue):
+        state.text = "\(newValue)"
+        return .none
+
+      case .onAppear:
+        return .publisher { [publisher = state.$value.publisher] in
+          publisher
+            .map(Action.response)
+            .prefix(1)
+        }
+      }
+    }
+  }
+}
+
+@Reducer
+private struct ListFeature {
+  @ObservableState
+  struct State: Equatable {
+    @Shared var value: Int
+    var children: IdentifiedArrayOf<RowFeature.State>
+
+    init(value: Int = 0) {
+      @Dependency(\.uuid) var uuid
+      self._value = Shared(value)
+      self.children = [
+        .init(id: 0, text: "0", value: _value),
+        .init(id: 1, text: "0", value: _value),
+        .init(id: 2, text: "0", value: _value),
+        .init(id: 3, text: "0", value: _value)
+      ]
+    }
+  }
+
+  enum Action: Equatable {
+    case children(IdentifiedActionOf<RowFeature>)
+    case incrementValue
+  }
+
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .children:
+        return .none
+
+      case .incrementValue:
+        state.value += 1
+        return .none
+      }
+    }
+    .forEach(\.children, action: \.children) { RowFeature() }
+  }
+}
+
+@Reducer
+private struct EarlySharedStateMutation {
+  @ObservableState
+  struct State: Equatable {
+    @Shared var count: Int
+  }
+  enum Action {
+    case action
+    case response
+  }
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .action:
+        return .send(.response)
+      case .response:
+        state.count = 42
+        return .none
+      }
+    }
+  }
 }

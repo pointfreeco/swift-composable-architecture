@@ -532,17 +532,18 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/)
-* [1.8.0](https://pointfreeco.github.io/swift-composable-architecture/1.8.0/documentation/composablearchitecture/)
+* [1.9.0](https://pointfreeco.github.io/swift-composable-architecture/1.9.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.9))
 
 <details>
   <summary>
   Other versions
   </summary>
 
-  * [1.7.0](https://pointfreeco.github.io/swift-composable-architecture/1.7.0/documentation/composablearchitecture/)
-  * [1.6.0](https://pointfreeco.github.io/swift-composable-architecture/1.6.0/documentation/composablearchitecture/)
-  * [1.5.0](https://pointfreeco.github.io/swift-composable-architecture/1.5.0/documentation/composablearchitecture/)
-  * [1.4.0](https://pointfreeco.github.io/swift-composable-architecture/1.4.0/documentation/composablearchitecture/)
+  * [1.8.0](https://pointfreeco.github.io/swift-composable-architecture/1.8.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.8))
+  * [1.7.0](https://pointfreeco.github.io/swift-composable-architecture/1.7.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7))
+  * [1.6.0](https://pointfreeco.github.io/swift-composable-architecture/1.6.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6))
+  * [1.5.0](https://pointfreeco.github.io/swift-composable-architecture/1.5.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5))
+  * [1.4.0](https://pointfreeco.github.io/swift-composable-architecture/1.4.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4))
   * [1.3.0](https://pointfreeco.github.io/swift-composable-architecture/1.3.0/documentation/composablearchitecture/)
   * [1.2.0](https://pointfreeco.github.io/swift-composable-architecture/1.2.0/documentation/composablearchitecture/)
   * [1.1.0](https://pointfreeco.github.io/swift-composable-architecture/1.1.0/documentation/composablearchitecture/)

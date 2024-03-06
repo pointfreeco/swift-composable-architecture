@@ -17,29 +17,21 @@ final class AppCoreTests: XCTestCase {
       }
     }
 
-    await store.send(\.login.view.email, "blob@pointfree.co") {
-      $0.modify(\.login) {
-        $0.email = "blob@pointfree.co"
-      }
+    await store.send(\.login.view.binding.email, "blob@pointfree.co") {
+      $0.login?.email = "blob@pointfree.co"
     }
-    await store.send(\.login.view.password, "bl0bbl0b") {
-      $0.modify(\.login) {
-        $0.password = "bl0bbl0b"
-        $0.isFormValid = true
-      }
+    await store.send(\.login.view.binding.password, "bl0bbl0b") {
+      $0.login?.password = "bl0bbl0b"
+      $0.login?.isFormValid = true
     }
     await store.send(\.login.view.loginButtonTapped) {
-      $0.modify(\.login) {
-        $0.isLoginRequestInFlight = true
-      }
+      $0.login?.isLoginRequestInFlight = true
     }
     await store.receive(\.login.loginResponse.success) {
       $0 = .newGame(NewGame.State())
     }
-    await store.send(\.newGame.oPlayerName, "Blob Sr.") {
-      $0.modify(\.newGame) {
-        $0.oPlayerName = "Blob Sr."
-      }
+    await store.send(\.newGame.binding.oPlayerName, "Blob Sr.") {
+      $0.newGame?.oPlayerName = "Blob Sr."
     }
     await store.send(\.newGame.logoutButtonTapped) {
       $0 = .login(Login.State())
@@ -58,42 +50,30 @@ final class AppCoreTests: XCTestCase {
       }
     }
 
-    await store.send(\.login.view.email, "blob@pointfree.co") {
-      $0.modify(\.login) {
-        $0.email = "blob@pointfree.co"
-      }
+    await store.send(\.login.view.binding.email, "blob@pointfree.co") {
+      $0.login?.email = "blob@pointfree.co"
     }
 
-    await store.send(\.login.view.password, "bl0bbl0b") {
-      $0.modify(\.login) {
-        $0.password = "bl0bbl0b"
-        $0.isFormValid = true
-      }
+    await store.send(\.login.view.binding.password, "bl0bbl0b") {
+      $0.login?.password = "bl0bbl0b"
+      $0.login?.isFormValid = true
     }
 
     await store.send(\.login.view.loginButtonTapped) {
-      $0.modify(\.login) {
-        $0.isLoginRequestInFlight = true
-      }
+      $0.login?.isLoginRequestInFlight = true
     }
     await store.receive(\.login.loginResponse.success) {
-      $0.modify(\.login) {
-        $0.isLoginRequestInFlight = false
-        $0.twoFactor = TwoFactor.State(token: "deadbeef")
-      }
+      $0.login?.isLoginRequestInFlight = false
+      $0.login?.twoFactor = TwoFactor.State(token: "deadbeef")
     }
 
-    await store.send(\.login.twoFactor.view.code, "1234") {
-      $0.modify(\.login) {
-        $0.twoFactor?.code = "1234"
-        $0.twoFactor?.isFormValid = true
-      }
+    await store.send(\.login.twoFactor.view.binding.code, "1234") {
+      $0.login?.twoFactor?.code = "1234"
+      $0.login?.twoFactor?.isFormValid = true
     }
 
     await store.send(\.login.twoFactor.view.submitButtonTapped) {
-      $0.modify(\.login) {
-        $0.twoFactor?.isTwoFactorRequestInFlight = true
-      }
+      $0.login?.twoFactor?.isTwoFactorRequestInFlight = true
     }
     await store.receive(\.login.twoFactor.twoFactorResponse.success) {
       $0 = .newGame(NewGame.State())

@@ -21,7 +21,7 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(\.path[id:0].detail.deleteButtonTapped) {
-      $0.path[id: 0, case: \.detail]?.destination = .alert(.deleteSyncUp)
+      $0.path[id: 0]?.detail?.destination = .alert(.deleteSyncUp)
     }
 
     await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
@@ -50,19 +50,19 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(\.path[id:0].detail.editButtonTapped) {
-      $0.path[id: 0, case: \.detail]?.destination = .edit(
+      $0.path[id: 0]?.detail?.destination = .edit(
         SyncUpForm.State(syncUp: syncUp)
       )
     }
 
     syncUp.title = "Blob"
-    await store.send(\.path[id:0].detail.destination.edit.syncUp, syncUp) {
-      $0.path[id: 0, case: \.detail]?.$destination[case: \.edit]?.syncUp.title = "Blob"
+    await store.send(\.path[id:0].detail.destination.edit.binding.syncUp, syncUp) {
+      $0.path[id: 0]?.detail?.destination?.edit?.syncUp.title = "Blob"
     }
 
     await store.send(\.path[id:0].detail.doneEditingButtonTapped) {
-      $0.path[id: 0, case: \.detail]?.destination = nil
-      $0.path[id: 0, case: \.detail]?.syncUp.title = "Blob"
+      $0.path[id: 0]?.detail?.destination = nil
+      $0.path[id: 0]?.detail?.syncUp.title = "Blob"
     }
     .finish()
   }

@@ -64,7 +64,30 @@ import Foundation
         }
       }
     }
-
+    
+    /// A projection of the shared value that returns a shared reference.
+    ///
+    /// Use the projected value to pass a shared value down to another feature. This is most
+    /// commonly done to share a value from one feature to another:
+    ///
+    /// ```swift
+    /// case .nextButtonTapped:
+    ///   state.path.append(
+    ///     PersonalInfoFeature(signUpData: state.$signUpData)
+    ///   )
+    /// ```
+    ///
+    /// Further you can use dot-chaining syntax to derive a smaller piece of shared state to hand
+    /// to another feature:
+    ///
+    /// ```swift
+    /// case .nextButtonTapped:
+    ///   state.path.append(
+    ///     PhoneNumberFeature(phoneNumber: state.$signUpData.phoneNumber)
+    ///   )
+    /// ```
+    ///
+    /// See <doc:SharingState#Deriving-shared-state> for more details.
     public var projectedValue: Self {
       get { self }
       set { self = newValue }
@@ -230,6 +253,29 @@ import Foundation
 
   extension Shared
   where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable & Sendable {
+    /// Derives a collection of shared elements from a shared collection of elements.
+    ///
+    /// This can be useful when used in conjunction with `ForEach` in order to derive a shared
+    /// reference for each element of a collection:
+    ///
+    /// ```swift
+    /// struct State {
+    ///   @Shared(.fileStorage(.todos)) var todos: IdentifiedArrayOf<Todo> = []
+    ///   // ...
+    /// }
+    ///
+    /// // ...
+    ///
+    /// ForEach(store.$todos.elements) { $todo in
+    ///   NavigationLink(
+    ///     // $todo: Shared<Todo>
+    ///     //  todo: Todo
+    ///     state: Path.State.todo(TodoFeature.State(todo: $todo))
+    ///   ) {
+    ///     Text(todo.title)
+    ///   }
+    /// }
+    /// ```
     public var elements: some RandomAccessCollection<Shared<Value.Element>> {
       zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
         self[index, default: DefaultSubscript(element)]

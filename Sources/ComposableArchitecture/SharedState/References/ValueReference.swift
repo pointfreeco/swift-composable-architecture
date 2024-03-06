@@ -22,8 +22,8 @@
     }
     
     public init(
-      wrappedValue value: @autoclosure @escaping () -> Value,
       _ persistenceKey: some PersistenceKey<Value>,
+      wrappedValue value: @autoclosure @escaping () -> Value,
       fileID: StaticString = #fileID,
       line: UInt = #line
     ) {
@@ -49,6 +49,27 @@
       )
     }
 
+    public init<Wrapped>(
+      _ persistenceKey: some PersistenceKey<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) where Value == Wrapped? {
+      self.init(persistenceKey, wrappedValue: nil, fileID: fileID, line: line)
+    }
+
+    @available(
+      *,
+      unavailable,
+      message: "'@Shared' must be initialized with a default value when using a persistence key"
+    )
+    public init(
+      _ persistenceKey: some PersistenceKey<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) {
+      fatalError()
+    }
+
     @_disfavoredOverload
     @available(
       *,
@@ -56,12 +77,12 @@
       message: "Use '@Shared' with a value type or supported reference type"
     )
     public init(
-      wrappedValue value: @autoclosure @escaping () -> Value,
       _ persistenceKey: some PersistenceKey<Value>,
+      wrappedValue value: @autoclosure @escaping () -> Value,
       fileID: StaticString = #fileID,
       line: UInt = #line
     ) where Value: AnyObject {
-      self.init(wrappedValue: value(), persistenceKey, fileID: fileID, line: line)
+      self.init(persistenceKey, wrappedValue: value(), fileID: fileID, line: line)
     }
   }
 
@@ -81,7 +102,7 @@
       isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
     )
     #if canImport(Combine)
-      private let _subject = PassthroughSubject<Value, Never>()
+      private let _subject: CurrentValueRelay<Value>
     #endif
 
     init(
@@ -91,6 +112,7 @@
       line: UInt
     ) {
       self._currentValue = persistenceKey.load() ?? initialValue()
+      self._subject = CurrentValueRelay(self._currentValue)
       self.persistenceKey = persistenceKey
       self.fileID = fileID
       self.line = line
@@ -105,6 +127,7 @@
       line: UInt
     ) {
       self._currentValue = value
+      self._subject = CurrentValueRelay(value)
       self.persistenceKey = nil
       self.fileID = fileID
       self.line = line
@@ -157,7 +180,7 @@
     }
 
     var publisher: AnyPublisher<Value, Never> {
-      self._subject.eraseToAnyPublisher()
+      self._subject.dropFirst().eraseToAnyPublisher()
     }
 
     var description: String {

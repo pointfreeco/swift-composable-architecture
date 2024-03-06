@@ -25,7 +25,7 @@
         #"""
         @available(iOS 18, *)
         struct State {
-          var count = 0 {
+          var count {
             @storageRestrictions(initializes: _count)
             init(initialValue) {
               _count = initialValue
@@ -71,7 +71,7 @@
       } expansion: {
         #"""
         struct State {
-          var count = 0 {
+          var count {
             @storageRestrictions(initializes: _count)
             init(initialValue) {
               _count = initialValue
@@ -117,7 +117,7 @@
       } expansion: {
         #"""
         public struct State {
-          var count = 0 {
+          var count {
             @storageRestrictions(initializes: _count)
             init(initialValue) {
               _count = initialValue
@@ -160,7 +160,7 @@
       } expansion: {
         #"""
         package struct State {
-          var count = 0 {
+          var count {
             @storageRestrictions(initializes: _count)
             init(initialValue) {
               _count = initialValue
