@@ -22,8 +22,8 @@
     }
     
     public init(
-      wrappedValue value: @autoclosure @escaping () -> Value,
       _ persistenceKey: some PersistenceKey<Value>,
+      wrappedValue value: @autoclosure @escaping () -> Value,
       fileID: StaticString = #fileID,
       line: UInt = #line
     ) {
@@ -54,7 +54,7 @@
       fileID: StaticString = #fileID,
       line: UInt = #line
     ) where Value == Wrapped? {
-      self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
+      self.init(persistenceKey, wrappedValue: nil, fileID: fileID, line: line)
     }
 
     @available(
@@ -77,12 +77,12 @@
       message: "Use '@Shared' with a value type or supported reference type"
     )
     public init(
-      wrappedValue value: @autoclosure @escaping () -> Value,
       _ persistenceKey: some PersistenceKey<Value>,
+      wrappedValue value: @autoclosure @escaping () -> Value,
       fileID: StaticString = #fileID,
       line: UInt = #line
     ) where Value: AnyObject {
-      self.init(wrappedValue: value(), persistenceKey, fileID: fileID, line: line)
+      self.init(persistenceKey, wrappedValue: value(), fileID: fileID, line: line)
     }
   }
 
