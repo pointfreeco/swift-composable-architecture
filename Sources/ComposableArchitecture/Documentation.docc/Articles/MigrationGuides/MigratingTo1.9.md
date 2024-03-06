@@ -55,11 +55,11 @@ features, and provide symmetry to how actions are received:
 >     +store.send(\.path[id: 0].tap)
 >     ```
 >
->   * And ``BindableAction``s can dynamically chain into a key path of state:
+>   * And ``BindingAction``s can dynamically chain into a key path of state:
 >
 >     ```diff
 >     -store.send(.binding(.set(\.firstName, "Blob")))
->     +store.send(\.firstName, "Blob")
+>     +store.send(\.binding.firstName, "Blob")
 >     ```
 >
 > Together, these helpers can massively simplify asserting against nested actions:
@@ -81,7 +81,7 @@ features, and provide symmetry to how actions are received:
 > -    )
 > -  )
 > -)
-> +store.send(\.path[id: 0].destination.sheet.password, "blobisawesome")
+> +store.send(\.path[id: 0].destination.sheet.binding.password, "blobisawesome")
 > ```
 
 ### Overriding dependencies

@@ -199,7 +199,7 @@
 
       state.destination = .child1(ChildState(count: 42))
       await self.fulfillment(of: [destinationDidChange], timeout: 0)
-      XCTAssertEqual(state.destination?[case: \.child1]?.count, 42)
+      XCTAssertEqual(state.destination?.child1?.count, 42)
     }
 
     func testDismissDestination() async {
@@ -229,7 +229,7 @@
 
       state.destination = .child2(ChildState(count: 42))
       await self.fulfillment(of: [destinationDidChange], timeout: 0)
-      XCTAssertEqual(state.destination?[case: \.child2]?.count, 42)
+      XCTAssertEqual(state.destination?.child2?.count, 42)
     }
 
     func testChangeDestination_KeepIdentity() async {
@@ -245,7 +245,7 @@
 
       state.destination = .child2(childState)
       await self.fulfillment(of: [destinationDidChange], timeout: 0)
-      XCTAssertEqual(state.destination?[case: \.child2]?.count, 42)
+      XCTAssertEqual(state.destination?.child2?.count, 42)
     }
 
     func testMutatingDestination_NonObservableCase() async {
@@ -627,6 +627,7 @@
       self.sibling = childCopy
     }
   }
+  @dynamicMemberLookup
   @CasePathable
   @ObservableState
   private enum DestinationState: Equatable {

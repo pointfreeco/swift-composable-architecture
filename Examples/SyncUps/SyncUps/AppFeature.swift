@@ -33,7 +33,7 @@ struct AppFeature {
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
         switch delegateAction {
         case .startMeeting:
-          let detailState = state.path[id: id, case: \.detail]!
+          let detailState = state.path[id: id]?.detail!
           state.path.append(.record(RecordMeeting.State(syncUp: detailState.$syncUp)))
           return .none
         }

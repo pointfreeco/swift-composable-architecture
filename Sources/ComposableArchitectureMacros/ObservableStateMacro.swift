@@ -469,7 +469,9 @@ extension VariableDeclSyntax {
     renamed rename: String,
     context: C
   ) {
-    if let attribute = self.firstAttribute(for: name) {
+    if let attribute = self.firstAttribute(for: name),
+      let type = attribute.attributeName.as(IdentifierTypeSyntax.self)
+    {
       context.diagnose(
         Diagnostic(
           node: attribute,
@@ -478,7 +480,13 @@ extension VariableDeclSyntax {
             message: MacroExpansionFixItMessage("Use '@\(rename)' instead"),
             oldNode: attribute,
             newNode: attribute.with(
-              \.attributeName, TypeSyntax(IdentifierTypeSyntax(name: .identifier(rename)))
+              \.attributeName,
+              TypeSyntax(
+                type.with(
+                  \.name,
+                  .identifier(rename, trailingTrivia: type.name.trailingTrivia)
+                )
+              )
             )
           )
         )
