@@ -18,10 +18,10 @@ final class LoginCoreTests: XCTestCase {
       }
     }
 
-    await store.send(\.view.email, "2fa@pointfree.co") {
+    await store.send(\.view.binding.email, "2fa@pointfree.co") {
       $0.email = "2fa@pointfree.co"
     }
-    await store.send(\.view.password, "password") {
+    await store.send(\.view.binding.password, "password") {
       $0.password = "password"
       $0.isFormValid = true
     }
@@ -32,7 +32,7 @@ final class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactor.State(token: "deadbeefdeadbeef")
     }
-    await store.send(\.twoFactor.view.code, "1234") {
+    await store.send(\.twoFactor.view.binding.code, "1234") {
       $0.twoFactor?.code = "1234"
       $0.twoFactor?.isFormValid = true
     }
@@ -58,10 +58,10 @@ final class LoginCoreTests: XCTestCase {
       }
     }
 
-    await store.send(\.view.email, "2fa@pointfree.co") {
+    await store.send(\.view.binding.email, "2fa@pointfree.co") {
       $0.email = "2fa@pointfree.co"
     }
-    await store.send(\.view.password, "password") {
+    await store.send(\.view.binding.password, "password") {
       $0.password = "password"
       $0.isFormValid = true
     }
@@ -72,7 +72,7 @@ final class LoginCoreTests: XCTestCase {
       $0.isLoginRequestInFlight = false
       $0.twoFactor = TwoFactor.State(token: "deadbeefdeadbeef")
     }
-    await store.send(\.twoFactor.view.code, "1234") {
+    await store.send(\.twoFactor.view.binding.code, "1234") {
       $0.twoFactor?.code = "1234"
       $0.twoFactor?.isFormValid = true
     }
