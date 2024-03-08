@@ -3,12 +3,14 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		CA93D060249BF4D000A6F65D /* Todo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA93D05F249BF4D000A6F65D /* Todo.swift */; };
 		DC1394322469E57000EE1157 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC1394312469E57000EE1157 /* ComposableArchitecture */; };
+		DC9A71112B9AE89A00DF9E00 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = DC9A71102B9AE89A00DF9E00 /* GRDB */; };
+		DC9A71132B9AE97100DF9E00 /* GRDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9A71122B9AE97100DF9E00 /* GRDB.swift */; };
 		DCBCB77624290F6C00DE1F59 /* TodosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB77524290F6C00DE1F59 /* TodosApp.swift */; };
 		DCBCB77A24290F6D00DE1F59 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DCBCB77924290F6D00DE1F59 /* Assets.xcassets */; };
 		DCBCB78B24290F6D00DE1F59 /* TodosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB78A24290F6D00DE1F59 /* TodosTests.swift */; };
@@ -52,6 +54,7 @@
 		23EDBE6A271CD8C7004F7430 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CA93D05F249BF4D000A6F65D /* Todo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Todo.swift; sourceTree = "<group>"; };
 		DC85B441242D0286009784B0 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
+		DC9A71122B9AE97100DF9E00 /* GRDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRDB.swift; sourceTree = "<group>"; };
 		DCBCB77024290F6C00DE1F59 /* Todos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCBCB77524290F6C00DE1F59 /* TodosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodosApp.swift; sourceTree = "<group>"; };
 		DCBCB77924290F6D00DE1F59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -66,6 +69,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC1394322469E57000EE1157 /* ComposableArchitecture in Frameworks */,
+				DC9A71112B9AE89A00DF9E00 /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,6 +106,7 @@
 		DCBCB77224290F6C00DE1F59 /* Todos */ = {
 			isa = PBXGroup;
 			children = (
+				DC9A71122B9AE97100DF9E00 /* GRDB.swift */,
 				CA93D05F249BF4D000A6F65D /* Todo.swift */,
 				DCBCB79A24290FEB00DE1F59 /* Todos.swift */,
 				DCBCB77524290F6C00DE1F59 /* TodosApp.swift */,
@@ -137,6 +142,7 @@
 			name = Todos;
 			packageProductDependencies = (
 				DC1394312469E57000EE1157 /* ComposableArchitecture */,
+				DC9A71102B9AE89A00DF9E00 /* GRDB */,
 			);
 			productName = Todos;
 			productReference = DCBCB77024290F6C00DE1F59 /* Todos.app */;
@@ -192,6 +198,7 @@
 			);
 			mainGroup = DCBCB76724290F6C00DE1F59;
 			packageReferences = (
+				DC9A710F2B9AE89A00DF9E00 /* XCRemoteSwiftPackageReference "GRDB" */,
 			);
 			productRefGroup = DCBCB77124290F6C00DE1F59 /* Products */;
 			projectDirPath = "";
@@ -226,6 +233,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC9A71132B9AE97100DF9E00 /* GRDB.swift in Sources */,
 				DCBCB77624290F6C00DE1F59 /* TodosApp.swift in Sources */,
 				CA93D060249BF4D000A6F65D /* Todo.swift in Sources */,
 				DCBCB79B24290FEB00DE1F59 /* Todos.swift in Sources */,
@@ -493,10 +501,26 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		DC9A710F2B9AE89A00DF9E00 /* XCRemoteSwiftPackageReference "GRDB" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		DC1394312469E57000EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
+		};
+		DC9A71102B9AE89A00DF9E00 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC9A710F2B9AE89A00DF9E00 /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

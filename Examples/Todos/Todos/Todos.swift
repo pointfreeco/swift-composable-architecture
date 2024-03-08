@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import GRDB
 @preconcurrency import SwiftUI
 
 enum Filter: LocalizedStringKey, CaseIterable, Hashable {
@@ -13,21 +14,7 @@ struct Todos {
   struct State: Equatable {
     var editMode: EditMode = .inactive
     var filter: Filter = .all
-    @Shared(.todos)
-    var todos: IdentifiedArrayOf<Todo> = []
-
-    var filteredTodoIDs: [Todo.ID] {
-      zip(self.todos.ids, self.todos).compactMap { id, todo in
-        switch filter {
-        case .all:
-          return id
-        case .active:
-          return !todo.isComplete ? id : nil
-        case .completed:
-          return todo.isComplete ? id : nil
-        }
-      }
-    }
+    @Shared(.query(Todo.all().order(Column("isComplete").asc))) var todos: IdentifiedArray = []
   }
 
   enum Action: BindableAction, Sendable {
@@ -37,59 +24,102 @@ struct Todos {
     case delete(IndexSet)
     case move(IndexSet, Int)
     case onAppear
+    case todos(IdentifiedActionOf<TodoFeature>)
   }
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.uuid) var uuid
   private enum CancelID { case todoCompletion }
 
+  @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
+
   var body: some Reducer<State, Action> {
-    BindingReducer()
-    Reduce { state, action in
-      switch action {
-      case .addTodoButtonTapped:
-        state.todos.insert(Todo(id: self.uuid()), at: 0)
-        return .none
-
-      case .binding:
-        return .none
-
-      case .clearCompletedButtonTapped:
-        state.todos.removeAll(where: \.isComplete)
-        return .none
-
-      case let .delete(indexSet):
-        let filteredTodosIDs = state.filteredTodoIDs
-        for index in indexSet {
-          state.todos.remove(id: filteredTodosIDs[index])
-        }
-        return .none
-
-      case var .move(source, destination):
-        if state.filter == .completed {
-          let filteredTodoIDs = state.filteredTodoIDs
-          source = IndexSet(
-            source
-              .map { filteredTodoIDs[$0] }
-              .compactMap { state.todos.index(id: $0) }
-          )
-          destination =
-            (destination < filteredTodoIDs.endIndex
-              ? state.todos.index(id: filteredTodoIDs[destination])
-              : state.todos.endIndex)
-            ?? destination
-        }
-        state.todos.move(fromOffsets: source, toOffset: destination)
-        return .none
-
-      case .onAppear:
-        return .run { @MainActor [todos = state.$todos] send in
-          for await _ in todos.publisher.removeDuplicates().values {
-            withAnimation(.default) {
-              todos.wrappedValue.sort { $1.isComplete && !$0.isComplete }
+    CombineReducers {
+      BindingReducer()
+      Reduce { state, action in
+        switch action {
+        case .addTodoButtonTapped:
+          return .run { _ in
+            try defaultDatabaseQueue.inDatabase { db in
+              try Todo().insert(db)
             }
           }
+          
+        case .binding:
+          return .none
+          
+        case .clearCompletedButtonTapped:
+          let ids = state.todos.filter(\.isComplete).ids
+          return .run { _ in
+            try defaultDatabaseQueue.inDatabase { db in
+              _ = try Todo.deleteAll(db, ids: ids)
+            }
+          }
+
+        case let .delete(indexSet):
+          let ids = indexSet.map { state.todos[$0].id }
+          return .run { _ in
+            try defaultDatabaseQueue.inDatabase { db in
+              _ = try Todo.deleteAll(db, ids: ids)
+            }
+          }
+          
+        case var .move(source, destination):
+          //        if state.filter == .completed {
+          //          let filteredTodoIDs = state.filteredTodoIDs
+          //          source = IndexSet(
+          //            source
+          //              .map { filteredTodoIDs[$0] }
+          //              .compactMap { state.todos.index(id: $0) }
+          //          )
+          //          destination =
+          //            (destination < filteredTodoIDs.endIndex
+          //              ? state.todos.index(id: filteredTodoIDs[destination])
+          //              : state.todos.endIndex)
+          //            ?? destination
+          //        }
+          //        state.todos.move(fromOffsets: source, toOffset: destination)
+          return .none
+          
+        case .onAppear:
+          return .run { _ in
+            var migrator = DatabaseMigrator()
+            migrator.registerMigration("Create todos") { db in
+              try db.create(table: "todo") { t in
+                t.autoIncrementedPrimaryKey("id")
+                t.column("description", .text)
+                t.column("isComplete", .boolean)
+              }
+            }
+            try migrator.migrate(defaultDatabaseQueue)
+          }
+          
+        case .todos:
+          return .none
         }
+      }
+      .forEach(\.todos, action: \.todos) {
+        TodoFeature()
+      }
+    }
+    .onChange(of: \.filter) { _, filter in
+      Reduce { state, _ in
+        let todos = state.todos
+        switch filter {
+        case .all:
+          state.$todos = Shared(
+            wrappedValue: todos, .query(Todo.all().order(Column("isComplete").asc))
+          )
+        case .active:
+          state.$todos = Shared(
+            wrappedValue: todos, .query(Todo.all().filter(Column("isComplete") == false))
+          )
+        case .completed:
+          state.$todos = Shared(
+            wrappedValue: todos, .query(Todo.all().filter(Column("isComplete") == true))
+          )
+        }
+        return .none
       }
     }
   }
@@ -110,13 +140,13 @@ struct AppView: View {
         .padding(.horizontal)
 
         List {
-          ForEach(store.filteredTodoIDs, id: \.self) { id in
-            let index = store.todos.ids.firstIndex(of: id)!
-            TodoView(todo: $store.todos[index])
+          ForEach(store.scope(state: \.todos, action: \.todos), id: \.state.id) { store in
+            TodoView(store: store)
           }
           .onDelete { store.send(.delete($0)) }
           .onMove { store.send(.move($0, $1)) }
         }
+        .animation(.default, value: store.todos)
       }
       .navigationTitle("Todos")
       .navigationBarItems(
@@ -147,17 +177,17 @@ extension IdentifiedArrayOf<Todo> {
   static let mock: Self = [
     Todo(
       description: "Check Mail",
-      id: UUID(),
+      id: 1,
       isComplete: false
     ),
     Todo(
       description: "Buy Milk",
-      id: UUID(),
+      id: 2,
       isComplete: false
     ),
     Todo(
       description: "Call Mom",
-      id: UUID(),
+      id: 3,
       isComplete: true
     ),
   ]

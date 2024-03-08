@@ -12,7 +12,7 @@ import Foundation
   /// wrapper.
   @dynamicMemberLookup
   @propertyWrapper
-  public struct Shared<Value> {
+  public struct Shared<Value>: Observable {
     fileprivate let reference: any Reference
     private let keyPath: AnyKeyPath
 
