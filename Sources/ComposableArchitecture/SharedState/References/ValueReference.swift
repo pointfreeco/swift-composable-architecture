@@ -22,7 +22,7 @@
     }
     
     public init(
-      wrappedValue value: @autoclosure @escaping () -> Value,
+      wrappedValue value: Value,
       _ persistenceKey: some PersistenceKey<Value>,
       fileID: StaticString = #fileID,
       line: UInt = #line
@@ -85,7 +85,7 @@
       message: "Use '@Shared' with a value type or supported reference type"
     )
     public init(
-      wrappedValue value: @autoclosure @escaping () -> Value,
+      wrappedValue value: Value,
       _ persistenceKey: some PersistenceKey<Value>,
       fileID: StaticString = #fileID,
       line: UInt = #line
