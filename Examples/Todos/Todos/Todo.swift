@@ -30,14 +30,22 @@ struct TodoFeature {
     case binding(BindingAction<State>)
   }
 
+  @Dependency(\.continuousClock) var clock
   @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
+
+  enum CancelID {
+    case debounce
+  }
 
   var body: some ReducerOf<Self> {
     BindingReducer()
     Reduce { todo, action in
       return .run { [todo] _ in
-        try defaultDatabaseQueue.inDatabase { db in
-          try todo.update(db)
+        try await withTaskCancellation(id: CancelID.debounce, cancelInFlight: true) {
+          try await clock.sleep(for: .seconds(0.3))
+          try defaultDatabaseQueue.inDatabase { db in
+            try todo.update(db)
+          }
         }
       }
     }
