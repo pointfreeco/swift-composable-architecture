@@ -114,18 +114,20 @@
     #endif
 
     init(
-      initialValue: @autoclosure @escaping () -> Value,
+      initialValue: Value,
       persistenceKey: some PersistenceKey<Value>,
       fileID: StaticString,
       line: UInt
     ) {
-      self._currentValue = persistenceKey.load() ?? initialValue()
+      self._currentValue = persistenceKey.load(initialValue: initialValue)
       self._subject = CurrentValueRelay(self._currentValue)
       self.persistenceKey = persistenceKey
       self.fileID = fileID
       self.line = line
-      self.subscription = persistenceKey.subscribe { [weak self, initialValue] value in
-        self?.currentValue = value ?? initialValue()
+      self.subscription = persistenceKey.subscribe(
+        initialValue: initialValue
+      ) { [weak self] value in
+        self?.currentValue = value
       }
     }
 

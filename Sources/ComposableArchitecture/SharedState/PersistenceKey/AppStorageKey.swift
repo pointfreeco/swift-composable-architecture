@@ -333,14 +333,30 @@
   }
 
   extension AppStorageKey: PersistenceKey {
-    public func subscribe(didSet: @escaping (_ newValue: Value?) -> Void) -> Shared<Value>.Subscription {
+    public func load(initialValue: Value) -> Value {
+      if case let .string(key) = self.key {
+        self.store.register(defaults: [key: initialValue])
+      }
+      return self._load() ?? initialValue
+    }
+
+    public func save(_ value: Value) {
+      SharedAppStorageLocals.$isSetting.withValue(true) {
+        self._save(value)
+      }
+    }
+
+    public func subscribe(
+      initialValue: Value,
+      didSet: @escaping (_ newValue: Value) -> Void
+    ) -> Shared<Value>.Subscription {
       switch self.key {
       case let .keyPath(key):
         let observer = self.store.observe(key, options: .new) { _, change in
           guard
             !SharedAppStorageLocals.isSetting
           else { return }
-          didSet(change.newValue)
+          didSet(change.newValue ?? initialValue)
         }
         return Shared.Subscription {
           observer.invalidate()
@@ -350,22 +366,12 @@
           guard
             !SharedAppStorageLocals.isSetting
           else { return }
-          didSet(value)
+          didSet(value ?? initialValue)
         }
         self.store.addObserver(observer, forKeyPath: key, options: .new, context: nil)
         return Shared.Subscription {
           self.store.removeObserver(observer, forKeyPath: key)
         }
-      }
-    }
-
-    public func load() -> Value? {
-      self._load()
-    }
-
-    public func save(_ value: Value) {
-      SharedAppStorageLocals.$isSetting.withValue(true) {
-        self._save(value)
       }
     }
 

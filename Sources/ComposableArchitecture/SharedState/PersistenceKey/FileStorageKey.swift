@@ -64,8 +64,12 @@
       NotificationCenter.default.removeObserver(self.notificationListener!)
     }
 
-    public func load() -> Value? {
-      try? JSONDecoder().decode(Value.self, from: self.storage.load(from: self.url))
+    public func load(initialValue: Value) -> Value {
+      do {
+        return try JSONDecoder().decode(Value.self, from: self.storage.load(from: self.url))
+      } catch {
+        return initialValue
+      }
     }
 
     public func save(_ value: Value) {
@@ -84,7 +88,9 @@
       }
     }
 
-    public func subscribe(didSet: @escaping (Value?) -> Void) -> Shared<Value>.Subscription {
+    public func subscribe(
+      initialValue: Value, didSet: @escaping (Value) -> Void
+    ) -> Shared<Value>.Subscription {
       // NB: Make sure there is a file to create a source for.
       if !self.storage.fileExists(at: self.url) {
         try? self.storage
@@ -100,7 +106,7 @@
         if self.storage.isSetting() == true {
           self.storage.setIsSetting(false)
         } else {
-          didSet(self.load())
+          didSet(self.load(initialValue: initialValue))
         }
       }
       return Shared.Subscription {

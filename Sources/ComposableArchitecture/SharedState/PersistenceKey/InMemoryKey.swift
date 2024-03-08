@@ -26,7 +26,7 @@
     public init(_ key: String) {
       self.key = key
     }
-    public func load() -> Value? { nil }
+    public func load(initialValue: Value) -> Value { initialValue }
     public func save(_ value: Value) {}
   }
 #endif
