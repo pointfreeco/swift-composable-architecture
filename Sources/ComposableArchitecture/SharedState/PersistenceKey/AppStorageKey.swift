@@ -406,13 +406,15 @@
 
   private enum DefaultAppStorageKey: DependencyKey {
     static var testValue: UncheckedSendable<UserDefaults> {
-      let suiteName = "co.pointfree.ComposableArchitecture.tests"
-      let defaultAppStorage = UserDefaults(suiteName: suiteName)!
-      defaultAppStorage.removePersistentDomain(forName: suiteName)
-      return UncheckedSendable(defaultAppStorage)
+      UncheckedSendable(
+        UserDefaults(
+          suiteName:
+            "\(NSTemporaryDirectory())co.pointfree.ComposableArchitecture.\(UUID().uuidString)"
+        )!
+      )
     }
     static var previewValue: UncheckedSendable<UserDefaults> {
-      DefaultAppStorageKey.testValue
+      Self.testValue
     }
     static var liveValue: UncheckedSendable<UserDefaults> {
       UncheckedSendable(UserDefaults.standard)
