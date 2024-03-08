@@ -9,7 +9,7 @@
     /// wrapper:
     ///
     /// ```swift
-    /// @Shared(.inMemory("appLaunchedAt")) var appLaunchedAt = Date()
+    /// @Shared(.appStorage("appLaunchedAt")) var appLaunchedAt = Date()
     /// ```
     ///
     /// - Parameter key: A string key identifying a value to share in memory.
@@ -72,6 +72,15 @@
     public static func appStorage(_ key: String) -> Self
     where Self == AppStorageKey<Data> {
       AppStorageKey(key)
+    }
+
+    /// Creates a persistence key that can read and write to a user default as Date.
+    ///
+    /// - Parameter key: The key to read and write the value to in the user defaults store.
+    /// - Returns: A user defaults persistence key.
+    public static func appStorage(_ key: String) -> Self
+    where Self == AppStorageKey<Date> {
+    AppStorageKey(key)
     }
 
     /// Creates a persistence key that can read and write to an integer user default, transforming
@@ -146,6 +155,15 @@
     public static func appStorage(_ key: String) -> Self
     where Self == AppStorageKey<Data?> {
       AppStorageKey(key)
+    }
+
+    /// Creates a persistence key that can read and write to a user default as optional Date.
+    ///
+    /// - Parameter key: The key to read and write the value to in the user defaults store.
+    /// - Returns: A user defaults persistence key.
+    public static func appStorage(_ key: String) -> Self
+    where Self == AppStorageKey<Date?> {
+    AppStorageKey(key)
     }
 
     /// Creates a persistence key that can read and write to an optional integer user default,
@@ -239,6 +257,14 @@
       self.store = store
     }
 
+    public init(_ key: String) where Value == Date {
+      @Dependency(\.defaultAppStorage) var store
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
+      self.key = .string(key)
+      self.store = store
+    }
+
     public init(_ key: String)
     where Value: RawRepresentable, Value.RawValue == Int {
       @Dependency(\.defaultAppStorage) var store
@@ -302,6 +328,14 @@
     }
 
     public init(_ key: String) where Value == Data? {
+      @Dependency(\.defaultAppStorage) var store
+      self._load = { [store] in store.object(forKey: key) as? Value }
+      self._save = { [store] in store.set($0, forKey: key) }
+      self.key = .string(key)
+      self.store = store
+    }
+
+    public init(_ key: String) where Value == Date? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
       self._save = { [store] in store.set($0, forKey: key) }
