@@ -3,9 +3,7 @@ import CustomDump
 import Combine
 #endif
 
-protocol Reference<Value>:
-  AnyObject, CustomDumpRepresentable, CustomStringConvertible, _CustomDiffObject
-{
+protocol Reference<Value>: AnyObject, CustomStringConvertible {
   associatedtype Value
   var currentValue: Value { get set }
   var snapshot: Value? { get set }
@@ -41,15 +39,5 @@ extension Reference {
       )
     }
     self.clearSnapshot()
-  }
-}
-
-extension Reference {
-  var customDumpValue: Any {
-    self.currentValue
-  }
-
-  var _customDiffValues: (Any, Any) {
-    (self.snapshot ?? self.currentValue, self.currentValue)
   }
 }

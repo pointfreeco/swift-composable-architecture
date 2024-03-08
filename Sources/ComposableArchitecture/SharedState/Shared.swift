@@ -247,7 +247,17 @@ import Foundation
 
   extension Shared: CustomDumpRepresentable {
     public var customDumpValue: Any {
-      self.reference
+      self.currentValue
+    }
+  }
+
+  extension Shared: _CustomDiffObject {
+    public var _customDiffValues: (Any, Any) {
+      (self.snapshot ?? self.currentValue, self.currentValue)
+    }
+
+    public var _objectIdentifier: ObjectIdentifier {
+      ObjectIdentifier(self.reference)
     }
   }
 
