@@ -54,7 +54,8 @@
             execute: DispatchWorkItem {
               self.workItem?.cancel()
               self.workItem = nil
-            })
+            }
+          )
         }
       #endif
     }
@@ -83,30 +84,27 @@
       }
     }
 
-    public var updates: AsyncStream<Value?> {
-      AsyncStream { continuation in
-        // NB: Make sure there is a file to create a source for.
-        if !FileManager.default.fileExists(atPath: self.url.path) {
-          try? FileManager.default
-            .createDirectory(
-              at: self.url.deletingLastPathComponent(), withIntermediateDirectories: true)
-          try? self.storage.save(Data(), to: self.url)
+    public func subscribe(didSet: @escaping (Value?) -> Void) -> Shared<Value>.Subscription {
+      // NB: Make sure there is a file to create a source for.
+      if !self.storage.fileExists(at: self.url) {
+        try? self.storage
+          .createDirectory(
+            at: self.url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? self.storage.save(Data(), to: self.url)
+      }
+      // TODO: detect deletion separately and restart source
+      let cancellable = self.storage.fileSystemSource(
+        url: self.url,
+        eventMask: [.write, .delete, .rename]
+      ) {
+        if self.storage.isSetting() == true {
+          self.storage.setIsSetting(false)
+        } else {
+          didSet(self.load())
         }
-
-        // TODO: detect deletion separately and restart source
-        let cancellable = self.storage.fileSystemSource(
-          url: self.url,
-          eventMask: [.write, .delete, .rename]
-        ) {
-          if self.storage.isSetting() == true {
-            self.storage.setIsSetting(false)
-          } else {
-            continuation.yield(self.load())
-          }
-        }
-        continuation.onTermination = { [cancellable = UncheckedSendable(cancellable)] _ in
-          cancellable.wrappedValue.cancel()
-        }
+      }
+      return Shared.Subscription {
+        cancellable.cancel()
       }
     }
   }
@@ -127,7 +125,12 @@
   public protocol FileStorage: Sendable, AnyObject {
     func async(execute workItem: DispatchWorkItem)
     func asyncAfter(interval: DispatchTimeInterval, execute: DispatchWorkItem)
+    func createDirectory(
+      at url: URL,
+      withIntermediateDirectories createIntermediates: Bool
+    ) throws
     func isSetting() -> Bool?
+    func fileExists(at url: URL) -> Bool
     func fileSystemSource(
       url: URL,
       eventMask: DispatchSource.FileSystemEvent,
@@ -159,10 +162,24 @@
       self.queue.asyncAfter(deadline: .now() + interval, execute: workItem)
     }
 
+    public func createDirectory(
+      at url: URL,
+      withIntermediateDirectories createIntermediates: Bool
+    ) throws {
+      try FileManager.default.createDirectory(
+        at: url,
+        withIntermediateDirectories: createIntermediates
+      )
+    }
+
     public func isSetting() -> Bool? {
       // TODO: Does this actually need to be a specific and be in the protocol, or could
       //      FileStorageKey just hold onto this state?
       self.queue.getSpecific(key: Self.isSettingKey)
+    }
+
+    public func fileExists(at url: URL) -> Bool {
+      FileManager.default.fileExists(atPath: url.path)
     }
 
     public func fileSystemSource(
@@ -219,12 +236,21 @@
       }
     }
 
+    public func async(execute workItem: DispatchWorkItem) {
+      self.scheduler.schedule(workItem.perform)
+    }
+
+    public func createDirectory(
+      at url: URL,
+      withIntermediateDirectories createIntermediates: Bool
+    ) throws {}
+
     public func isSetting() -> Bool? {
       self._isSetting.value
     }
 
-    public func async(execute workItem: DispatchWorkItem) {
-      self.scheduler.schedule(workItem.perform)
+    public func fileExists(at url: URL) -> Bool {
+      self.fileSystem.keys.contains(url)
     }
 
     public func fileSystemSource(
