@@ -35,7 +35,7 @@
               return reference
             } else {
               let reference = ValueReference(
-                initialValue: value(),
+                initialValue: value,
                 persistenceKey: persistenceKey,
                 fileID: fileID,
                 line: line
@@ -57,26 +57,17 @@
       self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
     }
 
-    @available(
-      *,
-      unavailable,
-      message: "'@Shared' must be initialized with a default value when using a persistence key"
-    )
     public init(
       _ persistenceKey: some PersistenceKey<Value>,
       fileID: StaticString = #fileID,
       line: UInt = #line
-    ) {
-      fatalError()
+    ) throws {
+      guard let initialValue = persistenceKey.load(initialValue: nil)
+      else {
+        throw LoadError()
+      }
+      self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
     }
-
-    // public init(
-    //   _ persistenceKey: some PersistenceKey<Value>,
-    //   fileID: StaticString = #fileID,
-    //   line: UInt = #line
-    // ) throws {
-    //   fatalError("TODO")
-    // }
 
     @_disfavoredOverload
     @available(
@@ -90,9 +81,11 @@
       fileID: StaticString = #fileID,
       line: UInt = #line
     ) where Value: AnyObject {
-      self.init(wrappedValue: value(), persistenceKey, fileID: fileID, line: line)
+      self.init(wrappedValue: value, persistenceKey, fileID: fileID, line: line)
     }
   }
+
+  private struct LoadError: Error {}
 
   private final class ValueReference<Value>: Reference {
     private var _currentValue: Value {
@@ -119,7 +112,7 @@
       fileID: StaticString,
       line: UInt
     ) {
-      self._currentValue = persistenceKey.load(initialValue: initialValue)
+      self._currentValue = persistenceKey.load(initialValue: initialValue) ?? initialValue
       self._subject = CurrentValueRelay(self._currentValue)
       self.persistenceKey = persistenceKey
       self.fileID = fileID
@@ -127,7 +120,7 @@
       self.subscription = persistenceKey.subscribe(
         initialValue: initialValue
       ) { [weak self] value in
-        self?.currentValue = value
+        self?.currentValue = value ?? initialValue
       }
     }
 

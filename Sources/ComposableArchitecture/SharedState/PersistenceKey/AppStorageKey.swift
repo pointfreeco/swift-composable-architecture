@@ -174,7 +174,7 @@
   /// See ``PersistenceKey/appStorage(_:)-9zd2f`` to create values of this type.
   public struct AppStorageKey<Value> {
     private let _load: () -> Value?
-    private let _save: (Value) -> Void
+    private let _save: (Value?) -> Void
     private let key: Key
     private let store: UserDefaults
 
@@ -186,7 +186,13 @@
     public init(_ keyPath: ReferenceWritableKeyPath<UserDefaults, Value>) {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store[keyPath: keyPath] }
-      self._save = { [store] in store[keyPath: keyPath] = $0 }
+      self._save = { [store] in
+        if let value = $0 {
+          store[keyPath: keyPath] = value
+        } else if let key = keyPath._kvcKeyPathString {
+          store.removeObject(forKey: key)
+        }
+      }
       self.key = .keyPath(keyPath)
       self.store = store
     }
@@ -245,7 +251,7 @@
       self._load = { [store] in
         (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:))
       }
-      self._save = { [store] in store.set($0.rawValue, forKey: key) }
+      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -256,7 +262,7 @@
       self._load = { [store] in
         (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:))
       }
-      self._save = { [store] in store.set($0.rawValue, forKey: key) }
+      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -264,7 +270,7 @@
     public init(_ key: String) where Value == Bool? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -272,7 +278,7 @@
     public init(_ key: String) where Value == Int? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -280,7 +286,7 @@
     public init(_ key: String) where Value == Double? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -288,7 +294,7 @@
     public init(_ key: String) where Value == String? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -296,7 +302,7 @@
     public init(_ key: String) where Value == URL? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -304,7 +310,7 @@
     public init(_ key: String) where Value == Data? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -315,7 +321,7 @@
       self._load = { [store] in
         (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:))
       }
-      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
+      self._save = { [store] in store.set($0??.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -326,29 +332,28 @@
       self._load = { [store] in
         (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:))
       }
-      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
+      self._save = { [store] in store.set($0??.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
   }
 
   extension AppStorageKey: PersistenceKey {
-    public func load(initialValue: Value) -> Value {
-      if case let .string(key) = self.key {
+    public func load(initialValue: Value?) -> Value? {
+      if let initialValue, case let .string(key) = self.key {
         self.store.register(defaults: [key: initialValue])
       }
       return self._load() ?? initialValue
     }
 
-    public func save(_ value: Value) {
+    public func save(_ value: Value?) {
       SharedAppStorageLocals.$isSetting.withValue(true) {
         self._save(value)
       }
     }
 
     public func subscribe(
-      initialValue: Value,
-      didSet: @escaping (_ newValue: Value) -> Void
+      initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
     ) -> Shared<Value>.Subscription {
       switch self.key {
       case let .keyPath(key):

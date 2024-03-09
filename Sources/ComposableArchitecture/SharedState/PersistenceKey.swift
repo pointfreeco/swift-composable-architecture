@@ -13,20 +13,20 @@
     associatedtype Value
 
     /// Loads the freshest value from storage. Returns `nil` if there is no value in storage.
-    func load(initialValue: Value) -> Value  // TODO: Should this be throwing?
+    func load(initialValue: Value?) -> Value?  // TODO: Should this be throwing?
 
     /// Saves a value to storage.
-    func save(_ value: Value)
+    func save(_ value: Value?)
 
     /// Subscribes to external updates.
     func subscribe(
-      initialValue: Value, didSet: @escaping (Value) -> Void
+      initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
     ) -> Shared<Value>.Subscription
   }
 
   extension PersistenceKey {
     public func subscribe(
-      initialValue: Value, didSet: @escaping (Value) -> Void
+      initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
     ) -> Shared<Value>.Subscription {
       Shared.Subscription {}
     }

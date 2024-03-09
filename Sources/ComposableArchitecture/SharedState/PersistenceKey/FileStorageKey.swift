@@ -64,7 +64,7 @@
       NotificationCenter.default.removeObserver(self.notificationListener!)
     }
 
-    public func load(initialValue: Value) -> Value {
+    public func load(initialValue: Value?) -> Value? {
       do {
         return try JSONDecoder().decode(Value.self, from: self.storage.load(from: self.url))
       } catch {
@@ -72,7 +72,7 @@
       }
     }
 
-    public func save(_ value: Value) {
+    public func save(_ value: Value?) {
       self.workItem?.cancel()
       let workItem = DispatchWorkItem { [weak self] in
         guard let self else { return }
@@ -89,7 +89,7 @@
     }
 
     public func subscribe(
-      initialValue: Value, didSet: @escaping (Value) -> Void
+      initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
     ) -> Shared<Value>.Subscription {
       // NB: Make sure there is a file to create a source for.
       if !self.storage.fileExists(at: self.url) {
