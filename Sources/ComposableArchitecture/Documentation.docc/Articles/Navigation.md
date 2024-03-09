@@ -28,6 +28,7 @@ use these tools.
 - <doc:StackBasedNavigation>
 - ``StackState``
 - ``StackAction``
+- ``StackActionOf``
 - ``StackElementID``
 - ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``
 
