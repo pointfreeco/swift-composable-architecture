@@ -36,7 +36,7 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  func testCancelInFlight() throws {
+  func testThrottle() throws {
     let testScheduler = DispatchQueue.test
     let fileStorage = EphemeralFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
@@ -54,13 +54,21 @@ final class FileStorageTests: XCTestCase {
       users.append(.blobJr)
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
-      testScheduler.advance(by: .seconds(3))
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
-
       testScheduler.advance(by: .seconds(2))
+      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
 
+      testScheduler.advance(by: .seconds(1))
+
+      users.append(.blobSr)
+      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+
+      testScheduler.advance(by: .seconds(4))
+      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+
+      testScheduler.advance(by: .seconds(1))
       try XCTAssertNoDifference(
-        fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+        fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr, .blobSr]
+      )
     }
   }
 

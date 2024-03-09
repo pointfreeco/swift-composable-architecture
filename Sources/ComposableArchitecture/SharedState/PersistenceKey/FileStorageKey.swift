@@ -32,6 +32,7 @@
   {
     let storage: any FileStorage
     let url: URL
+    let value = LockIsolated<Value?>(nil)
     var workItem: DispatchWorkItem?
     var notificationListener: Any!
 
@@ -73,18 +74,24 @@
     }
 
     public func save(_ value: Value?) {
-      self.workItem?.cancel()
-      let workItem = DispatchWorkItem { [weak self] in
-        guard let self else { return }
-        self.storage.setIsSetting(true)
-        try? self.storage.save(JSONEncoder().encode(value), to: self.url)
-        self.workItem = nil
-      }
-      self.workItem = workItem
-      if canListenForResignActive {
-        self.storage.asyncAfter(interval: .seconds(5), execute: workItem)
-      } else {
-        self.storage.async(execute: workItem)
+      self.value.setValue(value)
+      if self.workItem == nil {
+        let workItem = DispatchWorkItem { [weak self] in
+          guard let self else { return }
+          self.storage.setIsSetting(true)
+          if let value = self.value.value {
+            try? self.storage.save(JSONEncoder().encode(self.value.value), to: self.url)
+          } else {
+            try? self.storage.removeItem(at: self.url)
+          }
+          self.workItem = nil
+        }
+        self.workItem = workItem
+        if canListenForResignActive {
+          self.storage.asyncAfter(interval: .seconds(5), execute: workItem)
+        } else {
+          self.storage.async(execute: workItem)
+        }
       }
     }
 
@@ -143,6 +150,7 @@
       handler: @escaping () -> Void
     ) -> AnyCancellable
     func load(from url: URL) throws -> Data
+    func removeItem(at url: URL) throws
     func save(_ data: Data, to url: URL) throws
     func setIsSetting(_ isSetting: Bool)
   }
@@ -208,6 +216,10 @@
 
     public func load(from url: URL) throws -> Data {
       try Data(contentsOf: url)
+    }
+
+    public func removeItem(at url: URL) throws {
+      try FileManager.default.removeItem(at: url)
     }
 
     public func save(_ data: Data, to url: URL) throws {
@@ -277,6 +289,10 @@
         throw LoadError()
       }
       return data
+    }
+
+    public func removeItem(at url: URL) throws {
+      self.fileSystem.withValue { $0[url] = nil }
     }
 
     public func save(_ data: Data, to url: URL) throws {
