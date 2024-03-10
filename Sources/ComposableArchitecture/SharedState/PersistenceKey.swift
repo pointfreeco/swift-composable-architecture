@@ -16,7 +16,7 @@
     func load(initialValue: Value?) -> Value?  // TODO: Should this be throwing?
 
     /// Saves a value to storage.
-    func save(_ value: Value?)
+    func save(_ value: Value)
 
     /// Subscribes to external updates.
     func subscribe(

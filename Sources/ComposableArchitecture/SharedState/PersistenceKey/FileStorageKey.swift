@@ -73,17 +73,14 @@
       }
     }
 
-    public func save(_ value: Value?) {
+    public func save(_ value: Value) {
       self.value.setValue(value)
       if self.workItem == nil {
         let workItem = DispatchWorkItem { [weak self] in
-          guard let self else { return }
+          guard let self, let value = self.value.value else { return }
           self.storage.setIsSetting(true)
-          if let value = self.value.value {
-            try? self.storage.save(JSONEncoder().encode(self.value.value), to: self.url)
-          } else {
-            try? self.storage.removeItem(at: self.url)
-          }
+          try? self.storage.save(JSONEncoder().encode(value), to: self.url)
+          self.value.setValue(nil)
           self.workItem = nil
         }
         self.workItem = workItem
@@ -150,7 +147,6 @@
       handler: @escaping () -> Void
     ) -> AnyCancellable
     func load(from url: URL) throws -> Data
-    func removeItem(at url: URL) throws
     func save(_ data: Data, to url: URL) throws
     func setIsSetting(_ isSetting: Bool)
   }
@@ -216,10 +212,6 @@
 
     public func load(from url: URL) throws -> Data {
       try Data(contentsOf: url)
-    }
-
-    public func removeItem(at url: URL) throws {
-      try FileManager.default.removeItem(at: url)
     }
 
     public func save(_ data: Data, to url: URL) throws {
@@ -289,10 +281,6 @@
         throw LoadError()
       }
       return data
-    }
-
-    public func removeItem(at url: URL) throws {
-      self.fileSystem.withValue { $0[url] = nil }
     }
 
     public func save(_ data: Data, to url: URL) throws {

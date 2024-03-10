@@ -174,7 +174,7 @@
   /// See ``PersistenceKey/appStorage(_:)-9zd2f`` to create values of this type.
   public struct AppStorageKey<Value> {
     private let _load: () -> Value?
-    private let _save: (Value?) -> Void
+    private let _save: (Value) -> Void
     private let key: Key
     private let store: UserDefaults
 
@@ -186,13 +186,7 @@
     public init(_ keyPath: ReferenceWritableKeyPath<UserDefaults, Value>) {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store[keyPath: keyPath] }
-      self._save = { [store] in
-        if let value = $0 {
-          store[keyPath: keyPath] = value
-        } else if let key = keyPath._kvcKeyPathString {
-          store.removeObject(forKey: key)
-        }
-      }
+      self._save = { [store] in store[keyPath: keyPath] = $0 }
       self.key = .keyPath(keyPath)
       self.store = store
     }
@@ -251,7 +245,7 @@
       self._load = { [store] in
         (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:))
       }
-      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
+      self._save = { [store] in store.set($0.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -262,7 +256,7 @@
       self._load = { [store] in
         (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:))
       }
-      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
+      self._save = { [store] in store.set($0.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -321,7 +315,7 @@
       self._load = { [store] in
         (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:))
       }
-      self._save = { [store] in store.set($0??.rawValue, forKey: key) }
+      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -332,7 +326,7 @@
       self._load = { [store] in
         (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:))
       }
-      self._save = { [store] in store.set($0??.rawValue, forKey: key) }
+      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -346,7 +340,7 @@
       return self._load() ?? initialValue
     }
 
-    public func save(_ value: Value?) {
+    public func save(_ value: Value) {
       SharedAppStorageLocals.$isSetting.withValue(true) {
         self._save(value)
       }
