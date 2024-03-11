@@ -89,7 +89,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
           case pushChild
         }
         var body: some ReducerOf<Self> {
@@ -139,7 +139,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
           case popChild
           case pushChild
         }
@@ -203,7 +203,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
           case pushChild
         }
         var body: some ReducerOf<Self> {
@@ -252,7 +252,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
         }
         var body: some ReducerOf<Self> {
           Reduce { _, _ in .none }.forEach(\.children, action: /Action.children) { Child() }
@@ -307,7 +307,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case child(StackAction<Child.State, Child.Action>)
+          case child(StackActionOf<Child>)
         }
         var body: some ReducerOf<Self> {
           Reduce { _, _ in .none }
@@ -369,7 +369,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
           case pushChild
         }
         var body: some ReducerOf<Self> {
@@ -452,7 +452,7 @@
           var path = StackState<Path.State>()
         }
         enum Action: Equatable {
-          case path(StackAction<Path.State, Path.Action>)
+          case path(StackActionOf<Path>)
           case pushChild1
           case pushChild2
         }
@@ -507,7 +507,7 @@
           var path = StackState<Child.State>()
         }
         enum Action {
-          case path(StackAction<Child.State, Child.Action>)
+          case path(StackActionOf<Child>)
           case popToRoot
           case pushChild
         }
@@ -598,7 +598,7 @@
           var path = StackState<Path.State>()
         }
         enum Action: Equatable {
-          case path(StackAction<Path.State, Path.Action>)
+          case path(StackActionOf<Path>)
           case pushChild1
           case pushChild2
         }
@@ -697,7 +697,7 @@
           var path = StackState<Path.State>()
         }
         enum Action: Equatable {
-          case path(StackAction<Path.State, Path.Action>)
+          case path(StackActionOf<Path>)
           case popAll
           case popFirst
         }
@@ -861,7 +861,7 @@
             var path = StackState<Child.State>()
           }
           enum Action {
-            case path(StackAction<Child.State, Child.Action>)
+            case path(StackActionOf<Child>)
           }
           var body: some ReducerOf<Self> {
             EmptyReducer()
@@ -933,7 +933,7 @@
           var children: StackState<Child.State>
         }
         enum Action: Equatable {
-          case child(StackAction<Child.State, Child.Action>)
+          case child(StackActionOf<Child>)
         }
         var body: some ReducerOf<Self> {
           Reduce { _, _ in .none }
@@ -982,7 +982,7 @@
           var children: StackState<Child.State>
         }
         enum Action: Equatable {
-          case child(StackAction<Child.State, Child.Action>)
+          case child(StackActionOf<Child>)
         }
         var body: some ReducerOf<Self> {
           Reduce { _, _ in .none }
@@ -1019,7 +1019,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case child(StackAction<Child.State, Child.Action>)
+          case child(StackActionOf<Child>)
           case push
         }
         var body: some ReducerOf<Self> {
@@ -1074,7 +1074,7 @@
             var children = StackState<Child.State>()
           }
           enum Action: Equatable {
-            case child(StackAction<Child.State, Child.Action>)
+            case child(StackActionOf<Child>)
           }
           var body: some ReducerOf<Self> {
             Reduce { _, _ in .none }
@@ -1120,7 +1120,7 @@
             var children = StackState<Child.State>()
           }
           enum Action: Equatable {
-            case child(StackAction<Child.State, Child.Action>)
+            case child(StackActionOf<Child>)
           }
           var body: some ReducerOf<Self> {
             Reduce { _, _ in .none }
@@ -1164,7 +1164,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case child(StackAction<Child.State, Child.Action>)
+          case child(StackActionOf<Child>)
         }
         var body: some ReducerOf<Self> {
           Reduce { _, _ in .none }.forEach(\.children, action: /Action.child) { Child() }
@@ -1265,7 +1265,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
           case tapAfter
           case tapBefore
         }

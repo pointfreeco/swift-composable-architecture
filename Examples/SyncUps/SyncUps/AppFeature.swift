@@ -17,7 +17,7 @@ struct AppFeature {
   }
 
   enum Action {
-    case path(StackAction<Path.State, Path.Action>)
+    case path(StackActionOf<Path>)
     case syncUpsList(SyncUpsList.Action)
   }
 

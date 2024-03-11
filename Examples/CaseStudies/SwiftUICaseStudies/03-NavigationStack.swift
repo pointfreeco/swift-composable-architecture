@@ -22,7 +22,7 @@ struct NavigationDemo {
   enum Action {
     case goBackToScreen(id: StackElementID)
     case goToABCButtonTapped
-    case path(StackAction<Path.State, Path.Action>)
+    case path(StackActionOf<Path>)
     case popToRoot
   }
 
