@@ -76,7 +76,9 @@ final class RecordMeetingTests: XCTestCase {
     // NB: this improves on the onMeetingFinished pattern from vanilla SwiftUI
     await store.receive(\.delegate.save)
 
-    nonisolated(unsafe) let `self` = self
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
@@ -135,7 +137,9 @@ final class RecordMeetingTests: XCTestCase {
 
     await store.receive(\.delegate.save)
 
-    nonisolated(unsafe) let `self` = self
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
@@ -170,7 +174,9 @@ final class RecordMeetingTests: XCTestCase {
 
     await store.receive(\.delegate.save)
 
-    nonisolated(unsafe) let `self` = self
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
@@ -198,7 +204,9 @@ final class RecordMeetingTests: XCTestCase {
       $0.alert = nil
     }
 
-    nonisolated(unsafe) let `self` = self
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await task.cancel()
   }
@@ -249,7 +257,9 @@ final class RecordMeetingTests: XCTestCase {
     }
 
     await store.receive(\.delegate.save)
-    nonisolated(unsafe) let `self` = self
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
@@ -318,7 +328,9 @@ final class RecordMeetingTests: XCTestCase {
     store.exhaustivity = .on
 
     await store.receive(\.delegate.save)
-    nonisolated(unsafe) let `self` = self
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
@@ -352,7 +364,9 @@ final class RecordMeetingTests: XCTestCase {
       $0.alert = nil
     }
 
-    nonisolated(unsafe) let `self` = self
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
