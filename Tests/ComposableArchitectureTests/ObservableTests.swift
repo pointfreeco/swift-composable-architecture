@@ -249,16 +249,18 @@
     }
 
     func testMutatingDestination_NonObservableCase() async {
+      let expectation = self.expectation(description: "destination.didChange")
       var state = ParentState(destination: .inert(0))
 
       withPerceptionTracking {
         _ = state.destination
       } onChange: {
-        XCTFail("destination should not change")
+        expectation.fulfill()
       }
 
       state.destination = .inert(1)
       XCTAssertEqual(state.destination, .inert(1))
+      await self.fulfillment(of: [expectation])
     }
 
     func testReplaceWithCopy() async {
@@ -592,7 +594,6 @@
 
       store.send(())
 
-      XCTTODO("Should this eventually be observed by default?")
       self.wait(for: [onChangeExpectation], timeout: 0)
     }
   }
