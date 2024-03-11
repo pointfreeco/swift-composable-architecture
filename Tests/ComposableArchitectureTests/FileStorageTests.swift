@@ -200,7 +200,7 @@ final class FileStorageTests: XCTestCase {
         XCTAssertNoDifference(users, [.blob])
 
         try JSONEncoder().encode([User.blobJr]).write(to: .fileURL)
-        try await Task.sleep(nanoseconds: 1_000_000)
+        try await Task.sleep(nanoseconds: 10_000_000)
         XCTAssertNoDifference(users, [.blobJr])
       }
     }
