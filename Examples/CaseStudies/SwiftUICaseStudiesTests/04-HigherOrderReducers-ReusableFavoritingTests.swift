@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class ReusableComponentsFavoritingTests: XCTestCase {
+  @MainActor
   func testHappyPath() async {
     let clock = TestClock()
 
@@ -50,6 +50,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
     await store.receive(\.episodes[id:episodes[1].id].favorite.response.success)
   }
 
+  @MainActor
   func testUnhappyPath() async {
     let episodes: IdentifiedArrayOf<Episode.State> = [
       Episode.State(

@@ -6,8 +6,8 @@ import NewGameCore
 import TwoFactorCore
 import XCTest
 
-@MainActor
 final class AppCoreTests: XCTestCase {
+  @MainActor
   func testIntegration() async {
     let store = TestStore(initialState: TicTacToe.State.login(Login.State())) {
       TicTacToe.body
@@ -38,6 +38,7 @@ final class AppCoreTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testIntegration_TwoFactor() async {
     let store = TestStore(initialState: TicTacToe.State.login(Login.State())) {
       TicTacToe.body

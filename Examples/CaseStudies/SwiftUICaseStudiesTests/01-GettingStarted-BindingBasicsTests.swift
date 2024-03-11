@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class BindingFormTests: XCTestCase {
+  @MainActor
   func testBasics() async {
     let store = TestStore(initialState: BindingForm.State()) {
       BindingForm()

@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class EffectsBasicsTests: XCTestCase {
+  @MainActor
   func testCountDown() async {
     let store = TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
@@ -20,6 +20,7 @@ final class EffectsBasicsTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testNumberFact() async {
     let store = TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
@@ -40,6 +41,7 @@ final class EffectsBasicsTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testDecrement() async {
     let store = TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
@@ -55,6 +57,7 @@ final class EffectsBasicsTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testDecrementCancellation() async {
     let store = TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()

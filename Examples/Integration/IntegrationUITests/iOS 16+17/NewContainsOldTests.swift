@@ -2,16 +2,17 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
+  @MainActor
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 16 + 17"].tap()
     self.app.buttons["New containing old"].tap()
     self.clearLogs()
-    //SnapshotTesting.isRecording = true
+    // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testIncrementDecrement() {
     self.app.buttons.matching(identifier: "Increment").element(boundBy: 0).tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
@@ -39,6 +40,7 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testObserveChildCount() {
     self.app.buttons["Toggle observe child count"].tap()
     XCTAssertEqual(self.app.staticTexts["Child count: 0"].exists, true)
@@ -49,6 +51,7 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testIncrementChild_ObservingChildCount() {
     self.app.buttons["Toggle observe child count"].tap()
     self.clearLogs()
@@ -76,6 +79,7 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testDeinit() {
     self.app.buttons["Toggle observe child count"].tap()
     self.app.buttons.matching(identifier: "Increment").element(boundBy: 1).tap()

@@ -4,8 +4,8 @@ import LoginCore
 import TwoFactorCore
 import XCTest
 
-@MainActor
 final class LoginCoreTests: XCTestCase {
+  @MainActor
   func testFlow_Success_TwoFactor_Integration() async {
     let store = TestStore(initialState: Login.State()) {
       Login()
@@ -45,6 +45,7 @@ final class LoginCoreTests: XCTestCase {
     await twoFactorPresentationTask.cancel()
   }
 
+  @MainActor
   func testFlow_DismissEarly_TwoFactor_Integration() async {
     let store = TestStore(initialState: Login.State()) {
       Login()

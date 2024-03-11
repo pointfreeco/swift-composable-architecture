@@ -2,8 +2,8 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
+  @MainActor
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 17"].tap()
@@ -12,6 +12,7 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
     // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testBasics() {
     self.app.buttons["Add"].tap()
     self.assertLogs {
@@ -25,6 +26,7 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testAddTwoIncrementFirst() {
     self.app.buttons["Add"].tap()
     self.app.buttons["Add"].tap()
@@ -41,6 +43,7 @@ final class iOS17_ObservableIdentifiedListTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testAddTwoIncrementSecond() {
     self.app.buttons["Add"].tap()
     self.app.buttons["Add"].tap()
