@@ -3,8 +3,8 @@
 
   @testable import ComposableArchitecture
 
-  @MainActor
   final class BindingLocalTests: BaseTCATestCase {
+    @MainActor
     public func testBindingLocalIsActive() {
       XCTAssertFalse(BindingLocal.isActive)
 

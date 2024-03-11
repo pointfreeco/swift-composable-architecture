@@ -2,8 +2,8 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 final class EffectRunTests: BaseTCATestCase {
+  @MainActor
   func testRun() async {
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
@@ -21,6 +21,7 @@ final class EffectRunTests: BaseTCATestCase {
     await store.receive(.response)
   }
 
+  @MainActor
   func testRunCatch() async {
     struct State: Equatable {}
     enum Action: Equatable { case tapped, response }
@@ -44,6 +45,7 @@ final class EffectRunTests: BaseTCATestCase {
   }
 
   #if DEBUG
+    @MainActor
     func testRunUnhandledFailure() async {
       var line: UInt!
       XCTExpectFailure(nil, enabled: nil, strict: nil) {
@@ -77,6 +79,7 @@ final class EffectRunTests: BaseTCATestCase {
     }
   #endif
 
+  @MainActor
   func testRunCancellation() async {
     enum CancelID { case response }
     struct State: Equatable {}
@@ -99,6 +102,7 @@ final class EffectRunTests: BaseTCATestCase {
     await store.send(.tapped).finish()
   }
 
+  @MainActor
   func testRunCancellationCatch() async {
     enum CancelID { case responseA }
     struct State: Equatable {}
@@ -124,6 +128,7 @@ final class EffectRunTests: BaseTCATestCase {
   }
 
   #if DEBUG
+    @MainActor
     func testRunEscapeFailure() async {
       XCTExpectFailure {
         $0.compactDescription == """

@@ -1,9 +1,9 @@
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class OnChangeReducerTests: BaseTCATestCase {
+  @MainActor
   func testOnChange() async {
     struct Feature: Reducer {
       struct State: Equatable {
@@ -48,6 +48,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testOnChangeChildStates() async {
     struct Feature: Reducer {
       struct ChildFeature: Reducer {
@@ -139,6 +140,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testOnChangeTuple() async {
     struct Feature: Reducer {
       struct State: Equatable {

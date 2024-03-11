@@ -3,10 +3,8 @@ import CombineSchedulers
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 final class ComposableArchitectureTests: BaseTCATestCase {
-  var cancellables: Set<AnyCancellable> = []
-
+  @MainActor
   func testScheduling() async {
     struct Counter: Reducer {
       typealias State = Int
@@ -69,14 +67,17 @@ final class ComposableArchitectureTests: BaseTCATestCase {
     await store.receive(.squareNow) { $0 = 391876 }
   }
 
+  @MainActor
   func testSimultaneousWorkOrdering() {
+    var cancellables: Set<AnyCancellable> = []
+
     let mainQueue = DispatchQueue.test
 
     var values: [Int] = []
     mainQueue.schedule(after: mainQueue.now, interval: 1) { values.append(1) }
-      .store(in: &self.cancellables)
+      .store(in: &cancellables)
     mainQueue.schedule(after: mainQueue.now, interval: 2) { values.append(42) }
-      .store(in: &self.cancellables)
+      .store(in: &cancellables)
 
     XCTAssertEqual(values, [])
     mainQueue.advance()
@@ -85,6 +86,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
     XCTAssertEqual(values, [1, 42, 1, 1, 42])
   }
 
+  @MainActor
   func testLongLivingEffects() async {
     enum Action { case end, incr, start }
 
@@ -117,6 +119,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
     await store.send(.end)
   }
 
+  @MainActor
   func testCancellation() async {
     let mainQueue = DispatchQueue.test
 
