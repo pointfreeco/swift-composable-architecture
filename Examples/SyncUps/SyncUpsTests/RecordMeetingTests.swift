@@ -76,7 +76,8 @@ final class RecordMeetingTests: XCTestCase {
     // NB: this improves on the onMeetingFinished pattern from vanilla SwiftUI
     await store.receive(\.delegate.save)
 
-    _ = { self.wait(for: [dismissed], timeout: 0) }
+    nonisolated(unsafe) let `self` = self
+    await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
 
@@ -134,7 +135,8 @@ final class RecordMeetingTests: XCTestCase {
 
     await store.receive(\.delegate.save)
 
-    _ = { self.wait(for: [dismissed], timeout: 0) }
+    nonisolated(unsafe) let `self` = self
+    await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
 
@@ -168,7 +170,8 @@ final class RecordMeetingTests: XCTestCase {
 
     await store.receive(\.delegate.save)
 
-    _ = { self.wait(for: [dismissed], timeout: 0) }
+    nonisolated(unsafe) let `self` = self
+    await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
 
@@ -195,7 +198,8 @@ final class RecordMeetingTests: XCTestCase {
       $0.alert = nil
     }
 
-    _ = { self.wait(for: [dismissed], timeout: 0) }
+    nonisolated(unsafe) let `self` = self
+    await self.fulfillment(of: [dismissed])
     await task.cancel()
   }
 
@@ -245,7 +249,8 @@ final class RecordMeetingTests: XCTestCase {
     }
 
     await store.receive(\.delegate.save)
-    _ = { self.wait(for: [dismissed], timeout: 0) }
+    nonisolated(unsafe) let `self` = self
+    await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
 
@@ -313,7 +318,8 @@ final class RecordMeetingTests: XCTestCase {
     store.exhaustivity = .on
 
     await store.receive(\.delegate.save)
-    _ = { self.wait(for: [dismissed], timeout: 0) }
+    nonisolated(unsafe) let `self` = self
+    await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
 
@@ -346,7 +352,8 @@ final class RecordMeetingTests: XCTestCase {
       $0.alert = nil
     }
 
-    _ = { self.wait(for: [dismissed], timeout: 0) }
+    nonisolated(unsafe) let `self` = self
+    await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
 }
