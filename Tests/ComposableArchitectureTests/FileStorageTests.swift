@@ -55,15 +55,18 @@ final class FileStorageTests: XCTestCase {
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       testScheduler.advance(by: .seconds(2))
-      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+      try XCTAssertNoDifference(
+        fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
 
       testScheduler.advance(by: .seconds(1))
 
       users.append(.blobSr)
-      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+      try XCTAssertNoDifference(
+        fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
 
       testScheduler.advance(by: .seconds(4))
-      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+      try XCTAssertNoDifference(
+        fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
 
       testScheduler.advance(by: .seconds(1))
       try XCTAssertNoDifference(

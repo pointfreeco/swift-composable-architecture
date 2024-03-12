@@ -67,14 +67,18 @@ struct RootView: View {
           }
           NavigationLink("User defaults") {
             Demo(
-              store: Store(initialState: SharedStateUserDefaults.State()) { SharedStateUserDefaults() }
+              store: Store(initialState: SharedStateUserDefaults.State()) {
+                SharedStateUserDefaults()
+              }
             ) { store in
               SharedStateUserDefaultsView(store: store)
             }
           }
           NavigationLink("File storage") {
             Demo(
-              store: Store(initialState: SharedStateFileStorage.State()) { SharedStateFileStorage() }
+              store: Store(initialState: SharedStateFileStorage.State()) {
+                SharedStateFileStorage()
+              }
             ) { store in
               SharedStateFileStorageView(store: store)
             }

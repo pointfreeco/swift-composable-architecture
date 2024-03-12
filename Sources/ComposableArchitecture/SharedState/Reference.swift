@@ -1,6 +1,7 @@
 import CustomDump
+
 #if canImport(Combine)
-import Combine
+  import Combine
 #endif
 
 protocol Reference<Value>: AnyObject, CustomStringConvertible {

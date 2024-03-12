@@ -20,7 +20,7 @@
     where Value: AnyObject {
       self.init(reference: ValueReference(value, fileID: fileID, line: line))
     }
-    
+
     public init(
       wrappedValue value: Value,
       _ persistenceKey: some PersistenceKey<Value>,

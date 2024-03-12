@@ -115,7 +115,8 @@ final class iOS17_ObservableSharedStateTests: BaseIntegrationTests {
     self.clearLogs()
 
     self.app.buttons["Write directly to file system"].tap()
-    XCTTODO("""
+    XCTTODO(
+      """
       This should pass, but does not currently because deleting a file breaks the dispatch
       source.
       """)

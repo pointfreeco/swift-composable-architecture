@@ -36,18 +36,18 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-      A state change does not match expectation: …
+        A state change does not match expectation: …
 
-            SharedFeature.State(
-              _count: 0,
-              _profile: #1 Profile(…),
-          −   _sharedCount: #1 2,
-          +   _sharedCount: #1 1,
-              _stats: #1 Stats(count: 0)
-            )
+              SharedFeature.State(
+                _count: 0,
+                _profile: #1 Profile(…),
+            −   _sharedCount: #1 2,
+            +   _sharedCount: #1 1,
+                _stats: #1 Stats(count: 0)
+              )
 
-      (Expected: −, Actual: +)
-      """
+        (Expected: −, Actual: +)
+        """
     }
     await store.send(.sharedIncrement) {
       $0.sharedCount = 2
@@ -448,7 +448,8 @@ final class SharedTests: XCTestCase {
 
     let sharedCount = Shared(0)
     var counts = [Int]()
-    sharedCount.publisher.sink { _ in } receiveValue: { count in
+    sharedCount.publisher.sink { _ in
+    } receiveValue: { count in
       counts.append(count)
     }
     .store(in: &cancellables)
@@ -465,11 +466,13 @@ final class SharedTests: XCTestCase {
 
     let sharedCount = Shared(0)
     var counts = [Int]()
-    sharedCount.publisher.sink { _ in } receiveValue: { count in
+    sharedCount.publisher.sink { _ in
+    } receiveValue: { count in
       counts.append(count)
     }
     .store(in: &cancellables)
-    sharedCount.publisher.sink { _ in } receiveValue: { count in
+    sharedCount.publisher.sink { _ in
+    } receiveValue: { count in
       counts.append(count)
     }
     .store(in: &cancellables)
@@ -486,7 +489,8 @@ final class SharedTests: XCTestCase {
 
     let sharedCount = Shared(0)
     var counts = [Int]()
-    sharedCount.publisher.sink { _ in } receiveValue: { count in
+    sharedCount.publisher.sink { _ in
+    } receiveValue: { count in
       counts.append(count)
       if count == 1 {
         sharedCount.wrappedValue = 2
@@ -504,7 +508,8 @@ final class SharedTests: XCTestCase {
 
     @Shared(.appStorage("count")) var count = 0
     var counts = [Int]()
-    $count.publisher.sink { _ in } receiveValue: { newCount in
+    $count.publisher.sink { _ in
+    } receiveValue: { newCount in
       counts.append(newCount)
       if newCount == 1 {
         count = 2
@@ -527,7 +532,8 @@ final class SharedTests: XCTestCase {
     defer { _ = cancellables }
 
     var counts = [Int]()
-    $count.publisher.sink { _ in } receiveValue: { newCount in
+    $count.publisher.sink { _ in
+    } receiveValue: { newCount in
       counts.append(newCount)
       if newCount == 1 { count = 2 }
     }
@@ -555,16 +561,16 @@ final class SharedTests: XCTestCase {
       await store.send(.incrementValue) {
         $0.value = 1
       }
-      await store.receive(\.children[id: 0].response) {
+      await store.receive(\.children[id:0].response) {
         $0.children[id: 0]?.text = "1"
       }
-      await store.receive(\.children[id: 1].response) {
+      await store.receive(\.children[id:1].response) {
         $0.children[id: 1]?.text = "1"
       }
-      await store.receive(\.children[id: 2].response) {
+      await store.receive(\.children[id:2].response) {
         $0.children[id: 2]?.text = "1"
       }
-      await store.receive(\.children[id: 3].response) {
+      await store.receive(\.children[id:3].response) {
         $0.children[id: 3]?.text = "1"
       }
     }
@@ -725,7 +731,7 @@ private struct ListFeature {
         .init(id: 0, text: "0", value: _value),
         .init(id: 1, text: "0", value: _value),
         .init(id: 2, text: "0", value: _value),
-        .init(id: 3, text: "0", value: _value)
+        .init(id: 3, text: "0", value: _value),
       ]
     }
   }

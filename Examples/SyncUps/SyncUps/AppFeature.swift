@@ -78,7 +78,7 @@ struct AppView: View {
           syncUps: [
             .mock,
             .productMock,
-            .engineeringMock
+            .engineeringMock,
           ]
         )
       )

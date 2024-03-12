@@ -64,7 +64,7 @@ import Foundation
         }
       }
     }
-    
+
     /// A projection of the shared value that returns a shared reference.
     ///
     /// Use the projected value to pass a shared value down to another feature. This is most
@@ -107,7 +107,7 @@ import Foundation
       return Shared<Member>(
         reference: self.reference,
         keyPath: self.keyPath.appending(
-          path: keyPath.appending(path: \.[default: DefaultSubscript(initialValue)])
+          path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
         )!
       )
     }
@@ -140,14 +140,14 @@ import Foundation
     }
 
     #if canImport(Combine)
-    public var publisher: AnyPublisher<Value, Never> {
-      func open<R: Reference>(_ reference: R) -> AnyPublisher<Value, Never> {
-        return reference.publisher
-          .compactMap { $0[keyPath: self.keyPath] as? Value }
-          .eraseToAnyPublisher()
+      public var publisher: AnyPublisher<Value, Never> {
+        func open<R: Reference>(_ reference: R) -> AnyPublisher<Value, Never> {
+          return reference.publisher
+            .compactMap { $0[keyPath: self.keyPath] as? Value }
+            .eraseToAnyPublisher()
+        }
+        return open(self.reference)
       }
-      return open(self.reference)
-    }
     #endif
 
     private var currentValue: Value {

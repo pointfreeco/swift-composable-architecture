@@ -960,7 +960,7 @@ extension TestStore where State: Equatable {
   ) throws {
     let skipUnnecessaryModifyFailure =
       skipUnnecessaryModifyFailure
-        || self.reducer.dependencies[SharedChangeTracker.self]?.hasChanges == true
+      || self.reducer.dependencies[SharedChangeTracker.self]?.hasChanges == true
     try SharedLocals.$exhaustivity.withValue(self.exhaustivity) {
       let current = expected
       var expected = expected
@@ -1053,13 +1053,13 @@ extension TestStore where State: Equatable {
         let difference = self.withExhaustivity(.on) {
           diff(expected, actual, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-            ?? """
-            Expected:
-            \(String(describing: expected).indent(by: 2))
+              ?? """
+              Expected:
+              \(String(describing: expected).indent(by: 2))
 
-            Actual:
-            \(String(describing: actual).indent(by: 2))
-            """
+              Actual:
+              \(String(describing: actual).indent(by: 2))
+              """
         }
         let messageHeading =
           updateStateToExpectedResult != nil
@@ -1119,13 +1119,13 @@ extension TestStore where State: Equatable, Action: Equatable {
         TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-            ?? """
-            Expected:
-            \(String(describing: expectedAction).indent(by: 2))
+              ?? """
+              Expected:
+              \(String(describing: expectedAction).indent(by: 2))
 
-            Received:
-            \(String(describing: receivedAction).indent(by: 2))
-            """
+              Received:
+              \(String(describing: receivedAction).indent(by: 2))
+              """
         }
       },
       updateStateToExpectedResult,

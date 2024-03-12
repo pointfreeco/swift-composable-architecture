@@ -106,8 +106,8 @@ extension SharedStateUserDefaults {
           state.alert = AlertState {
             TextState(
               isPrime(state.count)
-              ? "👍 The number \(state.count) is prime!"
-              : "👎 The number \(state.count) is not prime :("
+                ? "👍 The number \(state.count) is prime!"
+                : "👎 The number \(state.count) is not prime :("
             )
           }
           return .none

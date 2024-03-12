@@ -1,5 +1,5 @@
-import Perception
 @_spi(Internals) import ComposableArchitecture
+import Perception
 import XCTest
 
 final class AppStorageTests: XCTestCase {
@@ -76,8 +76,8 @@ final class AppStorageTests: XCTestCase {
   }
 }
 
-fileprivate extension UserDefaults {
-  @objc dynamic var count: Int {
+extension UserDefaults {
+  @objc fileprivate dynamic var count: Int {
     get { integer(forKey: "count") }
     set { set(newValue, forKey: "count") }
   }

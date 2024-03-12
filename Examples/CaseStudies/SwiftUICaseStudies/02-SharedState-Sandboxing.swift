@@ -57,7 +57,7 @@ struct SharedStateSandboxing {
     .ifLet(\.$sandboxed, action: \.sandboxed) {
       SharedStateSandboxing()
         .transformDependency(\.self) {
-          _ = $0 // TODO
+          _ = $0  // TODO
         }
     }
   }

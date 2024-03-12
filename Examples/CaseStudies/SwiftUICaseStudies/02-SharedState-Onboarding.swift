@@ -2,12 +2,12 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-This case study demonstrates how to use shared data in order to implement a complex sign up flow.
+  This case study demonstrates how to use shared data in order to implement a complex sign up flow.
 
-The sign up flow consists of 3 steps, each of which can mutate a bit of shared data, and a final \
-summary screen. The summary screen also allows the user to make any last minute edits to any of \
-the data in the previous steps.
-"""
+  The sign up flow consists of 3 steps, each of which can mutate a bit of shared data, and a final \
+  summary screen. The summary screen also allows the user to make any last minute edits to any of \
+  the data in the previous steps.
+  """
 
 struct SignUpData: Equatable {
   var email = ""
@@ -415,7 +415,7 @@ private struct SummaryStep: View {
           .font(.caption)
         }
       }
-      
+
       Section {
         Text(store.signUpData.firstName)
         Text(store.signUpData.lastName)
@@ -430,7 +430,7 @@ private struct SummaryStep: View {
           .font(.caption)
         }
       }
-      
+
       Section {
         ForEach(store.signUpData.topics.sorted(by: { $0.rawValue < $1.rawValue })) { topic in
           Text(topic.rawValue)
@@ -445,7 +445,7 @@ private struct SummaryStep: View {
           .font(.caption)
         }
       }
-      
+
       Section {
         Button {
           store.send(.submitButtonTapped)
@@ -533,7 +533,7 @@ private struct SummaryStep: View {
               topics: [
                 .composableArchitecture,
                 .concurrency,
-                .modernSwiftUI
+                .modernSwiftUI,
               ]
             )
           )
