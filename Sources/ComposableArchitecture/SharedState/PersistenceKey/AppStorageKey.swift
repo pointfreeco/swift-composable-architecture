@@ -264,7 +264,7 @@
     public init(_ key: String) where Value == Bool? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -272,7 +272,7 @@
     public init(_ key: String) where Value == Int? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -280,7 +280,7 @@
     public init(_ key: String) where Value == Double? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -288,7 +288,7 @@
     public init(_ key: String) where Value == String? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -296,7 +296,7 @@
     public init(_ key: String) where Value == URL? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -304,7 +304,7 @@
     public init(_ key: String) where Value == Data? {
       @Dependency(\.defaultAppStorage) var store
       self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
+      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
       self.key = .string(key)
       self.store = store
     }
@@ -333,14 +333,29 @@
   }
 
   extension AppStorageKey: PersistenceKey {
-    public func subscribe(didSet: @escaping (_ newValue: Value?) -> Void) -> Shared<Value>.Subscription {
+    public func load(initialValue: Value?) -> Value? {
+      if let initialValue, case let .string(key) = self.key {
+        self.store.register(defaults: [key: initialValue])
+      }
+      return self._load() ?? initialValue
+    }
+
+    public func save(_ value: Value) {
+      SharedAppStorageLocals.$isSetting.withValue(true) {
+        self._save(value)
+      }
+    }
+
+    public func subscribe(
+      initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
+    ) -> Shared<Value>.Subscription {
       switch self.key {
       case let .keyPath(key):
         let observer = self.store.observe(key, options: .new) { _, change in
           guard
             !SharedAppStorageLocals.isSetting
           else { return }
-          didSet(change.newValue)
+          didSet(change.newValue ?? initialValue)
         }
         return Shared.Subscription {
           observer.invalidate()
@@ -350,22 +365,12 @@
           guard
             !SharedAppStorageLocals.isSetting
           else { return }
-          didSet(value)
+          didSet(value ?? initialValue)
         }
         self.store.addObserver(observer, forKeyPath: key, options: .new, context: nil)
         return Shared.Subscription {
           self.store.removeObserver(observer, forKeyPath: key)
         }
-      }
-    }
-
-    public func load() -> Value? {
-      self._load()
-    }
-
-    public func save(_ value: Value) {
-      SharedAppStorageLocals.$isSetting.withValue(true) {
-        self._save(value)
       }
     }
 

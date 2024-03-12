@@ -32,6 +32,7 @@
   {
     let storage: any FileStorage
     let url: URL
+    let value = LockIsolated<Value?>(nil)
     var workItem: DispatchWorkItem?
     var notificationListener: Any!
 
@@ -64,27 +65,36 @@
       NotificationCenter.default.removeObserver(self.notificationListener!)
     }
 
-    public func load() -> Value? {
-      try? JSONDecoder().decode(Value.self, from: self.storage.load(from: self.url))
+    public func load(initialValue: Value?) -> Value? {
+      do {
+        return try JSONDecoder().decode(Value.self, from: self.storage.load(from: self.url))
+      } catch {
+        return initialValue
+      }
     }
 
     public func save(_ value: Value) {
-      self.workItem?.cancel()
-      let workItem = DispatchWorkItem { [weak self] in
-        guard let self else { return }
-        self.storage.setIsSetting(true)
-        try? self.storage.save(JSONEncoder().encode(value), to: self.url)
-        self.workItem = nil
-      }
-      self.workItem = workItem
-      if canListenForResignActive {
-        self.storage.asyncAfter(interval: .seconds(5), execute: workItem)
-      } else {
-        self.storage.async(execute: workItem)
+      self.value.setValue(value)
+      if self.workItem == nil {
+        let workItem = DispatchWorkItem { [weak self] in
+          guard let self, let value = self.value.value else { return }
+          self.storage.setIsSetting(true)
+          try? self.storage.save(JSONEncoder().encode(value), to: self.url)
+          self.value.setValue(nil)
+          self.workItem = nil
+        }
+        self.workItem = workItem
+        if canListenForResignActive {
+          self.storage.asyncAfter(interval: .seconds(5), execute: workItem)
+        } else {
+          self.storage.async(execute: workItem)
+        }
       }
     }
 
-    public func subscribe(didSet: @escaping (Value?) -> Void) -> Shared<Value>.Subscription {
+    public func subscribe(
+      initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
+    ) -> Shared<Value>.Subscription {
       // NB: Make sure there is a file to create a source for.
       if !self.storage.fileExists(at: self.url) {
         try? self.storage
@@ -100,7 +110,7 @@
         if self.storage.isSetting() == true {
           self.storage.setIsSetting(false)
         } else {
-          didSet(self.load())
+          didSet(self.load(initialValue: initialValue))
         }
       }
       return Shared.Subscription {
