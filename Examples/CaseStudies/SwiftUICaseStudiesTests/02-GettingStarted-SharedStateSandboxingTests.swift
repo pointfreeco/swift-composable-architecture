@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class SharedStateSandboxingTests: XCTestCase {
+  @MainActor
   func testBasics() async {
     let store = TestStore(initialState: SharedStateSandboxing.State()) {
       SharedStateSandboxing()

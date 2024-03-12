@@ -39,7 +39,7 @@
         var path = StackState<BasicsView.Feature.State>()
       }
       enum Action {
-        case path(StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>)
+        case path(StackActionOf<BasicsView.Feature>)
       }
       var body: some ReducerOf<Self> {
         EmptyReducer()

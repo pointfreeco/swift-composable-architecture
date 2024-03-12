@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class AlertsAndConfirmationDialogsTests: XCTestCase {
+  @MainActor
   func testAlert() async {
     let store = TestStore(initialState: AlertAndConfirmationDialog.State()) {
       AlertAndConfirmationDialog()
@@ -33,6 +33,7 @@ final class AlertsAndConfirmationDialogsTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testConfirmationDialog() async {
     let store = TestStore(initialState: AlertAndConfirmationDialog.State()) {
       AlertAndConfirmationDialog()

@@ -2,9 +2,9 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
   final class ScopeTests: BaseTCATestCase {
+    @MainActor
     func testStructChild() async {
       let store = TestStore(initialState: Feature.State()) {
         Feature()
@@ -24,6 +24,7 @@
       }
     }
 
+    @MainActor
     func testEnumChild() async {
       let store = TestStore(initialState: Feature.State()) {
         Feature()
@@ -41,6 +42,7 @@
     }
 
     #if DEBUG
+      @MainActor
       func testNilChild() async {
         let store = TestStoreOf<Child2>(initialState: Child2.State.count(0)) {
           Scope(state: \.name, action: \.name) {}

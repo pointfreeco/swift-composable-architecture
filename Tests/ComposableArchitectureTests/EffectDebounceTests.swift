@@ -2,10 +2,8 @@ import Combine
 @_spi(Internals) import ComposableArchitecture
 import XCTest
 
-@MainActor
 final class EffectDebounceTests: BaseTCATestCase {
-  var cancellables: Set<AnyCancellable> = []
-
+  @MainActor
   func testDebounce() async {
     let mainQueue = DispatchQueue.test
     var values: [Int] = []
@@ -56,6 +54,7 @@ final class EffectDebounceTests: BaseTCATestCase {
     XCTAssertEqual(values, [3])
   }
 
+  @MainActor
   func testDebounceIsLazy() async {
     let mainQueue = DispatchQueue.test
     var values: [Int] = []

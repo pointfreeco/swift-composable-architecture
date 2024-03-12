@@ -2,8 +2,8 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
+  @MainActor
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 17"].tap()
@@ -12,6 +12,7 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
     // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testOptional() {
     self.app.buttons["Present sheet"].tap()
     self.assertLogs {
@@ -36,6 +37,7 @@ final class iOS17_ObservablePresentationTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testOptional_ObserveChildCount() {
     self.app.buttons["Present sheet"].tap()
     self.assertLogs {

@@ -1,8 +1,8 @@
 import TestCases
 import XCTest
 
-@MainActor
 final class BindingLocalTests: BaseIntegrationTests {
+  @MainActor
   override func setUpWithError() throws {
     try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] != nil)
     try super.setUpWithError()
@@ -10,6 +10,7 @@ final class BindingLocalTests: BaseIntegrationTests {
     app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
   }
 
+  @MainActor
   func testNoBindingWarning_FullScreenCover() {
     app.buttons["Full-screen-cover"].tap()
 
@@ -18,6 +19,7 @@ final class BindingLocalTests: BaseIntegrationTests {
     app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testOnDisappearWarning_FullScreenCover() {
     self.expectRuntimeWarnings()
 
@@ -30,6 +32,7 @@ final class BindingLocalTests: BaseIntegrationTests {
     app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testNoBindingWarning_NavigationDestination() {
     app.buttons["Navigation destination"].tap()
 
@@ -38,6 +41,7 @@ final class BindingLocalTests: BaseIntegrationTests {
     app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testOnDisappearWarning_NavigationDestination() {
     self.expectRuntimeWarnings()
 
@@ -50,6 +54,7 @@ final class BindingLocalTests: BaseIntegrationTests {
     app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testNoBindingWarning_Path() {
     app.buttons["Path"].tap()
 
@@ -58,6 +63,7 @@ final class BindingLocalTests: BaseIntegrationTests {
     app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testOnDisappearWarning_Path() {
     self.expectRuntimeWarnings()
 
@@ -70,6 +76,7 @@ final class BindingLocalTests: BaseIntegrationTests {
     app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testNoBindingWarning_Popover() {
     app.buttons["Popover"].tap()
 
@@ -78,6 +85,7 @@ final class BindingLocalTests: BaseIntegrationTests {
     app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testOnDisappearWarning_Popover() {
     self.expectRuntimeWarnings()
 
@@ -90,6 +98,7 @@ final class BindingLocalTests: BaseIntegrationTests {
     app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testNoBindingWarning_Sheet() {
     app.buttons["Sheet"].tap()
 
@@ -98,6 +107,7 @@ final class BindingLocalTests: BaseIntegrationTests {
     app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testOnDisappearWarning_Sheet() {
     self.expectRuntimeWarnings()
 

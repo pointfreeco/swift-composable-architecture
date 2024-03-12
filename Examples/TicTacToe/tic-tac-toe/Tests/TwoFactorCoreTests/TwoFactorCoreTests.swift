@@ -3,8 +3,8 @@ import ComposableArchitecture
 import TwoFactorCore
 import XCTest
 
-@MainActor
 final class TwoFactorCoreTests: XCTestCase {
+  @MainActor
   func testFlow_Success() async {
     let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
       TwoFactor()
@@ -35,6 +35,7 @@ final class TwoFactorCoreTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testFlow_Failure() async {
     let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
       TwoFactor()

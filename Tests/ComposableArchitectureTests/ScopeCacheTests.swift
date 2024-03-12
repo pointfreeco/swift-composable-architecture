@@ -2,9 +2,9 @@
   @_spi(Internals) import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class ScopeCacheTests: BaseTCATestCase {
     @available(*, deprecated)
+    @MainActor
     func testOptionalScope_UncachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
@@ -38,6 +38,7 @@
       #endif
     }
 
+    @MainActor
     func testOptionalScope_CachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
@@ -49,6 +50,7 @@
       #endif
     }
 
+    @MainActor
     func testOptionalScope_StoreIfLet() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
@@ -65,6 +67,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testOptionalScope_StoreIfLet_UncachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
@@ -98,6 +101,7 @@
       #endif
     }
 
+    @MainActor
     func testIdentifiedArrayScope_CachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
@@ -113,6 +117,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testIdentifiedArrayScope_UncachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {

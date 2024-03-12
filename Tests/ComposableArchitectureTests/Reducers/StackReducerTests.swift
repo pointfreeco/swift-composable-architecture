@@ -2,8 +2,8 @@
   @_spi(Internals) import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class StackReducerTests: BaseTCATestCase {
+    @MainActor
     func testStackStateSubscriptCase() {
       enum Element: Equatable {
         case int(Int)
@@ -19,6 +19,7 @@
     }
 
     #if DEBUG
+      @MainActor
       func testStackStateSubscriptCase_Unexpected() {
         enum Element: Equatable {
           case int(Int)
@@ -47,6 +48,7 @@
       }
     #endif
 
+    @MainActor
     func testCustomDebugStringConvertible() {
       @Dependency(\.stackElementID) var stackElementID
       XCTAssertEqual(stackElementID.peek().generation, 0)
@@ -62,6 +64,7 @@
       }
     }
 
+    @MainActor
     func testPresent() async {
       struct Child: Reducer {
         struct State: Equatable {
@@ -89,7 +92,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
           case pushChild
         }
         var body: some ReducerOf<Self> {
@@ -117,6 +120,7 @@
       }
     }
 
+    @MainActor
     func testDismissFromParent() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -139,7 +143,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
           case popChild
           case pushChild
         }
@@ -175,6 +179,7 @@
       }
     }
 
+    @MainActor
     func testDismissFromChild() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -203,7 +208,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
           case pushChild
         }
         var body: some ReducerOf<Self> {
@@ -236,6 +241,7 @@
       }
     }
 
+    @MainActor
     func testDismissReceiveWrongAction() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -252,7 +258,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
         }
         var body: some ReducerOf<Self> {
           Reduce { _, _ in .none }.forEach(\.children, action: /Action.children) { Child() }
@@ -282,6 +288,7 @@
       }
     }
 
+    @MainActor
     func testDismissFromIntermediateChild() async {
       struct Child: Reducer {
         struct State: Equatable { var count = 0 }
@@ -307,7 +314,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case child(StackAction<Child.State, Child.Action>)
+          case child(StackActionOf<Child>)
         }
         var body: some ReducerOf<Self> {
           Reduce { _, _ in .none }
@@ -346,6 +353,7 @@
       }
     }
 
+    @MainActor
     func testDismissFromDeepLinkedChild() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -369,7 +377,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
           case pushChild
         }
         var body: some ReducerOf<Self> {
@@ -400,6 +408,7 @@
       }
     }
 
+    @MainActor
     func testEnumChild() async {
       struct Child: Reducer {
         struct State: Equatable {
@@ -452,7 +461,7 @@
           var path = StackState<Path.State>()
         }
         enum Action: Equatable {
-          case path(StackAction<Path.State, Path.Action>)
+          case path(StackActionOf<Path>)
           case pushChild1
           case pushChild2
         }
@@ -491,6 +500,7 @@
       }
     }
 
+    @MainActor
     func testParentDismiss() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -507,7 +517,7 @@
           var path = StackState<Child.State>()
         }
         enum Action {
-          case path(StackAction<Child.State, Child.Action>)
+          case path(StackActionOf<Child>)
           case popToRoot
           case pushChild
         }
@@ -598,7 +608,7 @@
           var path = StackState<Path.State>()
         }
         enum Action: Equatable {
-          case path(StackAction<Path.State, Path.Action>)
+          case path(StackActionOf<Path>)
           case pushChild1
           case pushChild2
         }
@@ -621,6 +631,7 @@
         }
       }
     }
+    @MainActor
     func testSiblingCannotCancel() async {
       var path = StackState<TestSiblingCannotCancel.Path.State>()
       path.append(.child1(TestSiblingCannotCancel.Child.State()))
@@ -697,7 +708,7 @@
           var path = StackState<Path.State>()
         }
         enum Action: Equatable {
-          case path(StackAction<Path.State, Path.Action>)
+          case path(StackActionOf<Path>)
           case popAll
           case popFirst
         }
@@ -720,6 +731,7 @@
         }
       }
     }
+    @MainActor
     func testFirstChildWhileEffectInFlight_DeliversToCorrectID() async {
       let mainQueue = DispatchQueue.test
       let store = TestStore(
@@ -761,6 +773,7 @@
     }
 
     #if DEBUG
+      @MainActor
       func testSendActionWithIDThatDoesNotExist() async {
         struct Parent: Reducer {
           struct State: Equatable {
@@ -811,6 +824,7 @@
     #endif
 
     #if DEBUG
+      @MainActor
       func testPopIDThatDoesNotExist() async {
         struct Parent: Reducer {
           struct State: Equatable {
@@ -846,6 +860,7 @@
     #endif
 
     #if DEBUG
+      @MainActor
       func testChildWithInFlightEffect() async {
         struct Child: Reducer {
           struct State: Equatable {}
@@ -861,7 +876,7 @@
             var path = StackState<Child.State>()
           }
           enum Action {
-            case path(StackAction<Child.State, Child.Action>)
+            case path(StackActionOf<Child>)
           }
           var body: some ReducerOf<Self> {
             EmptyReducer()
@@ -905,6 +920,7 @@
       }
     #endif
 
+    @MainActor
     func testMultipleChildEffects() async {
       struct Child: Reducer {
         struct State: Equatable { var count = 0 }
@@ -933,7 +949,7 @@
           var children: StackState<Child.State>
         }
         enum Action: Equatable {
-          case child(StackAction<Child.State, Child.Action>)
+          case child(StackActionOf<Child>)
         }
         var body: some ReducerOf<Self> {
           Reduce { _, _ in .none }
@@ -967,6 +983,7 @@
       }
     }
 
+    @MainActor
     func testChildEffectCancellation() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -982,7 +999,7 @@
           var children: StackState<Child.State>
         }
         enum Action: Equatable {
-          case child(StackAction<Child.State, Child.Action>)
+          case child(StackActionOf<Child>)
         }
         var body: some ReducerOf<Self> {
           Reduce { _, _ in .none }
@@ -1006,6 +1023,7 @@
       }
     }
 
+    @MainActor
     func testPush() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -1019,7 +1037,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case child(StackAction<Child.State, Child.Action>)
+          case child(StackActionOf<Child>)
           case push
         }
         var body: some ReducerOf<Self> {
@@ -1061,6 +1079,7 @@
     }
 
     #if DEBUG
+      @MainActor
       func testPushReusedID() async {
         struct Child: Reducer {
           struct State: Equatable {}
@@ -1074,7 +1093,7 @@
             var children = StackState<Child.State>()
           }
           enum Action: Equatable {
-            case child(StackAction<Child.State, Child.Action>)
+            case child(StackActionOf<Child>)
           }
           var body: some ReducerOf<Self> {
             Reduce { _, _ in .none }
@@ -1107,6 +1126,7 @@
     #endif
 
     #if DEBUG
+      @MainActor
       func testPushIDGreaterThanNextGeneration() async {
         struct Child: Reducer {
           struct State: Equatable {}
@@ -1120,7 +1140,7 @@
             var children = StackState<Child.State>()
           }
           enum Action: Equatable {
-            case child(StackAction<Child.State, Child.Action>)
+            case child(StackActionOf<Child>)
           }
           var body: some ReducerOf<Self> {
             Reduce { _, _ in .none }
@@ -1151,6 +1171,7 @@
       }
     #endif
 
+    @MainActor
     func testMismatchedIDFailure() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -1164,7 +1185,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case child(StackAction<Child.State, Child.Action>)
+          case child(StackActionOf<Child>)
         }
         var body: some ReducerOf<Self> {
           Reduce { _, _ in .none }.forEach(\.children, action: /Action.child) { Child() }
@@ -1194,6 +1215,7 @@
       }
     }
 
+    @MainActor
     func testSendCopiesStackElementIDGenerator() async {
       struct Feature: Reducer {
         struct State: Equatable {
@@ -1247,6 +1269,7 @@
       }
     }
 
+    @MainActor
     func testOuterCancellation() async {
       struct Child: Reducer {
         struct State: Equatable {}
@@ -1265,7 +1288,7 @@
           var children = StackState<Child.State>()
         }
         enum Action: Equatable {
-          case children(StackAction<Child.State, Child.Action>)
+          case children(StackActionOf<Child>)
           case tapAfter
           case tapBefore
         }

@@ -478,7 +478,7 @@ struct ChildView: View {
 }
 ```
 
-When `self.dismiss()` is invoked, SwiftUI finds the closet parent view with a presentation, and
+When `self.dismiss()` is invoked, SwiftUI finds the closest parent view with a presentation, and
 causes it to dismiss by writing `false` or `nil` to the binding that drives the presentation. This 
 can be incredibly useful, but it is also relegated to the view layer. It is not possible to use 
 `dismiss` elsewhere, like in an observable object, which would allow you to have nuanced logic

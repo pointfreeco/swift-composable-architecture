@@ -2,14 +2,15 @@ import Integration
 import TestCases
 import XCTest
 
-@MainActor
 final class LegacyPresentationTests: BaseIntegrationTests {
+  @MainActor
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
     self.app.buttons[TestCase.presentation.rawValue].tap()
   }
 
+  @MainActor
   func testSheet_ChildDismiss() {
     self.app.buttons["Open sheet"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -26,6 +27,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testSheet_ParentDismiss() {
     self.app.buttons["Open sheet"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -37,6 +39,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testSheet_EffectsCancelOnDismiss() {
     self.app.buttons["Open sheet"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -58,6 +61,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testSheet_IdentityChange() {
     self.app.buttons["Open sheet"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -74,6 +78,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testPopover_ChildDismiss() {
     self.app.buttons["Open popover"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -90,6 +95,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testPopover_ParentDismiss() {
     self.app.buttons["Open popover"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -101,6 +107,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testPopover_EffectsCancelOnDismiss() {
     self.app.buttons["Open popover"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -122,6 +129,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testFullScreenCover_ChildDismiss() {
     self.app.buttons["Open full screen cover"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -138,6 +146,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testFullScreenCover_ParentDismiss() {
     self.app.buttons["Open full screen cover"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -149,6 +158,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testFullScreenCover_EffectsCancelOnDismiss() {
     self.app.buttons["Open full screen cover"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -170,6 +180,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testAlertActionDoesNotSendExtraDismiss() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["OK"].tap()
@@ -179,6 +190,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testAlertCancel() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Cancel"].tap()
@@ -188,6 +200,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testAlertThenAlert() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Show alert"].tap()
@@ -197,6 +210,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testAlertThenDialog() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Show dialog"].tap()
@@ -206,6 +220,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testAlertThenSheet() {
     self.app.buttons["Open alert"].tap()
     self.app.buttons["Show sheet"].tap()
@@ -215,6 +230,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testDialogActionDoesNotSendExtraDismiss() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["OK"].tap()
@@ -224,6 +240,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testDialogCancel() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["Cancel"].tap()
@@ -233,6 +250,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testShowDialogThenAlert() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["Show alert"].tap()
@@ -242,6 +260,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testShowDialogThenDialog() {
     self.app.buttons["Open dialog"].tap()
     self.app.buttons["Show dialog"].tap()
@@ -251,6 +270,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testSheetExtraBindingActionsIgnoredOnDismiss() {
     self.app.buttons["Open sheet"].tap()
     self.app.textFields["Text field"].tap()
@@ -261,6 +281,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testPopoverExtraBindingActionsIgnoredOnDismiss() {
     self.app.buttons["Open popover"].tap()
     self.app.textFields["Text field"].tap()
@@ -271,6 +292,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testCoverExtraBindingActionsIgnoredOnDismiss() {
     self.app.buttons["Open full screen cover"].tap()
     self.app.textFields["Text field"].tap()
@@ -281,6 +303,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testNavigationLink_ChildActions() {
     self.app.buttons["Open navigation link demo"].tap()
     self.app.buttons["Open navigation link"].find().tap()
@@ -292,6 +315,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testNavigationLink_ChildDismiss() {
     self.app.buttons["Open navigation link demo"].tap()
     self.app.buttons["Open navigation link"].find().tap()
@@ -302,6 +326,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testNavigationLink_ParentDismiss() {
     self.app.buttons["Open navigation link demo"].tap()
     self.app.buttons["Open navigation link"].find().tap()
@@ -312,6 +337,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testNavigationLink_ChildEffectCancellation() {
     self.app.buttons["Open navigation link demo"].tap()
     self.app.buttons["Open navigation link"].find().tap()
@@ -324,6 +350,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testNavigationLink_ExtraBindingActionsIgnoredOnDismiss() {
     self.app.buttons["Open navigation link demo"].tap()
     self.app.buttons["Open navigation link"].find().tap()
@@ -332,6 +359,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Action sent while state nil."].exists, false)
   }
 
+  @MainActor
   func testIdentifiedNavigationLink_ChildActions() {
     self.app.buttons["Open navigation link demo"].tap()
     self.app.buttons["Open identified navigation link"].find().tap()
@@ -340,12 +368,14 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Count: 1"].exists, true)
   }
 
+  @MainActor
   func testIdentifiedNavigationLink_NonDeadbeefLink() {
     self.app.buttons["Open navigation link demo"].tap()
     self.app.buttons["Open non-deadbeef identified navigation link"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, false)
   }
 
+  @MainActor
   func testNavigationDestination_ChildDismiss() {
     self.app.buttons["Open navigation destination"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -362,6 +392,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testNavigationDestination_ParentDismiss() {
     self.app.buttons["Open navigation destination"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -373,6 +404,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testNavigationDestination_BackButtonDismiss() {
     self.app.buttons["Open navigation destination"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -384,6 +416,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
   }
 
+  @MainActor
   func testNavigationDestination_EffectsCancelOnDismiss() {
     self.app.buttons["Open navigation destination"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
@@ -400,24 +433,26 @@ final class LegacyPresentationTests: BaseIntegrationTests {
     self.app.buttons["Open navigation destination"].tap()
     XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
     XCTAssertEqual(
-      self.app.staticTexts["Count: 999"].waitForExistence(timeout: 3),
+      app.staticTexts["Count: 999"].waitForExistence(timeout: 3),
       false
     )
   }
 
+  @MainActor
   func testCustomAlert() {
-    self.app.buttons["Open custom alert"].tap()
-    XCTAssertEqual(self.app.staticTexts["Custom alert!"].exists, true)
-    self.app.typeText("Hello!")
-    self.app.buttons["Submit"].tap()
-    XCTAssertEqual(self.app.staticTexts["Hello!"].waitForExistence(timeout: 1), true)
-    XCTAssertEqual(self.app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1), true)
+    app.buttons["Open custom alert"].tap()
+    XCTAssertEqual(app.staticTexts["Custom alert!"].exists, true)
+    app.typeText("Hello!")
+    app.buttons["Submit"].tap()
+    XCTAssertEqual(app.staticTexts["Hello!"].waitForExistence(timeout: 1), true)
+    XCTAssertEqual(app.staticTexts["Dismiss action sent"].waitForExistence(timeout: 1), true)
   }
 
+  @MainActor
   func testDismissAndAlert() {
-    self.app.buttons["Open sheet"].tap()
-    XCTAssertEqual(self.app.staticTexts["Count: 0"].exists, true)
-    self.app.buttons["Dismiss and alert"].tap()
+    app.buttons["Open sheet"].tap()
+    XCTAssertEqual(app.staticTexts["Count: 0"].exists, true)
+    app.buttons["Dismiss and alert"].tap()
     XCTTODO(
       """
       This test should pass but does not due to a SwiftUI bug. You cannot simultaneously close

@@ -3,9 +3,9 @@ import XCTest
 
 @testable import SyncUps
 
-@MainActor
 final class RecordMeetingTests: XCTestCase {
-  func testTimer() async throws {
+  @MainActor
+  func testTimer() async {
     let clock = TestClock()
     let dismissed = self.expectation(description: "dismissed")
 
@@ -87,11 +87,15 @@ final class RecordMeetingTests: XCTestCase {
       XCTAssertEqual($0.durationRemaining, .seconds(0))
     }
 
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
 
-  func testRecordTranscript() async throws {
+  @MainActor
+  func testRecordTranscript() async {
     let clock = TestClock()
     let dismissed = self.expectation(description: "dismissed")
 
@@ -147,11 +151,16 @@ final class RecordMeetingTests: XCTestCase {
     }
 
     XCTAssertEqual(store.state.syncUp.meetings[0].transcript, "I completed the project")
+
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
 
-  func testEndMeetingSave() async throws {
+  @MainActor
+  func testEndMeetingSave() async {
     let clock = TestClock()
     let dismissed = self.expectation(description: "dismissed")
 
@@ -188,11 +197,15 @@ final class RecordMeetingTests: XCTestCase {
       )
     }
 
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
 
-  func testEndMeetingDiscard() async throws {
+  @MainActor
+  func testEndMeetingDiscard() async {
     let clock = TestClock()
     let dismissed = self.expectation(description: "dismissed")
 
@@ -214,11 +227,15 @@ final class RecordMeetingTests: XCTestCase {
       $0.alert = nil
     }
 
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await task.cancel()
   }
 
-  func testNextSpeaker() async throws {
+  @MainActor
+  func testNextSpeaker() async {
     let clock = TestClock()
     let dismissed = self.expectation(description: "dismissed")
 
@@ -274,11 +291,15 @@ final class RecordMeetingTests: XCTestCase {
       )
     }
 
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
 
-  func testSpeechRecognitionFailure_Continue() async throws {
+  @MainActor
+  func testSpeechRecognitionFailure_Continue() async {
     let clock = TestClock()
     let dismissed = self.expectation(description: "dismissed")
 
@@ -344,11 +365,15 @@ final class RecordMeetingTests: XCTestCase {
     await store.receive(\.timerTick)
     store.exhaustivity = .on
 
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }
 
-  func testSpeechRecognitionFailure_Discard() async throws {
+  @MainActor
+  func testSpeechRecognitionFailure_Discard() async {
     let clock = TestClock()
     let dismissed = self.expectation(description: "dismissed")
 
@@ -376,6 +401,9 @@ final class RecordMeetingTests: XCTestCase {
       $0.alert = nil
     }
 
+    #if swift(>=5.10)
+      nonisolated(unsafe) let `self` = self
+    #endif
     await self.fulfillment(of: [dismissed])
     await onTask.cancel()
   }

@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class RefreshableTests: XCTestCase {
+  @MainActor
   func testHappyPath() async {
     let store = TestStore(initialState: Refreshable.State()) {
       Refreshable()
@@ -22,6 +22,7 @@ final class RefreshableTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testUnhappyPath() async {
     struct FactError: Equatable, Error {}
 
@@ -39,6 +40,7 @@ final class RefreshableTests: XCTestCase {
     await store.receive(\.factResponse.failure)
   }
 
+  @MainActor
   func testCancellation() async {
     let store = TestStore(initialState: Refreshable.State()) {
       Refreshable()

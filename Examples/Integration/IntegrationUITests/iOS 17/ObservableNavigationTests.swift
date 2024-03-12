@@ -2,8 +2,8 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS17_ObservableNavigationTests: BaseIntegrationTests {
+  @MainActor
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 17"].tap()
@@ -12,6 +12,7 @@ final class iOS17_ObservableNavigationTests: BaseIntegrationTests {
     // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testBasics() {
     self.app.buttons["Push feature"].tap()
     self.assertLogs {
@@ -28,6 +29,7 @@ final class iOS17_ObservableNavigationTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testDeepStack() {
     self.app.buttons["Push feature"].tap()
     self.app.buttons["Push feature"].tap()

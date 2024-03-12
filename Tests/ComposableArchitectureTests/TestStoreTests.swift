@@ -3,8 +3,8 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class TestStoreTests: BaseTCATestCase {
+    @MainActor
     func testEffectConcatenation() async {
       struct State: Equatable {}
 
@@ -53,6 +53,7 @@
       await store.send(.d)
     }
 
+    @MainActor
     func testAsync() async {
       enum Action: Equatable {
         case tap
@@ -76,6 +77,7 @@
       }
     }
 
+    @MainActor
     func testExpectedStateEquality() async {
       struct State: Equatable {
         var count: Int = 0
@@ -123,6 +125,7 @@
       }
     }
 
+    @MainActor
     func testExpectedStateEqualityMustModify() async {
       struct State: Equatable {
         var count: Int = 0
@@ -157,6 +160,7 @@
       }
     }
 
+    @MainActor
     func testReceiveActionMatchingPredicate() async {
       enum Action: Equatable {
         case noop, finished
@@ -191,6 +195,7 @@
       await store.receive { $0 == .noop }
     }
 
+    @MainActor
     func testStateAccess() async {
       enum Action { case a, b, c, d }
       let store = TestStore(initialState: 0) {
@@ -246,6 +251,7 @@
         }
       }
     }
+    @MainActor
     func testOverrideDependenciesDirectlyOnReducer() async {
       let store = TestStore(initialState: 0) {
         Feature_testOverrideDependenciesDirectlyOnReducer()
@@ -276,6 +282,7 @@
         }
       }
     }
+    @MainActor
     func testOverrideDependenciesOnTestStore() async {
       let store = TestStore(initialState: 0) {
         Feature_testOverrideDependenciesOnTestStore()
@@ -299,6 +306,7 @@
         }
       }
     }
+    @MainActor
     func testOverrideDependenciesOnTestStore_MidwayChange() async {
       let store = TestStore(initialState: 0) {
         Feature_testOverrideDependenciesOnTestStore_MidwayChange()
@@ -333,6 +341,7 @@
         }
       }
     }
+    @MainActor
     func testOverrideDependenciesOnTestStore_Init() async {
       let store = TestStore(initialState: 0) {
         Feature_testOverrideDependenciesOnTestStore_Init()
@@ -376,6 +385,7 @@
         }
       }
     }
+    @MainActor
     func testDependenciesEarlyBinding() async {
       let store = TestStore(initialState: Feature_testDependenciesEarlyBinding.State()) {
         Feature_testDependenciesEarlyBinding()
@@ -395,6 +405,7 @@
       }
     }
 
+    @MainActor
     func testPrepareDependenciesCalledOnce() {
       var count = 0
       let store = TestStore(initialState: 0) {
@@ -407,6 +418,7 @@
       _ = store
     }
 
+    @MainActor
     func testEffectEmitAfterSkipInFlightEffects() async {
       let mainQueue = DispatchQueue.test
       enum Action: Equatable { case tap, response }
@@ -433,6 +445,7 @@
       }
     }
 
+    @MainActor
     func testAssert_NonExhaustiveTestStore() async {
       let store = TestStore(initialState: 0) {
         EmptyReducer<Int, Void>()
@@ -444,6 +457,7 @@
       }
     }
 
+    @MainActor
     func testAssert_NonExhaustiveTestStore_Failure() async {
       let store = TestStore(initialState: 0) {
         EmptyReducer<Int, Void>()
@@ -466,6 +480,7 @@
       }
     }
 
+    @MainActor
     func testSubscribeReceiveCombineScheduler() async {
       let subject = PassthroughSubject<Void, Never>()
       let scheduler = DispatchQueue.test
@@ -504,6 +519,7 @@
       await task.cancel()
     }
 
+    @MainActor
     func testMainSerialExecutor_AutoAssignsAndResets_False() async {
       uncheckedUseMainSerialExecutor = false
       XCTAssertFalse(uncheckedUseMainSerialExecutor)
@@ -516,6 +532,7 @@
       _ = store
     }
 
+    @MainActor
     func testMainSerialExecutor_AutoAssignsAndResets_True() async {
       uncheckedUseMainSerialExecutor = true
       XCTAssertTrue(uncheckedUseMainSerialExecutor)
@@ -528,6 +545,7 @@
       _ = store
     }
 
+    @MainActor
     func testReceiveCaseKeyPathWithValue() async {
       let store = TestStore<Int, Action>(initialState: 0) {
         Reduce { state, action in
@@ -561,6 +579,7 @@
       await store.receive(\.delegate.success, 43)
     }
 
+    @MainActor
     func testSendCaseKeyPath() async {
       let store = TestStore<Int, Action>(initialState: 0) {
         Reduce { state, action in
@@ -598,6 +617,7 @@
       await store.receive(\.delegate.success, 42)
     }
 
+    @MainActor
     func testBindingTestStore_WhenStateAndActionHaveSameName() async {
       let store = TestStore(initialState: .init()) {
         SameNameForStateAndAction()

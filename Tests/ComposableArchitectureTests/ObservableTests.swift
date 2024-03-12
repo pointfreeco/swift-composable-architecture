@@ -3,7 +3,6 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class ObservableTests: BaseTCATestCase {
     func testBasics() async {
       var state = ChildState()
@@ -249,16 +248,18 @@
     }
 
     func testMutatingDestination_NonObservableCase() async {
+      let expectation = self.expectation(description: "destination.didChange")
       var state = ParentState(destination: .inert(0))
 
       withPerceptionTracking {
         _ = state.destination
       } onChange: {
-        XCTFail("destination should not change")
+        expectation.fulfill()
       }
 
       state.destination = .inert(1)
       XCTAssertEqual(state.destination, .inert(1))
+      await self.fulfillment(of: [expectation])
     }
 
     func testReplaceWithCopy() async {
@@ -281,6 +282,7 @@
       XCTAssertEqual(state.sibling.count, 2)
     }
 
+    @MainActor
     func testStore_ReplaceChild() async {
       let store = Store<ParentState, Void>(initialState: ParentState()) {
         Reduce { state, _ in
@@ -301,6 +303,7 @@
       XCTAssertEqual(store.child.count, 42)
     }
 
+    @MainActor
     func testStore_Replace() async {
       let store = Store<ChildState, Void>(initialState: ChildState()) {
         Reduce { state, _ in
@@ -321,6 +324,7 @@
       XCTAssertEqual(store.count, 42)
     }
 
+    @MainActor
     func testStore_ResetChild() async {
       let store = Store<ParentState, Void>(initialState: ParentState(child: ChildState(count: 42)))
       {
@@ -342,6 +346,7 @@
       XCTAssertEqual(store.child.count, 0)
     }
 
+    @MainActor
     func testStore_Reset() async {
       let store = Store<ChildState, Void>(initialState: ChildState(count: 42)) {
         Reduce { state, _ in
@@ -592,7 +597,6 @@
 
       store.send(())
 
-      XCTTODO("Should this eventually be observed by default?")
       self.wait(for: [onChangeExpectation], timeout: 0)
     }
   }
