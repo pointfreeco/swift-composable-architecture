@@ -48,12 +48,12 @@ final class SharedInMemoryTests: XCTestCase {
 
               ParentFeature.State(
                 _child1: Feature.State(
-            −     _count: 0
-            +     _count: 1
+            −     _count: #1 0
+            +     _count: #1 1
                 ),
                 _child2: Feature.State(
-            −     _count: 0
-            +     _count: 1
+            −     _count: #1 Int(↩︎)
+            +     _count: #1 Int(↩︎)
                 )
               )
 

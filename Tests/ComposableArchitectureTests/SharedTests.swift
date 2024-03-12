@@ -40,10 +40,10 @@ final class SharedTests: XCTestCase {
 
             SharedFeature.State(
               _count: 0,
-              _profile: Profile(…),
-          −   _sharedCount: 2,
-          +   _sharedCount: 1,
-              _stats: Stats(count: 0)
+              _profile: #1 Profile(…),
+          −   _sharedCount: #1 2,
+          +   _sharedCount: #1 1,
+              _stats: #1 Stats(count: 0)
             )
 
       (Expected: −, Actual: +)
@@ -121,10 +121,10 @@ final class SharedTests: XCTestCase {
 
               SharedFeature.State(
                 _count: 0,
-                _profile: Profile(…),
-            −   _sharedCount: 2,
-            +   _sharedCount: 1,
-                _stats: Stats(count: 0)
+                _profile: #1 Profile(…),
+            −   _sharedCount: #1 2,
+            +   _sharedCount: #1 1,
+                _stats: #1 Stats(count: 0)
               )
 
         (Expected: −, Actual: +)
@@ -167,10 +167,10 @@ final class SharedTests: XCTestCase {
 
               SharedFeature.State(
                 _count: 0,
-                _profile: Profile(…),
-            −   _sharedCount: 0,
-            +   _sharedCount: 1,
-                _stats: Stats(count: 0)
+                _profile: #1 Profile(…),
+            −   _sharedCount: #1 0,
+            +   _sharedCount: #1 1,
+                _stats: #1 Stats(count: 0)
               )
 
         (Expected: −, Actual: +)
@@ -361,13 +361,21 @@ final class SharedTests: XCTestCase {
   }
 
   func testDump() {
-    let profile = Shared(Profile(stats: Shared(Stats())))
+    @Shared(Profile(stats: Shared(Stats()))) var profile: Profile
     XCTAssertEqual(
       String(customDumping: profile),
       """
       Profile(
-        _stats: Stats(count: 0)
+        _stats: #1 Stats(count: 0)
       )
+      """
+    )
+
+    let count = $profile.stats.count
+    XCTAssertEqual(
+      String(customDumping: count),
+      """
+      #1 0
       """
     )
   }
@@ -382,8 +390,8 @@ final class SharedTests: XCTestCase {
         State was not expected to change, but a change occurred: …
 
               SimpleFeature.State(
-            −   _count: 0
-            +   _count: 1
+            −   _count: #1 0
+            +   _count: #1 1
               )
 
         (Expected: −, Actual: +)
