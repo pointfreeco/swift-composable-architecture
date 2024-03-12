@@ -248,8 +248,7 @@ extension DeclGroupSyntax {
 
   var definedVariables: [VariableDeclSyntax] {
     memberBlock.members.compactMap { member in
-      if let variableDecl = member.decl.as(VariableDeclSyntax.self)
-      {
+      if let variableDecl = member.decl.as(VariableDeclSyntax.self) {
         return variableDecl
       }
       return nil
