@@ -194,6 +194,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
     await store.send(.noop)
   }
 
+  @MainActor
   func testSharedState() async {
     struct Count: Codable, Equatable {
       var value = 0
