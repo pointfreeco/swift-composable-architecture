@@ -312,7 +312,7 @@ enum ObservableStateCase {
       } else {
         return """
           case .\(element.name.text):
-          return ._$inert._$tag(\(tag))
+          return ObservableStateID()._$tag(\(tag))
           """
       }
     case let .ifConfig(configs):

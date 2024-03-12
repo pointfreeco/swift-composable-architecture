@@ -2,16 +2,17 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS16_OptionalTests: BaseIntegrationTests {
+  @MainActor
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 16"].tap()
     self.app.buttons["Optional"].tap()
     self.clearLogs()
-    //SnapshotTesting.isRecording = true
+    // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testBasics() {
     self.app.buttons["Toggle"].tap()
     self.assertLogs {
@@ -44,6 +45,7 @@ final class iOS16_OptionalTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testParentObserveChild() {
     self.app.buttons["Toggle"].tap()
     self.app.buttons["Increment"].tap()

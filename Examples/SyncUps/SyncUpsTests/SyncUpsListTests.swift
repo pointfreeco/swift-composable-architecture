@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SyncUps
 
-@MainActor
 final class SyncUpsListTests: XCTestCase {
+  @MainActor
   func testAdd() async throws {
     let store = TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()
@@ -33,6 +33,7 @@ final class SyncUpsListTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testAdd_ValidatedAttendees() async throws {
     @Dependency(\.uuid) var uuid
 

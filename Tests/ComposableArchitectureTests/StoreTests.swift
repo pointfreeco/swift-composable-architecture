@@ -3,10 +3,10 @@
   @_spi(Internals) import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class StoreTests: BaseTCATestCase {
     var cancellables: Set<AnyCancellable> = []
 
+    @MainActor
     func testCancellableIsRemovedOnImmediatelyCompletingEffect() {
       let store = Store<Void, Void>(initialState: ()) {}
 
@@ -17,6 +17,7 @@
       XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
     }
 
+    @MainActor
     func testCancellableIsRemovedWhenEffectCompletes() {
       let mainQueue = DispatchQueue.test
 
@@ -47,6 +48,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testScopedStoreReceivesUpdatesFromParent() {
       let counterReducer = Reduce<Int, Void>({ state, _ in
         state += 1
@@ -71,6 +73,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testParentStoreReceivesUpdatesFromChild() {
       let counterReducer = Reduce<Int, Void>({ state, _ in
         state += 1
@@ -95,6 +98,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testScopeCallCount_OneLevel_NoSubscription() {
       var numCalls1 = 0
       let store = Store<Int, Void>(initialState: 0) {}
@@ -112,6 +116,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testScopeCallCount_OneLevel_Subscribing() {
       var numCalls1 = 0
       let store = Store<Int, Void>(initialState: 0) {}
@@ -130,6 +135,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testScopeCallCount_TwoLevels_Subscribing() {
       var numCalls1 = 0
       var numCalls2 = 0
@@ -158,6 +164,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testScopeCallCount_ThreeLevels_ViewStoreSubscribing() {
       var numCalls1 = 0
       var numCalls2 = 0
@@ -233,6 +240,7 @@
     }
 
     func testSynchronousEffectsSentAfterSinking() {
+      @MainActor
       enum Action {
         case tap
         case next1
@@ -279,6 +287,7 @@
       XCTAssertEqual(values, [1, 2, 3, 4])
     }
 
+    @MainActor
     func testLotsOfSynchronousActions() {
       enum Action { case incr, noop }
       let reducer = Reduce<Int, Action>({ state, action in
@@ -348,6 +357,7 @@
       XCTAssertEqual(outputs, [nil, 1, nil, 1, nil, 1, nil])
     }
 
+    @MainActor
     func testIfLetTwo() {
       let parentStore = Store(initialState: 0) {
         Reduce<Int?, Bool> { state, action in
@@ -380,6 +390,7 @@
         .store(in: &self.cancellables)
     }
 
+    @MainActor
     func testActionQueuing() async {
       let subject = PassthroughSubject<Void, Never>()
 
@@ -418,6 +429,7 @@
       subject.send(completion: .finished)
     }
 
+    @MainActor
     func testCoalesceSynchronousActions() {
       let store = Store(initialState: 0) {
         Reduce<Int, Int> { state, action in
@@ -449,6 +461,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testBufferedActionProcessing() {
       struct ChildState: Equatable {
         var count: Int?
@@ -510,6 +523,7 @@
         ])
     }
 
+    @MainActor
     func testCascadingTaskCancellation() async {
       enum Action { case task, response, response1, response2 }
       let store = TestStore(initialState: 0) {
@@ -540,6 +554,7 @@
       await task.cancel()
     }
 
+    @MainActor
     func testTaskCancellationEmpty() async {
       enum Action { case task }
 
@@ -556,6 +571,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testScopeCancellation() async throws {
       let neverEndingTask = Task<Void, Error> { try await Task.never() }
 
@@ -593,6 +609,7 @@
         }
       }
     }
+    @MainActor
     func testOverrideDependenciesDirectlyOnReducer() {
       let store = Store(initialState: 0) {
         Feature_testOverrideDependenciesDirectlyOnReducer()
@@ -615,6 +632,7 @@
         }
       }
     }
+    @MainActor
     func testOverrideDependenciesDirectlyOnStore() {
       @Dependency(\.uuid) var uuid
       let store = Store(initialState: uuid()) {
@@ -669,6 +687,7 @@
         }
       }
     }
+    @MainActor
     func testStoreVsTestStore() async {
       let testStore = TestStore(initialState: Feature_testStoreVsTestStore.State()) {
         Feature_testStoreVsTestStore()
@@ -729,6 +748,7 @@
         }
       }
     }
+    @MainActor
     func testStoreVsTestStore_Publisher() async {
       let testStore = TestStore(initialState: Feature_testStoreVsTestStore_Publisher.State()) {
         Feature_testStoreVsTestStore_Publisher()
@@ -798,6 +818,7 @@
         }
       }
     }
+    @MainActor
     func testChildParentEffectCancellation() async throws {
       let mainQueue = DispatchQueue.test
       let store = Store(
@@ -826,6 +847,7 @@
       XCTAssertEqual(viewStore.count, 1)
     }
 
+    @MainActor
     func testInit_InitialState_WithDependencies() async {
       struct Feature: Reducer {
         struct State: Equatable {
@@ -850,6 +872,7 @@
       XCTAssertEqual(store.withState(\.date), Date(timeIntervalSinceReferenceDate: 1_234_567_890))
     }
 
+    @MainActor
     func testInit_ReducerBuilder_WithDependencies() async {
       struct Feature: Reducer {
         let date: Date
@@ -901,6 +924,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testPresentationScope() async {
       let store = Store(
         initialState: Feature_testPresentationScope.State(

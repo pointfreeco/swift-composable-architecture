@@ -2,7 +2,6 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class BindingTests: BaseTCATestCase {
     @Reducer
     struct BindingTest {
@@ -49,6 +48,7 @@
       )
     }
 
+    @MainActor
     func testViewEquality() {
       struct Feature: Reducer {
         struct State: Equatable {
@@ -76,6 +76,7 @@
       XCTAssertEqual(count.wrappedValue, 1)
     }
 
+    @MainActor
     func testNestedBindingState() {
       let store = Store(initialState: BindingTest.State()) { BindingTest() }
 
@@ -86,6 +87,7 @@
       XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
     }
 
+    @MainActor
     func testNestedBindingViewState() {
       struct ViewState: Equatable {
         @BindingViewState var field: String
@@ -100,6 +102,7 @@
       XCTAssertEqual(store.withState { $0.nested.field }, "Hello!")
     }
 
+    @MainActor
     func testBindingActionUpdatesRespectsPatternMatching() async {
       let testStore = TestStore(
         initialState: BindingTest.State(nested: BindingTest.State.Nested(field: ""))

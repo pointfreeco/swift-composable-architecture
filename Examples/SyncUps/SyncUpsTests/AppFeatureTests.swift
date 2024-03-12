@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SyncUps
 
-@MainActor
 final class AppFeatureTests: XCTestCase {
+  @MainActor
   func testDelete() async throws {
     let syncUp = SyncUp.mock
 
@@ -34,6 +34,7 @@ final class AppFeatureTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testDetailEdit() async throws {
     var syncUp = SyncUp.mock
 
@@ -67,6 +68,7 @@ final class AppFeatureTests: XCTestCase {
     .finish()
   }
 
+  @MainActor
   func testRecording() async {
     let speechResult = SpeechRecognitionResult(
       bestTranscription: Transcription(formattedString: "I completed the project"),

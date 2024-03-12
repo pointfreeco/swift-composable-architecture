@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class TimersTests: XCTestCase {
+  @MainActor
   func testStart() async {
     let clock = TestClock()
 

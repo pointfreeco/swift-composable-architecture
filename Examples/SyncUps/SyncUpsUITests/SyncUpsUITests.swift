@@ -1,11 +1,13 @@
 import XCTest
 
 final class SyncUpsUITests: XCTestCase {
+  @MainActor
   var app: XCUIApplication!
 
+  @MainActor
   override func setUpWithError() throws {
-    self.continueAfterFailure = false
-    self.app = XCUIApplication()
+    continueAfterFailure = false
+    app = XCUIApplication()
     app.launchEnvironment = [
       "UITesting": "true"
     ]
@@ -20,6 +22,7 @@ final class SyncUpsUITests: XCTestCase {
   // it takes 0.025 seconds (400 times faster) and it even tests more. It further confirms that when
   // the sync-up is added to the list its data will be persisted to disk so that it will be
   // available on next launch.
+  @MainActor
   func testAdd() throws {
     app.launch()
     app.navigationBars["Daily Sync-ups"].buttons["Add"].tap()

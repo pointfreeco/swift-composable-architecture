@@ -2,8 +2,8 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class TestStoreNonExhaustiveTests: BaseTCATestCase {
+    @MainActor
     func testSkipReceivedActions_NonStrict() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { state, action in
@@ -23,6 +23,7 @@
       XCTAssertEqual(store.state, 2)
     }
 
+    @MainActor
     func testSkipReceivedActions_Strict() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { state, action in
@@ -46,6 +47,7 @@
       await store.skipReceivedActions(strict: true)
     }
 
+    @MainActor
     func testSkipReceivedActions_NonExhaustive() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { state, action in
@@ -66,6 +68,7 @@
       XCTAssertEqual(store.state, 2)
     }
 
+    @MainActor
     func testSkipReceivedActions_PartialExhaustive() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { state, action in
@@ -86,6 +89,7 @@
       XCTAssertEqual(store.state, 2)
     }
 
+    @MainActor
     func testCancelInFlightEffects_NonStrict() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { _, action in
@@ -97,6 +101,7 @@
       await store.skipInFlightEffects(strict: false)
     }
 
+    @MainActor
     func testCancelInFlightEffects_Strict() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { _, action in
@@ -112,6 +117,7 @@
       await store.skipInFlightEffects(strict: true)
     }
 
+    @MainActor
     func testCancelInFlightEffects_NonExhaustive() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { _, action in
@@ -124,6 +130,7 @@
       await store.skipInFlightEffects(strict: false)
     }
 
+    @MainActor
     func testCancelInFlightEffects_PartialExhaustive() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { _, action in
@@ -137,6 +144,7 @@
     }
 
     // Confirms that you don't have to receive all actions before the test completes.
+    @MainActor
     func testIgnoreReceiveActions_PartialExhaustive() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { _, action in
@@ -149,6 +157,7 @@
     }
 
     // Confirms that you don't have to receive all actions before the test completes.
+    @MainActor
     func testIgnoreReceiveActions_NonExhaustive() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { _, action in
@@ -161,6 +170,7 @@
     }
 
     // Confirms that all effects do not need to complete before the test completes.
+    @MainActor
     func testIgnoreInFlightEffects_PartialExhaustive() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { _, action in
@@ -173,6 +183,7 @@
     }
 
     // Confirms that all effects do not need to complete before the test completes.
+    @MainActor
     func testIgnoreInFlightEffects_NonExhaustive() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Bool> { _, action in
@@ -185,6 +196,7 @@
     }
 
     // Confirms that you don't have to assert on all state changes in a non-exhaustive test store.
+    @MainActor
     func testNonExhaustiveSend_PartialExhaustive() async {
       let store = TestStore(initialState: Counter.State()) {
         Counter()
@@ -205,6 +217,7 @@
       }
     }
 
+    @MainActor
     func testNonExhaustiveSend_PartialExhaustive_Prefix() async {
       let store = TestStore(initialState: Counter.State()) {
         Counter()
@@ -219,6 +232,7 @@
 
     // Confirms that you don't have to assert on all state changes in a non-exhaustive test store,
     // *but* if you make an incorrect mutation you will still get a failure.
+    @MainActor
     func testNonExhaustiveSend_PartialExhaustive_BadAssertion() async {
       let store = TestStore(initialState: Counter.State()) {
         Counter()
@@ -245,6 +259,7 @@
 
     // Confirms that you don't have to assert on all state changes in a non-exhaustive test store,
     // *and* that informational boxes of what was not asserted on is not shown.
+    @MainActor
     func testNonExhaustiveSend_NonExhaustive() async {
       let store = TestStore(initialState: Counter.State()) {
         Counter()
@@ -259,6 +274,7 @@
 
     // Confirms that you can send actions without having received all effect actions in
     // non-exhaustive test stores.
+    @MainActor
     func testSend_SkipReceivedActions() async {
       struct State: Equatable {
         var count = 0
@@ -298,6 +314,7 @@
 
     // Confirms that if you receive an action in a non-exhaustive test store with a bad assertion
     // you will still get a failure.
+    @MainActor
     func testSend_SkipReceivedActions_BadAssertion() async {
       struct State: Equatable {
         var count = 0
@@ -345,6 +362,7 @@
 
     // Confirms that with non-exhaustive test stores you can send multiple actions without asserting
     // on any state changes until the very last action.
+    @MainActor
     func testMultipleSendsWithAssertionOnLast() async {
       let store = TestStore(initialState: Counter.State()) {
         Counter()
@@ -365,6 +383,7 @@
 
     // Confirms that you don't have to assert on all state changes when receiving an action from an
     // effect in a non-exhaustive test store.
+    @MainActor
     func testReceive_StateChange() async {
       let store = TestStore(initialState: NonExhaustiveReceive.State()) {
         NonExhaustiveReceive()
@@ -388,6 +407,7 @@
     }
 
     // Confirms that you can skip receiving certain effect actions in a non-exhaustive test store.
+    @MainActor
     func testReceive_SkipAction() async {
       let store = TestStore(initialState: NonExhaustiveReceive.State()) {
         NonExhaustiveReceive()
@@ -408,6 +428,7 @@
 
     // Confirms that you are allowed to send actions without having received all actions queued
     // from effects.
+    @MainActor
     func testSendWithUnreceivedAction() async {
       let store = TestStore(initialState: NonExhaustiveReceive.State()) {
         NonExhaustiveReceive()
@@ -425,6 +446,7 @@
 
     // Confirms that when you send an action the test store skips any unreceived actions
     // automatically.
+    @MainActor
     func testSendWithUnreceivedActions_SkipsActions() async {
       enum Action: Equatable {
         case tap
@@ -455,6 +477,7 @@
       XCTAssertEqual(store.state, 86)
     }
 
+    @MainActor
     func testPartialExhaustivityPrefix() async {
       let testScheduler = DispatchQueue.test
       enum Action {
@@ -495,6 +518,7 @@
       // Ignore in-flight effect
     }
 
+    @MainActor
     func testCasePathReceive_PartialExhaustive() async {
       let store = TestStore(initialState: NonExhaustiveReceive.State()) {
         NonExhaustiveReceive()
@@ -510,6 +534,7 @@
       }
     }
 
+    @MainActor
     func testCasePathReceive_NonExhaustive() async {
       let store = TestStore(initialState: NonExhaustiveReceive.State()) {
         NonExhaustiveReceive()
@@ -525,6 +550,7 @@
       }
     }
 
+    @MainActor
     func testCasePathReceive_Exhaustive() async {
       let store = TestStore(initialState: NonExhaustiveReceive.State()) {
         NonExhaustiveReceive()
@@ -541,6 +567,7 @@
       }
     }
 
+    @MainActor
     func testCasePathReceive_Exhaustive_NonEquatable() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, NonEquatableAction> { state, action in
@@ -557,6 +584,7 @@
       await store.receive(\.response)
     }
 
+    @MainActor
     func testPredicateReceive_Exhaustive_NonEquatable() async {
       struct NonEquatable {}
       enum Action {
@@ -579,6 +607,7 @@
       await store.receive { if case .response = $0 { return true } else { return false } }
     }
 
+    @MainActor
     func testCasePathReceive_SkipReceivedAction() async {
       let store = TestStore(initialState: NonExhaustiveReceive.State()) {
         NonExhaustiveReceive()
@@ -591,6 +620,7 @@
       }
     }
 
+    @MainActor
     func testCasePathReceive_WrongAction() async {
       let store = TestStore(initialState: NonExhaustiveReceive.State()) {
         NonExhaustiveReceive()
@@ -610,6 +640,7 @@
       await store.receive(\.response2)
     }
 
+    @MainActor
     func testCasePathReceive_ReceivedExtraAction() async {
       let store = TestStore(initialState: NonExhaustiveReceive.State()) {
         NonExhaustiveReceive()
@@ -628,6 +659,7 @@
       await store.receive(\.response2)
     }
 
+    @MainActor
     func testXCTModifyExhaustive() async {
       struct State: Equatable {
         var child: Int? = 0
@@ -669,6 +701,7 @@
       }
     }
 
+    @MainActor
     func testXCTModifyNonExhaustive() async {
       enum Action { case tap, response }
       let store = TestStore(initialState: Optional(1)) {
@@ -691,6 +724,7 @@
       }
     }
 
+    @MainActor
     func testReceiveNonExhaustiveWithTimeout() async {
       struct State: Equatable {}
       enum Action: Equatable { case tap, response1, response2 }
@@ -716,6 +750,7 @@
       await store.receive(.response2, timeout: 1_000_000_000)
     }
 
+    @MainActor
     func testReceiveNonExhaustiveWithTimeoutMultipleNonMatching() async {
       struct State: Equatable {}
       enum Action: Equatable { case tap, response1, response2 }
@@ -751,6 +786,7 @@
       await store.receive(.response2, timeout: 1_000_000_000)
     }
 
+    @MainActor
     func testReceiveNonExhaustiveWithTimeoutMultipleMatching() async {
       struct State: Equatable {}
       enum Action: Equatable { case tap, response1, response2 }
@@ -776,6 +812,7 @@
       await store.receive(.response2, timeout: 1_000_000_000)
     }
 
+    @MainActor
     func testNonExhaustive_ShowSkippedAssertions_ExpectedStateToChange() async {
       let store = TestStore(initialState: 0) {
         Reduce<Int, Void> { _, _ in .none }
@@ -787,6 +824,7 @@
 
     // This example comes from Krzysztof Zabłocki's blog post:
     // https://www.merowing.info/exhaustive-testing-in-tca/
+    @MainActor
     func testKrzysztofExample1() async {
       let store = TestStore(initialState: KrzysztofExample.State()) {
         KrzysztofExample()
@@ -800,6 +838,7 @@
 
     // This example comes from Krzysztof Zabłocki's blog post:
     // https://www.merowing.info/exhaustive-testing-in-tca/
+    @MainActor
     func testKrzysztofExample2() async {
       let store = TestStore(initialState: KrzysztofExample.State()) {
         KrzysztofExample()
@@ -816,6 +855,7 @@
 
     // This example comes from Krzysztof Zabłocki's blog post:
     // https://www.merowing.info/exhaustive-testing-in-tca/
+    @MainActor
     func testKrzysztofExample3() async {
       let mainQueue = DispatchQueue.test
 
@@ -834,6 +874,7 @@
       XCTAssertEqual(store.state.age, 34)
     }
 
+    @MainActor
     func testEffectfulAssertion_NonExhaustiveTestStore_ShowSkippedAssertions() async {
       struct Model: Equatable {
         let id: UUID

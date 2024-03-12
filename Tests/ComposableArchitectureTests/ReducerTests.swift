@@ -5,7 +5,6 @@
   import XCTest
   import os.signpost
 
-  @MainActor
   final class ReducerTests: BaseTCATestCase {
     var cancellables: Set<AnyCancellable> = []
 
@@ -38,6 +37,7 @@
         }
       }
     }
+    @MainActor
     func testCombine_EffectsAreMerged() async throws {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         var fastValue: Int? = nil
@@ -84,6 +84,7 @@
         }
       }
     }
+    @MainActor
     func testCombine() async {
       var first = false
       var second = false

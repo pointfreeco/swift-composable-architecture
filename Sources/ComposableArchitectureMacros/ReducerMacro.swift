@@ -192,14 +192,14 @@ extension ReducerMacro: MemberMacro {
   ) throws -> [DeclSyntax] {
     let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
     let typeNames = declaration.memberBlock.members.compactMap {
-      $0.as(MemberBlockItemSyntax.self)?.decl.as(StructDeclSyntax.self)?.name.text
-        ?? $0.as(MemberBlockItemSyntax.self)?.decl.as(TypeAliasDeclSyntax.self)?.name.text
-        ?? $0.as(MemberBlockItemSyntax.self)?.decl.as(EnumDeclSyntax.self)?.name.text
+      $0.decl.as(StructDeclSyntax.self)?.name.text
+        ?? $0.decl.as(TypeAliasDeclSyntax.self)?.name.text
+        ?? $0.decl.as(EnumDeclSyntax.self)?.name.text
     }
     let hasState = typeNames.contains("State")
     let hasAction = typeNames.contains("Action")
     let bindings = declaration.memberBlock.members.flatMap {
-      $0.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self)?.bindings ?? []
+      $0.decl.as(VariableDeclSyntax.self)?.bindings ?? []
     }
     let hasReduceMethod = declaration.memberBlock.members.contains {
       guard
@@ -371,7 +371,7 @@ extension ReducerMacro: MemberMacro {
         )
       }
       if !declaration.memberBlock.members.contains(
-        where: { $0.as(FunctionDeclSyntax.self)?.name.text == "scope" }
+        where: { $0.decl.as(FunctionDeclSyntax.self)?.name.text == "scope" }
       ) {
         decls.append(
           """
