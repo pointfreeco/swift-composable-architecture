@@ -2,8 +2,8 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS17_ObservableBindingLocalTests: BaseIntegrationTests {
+  @MainActor
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 17"].tap()
@@ -12,6 +12,7 @@ final class iOS17_ObservableBindingLocalTests: BaseIntegrationTests {
     // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testNoBindingWarning_FullScreenCover() {
     self.app.buttons["Full-screen-cover"].tap()
 
@@ -20,6 +21,7 @@ final class iOS17_ObservableBindingLocalTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testOnDisappearWarning_FullScreenCover() {
     self.expectRuntimeWarnings()
 
@@ -32,6 +34,7 @@ final class iOS17_ObservableBindingLocalTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testNoBindingWarning_NavigationDestination() {
     self.app.buttons["Navigation destination"].tap()
 
@@ -40,6 +43,7 @@ final class iOS17_ObservableBindingLocalTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testOnDisappearWarning_NavigationDestination() {
     self.expectRuntimeWarnings()
 
@@ -52,6 +56,7 @@ final class iOS17_ObservableBindingLocalTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testNoBindingWarning_Path() {
     self.app.buttons["Path"].tap()
 
@@ -60,6 +65,7 @@ final class iOS17_ObservableBindingLocalTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testOnDisappearWarning_Path() {
     self.expectRuntimeWarnings()
 
@@ -72,6 +78,7 @@ final class iOS17_ObservableBindingLocalTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testNoBindingWarning_Popover() {
     self.app.buttons["Popover"].tap()
 
@@ -80,6 +87,7 @@ final class iOS17_ObservableBindingLocalTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testOnDisappearWarning_Popover() {
     self.expectRuntimeWarnings()
 
@@ -92,6 +100,7 @@ final class iOS17_ObservableBindingLocalTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testNoBindingWarning_Sheet() {
     self.app.buttons["Sheet"].tap()
 
@@ -100,6 +109,7 @@ final class iOS17_ObservableBindingLocalTests: BaseIntegrationTests {
     self.app.buttons["Dismiss"].tap()
   }
 
+  @MainActor
   func testOnDisappearWarning_Sheet() {
     self.expectRuntimeWarnings()
 

@@ -2,8 +2,8 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
+  @MainActor
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 16 + 17"].tap()
@@ -12,6 +12,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testBasics() {
     self.app.buttons["Increment"].tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
@@ -30,6 +31,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testPresentChild_NotObservingChildCount() {
     self.app.buttons["Present child"].tap()
     self.assertLogs {
@@ -63,6 +65,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testDismissChild_NotObservingChildCount() {
     self.app.buttons["Present child"].tap()
     self.clearLogs()
@@ -106,6 +109,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testObserveChildCount() {
     self.app.buttons["Toggle observe child count"].tap()
     XCTAssertEqual(self.app.staticTexts["Child count: N/A"].exists, true)
@@ -124,6 +128,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testPresentChild_ObservingChildCount() {
     self.app.buttons["Toggle observe child count"].tap()
     self.clearLogs()
@@ -161,6 +166,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testIncrementChild_ObservingChildCount() {
     self.app.buttons["Toggle observe child count"].tap()
     self.app.buttons["Present child"].tap()
@@ -206,6 +212,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testDismissChild_ObservingChildCount() {
     self.app.buttons["Toggle observe child count"].tap()
     self.app.buttons["Present child"].tap()
@@ -250,6 +257,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testDeinit() {
     self.app.buttons["Toggle observe child count"].tap()
     self.app.buttons["Present child"].tap()

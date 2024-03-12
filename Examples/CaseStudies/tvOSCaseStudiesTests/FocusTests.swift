@@ -3,8 +3,8 @@ import XCTest
 
 @testable import tvOSCaseStudies
 
-@MainActor
 final class tvOSCaseStudiesTests: XCTestCase {
+  @MainActor
   func testFocus() async {
     let store = TestStore(initialState: Focus.State(currentFocus: 1)) {
       Focus()

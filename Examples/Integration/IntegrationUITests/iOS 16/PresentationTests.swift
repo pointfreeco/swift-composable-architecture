@@ -2,8 +2,8 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS16_PresentationTests: BaseIntegrationTests {
+  @MainActor
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["iOS 16"].tap()
@@ -12,6 +12,7 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
     // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testOptional() throws {
     try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] != nil)
 
@@ -61,6 +62,7 @@ final class iOS16_PresentationTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testOptional_ObserveChildCount() {
     self.app.buttons["Present sheet"].tap()
     self.assertLogs {

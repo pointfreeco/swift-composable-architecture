@@ -85,10 +85,7 @@ extension SyntaxProtocol {
         if let sendExpression = functionCall.sendExpression {
           var fixIt: FixIt?
           if let outer = functionCall.arguments.first,
-            let inner =
-              outer
-              .as(LabeledExprSyntax.self)?.expression
-              .as(FunctionCallExprSyntax.self),
+            let inner = outer.expression.as(FunctionCallExprSyntax.self),
             inner.calledExpression
               .as(MemberAccessExprSyntax.self)?.declName.baseName.text == "view",
             inner.arguments.count == 1

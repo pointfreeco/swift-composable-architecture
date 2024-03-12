@@ -3,11 +3,10 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class ReusableComponentsDownloadComponentTests: XCTestCase {
-  let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
-
+  @MainActor
   func testDownloadFlow() async {
+    let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
     let store = TestStore(
       initialState: DownloadComponent.State(
         id: 1,
@@ -17,26 +16,28 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     ) {
       DownloadComponent()
     } withDependencies: {
-      $0.downloadClient.download = { @Sendable _ in self.download.stream }
+      $0.downloadClient.download = { @Sendable _ in download.stream }
     }
 
     await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
     }
 
-    self.download.continuation.yield(.updateProgress(0.2))
+    download.continuation.yield(.updateProgress(0.2))
     await store.receive(\.downloadClient.success.updateProgress) {
       $0.mode = .downloading(progress: 0.2)
     }
 
-    self.download.continuation.yield(.response(Data()))
-    self.download.continuation.finish()
+    download.continuation.yield(.response(Data()))
+    download.continuation.finish()
     await store.receive(\.downloadClient.success.response) {
       $0.mode = .downloaded
     }
   }
 
+  @MainActor
   func testCancelDownloadFlow() async {
+    let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
     let store = TestStore(
       initialState: DownloadComponent.State(
         id: 1,
@@ -46,14 +47,14 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     ) {
       DownloadComponent()
     } withDependencies: {
-      $0.downloadClient.download = { @Sendable _ in self.download.stream }
+      $0.downloadClient.download = { @Sendable _ in download.stream }
     }
 
     await store.send(.buttonTapped) {
       $0.mode = .startingToDownload
     }
 
-    self.download.continuation.yield(.updateProgress(0.2))
+    download.continuation.yield(.updateProgress(0.2))
     await store.receive(\.downloadClient.success.updateProgress) {
       $0.mode = .downloading(progress: 0.2)
     }
@@ -77,7 +78,9 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testDownloadFinishesWhileTryingToCancel() async {
+    let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
     let store = TestStore(
       initialState: DownloadComponent.State(
         id: 1,
@@ -87,7 +90,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     ) {
       DownloadComponent()
     } withDependencies: {
-      $0.downloadClient.download = { @Sendable _ in self.download.stream }
+      $0.downloadClient.download = { @Sendable _ in download.stream }
     }
 
     let task = await store.send(.buttonTapped) {
@@ -107,8 +110,8 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
       }
     }
 
-    self.download.continuation.yield(.response(Data()))
-    self.download.continuation.finish()
+    download.continuation.yield(.response(Data()))
+    download.continuation.finish()
     await store.receive(\.downloadClient.success.response) {
       $0.alert = nil
       $0.mode = .downloaded
@@ -117,7 +120,9 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     await task.finish()
   }
 
+  @MainActor
   func testDeleteDownloadFlow() async {
+    let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
     let store = TestStore(
       initialState: DownloadComponent.State(
         id: 1,
@@ -127,7 +132,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     ) {
       DownloadComponent()
     } withDependencies: {
-      $0.downloadClient.download = { @Sendable _ in self.download.stream }
+      $0.downloadClient.download = { @Sendable _ in download.stream }
     }
 
     await store.send(.buttonTapped) {
