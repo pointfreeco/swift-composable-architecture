@@ -2,8 +2,8 @@ import ComposableArchitecture
 import XCTest
 
 @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
-@MainActor
 final class SharedAppStorageTests: XCTestCase {
+  @MainActor
   func testBasics() async {
     let store = TestStore(initialState: Feature.State()) {
       Feature()
@@ -14,6 +14,7 @@ final class SharedAppStorageTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testSubscription() async throws {
     let store = TestStore(initialState: Feature.State()) {
       Feature()
@@ -30,6 +31,7 @@ final class SharedAppStorageTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testSiblings() async {
     let store = TestStore(initialState: ParentFeature.State()) {
       ParentFeature()
@@ -53,6 +55,7 @@ final class SharedAppStorageTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testSiblings_Failure() async {
     let store = TestStore(initialState: ParentFeature.State()) {
       ParentFeature()
