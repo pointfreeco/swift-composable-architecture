@@ -700,12 +700,10 @@ public final class TestStore<State, Action> {
     _ exhaustivity: Exhaustivity,
     operation: () throws -> R
   ) rethrows -> R {
-    try SharedLocals.$exhaustivity.withValue(exhaustivity) {
-      let previous = self.exhaustivity
-      defer { self.exhaustivity = previous }
-      self.exhaustivity = exhaustivity
-      return try operation()
-    }
+    let previous = self.exhaustivity
+    defer { self.exhaustivity = previous }
+    self.exhaustivity = exhaustivity
+    return try operation()
   }
 
   /// Overrides the store's exhaustivity for a given operation.
@@ -718,12 +716,10 @@ public final class TestStore<State, Action> {
     _ exhaustivity: Exhaustivity,
     operation: @MainActor () async throws -> R
   ) async rethrows -> R {
-    try await SharedLocals.$exhaustivity.withValue(exhaustivity) {
-      let previous = self.exhaustivity
-      defer { self.exhaustivity = previous }
-      self.exhaustivity = exhaustivity
-      return try await operation()
-    }
+    let previous = self.exhaustivity
+    defer { self.exhaustivity = previous }
+    self.exhaustivity = exhaustivity
+    return try await operation()
   }
 }
 
@@ -961,7 +957,10 @@ extension TestStore where State: Equatable {
     let skipUnnecessaryModifyFailure =
       skipUnnecessaryModifyFailure
       || self.reducer.dependencies[SharedChangeTracker.self]?.hasChanges == true
-    try SharedLocals.$exhaustivity.withValue(self.exhaustivity) {
+    if self.exhaustivity != .on {
+      self.reducer.dependencies[SharedChangeTracker.self]?.resetChanges()
+    }
+    try SharedLocals.$isProcessingChanges.withValue(true) {
       let current = expected
       var expected = expected
 

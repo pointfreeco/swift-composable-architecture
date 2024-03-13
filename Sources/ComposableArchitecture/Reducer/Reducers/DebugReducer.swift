@@ -88,7 +88,7 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
           let oldState = state
           let effects = self.base.reduce(into: &state, action: action)
           if self.sharedChangeTracker.hasChanges {
-            SharedLocals.$exhaustivity.withValue(.on) {
+            SharedLocals.$isProcessingChanges.withValue(true) {
               printer.printChange(receivedAction: action, oldState: oldState, newState: state)
             }
             self.sharedChangeTracker.clearChanges()

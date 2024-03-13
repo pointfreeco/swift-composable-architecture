@@ -69,6 +69,26 @@ final class SharedTests: XCTestCase {
 
     await store.send(.sharedIncrement)
     XCTAssertEqual(store.state.sharedCount, 1)
+
+    XCTExpectFailure {
+      $0.compactDescription == """
+        A state change does not match expectation: …
+
+              SharedFeature.State(
+                _count: 0,
+                _profile: #1 Profile(…),
+            −   _sharedCount: #1 3,
+            +   _sharedCount: #1 2,
+                _stats: #1 Stats(count: 0)
+              )
+
+        (Expected: −, Actual: +)
+        """
+    }
+    await store.send(.sharedIncrement) {
+      $0.sharedCount = 3
+    }
+    XCTAssertEqual(store.state.sharedCount, 2)
   }
 
   func testMultiSharing() async {
