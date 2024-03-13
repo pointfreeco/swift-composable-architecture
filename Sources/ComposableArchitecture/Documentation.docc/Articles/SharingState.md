@@ -677,7 +677,7 @@ It is possible to use [`@Shared`](<doc:Shared>) in features that have not yet be
 the observation tools released in 1.7, such as the ``ObservableState()`` macro. In the reducer
 you can use `@Shared` regardless of your use of the observation tools. 
 
-However, if you are deploying to iOS 16 or earlier, then you must use `WithObservationTracking`
+However, if you are deploying to iOS 16 or earlier, then you must use `WithPerceptionTracking`
 in your views if you are accessing shared state. For example, the following view:
 
 ```swift
