@@ -224,16 +224,6 @@ import Foundation
     }
   }
 
-  extension Shared: Decodable where Value: Decodable {
-    public init(from decoder: Decoder) throws {
-      do {
-        self.init(try decoder.singleValueContainer().decode(Value.self))
-      } catch {
-        self.init(try .init(from: decoder))
-      }
-    }
-  }
-
   extension Shared: Encodable where Value: Encodable {
     public func encode(to encoder: Encoder) throws {
       do {

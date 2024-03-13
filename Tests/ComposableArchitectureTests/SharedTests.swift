@@ -639,6 +639,29 @@ final class SharedTests: XCTestCase {
       $0.count = 42
     }
   }
+
+  func test_Codable_AppStorage() throws {
+    struct State: Codable {
+      @Shared(.appStorage("count")) var count = 0
+      init(count: Int = 0) {
+        self.count = count
+      }
+      init(from decoder: any Decoder) throws {
+        self._count = Shared(wrappedValue: 0, .appStorage("count"))
+      }
+    }
+
+    let state = State()
+    state.count = 42
+
+    let data = try JSONEncoder().encode(state)
+
+    state.count += 1
+
+    let decodedState = try JSONDecoder().decode(State.self, from: data)
+
+    XCTAssertEqual(decodedState.count, 43)
+  }
 }
 
 @Reducer
