@@ -24,6 +24,16 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(defaults.integer(forKey: "count"), 43)
   }
 
+  func testDefaultsRegistered_Optional() {
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("data")) var data: Data?
+    XCTAssertEqual(defaults.data(forKey: "data"), nil)
+
+    data = Data()
+    XCTAssertEqual(data, Data())
+    XCTAssertEqual(defaults.data(forKey: "data"), Data())
+  }
+
   func testDefaultAppStorageOverride() {
     let defaults = UserDefaults(suiteName: "tests")!
     defaults.removePersistentDomain(forName: "tests")

@@ -334,8 +334,19 @@
 
   extension AppStorageKey: PersistenceKey {
     public func load(initialValue: Value?) -> Value? {
-      if let initialValue, case let .string(key) = self.key {
-        self.store.register(defaults: [key: initialValue])
+      func register<Wrapped>(_ wrapped: Wrapped?) {
+        if let wrapped, case let .string(key) = self.key {
+          self.store.register(defaults: [key: wrapped])
+        }
+      }
+      if let initialValue {
+        if let initialValue = initialValue as? any _Optional {
+          if let wrapped = initialValue._wrapped {
+            register(wrapped)
+          }
+        } else {
+          register(initialValue)
+        }
       }
       return self._load() ?? initialValue
     }
@@ -429,5 +440,13 @@
   // NB: This is mainly used for tests, where observer notifications can bleed across cases.
   private enum SharedAppStorageLocals {
     @TaskLocal static var isSetting = false
+  }
+
+  private protocol _Optional<Wrapped> {
+    associatedtype Wrapped
+    var _wrapped: Wrapped? { get }
+  }
+  extension Optional: _Optional {
+    var _wrapped: Wrapped? { self }
   }
 #endif
