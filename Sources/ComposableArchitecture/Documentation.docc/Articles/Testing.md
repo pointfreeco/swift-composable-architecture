@@ -68,8 +68,8 @@ concise. It's called ``TestStore``, and it is constructed similarly to ``Store``
 initial state of the feature and the ``Reducer`` that runs the feature's logic:
 
 ```swift
-@MainActor
 class CounterTests: XCTestCase {
+  @MainActor
   func testBasics() async {
     let store = TestStore(initialState: Feature.State(count: 0)) {
       Feature()
@@ -78,8 +78,8 @@ class CounterTests: XCTestCase {
 }
 ```
 
-> Tip: Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should
-be marked as `async` since most assertion helpers on ``TestStore`` can suspend.
+> Tip: Tests that use ``TestStore`` should be annotated as `@MainActor` and marked as `async` since
+> most assertion helpers on ``TestStore`` can suspend.
 
 Test stores have a ``TestStore/send(_:assert:file:line:)-2co21`` method, but it behaves differently from
 stores and view stores. You provide an action to send into the system, but then you must also
@@ -102,8 +102,8 @@ await store.send(.incrementButtonTapped) {
 }
 ```
 
-> The ``TestStore/send(_:assert:file:line:)`` method is `async` for technical reasons that we do not
-> have to worry about right now.
+> The ``TestStore/send(_:assert:file:line:)-2co21`` method is `async` for technical reasons that we
+> do not have to worry about right now.
 
 If your mutation is incorrect, meaning you perform a mutation that is different from what happened
 in the ``Reducer``, then you will get a test failure with a nicely formatted message showing exactly
@@ -233,8 +233,8 @@ To test this we can start off similar to how we did in the [previous section][Te
 when testing state mutations:
 
 ```swift
-@MainActor
 class TimerTests: XCTestCase {
+  @MainActor
   func testBasics() async {
     let store = TestStore(initialState: Feature.State(count: 0)) {
       Feature()

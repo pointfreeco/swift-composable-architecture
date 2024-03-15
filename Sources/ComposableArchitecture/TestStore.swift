@@ -474,7 +474,7 @@ public final class TestStore<State, Action> {
 
   /// The current state of the test store.
   ///
-  /// When read from a trailing closure assertion in ``send(_:assert:file:line:)`` or
+  /// When read from a trailing closure assertion in ``send(_:assert:file:line:)-2co21`` or
   /// ``receive(_:timeout:assert:file:line:)-6325h``, it will equal the `inout` state passed to the
   /// closure.
   public var state: State {
