@@ -21,7 +21,7 @@
     }
   }
 
-  /// A type defining a user defaults persistence strategy via a key path.
+  /// A type defining a user defaults persistence strategy via key path.
   ///
   /// See ``PersistenceKey/appStorage(_:)-4ly47`` to create values of this type.
   public struct AppStorageKeyPathKey<Value> {

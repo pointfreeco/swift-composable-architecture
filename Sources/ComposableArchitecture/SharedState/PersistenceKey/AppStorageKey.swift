@@ -151,7 +151,7 @@
     }
   }
 
-  /// A type defining a user defaults persistence strategy
+  /// A type defining a user defaults persistence strategy.
   ///
   /// See ``PersistenceKey/appStorage(_:)-9zd2f`` to create values of this type.
   public struct AppStorageKey<Value> {
