@@ -261,11 +261,11 @@ import XCTestDynamicOverlay
 /// complete before the test is finished. To turn off exhaustivity you can set ``exhaustivity``
 /// to ``Exhaustivity/off``. When that is done the ``TestStore``'s behavior changes:
 ///
-///   * The trailing closures of ``send(_:assert:file:line:)`` and
+///   * The trailing closures of ``send(_:assert:file:line:)-2co21`` and
 ///     ``receive(_:timeout:assert:file:line:)-6325h`` no longer need to assert on all state
 ///     changes. They can assert on any subset of changes, and only if they make an incorrect
 ///     mutation will a test failure be reported.
-///   * The ``send(_:assert:file:line:)`` and ``receive(_:timeout:assert:file:line:)-6325h``
+///   * The ``send(_:assert:file:line:)-2co21`` and ``receive(_:timeout:assert:file:line:)-6325h``
 ///     methods are allowed to be called even when actions have been received from effects that have
 ///     not been asserted on yet. Any pending actions will be cleared.
 ///   * Tests are allowed to finish with unasserted, received actions and in-flight effects. No test

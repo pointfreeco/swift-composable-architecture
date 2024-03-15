@@ -48,7 +48,7 @@
         doing. For example, we can emulate tapping the increment button and then the decrement 
         button.
         
-        > Note: The ``ComposableArchitecture/TestStore/send(_:assert:file:line:)`` method on
+        > Note: The ``ComposableArchitecture/TestStore/send(_:assert:file:line:)-2co21`` method on
         the test store is async because most features involve asynchronous side effects, and the
         test store using the async context to track those effects.
         

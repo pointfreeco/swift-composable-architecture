@@ -257,11 +257,11 @@ should take a plain, non-`Shared` value and you construct the `Shared` value in 
   }
   ```
 
-* You are using a persistence strategy with shared state (e.g. 
+* You are using a persistence strategy with shared state (_e.g._ 
 ``PersistenceKey/appStorage(_:)-6nc2t``, ``PersistenceKey/fileStorage(_:)``, etc.), then the
 initializer should take a plain, non-`Shared` value and you construct the `Shared` value in the
-initializer using ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` which takes a
-``PersistenceKey`` as the second argumnet:
+initializer using ``Shared/init(wrappedValue:_:fileID:line:)`` which takes a
+``PersistenceKey`` as the second argument:
 
   ```swift
   public struct State {
@@ -280,7 +280,7 @@ initializer using ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` which takes
 
   > Important: The value passed to this initializer is only used if the external storage does not
   > already have a value. If a value exists in the storage then it is not used. In fact, the
-  > `wrappedValue` argument of ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` is an 
+  > `wrappedValue` argument of ``Shared/init(wrappedValue:_:fileID:line:)`` is an 
   > `@autoclosure` so that it is not even evaluated if not used. For that reason you
   > may prefer to make the argument to the initializer an `@autoclosure` so that it too is evaluated
   > only if actually used:

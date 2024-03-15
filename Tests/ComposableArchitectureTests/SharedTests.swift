@@ -129,6 +129,7 @@ final class SharedTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testIncrementalMutation_Failure() async {
     let store = TestStore(
       initialState: SharedFeature.State(

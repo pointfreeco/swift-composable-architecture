@@ -200,12 +200,12 @@
       
       Already we can see a difference between non-exhaustive and exhaustive test stores. We are 
       not specifying the trailing closure in 
-      ``ComposableArchitecture/TestStore/send(_:assert:file:line:)`` to assert on state changes, 
-      yet the test will still pass.
+      ``ComposableArchitecture/TestStore/send(_:assert:file:line:)-2co21`` to assert on state
+      changes, yet the test will still pass.
       
       A non-exhaustive store operates similarly to an exhaustive one, but with a few key 
       differences. In a non-exhaustive store, the `$0` handed to the trailing closure of
-      ``ComposableArchitecture/TestStore/send(_:assert:file:line:)`` is the state _after_
+      ``ComposableArchitecture/TestStore/send(_:assert:file:line:)-2co21`` is the state _after_
       the action has been processed, whereas in an exhaustive test store it is the state _before_.
       This means in non-exhaustive test stores you do not have make any mutations in the trailing
       closure if you do not want to. And anything you _do_ set in the trailing closure must match

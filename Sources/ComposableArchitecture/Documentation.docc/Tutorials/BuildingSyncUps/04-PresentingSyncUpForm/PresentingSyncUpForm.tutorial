@@ -112,7 +112,7 @@
         with the `@Bindable` property wrapper.
         
         > Note: Remember that if the `@Bindable` property wrapper is not available to you due to
-        > platform restrictions you can instead use the library's ``@Perception.Bindable`` property
+        > platform restrictions you can instead use the library's `@Perception.Bindable` property
         > wrapper.
         
         @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-02-code-0002.swift)

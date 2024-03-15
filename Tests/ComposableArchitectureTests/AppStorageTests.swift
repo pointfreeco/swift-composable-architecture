@@ -34,6 +34,30 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(defaults.data(forKey: "data"), Data())
   }
 
+  func testDefaultsRegistered_RawRepresentable() {
+    enum Direction: String, CaseIterable {
+      case north, south, east, west
+    }
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("direction")) var direction: Direction = .north
+    XCTAssertEqual(defaults.string(forKey: "direction"), "north")
+
+    direction = .south
+    XCTAssertEqual(defaults.string(forKey: "direction"), "south")
+  }
+
+  func testDefaultsRegistered_Optional_RawRepresentable() {
+    enum Direction: String, CaseIterable {
+      case north, south, east, west
+    }
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("direction")) var direction: Direction?
+    XCTAssertEqual(defaults.string(forKey: "direction"), nil)
+
+    direction = .south
+    XCTAssertEqual(defaults.string(forKey: "direction"), "south")
+  }
+
   func testDefaultAppStorageOverride() {
     let defaults = UserDefaults(suiteName: "tests")!
     defaults.removePersistentDomain(forName: "tests")

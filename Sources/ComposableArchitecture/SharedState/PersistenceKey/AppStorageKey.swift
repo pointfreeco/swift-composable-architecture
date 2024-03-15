@@ -2,24 +2,6 @@
   import Foundation
 
   extension PersistenceKey {
-    /// Creates a persistence key for sharing data in user defaults given a key path.
-    ///
-    /// For example, one could initialize a key with the date and time at which the application was
-    /// most recently launched, and access this date from anywhere using the ``Shared`` property
-    /// wrapper:
-    ///
-    /// ```swift
-    /// @Shared(.inMemory("appLaunchedAt")) var appLaunchedAt = Date()
-    /// ```
-    ///
-    /// - Parameter key: A string key identifying a value to share in memory.
-    /// - Returns: A persistence key.
-    public static func appStorage<Value>(
-      _ keyPath: ReferenceWritableKeyPath<UserDefaults, Value>
-    ) -> Self where Self == AppStorageKey<Value> {
-      AppStorageKey(keyPath)
-    }
-
     /// Creates a persistence key that can read and write to a boolean user default.
     ///
     /// - Parameter key: The key to read and write the value to in the user defaults store.
@@ -173,215 +155,150 @@
   ///
   /// See ``PersistenceKey/appStorage(_:)-9zd2f`` to create values of this type.
   public struct AppStorageKey<Value> {
-    private let _load: () -> Value?
-    private let _save: (Value) -> Void
-    private let key: Key
+    private let lookup: any Lookup<Value>
+    private let key: String
     private let store: UserDefaults
-
-    private enum Key: Hashable {
-      case string(String)
-      case keyPath(ReferenceWritableKeyPath<UserDefaults, Value>)
-    }
-
-    public init(_ keyPath: ReferenceWritableKeyPath<UserDefaults, Value>) {
-      @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store[keyPath: keyPath] }
-      self._save = { [store] in store[keyPath: keyPath] = $0 }
-      self.key = .keyPath(keyPath)
-      self.store = store
-    }
 
     public init(_ key: String) where Value == Bool {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
-      self.key = .string(key)
+      self.lookup = CastableLookup()
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String) where Value == Int {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
-      self.key = .string(key)
+      self.lookup = CastableLookup()
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String) where Value == Double {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
-      self.key = .string(key)
+      self.lookup = CastableLookup()
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String) where Value == String {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
-      self.key = .string(key)
+      self.lookup = CastableLookup()
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String) where Value == URL {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
-      self.key = .string(key)
+      self.lookup = CastableLookup()
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String) where Value == Data {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0, forKey: key) }
-      self.key = .string(key)
+      self.lookup = CastableLookup()
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String)
     where Value: RawRepresentable, Value.RawValue == Int {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in
-        (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:))
-      }
-      self._save = { [store] in store.set($0.rawValue, forKey: key) }
-      self.key = .string(key)
+      self.lookup = RawRepresentableLookup(base: CastableLookup())
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String)
     where Value: RawRepresentable, Value.RawValue == String {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in
-        (store.object(forKey: key) as? Value.RawValue).flatMap(Value.init(rawValue:))
-      }
-      self._save = { [store] in store.set($0.rawValue, forKey: key) }
-      self.key = .string(key)
+      self.lookup = RawRepresentableLookup(base: CastableLookup())
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String) where Value == Bool? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
-      self.key = .string(key)
+      self.lookup = OptionalLookup(base: CastableLookup())
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String) where Value == Int? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
-      self.key = .string(key)
+      self.lookup = OptionalLookup(base: CastableLookup())
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String) where Value == Double? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
-      self.key = .string(key)
+      self.lookup = OptionalLookup(base: CastableLookup())
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String) where Value == String? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
-      self.key = .string(key)
+      self.lookup = OptionalLookup(base: CastableLookup())
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String) where Value == URL? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
-      self.key = .string(key)
+      self.lookup = OptionalLookup(base: CastableLookup())
+      self.key = key
       self.store = store
     }
 
     public init(_ key: String) where Value == Data? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in store.object(forKey: key) as? Value }
-      self._save = { [store] in store.set($0 ?? nil, forKey: key) }
-      self.key = .string(key)
+      self.lookup = OptionalLookup(base: CastableLookup())
+      self.key = key
       self.store = store
     }
 
     public init<R: RawRepresentable>(_ key: String)
     where R.RawValue == Int, Value == R? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in
-        (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:))
-      }
-      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
-      self.key = .string(key)
+      self.lookup = OptionalLookup(base: RawRepresentableLookup(base: CastableLookup()))
+      self.key = key
       self.store = store
     }
 
     public init<R: RawRepresentable>(_ key: String)
     where R.RawValue == String, Value == R? {
       @Dependency(\.defaultAppStorage) var store
-      self._load = { [store] in
-        (store.object(forKey: key) as? R.RawValue).flatMap(R.init(rawValue:))
-      }
-      self._save = { [store] in store.set($0?.rawValue, forKey: key) }
-      self.key = .string(key)
+      self.lookup = OptionalLookup(base: RawRepresentableLookup(base: CastableLookup()))
+      self.key = key
       self.store = store
     }
   }
 
   extension AppStorageKey: PersistenceKey {
     public func load(initialValue: Value?) -> Value? {
-      func register<Wrapped>(_ wrapped: Wrapped?) {
-        if let wrapped, case let .string(key) = self.key {
-          self.store.register(defaults: [key: wrapped])
-        }
-      }
-      if let initialValue {
-        if let initialValue = initialValue as? any _Optional {
-          if let wrapped = initialValue._wrapped {
-            register(wrapped)
-          }
-        } else {
-          register(initialValue)
-        }
-      }
-      return self._load() ?? initialValue
+      self.lookup.loadValue(from: self.store, at: self.key, default: initialValue)
     }
 
     public func save(_ value: Value) {
       SharedAppStorageLocals.$isSetting.withValue(true) {
-        self._save(value)
+        self.lookup.saveValue(value, to: self.store, at: self.key)
       }
     }
 
     public func subscribe(
       initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
     ) -> Shared<Value>.Subscription {
-      switch self.key {
-      case let .keyPath(key):
-        let observer = self.store.observe(key, options: .new) { _, change in
-          guard
-            !SharedAppStorageLocals.isSetting
-          else { return }
-          didSet(change.newValue ?? initialValue)
-        }
-        return Shared.Subscription {
-          observer.invalidate()
-        }
-      case let .string(key):
-        let observer = Observer { value in
-          guard
-            !SharedAppStorageLocals.isSetting
-          else { return }
-          didSet(value ?? initialValue)
-        }
-        self.store.addObserver(observer, forKeyPath: key, options: .new, context: nil)
-        return Shared.Subscription {
-          self.store.removeObserver(observer, forKeyPath: key)
-        }
+      let observer = Observer { value in
+        guard
+          !SharedAppStorageLocals.isSetting
+        else { return }
+        didSet(value ?? initialValue)
+      }
+      self.store.addObserver(observer, forKeyPath: key, options: .new, context: nil)
+      return Shared.Subscription {
+        self.store.removeObserver(observer, forKeyPath: key)
       }
     }
 
@@ -442,11 +359,54 @@
     @TaskLocal static var isSetting = false
   }
 
-  private protocol _Optional<Wrapped> {
-    associatedtype Wrapped
-    var _wrapped: Wrapped? { get }
+  private protocol Lookup<Value> {
+    associatedtype Value
+    func loadValue(from store: UserDefaults, at key: String, default defaultValue: Value?) -> Value?
+    func saveValue(_ newValue: Value, to store: UserDefaults, at key: String)
   }
-  extension Optional: _Optional {
-    var _wrapped: Wrapped? { self }
+
+  private struct CastableLookup<Value>: Lookup {
+    func loadValue(
+      from store: UserDefaults, at key: String, default defaultValue: Value?
+    ) -> Value? {
+      if let defaultValue {
+        store.register(defaults: [key: defaultValue])
+      }
+      return store.object(forKey: key) as? Value ?? defaultValue
+    }
+    func saveValue(_ newValue: Value, to store: UserDefaults, at key: String) {
+      store.setValue(newValue, forKey: key)
+    }
+  }
+
+  private struct RawRepresentableLookup<Value: RawRepresentable, Base: Lookup>: Lookup
+  where Value.RawValue == Base.Value {
+    let base: Base
+    func loadValue(
+      from store: UserDefaults, at key: String, default defaultValue: Value?
+    ) -> Value? {
+      base.loadValue(from: store, at: key, default: defaultValue?.rawValue)
+        .flatMap(Value.init(rawValue:))
+        ?? defaultValue
+    }
+    func saveValue(_ newValue: Value, to store: UserDefaults, at key: String) {
+      base.saveValue(newValue.rawValue, to: store, at: key)
+    }
+  }
+
+  private struct OptionalLookup<Base: Lookup>: Lookup {
+    let base: Base
+    func loadValue(
+      from store: UserDefaults, at key: String, default defaultValue: Base.Value??
+    ) -> Base.Value?? {
+      base.loadValue(from: store, at: key, default: defaultValue ?? nil)
+    }
+    func saveValue(_ newValue: Base.Value?, to store: UserDefaults, at key: String) {
+      if let newValue {
+        base.saveValue(newValue, to: store, at: key)
+      } else {
+        store.removeObject(forKey: key)
+      }
+    }
   }
 #endif
