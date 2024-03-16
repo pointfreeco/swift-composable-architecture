@@ -8,13 +8,28 @@ enum Filter: LocalizedStringKey, CaseIterable, Hashable {
   case completed = "Completed"
 }
 
+private struct TodosRequest: GRDBQuery {
+  var filter: Filter
+
+  func fetch(_ db: GRDB.Database) throws -> IdentifiedArrayOf<Todo> {
+    switch filter {
+    case .all:
+      try Todo.all().order(Column("isComplete").asc).fetchIdentifiedArray(db)
+    case .active:
+      try Todo.all().filter(Column("isComplete") == false).fetchIdentifiedArray(db)
+    case .completed:
+      try Todo.all().filter(Column("isComplete") == true).fetchIdentifiedArray(db)
+    }
+  }
+}
+
 @Reducer
 struct Todos {
   @ObservableState
   struct State: Equatable {
     var editMode: EditMode = .inactive
     var filter: Filter = .all
-    @Shared(.query(Todo.all().order(Column("isComplete").asc))) var todos: IdentifiedArray = []
+    @Shared(.query(TodosRequest(filter: .all))) var todos: IdentifiedArray = []
   }
 
   enum Action: BindableAction, Sendable {
@@ -105,20 +120,9 @@ struct Todos {
     .onChange(of: \.filter) { _, filter in
       Reduce { state, _ in
         let todos = state.todos
-        switch filter {
-        case .all:
-          state.$todos = Shared(
-            wrappedValue: todos, .query(Todo.all().order(Column("isComplete").asc))
-          )
-        case .active:
-          state.$todos = Shared(
-            wrappedValue: todos, .query(Todo.all().filter(Column("isComplete") == false))
-          )
-        case .completed:
-          state.$todos = Shared(
-            wrappedValue: todos, .query(Todo.all().filter(Column("isComplete") == true))
-          )
-        }
+        state.$todos = Shared(
+          wrappedValue: todos, .query(TodosRequest(filter: filter))
+        )
         return .none
       }
     }

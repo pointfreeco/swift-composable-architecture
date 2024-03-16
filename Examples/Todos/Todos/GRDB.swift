@@ -14,68 +14,64 @@ extension DependencyValues {
   }
 }
 
+public protocol GRDBQuery: Hashable {
+  associatedtype Value
+  func fetch(_ db: Database) throws -> Value
+}
+
 extension PersistenceKey {
-  public static func query<Request: FetchRequest>(_ request: Request) -> Self
-  where Self == GRDBQueryKey<Request> {
-    Self(request)
+  public static func query<Query: GRDBQuery>(_ query: Query) -> Self
+  where Self == GRDBQueryKey<Query> {
+    Self(query)
   }
 }
 
-public final class GRDBQueryKey<Request: FetchRequest>: PersistenceKey
-where Request.RowDecoder: FetchableRecord, Request.RowDecoder: Identifiable {
-  let request: Request
+public final class GRDBQueryKey<Query: GRDBQuery>: PersistenceKey {
+  let query: Query
 
-  public init(_ request: Request) {
-    self.request = request
+  public init(_ query: Query) {
+    self.query = query
   }
 
   public static func == (lhs: GRDBQueryKey, rhs: GRDBQueryKey) -> Bool {
-    @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
-    return defaultDatabaseQueue.inDatabase { db in
-      guard
-        let lhsStatement =
-          try? lhs.request.makePreparedRequest(db, forSingleResult: false).statement,
-        let rhsStatement =
-          try? lhs.request.makePreparedRequest(db, forSingleResult: false).statement
-      else { return false }
-      return lhsStatement.sql == rhsStatement.sql
-        && lhsStatement.arguments == rhsStatement.arguments
-    }
+    lhs.query == rhs.query
   }
 
   public func hash(into hasher: inout Hasher) {
-    @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
-    try? defaultDatabaseQueue.inDatabase { db in
-      let statement = try request.makePreparedRequest(db, forSingleResult: false).statement
-      hasher.combine(statement.sql)
-      hasher.combine(statement.arguments)
-    }
+    hasher.combine(query)
   }
 
-  public func load() -> IdentifiedArrayOf<Request.RowDecoder>? {
+  public func load() -> Query.Value? {
     @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
-    return try? defaultDatabaseQueue.inDatabase { db in
-      try IdentifiedArray(uniqueElements: request.fetchAll(db))
-    }
+    return try? defaultDatabaseQueue.read(query.fetch(_:))
   }
 
-  public func save(_ value: IdentifiedArrayOf<Request.RowDecoder>) {
+  public func save(_ value: Query.Value) {
   }
 
   public func subscribe(
-    didSet: @escaping (IdentifiedArrayOf<Request.RowDecoder>?) -> Void
-  ) -> Shared<IdentifiedArrayOf<Request.RowDecoder>>.Subscription {
+    didSet: @escaping (Query.Value?) -> Void
+  ) -> Shared<Query.Value>.Subscription {
     @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
-    let observation = ValueObservation.tracking { db in
-      try self.request.fetchAll(db)
-    }
+    let observation = ValueObservation.tracking(query.fetch(_:))
     let cancellable = observation.start(in: defaultDatabaseQueue) { error in
 
     } onChange: { newValue in
-      didSet(IdentifiedArray(uniqueElements: newValue))
+      didSet(newValue)
     }
     return Shared.Subscription {
       cancellable.cancel()
     }
   }
+}
+
+extension FetchRequest where RowDecoder: FetchableRecord & Identifiable {
+    /// For example:
+    ///
+    /// ```
+    /// let players = try Player.all().fetchIdentifiedArray(db)
+    /// ```
+    public func fetchIdentifiedArray(_ db: Database) throws -> IdentifiedArrayOf<RowDecoder> {
+        try IdentifiedArray(fetchCursor(db))
+    }
 }
