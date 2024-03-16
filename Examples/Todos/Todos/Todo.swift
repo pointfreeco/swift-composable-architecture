@@ -43,7 +43,7 @@ struct TodoFeature {
       return .run { [todo] _ in
         try await withTaskCancellation(id: CancelID.debounce, cancelInFlight: true) {
           try await clock.sleep(for: .seconds(0.3))
-          try defaultDatabaseQueue.inDatabase { db in
+          try await defaultDatabaseQueue.write { db in
             try todo.update(db)
           }
         }
