@@ -499,13 +499,17 @@ public final class TestStore<State, Action> {
   ///
   /// - Parameters:
   ///   - initialState: The state the feature starts in.
-  ///   - reducer: The reducer that powers the runtime of the feature.
+  ///   - reducer: The reducer that powers the runtime of the feature. Unlike
+  ///     ``Store/init(initialState:reducer:withDependencies:)``, this is _not_ a builder closure
+  ///     due to a [Swift bug](https://github.com/apple/swift/issues/72399) that is more likely to
+  ///     affect test store initialization. If you must compose multiple reducers in this closure,
+  ///     wrap them in ``CombineReducers``.
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be
   ///     accessed during the test. These dependencies will be used when producing the initial
   ///     state.
   public init<R: Reducer>(
-    initialState: @autoclosure () -> R.State,
-    @ReducerBuilder<State, Action> reducer: () -> R,
+    initialState: @autoclosure () -> State,
+    reducer: () -> R,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
     },
     file: StaticString = #file,
