@@ -45,10 +45,12 @@
         let clock = TestClock()
 
         let store = TestStore(initialState: 0) {
-          Feature_testCombine_EffectsAreMerged(
-            delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
-          Feature_testCombine_EffectsAreMerged(
-            delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
+          CombineReducers {
+            Feature_testCombine_EffectsAreMerged(
+              delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
+            Feature_testCombine_EffectsAreMerged(
+              delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
+          }
         } withDependencies: {
           $0.continuousClock = clock
         }
@@ -90,8 +92,10 @@
       var second = false
 
       let store = TestStore(initialState: 0) {
-        Feature_testCombine(effect: { @MainActor in first = true })
-        Feature_testCombine(effect: { @MainActor in second = true })
+        CombineReducers {
+          Feature_testCombine(effect: { @MainActor in first = true })
+          Feature_testCombine(effect: { @MainActor in second = true })
+        }
       }
 
       await store
