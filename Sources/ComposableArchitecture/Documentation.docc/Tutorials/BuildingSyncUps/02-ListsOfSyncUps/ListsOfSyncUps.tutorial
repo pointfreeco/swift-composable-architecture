@@ -217,4 +217,29 @@
       }
     }
   }
+  
+  @Section(title: "A handy debugging tool") {
+    @ContentAndMedia {
+      With this little bit of work done we can already demonstrate a powerful debugging tool of the
+      Composable Architecture. It is possible to print a nicely formatted diff of your features'
+      state whenever it is mutated.
+    }
+    
+    @Steps {
+      @Step {
+        At the bottom fo the file, where the `#Preview` is constructed, apply the `_printChanges`
+        reducer operator to `SyncUpsList`. 
+        
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-03-code-0001.swift, previousFile: ListsOfSyncUps-03-code-0001-previous.swift)
+      }
+      
+      @Step {
+        Run the preview again and delete the row. View the logs in the console to see that a nicely
+        formatted message has been printed to the console to show what action was sent and how
+        the state changed.
+        
+        @Code(name: "console-output.diff", file: ListsOfSyncUps-03-code-0002.diff)
+      }
+    }
+  }
 }
