@@ -387,6 +387,106 @@
       }
     }
 
+    func testEnum_Empty_AccessControl_Package() {
+        assertMacro {
+          """
+          @Reducer
+          package enum Destination {
+          }
+          """
+        } expansion: {
+          """
+          package enum Destination {
+
+              @CasePathable
+              @dynamicMemberLookup
+              @ObservableState
+
+              package enum State: ComposableArchitecture.CaseReducerState {
+
+                  package typealias StateReducer = Destination
+
+              }
+
+              @CasePathable
+
+              package enum Action {
+
+              }
+
+              @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+
+              package static var body: ComposableArchitecture.EmptyReducer<Self.State, Self.Action> {
+                  ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+              }
+
+              package enum CaseScope {
+
+              }
+
+              package static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+                  switch store.state {
+
+                  }
+              }
+          }
+
+          extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
+          }
+          """
+        }
+    }
+
+    func testEnum_Empty_AccessControl_Public() {
+      assertMacro {
+        """
+        @Reducer
+        public enum Destination {
+        }
+        """
+      } expansion: {
+        """
+        public enum Destination {
+
+            @CasePathable
+            @dynamicMemberLookup
+            @ObservableState
+
+            public enum State: ComposableArchitecture.CaseReducerState {
+
+                public typealias StateReducer = Destination
+
+            }
+
+            @CasePathable
+
+            public enum Action {
+
+            }
+
+            @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+
+            public static var body: ComposableArchitecture.EmptyReducer<Self.State, Self.Action> {
+                ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+            }
+
+            public enum CaseScope {
+
+            }
+
+            public static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+                switch store.state {
+
+                }
+            }
+        }
+
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
+        }
+        """
+      }
+    }
+
     func testEnum_OneAlertCase() {
       assertMacro {
         """
