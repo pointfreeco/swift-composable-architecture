@@ -527,6 +527,7 @@
           @CasePathable
           enum Action {
             case timeline(Timeline.Action)
+            case meeting(Swift.Never)
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
@@ -591,6 +592,7 @@
           enum Action {
             case alert(AlertState<Alert> .Action)
             case dialog(ConfirmationDialogState<Dialog> .Action)
+            case meeting(Swift.Never)
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
@@ -1025,6 +1027,7 @@
             case phone(PhoneFeature.Action)
             #else
             case other(OtherFeature.Action)
+            case another(Swift.Never)
             #endif
 
             #if DEBUG
