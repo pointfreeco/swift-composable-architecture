@@ -1,4 +1,4 @@
-@Tutorial(time: 10) {
+@Tutorial(time: 5) {
   @Intro(title: "Testing the list of sync-ups") {
     The SyncUpsList feature we have built so far isn't very complex. In fact, it only has one
     primary action, that of deleting sync-ups from its collection. However, it can be good practice

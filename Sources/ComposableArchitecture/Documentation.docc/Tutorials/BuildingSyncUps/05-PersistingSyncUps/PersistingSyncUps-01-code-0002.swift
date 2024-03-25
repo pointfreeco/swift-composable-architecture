@@ -4,7 +4,7 @@ import SwiftUI
 @Reducer
 struct SyncUpsList {
   @ObservableState
-  struct State {
+  struct State: Equatable {
     @Presents var addSyncUp: SyncUpForm.State?
     @Shared(.fileStorage()) var syncUps: IdentifiedArrayOf<SyncUp> = []
   }

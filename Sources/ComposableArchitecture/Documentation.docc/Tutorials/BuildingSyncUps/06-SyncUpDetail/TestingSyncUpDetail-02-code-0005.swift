@@ -1,8 +1,10 @@
 import ComposableArchitecture
-import SyncUps
 import XCTest
 
+@testable import SyncUps
+
 class SyncUpDetailTests: XCTestCase {
+  @MainActor
   func testDelete() async {
     let syncUp = SyncUp(
       id: SyncUp.ID(),
@@ -21,6 +23,7 @@ class SyncUpDetailTests: XCTestCase {
     await store.receive(\.delegate.deleteSyncUp, syncUp.id)
   }
   
+  @MainActor
   func testEdit() async {
     // ...
   }

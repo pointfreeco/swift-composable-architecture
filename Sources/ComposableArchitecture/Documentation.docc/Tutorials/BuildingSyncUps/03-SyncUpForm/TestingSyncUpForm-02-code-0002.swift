@@ -1,9 +1,11 @@
 
 import ComposableArchitecture
-import SyncUps
 import XCTest
 
+@testable import SyncUps
+
 class SyncUpFormTests: XCTestCase {
+  @MainActor
   func testAddAttendee() {
     let store = TestStore(
       initialState: SyncUpForm.State(
@@ -20,10 +22,12 @@ class SyncUpFormTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testRemoveFocusedAttendee() {
     // ...
   }
 
+  @MainActor
   func testRemoveAttendee() {
     // ...
   }

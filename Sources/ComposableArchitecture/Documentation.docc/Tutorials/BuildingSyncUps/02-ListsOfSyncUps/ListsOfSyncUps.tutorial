@@ -130,6 +130,9 @@
         type with the ``ComposableArchitecture/ObservableState`` macro so that the view can 
         automatically observe changes to state.
         
+        > Note: We are pre-emptively making `State` conform to `Equatable` because it will be useful
+        for tests later in this tutorial.
+        
         @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0003.swift)
       }
       
