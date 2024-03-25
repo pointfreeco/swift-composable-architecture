@@ -47,11 +47,11 @@
       @Step {
         Replace all plain arrays with an `IdentifiedArray`. This type comes from our 
         [IdentifiedCollections][identified-array-gh] library, which is automatically included with
-        the Composable Architecture.
-        
-        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0003.swift)
+        the Composable Architecture.        
         
         [identified-array-gh]: http://github.com/pointfreeco/swift-identified-collections
+        
+        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0003.swift)
       }
       
       There's another improvement that can be made to our domain models, but this one is completely

@@ -34,10 +34,6 @@ struct SyncUpsListView: View {
   }
 }
 
-extension Theme {
-  var mainColor: Color { Color(self.rawValue) }
-}
-
 struct CardView: View {
   let syncUp: SyncUp
 
@@ -56,18 +52,6 @@ struct CardView: View {
     }
     .padding()
     .foregroundColor(syncUp.theme.accentColor)
-  }
-}
-
-extension Theme {
-  var accentColor: Color {
-    switch self {
-    case .bubblegum, .buttercup, .lavender, .orange, .periwinkle, .poppy, .seafoam, .sky, .tan,
-        .teal, .yellow:
-      return .black
-    case .indigo, .magenta, .navy, .oxblood, .purple:
-      return .white
-    }
   }
 }
 

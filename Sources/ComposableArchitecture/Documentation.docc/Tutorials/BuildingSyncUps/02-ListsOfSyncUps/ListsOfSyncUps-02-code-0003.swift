@@ -5,6 +5,6 @@ import SwiftUI
 struct SyncUpsList {
   @ObservableState
   struct State {
-    var syncUps: IdentifiedArrayOf<SyncUps> = []
+    var syncUps: IdentifiedArrayOf<SyncUp> = []
   }
 }

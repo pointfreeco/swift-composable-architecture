@@ -5,10 +5,10 @@ import SwiftUI
 struct SyncUpsList {
   @ObservableState
   struct State {
-    var syncUps: IdentifiedArrayOf<SyncUps> = []
+    var syncUps: IdentifiedArrayOf<SyncUp> = []
   }
   enum Action {
-    case addButtonTapped
+    case addSyncUpButtonTapped
     case onDelete(IndexSet)
     case syncUpTapped(id: SyncUp.ID)
   }
