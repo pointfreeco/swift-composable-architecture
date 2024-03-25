@@ -683,7 +683,20 @@ private enum PartialToState<State> {
   func appending<ChildState>(_ state: PartialToState<ChildState>) -> PartialToState<ChildState> {
     switch (self, state) {
     case let (.keyPath(lhs), .keyPath(rhs)):
+      #if DEBUG
+      guard let appended = lhs.appending(path: rhs) else {
+        fatalError("""
+          ℹ️ Key path has failed to append. This can occur if the \
+          root or value types have been replaced. If you are using \
+          InjectionIII.app v4.8.4+, you can create an environment \
+          variable INJECTION_KEYPATHS in your scheme to avoid this \
+          problem.
+          """)
+      }
+      return .keyPath(appended)
+      #else
       return .keyPath(lhs.appending(path: rhs)!)
+      #endif
     case let (.closure(lhs), .keyPath(rhs)):
       return .appended(lhs, rhs)
     case let (.appended(lhsClosure, lhsKeyPath), .keyPath(rhs)):
