@@ -223,10 +223,10 @@ wrapper, including those that ship with vanilla SwiftUI (e.g. `@State`, `@StateO
 but the rules can be quite confusing and so below we describe the various ways to initialize
 shared state.
 
-It is common to need to provide a custom initialize to your feature's 
+It is common to need to provide a custom initializer to your feature's 
 ``Reducer/State`` type, especially when modularizing. When using
 [`@Shared`](<doc:Shared>) in your `State` that can become complicated.
-Depending on your exact situation you can do what of the following:
+Depending on your exact situation you can do one of the following:
 
 * You are using non-persisted shared state (i.e. no argument is passed to `@Shared`), and the 
 "source of truth" of the state lives with the parent feature. Then the initializer should take a 
