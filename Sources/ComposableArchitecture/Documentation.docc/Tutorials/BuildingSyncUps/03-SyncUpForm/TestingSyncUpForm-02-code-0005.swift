@@ -39,11 +39,11 @@ struct SyncUpForm {
       case let .onDeleteAttendees(indexSet):
         guard let firstDeletedIndex = indexSet.first
         else { return .none }
-        let firstDeletedAttendee = state.attendees[firstDeletedIndex]
+        let firstDeletedAttendee = state.syncUp.attendees[firstDeletedIndex]
 
-        state.attendees.remove(atOffsets: indexSet)
-        if state.attendees.isEmpty {
-          state.attendees.insert(
+        state.syncUp.attendees.remove(atOffsets: indexSet)
+        if state.syncUp.attendees.isEmpty {
+          state.syncUp.attendees.append(
             Attendee(id: Attendee.ID(uuid()))
           )
         }

@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftUI
 
 @Reducer
 struct SyncUpForm {
@@ -21,9 +22,9 @@ struct SyncUpForm {
         return .none
 
       case let .onDeleteAttendees(indexSet):
-        state.attendees.remove(atOffsets: indexSet)
-        if state.attendees.isEmpty {
-          state.attendees.insert(
+        state.syncUp.attendees.remove(atOffsets: indexSet)
+        if state.syncUp.attendees.isEmpty {
+          state.syncUp.attendees.append(
             Attendee(id: Attendee.ID())
           )
         }
