@@ -190,7 +190,9 @@ extension ReducerMacro: MemberMacro {
     providingMembersOf declaration: D,
     in context: C
   ) throws -> [DeclSyntax] {
-    let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
+    let access = declaration.modifiers.first {
+      [.keyword(.public), .keyword(.package)].contains($0.name.tokenKind)
+    }
     let typeNames = declaration.memberBlock.members.compactMap {
       $0.decl.as(StructDeclSyntax.self)?.name.text
         ?? $0.decl.as(TypeAliasDeclSyntax.self)?.name.text
