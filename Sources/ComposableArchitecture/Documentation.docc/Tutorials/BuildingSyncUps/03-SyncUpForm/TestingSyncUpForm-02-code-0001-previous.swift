@@ -6,12 +6,12 @@ import XCTest
 
 class SyncUpFormTests: XCTestCase {
   @MainActor
-  func testRemoveFocusedAttendee() {
+  func testRemoveFocusedAttendee() async {
     // ...
   }
 
   @MainActor
-  func testRemoveAttendee() {
+  func testRemoveAttendee() async {
     // ...
   }
 }

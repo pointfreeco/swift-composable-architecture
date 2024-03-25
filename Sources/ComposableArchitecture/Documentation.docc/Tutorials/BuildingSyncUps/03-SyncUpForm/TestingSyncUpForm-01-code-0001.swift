@@ -5,7 +5,7 @@ import XCTest
 
 class SyncUpFormTests: XCTestCase {
   @MainActor
-  func testRemoveAttendee() {
+  func testRemoveAttendee() async {
 
   }
 }

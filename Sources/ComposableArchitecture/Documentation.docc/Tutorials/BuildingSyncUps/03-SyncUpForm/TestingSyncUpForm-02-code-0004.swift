@@ -4,7 +4,7 @@ import SwiftUI
 @Reducer
 struct SyncUpForm {
   @ObservableState
-  struct State {
+  struct State: Equatable {
     var focus: Field? = .title
     var syncUp: SyncUp
 

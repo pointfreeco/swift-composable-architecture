@@ -14,7 +14,7 @@ class SyncUpsListTests: XCTestCase {
 
     await store.send(.addButtonTapped) {
       $0.addSyncUp = SyncUpForm.State(
-        syncUp: SyncUp(id: SyncUp.ID(UUID(0)))
+        syncUp: SyncUp(id: SyncUp.ID(0))
       )
     }
   }

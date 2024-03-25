@@ -16,7 +16,7 @@ class SyncUpsListTests: XCTestCase {
     await store.send(.addButtonTapped)
 
     let editedSyncUp = SyncUp(
-      id: SyncUp.ID(UUID(0)),
+      id: SyncUp.ID(0),
       attendees: [
         Attendee(id: Attendee.ID(), name: "Blob"),
         Attendee(id: Attendee.ID(), name: "Blob Jr."),

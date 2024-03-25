@@ -5,7 +5,7 @@ import XCTest
 
 class SyncUpFormTests: XCTestCase {
   @MainActor
-  func testRemoveFocusedAttendee() {
+  func testRemoveFocusedAttendee() async {
     let attendee1 = Attendee(id: Attendee.ID())
     let attendee2 = Attendee(id: Attendee.ID())
     let store = TestStore(
@@ -21,13 +21,13 @@ class SyncUpFormTests: XCTestCase {
     }
 
     await store.send(.onDeleteAttendees([0])) {
-      state.focus = .attendee(attendee2.id)
-      state.attendees = [attendee2]
+      $0.focus = .attendee(attendee2.id)
+      $0.syncUp.attendees = [attendee2]
     }
   }
 
   @MainActor
-  func testRemoveAttendee() {
+  func testRemoveAttendee() async {
     // ...
   }
 }

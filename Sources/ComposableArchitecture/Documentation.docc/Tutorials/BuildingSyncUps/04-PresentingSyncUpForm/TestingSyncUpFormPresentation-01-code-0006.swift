@@ -24,7 +24,7 @@ struct SyncUpsList {
       switch action {
       case .addButtonTapped:
         state.addSyncUp = SyncUpForm.State(
-          syncUp: SyncUp(id: SyncUp.ID(uuid()))
+          syncUp: SyncUp(id: uuid())
         )
         return .none
 
