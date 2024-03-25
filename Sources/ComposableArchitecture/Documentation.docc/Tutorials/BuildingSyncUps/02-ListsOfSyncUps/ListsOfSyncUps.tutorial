@@ -192,9 +192,9 @@
         `store` and send actions to it.
         
         > Note: In order to get the colors for each `Theme` value you will need to copy the 
-        > [Assets.xcassets][assets] directory into your project.
+        > [Assets.xcassets][assets] from the completed demo project into your project.
         
-        [assets]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SyncUps/SyncUps
+        [assets]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SyncUps/SyncUps/Assets.xcassets
         
         @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0008.swift)
       }
