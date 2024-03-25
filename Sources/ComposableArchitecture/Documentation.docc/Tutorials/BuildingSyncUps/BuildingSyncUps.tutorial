@@ -46,7 +46,7 @@
   
   @Chapter(name: "Persisting sync-ups to disk") {
     Applications typically need to persist data across application launches. The Composable 
-    Architecture comes with all the tools you need to persist your application's data.
+    Architecture comes with tools to help you persist your application's data.
     
     @TutorialReference(tutorial: "doc:PersistingSyncUps")
     @Image(source: "chapter5.png")

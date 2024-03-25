@@ -65,12 +65,20 @@
       }
       
       @Step {
-        We can now properly implement the `addButtonTapped` action, which previously we left blank.
-        All we have to do is populate the `addSyncUp` state, and let the view take care of
+        We can now properly implement the `addSyncUpButtonTapped` action, which previously we left 
+        blank. All we have to do is populate the `addSyncUp` state, and let the view take care of
         observing that the state is non-`nil` and presenting the form.
         
         @Code(name: "SyncUpsList.swift", file: PresentingSyncUpForm-01-code-0005.swift)
       }
+      
+<!--      Let's also be proactive in controlling our dependencies from the beginning. We see that we -->
+<!--      are generating a new UUID from scratch when creating the `SyncUp`, so let's go ahead and use-->
+<!--      the `\.uuid` dependency.-->
+<!--      -->
+<!--      @Step {-->
+<!--        Add the `\.uuid` dependency to the feature and use it instead of generating -->
+<!--      }-->
       
       That is all it takes to integrate two features together using the tools from the 
       Composable Architecture. Notice that we have not yet mentioned _how_ we want the 

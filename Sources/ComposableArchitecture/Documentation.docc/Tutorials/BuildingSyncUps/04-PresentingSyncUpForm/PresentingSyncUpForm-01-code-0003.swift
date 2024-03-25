@@ -17,7 +17,7 @@ struct SyncUpsList {
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      case .addButtonTapped:
+      case .addSyncUpButtonTapped:
         return .none
 
       case .addSyncUp:

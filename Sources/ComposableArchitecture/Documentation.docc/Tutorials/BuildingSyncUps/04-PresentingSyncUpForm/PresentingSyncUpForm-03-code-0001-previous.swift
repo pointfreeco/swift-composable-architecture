@@ -20,8 +20,8 @@ struct SyncUpsListView: View {
         .listRowBackground(syncUp.theme.mainColor)
       }
     }
-    .sheet(item: $store.scope(state: \.addSyncUp, action: \.addSyncUp)) { store in
-      SyncUpFormView(store: store)
+    .sheet(item: $store.scope(state: \.addSyncUp, action: \.addSyncUp)) { addSyncUpStore in
+      SyncUpFormView(store: addSyncUpStore)
     }
     .toolbar {
       Button {
@@ -69,23 +69,25 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 }
 
 #Preview {
-  SyncUpsListView(
-    store: Store(
-      initialState: SyncUpsList.State(
-        syncUps: [
-          SyncUp(
-            id: SyncUp.ID(),
-            attendees: [
-              Attendee(id: Attendee.ID(), name: "Blob"),
-              Attendee(id: Attendee.ID(), name: "Blob Jr."),
-              Attendee(id: Attendee.ID(), name: "Blob Sr."),
-            ],
-            title: "Point-Free Morning Sync"
-          )
-        ]
-      )
-    ) {
-      SyncUpsList()
-    }
-  )
+  NavigationStack {
+    SyncUpsListView(
+      store: Store(
+        initialState: SyncUpsList.State(
+          syncUps: [
+            SyncUp(
+              id: SyncUp.ID(),
+              attendees: [
+                Attendee(id: Attendee.ID(), name: "Blob"),
+                Attendee(id: Attendee.ID(), name: "Blob Jr."),
+                Attendee(id: Attendee.ID(), name: "Blob Sr."),
+              ],
+              title: "Point-Free Morning Sync"
+            )
+          ]
+        )
+      ) {
+        SyncUpsList()
+      }
+    )
+  }
 }

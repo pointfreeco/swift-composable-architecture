@@ -12,7 +12,7 @@ class SyncUpsListTests: XCTestCase {
       $0.uuid = .incrementing
     }
 
-    await store.send(.addButtonTapped) {
+    await store.send(.addSyncUpButtonTapped) {
       $0.addSyncUp = SyncUpForm.State(syncUp: SyncUp(id: SyncUp.ID()))
     }
   }

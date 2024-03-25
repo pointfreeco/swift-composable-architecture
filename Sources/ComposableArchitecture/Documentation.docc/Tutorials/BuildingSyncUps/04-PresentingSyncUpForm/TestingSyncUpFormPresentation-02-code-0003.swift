@@ -13,7 +13,7 @@ class SyncUpsListTests: XCTestCase {
     }
     store.exhaustivity = .off
 
-    await store.send(.addButtonTapped)
+    await store.send(.addSyncUpButtonTapped)
   }
   
   @MainActor

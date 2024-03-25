@@ -28,6 +28,9 @@ struct SyncUpDetail {
         state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
         return .none
 
+      case .editSyncUp:
+        return .none
+
       case .startMeetingButtonTapped:
         return .none
       }

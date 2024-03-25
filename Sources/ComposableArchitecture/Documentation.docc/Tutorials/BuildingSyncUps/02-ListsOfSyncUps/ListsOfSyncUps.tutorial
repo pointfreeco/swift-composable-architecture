@@ -145,7 +145,7 @@
         
         > Important: As we saw in <doc:MeetComposableArchitecture>, we prefer to name our actions
         > after exactly what happens in the view rather than what logic we want to execute. So we
-        > prefer `addButtonTapped` over something like `showAddSheet`.
+        > prefer `addSyncUpButtonTapped` over something like `showAddSheet`.
         
         @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0004.swift)
       }
@@ -153,7 +153,7 @@
       @Step {
         Implement the ``ComposableArchitecture/Reducer/body-8lumc`` of the reducer by using the 
         ``ComposableArchitecture/Reduce`` type to implement each action. We will leave the 
-        `addButtonTapped` and `syncUpTapped` actions unimplemented for now since it requires more
+        `addSyncUpButtonTapped` and `syncUpTapped` actions unimplemented for now since it requires more
         work to present a sheet and drill down to a sync-up.
         
         > Note: Due to a bug in the Swift compiler it can often happen that you lose type inference

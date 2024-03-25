@@ -20,8 +20,8 @@ class SyncUpDetailTests: XCTestCase {
 
     var editedSyncUp = syncUp
     editedSyncUp.title = "Point-Free Evening Sync"
-    await store.send(.destination(.presented(.edit(.binding(.set(\.syncUp, editedSyncUp)))))) {
-      $0.$destination[case: \.edit]?.syncUp = editedSyncUp
+    await store.send(\.destination.edit.binding.syncUp, editedSyncUp) {
+      $0.$destination?.edit?.syncUp = editedSyncUp
     }
   }
 }

@@ -12,13 +12,13 @@ class SyncUpsListTests: XCTestCase {
       $0.uuid = .incrementing
     }
 
-    await store.send(.addButtonTapped) {
+    await store.send(.addSyncUpButtonTapped) {
       $0.addSyncUp = SyncUpForm.State(
         syncUp: SyncUp(id: SyncUp.ID(0))
       )
     }
 
-    await store.send(.addSyncUp(.presented(.set(<#property#>, <#value#>))))
+    await store.send(\.addSyncUp.binding…)
   }
 
   @MainActor

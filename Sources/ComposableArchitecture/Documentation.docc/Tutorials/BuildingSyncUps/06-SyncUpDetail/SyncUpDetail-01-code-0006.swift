@@ -50,9 +50,6 @@ struct SyncUpDetailView: View {
               }
             }
           }
-          .onDelete { indices in
-            store.send(.deleteMeetings(atOffsets: indices))
-          }
         } header: {
           Text("Past meetings")
         }

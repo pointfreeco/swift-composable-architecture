@@ -10,7 +10,7 @@ class SyncUpsListTests: XCTestCase {
       SyncUpsList()
     }
 
-    await store.send(.addButtonTapped) {
+    await store.send(.addSyncUpButtonTapped) {
       $0.addSyncUp = SyncUpForm.State(syncUp: SyncUp(id: SyncUp.ID()))
     }
     // ❌ A state change does not match expectation: …

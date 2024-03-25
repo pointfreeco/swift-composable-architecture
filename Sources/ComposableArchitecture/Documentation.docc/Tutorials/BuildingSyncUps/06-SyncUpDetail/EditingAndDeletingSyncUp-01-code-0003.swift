@@ -25,6 +25,9 @@ struct SyncUpDetail {
       case .editButtonTapped:
         return .none
 
+      case .editSyncUp:
+        return .none
+
       case .startMeetingButtonTapped:
         return .none
       }

@@ -1,4 +1,4 @@
-@Tutorial(time: 10) {
+@Tutorial(time: 30) {
   @Intro(title: "Editing and deleting a sync-up") {
     Let's implement two major pieces of functionality in the detail screen: editing the sync-up
     and deleting the sync-up. This will force us to face a number of common problems in app 
@@ -428,7 +428,7 @@
       }
       
       @Step {
-        Do the same for the dismiss action.
+        Return `.none` for all other `.destination` actions.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0007.swift)
       }
@@ -447,8 +447,8 @@
       }
       
       @Step {
-        Update where we pattern match on `editSyncUp` to instead pattern match on the `.edit` case
-        of the `destination` state.
+        Update the `.doneEditingButtonTapped` action by grabbing the edited sync up from the 
+        `.edit` case of the `destination` enum.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0010.swift)
       }

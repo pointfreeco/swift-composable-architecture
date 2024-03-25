@@ -12,7 +12,7 @@ class SyncUpsListTests: XCTestCase {
       $0.uuid = .incrementing
     }
 
-    await store.send(.addButtonTapped) {
+    await store.send(.addSyncUpButtonTapped) {
       $0.addSyncUp = SyncUpForm.State(
         syncUp: SyncUp(id: SyncUp.ID(0))
       )
@@ -26,7 +26,7 @@ class SyncUpsListTests: XCTestCase {
       ],
       title: "Point-Free morning sync"
     )
-    await store.send(.addSyncUp(.presented(.set(\.syncUp, editedSyncUp)))) {
+    await store.send(\.addSyncUp.binding.syncUp, editedSyncUp) {
       $0.addSyncUp?.syncUp = editedSyncUp
     }
   }

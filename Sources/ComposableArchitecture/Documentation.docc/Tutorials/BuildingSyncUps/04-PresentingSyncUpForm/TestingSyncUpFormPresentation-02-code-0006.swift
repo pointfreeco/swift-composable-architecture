@@ -13,7 +13,7 @@ class SyncUpsListTests: XCTestCase {
     }
     store.exhaustivity = .off(showSkippedAssertions: true)
 
-    await store.send(.addButtonTapped)
+    await store.send(.addSyncUpButtonTapped)
 
     let editedSyncUp = SyncUp(
       id: SyncUp.ID(0),
