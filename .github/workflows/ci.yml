@@ -33,7 +33,7 @@ jobs:
 
   library-evolution:
     name: Library (evolution)
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 15.2
@@ -58,7 +58,7 @@ jobs:
 
   benchmarks:
     name: Benchmarks
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 15.2
@@ -68,7 +68,7 @@ jobs:
 
   examples:
     name: Examples
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 15.2
