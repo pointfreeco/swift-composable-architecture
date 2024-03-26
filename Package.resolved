@@ -147,10 +147,10 @@
     {
       "identity" : "swiftui-navigation",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swiftui-navigation",
+      "location" : "https://github.com/randomeizer/swiftui-navigation",
       "state" : {
-        "revision" : "78f9d72cf667adb47e2040aa373185c88c63f0dc",
-        "version" : "1.2.0"
+        "branch" : "assert-with-binding",
+        "revision" : "44e94f0f1f73c7a86fbeaa935caa848840bb0079"
       }
     },
     {
