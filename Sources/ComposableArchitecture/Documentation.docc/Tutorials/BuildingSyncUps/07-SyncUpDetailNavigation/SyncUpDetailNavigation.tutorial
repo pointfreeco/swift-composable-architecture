@@ -1,0 +1,290 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Navigating to a sync-up detail") {
+    We will wrap the application built so far in a `NavigationStack` so that we can navigate to
+    the detail screen. To do this we will create a new root-level feature that will be responsible
+    for implementing the logic of the stack and integrating all of the features together.
+  }
+  
+  @Section(title: "Creating the app feature") {
+    @ContentAndMedia {
+      Let's create a new feature to hold the `NavigationStack`.
+    }
+    
+    @Steps {
+      @Step {
+        Create a new file called App.swift and paste in the basic scaffolding of a new 
+        Composable Architecture feature.
+        
+        > Note: You may already have an App.swift in your project that holds the entry point of
+        the application (i.e. `@main`). If so, you can name this file AppFeature.swift, or you can
+        rename the entry point to Main.swift.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0001.swift)
+      }
+      
+      This feature's primary responsibility will to integrate all the features that can be 
+      presented in the navigation stack. Currently that is only the `SyncUpsList` feature, which
+      is always at the root of the stack, and the `SyncUpDetail` feature. Soon there will be more
+      features that can be presented in the stack, such as the record meeting feature and the past
+      meeting feature.
+      
+      The sync-ups list feature is a little different from all of those other features, though.
+      It is at the root of the stack, and it can not be dismissed. For that reason it is composed
+      into the `AppFeature` by simply holding onto its state and actions, and using the 
+      ``ComposableArchitecture/Scope`` reducer to compose it into `App`'s `body`.
+      
+      @Step {
+        Integrate the `SyncUpsList` reducer into the `AppReducer` by holding onto its state and
+        actions, and using the ``ComposableArchitecture/Scope`` reducer to compose the two
+        reducer together.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0002.swift)
+      }
+      
+      Next we want to integrate the `SyncUpDetail` reducer into the `AppReducer`. The library comes
+      with specific tools to do this for navigation stacks. It starts by using 
+      ``ComposableArchitecture/StackState``, which is a collection type provided by the library
+      specifically tuned for dealing with navigation stacks.
+      
+      @Step {
+        Integrate the state of `SyncUpDetail` in `App` by holding onto 
+        ``ComposableArchitecture/StackState``. We like to call this variable `path` since it mimics
+        the `NavigationStack(path:)` API in SwiftUI.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0003.swift)
+      }
+      
+      However, this is not quite right. We don't want to _only_ show the `SyncUpDetail` in the 
+      navigation stack. Soon we will have a `RecordMeeting` feature, and a `Meeting` feature, 
+      and in the future there may be more.
+      
+      For this reason it is best to do some upfront work to model a feature that can handle any
+      number of features on the stack. This works must like the `Destination` reducer we created
+      in <doc:EditingAndDeletingSyncUp>.
+      
+      @Step {
+        Create a new `Path` reducer inside `App`. We have currently done this by extending `App`,
+        but you can also add it directly inside `App` too.
+        
+        > Note: We have temporarily collapsed the code in `App`.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0004.swift, previousFile: SyncUpDetailNavigation-01-code-0004-previous.swift)        
+      }
+      
+      @Step {
+        Add an _enum_ for the `State` of the feature with a case for the `SyncUpDetail` state. In
+        the future more cases will be added to this enum for each kind of feature that can be 
+        pushed onto the stack.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0005.swift)        
+      }
+      
+      @Step {
+        Add an enum for the `Action` with a case for the `SyncUpDetail` action.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0006.swift)        
+      }
+      
+      @Step {
+        Compose `SyncUpDetail` into the body of `Path` using the ``ComposableArchitecture/Scope``
+        reducer.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0007.swift)        
+      }
+      
+      That's all it takes to create a single reducer that encapsulates all of the logic and behavior
+      of each screen in the navigation stack. In the future as we add more screens to the stack
+      we will just add more cases and more `Scope`s to this reducer.
+      
+      Next we will integrate the `Path` reducer into the `App` reducer.
+      
+      @Step {
+        Update the `path` variable to hold onto ``ComposableArchitecture/StackState`` of 
+        `Path.State`.
+
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0008.swift, previousFile: SyncUpDetailNavigation-01-code-0008-previous.swift)        
+      }
+      
+      @Step {
+        Integrate the `Path`'s actions into `App` by adding a case to its `Action` enum, and using
+        the ``ComposableArchitecture/StackAction``.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0009.swift)
+        
+        > Note: Right now we don't need to perform any logic in the `.path` action so we can return
+        `.none` in it.
+      }
+      
+      ``ComposableArchitecture/StackAction`` is a type that represents the most 
+      fundamental things that can happen in a stack: an element in the stack can send an action
+      (``ComposableArchitecture/StackAction/element(id:action:)``), or it can push an element
+      onto the stack (``ComposableArchitecture/StackAction/push(id:state:)``), or it can
+      pop an element from the stack (``ComposableArchitecture/StackAction/popFrom(id:)``).
+      
+      @Step {
+        Integrate the `Path` reducer into the `body` of the `App` reducer by using the 
+        ``ComposableArchitecture/Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` operator.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0010.swift)
+      }
+      
+      The ``ComposableArchitecture/Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` 
+      operator takes care of processing an incoming ``ComposableArchitecture/StackAction``, routing
+      it to the current reducer in the stack, and automatically cancelling effects when a feature
+      is popped from the stack.
+      
+      That is all it takes to create the `App` reducer and integrate the `SyncUpDetail` into the
+      stack. Next We will create the view layer.
+    }
+  }
+  
+  @Section(title: "Creating the app view") {
+    @ContentAndMedia {
+      Let's create the view that holds onto the `NavigationStack`.
+    }
+    
+    @Steps {
+      @Step {
+        Create a new `AppView` struct to conform to the `View` protocol in SwiftUI.
+
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0001.swift, previousFile: SyncUpDetailNavigation-02-code-0001-previous.swift)        
+      }
+      
+      @Step {
+        Add a `store` property to the view. We are going to be proactive and make the property
+        `@Bindable` because we will need to deriving a binding to it for the `NavigationStack`.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0002.swift)
+      }
+      
+      @Step {
+        Implement the `body` of the view by constructing a `NavigationStack`, but we will be using
+        special initializer that comes with the library:
+        ``SwiftUI/NavigationStack/init(path:root:destination:)``. This initializer takes a binding
+        to a store focused on the stack domain, as well as two trailing closures. The first for
+        the root view that is always present, and the second for the destinations that can be 
+        pushed onto the stack.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0003.swift)
+      }
+      
+      @Step {
+        For the root view we can construct the `SyncUpsListView` by using 
+        ``ComposableArchitecture/Store/scope(state:action:)-90255`` on the `store` to isolate
+        the `SyncUpsList` domain.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0004.swift)
+      }
+      
+      @Step {
+        The `destination` trailing closure is handed a `store` focused on the path's state, which
+        is an enum. Because we are using the ``Reducer()`` macro on a `Path` enum we get access
+        to a special super power of enum reducers. We can switch on `store.case` to destructure
+        a child store for each case of the enum.
+        
+        See <doc:Reducers#Destination-and-path-reducers> for more information on this tool.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0005.swift)
+      }
+      
+      @Step {
+        For each case in the enum we will destructure the store and construct the corresponding
+        destination view by handing the store to the view.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0006.swift)
+      }
+      
+      That's all it takes to build the root `AppView` that holds onto a `NavigationStack`. But
+      currently we do not have any buttons to actually navigate to the detail screen from the list
+      screen.
+    }
+  }
+  
+  @Section(title: "Navigating to the detail") {
+    @ContentAndMedia {
+      To navigate to the detail screen from the list screen we need to append some 
+      `SyncUpDetail.State` to the `path` of the `App` feature. The easiest way to do this is with
+      a `NavigationLink`, which will automatically append some state to the path when tapped.
+    }
+    
+    @Steps {
+      @Step {
+        Go to the SyncUpsList.swift file where the `SyncUpListView` is defined. In that view we 
+        currently have a `Button` in the list. Let's now replace it with a `NavigationLink`, but
+        using the special initializer that comes with this library: 
+        ``SwiftUI/NavigationLink/init(state:label:fileID:line:)``.
+        
+        @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0001.swift, previousFile: SyncUpDetailNavigation-03-code-0001-previous.swift))
+      }
+      
+      This special initializer takes a piece of state that matches the type that is held in the 
+      root feature's ``ComposableArchitecture/StackState``. In our case, that is `App.Path.State`,
+      which is an enum of all the possible destinations that can be navigated to.
+      
+      @Step {
+        Provide `Path.State.detail` to the `NavigationLink` to indicate that we want to 
+        navigate to the detail feature.
+        
+        @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0002.swift)
+      }
+      
+      However, to construct `SyncUpDetail.State` we need to provide a `Shared<SyncUp>` value.
+      This needs to be derived from the shared sync-ups held in `SyncUpsList.State` so that the
+      detail feature can be allowed to make edits to the state have those edits be automatically
+      made to `SyncUpsList.State`.
+      
+      One can use the projected value of [`@Shared`](<doc:Shared>) along with the 
+      ``ComposableArchitecture/Shared/elements`` property defined on shared collections in order to
+      derive a `Shared` value for each element in the collection.
+      
+      @Step {
+        Use the ``ComposableArchitecture/Shared/elements`` property in the `ForEach` to derive a
+        `Shared<SyncUp>` for each element in the `Shared<IdentifiedArrayOf<SyncUp>>`.
+        @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0003.swift)
+      }
+      
+      @Step {
+        Pass the projected value `$syncUp` to `SyncUpDetail.State`.
+        
+        @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0004.swift)
+      }
+      
+      That is all it takes to perform a navigation from the list feature to the detail feature.
+      When the navigation link is tapped, SwiftUI will search up the view heirarch to find the
+      `NavigationStack` powering the view, find its `path` binding, and append the new `.detail`
+      state to the path, thus triggering a drill-down animation.
+      
+      This is the easiest way to navigate to one screen to another, but it does have some drawbacks.
+      Because we need to reference all of `App.State.Path` to construct a navigation link, it can
+      make modularization difficult. Every navigation link will need access to every feature's 
+      state.
+      
+      An alternative is to use a plain `Button` instead of `NavigationLink`, and send an action
+      from that button. Then the parent `App` feature can intercept that action and manually append
+      state to its `path`. This fully decouples the features from one another, and only the `App`
+      feature needs to have knowledge about all of the child features.
+      
+      We will not do that refactor now, but it would be instructive for the reader to try it 
+      themselves.
+      
+      Before moving on let's make sure that the deletion and editing logic that we implemented in
+      the detail screens properly works now that we can navigate to the detail screen from the 
+      sync-ups list screen.
+      
+      @Step {
+        Navigate to the detail screen of a sync-up and delete it to confirm that it works as 
+        expected.
+        
+        @Video(source: SyncUpDetailNavigation-03-video-0005.mov)
+      }
+      
+      @Step {
+        Navigate to the detail screen of a sync-up, edit it, and then navigate back to the list
+        screen to verify that changes were made. Also relaunch the app to confirm that the data
+        was persisted to disk.
+        
+        @Video(source: SyncUpDetailNavigation-03-video-0006.mov)
+      }
+    }
+  }
+}

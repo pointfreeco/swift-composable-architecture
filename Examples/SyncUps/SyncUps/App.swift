@@ -8,18 +8,15 @@ struct SyncUpsApp: App {
       ._printChanges()
   } withDependencies: {
     if ProcessInfo.processInfo.environment["UITesting"] == "true" {
-      $0.dataManager = .mock()
+      $0.defaultFileStorage = EphemeralFileStorage()
     }
   }
 
   var body: some Scene {
     WindowGroup {
-      // NB: This conditional is here only to facilitate UI testing so that we can mock out certain
-      //     dependencies for the duration of the test (e.g. the data manager). We do not really
-      //     recommend performing UI tests in general, but we do want to demonstrate how it can be
-      //     done.
-      if _XCTIsTesting {
-        // NB: Don't run application when testing so that it doesn't interfere with tests.
+      if _XCTIsTesting || ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+        // NB: Don't run application when testing so that it doesn't interfere with tests, or in
+        //     previews so that it doesn't interfere with previews.
         EmptyView()
       } else {
         AppView(store: store)

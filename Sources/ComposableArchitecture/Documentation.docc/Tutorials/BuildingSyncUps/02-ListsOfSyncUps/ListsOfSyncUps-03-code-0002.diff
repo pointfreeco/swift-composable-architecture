@@ -1,0 +1,39 @@
+received action:
+  AppFeature.Action.syncUpsList(
+    .onDelete(
+      IndexSet(
+        ranges: [
+          [0]: 0..<1
+        ]
+      )
+    )
+  )
+  AppFeature.State(
+    _path: [:],
+    _syncUpsList: SyncUpsList.State(
+      _destination: nil,
+      _syncUps: #1 IdentifiedArray(
+-       SyncUp(
+-         id: Tagged(rawValue: UUID(BCD45D06-2291-4A22-906A-C1EF07500AB7)),
+-         attendees: [
+-           [0]: Attendee(
+-             id: Tagged(rawValue: UUID(90414E54-A420-46BC-97B7-0F5C2AE9FF43)),
+-             name: "Blob"
+-           ),
+-           [1]: Attendee(
+-             id: Tagged(rawValue: UUID(6DB1380D-DEFF-4C16-A432-09F263EA79FF)),
+-             name: "Blob Jr"
+-           ),
+-           [2]: Attendee(
+-             id: Tagged(rawValue: UUID(01A53781-5EA2-43EE-A44F-79E73B452ADF)),
+-             name: "Blob Sr"
+-           )
+-         ],
+-         duration: 5 minutes,
+-         meetings: [],
+-         theme: .bubblegum,
+-         title: "Point-Free Morning Sync"
+-       )
+      )
+    )
+  )

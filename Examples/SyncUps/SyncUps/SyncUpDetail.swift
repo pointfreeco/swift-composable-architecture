@@ -19,7 +19,7 @@ struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    var syncUp: SyncUp
+    @Shared var syncUp: SyncUp
   }
 
   enum Action: Sendable {
@@ -34,8 +34,6 @@ struct SyncUpDetail {
 
     @CasePathable
     enum Delegate {
-      case deleteSyncUp
-      case syncUpUpdated(SyncUp)
       case startMeeting
     }
   }
@@ -65,16 +63,15 @@ struct SyncUpDetail {
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
-          return .run { send in
-            await send(.delegate(.deleteSyncUp), animation: .default)
-            await self.dismiss()
-          }
+          @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = []
+          syncUps.remove(id: state.syncUp.id)
+          return .run { _ in await self.dismiss() }
+
         case .continueWithoutRecording:
           return .send(.delegate(.startMeeting))
+
         case .openSettings:
-          return .run { _ in
-            await self.openSettings()
-          }
+          return .run { _ in await self.openSettings() }
         }
 
       case .destination:
@@ -110,11 +107,6 @@ struct SyncUpDetail {
       }
     }
     .ifLet(\.$destination, action: \.destination)
-    .onChange(of: \.syncUp) { oldValue, newValue in
-      Reduce { state, action in
-        .send(.delegate(.syncUpUpdated(newValue)))
-      }
-    }
   }
 }
 
@@ -271,7 +263,7 @@ extension AlertState where Action == SyncUpDetail.Destination.Alert {
 #Preview {
   NavigationStack {
     SyncUpDetailView(
-      store: Store(initialState: SyncUpDetail.State(syncUp: .mock)) {
+      store: Store(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
         SyncUpDetail()
       }
     )

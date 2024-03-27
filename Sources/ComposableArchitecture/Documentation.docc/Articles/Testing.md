@@ -81,8 +81,8 @@ class CounterTests: XCTestCase {
 > Tip: Tests that use ``TestStore`` should be annotated as `@MainActor` and marked as `async` since
 > most assertion helpers on ``TestStore`` can suspend.
 
-Test stores have a ``TestStore/send(_:assert:file:line:)-2co21`` method, but it behaves differently
-from stores and view stores. You provide an action to send into the system, but then you must also
+Test stores have a ``TestStore/send(_:assert:file:line:)-2co21`` method, but it behaves differently from
+stores and view stores. You provide an action to send into the system, but then you must also
 provide a trailing closure to describe how the state of the feature changed after sending the
 action:
 
@@ -571,7 +571,7 @@ It can be important to understand how non-exhaustive testing works under the hoo
 limit the ways in which you can assert on state changes.
 
 When you construct an _exhaustive_ test store, which is the default, the `$0` used inside the
-trailing closure of ``TestStore/send(_:assert:file:line:)-2co21`` represents the state _before_ the 
+trailing closure of ``TestStore/send(_:assert:file:line:)-2co21`` represents the state _before_ the
 action is sent:
 
 ```swift

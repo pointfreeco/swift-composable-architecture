@@ -1,0 +1,25 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Testing navigation") {
+    We have now implemented a navigation stack at the root of our application, and integrated
+    3 features into the stack: the `SyncUpsList` feature, the `SyncUpDetail` feature, and the 
+    `MeetingView`. Some of these features have quite complex logic binding them together, such as 
+    when one deletes a sync-up from the detail screen it should pop the screen off the stack.
+    
+    Let's see what it takes to write tests involving navigation stacks.
+    
+  }
+  
+  @Section(title: "<#text#>") {
+    @ContentAndMedia {
+      <#text#>
+    }
+    
+    @Steps {
+      @Step {
+        <#text#>
+        
+        @Code(name: "<#display name#>", file: <#filename.swift#>)
+      }
+    }
+  }
+}

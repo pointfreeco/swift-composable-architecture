@@ -13,7 +13,6 @@
 		DC808D7729E9C3AD0072B4A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC808D7629E9C3AD0072B4A9 /* Assets.xcassets */; };
 		DC808D8429E9C3AD0072B4A9 /* SyncUpFormTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D8329E9C3AD0072B4A9 /* SyncUpFormTests.swift */; };
 		DC808D8E29E9C3AD0072B4A9 /* SyncUpsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D8D29E9C3AD0072B4A9 /* SyncUpsUITests.swift */; };
-		DC808DA029E9C4340072B4A9 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D9F29E9C4340072B4A9 /* DataManager.swift */; };
 		DC808DA329E9C4490072B4A9 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC808DA229E9C4490072B4A9 /* ComposableArchitecture */; };
 		DC808DA529E9C4C70072B4A9 /* OpenSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808DA429E9C4C70072B4A9 /* OpenSettings.swift */; };
 		DC808DA729E9C4D60072B4A9 /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808DA629E9C4D60072B4A9 /* SpeechRecognizer.swift */; };
@@ -59,7 +58,6 @@
 		DC808D8929E9C3AD0072B4A9 /* SyncUpsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SyncUpsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC808D8D29E9C3AD0072B4A9 /* SyncUpsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncUpsUITests.swift; sourceTree = "<group>"; };
 		DC808D9C29E9C3C10072B4A9 /* swift-composable-architecture */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-composable-architecture"; path = ../..; sourceTree = "<group>"; };
-		DC808D9F29E9C4340072B4A9 /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		DC808DA429E9C4C70072B4A9 /* OpenSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSettings.swift; sourceTree = "<group>"; };
 		DC808DA629E9C4D60072B4A9 /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
 		DC808DA829E9C5090072B4A9 /* SyncUpForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncUpForm.swift; sourceTree = "<group>"; };
@@ -175,7 +173,6 @@
 		DC808D9E29E9C4040072B4A9 /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
-				DC808D9F29E9C4340072B4A9 /* DataManager.swift */,
 				DC808DA429E9C4C70072B4A9 /* OpenSettings.swift */,
 				DC808DA629E9C4D60072B4A9 /* SpeechRecognizer.swift */,
 			);
@@ -334,7 +331,6 @@
 				DC808DA529E9C4C70072B4A9 /* OpenSettings.swift in Sources */,
 				DC808DAD29E9C52A0072B4A9 /* Models.swift in Sources */,
 				DC808DB129E9C54A0072B4A9 /* SyncUpDetail.swift in Sources */,
-				DC808DA029E9C4340072B4A9 /* DataManager.swift in Sources */,
 				DC808D7329E9C3AC0072B4A9 /* App.swift in Sources */,
 				DC808DB329E9C5540072B4A9 /* SyncUpsList.swift in Sources */,
 				DC808DAF29E9C53E0072B4A9 /* RecordMeeting.swift in Sources */,

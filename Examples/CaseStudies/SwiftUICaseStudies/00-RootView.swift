@@ -3,6 +3,7 @@ import SwiftUI
 
 struct RootView: View {
   @State var isNavigationStackCaseStudyPresented = false
+  @State var isSignUpCaseStudyPresented = false
 
   var body: some View {
     NavigationStack {
@@ -33,11 +34,6 @@ struct RootView: View {
               OptionalBasicsView(store: store)
             }
           }
-          NavigationLink("Shared state") {
-            Demo(store: Store(initialState: SharedState.State()) { SharedState() }) { store in
-              SharedStateView(store: store)
-            }
-          }
           NavigationLink("Alerts and Confirmation Dialogs") {
             Demo(
               store: Store(initialState: AlertAndConfirmationDialog.State()) {
@@ -59,6 +55,49 @@ struct RootView: View {
           }
         } header: {
           Text("Getting started")
+        }
+
+        Section {
+          NavigationLink("In memory") {
+            Demo(
+              store: Store(initialState: SharedStateInMemory.State()) { SharedStateInMemory() }
+            ) { store in
+              SharedStateInMemoryView(store: store)
+            }
+          }
+          NavigationLink("User defaults") {
+            Demo(
+              store: Store(initialState: SharedStateUserDefaults.State()) {
+                SharedStateUserDefaults()
+              }
+            ) { store in
+              SharedStateUserDefaultsView(store: store)
+            }
+          }
+          NavigationLink("File storage") {
+            Demo(
+              store: Store(initialState: SharedStateFileStorage.State()) {
+                SharedStateFileStorage()
+              }
+            ) { store in
+              SharedStateFileStorageView(store: store)
+            }
+          }
+          NavigationLink("Sandboxed shared state") {
+            Demo(
+              store: Store(initialState: SharedStateSandboxing.State()) { SharedStateSandboxing() }
+            ) { store in
+              SharedStateSandboxingView(store: store)
+            }
+          }
+          Button("Sign up flow") {
+            isSignUpCaseStudyPresented = true
+          }
+          .sheet(isPresented: $isSignUpCaseStudyPresented) {
+            SignUpFlow()
+          }
+        } header: {
+          Text("Shared state")
         }
 
         Section {

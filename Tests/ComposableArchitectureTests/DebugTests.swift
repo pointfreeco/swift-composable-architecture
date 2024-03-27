@@ -170,5 +170,41 @@
         """
       )
     }
+
+    @MainActor
+    func testDebugReducer_SharedState() async throws {
+      let logs = LockIsolated<String>("")
+      let printer = _ReducerPrinter<State, Bool>(
+        printChange: { action, oldState, newState in
+          logs.withValue {
+            $0.append(diff(oldState, newState).map { "\($0)\n" } ?? "  (No state changes)\n")
+          }
+        }
+      )
+
+      struct State {
+        @Shared var count: Int
+      }
+
+      let store = Store<State, Bool>(initialState: State(count: Shared(0))) {
+        Reduce<State, Bool>(internal: { state, action in
+          state.count += action ? 1 : -1
+          return .none
+        })
+        ._printChanges(printer)
+      }
+      store.send(true)
+      try await Task.sleep(nanoseconds: 300_000_000)
+      XCTAssertNoDifference(
+        logs.value,
+        #"""
+          DebugTests.State(
+        -   _count: #1 0
+        +   _count: #1 1
+          )
+
+        """#
+      )
+    }
   }
 #endif
