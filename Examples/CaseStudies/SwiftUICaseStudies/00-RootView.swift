@@ -40,11 +40,20 @@ struct RootView: View {
           }
           NavigationLink("Alerts and Confirmation Dialogs") {
             Demo(
-              store: Store(initialState: AlertAndConfirmationDialog.State()) {
-                AlertAndConfirmationDialog()
+              store: Store(initialState: AlertsAndConfirmationDialogs.State()) {
+                AlertsAndConfirmationDialogs()
               }
             ) { store in
-              AlertAndConfirmationDialogView(store: store)
+              AlertsAndConfirmationDialogsView(store: store)
+            }
+          }
+          NavigationLink("Alert and Confirmation Dialog State") {
+            Demo(
+              store: Store(initialState: AlertAndConfirmationDialogState.State()) {
+                AlertAndConfirmationDialogState()
+              }
+            ) { store in
+              AlertAndConfirmationDialogStateView(store: store)
             }
           }
           NavigationLink("Focus State") {
