@@ -50,6 +50,7 @@ public struct _ReducerPrinter<State, Action> {
 }
 
 extension _ReducerPrinter {
+  /// the default printer
   public static var customDump: Self {
     Self { receivedAction, oldState, newState in
       var target = ""
@@ -61,9 +62,78 @@ extension _ReducerPrinter {
     }
   }
 
+  /// Prints just the labels of the actions without the changes
   public static var actionLabels: Self {
     Self { receivedAction, _, _ in
       print("received action: \(debugCaseOutput(receivedAction))")
+    }
+  }
+}
+
+extension _ReducerPrinter {
+  /// Prints only the actions that you want to see.
+  ///
+  ///  ## Example Usage
+  ///  ```swift
+  /// // only print if the action is `.childPlayer(.updateProgress)`
+  ///  MyReducer()
+  ///    ._printChanges(
+  ///      .filtered(
+  ///        actions: { action in
+  ///          switch action {
+  ///            case .childPlayer(.updateProgress):
+  ///              return false
+  ///            default: return true
+  ///          }
+  ///        }
+  ///      )
+  ///    )
+  /// ```
+  /// - Parameter includingActions: a closure describing the action to include.
+  /// - Returns: the `_ReducerPrinter`
+  public static func filtered(actions includingActions: @escaping (Action) -> Bool) -> Self {
+    Self { receivedAction, oldState, newState in
+      if includingActions(receivedAction) {
+        // repeated from _ReducerPrinter.customDump
+        // TODO: Remove code duplication
+        var target = ""
+        target.write("received action:\n")
+        CustomDump.customDump(receivedAction, to: &target, indent: 2)
+        target.write("\n")
+        target.write(diff(oldState, newState).map { "\($0)\n" } ?? "  (No state changes)\n")
+        print(target)
+      }
+    }
+  }
+  
+  /// Prints only the changes you want to see
+  ///
+  /// ## Example Usage
+  /// ```swift
+  /// MyReducer()
+  ///   ._printChanges(
+  ///     .filtered(
+  ///       changes: { oldState, newState in
+  ///         // only print when sheetPlayer changes
+  ///         oldState.sheetPlayer != newState.sheetPlayer
+  ///       }
+  ///     )
+  ///   )
+  /// ```
+  /// - Parameter includingChanges: a closure describing the changes to include
+  /// - Returns: the `_ReducerPrinter`
+  public static func filtered(changes includingChanges: @escaping (_ oldState: State, _ newState: State) -> Bool) -> Self {
+    Self { receivedAction, oldState, newState in
+      if includingChanges(oldState, newState) {
+        // repeated from _ReducerPrinter.customDump
+        // TODO: Remove code duplication
+        var target = ""
+        target.write("received action:\n")
+        CustomDump.customDump(receivedAction, to: &target, indent: 2)
+        target.write("\n")
+        target.write(diff(oldState, newState).map { "\($0)\n" } ?? "  (No state changes)\n")
+        print(target)
+      }
     }
   }
 }
