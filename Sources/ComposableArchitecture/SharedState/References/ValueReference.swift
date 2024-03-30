@@ -33,7 +33,6 @@ extension Shared {
           }
         }
       }(),
-      keyPath: \Value.self
     )
   }
 
@@ -44,7 +43,7 @@ extension Shared {
   ) where Value == Wrapped? {
     self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
   }
-
+  
   public init(
     _ persistenceKey: some PersistenceKey<Value>,
     fileID: StaticString = #fileID,
@@ -53,6 +52,20 @@ extension Shared {
     guard let initialValue = persistenceKey.load(initialValue: nil)
     else {
       throw LoadError()
+    }
+    self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+  }
+  
+  public init<Key: PersistenceKey>(
+    _ persistenceKey: DefaultProvidingKey<Key>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Key.Value == Value {
+    var initialValue: Key.Value
+    if let existingValue = persistenceKey.load(initialValue: nil) {
+      initialValue = existingValue
+    } else {
+      initialValue = persistenceKey.defaultValue
     }
     self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
   }
