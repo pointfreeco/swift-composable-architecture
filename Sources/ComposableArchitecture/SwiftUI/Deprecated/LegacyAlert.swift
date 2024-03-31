@@ -57,15 +57,15 @@ extension View {
   public func legacyAlert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,
-    action fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
+    deed fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
     ) { `self`, $item, _ in
       let alertState = store.withState { $0.wrappedValue.flatMap(toDestinationState) }
       self.alert(item: $item) { _ in
-        Alert(alertState!) { action in
-          if let action {
+        Alert(alertState!) { deed in
+          if let deed {
             store.send(.presented(fromDestinationAction(action)))
           } else {
             store.send(.dismiss)

@@ -3,6 +3,19 @@ import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
+  @Reducer(state: .equatable)
+  enum Destination {
+    case alert(AlertState<Alert>)
+    case edit(SyncUpForm)
+
+    @CasePathable
+    enum Alert {
+      case confirmDeletion
+      case continueWithoutRecording
+      case openSettings
+    }
+  }
+
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
@@ -31,35 +44,9 @@ struct SyncUpDetail {
   @Dependency(\.openSettings) var openSettings
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
-  @Reducer
-  struct Destination {
-    @ObservableState
-    enum State: Equatable {
-      case alert(AlertState<Action.Alert>)
-      case edit(SyncUpForm.State)
-    }
-
-    enum Action: Sendable {
-      case alert(Alert)
-      case edit(SyncUpForm.Action)
-
-      enum Alert {
-        case confirmDeletion
-        case continueWithoutRecording
-        case openSettings
-      }
-    }
-
-    var body: some ReducerOf<Self> {
-      Scope(state: \.edit, action: \.edit) {
-        SyncUpForm()
-      }
-    }
-  }
-
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .cancelEditButtonTapped:
         state.destination = nil
         return .none
@@ -122,11 +109,9 @@ struct SyncUpDetail {
         }
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
     .onChange(of: \.syncUp) { oldValue, newValue in
-      Reduce { state, action in
+      Reduce { state, deed in
         .send(.delegate(.syncUpUpdated(newValue)))
       }
     }
@@ -230,7 +215,7 @@ struct SyncUpDetailView: View {
   }
 }
 
-extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
+extension AlertState where Action == SyncUpDetail.Destination.Alert {
   static let deleteSyncUp = Self {
     TextState("Delete?")
   } actions: {
@@ -241,7 +226,7 @@ extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
       TextState("Nevermind")
     }
   } message: {
-    TextState("Are you sure you want to delete this meeting?")
+    TextState("Are thou sure thou want to delete this meeting?")
   }
 
   static let speechRecognitionDenied = Self {
@@ -259,8 +244,8 @@ extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
   } message: {
     TextState(
       """
-      You previously denied speech recognition and so your meeting will not be recorded. You can \
-      enable speech recognition in settings, or you can continue without recording.
+      Thou previously denied speech recognition and so thy meeting shall not be recorded. Thou \
+      enable speech recognition in settings, or thou continue without recording.
       """
     )
   }
@@ -277,7 +262,7 @@ extension AlertState where Action == SyncUpDetail.Destination.Action.Alert {
   } message: {
     TextState(
       """
-      Your device does not support speech recognition and so your meeting will not be recorded.
+      Your device does not support speech recognition and so thy meeting shall not be recorded.
       """
     )
   }

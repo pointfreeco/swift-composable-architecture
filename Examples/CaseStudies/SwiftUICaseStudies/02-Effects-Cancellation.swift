@@ -2,14 +2,14 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how one can cancel in-flight effects in the Composable Architecture.
+  This screen demonstrates how one cancel in-flight effects in the Composable Architecture.
 
   Use the stepper to count to a number, and then tap the "Number fact" button to fetch \
   a random fact about that number using an API.
 
-  While the API request is in-flight, you can tap "Cancel" to cancel the effect and prevent \
+  While the API request is in-flight, thou tap "Cancel" to cancel the effect and prevent \
   it from feeding data back into the application. Interacting with the stepper while a \
-  request is in-flight will also cancel it.
+  request is in-flight shall also cancel it.
   """
 
 @Reducer
@@ -32,8 +32,8 @@ struct EffectsCancellation {
   private enum CancelID { case factRequest }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .cancelButtonTapped:
         state.isFactRequestInFlight = false
         return .cancel(id: CancelID.factRequest)

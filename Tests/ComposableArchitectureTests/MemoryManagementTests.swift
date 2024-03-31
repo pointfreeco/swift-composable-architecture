@@ -45,8 +45,8 @@ final class MemoryManagementTests: BaseTCATestCase {
 
     enum Action { case tap, response }
     let store = Store(initialState: false) {
-      Reduce<Bool, Action> { state, action in
-        switch action {
+      Reduce<Bool, Action> { state, deed in
+        switch deed {
         case .tap:
           state = false
           return .send(.response)

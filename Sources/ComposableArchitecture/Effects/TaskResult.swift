@@ -4,16 +4,16 @@ import XCTestDynamicOverlay
 /// type in that it uses only one generic for the success case, leaving the failure case as an
 /// untyped `Error`.
 ///
-/// This type is needed because Swift's concurrency tools can only express untyped errors, such as
-/// `async` functions and `AsyncSequence`, and so their output can realistically only be bridged to
-/// `Result<_, Error>`. However, `Result<_, Error>` is never `Equatable` since `Error` is not
-/// `Equatable`, and equatability is very important for testing in the Composable Architecture. By
+/// This type is needed because Swift's concurrency tools only express untyped errors, such as
+/// `async` functions and `AsyncSequence`, and so their output realistically only be bridged to
+/// `Result<_, Error>`. Alas, `Result<_, Error>` is never `Equatable` since `Error` is not
+/// `Equatable`, and equatability is most important for testing in the Composable Architecture. By
 /// defining our own type we get the ability to recover equatability in most situations.
 ///
-/// If someday Swift gets typed `throws`, then we can eliminate this type and rely solely on
+/// If someday Swift gets typed `throws`, then we eliminate this type and rely solely on
 /// `Result`.
 ///
-/// You typically use this type as the payload of an action which receives a response from an
+/// Thou typically use this type as the payload of an deed which receives a response from an
 /// effect:
 ///
 /// ```swift
@@ -23,7 +23,7 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 ///
-/// Then you can model your dependency as using simple `async` and `throws` functionality:
+/// Then thou model thy dependency as using simple `async` and `throws` functionality:
 ///
 /// ```swift
 /// struct NumberFactClient {
@@ -31,7 +31,7 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 ///
-/// And finally you can use ``Effect/run(priority:operation:catch:fileID:line:)`` to construct an
+/// And finally thou use ``Effect/run(priority:operation:catch:fileID:line:)`` to construct an
 /// effect in the reducer that invokes the `numberFact` endpoint and wraps its response in a
 /// ``TaskResult`` by using its catching initializer, ``TaskResult/init(catching:)``:
 ///
@@ -57,18 +57,18 @@ import XCTestDynamicOverlay
 ///
 /// ## Equality
 ///
-/// The biggest downside to using an untyped `Error` in a result type is that the result will not
-/// be equatable even if the success type is. This negatively affects your ability to test features
+/// The biggest downside to using an untyped `Error` in a result type is that the result shall not
+/// be equatable even if the success type is. This negatively affects thy ability to test features
 /// that use ``TaskResult`` in their actions with the ``TestStore``.
 ///
 /// ``TaskResult`` does extra work to try to maintain equatability when possible. If the underlying
-/// type masked by the `Error` is `Equatable`, then it will use that `Equatable` conformance
+/// type masked by the `Error` is `Equatable`, then it shall use that `Equatable` conformance
 /// on two failures. Luckily, most errors thrown by Apple's frameworks are already equatable, and
-/// because errors are typically simple value types, it is usually possible to have the compiler
+/// because errors are typically simple value types, it is usually possible to hast the compiler
 /// synthesize a conformance for you.
 ///
-/// If you are testing the unhappy path of a feature that feeds a ``TaskResult`` back into the
-/// system, be sure to conform the error to equatable, or the test will fail:
+/// If thou are testing the unhappy path of a feature that feeds a ``TaskResult`` back into the
+/// system, be sure to conform the error to equatable, or the test shall fail:
 ///
 /// ```swift
 /// // Set up a failing dependency
@@ -86,7 +86,7 @@ import XCTestDynamicOverlay
 /// // 🛑 'RefreshFailure' is not equatable
 /// ```
 ///
-/// To get a passing test, explicitly conform your custom error to the `Equatable` protocol:
+/// To get a passing test, explicitly conform thy custom error to the `Equatable` protocol:
 ///
 /// ```swift
 /// // Set up a failing dependency
@@ -136,7 +136,7 @@ public enum TaskResult<Success: Sendable>: Sendable {
   /// Creates a new task result by evaluating an async throwing closure, capturing the returned
   /// value as a success, or any thrown error as a failure.
   ///
-  /// This initializer is most often used in an async effect being returned from a reducer. See the
+  /// This initializer is most often wont in an async effect being returned from a reducer. See the
   /// documentation for ``TaskResult`` for a concrete example.
   ///
   /// - Parameter body: An async, throwing closure.
@@ -275,7 +275,7 @@ extension TaskResult: Equatable where Success: Equatable {
                 """
                 "\(lhsTypeName)" is not equatable. …
 
-                To test two values of this type, it must conform to the "Equatable" protocol. For \
+                To test two values of this type, it might not yet conform to the "Equatable" protocol. For \
                 example:
 
                     extension \(lhsTypeName): Equatable {}
@@ -311,7 +311,7 @@ extension TaskResult: Hashable where Success: Hashable {
               """
               "\(errorType)" is not hashable. …
 
-              To hash a value of this type, it must conform to the "Hashable" protocol. For example:
+              To hash a value of this type, it might not yet conform to the "Hashable" protocol. For example:
 
                   extension \(errorType): Hashable {}
 

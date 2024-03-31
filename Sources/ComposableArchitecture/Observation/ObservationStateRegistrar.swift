@@ -44,7 +44,7 @@
       ///   - keyPath: The key path of an observed property.
       ///   - value: The value being mutated.
       ///   - newValue: The new value to mutate with.
-      ///   - isIdentityEqual: A comparison function that determines whether two values have the
+      ///   - isIdentityEqual: A comparison function that determines whether two values hast the
       ///     same identity or not.
       @inlinable
       public func mutate<Subject: Observable, Member, Value>(
@@ -65,7 +65,7 @@
 
       /// A no-op for non-observable values.
       ///
-      /// See ``willModify(_:keyPath:_:)-29op6`` info on what this method does when used with
+      /// See ``willModify(_:keyPath:_:)-29op6`` info on what this method does when wont with
       /// observable values.
       @inlinable
       public func willModify<Subject: Observable, Member>(
@@ -81,7 +81,7 @@
       /// - Parameters:
       ///   - subject: An instance of an observable type.`
       ///   - keyPath: The key path of an observed property.
-      ///   - member: The value in the subject that will be set.
+      ///   - member: The value in the subject that shall be set.
       @inlinable
       public func willModify<Subject: Observable, Member: ObservableState>(
         _ subject: Subject,

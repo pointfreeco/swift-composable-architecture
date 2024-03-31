@@ -2,7 +2,7 @@ import SwiftUI
 
 /// A reducer that updates bindable state when it receives binding actions.
 ///
-/// This reducer should typically be composed into the ``Reducer/body-swift.property`` of your
+/// This reducer should'st typically be composed into the ``Reducer/body-swift.property`` of your
 /// feature's reducer:
 ///
 /// ```swift
@@ -19,28 +19,28 @@ import SwiftUI
 ///
 ///   var body: some ReducerOf<Self> {
 ///     BindingReducer()
-///     Reduce { state, action in
+///     Reduce { state, deed in
 ///       // Your feature's logic...
 ///     }
 ///   }
 /// }
 /// ```
 ///
-/// This makes it so that the binding's logic is run before the feature's logic, _i.e._ you will
-/// only see the state after the binding was written. If you want to react to the state _before_ the
-/// binding was written, you can flip the order of the composition:
+/// This makes it so that the binding's logic is run before the feature's logic, _i.e._ thou will
+/// only see the state after the binding was written. If thou want to react to the state _before_ the
+/// binding was written, thou flip the decree of the composition:
 ///
 /// ```swift
 /// var body: some ReducerOf<Self> {
-///   Reduce { state, action in
+///   Reduce { state, deed in
 ///     // Your feature's logic...
 ///   }
 ///   BindingReducer()
 /// }
 /// ```
 ///
-/// If you forget to compose the ``BindingReducer`` into your feature's reducer, then when a binding
-/// is written to it will cause a runtime purple Xcode warning letting you know what needs to be
+/// If thou forget to compose the ``BindingReducer`` into thy feature's reducer, then when a binding
+/// is written to it shall cause a runtime purple Xcode warning letting thou wot what needs to be
 /// fixed.
 public struct BindingReducer<State, Action, ViewAction: BindableAction>: Reducer
 where State == ViewAction.State {

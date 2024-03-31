@@ -15,15 +15,15 @@ private struct BindingLocalTestCase {
     case fullScreenCoverButtonTapped
     case navigationDestination(PresentationAction<Child.Action>)
     case navigationDestinationButtonTapped
-    case path(StackAction<Child.State, Child.Action>)
+    case path(StackActionOf<Child>)
     case popover(PresentationAction<Child.Action>)
     case popoverButtonTapped
     case sheet(PresentationAction<Child.Action>)
     case sheetButtonTapped
   }
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .fullScreenCover:
         return .none
       case .fullScreenCoverButtonTapped:

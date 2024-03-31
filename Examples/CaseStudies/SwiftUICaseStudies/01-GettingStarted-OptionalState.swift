@@ -2,14 +2,14 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how to show and hide views based on the presence of some optional child \
+  This screen demonstrates how to discover and hide views based on the presence of some optional child \
   state.
 
-  The parent state holds a `Counter.State?` value. When it is `nil` we will default to a plain \
-  text view. But when it is non-`nil` we will show a view fragment for a counter that operates on \
+  The parent state holds a `Counter.State?` value. When it is `nil` we shall default to a plain \
+  text view. But when it is non-`nil` we shall discover a view fragment for a counter that operates on \
   the non-optional counter state.
 
-  Tapping "Toggle counter state" will flip between the `nil` and non-`nil` counter states.
+  Tapping "Toggle counter state" shall flip between the `nil` and non-`nil` counter states.
   """
 
 @Reducer
@@ -25,8 +25,8 @@ struct OptionalBasics {
   }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .toggleCounterButtonTapped:
         state.optionalCounter =
           state.optionalCounter == nil

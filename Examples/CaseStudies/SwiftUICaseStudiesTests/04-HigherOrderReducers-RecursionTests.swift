@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class RecursionTests: XCTestCase {
+  @MainActor
   func testAddRow() async {
     let store = TestStore(initialState: Nested.State(id: UUID())) {
       Nested()
@@ -16,11 +16,12 @@ final class RecursionTests: XCTestCase {
       $0.rows.append(Nested.State(id: UUID(0)))
     }
 
-    await store.send(.rows(.element(id: UUID(0), action: .addRowButtonTapped))) {
+    await store.send(\.rows[id:UUID(0)].addRowButtonTapped) {
       $0.rows[id: UUID(0)]?.rows.append(Nested.State(id: UUID(1)))
     }
   }
 
+  @MainActor
   func testChangeName() async {
     let store = TestStore(initialState: Nested.State(id: UUID())) {
       Nested()
@@ -31,6 +32,7 @@ final class RecursionTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testDeleteRow() async {
     let store = TestStore(
       initialState: Nested.State(

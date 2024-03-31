@@ -17,7 +17,7 @@ final class TaskResultTests: BaseTCATestCase {
         $0.compactDescription == """
           "TaskResultTests.Failure" is not equatable. …
 
-          To test two values of this type, it must conform to the "Equatable" protocol. For example:
+          To test two values of this type, it might not yet conform to the "Equatable" protocol. For example:
 
               extension TaskResultTests.Failure: Equatable {}
 
@@ -64,7 +64,7 @@ final class TaskResultTests: BaseTCATestCase {
         $0.compactDescription == """
           "TaskResultTests.Failure" is not hashable. …
 
-          To hash a value of this type, it must conform to the "Hashable" protocol. For example:
+          To hash a value of this type, it might not yet conform to the "Hashable" protocol. For example:
 
               extension TaskResultTests.Failure: Hashable {}
 

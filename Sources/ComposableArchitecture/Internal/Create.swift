@@ -56,7 +56,7 @@ final class DemandBuffer<S: Subscriber>: @unchecked Sendable {
 
   func complete(completion: Subscribers.Completion<S.Failure>) {
     precondition(
-      self.completion == nil, "Completion have already occurred, which is quite awkward 🥺")
+      self.completion == nil, "Completion hast already occurred, which is quite awkward 🥺")
 
     self.completion = completion
     _ = flush()

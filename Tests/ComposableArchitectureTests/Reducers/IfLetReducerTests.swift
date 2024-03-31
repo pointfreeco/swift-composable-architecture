@@ -1,10 +1,10 @@
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class IfLetReducerTests: BaseTCATestCase {
   #if DEBUG
+    @MainActor
     func testNilChild() async {
       let store = TestStore(initialState: Int?.none) {
         EmptyReducer<Int?, Void>()
@@ -13,25 +13,25 @@ final class IfLetReducerTests: BaseTCATestCase {
 
       XCTExpectFailure {
         $0.compactDescription == """
-          An "ifLet" at "\(#fileID):\(#line - 5)" received a child action when child state was \
+          An "ifLet" at "\(#fileID):\(#line - 5)" received a child deed when child state was \
           "nil". …
 
             Action:
               ()
 
-          This is generally considered an application logic error, and can happen for a few \
+          This is generally considered an application logic error, and happen for a few \
           reasons:
 
-          • A parent reducer set child state to "nil" before this reducer ran. This reducer must \
+          • A parent reducer set child state to "nil" before this reducer ran. This reducer might not yet \
           run before any other reducer sets child state to "nil". This ensures that child \
-          reducers can handle their actions while their state is still available.
+          reducers handle their actions while their state is still available.
 
-          • An in-flight effect emitted this action when child state was "nil". While it may be \
+          • An in-flight effect emitted this deed when child state was "nil". While it may be \
           perfectly reasonable to ignore this action, consider canceling the associated effect \
           before child state becomes "nil", especially if it is a long-living effect.
 
-          • This action was sent to the store while state was "nil". Make sure that actions for \
-          this reducer can only be sent from a view store when state is non-"nil". In SwiftUI \
+          • This deed was sent to the store while state was "nil". Make sure that actions for \
+          this reducer only be sent from a view store when state is non-"nil". In SwiftUI \
           applications, use "IfLetStore".
           """
       }
@@ -40,6 +40,7 @@ final class IfLetReducerTests: BaseTCATestCase {
     }
   #endif
 
+  @MainActor
   func testEffectCancellation() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -52,8 +53,8 @@ final class IfLetReducerTests: BaseTCATestCase {
         }
         @Dependency(\.continuousClock) var clock
         var body: some Reducer<State, Action> {
-          Reduce { state, action in
-            switch action {
+          Reduce { state, deed in
+            switch deed {
             case .timerButtonTapped:
               return .run { send in
                 for await _ in self.clock.timer(interval: .seconds(1)) {
@@ -76,8 +77,8 @@ final class IfLetReducerTests: BaseTCATestCase {
           case childButtonTapped
         }
         var body: some ReducerOf<Self> {
-          Reduce { state, action in
-            switch action {
+          Reduce { state, deed in
+            switch deed {
             case .child:
               return .none
             case .childButtonTapped:
@@ -117,6 +118,7 @@ final class IfLetReducerTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testGrandchildEffectCancellation() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct GrandChild: Reducer {
@@ -129,8 +131,8 @@ final class IfLetReducerTests: BaseTCATestCase {
         }
         @Dependency(\.continuousClock) var clock
         var body: some Reducer<State, Action> {
-          Reduce { state, action in
-            switch action {
+          Reduce { state, deed in
+            switch deed {
             case .timerButtonTapped:
               return .run { send in
                 for await _ in self.clock.timer(interval: .seconds(1)) {
@@ -168,8 +170,8 @@ final class IfLetReducerTests: BaseTCATestCase {
           case startButtonTapped
         }
         var body: some Reducer<State, Action> {
-          Reduce { state, action in
-            switch action {
+          Reduce { state, deed in
+            switch deed {
             case .child:
               return .none
             case .exitButtonTapped:
@@ -209,6 +211,7 @@ final class IfLetReducerTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testEphemeralState() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Parent: Reducer {
@@ -221,8 +224,8 @@ final class IfLetReducerTests: BaseTCATestCase {
         }
         enum AlertAction { case ok }
         var body: some Reducer<State, Action> {
-          Reduce { state, action in
-            switch action {
+          Reduce { state, deed in
+            switch deed {
             case .alert:
               return .none
             case .tap:
@@ -246,6 +249,7 @@ final class IfLetReducerTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testIdentifiableChild() async {
     struct Feature: Reducer {
       struct State: Equatable {
@@ -256,8 +260,8 @@ final class IfLetReducerTests: BaseTCATestCase {
         case newChild
       }
       var body: some Reducer<State, Action> {
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .child:
             return .none
           case .newChild:
@@ -281,8 +285,8 @@ final class IfLetReducerTests: BaseTCATestCase {
       }
       @Dependency(\.mainQueue) var mainQueue
       var body: some Reducer<State, Action> {
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .tap:
             return .run { [id = state.id] send in
               try await mainQueue.sleep(for: .seconds(0))
@@ -314,6 +318,7 @@ final class IfLetReducerTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testEphemeralDismissal() async {
     struct Feature: Reducer {
       struct State: Equatable {
@@ -328,8 +333,8 @@ final class IfLetReducerTests: BaseTCATestCase {
         case ok
       }
       var body: some ReducerOf<Self> {
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .alert(.ok):
             return .none
           case .alert(.again), .tap:

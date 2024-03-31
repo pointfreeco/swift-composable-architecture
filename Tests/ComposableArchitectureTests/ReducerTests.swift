@@ -5,7 +5,6 @@
   import XCTest
   import os.signpost
 
-  @MainActor
   final class ReducerTests: BaseTCATestCase {
     var cancellables: Set<AnyCancellable> = []
 
@@ -29,7 +28,7 @@
       let delay: Duration
       let setValue: @Sendable () async -> Void
       var body: some Reducer<State, Action> {
-        Reduce { state, action in
+        Reduce { state, deed in
           state += 1
           return .run { _ in
             try await self.clock.sleep(for: self.delay)
@@ -38,6 +37,7 @@
         }
       }
     }
+    @MainActor
     func testCombine_EffectsAreMerged() async throws {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         var fastValue: Int? = nil
@@ -45,10 +45,12 @@
         let clock = TestClock()
 
         let store = TestStore(initialState: 0) {
-          Feature_testCombine_EffectsAreMerged(
-            delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
-          Feature_testCombine_EffectsAreMerged(
-            delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
+          CombineReducers {
+            Feature_testCombine_EffectsAreMerged(
+              delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
+            Feature_testCombine_EffectsAreMerged(
+              delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
+          }
         } withDependencies: {
           $0.continuousClock = clock
         }
@@ -76,7 +78,7 @@
       enum Action { case increment }
       let effect: @Sendable () async -> Void
       var body: some Reducer<State, Action> {
-        Reduce { state, action in
+        Reduce { state, deed in
           state += 1
           return .run { _ in
             await self.effect()
@@ -84,13 +86,16 @@
         }
       }
     }
+    @MainActor
     func testCombine() async {
       var first = false
       var second = false
 
       let store = TestStore(initialState: 0) {
-        Feature_testCombine(effect: { @MainActor in first = true })
-        Feature_testCombine(effect: { @MainActor in second = true })
+        CombineReducers {
+          Feature_testCombine(effect: { @MainActor in first = true })
+          Feature_testCombine(effect: { @MainActor in second = true })
+        }
       }
 
       await store

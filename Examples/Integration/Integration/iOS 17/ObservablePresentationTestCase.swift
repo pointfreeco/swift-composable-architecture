@@ -94,6 +94,11 @@ struct ObservablePresentationView: View {
 
   @Reducer
   struct Feature {
+    @Reducer(state: .equatable)
+    enum Destination {
+      case fullScreenCover(ObservableBasicsView.Feature)
+      case popover(ObservableBasicsView.Feature)
+    }
     @ObservableState
     struct State: Equatable {
       var isObservingChildCount = false
@@ -109,29 +114,9 @@ struct ObservablePresentationView: View {
       case sheet(PresentationAction<ObservableBasicsView.Feature.Action>)
       case toggleObserveChildCountButtonTapped
     }
-    @Reducer
-    struct Destination {
-      @ObservableState
-      enum State: Equatable {
-        case fullScreenCover(ObservableBasicsView.Feature.State)
-        case popover(ObservableBasicsView.Feature.State)
-      }
-      enum Action {
-        case fullScreenCover(ObservableBasicsView.Feature.Action)
-        case popover(ObservableBasicsView.Feature.Action)
-      }
-      var body: some ReducerOf<Self> {
-        Scope(state: \.fullScreenCover, action: \.fullScreenCover) {
-          ObservableBasicsView.Feature()
-        }
-        Scope(state: \.popover, action: \.popover) {
-          ObservableBasicsView.Feature()
-        }
-      }
-    }
     var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .destination:
           return .none
         case .dismissButtonTapped:
@@ -154,9 +139,7 @@ struct ObservablePresentationView: View {
           return .none
         }
       }
-      .ifLet(\.$destination, action: \.destination) {
-        Destination()
-      }
+      .ifLet(\.$destination, action: \.destination)
       .ifLet(\.$sheet, action: \.sheet) {
         ObservableBasicsView.Feature()
       }

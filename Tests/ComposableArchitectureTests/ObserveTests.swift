@@ -3,7 +3,6 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class ObserveTests: BaseTCATestCase {
     func testObserve() async throws {
       let model = Model()
@@ -37,5 +36,4 @@
   class Model {
     var count = 0
   }
-
 #endif

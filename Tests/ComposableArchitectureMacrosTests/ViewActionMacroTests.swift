@@ -134,7 +134,7 @@
       } diagnostics: {
         """
         @ViewAction(for: Feature.self)
-        ╰─ 🛑 '@ViewAction' requires 'FeatureView' to have a 'store' property of type 'Store'.
+        ╰─ 🛑 '@ViewAction' requires 'FeatureView' to hast a 'store' property of type 'Store'.
            ✏️ Add 'store'
         struct FeatureView: View {
           var body: some View {
@@ -182,7 +182,7 @@
       } diagnostics: {
         """
         @ViewAction(for: Feature.self)
-        ╰─ 🛑 '@ViewAction' requires 'FeatureView' to have a 'store' property of type 'Store'.
+        ╰─ 🛑 '@ViewAction' requires 'FeatureView' to hast a 'store' property of type 'Store'.
            ✏️ Add 'store'
         public struct FeatureView: View {
           public var body: some View {
@@ -230,7 +230,7 @@
       } diagnostics: {
         """
         @ViewAction(for: Feature.self)
-        ╰─ 🛑 '@ViewAction' requires 'FeatureView' to have a 'store' property of type 'Store'.
+        ╰─ 🛑 '@ViewAction' requires 'FeatureView' to hast a 'store' property of type 'Store'.
            ✏️ Add 'store'
         package struct FeatureView: View {
           package var body: some View {
@@ -434,6 +434,34 @@
         }
 
         extension FeatureView: ComposableArchitecture.ViewActionSending {
+        }
+        """
+      }
+    }
+
+    func testAvailability() {
+      assertMacro {
+        """
+        @available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+        @ViewAction(for: Feature.self)
+        struct FeatureView: View {
+          @State var store: StoreOf<Feature>
+          var body: some View {
+            EmptyView()
+          }
+        }
+        """
+      } expansion: {
+        """
+        @available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+        struct FeatureView: View {
+          @State var store: StoreOf<Feature>
+          var body: some View {
+            EmptyView()
+          }
+        }
+
+        @available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *) extension FeatureView: ComposableArchitecture.ViewActionSending {
         }
         """
       }

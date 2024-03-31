@@ -3,7 +3,6 @@
   @_spi(Canary) @_spi(Internals) import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class EffectTests: BaseTCATestCase {
     var cancellables: Set<AnyCancellable> = []
     let mainQueue = DispatchQueue.test
@@ -135,8 +134,8 @@
       }
       @Dependency(\.date) var date
       var body: some Reducer<Int, Action> {
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .tap:
             return .run { send in
               await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
@@ -148,6 +147,7 @@
         }
       }
     }
+    @MainActor
     func testDependenciesTransferredToEffects_Task() async {
       let store = TestStore(initialState: 0) {
         Feature_testDependenciesTransferredToEffects_Task()
@@ -168,8 +168,8 @@
       }
       @Dependency(\.date) var date
       var body: some Reducer<Int, Action> {
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .tap:
             return .run { send in
               await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
@@ -181,6 +181,7 @@
         }
       }
     }
+    @MainActor
     func testDependenciesTransferredToEffects_Run() async {
       let store = TestStore(initialState: 0) {
         Feature_testDependenciesTransferredToEffects_Run()

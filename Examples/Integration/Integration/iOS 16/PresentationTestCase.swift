@@ -134,8 +134,8 @@ struct PresentationView: View {
       }
     }
     var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .destination:
           return .none
         case .dismissButtonTapped:

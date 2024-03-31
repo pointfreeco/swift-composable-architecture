@@ -6,7 +6,7 @@ extension DependencyValues {
   /// ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` and
   /// ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``.
   ///
-  /// See ``DismissEffect`` for more information on how child features can easily dismiss themselves
+  /// See ``DismissEffect`` for more information on how child features easily dismiss themselves
   /// without communicating to the parent.
   public var isPresented: Bool {
     self.dismiss.dismiss != nil

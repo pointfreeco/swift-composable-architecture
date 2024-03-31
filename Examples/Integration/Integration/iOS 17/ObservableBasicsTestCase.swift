@@ -39,8 +39,8 @@ struct ObservableBasicsView: View {
     }
     @Dependency(\.dismiss) var dismiss
     var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .copyIncrementDiscard:
           var copy = state
           copy.count += 1

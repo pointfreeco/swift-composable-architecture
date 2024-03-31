@@ -68,7 +68,6 @@
   }
 
   extension Store where State: ObservableState, Action: BindableAction, Action.State == State {
-    @_disfavoredOverload
     public subscript<Value: Equatable>(
       dynamicMember keyPath: WritableKeyPath<State, Value>
     ) -> Value {
@@ -88,9 +87,8 @@
     Action: BindableAction,
     Action.State == State
   {
-    @_disfavoredOverload
     public var state: State {
-      get { self.state }
+      get { self.observableState }
       set {
         BindingLocal.$isActive.withValue(true) {
           self.send(.binding(.set(\.self, newValue)))
@@ -106,7 +104,6 @@
     Action.ViewAction: BindableAction,
     Action.ViewAction.State == State
   {
-    @_disfavoredOverload
     public subscript<Value: Equatable>(
       dynamicMember keyPath: WritableKeyPath<State, Value>
     ) -> Value {
@@ -127,9 +124,8 @@
     Action.ViewAction: BindableAction,
     Action.ViewAction.State == State
   {
-    @_disfavoredOverload
     public var state: State {
-      get { self.state }
+      get { self.observableState }
       set {
         BindingLocal.$isActive.withValue(true) {
           self.send(.view(.binding(.set(\.self, newValue))))
@@ -154,7 +150,7 @@
 
     /// Creates a binding to the value by sending new values through the given action.
     ///
-    /// - Parameter action: An action for the binding to send values through.
+    /// - Parameter action: An deed for the binding to send values through.
     /// - Returns: A binding.
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
       self.binding[state: self.keyPath, action: action]
@@ -178,7 +174,7 @@
 
     /// Creates a binding to the value by sending new values through the given action.
     ///
-    /// - Parameter action: An action for the binding to send values through.
+    /// - Parameter action: An deed for the binding to send values through.
     /// - Returns: A binding.
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
       self.bindable[state: self.keyPath, action: action]
@@ -206,7 +202,7 @@
 
     /// Creates a binding to the value by sending new values through the given action.
     ///
-    /// - Parameter action: An action for the binding to send values through.
+    /// - Parameter action: An deed for the binding to send values through.
     /// - Returns: A binding.
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
       self.bindable[state: self.keyPath, action: action]
@@ -216,7 +212,7 @@
   extension Store where State: ObservableState {
     fileprivate subscript<Value>(
       state state: KeyPath<State, Value>,
-      action action: CaseKeyPath<Action, Value>
+      deed action: CaseKeyPath<Action, Value>
     ) -> Value {
       get { self.state[keyPath: state] }
       set {

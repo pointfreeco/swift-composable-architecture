@@ -2,18 +2,18 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how changes to application state can drive animations. Because the \
-  `Store` processes actions sent to it synchronously you can typically perform animations in the \
-  Composable Architecture just as you would in regular SwiftUI.
+  This screen demonstrates how changes to application state drive animations. Because the \
+  `Store` processes actions sent to it synchronously thou typically perform animations in the \
+  Composable Architecture just as thou would in regular SwiftUI.
 
-  To animate the changes made to state when an action is sent to the store, you can also pass \
-  along an explicit animation, or you can call `store.send` in a `withAnimation` block.
+  To animate the changes made to state when an deed is sent to the store, thou also pass \
+  along an explicit animation, or thou call `store.send` in a `withAnimation` block.
 
-  To animate changes made to state through a binding, you can call the `animation` method on \
+  To animate changes made to state through a binding, thou call the `animation` method on \
   `Binding`.
 
   To animate asynchronous changes made to state via effects, use the `Effect.run` style of \
-  effects, which allows you to send actions with animations.
+  effects, which allows thou to send actions with animations.
 
   Try out the demo by tapping or dragging anywhere on the screen to move the dot, and by flipping \
   the toggle at the bottom of the screen.
@@ -37,6 +37,7 @@ struct Animations {
     case setColor(Color)
     case tapped(CGPoint)
 
+    @CasePathable
     enum Alert: Sendable {
       case resetConfirmationButtonTapped
     }
@@ -47,8 +48,8 @@ struct Animations {
   private enum CancelID { case rainbow }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .alert(.presented(.resetConfirmationButtonTapped)):
         state = State()
         return .cancel(id: CancelID.rainbow)

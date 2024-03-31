@@ -6,7 +6,7 @@ private let readMe = """
   application.
 
   The domain of the application is modeled using simple data types that correspond to the mutable \
-  state of the application and any actions that can affect that state or the outside world.
+  state of the application and any actions that affect that state or the outside world.
   """
 
 @Reducer
@@ -22,8 +22,8 @@ struct Counter {
   }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .decrementButtonTapped:
         state.count -= 1
         return .none

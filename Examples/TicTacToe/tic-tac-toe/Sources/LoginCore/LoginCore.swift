@@ -25,6 +25,7 @@ public struct Login: Sendable {
 
     public enum Alert: Equatable, Sendable {}
 
+    @CasePathable
     public enum View: BindableAction, Sendable {
       case binding(BindingAction<State>)
       case loginButtonTapped
@@ -37,8 +38,8 @@ public struct Login: Sendable {
 
   public var body: some Reducer<State, Action> {
     BindingReducer(action: \.view)
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .alert:
         return .none
 

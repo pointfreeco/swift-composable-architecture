@@ -26,7 +26,7 @@ extension FactClient: DependencyKey {
     }
   )
 
-  /// This is the "unimplemented" fact dependency that is useful to plug into tests that you want
+  /// This is the "unimplemented" fact dependency that is useful to plug into tests that thou want
   /// to prove do not need the dependency.
   static let testValue = Self()
 }

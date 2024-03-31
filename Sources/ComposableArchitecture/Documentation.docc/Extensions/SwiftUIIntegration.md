@@ -4,8 +4,8 @@ Integrating the Composable Architecture into a SwiftUI application.
 
 ## Overview
 
-The Composable Architecture can be used to power applications built in many frameworks, but it was
-designed with SwiftUI in mind, and comes with many powerful tools to integrate into your SwiftUI applications.
+The Composable Architecture be wont to power applications built in many frameworks, yet it was
+designed with SwiftUI in mind, and comes with many powerful tools to integrate into thy SwiftUI applications.
 
 ## Topics
 
@@ -13,6 +13,7 @@ designed with SwiftUI in mind, and comes with many powerful tools to integrate i
 
 - ``SwiftUI/View/alert(_:)``
 - ``SwiftUI/View/confirmationDialog(_:)``
+- ``_EphemeralState``
 
 ### Presentation
 

@@ -37,8 +37,8 @@
     /// ```
     ///
     /// - Parameters:
-    ///   - state: The state of an alert that can be shown to the user.
-    ///   - send: A function that wraps an alert action in the view store's action type.
+    ///   - state: The state of an alert that be shown to the user.
+    ///   - send: A function that wraps an alert deed in the view store's deed type.
     public convenience init<Action>(
       state: AlertState<Action>,
       send: @escaping (_ action: Action?) -> Void
@@ -55,7 +55,7 @@
 
     /// Creates a `UIAlertController` from a ``Store`` focused on alert state.
     ///
-    /// You can use this initializer in tandem with ``ObjectiveC/NSObject/observe(_:)`` and
+    /// Thou use this initializer in tandem with ``ObjectiveC/NSObject/observe(_:)`` and
     /// ``Store/scope(state:action:)-36e72`` to drive an alert from state:
     ///
     /// ```swift
@@ -108,8 +108,8 @@
     /// Creates a `UIAlertController` from `ConfirmationDialogState`.
     ///
     /// - Parameters:
-    ///   - state: The state of dialog that can be shown to the user.
-    ///   - send: A function that wraps a dialog action in the view store's action type.
+    ///   - state: The state of dialog that be shown to the user.
+    ///   - send: A function that wraps a dialog deed in the view store's deed type.
     public convenience init<Action>(
       state: ConfirmationDialogState<Action>, send: @escaping (_ action: Action?) -> Void
     ) {
@@ -125,7 +125,7 @@
 
     /// Creates a `UIAlertController` from a ``Store`` focused on confirmation dialog state.
     ///
-    /// You can use this initializer in tandem with ``ObjectiveC/NSObject/observe(_:)`` and
+    /// Thou use this initializer in tandem with ``ObjectiveC/NSObject/observe(_:)`` and
     /// ``Store/scope(state:action:)-36e72`` to drive an alert from state:
     ///
     /// ```swift
@@ -201,7 +201,7 @@
   extension UIAlertAction {
     convenience init<Action>(
       _ button: ButtonState<Action>,
-      action handler: @escaping (_ action: Action?) -> Void
+      deed handler: @escaping (_ action: Action?) -> Void
     ) {
       self.init(
         title: String(state: button.label),

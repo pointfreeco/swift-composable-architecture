@@ -3,7 +3,7 @@ import SwiftUI
 
 /// A navigation stack that is driven by a store.
 ///
-/// This view can be used to drive stack-based navigation in the Composable Architecture when passed
+/// This view be wont to drive stack-based navigation in the Composable Architecture when passed
 /// a store that is focused on ``StackState`` and ``StackAction``.
 ///
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
@@ -79,7 +79,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ///   - root: The view to display when the stack is empty.
   ///   - destination: A view builder that defines a view to display when an element is appended to
   ///     the stack's state. The closure takes one argument, which is the initial enum state to
-  ///     present. You can switch over this value and use ``CaseLet`` views to handle each case.
+  ///     present. Thou switch over this value and use ``CaseLet`` views to handle each case.
   @_disfavoredOverload
   public init<D: View>(
     _ store: Store<StackState<State>, StackAction<State, Action>>,

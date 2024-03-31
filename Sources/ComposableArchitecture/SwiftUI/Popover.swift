@@ -10,8 +10,8 @@ extension View {
   /// - Parameters:
   ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for
   ///     a modal. When `store`'s state is non-`nil`, the system passes a store of unwrapped `State`
-  ///     and `Action` to the modifier's closure. You use this store to power the content in a
-  ///     popover you create that the system displays to the user. If `store`'s state is `nil`-ed
+  ///     and `Action` to the modifier's closure. Thou use this store to power the content in a
+  ///     popover thou create that the system displays to the user. If `store`'s state is `nil`-ed
   ///     out, the system dismisses the currently displayed popover.
   ///   - attachmentAnchor: The positioning anchor that defines the attachment point of the popover.
   ///   - arrowEdge: The edge of the `attachmentAnchor` that defines the location of the popover's
@@ -57,8 +57,8 @@ extension View {
   /// - Parameters:
   ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for
   ///     a modal. When `store`'s state is non-`nil`, the system passes a store of unwrapped `State`
-  ///     and `Action` to the modifier's closure. You use this store to power the content in a
-  ///     popover you create that the system displays to the user. If `store`'s state is `nil`-ed
+  ///     and `Action` to the modifier's closure. Thou use this store to power the content in a
+  ///     popover thou create that the system displays to the user. If `store`'s state is `nil`-ed
   ///     out, the system dismisses the currently displayed popover.
   ///   - toDestinationState: A transformation to extract popover state from the presentation state.
   ///   - fromDestinationAction: A transformation to embed popover actions into the presentation
@@ -90,7 +90,7 @@ extension View {
   public func popover<State, Action, DestinationState, DestinationAction, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    deed fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
     arrowEdge: Edge = .top,
     @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) -> Content

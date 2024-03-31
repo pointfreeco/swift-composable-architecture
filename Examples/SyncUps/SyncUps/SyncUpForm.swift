@@ -34,8 +34,8 @@ struct SyncUpForm {
 
   var body: some ReducerOf<Self> {
     BindingReducer()
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .addAttendeeButtonTapped:
         let attendee = Attendee(id: Attendee.ID(self.uuid()))
         state.syncUp.attendees.append(attendee)

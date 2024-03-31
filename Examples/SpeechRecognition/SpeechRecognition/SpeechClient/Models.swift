@@ -2,7 +2,7 @@ import Speech
 
 // The core data types in the Speech framework are reference types and are not constructible by us,
 // and so they aren't testable out the box. We define struct versions of those types to make
-// them easier to use and test.
+// 'em easier to use and test.
 
 struct SpeechRecognitionMetadata: Equatable {
   var averagePauseDuration: TimeInterval

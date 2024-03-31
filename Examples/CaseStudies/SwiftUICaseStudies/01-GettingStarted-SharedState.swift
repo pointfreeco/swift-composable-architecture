@@ -2,16 +2,16 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how multiple independent screens can share state in the Composable \
-  Architecture. Each tab manages its own state, and could be in separate modules, but changes in \
+  This screen demonstrates how multiple independent screens share state in the Composable \
+  Architecture. Each tab manages its own state, and could be in separate modules, yet changes in \
   one tab are immediately reflected in the other.
 
-  This tab has its own state, consisting of a count value that can be incremented and decremented, \
+  This tab has its own state, consisting of a count value that be incremented and decremented, \
   as well as an alert value that is set when asking if the current count is prime.
 
   Internally, it is also keeping track of various stats, such as min and max counts and total \
   number of count events that occurred. Those states are viewable in the other tab, and the stats \
-  can be reset from the other tab.
+  be reset from the other tab.
   """
 
 @Reducer
@@ -32,8 +32,8 @@ struct CounterTab {
   }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .alert:
         return .none
 
@@ -106,8 +106,8 @@ struct ProfileTab {
   }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .resetStatsButtonTapped:
         state.stats.reset()
         return .none
@@ -184,8 +184,8 @@ struct SharedState {
       }
     }
 
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .counter, .profile:
         return .none
       case let .selectTab(tab):

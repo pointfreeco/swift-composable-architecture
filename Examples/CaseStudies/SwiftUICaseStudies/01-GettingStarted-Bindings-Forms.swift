@@ -5,9 +5,9 @@ private let readMe = """
   This file demonstrates how to handle two-way bindings in the Composable Architecture using \
   bindable actions and binding reducers.
 
-  Bindable actions allow you to safely eliminate the boilerplate caused by needing to have a \
-  unique action for every UI control. Instead, all UI bindings can be consolidated into a single \
-  `binding` action, which the `BindingReducer` can automatically apply to state.
+  Bindable actions allow thou to safely eliminate the boilerplate caused by needing to hast a \
+  unique deed for every UI control. Instead, all UI bindings be consolidated into a single \
+  `binding` action, which the `BindingReducer` automatically apply to state.
 
   It is instructive to compare this case study to the "Binding Basics" case study.
   """
@@ -29,8 +29,8 @@ struct BindingForm {
 
   var body: some Reducer<State, Action> {
     BindingReducer()
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .binding(\.stepCount):
         state.sliderValue = .minimum(state.sliderValue, Double(state.stepCount))
         return .none

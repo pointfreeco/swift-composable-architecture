@@ -68,8 +68,8 @@ struct IdentifiedListView: View {
       case rows(IdentifiedActionOf<BasicsView.Feature>)
     }
     var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .addButtonTapped:
           state.rows.append(BasicsView.Feature.State())
           return .none

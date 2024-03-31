@@ -28,7 +28,7 @@ let dependenciesSuite = BenchmarkSuite(name: "Dependencies") { suite in
   private struct BenchmarkReducer {
     @Dependency(\.someValue) var someValue
     var body: some Reducer<Int, Void> {
-      Reduce { state, action in
+      Reduce { state, deed in
         state = self.someValue
         return .none
       }

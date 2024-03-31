@@ -35,8 +35,8 @@ private struct ChildFeature {
   }
   @Dependency(\.dismiss) var dismiss
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .alert:
         return .none
       case .navigationDestination:
@@ -69,7 +69,7 @@ private struct ChildFeature {
         return .none
       case .showAlertButtonTapped:
         state.alert = AlertState {
-          TextState("What do you want to do?")
+          TextState("What do thou want to do?")
         } actions: {
           ButtonState(action: .pop) {
             TextState("Parent pops feature")
@@ -142,11 +142,11 @@ private struct NavigationStackTestCase {
     var childResponse: Int?
   }
   enum Action {
-    case child(StackAction<ChildFeature.State, ChildFeature.Action>)
+    case child(StackActionOf<ChildFeature>)
   }
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case let .child(.element(id: _, action: .response(value))):
         state.childResponse = value
         return .none

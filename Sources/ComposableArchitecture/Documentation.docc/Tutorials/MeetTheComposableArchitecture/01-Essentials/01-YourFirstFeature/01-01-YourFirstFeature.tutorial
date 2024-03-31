@@ -7,10 +7,10 @@
   @Section(title: "Create a reducer") {
     @ContentAndMedia {
       The fundamental unit that features are built with in the Composable Architecture is the
-      ``ComposableArchitecture/Reducer()`` macro and ``ComposableArchitecture/Reducer`` protocol.
-      A conformance to that protocol represents the logic and behavior for a feature in your
-      application. This includes how to evolve the current state to the next state when an action is 
-      sent into the system, and how effects communicate with the outside world and feed data back 
+      ``ComposableArchitecture/Reducer()`` macro and ``ComposableArchitecture/Reducer`` protocol. A
+      conformance to that protocol represents the logic and behavior for a feature in your
+      application. This includes how to evolve the current state to the next state when an action is
+      sent into the system, and how effects communicate with the outside world and feed data back
       into the system.
       
       And most importantly, the feature's core logic and behavior can be built in full isolation

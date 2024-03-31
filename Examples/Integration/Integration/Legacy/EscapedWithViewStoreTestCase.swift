@@ -3,14 +3,14 @@ import SwiftUI
 
 @Reducer
 private struct EscapedWithViewStoreTestCase {
-  enum Action: Equatable, Sendable {
+  enum Action: Sendable {
     case incr
     case decr
   }
 
   var body: some Reducer<Int, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .incr:
         state += 1
         return .none

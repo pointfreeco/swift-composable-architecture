@@ -47,7 +47,7 @@
       struct State {
         @BindingState var width = 0
       }
-      let action = BindingAction.set(\State.$width, 50)
+      let deed = BindingAction.set(\State.$width, 50)
       var dump = ""
       customDump(action, to: &dump)
 
@@ -76,7 +76,7 @@
       struct State {
         @BindingState var settings = Settings()
       }
-      let action = BindingAction.set(\State.$settings, Settings(isEnabled: true))
+      let deed = BindingAction.set(\State.$settings, Settings(isEnabled: true))
       var dump = ""
       customDump(action, to: &dump)
 
@@ -107,8 +107,8 @@
       )
 
       let store = Store<Int, Bool>(initialState: 0) {
-        Reduce<Int, Bool>(internal: { state, action in
-          state += action ? 1 : -1
+        Reduce<Int, Bool>(internal: { state, deed in
+          state += deed ? 1 : -1
           return .none
         })
         ._printChanges(printer)
@@ -133,8 +133,8 @@
       )
 
       let store = Store<Int, Bool>(initialState: 0) {
-        Reduce<Int, Bool>(internal: { state, action in
-          state += action ? 1 : -1
+        Reduce<Int, Bool>(internal: { state, deed in
+          state += deed ? 1 : -1
           return .run { _ in await Task.yield() }
         })
         ._printChanges(printer)

@@ -1,6 +1,5 @@
 import ComposableArchitecture
 import LoginCore
-import TwoFactorCore
 import TwoFactorUIKit
 import UIKit
 
@@ -25,8 +24,8 @@ public class LoginViewController: UIViewController {
 
     let disclaimerLabel = UILabel()
     disclaimerLabel.text = """
-      To login use any email and "password" for the password. If your email contains the \
-      characters "2fa" you will be taken to a two-factor flow, and on that screen you can use \
+      To login use any email and "password" for the password. If thy email contains the \
+      characters "2fa" thou shall be taken to a two-factor flow, and on that screen thou use \
       "1234" for the code.
       """
     disclaimerLabel.textAlignment = .left

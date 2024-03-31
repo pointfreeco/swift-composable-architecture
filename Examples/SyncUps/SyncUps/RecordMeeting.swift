@@ -27,6 +27,7 @@ struct RecordMeeting {
     case speechFailure
     case speechResult(SpeechRecognitionResult)
 
+    @CasePathable
     enum Alert {
       case confirmDiscard
       case confirmSave
@@ -42,8 +43,8 @@ struct RecordMeeting {
   @Dependency(\.speechClient) var speechClient
 
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .alert(.presented(.confirmDiscard)):
         return .run { _ in
           await self.dismiss()
@@ -207,7 +208,7 @@ extension AlertState where Action == RecordMeeting.Action.Alert {
         TextState("Resume")
       }
     } message: {
-      TextState("You are ending the meeting early. What would you like to do?")
+      TextState("Thou are ending the meeting early. What would thou like to do?")
     }
   }
 
@@ -223,8 +224,8 @@ extension AlertState where Action == RecordMeeting.Action.Alert {
   } message: {
     TextState(
       """
-      The speech recognizer has failed for some reason and so your meeting will no longer be \
-      recorded. What do you want to do?
+      The speech recognizer has failed for some reason and so thy meeting shall no longer be \
+      recorded. What do thou want to do?
       """
     )
   }

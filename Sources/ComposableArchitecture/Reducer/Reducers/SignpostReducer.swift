@@ -4,16 +4,16 @@ extension Reducer {
   /// Instruments a reducer with
   /// [signposts](https://developer.apple.com/documentation/os/logging/recording_performance_data).
   ///
-  /// Each invocation of the reducer will be measured by an interval, and the lifecycle of its
-  /// effects will be measured with interval and event signposts.
+  /// Each invocation of the reducer shall be measured by an interval, and the lifecycle of its
+  /// effects shall be measured with interval and event signposts.
   ///
-  /// To use, build your app for profiling, create a blank instrument, and add the signpost
-  /// instrument. Start recording your app you will see timing information for every action sent to
+  /// To use, build thy app for profiling, create a blank instrument, and add the signpost
+  /// instrument. Start recording thy app thou shall see timing information for every deed sent to
   /// the store, as well as every effect executed.
   ///
-  /// Effect instrumentation can be particularly useful for inspecting the lifecycle of long-living
-  /// effects. For example, if you start an effect (_e.g._, a location manager) in `onAppear` and
-  /// forget to tear down the effect in `onDisappear`, the instrument will show that the effect
+  /// Effect instrumentation be particularly useful for inspecting the lifecycle of long-living
+  /// effects. For example, if thou start an effect (_e.g._, a location manager) in `onAppear` and
+  /// forget to tear down the effect in `onDisappear`, the instrument shall discover that the effect
   /// never completed.
   ///
   /// - Parameters:
@@ -122,7 +122,7 @@ extension Effect {
             actionOutput
           )
           await operation(
-            Send { action in
+            Send { deed in
               os_signpost(
                 .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
               )

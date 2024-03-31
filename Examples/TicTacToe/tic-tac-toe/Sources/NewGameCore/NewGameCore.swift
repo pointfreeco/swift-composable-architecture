@@ -23,8 +23,8 @@ public struct NewGame {
 
   public var body: some Reducer<State, Action> {
     BindingReducer()
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .binding:
         return .none
 

@@ -60,7 +60,7 @@ private actor Speech {
         case (_, .some):
           continuation.finish(throwing: SpeechClient.Failure.taskError)
         case (.none, .none):
-          fatalError("It should not be possible to have both a nil result and nil error.")
+          fatalError("It should'st not be possible to hast both a nil result and nil error.")
         }
       }
 

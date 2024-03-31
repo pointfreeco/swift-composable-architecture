@@ -3,8 +3,8 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class TestStoreTests: BaseTCATestCase {
+    @MainActor
     func testEffectConcatenation() async {
       struct State: Equatable {}
 
@@ -53,6 +53,7 @@
       await store.send(.d)
     }
 
+    @MainActor
     func testAsync() async {
       enum Action: Equatable {
         case tap
@@ -76,123 +77,125 @@
       }
     }
 
-    #if DEBUG
-      func testExpectedStateEquality() async {
-        struct State: Equatable {
-          var count: Int = 0
-          var isChanging: Bool = false
-        }
+    @MainActor
+    func testExpectedStateEquality() async {
+      struct State: Equatable {
+        var count: Int = 0
+        var isChanging: Bool = false
+      }
 
-        enum Action: Equatable {
-          case increment
-          case changed(from: Int, to: Int)
-        }
+      enum Action: Equatable {
+        case increment
+        case changed(from: Int, to: Int)
+      }
 
-        let store = TestStore(initialState: State()) {
-          Reduce<State, Action> { state, action in
-            switch action {
-            case .increment:
-              state.isChanging = true
-              return .send(.changed(from: state.count, to: state.count + 1))
-            case let .changed(from, to):
-              state.isChanging = false
-              if state.count == from {
-                state.count = to
-              }
-              return .none
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
+          switch action {
+          case .increment:
+            state.isChanging = true
+            return .send(.changed(from: state.count, to: state.count + 1))
+          case let .changed(from, to):
+            state.isChanging = false
+            if state.count == from {
+              state.count = to
             }
+            return .none
           }
-        }
-
-        await store.send(.increment) {
-          $0.isChanging = true
-        }
-        await store.receive(.changed(from: 0, to: 1)) {
-          $0.isChanging = false
-          $0.count = 1
-        }
-
-        XCTExpectFailure()
-        await store.send(.increment) {
-          $0.isChanging = false
-        }
-
-        XCTExpectFailure()
-        await store.receive(.changed(from: 1, to: 2)) {
-          $0.isChanging = true
-          $0.count = 1100
         }
       }
 
-      func testExpectedStateEqualityMustModify() async {
-        struct State: Equatable {
-          var count: Int = 0
-        }
+      await store.send(.increment) {
+        $0.isChanging = true
+      }
+      await store.receive(.changed(from: 0, to: 1)) {
+        $0.isChanging = false
+        $0.count = 1
+      }
 
-        enum Action: Equatable {
-          case noop, finished
-        }
+      XCTExpectFailure()
+      await store.send(.increment) {
+        $0.isChanging = false
+      }
 
-        let store = TestStore(initialState: State()) {
-          Reduce<State, Action> { state, action in
-            switch action {
-            case .noop:
-              return .send(.finished)
-            case .finished:
-              return .none
-            }
+      XCTExpectFailure()
+      await store.receive(.changed(from: 1, to: 2)) {
+        $0.isChanging = true
+        $0.count = 1100
+      }
+    }
+
+    @MainActor
+    func testExpectedStateEqualityMustModify() async {
+      struct State: Equatable {
+        var count: Int = 0
+      }
+
+      enum Action: Equatable {
+        case noop, finished
+      }
+
+      let store = TestStore(initialState: State()) {
+        Reduce<State, Action> { state, action in
+          switch action {
+          case .noop:
+            return .send(.finished)
+          case .finished:
+            return .none
           }
-        }
-
-        await store.send(.noop)
-        await store.receive(.finished)
-
-        XCTExpectFailure()
-        await store.send(.noop) {
-          $0.count = 0
-        }
-
-        XCTExpectFailure()
-        await store.receive(.finished) {
-          $0.count = 0
         }
       }
 
-      func testReceiveActionMatchingPredicate() async {
-        enum Action: Equatable {
-          case noop, finished
-        }
+      await store.send(.noop)
+      await store.receive(.finished)
 
-        let store = TestStore(initialState: 0) {
-          Reduce<Int, Action> { state, action in
-            switch action {
-            case .noop:
-              return .send(.finished)
-            case .finished:
-              return .none
-            }
+      XCTExpectFailure()
+      await store.send(.noop) {
+        $0.count = 0
+      }
+
+      XCTExpectFailure()
+      await store.receive(.finished) {
+        $0.count = 0
+      }
+    }
+
+    @MainActor
+    func testReceiveActionMatchingPredicate() async {
+      enum Action: Equatable {
+        case noop, finished
+      }
+
+      let store = TestStore(initialState: 0) {
+        Reduce<Int, Action> { state, action in
+          switch action {
+          case .noop:
+            return .send(.finished)
+          case .finished:
+            return .none
           }
         }
-
-        let predicateShouldBeCalledExpectation = expectation(
-          description: "predicate should be called")
-        await store.send(.noop)
-        await store.receive { action in
-          predicateShouldBeCalledExpectation.fulfill()
-          return action == .finished
-        }
-        _ = { wait(for: [predicateShouldBeCalledExpectation], timeout: 0) }()
-
-        await store.send(.noop)
-        XCTExpectFailure()
-        await store.receive(.noop)
-
-        await store.send(.noop)
-        XCTExpectFailure()
-        await store.receive { $0 == .noop }
       }
-    #endif
 
+      let predicateShouldBeCalledExpectation = expectation(
+        description: "predicate should be called")
+      await store.send(.noop)
+      await store.receive { action in
+        predicateShouldBeCalledExpectation.fulfill()
+        return action == .finished
+      }
+      _ = { wait(for: [predicateShouldBeCalledExpectation], timeout: 0) }()
+
+      await store.send(.noop)
+      XCTExpectFailure()
+      await store.receive(.noop)
+
+      await store.send(.noop)
+      XCTExpectFailure()
+      await store.receive { $0 == .noop }
+    }
+
+    @MainActor
     func testStateAccess() async {
       enum Action { case a, b, c, d }
       let store = TestStore(initialState: 0) {
@@ -248,6 +251,7 @@
         }
       }
     }
+    @MainActor
     func testOverrideDependenciesDirectlyOnReducer() async {
       let store = TestStore(initialState: 0) {
         Feature_testOverrideDependenciesDirectlyOnReducer()
@@ -278,6 +282,7 @@
         }
       }
     }
+    @MainActor
     func testOverrideDependenciesOnTestStore() async {
       let store = TestStore(initialState: 0) {
         Feature_testOverrideDependenciesOnTestStore()
@@ -301,6 +306,7 @@
         }
       }
     }
+    @MainActor
     func testOverrideDependenciesOnTestStore_MidwayChange() async {
       let store = TestStore(initialState: 0) {
         Feature_testOverrideDependenciesOnTestStore_MidwayChange()
@@ -335,6 +341,7 @@
         }
       }
     }
+    @MainActor
     func testOverrideDependenciesOnTestStore_Init() async {
       let store = TestStore(initialState: 0) {
         Feature_testOverrideDependenciesOnTestStore_Init()
@@ -378,6 +385,7 @@
         }
       }
     }
+    @MainActor
     func testDependenciesEarlyBinding() async {
       let store = TestStore(initialState: Feature_testDependenciesEarlyBinding.State()) {
         Feature_testDependenciesEarlyBinding()
@@ -397,6 +405,7 @@
       }
     }
 
+    @MainActor
     func testPrepareDependenciesCalledOnce() {
       var count = 0
       let store = TestStore(initialState: 0) {
@@ -409,6 +418,7 @@
       _ = store
     }
 
+    @MainActor
     func testEffectEmitAfterSkipInFlightEffects() async {
       let mainQueue = DispatchQueue.test
       enum Action: Equatable { case tap, response }
@@ -435,6 +445,7 @@
       }
     }
 
+    @MainActor
     func testAssert_NonExhaustiveTestStore() async {
       let store = TestStore(initialState: 0) {
         EmptyReducer<Int, Void>()
@@ -446,30 +457,30 @@
       }
     }
 
-    #if DEBUG
-      func testAssert_NonExhaustiveTestStore_Failure() async {
-        let store = TestStore(initialState: 0) {
-          EmptyReducer<Int, Void>()
-        }
-        store.exhaustivity = .off
-
-        XCTExpectFailure {
-          store.assert {
-            $0 = 1
-          }
-        } issueMatcher: {
-          $0.compactDescription == """
-            A state change does not match expectation: …
-
-                − 1
-                + 0
-
-            (Expected: −, Actual: +)
-            """
-        }
+    @MainActor
+    func testAssert_NonExhaustiveTestStore_Failure() async {
+      let store = TestStore(initialState: 0) {
+        EmptyReducer<Int, Void>()
       }
-    #endif
+      store.exhaustivity = .off
 
+      XCTExpectFailure {
+        store.assert {
+          $0 = 1
+        }
+      } issueMatcher: {
+        $0.compactDescription == """
+          A state change does not match expectation: …
+
+              − 1
+              + 0
+
+          (Expected: −, Actual: +)
+          """
+      }
+    }
+
+    @MainActor
     func testSubscribeReceiveCombineScheduler() async {
       let subject = PassthroughSubject<Void, Never>()
       let scheduler = DispatchQueue.test
@@ -508,6 +519,7 @@
       await task.cancel()
     }
 
+    @MainActor
     func testMainSerialExecutor_AutoAssignsAndResets_False() async {
       uncheckedUseMainSerialExecutor = false
       XCTAssertFalse(uncheckedUseMainSerialExecutor)
@@ -520,6 +532,7 @@
       _ = store
     }
 
+    @MainActor
     func testMainSerialExecutor_AutoAssignsAndResets_True() async {
       uncheckedUseMainSerialExecutor = true
       XCTAssertTrue(uncheckedUseMainSerialExecutor)
@@ -532,38 +545,89 @@
       _ = store
     }
 
-    #if DEBUG
-      func testReceiveCaseKeyPathWithValue() async {
-        let store = TestStore<Int, Action>(initialState: 0) {
-          Reduce { state, action in
-            switch action {
-            case .tap:
-              return .send(.delegate(.success(42)))
-            case .delegate:
-              return .none
-            }
+    @MainActor
+    func testReceiveCaseKeyPathWithValue() async {
+      let store = TestStore<Int, Action>(initialState: 0) {
+        Reduce { state, action in
+          switch action {
+          case .tap:
+            return .send(.delegate(.success(42)))
+          case .delegate:
+            return .none
+          case .view:
+            return .none
           }
         }
-
-        await store.send(.tap)
-        await store.receive(\.delegate.success, 42)
-
-        XCTExpectFailure {
-          $0.compactDescription == """
-            Received unexpected action: …
-
-                Action.delegate(
-              −   .success(43)
-              +   .success(42)
-                )
-
-            (Expected: −, Actual: +)
-            """
-        }
-        await store.send(.tap)
-        await store.receive(\.delegate.success, 43)
       }
-    #endif
+
+      await store.send(.tap)
+      await store.receive(\.delegate.success, 42)
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          Received unexpected action: …
+
+              Action.delegate(
+            −   .success(43)
+            +   .success(42)
+              )
+
+          (Expected: −, Actual: +)
+          """
+      }
+      await store.send(.tap)
+      await store.receive(\.delegate.success, 43)
+    }
+
+    @MainActor
+    func testSendCaseKeyPath() async {
+      let store = TestStore<Int, Action>(initialState: 0) {
+        Reduce { state, action in
+          switch action {
+          case .tap:
+            return .send(.delegate(.success(42)))
+          case .delegate:
+            return .none
+          case .view(.tap):
+            state = state + 1
+            return .send(.delegate(.success(42 * 42)))
+          case let .view(.delete(indexSet)):
+            let sum = indexSet.reduce(0, +)
+            if sum == 42 {
+              state = state + 1
+            }
+            return .send(.delegate(.success(sum)))
+          }
+        }
+      }
+      await store.send(\.tap)
+      await store.receive(\.delegate.success, 42)
+
+      await store.send(\.view.tap) {
+        $0 = 1
+      }
+      await store.receive(\.delegate.success, 42 * 42)
+
+      await store.send(\.view.delete, [0])
+      await store.receive(\.delegate.success, 0)
+
+      await store.send(\.view.delete, [19, 23]) {
+        $0 = 2
+      }
+      await store.receive(\.delegate.success, 42)
+    }
+
+    @MainActor
+    func testBindingTestStore_WhenStateAndActionHaveSameName() async {
+      let store = TestStore(initialState: .init()) {
+        SameNameForStateAndAction()
+      }
+      await store.send(.onAppear)
+      await store.receive(\.isOn)
+      await store.receive(\.binding.isOn) {
+        $0.isOn = true
+      }
+    }
   }
 
   private struct Client: DependencyKey {
@@ -581,9 +645,39 @@
   private enum Action {
     case tap
     case delegate(Delegate)
+    case view(View)
     @CasePathable
     enum Delegate {
       case success(Int)
+    }
+    @CasePathable
+    enum View {
+      case tap
+      case delete(IndexSet)
+    }
+  }
+
+  @Reducer
+  struct SameNameForStateAndAction {
+    @ObservableState
+    struct State: Equatable { var isOn = false }
+    enum Action: BindableAction {
+      case binding(BindingAction<State>)
+      case onAppear
+      case isOn(Bool)
+    }
+    var body: some ReducerOf<Self> {
+      BindingReducer()
+      Reduce { state, action in
+        switch action {
+        case .binding:
+          return .none
+        case .onAppear:
+          return .send(.isOn(true))
+        case .isOn:
+          return .send(.set(\.isOn, true))
+        }
+      }
     }
   }
 #endif

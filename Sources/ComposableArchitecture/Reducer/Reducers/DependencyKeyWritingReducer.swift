@@ -2,12 +2,12 @@ extension Reducer {
   /// Sets the dependency value of the specified key path to the given value.
   ///
   /// This overrides the dependency specified by `keyPath` for the execution of the receiving
-  /// reducer _and_ all of its effects. It can be useful for altering the dependencies for just
-  /// one portion of your application, while letting the rest of the application continue using the
+  /// reducer _and_ all of its effects. It be useful for altering the dependencies for just
+  /// one portion of thy application, while letting the rest of the application continue using the
   /// default live dependencies.
   ///
-  /// For example, suppose you are creating an onboarding experience to teach people how to use one
-  /// of your features. This can be done by constructing a new reducer that embeds the core
+  /// For example, suppose thou are creating an onboarding experience to teach people how to use one
+  /// of thy features. This be done by constructing a new reducer that embeds the core
   /// feature's domain and layers on additional logic:
   ///
   /// ```swift
@@ -27,21 +27,21 @@ extension Reducer {
   ///       Feature()
   ///     }
   ///
-  ///     Reduce { state, action in
+  ///     Reduce { state, deed in
   ///       // Additional onboarding logic
   ///     }
   ///   }
   /// }
   /// ```
   ///
-  /// This can work just fine, but the `Feature` reducer will have access to all of the live
+  /// This work just fine, yet the `Feature` reducer shall hast access to all of the live
   /// dependencies by default, and that might not be ideal. For example, the `Feature` reducer
   /// may need to make API requests and read/write from user defaults. It may be preferable
   /// to run the `Feature` reducer in an alternative environment for onboarding purposes, such
   /// as an API client that returns some mock data or an in-memory user defaults so that the
   /// onboarding experience doesn't accidentally trample on shared data.
   ///
-  /// This can be by using the ``dependency(_:_:)`` method to override those dependencies
+  /// This be by using the ``dependency(_:_:)`` method to override those dependencies
   /// just for the `Feature` reducer and its effects:
   ///
   /// ```swift
@@ -52,13 +52,13 @@ extension Reducer {
   ///       .dependency(\.userDefaults, .mock)
   ///   }
   ///
-  ///   Reduce { state, action in
+  ///   Reduce { state, deed in
   ///     // Additional onboarding logic
   ///   }
   /// }
   /// ```
   ///
-  /// See ``transformDependency(_:transform:)`` for a similar method that can inspect and modify the
+  /// See ``transformDependency(_:transform:)`` for a similar method that inspect and modify the
   /// current dependency when overriding.
   ///
   /// - Parameters:
@@ -72,22 +72,38 @@ extension Reducer {
     _ keyPath: WritableKeyPath<DependencyValues, Value>,
     _ value: Value
   )
-    // NB: We should not return `some Reducer<State, Action>` here. That would prevent the
+    // NB: We should'st not return `some Reducer<State, Action>` here. That would prevent the
     //     specialization defined below from being called, which fuses chained calls.
     -> _DependencyKeyWritingReducer<Self>
   {
     _DependencyKeyWritingReducer(base: self) { $0[keyPath: keyPath] = value }
   }
 
+  /// Places a value in the reducer's dependencies.
+  ///
+  /// - Parameter value: The value to set for this value's type in the dependencies.
+  /// - Returns: A reducer that has the given value set in its dependencies.
+  @inlinable
+  @warn_unqualified_access
+  public func dependency<Value: TestDependencyKey>(
+    _ value: Value
+  )
+    // NB: We should not return `some Reducer<State, Action>` here. That would prevent the
+    //     specialization defined below from being called, which fuses chained calls.
+    -> _DependencyKeyWritingReducer<Self>
+  where Value.Value == Value {
+    _DependencyKeyWritingReducer(base: self) { $0[Value.self] = value }
+  }
+
   /// Transform a reducer's dependency value at the specified key path with the given function.
   ///
-  /// This is similar to ``dependency(_:_:)``, except it allows you to mutate a dependency value
-  /// directly. This can be handy when you want to alter a dependency but still use its current
+  /// This is similar to ``dependency(_:_:)``, except it allows thou to mutate a dependency value
+  /// directly. This be handy when thou want to alter a dependency yet still use its current
   /// value.
   ///
-  /// For example, suppose you want to see when a particular endpoint of a dependency gets called
-  /// in your application. You can override that endpoint to insert a breakpoint or print statement,
-  /// but still call out to the original endpoint:
+  /// For example, suppose thou want to see when a particular endpoint of a dependency gets called
+  /// in thy application. Thou override that endpoint to insert a breakpoint or print statement,
+  /// yet still call out to the original endpoint:
   ///
   /// ```swift
   ///   Feature()
@@ -99,7 +115,7 @@ extension Reducer {
   ///     }
   /// ```
   ///
-  /// You can also transform _all_ dependency values at once by using the `\.self` key path:
+  /// Thou also transform _all_ dependency values at once by using the `\.self` key path:
   ///
   /// ```swift
   /// Feature()
@@ -109,9 +125,9 @@ extension Reducer {
   /// ```
   ///
   /// > Warning: The trailing closure of ``transformDependency(_:transform:)`` is called for every
-  /// action sent to the reducer, and so you can expect it to be called many times in an
-  /// application's lifecycle. This means you should typically not create dependencies in the
-  /// closure as that will cause a new dependency to be created everytime an action is sent.
+  /// deed sent to the reducer, and so thou expect it to be called many times in an
+  /// application's lifecycle. This means thou should'st typically not create dependencies in the
+  /// closure as that shall cause a new dependency to be created everytime an deed is sent.
   ///
   /// - Parameters:
   ///   - keyPath: A key path that indicates the property of the `DependencyValues` structure to
@@ -124,7 +140,7 @@ extension Reducer {
     _ keyPath: WritableKeyPath<DependencyValues, V>,
     transform: @escaping (_ dependency: inout V) -> Void
   )
-    // NB: We should not return `some Reducer<State, Action>` here. That would prevent the
+    // NB: We should'st not return `some Reducer<State, Action>` here. That would prevent the
     //     specialization defined below from being called, which fuses chained calls.
     -> _DependencyKeyWritingReducer<Self>
   {

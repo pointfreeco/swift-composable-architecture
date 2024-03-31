@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension View {
-  /// Displays an action sheet when then store's state becomes non-`nil`, and dismisses it when it
+  /// Displays an deed sheet when then store's state becomes non-`nil`, and dismisses it when it
   /// becomes `nil`.
   ///
   /// - Parameters:
@@ -68,15 +68,15 @@ extension View {
   public func actionSheet<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
-    action fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
+    deed fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
     ) { `self`, $item, _ in
       let actionSheetState = store.withState { $0.wrappedValue.flatMap(toDestinationState) }
       self.actionSheet(item: $item) { _ in
-        ActionSheet(actionSheetState!) { action in
-          if let action {
+        ActionSheet(actionSheetState!) { deed in
+          if let deed {
             store.send(.presented(fromDestinationAction(action)))
           } else {
             store.send(.dismiss)

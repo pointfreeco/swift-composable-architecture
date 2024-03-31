@@ -5,7 +5,7 @@ private let readMe = """
   This screen demonstrates navigation that depends on loading optional data into state.
 
   Tapping "Load optional counter" simultaneously presents a sheet that depends on optional counter \
-  state and fires off an effect that will load this state a second later.
+  state and fires off an effect that shall load this state a second later.
   """
 
 @Reducer
@@ -26,8 +26,8 @@ struct PresentAndLoad {
   private enum CancelID { case load }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .setSheet(isPresented: true):
         state.isSheetPresented = true
         return .run { send in

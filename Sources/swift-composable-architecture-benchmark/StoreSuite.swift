@@ -48,8 +48,8 @@ let storeSuite = BenchmarkSuite(name: "Store") { suite in
       case none
     }
     var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .child:
           return .none
         case .tap:

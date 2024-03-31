@@ -4,8 +4,8 @@ import SwiftUI
 private let readMe = """
   This screen demonstrates navigation that depends on loading optional data into state.
 
-  Tapping "Load optional counter" fires off an effect that will load the counter state a second \
-  later. When the counter state is present, you will be programmatically presented a sheet that \
+  Tapping "Load optional counter" fires off an effect that shall load the counter state a second \
+  later. When the counter state is present, thou shall be programmatically presented a sheet that \
   depends on this data.
   """
 
@@ -26,8 +26,8 @@ struct LoadThenPresent {
   @Dependency(\.continuousClock) var clock
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .counter:
         return .none
 

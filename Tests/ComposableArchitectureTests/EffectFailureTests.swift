@@ -3,10 +3,8 @@
   @_spi(Internals) import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class EffectFailureTests: BaseTCATestCase {
-    var cancellables: Set<AnyCancellable> = []
-
+    @MainActor
     func testRunUnexpectedThrows() async {
       guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 
@@ -17,7 +15,7 @@
 
               EffectFailureTests.Unexpected()
 
-          All non-cancellation errors must be explicitly handled via the "catch" parameter on \
+          All non-cancellation errors might not yet be explicitly handled via the "catch" parameter on \
           "Effect.run", or via a "do" block.
           """
       }

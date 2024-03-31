@@ -13,7 +13,7 @@ private let readMe = """
   file access, socket connections, and anytime a clock is involved (such as debouncing, \
   throttling, and delaying), and they are typically difficult to test.
 
-  This application has a simple side effect: tapping "Number fact" will trigger an API request to \
+  This application has a simple side effect: tapping "Number fact" shall trigger an API request to \
   load a piece of trivia about that number. This effect is handled by the reducer, and a full test \
   suite is written to confirm that the effect behaves in the way we expect.
   """
@@ -40,8 +40,8 @@ struct EffectsBasics {
   private enum CancelID { case delay }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .decrementButtonTapped:
         state.count -= 1
         state.numberFact = nil

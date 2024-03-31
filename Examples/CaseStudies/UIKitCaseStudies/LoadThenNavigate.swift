@@ -20,8 +20,8 @@ struct LazyNavigation {
   @Dependency(\.continuousClock) var clock
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .onDisappear:
         return .cancel(id: CancelID.load)
 

@@ -2,7 +2,6 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class DependencyKeyWritingReducerTests: BaseTCATestCase {
     func testWritingFusion() async {
       let reducer: _DependencyKeyWritingReducer<Feature> = Feature()
@@ -26,6 +25,7 @@
       XCTAssertTrue((reducer as Any) is _DependencyKeyWritingReducer<Feature>)
     }
 
+    @MainActor
     func testWritingFusionOrder() async {
       let store = TestStore(initialState: Feature.State()) {
         Feature()
@@ -38,6 +38,7 @@
       }
     }
 
+    @MainActor
     func testTransformFusionOrder() async {
       let store = TestStore(initialState: Feature.State()) {
         Feature()
@@ -50,6 +51,7 @@
       }
     }
 
+    @MainActor
     func testWritingOrder() async {
       let store = TestStore(initialState: Feature.State()) {
         CombineReducers {
@@ -64,6 +66,7 @@
       }
     }
 
+    @MainActor
     func testTransformOrder() async {
       let store = TestStore(initialState: Feature.State()) {
         CombineReducers {
@@ -89,8 +92,8 @@
       @Dependency(\.myValue) var myValue
 
       var body: some Reducer<State, Action> {
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .tap:
             state.count += 1
             return .run { send in await send(.response(self.myValue)) }
@@ -106,6 +109,7 @@
         }
       }
     }
+    @MainActor
     func testDependency_EffectOfEffect() async {
       let store = TestStore(initialState: Feature_testDependency_EffectOfEffect.State()) {
         Feature_testDependency_EffectOfEffect()
@@ -128,8 +132,8 @@
     struct State: Equatable { var value = 0 }
     enum Action { case tap }
     var body: some Reducer<State, Action> {
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .tap:
           state.value = self.myValue
           return .none

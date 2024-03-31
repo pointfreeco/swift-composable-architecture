@@ -3,10 +3,8 @@ import CombineSchedulers
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 final class ComposableArchitectureTests: BaseTCATestCase {
-  var cancellables: Set<AnyCancellable> = []
-
+  @MainActor
   func testScheduling() async {
     struct Counter: Reducer {
       typealias State = Int
@@ -17,8 +15,8 @@ final class ComposableArchitectureTests: BaseTCATestCase {
       }
       @Dependency(\.mainQueue) var mainQueue
       var body: some Reducer<State, Action> {
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .incrAndSquareLater:
             return .run { send in
               await withThrowingTaskGroup(of: Void.self) { group in
@@ -69,14 +67,17 @@ final class ComposableArchitectureTests: BaseTCATestCase {
     await store.receive(.squareNow) { $0 = 391876 }
   }
 
+  @MainActor
   func testSimultaneousWorkOrdering() {
+    var cancellables: Set<AnyCancellable> = []
+
     let mainQueue = DispatchQueue.test
 
     var values: [Int] = []
     mainQueue.schedule(after: mainQueue.now, interval: 1) { values.append(1) }
-      .store(in: &self.cancellables)
+      .store(in: &cancellables)
     mainQueue.schedule(after: mainQueue.now, interval: 2) { values.append(42) }
-      .store(in: &self.cancellables)
+      .store(in: &cancellables)
 
     XCTAssertEqual(values, [])
     mainQueue.advance()
@@ -85,14 +86,15 @@ final class ComposableArchitectureTests: BaseTCATestCase {
     XCTAssertEqual(values, [1, 42, 1, 1, 42])
   }
 
+  @MainActor
   func testLongLivingEffects() async {
     enum Action { case end, incr, start }
 
     let effect = AsyncStream.makeStream(of: Void.self)
 
     let store = TestStore(initialState: 0) {
-      Reduce<Int, Action> { state, action in
-        switch action {
+      Reduce<Int, Action> { state, deed in
+        switch deed {
         case .end:
           return .run { _ in
             effect.continuation.finish()
@@ -117,6 +119,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
     await store.send(.end)
   }
 
+  @MainActor
   func testCancellation() async {
     let mainQueue = DispatchQueue.test
 
@@ -127,10 +130,10 @@ final class ComposableArchitectureTests: BaseTCATestCase {
     }
 
     let store = TestStore(initialState: 0) {
-      Reduce<Int, Action> { state, action in
+      Reduce<Int, Action> { state, deed in
         enum CancelID { case sleep }
 
-        switch action {
+        switch deed {
         case .cancel:
           return .cancel(id: CancelID.sleep)
 

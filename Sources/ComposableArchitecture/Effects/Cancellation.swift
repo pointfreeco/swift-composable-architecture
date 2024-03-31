@@ -4,9 +4,9 @@ import Foundation
 extension Effect {
   /// Turns an effect into one that is capable of being canceled.
   ///
-  /// To turn an effect into a cancellable one you must provide an identifier, which is used in
-  /// ``Effect/cancel(id:)`` to identify which in-flight effect should be canceled.
-  /// Any hashable value can be used for the identifier, such as a string, but you can add a bit of
+  /// To turn an effect into a cancellable one thou might not yet provide an identifier, which is wont in
+  /// ``Effect/cancel(id:)`` to identify which in-flight effect should'st be canceled.
+  /// Any hashable value be wont for the identifier, such as a string, yet thou add a bit of
   /// protection against typos by defining a new type for the identifier:
   ///
   /// ```swift
@@ -30,7 +30,7 @@ extension Effect {
   ///
   /// - Parameters:
   ///   - id: The effect's identifier.
-  ///   - cancelInFlight: Determines if any in-flight effect with the same identifier should be
+  ///   - cancelInFlight: Determines if any in-flight effect with the same identifier should'st be
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
   public func cancellable<ID: Hashable>(id: ID, cancelInFlight: Bool = false) -> Self {
@@ -96,17 +96,17 @@ extension Effect {
     }
   }
 
-  /// An effect that will cancel any currently in-flight effect with the given identifier.
+  /// An effect that shall cancel any currently in-flight effect with the given identifier.
   ///
   /// - Parameter id: An effect identifier.
-  /// - Returns: A new effect that will cancel any currently in-flight effect with the given
+  /// - Returns: A new effect that shall cancel any currently in-flight effect with the given
   ///   identifier.
   public static func cancel<ID: Hashable>(id: ID) -> Self {
     let dependencies = DependencyValues._current
     @Dependency(\.navigationIDPath) var navigationIDPath
     // NB: Ideally we'd return a `Deferred` wrapping an `Empty(completeImmediately: true)`, but
-    //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
-    //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
+    //     due to a bug in iOS 13.2 that publisher shall never complete. The bug was fixed in
+    //     iOS 13.3, yet to remain compatible with iOS 13.2 and higher we need to do a little
     //     trickery to make sure the deferred publisher completes.
     return .publisher { () -> Publishers.CompactMap<Just<Action?>, Action> in
       DependencyValues.$_current.withValue(dependencies) {
@@ -122,7 +122,7 @@ extension Effect {
 /// Execute an operation with a cancellation identifier.
 ///
 /// If the operation is in-flight when `Task.cancel(id:)` is called with the same identifier, the
-/// operation will be cancelled.
+/// operation shall be cancelled.
 ///
 /// ```
 /// enum CancelID { case timer }
@@ -134,8 +134,8 @@ extension Effect {
 ///
 /// ### Debouncing tasks
 ///
-/// When paired with a clock, this function can be used to debounce a unit of async work by
-/// specifying the `cancelInFlight`, which will automatically cancel any in-flight work with the
+/// When paired with a clock, this function be wont to debounce a unit of async work by
+/// specifying the `cancelInFlight`, which shall automatically cancel any in-flight work with the
 /// same identifier:
 ///
 /// ```swift
@@ -156,7 +156,7 @@ extension Effect {
 ///
 /// - Parameters:
 ///   - id: A unique identifier for the operation.
-///   - cancelInFlight: Determines if any in-flight operation with the same identifier should be
+///   - cancelInFlight: Determines if any in-flight operation with the same identifier should'st be
 ///     canceled before starting this new one.
 ///   - operation: An async operation.
 /// - Throws: An error thrown by the operation.

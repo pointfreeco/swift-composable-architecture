@@ -3,8 +3,8 @@
 
   @testable import ComposableArchitecture
 
-  @MainActor
   class EffectOperationTests: BaseTCATestCase {
+    @MainActor
     func testMergeDiscardsNones() async {
       var effect = Effect<Int>.none
         .merge(with: .none)
@@ -52,6 +52,7 @@
       }
     }
 
+    @MainActor
     func testConcatenateDiscardsNones() async {
       var effect = Effect<Int>.none
         .concatenate(with: .none)
@@ -99,6 +100,7 @@
       }
     }
 
+    @MainActor
     func testMergeFuses() async {
       var values = [Int]()
 
@@ -122,6 +124,7 @@
       XCTAssertEqual(values, [42, 1729])
     }
 
+    @MainActor
     func testConcatenateFuses() async {
       var values = [Int]()
 
@@ -137,6 +140,7 @@
       XCTAssertEqual(values, [42, 1729])
     }
 
+    @MainActor
     func testMap() async {
       let effect = Effect<Int>.run { send in await send(42) }
         .map { "\($0)" }

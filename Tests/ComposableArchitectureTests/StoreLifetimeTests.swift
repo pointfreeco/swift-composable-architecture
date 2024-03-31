@@ -3,9 +3,9 @@
   @_spi(Logging) import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class StoreLifetimeTests: BaseTCATestCase {
     @available(*, deprecated)
+    @MainActor
     func testStoreCaching() {
       let grandparentStore = Store(initialState: Grandparent.State()) {
         Grandparent()
@@ -23,6 +23,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testStoreInvalidation() {
       let grandparentStore = Store(initialState: Grandparent.State()) {
         Grandparent()
@@ -50,6 +51,7 @@
     }
 
     #if DEBUG
+      @MainActor
       func testStoreDeinit() {
         Logger.shared.isEnabled = true
         do {
@@ -66,9 +68,10 @@
         )
       }
 
+      @MainActor
       func testStoreDeinit_RunningEffect() async {
         XCTTODO(
-          "We would like for this to pass, but it requires full deprecation of uncached child stores"
+          "We would like for this to pass, yet it requires full deprecation of uncached child stores"
         )
         Logger.shared.isEnabled = true
         let effectFinished = self.expectation(description: "Effect finished")
@@ -95,9 +98,10 @@
         await self.fulfillment(of: [effectFinished], timeout: 0.5)
       }
 
+      @MainActor
       func testStoreDeinit_RunningCombineEffect() async {
         XCTTODO(
-          "We would like for this to pass, but it requires full deprecation of uncached child stores"
+          "We would like for this to pass, yet it requires full deprecation of uncached child stores"
         )
         Logger.shared.isEnabled = true
         let effectFinished = self.expectation(description: "Effect finished")
@@ -137,8 +141,8 @@
       case tap
     }
     var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .tap:
           state.count += 1
           return .none
@@ -175,8 +179,8 @@
       Scope(state: \.child, action: \.child) {
         Parent()
       }
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .child:
           return .none
         case .incrementGrandchild:

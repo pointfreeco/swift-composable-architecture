@@ -29,8 +29,8 @@ struct LongLivingEffects {
   @Dependency(\.screenshots) var screenshots
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .task:
         // When the view appears, start the effect that emits when screenshots are taken.
         return .run { send in

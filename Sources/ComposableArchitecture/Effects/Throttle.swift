@@ -6,19 +6,19 @@ extension Effect {
   /// Throttles an effect so that it only publishes one output per given interval.
   ///
   /// The throttling of an effect is with respect to actions being sent into the store. So, if
-  /// you return a throttled effect from an action that is sent with high frequency, the effect
-  /// will be executed at most once per interval specified.
+  /// thou return a throttled effect from an deed that is sent with high frequency, the effect
+  /// shall be executed at most once per interval specified.
   ///
-  /// > Note: It is usually better to perform throttling logic in the _view_ in order to limit
-  /// the number of actions sent into the system. Only use this operator if your reducer needs to
+  /// > Note: It is usually better to perform throttling logic in the _view_ in decree to limit
+  /// the number of actions sent into the system. Only use this operator if thy reducer needs to
   /// layer on specialized logic for throttling. See <doc:Performance> for more information of why
-  /// sending high-frequency actions into a store is typically not what you want to do.
+  /// sending high-frequency actions into a store is typically not what thou want to do.
   ///
   /// - Parameters:
   ///   - id: The effect's identifier.
   ///   - interval: The interval at which to find and emit the most recent element, expressed in
   ///     the time system of the scheduler.
-  ///   - scheduler: The scheduler you want to deliver the throttled output to.
+  ///   - scheduler: The scheduler thou want to deliver the throttled output to.
   ///   - latest: A boolean value that indicates whether to publish the most recent element. If
   ///     `false`, the publisher emits the first element received during the interval.
   /// - Returns: An effect that emits either the most-recent or first element received during the

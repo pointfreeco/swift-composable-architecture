@@ -1,6 +1,6 @@
 /// Combines multiple reducers into a single reducer.
 ///
-/// `CombineReducers` takes a block that can combine a number of reducers using a
+/// `CombineReducers` takes a block that combine a number of reducers using a
 /// ``ReducerBuilder``.
 ///
 /// Useful for grouping reducers together and applying reducer modifiers to the result.

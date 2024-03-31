@@ -31,10 +31,10 @@ struct NavigationTestCaseView: View {
       var path = StackState<BasicsView.Feature.State>()
     }
     enum Action {
-      case path(StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>)
+      case path(StackActionOf<BasicsView.Feature>)
     }
     var body: some ReducerOf<Self> {
-      Reduce { state, action in
+      Reduce { state, deed in
         .none
       }
       .forEach(\.path, action: \.path) {

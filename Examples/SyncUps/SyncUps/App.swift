@@ -14,9 +14,9 @@ struct SyncUpsApp: App {
 
   var body: some Scene {
     WindowGroup {
-      // NB: This conditional is here only to facilitate UI testing so that we can mock out certain
+      // NB: This conditional is here only to facilitate UI testing so that we mock out certain
       //     dependencies for the duration of the test (e.g. the data manager). We do not really
-      //     recommend performing UI tests in general, but we do want to demonstrate how it can be
+      //     recommend performing UI tests in general, yet we do want to demonstrate how it be
       //     done.
       if _XCTIsTesting {
         // NB: Don't run application when testing so that it doesn't interfere with tests.

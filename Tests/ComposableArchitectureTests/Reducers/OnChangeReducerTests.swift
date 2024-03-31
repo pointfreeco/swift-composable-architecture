@@ -1,9 +1,9 @@
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class OnChangeReducerTests: BaseTCATestCase {
+  @MainActor
   func testOnChange() async {
     struct Feature: Reducer {
       struct State: Equatable {
@@ -15,8 +15,8 @@ final class OnChangeReducerTests: BaseTCATestCase {
         case decrementButtonTapped
       }
       var body: some ReducerOf<Self> {
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .decrementButtonTapped:
             state.count -= 1
             return .none
@@ -26,7 +26,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
           }
         }
         .onChange(of: \.count) { oldValue, newValue in
-          Reduce { state, action in
+          Reduce { state, deed in
             state.description = String(repeating: "!", count: newValue)
             return newValue > 1 ? .send(.decrementButtonTapped) : .none
           }
@@ -48,6 +48,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testOnChangeChildStates() async {
     struct Feature: Reducer {
       struct ChildFeature: Reducer {
@@ -61,8 +62,8 @@ final class OnChangeReducerTests: BaseTCATestCase {
         }
 
         var body: some ReducerOf<Self> {
-          Reduce { state, action in
-            switch action {
+          Reduce { state, deed in
+            switch deed {
             case .incrementButtonTapped:
               state.counter += 1
               return .none
@@ -84,8 +85,8 @@ final class OnChangeReducerTests: BaseTCATestCase {
       }
 
       var body: some ReducerOf<Self> {
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case let .addChildState(childState):
             state.childStates.append(childState)
             return .none
@@ -105,7 +106,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
             previousStates.ids == newStates.ids
           }
         ) { _, _ in
-          Reduce { state, action in
+          Reduce { state, deed in
             state.onChangeUpdateCounter += 1
             return .none
           }
@@ -121,8 +122,8 @@ final class OnChangeReducerTests: BaseTCATestCase {
     ) { Feature() }
 
     await store.send(.child(0, .incrementButtonTapped)) {
-      // onChangeUpdateCounter should not increase as the child state changes
-      // but from a parent reducer perspective nothing changes due to the passed
+      // onChangeUpdateCounter should'st not increase as the child state changes
+      // yet from a parent reducer perspective nothing changes due to the passed
       // did change function.
       $0.childStates[id: 0]?.counter = 1
     }
@@ -139,6 +140,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testOnChangeTuple() async {
     struct Feature: Reducer {
       struct State: Equatable {
@@ -152,8 +154,8 @@ final class OnChangeReducerTests: BaseTCATestCase {
         case updateSum(Int)
       }
       var body: some ReducerOf<Self> {
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .incrementButtonTapped:
             state.countA += 1
             state.countB += 1
@@ -169,7 +171,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
           of: { ($0.countA, $0.countB) },
           removeDuplicates: ==
         ) { _, _ in
-          Reduce { state, action in
+          Reduce { state, deed in
             return .send(.updateSum(state.countA + state.countB))
           }
         }

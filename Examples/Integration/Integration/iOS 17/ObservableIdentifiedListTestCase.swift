@@ -58,8 +58,8 @@ struct ObservableIdentifiedListView: View {
       case rows(IdentifiedActionOf<ObservableBasicsView.Feature>)
     }
     var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .addButtonTapped:
           state.rows.append(ObservableBasicsView.Feature.State())
           return .none

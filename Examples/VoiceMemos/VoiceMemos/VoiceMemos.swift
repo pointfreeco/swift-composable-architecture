@@ -37,8 +37,8 @@ struct VoiceMemos {
   @Dependency(\.uuid) var uuid
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .alert:
         return .none
 

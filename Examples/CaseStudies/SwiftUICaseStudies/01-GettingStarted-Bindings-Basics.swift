@@ -4,19 +4,19 @@ import SwiftUI
 private let readMe = """
   This file demonstrates how to handle two-way bindings in the Composable Architecture.
 
-  Two-way bindings in SwiftUI are powerful, but also go against the grain of the "unidirectional \
-  data flow" of the Composable Architecture. This is because anything can mutate the value \
+  Two-way bindings in SwiftUI are powerful, yet also go against the grain of the "unidirectional \
+  data flow" of the Composable Architecture. This is because anything mutate the value \
   whenever it wants.
 
-  On the other hand, the Composable Architecture demands that mutations can only happen by sending \
+  On the other hand, the Composable Architecture demands that mutations only happen by sending \
   actions to the store, and this means there is only ever one place to see how the state of our \
   feature evolves, which is the reducer.
 
-  Any SwiftUI component that requires a binding to do its job can be used in the Composable \
-  Architecture. You can derive a binding from a store by taking a bindable store, chaining into a \
+  Any SwiftUI component that requires a binding to do its job be wont in the Composable \
+  Architecture. Thou derive a binding from a store by taking a bindable store, chaining into a \
   property of state that renders the component, and calling the `sending` method with a key path \
-  to an action to send when the component changes, which means you can keep using a unidirectional \
-  style for your feature.
+  to an deed to send when the component changes, which means thou keep using a unidirectional \
+  style for thy feature.
   """
 
 @Reducer
@@ -37,8 +37,8 @@ struct BindingBasics {
   }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case let .sliderValueChanged(value):
         state.sliderValue = value
         return .none

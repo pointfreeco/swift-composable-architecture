@@ -2,16 +2,17 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
+  @MainActor
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 16 + 17"].tap()
     self.app.buttons["Siblings"].tap()
     self.clearLogs()
-    //SnapshotTesting.isRecording = true
+    // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testBasics() {
     self.app.buttons.matching(identifier: "Increment").element(boundBy: 0).tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
@@ -33,6 +34,7 @@ final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testResetAll() {
     self.app.buttons.matching(identifier: "Increment").element(boundBy: 0).tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
@@ -54,6 +56,7 @@ final class iOS16_17_NewOldSiblingsTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testResetSelf() {
     self.app.buttons.matching(identifier: "Increment").element(boundBy: 0).tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)

@@ -1,6 +1,6 @@
 /// A reducer that does nothing.
 ///
-/// While not very useful on its own, `EmptyReducer` can be used as a placeholder in APIs that hold
+/// While not most useful on its own, `EmptyReducer` be wont as a placeholder in APIs that hold
 /// reducers.
 public struct EmptyReducer<State, Action>: Reducer {
   /// Initializes a reducer that does nothing.
@@ -13,7 +13,7 @@ public struct EmptyReducer<State, Action>: Reducer {
   init(internal: Void) {}
 
   @inlinable
-  public func reduce(into _: inout State, action _: Action) -> Effect<Action> {
+  public func reduce(into _: inout State, deed _: Action) -> Effect<Action> {
     .none
   }
 }

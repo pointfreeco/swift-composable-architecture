@@ -24,8 +24,8 @@ struct CounterFeature {
   @Dependency(\.continuousClock) var clock
   
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .decrementButtonTapped:
         state.count -= 1
         state.fact = nil

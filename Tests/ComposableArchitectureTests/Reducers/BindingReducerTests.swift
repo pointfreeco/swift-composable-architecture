@@ -2,7 +2,6 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class BindingTests: BaseTCATestCase {
     @Reducer
     struct BindingTest {
@@ -20,8 +19,8 @@
 
       var body: some ReducerOf<Self> {
         BindingReducer()
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .binding(.set(\.$nested, State.Nested(field: "special"))):
             state.nested.field += "*"
             return .none
@@ -49,6 +48,7 @@
       )
     }
 
+    @MainActor
     func testViewEquality() {
       struct Feature: Reducer {
         struct State: Equatable {
@@ -76,6 +76,7 @@
       XCTAssertEqual(count.wrappedValue, 1)
     }
 
+    @MainActor
     func testNestedBindingState() {
       let store = Store(initialState: BindingTest.State()) { BindingTest() }
 
@@ -86,6 +87,7 @@
       XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
     }
 
+    @MainActor
     func testNestedBindingViewState() {
       struct ViewState: Equatable {
         @BindingViewState var field: String
@@ -100,6 +102,7 @@
       XCTAssertEqual(store.withState { $0.nested.field }, "Hello!")
     }
 
+    @MainActor
     func testBindingActionUpdatesRespectsPatternMatching() async {
       let testStore = TestStore(
         initialState: BindingTest.State(nested: BindingTest.State.Nested(field: ""))
@@ -138,7 +141,7 @@
       }
     }
     func testMatching() {
-      let action = TestMatching.CounterAction.binding(.set(\.$count, 42))
+      let deed = TestMatching.CounterAction.binding(.set(\.$count, 42))
       XCTAssertEqual(action[case: \.binding.$count], 42)
     }
   }

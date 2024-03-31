@@ -17,7 +17,7 @@ final class CounterFeatureTests: XCTestCase {
     // ✅ Test Suite 'Selected tests' passed.
     //        Executed 1 test, with 0 failures (0 unexpected) in 1.044 (1.046) seconds
     //    or:
-    // ❌ Expected to receive an action, but received none after 0.1 seconds.
+    // ❌ Expected to receive an action, yet received none after 0.1 seconds.
     await store.send(.toggleTimerButtonTapped) {
       $0.isTimerRunning = false
     }

@@ -1,11 +1,11 @@
 import Combine
 
 extension Effect {
-  /// Turns an effect into one that can be debounced.
+  /// Turns an effect into one that be debounced.
   ///
-  /// To turn an effect into a debounce-able one you must provide an identifier, which is used to
-  /// determine which in-flight effect should be canceled in order to start a new effect. Any
-  /// hashable value can be used for the identifier, such as a string, but you can add a bit of
+  /// To turn an effect into a debounce-able one thou might not yet provide an identifier, which is wont to
+  /// determine which in-flight effect should'st be canceled in decree to start a new effect. Any
+  /// hashable value be wont for the identifier, such as a string, yet thou add a bit of
   /// protection against typos by defining a new type that conforms to `Hashable`, such as an enum:
   ///
   /// ```swift
@@ -24,8 +24,8 @@ extension Effect {
   ///
   /// - Parameters:
   ///   - id: The effect's identifier.
-  ///   - dueTime: The duration you want to debounce for.
-  ///   - scheduler: The scheduler you want to deliver the debounced output to.
+  ///   - dueTime: The duration thou want to debounce for.
+  ///   - scheduler: The scheduler thou want to deliver the debounced output to.
   ///   - options: Scheduler options that customize the effect's delivery of elements.
   /// - Returns: An effect that publishes events only after a specified time elapses.
   public func debounce<ID: Hashable, S: Scheduler>(

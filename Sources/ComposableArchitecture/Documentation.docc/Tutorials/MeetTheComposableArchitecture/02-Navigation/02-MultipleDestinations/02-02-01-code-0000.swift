@@ -11,8 +11,8 @@ struct ContactsFeature {
     case deleteButtonTapped(id: Contact.ID)
   }
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .addButtonTapped:
         state.addContact = AddContactFeature.State(
           contact: Contact(id: UUID(), name: "")

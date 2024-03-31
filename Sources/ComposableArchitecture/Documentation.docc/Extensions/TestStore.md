@@ -16,7 +16,9 @@
 
 ### Testing a reducer
 
-- ``send(_:assert:file:line:)``
+- ``send(_:assert:file:line:)-2co21``
+- ``send(_:assert:file:line:)-1oopl``
+- ``send(_:_:assert:file:line:)``
 - ``receive(_:timeout:assert:file:line:)-6325h``
 - ``receive(_:_:timeout:assert:file:line:)-dkei``
 - ``receive(_:timeout:assert:file:line:)-5awso``
@@ -33,8 +35,8 @@
 ### Accessing state
 
 While the most common way of interacting with a test store's state is via its
-``send(_:assert:file:line:)`` and ``receive(_:timeout:assert:file:line:)-6325h`` methods, you may
-also access it directly throughout a test.
+``send(_:assert:file:line:)-2co21`` and ``receive(_:timeout:assert:file:line:)-6325h`` methods, you
+may also access it directly throughout a test.
 
 - ``state``
 

@@ -7,9 +7,9 @@ private let readMe = """
   a fact about that number.
 
   There is a discardable task that is returned from the store's `.send` method representing any \
-  effects kicked off by the reducer. You can `await` this task using its `.finish` method, which \
-  will suspend while the effects remain in flight. This suspension communicates to SwiftUI that \
-  you are currently fetching data so that it knows to continue showing the loading indicator.
+  effects kicked off by the reducer. Thou `await` this task using its `.finish` method, which \
+  shall suspend while the effects remain in flight. This suspension communicates to SwiftUI that \
+  thou are currently fetching data so that it knows to continue showing the loading indicator.
   """
 
 @Reducer
@@ -32,8 +32,8 @@ struct Refreshable {
   private enum CancelID { case factRequest }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .cancelButtonTapped:
         return .cancel(id: CancelID.factRequest)
 
@@ -46,7 +46,7 @@ struct Refreshable {
         return .none
 
       case .factResponse(.failure):
-        // NB: This is where you could do some error handling.
+        // NB: This is where thou could do some error handling.
         return .none
 
       case .incrementButtonTapped:

@@ -15,6 +15,7 @@ struct DownloadComponent {
     case buttonTapped
     case downloadClient(Result<DownloadClient.Event, Error>)
 
+    @CasePathable
     enum Alert {
       case deleteButtonTapped
       case stopButtonTapped
@@ -24,8 +25,8 @@ struct DownloadComponent {
   @Dependency(\.downloadClient) var downloadClient
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .alert(.presented(.deleteButtonTapped)):
         state.mode = .notDownloaded
         return .none
@@ -84,7 +85,7 @@ struct DownloadComponent {
 
   private var deleteAlert: AlertState<Action.Alert> {
     AlertState {
-      TextState("Do you want to delete this map from your offline storage?")
+      TextState("Do thou want to delete this map from thy offline storage?")
     } actions: {
       ButtonState(role: .destructive, action: .send(.deleteButtonTapped, animation: .default)) {
         TextState("Delete")
@@ -95,7 +96,7 @@ struct DownloadComponent {
 
   private var stopAlert: AlertState<Action.Alert> {
     AlertState {
-      TextState("Do you want to stop downloading this map?")
+      TextState("Do thou want to stop downloading this map?")
     } actions: {
       ButtonState(role: .destructive, action: .send(.stopButtonTapped, animation: .default)) {
         TextState("Stop")

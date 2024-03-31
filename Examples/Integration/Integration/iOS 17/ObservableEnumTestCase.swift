@@ -66,6 +66,11 @@ struct ObservableEnumView: View {
 
   @Reducer
   struct Feature {
+    @Reducer(state: .equatable)
+    enum Destination {
+      case feature1(ObservableBasicsView.Feature)
+      case feature2(ObservableBasicsView.Feature)
+    }
     @ObservableState
     struct State: Equatable {
       @Presents var destination: Destination.State?
@@ -75,29 +80,9 @@ struct ObservableEnumView: View {
       case toggle1ButtonTapped
       case toggle2ButtonTapped
     }
-    @Reducer
-    struct Destination {
-      @ObservableState
-      enum State: Equatable {
-        case feature1(ObservableBasicsView.Feature.State)
-        case feature2(ObservableBasicsView.Feature.State)
-      }
-      enum Action {
-        case feature1(ObservableBasicsView.Feature.Action)
-        case feature2(ObservableBasicsView.Feature.Action)
-      }
-      var body: some ReducerOf<Self> {
-        Scope(state: \.feature1, action: \.feature1) {
-          ObservableBasicsView.Feature()
-        }
-        Scope(state: \.feature2, action: \.feature2) {
-          ObservableBasicsView.Feature()
-        }
-      }
-    }
     var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .destination:
           return .none
         case .toggle1ButtonTapped:
@@ -122,9 +107,7 @@ struct ObservableEnumView: View {
           return .none
         }
       }
-      .ifLet(\.$destination, action: \.destination) {
-        Destination()
-      }
+      .ifLet(\.$destination, action: \.destination)
     }
   }
 }

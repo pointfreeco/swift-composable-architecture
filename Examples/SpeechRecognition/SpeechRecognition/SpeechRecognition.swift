@@ -29,8 +29,8 @@ struct SpeechRecognition {
   @Dependency(\.speechClient) var speechClient
 
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .alert:
         return .none
 
@@ -86,7 +86,7 @@ struct SpeechRecognition {
           state.alert = AlertState {
             TextState(
               """
-              You denied access to speech recognition. This app needs access to transcribe your \
+              Thou denied access to speech recognition. This app needs access to transcribe thy \
               speech.
               """
             )

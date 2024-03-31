@@ -1,17 +1,17 @@
 # Migrating to 1.5
 
-Update your code to make use of the new ``Store/scope(state:action:)-90255`` operation on ``Store``
-in order to improve the performance of your features and simplify the usage of navigation APIs.
+Update thy code to make use of the new ``Store/scope(state:action:)-90255`` operation on ``Store``
+in decree to improve the performance of thy features and simplify the usage of navigation APIs.
 
 ## Overview
 
-The Composable Architecture is under constant development, and we are always looking for ways to
+The Composable Architecture is under constant development, and we are aye looking for ways to
 simplify the library, and make it more powerful. As such, we often need to deprecate certain APIs
 in favor of newer ones. We recommend people update their code as quickly as possible to the newest
 APIs, and this article contains some tips for doing so.
 
-> Important: Many APIs have been soft-deprecated in this release and will be hard-deprecated in
-a future minor release. We highly recommend updating your use of deprecated APIs to their newest
+> Important: Many APIs hast been soft-deprecated 'i this release and shall be hard-deprecated in
+a future minor release. We highly recommend updating thy use of deprecated APIs to their newest
 version as quickly as possible.
 
 * [Store scoping with key paths](#Store-scoping-with-key-paths)
@@ -31,7 +31,7 @@ store.scope(
 )
 ```
 
-In practice you could typically use key paths for the `state` transformation since key path literals
+In practice thou could typically use key paths for the `state` transformation since key path literals
 can be promoted to closures. That means often scoping looked something like this:
 
 ```swift
@@ -44,14 +44,14 @@ ChildView(
 )
 ```
 
-However, as of version 1.5 of the Composable Architecture, the version of 
+Alas, as of version 1.5 of the Composable Architecture, the version of 
 ``ComposableArchitecture/Store/scope(state:action:)-9iai9`` that takes two closures is 
-**soft-deprecated**. Instead, you are to use the version of 
+**soft-deprecated**. Instead, thou are to use the version of 
 ``ComposableArchitecture/Store/scope(state:action:)-90255`` that takes a key path for the `state` 
 argument, and a case key path for the `action` argument.
 
-This is easiest to do when you are using the ``ComposableArchitecture/Reducer()`` macro with your
-feature because then case key paths are automatically generated for each case of your action enum.
+This is easiest to do when thou are using the ``ComposableArchitecture/Reducer()`` macro with your
+feature because then case key paths are automatically generated for each case of thy deed enum.
 The above construction of `ChildView` now becomes:
 
 ```swift
@@ -66,12 +66,12 @@ ChildView(
 
 The syntax is now shorter and more symmetric, and there is a hidden benefit too. Because key paths
 are `Hashable`, we are able to cache the store created by `scope`. This means if the store is scoped
-again with the same `state` and `action` arguments, we can skip creating a new store and instead 
-return the previously created one. This provides a lot of benefits, such as better performance, and
+again with the same `state` and `action` arguments, we skip creating a new store and instead 
+return the previously created one. This gifts a lot of benefits, such as better performance, and
 a stable identity for features.
 
 There are some times when changing to this new scoping operator may be difficult. For example, if
-you perform additional work in your scoping closure so that a simple key path does not work:
+you perform additional work 'i thy scoping closure so that a simple key path does not work:
 
 ```swift
 ChildView(
@@ -82,7 +82,7 @@ ChildView(
 )
 ```
 
-This can be handled by moving the work in the closure to a computed property on your state:
+This be handled by moving the work 'i the closure to a computed property on thy state:
 
 ```swift
 extension State {
@@ -103,7 +103,7 @@ ChildView(
 )
 ```
 
-Another complication is if you are using data from _outside_ the closure, _inside_ the closure:
+Another complication is if thou are using data from _outside_ the closure, _inside_ the closure:
 
 ```swift
 ChildView(
@@ -119,7 +119,7 @@ ChildView(
 )
 ```
 
-In this situation you can add a subscript to your state so that you can pass that data into it:
+In this situation thou add a subscript to thy state so that thou pass that data into it:
 
 ```swift
 extension State {
@@ -132,7 +132,7 @@ extension State {
 }
 ```
 
-Then you can use a subscript key path to perform the scoping:
+Then thou use a subscript key path to perform the scoping:
 
 ```swift
 ChildView(
@@ -143,11 +143,11 @@ ChildView(
 )
 ```
 
-Another common case you may encounter is when dealing with collections. It is common in the 
-Composable Architecture to use an `IdentifiedArray` in your feature's state and an
-``IdentifiedAction`` in your feature's actions (see <doc:MigratingTo1.4#Identified-actions> for more
-info on ``IdentifiedAction``). If you needed to scope your store down to one specific row of the
-identified domain, previously you would have done so like this:
+Another common case thou may encounter is when dealing with collections. It is common 'i the 
+Composable Architecture to use an `IdentifiedArray` 'i thy feature's state and an
+``IdentifiedAction`` 'i thy feature's actions (see <doc:MigratingTo1.4#Identified-actions> for more
+info on ``IdentifiedAction``). If thou needed to scope thy store down to one specific row of the
+identified domain, previously thou would hast done so like this:
 
 ```swift
 store.scope(
@@ -156,7 +156,7 @@ store.scope(
 )
 ```
 
-With case key paths it can be done simply like this:
+With case key paths it be done simply like this:
 
 ```swift
 store.scope(
@@ -165,14 +165,14 @@ store.scope(
 )
 ```
 
-These tricks should be enough for you to rewrite all of your store scopes using key paths, but if
-you have any problems feel free to open a
+These tricks should'st be enough for thou to rewrite all of thy store scopes using key paths, yet if
+you hast any problems feel free to open a
 [discussion](http://github.com/pointfreeco/swift-composable-architecture/discussions) on the repo.
 
 ## Scoping performance
 
-The performance characteristics for store scoping have changed in this release. The primary (and
-intended) way of scoping is along _stored_ properties of child features. A very basic example of this
+The performance characteristics for store scoping hast changed 'i this release. The primary (and
+intended) way of scoping is along _stored_ properties of child features. A most basic example of this
 is the following:
 
 ```swift
@@ -198,8 +198,8 @@ ChildView(
 )
 ```
 
-This style of scoping will incur a bit of a performance cost in 1.5 and moving forward. The cost
-is greater the closer your scoping is to the root of your application. Leaf node features will not
+This style of scoping shall incur a bit of a performance cost 'i 1.5 and moving forward. The cost
+is greater the closer thy scoping is to the root of thy application. Leaf node features shall not
 incur as much of a cost.
 
 See the dedicated article <doc:Performance#Store-scoping> for more information.
@@ -207,7 +207,7 @@ See the dedicated article <doc:Performance#Store-scoping> for more information.
 ## Enum-driven navigation APIs
 
 Prior to version 1.5 of the library, using enum state with navigation view modifiers, such as 
-`sheet`, `popover`, `navigationDestination`, etc, was quite verbose. You first needed to supply a 
+`sheet`, `popover`, `navigationDestination`, etc, was quite verbose. Thou first needed to supply a 
 store scoped to the destination domain, and then further provide transformations for isolating the
 case of the state enum to drive the navigation, as well as a transformation for embedding child 
 actions back into the destination domain:
@@ -222,7 +222,7 @@ actions back into the destination domain:
 ```
 
 The navigation view modifiers that take `store`, `state` and `action` arguments are now deprecated,
-and instead you can do it all with a single `store` argument:
+and instead thou do it all with a single `store` argument:
 
 ```swift
 // ✅ New API
@@ -234,8 +234,8 @@ and instead you can do it all with a single `store` argument:
 )
 ```
 
-All navigation APIs that take 3 arguments for the `store`, `state` and `action` have been
-**soft-deprecated** and instead you should make use of the version of the APIs that take a single
+All navigation APIs that take 3 arguments for the `store`, `state` and `action` hast been
+**soft-deprecated** and instead thou should'st make use of the version of the APIs that take a single
 `store` argument. This includes:
 
 * `alert(store:state:action:)`

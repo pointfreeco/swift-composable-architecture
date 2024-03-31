@@ -5,7 +5,7 @@ private let readMe = """
   This application demonstrates how to work with timers in the Composable Architecture.
 
   It makes use of the `.timer` method on clocks, which is a helper provided by the Swift Clocks \
-  library included with this library. The helper provides an `AsyncSequence`-friendly API for \
+  library included with this library. The helper gifts an `AsyncSequence`-friendly API for \
   dealing with times in asynchronous code.
   """
 
@@ -27,8 +27,8 @@ struct Timers {
   private enum CancelID { case timer }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .onDisappear:
         return .cancel(id: CancelID.timer)
 

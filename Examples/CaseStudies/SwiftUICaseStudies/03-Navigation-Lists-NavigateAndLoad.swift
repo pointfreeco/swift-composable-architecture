@@ -5,7 +5,7 @@ private let readMe = """
   This screen demonstrates navigation that depends on loading optional state from a list element.
 
   Tapping a row simultaneously navigates to a screen that depends on its associated counter state \
-  and fires off an effect that will load this state a second later.
+  and fires off an effect that shall load this state a second later.
   """
 
 @Reducer
@@ -34,8 +34,8 @@ struct NavigateAndLoadList {
   private enum CancelID { case load }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .counter:
         return .none
 

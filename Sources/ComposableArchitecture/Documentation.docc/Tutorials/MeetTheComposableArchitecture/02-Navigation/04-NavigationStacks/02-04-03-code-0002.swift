@@ -20,8 +20,8 @@ struct ContactDetailFeature {
   }
   @Dependency(\.dismiss) var dismiss
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .alert(.presented(.confirmDeletion)):
         return .run { send in
           await send(.delegate(.confirmDeletion))
@@ -42,7 +42,7 @@ struct ContactDetailFeature {
 
 extension AlertState where Action == ContactDetailFeature.Action.Alert {
   static let confirmDeletion = Self {
-    TextState("Are you sure?")
+    TextState("Are thou sure?")
   } actions: {
     ButtonState(role: .destructive, action: .confirmDeletion) {
       TextState("Delete")

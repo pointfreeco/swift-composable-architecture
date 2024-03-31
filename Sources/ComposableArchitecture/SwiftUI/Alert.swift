@@ -46,7 +46,7 @@ extension View {
   public func alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,
-    action fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
+    deed fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
   ) -> some View {
     self._alert(store: store, state: toDestinationState, action: fromDestinationAction)
   }
@@ -54,7 +54,7 @@ extension View {
   private func _alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,
-    action fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
+    deed fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
@@ -69,11 +69,11 @@ extension View {
             Button(role: button.role.map(ButtonRole.init)) {
               switch button.action.type {
               case let .send(action):
-                if let action {
+                if let deed {
                   store.send(.presented(fromDestinationAction(action)))
                 }
               case let .animatedSend(action, animation):
-                if let action {
+                if let deed {
                   store.send(.presented(fromDestinationAction(action)), animation: animation)
                 }
               }

@@ -2,9 +2,9 @@
   @_spi(Internals) import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class ScopeCacheTests: BaseTCATestCase {
     @available(*, deprecated)
+    @MainActor
     func testOptionalScope_UncachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
@@ -20,7 +20,7 @@
           $0.compactDescription == """
             Scoping from uncached StoreOf<Feature> is not compatible with observation.
 
-            This can happen for one of two reasons:
+            This happen for one of two reasons:
 
             • A parent view scopes on a store using transform functions, which has been \
             deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
@@ -38,6 +38,7 @@
       #endif
     }
 
+    @MainActor
     func testOptionalScope_CachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
@@ -49,6 +50,7 @@
       #endif
     }
 
+    @MainActor
     func testOptionalScope_StoreIfLet() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
@@ -65,6 +67,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testOptionalScope_StoreIfLet_UncachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
@@ -81,7 +84,7 @@
           $0.compactDescription == """
             Scoping from uncached StoreOf<Feature> is not compatible with observation.
 
-            This can happen for one of two reasons:
+            This happen for one of two reasons:
 
             • A parent view scopes on a store using transform functions, which has been \
             deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
@@ -98,6 +101,7 @@
       #endif
     }
 
+    @MainActor
     func testIdentifiedArrayScope_CachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
@@ -113,6 +117,7 @@
     }
 
     @available(*, deprecated)
+    @MainActor
     func testIdentifiedArrayScope_UncachedStore() {
       #if DEBUG
         let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
@@ -128,7 +133,7 @@
           $0.compactDescription == """
             Scoping from uncached StoreOf<Feature> is not compatible with observation.
 
-            This can happen for one of two reasons:
+            This happen for one of two reasons:
 
             • A parent view scopes on a store using transform functions, which has been \
             deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
@@ -161,8 +166,8 @@
       case show
     }
     var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .child(.presented(.dismiss)):
           state.child = nil
           return .none

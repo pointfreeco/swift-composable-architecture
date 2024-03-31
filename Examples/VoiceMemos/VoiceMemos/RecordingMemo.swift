@@ -36,8 +36,8 @@ struct RecordingMemo {
   @Dependency(\.continuousClock) var clock
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .audioRecorderDidFinish(.success(true)):
         return .send(.delegate(.didFinish(.success(state))))
 

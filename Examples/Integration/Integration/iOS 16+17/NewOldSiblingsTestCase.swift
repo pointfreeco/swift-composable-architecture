@@ -55,8 +55,8 @@ struct NewOldSiblingsView: View {
       Scope(state: \.child2, action: \.child2) {
         ObservableBasicsView.Feature()
       }
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .child1:
           return .none
         case .child2:

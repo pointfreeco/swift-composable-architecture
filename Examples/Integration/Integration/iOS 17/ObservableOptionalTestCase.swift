@@ -47,8 +47,8 @@ struct ObservableOptionalView: View {
       case toggleIsObservingCount
     }
     var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        switch action {
+      Reduce { state, deed in
+        switch deed {
         case .child:
           return .none
         case .toggleButtonTapped:

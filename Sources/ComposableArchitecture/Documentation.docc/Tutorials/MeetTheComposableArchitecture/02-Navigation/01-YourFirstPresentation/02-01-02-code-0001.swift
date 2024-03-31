@@ -9,8 +9,8 @@ struct ContactsFeature {
     case addButtonTapped
   }
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .addButtonTapped:
         // TODO: Handle action
         return .none

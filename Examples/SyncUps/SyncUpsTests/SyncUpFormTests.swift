@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SyncUps
 
-@MainActor
 final class SyncUpFormTests: XCTestCase {
+  @MainActor
   func testAddAttendee() async {
     let store = TestStore(
       initialState: SyncUpForm.State(
@@ -36,6 +36,7 @@ final class SyncUpFormTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testFocus_RemoveAttendee() async {
     let store = TestStore(
       initialState: SyncUpForm.State(

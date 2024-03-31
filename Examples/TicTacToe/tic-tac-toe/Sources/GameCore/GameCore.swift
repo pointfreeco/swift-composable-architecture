@@ -34,8 +34,8 @@ public struct Game: Sendable {
   public init() {}
 
   public var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case let .cellTapped(row, column):
         guard
           state.board[row][column] == nil,
@@ -63,7 +63,7 @@ public struct Game: Sendable {
   }
 }
 
-public enum Player: Equatable {
+public enum Player: Equatable, Sendable {
   case o
   case x
 

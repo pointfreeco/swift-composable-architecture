@@ -25,6 +25,7 @@ public struct TwoFactor: Sendable {
 
     public enum Alert: Equatable, Sendable {}
 
+    @CasePathable
     public enum View: BindableAction, Sendable {
       case binding(BindingAction<State>)
       case submitButtonTapped
@@ -37,8 +38,8 @@ public struct TwoFactor: Sendable {
 
   public var body: some ReducerOf<Self> {
     BindingReducer(action: \.view)
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .alert:
         return .none
 

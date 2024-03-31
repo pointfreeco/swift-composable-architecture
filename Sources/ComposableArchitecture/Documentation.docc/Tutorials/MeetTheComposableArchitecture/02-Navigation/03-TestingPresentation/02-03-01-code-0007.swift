@@ -15,8 +15,8 @@ struct ContactsFeature {
   }
   @Dependency(\.uuid) var uuid
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .addButtonTapped:
         state.destination = .addContact(
           AddContactFeature.State(
@@ -39,7 +39,7 @@ struct ContactsFeature {
       case let .deleteButtonTapped(id: id):
         state.destination = .alert(
           AlertState {
-            TextState("Are you sure?")
+            TextState("Are thou sure?")
           } actions: {
             ButtonState(role: .destructive, action: .confirmDeletion(id: id)) {
               TextState("Delete")

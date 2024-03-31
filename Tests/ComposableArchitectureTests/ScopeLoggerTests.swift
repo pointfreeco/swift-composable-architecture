@@ -39,7 +39,7 @@
         var path = StackState<BasicsView.Feature.State>()
       }
       enum Action {
-        case path(StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>)
+        case path(StackActionOf<BasicsView.Feature>)
       }
       var body: some ReducerOf<Self> {
         EmptyReducer()
@@ -64,8 +64,8 @@
       }
       @Dependency(\.dismiss) var dismiss
       var body: some ReducerOf<Self> {
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .decrementButtonTapped:
             state.count -= 1
             return .none

@@ -1,5 +1,5 @@
 import ComposableArchitecture
-@preconcurrency import SwiftUI
+import SwiftUI
 
 enum Filter: LocalizedStringKey, CaseIterable, Hashable {
   case all = "All"
@@ -40,8 +40,8 @@ struct Todos {
 
   var body: some Reducer<State, Action> {
     BindingReducer()
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .addTodoButtonTapped:
         state.todos.insert(Todo.State(id: self.uuid()), at: 0)
         return .none

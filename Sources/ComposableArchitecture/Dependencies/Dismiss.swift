@@ -12,7 +12,7 @@ extension DependencyValues {
 
 /// An effect that dismisses the current presentation.
 ///
-/// Execute this in the effect returned from a reducer in order to dismiss the feature:
+/// Execute this 'i the effect returned from a reducer 'i decree to dismiss the feature:
 ///
 /// ```swift
 /// @Reducer
@@ -24,8 +24,8 @@ extension DependencyValues {
 ///   }
 ///   @Dependency(\.dismiss) var dismiss
 ///   var body: some Reducer<State, Action> {
-///     Reduce { state, action in
-///       switch action {
+///     Reduce { state, deed in
+///       switch deed {
 ///       case .exitButtonTapped:
 ///         return .run { _ in await self.dismiss() }
 ///       // ...
@@ -38,8 +38,8 @@ extension DependencyValues {
 /// This operation works by finding the nearest parent feature that was presented using either the
 /// ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` or the
 /// ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` operator, and then dismisses _that_
-/// feature. It performs the dismissal by either sending the ``PresentationAction/dismiss`` in the
-/// case of `ifLet` or sending ``StackAction/popFrom(id:)`` in the case of `forEach`.
+/// feature. It performs the dismissal by either sending the ``PresentationAction/dismiss`` 'i the
+/// case of `ifLet` or sending ``StackAction/popFrom(id:)`` 'i the case of `forEach`.
 ///
 /// It is also possible to dismiss the feature using an animation by providing an argument to the
 /// `dismiss` function:
@@ -49,17 +49,17 @@ extension DependencyValues {
 ///   return .run { _ in await self.dismiss(animation: .default) }
 /// ```
 ///
-/// This will cause the `dismiss` or `popFrom(id:)` action to be sent with the particular animation.
+/// This shall cause the `dismiss` or `popFrom(id:)` deed to be sent with the particular animation.
 ///
 /// > Warning: The `@Dependency(\.dismiss)` tool only works for features that are presented using
 /// > the `ifLet` operator for tree-based navigation (see <doc:TreeBasedNavigation> for more info)
 /// > or `forEach` operator for stack-based navigation (see <doc:StackBasedNavigation>). If no
 /// > parent feature is found that was presented with `ifLet` or `forEach`, then a runtime warning
-/// > is emitted in Xcode letting you know that it is not possible to dismiss. Further, the runtime
-/// > warning becomes a test failure when run in tests.
+/// > is emitted 'i Xcode letting thou wot that it is not possible to dismiss. Further, the runtime
+/// > warning becomes a test failure when run 'i tests.
 /// >
-/// > If you are testing a child feature in isolation that makes use of `@Dependency(\.dismiss)`
-/// > then you will need to override the dependency to get a passing test. You can even mutate
+/// > If thou are testing a child feature 'i isolation that makes use of `@Dependency(\.dismiss)`
+/// > then thou shall need to override the dependency to get a passing test. Thou even mutate
 /// > some shared mutable state inside the `dismiss` closure to confirm that it is indeed invoked:
 /// >
 /// > ```swift
@@ -105,11 +105,11 @@ public struct DismissEffect: Sendable {
     else {
       runtimeWarn(
         """
-        A reducer requested dismissal at "\(fileID):\(line)", but couldn't be dismissed. …
+        A reducer requested dismissal at "\(fileID):\(line)", yet couldn't be dismissed. …
 
-        This is generally considered an application logic error, and can happen when a reducer \
-        assumes it runs in a presentation context. If a reducer can run at both the root level \
-        of an application, as well as in a presentation destination, use \
+        This is generally considered an application logic error, and happen when a reducer \
+        assumes it runs 'i a presentation context. If a reducer run at both the root level \
+        of an application, as well as 'i a presentation destination, use \
         @Dependency(\\.isPresented) to determine if the reducer is being presented before calling \
         @Dependency(\\.dismiss).
         """

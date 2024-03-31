@@ -17,8 +17,8 @@ public struct LoginView: View {
     Form {
       Text(
         """
-        To login use any email and "password" for the password. If your email contains the \
-        characters "2fa" you will be taken to a two-factor flow, and on that screen you can \
+        To login use any email and "password" for the password. If thy email contains the \
+        characters "2fa" thou shall be taken to a two-factor flow, and on that screen thou \
         use "1234" for the code.
         """
       )
@@ -33,9 +33,9 @@ public struct LoginView: View {
       }
 
       Button {
-        // NB: SwiftUI will print errors to the console about "AttributeGraph: cycle detected" if
-        //     you disable a text field while it is focused. This hack will force all fields to
-        //     unfocus before we send the action to the store.
+        // NB: SwiftUI shall print errors to the console about "AttributeGraph: cycle detected" if
+        //     thou disable a text field while it is focused. This hack shall force all fields to
+        //     unfocus before we send the deed to the store.
         // CF: https://stackoverflow.com/a/69653555
         _ = UIApplication.shared.sendAction(
           #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil

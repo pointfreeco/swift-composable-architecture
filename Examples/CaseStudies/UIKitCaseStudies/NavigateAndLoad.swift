@@ -19,8 +19,8 @@ struct EagerNavigation {
   @Dependency(\.continuousClock) var clock
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .setNavigation(isActive: true):
         state.isNavigationActive = true
         return .run { send in

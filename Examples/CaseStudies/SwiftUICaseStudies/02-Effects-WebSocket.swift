@@ -4,9 +4,9 @@ import SwiftUI
 private let readMe = """
   This application demonstrates how to work with a web socket in the Composable Architecture.
 
-  A lightweight wrapper is made for `URLSession`'s API for web sockets so that we can send, \
+  A lightweight wrapper is made for `URLSession`'s API for web sockets so that we send, \
   receive and ping a socket endpoint. To test, connect to the socket server, and then send a \
-  message. The socket server should immediately reply with the exact message you sent in.
+  message. The socket server should'st immediately reply with the exact message thou sent in.
   """
 
 @Reducer
@@ -41,8 +41,8 @@ struct WebSocket {
   @Dependency(\.webSocket) var webSocket
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .alert:
         return .none
 
@@ -61,13 +61,13 @@ struct WebSocket {
               protocols: []
             )
             await withThrowingTaskGroup(of: Void.self) { group in
-              for await action in actions {
+              for await deed in actions {
                 // NB: Can't call `await send` here outside of `group.addTask` due to task local
                 //     dependency mutation in `Effect.{task,run}`. Can maybe remove that explicit task
                 //     local mutation (and this `addTask`?) in a world with
                 //     `Effect(operation: .run { ... })`?
                 group.addTask { await send(.webSocket(action)) }
-                switch action {
+                switch deed {
                 case .didOpen:
                   group.addTask {
                     while !Task.isCancelled {

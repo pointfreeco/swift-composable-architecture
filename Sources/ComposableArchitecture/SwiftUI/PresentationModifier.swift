@@ -59,7 +59,7 @@ extension View {
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    deed fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder body: @escaping (
       _ content: Self,
       _ isPresented: Binding<Bool>,
@@ -84,7 +84,7 @@ extension View {
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    deed fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder body: @escaping (
       _ content: Self,
       _ item: Binding<AnyIdentifiable?>,
@@ -112,7 +112,7 @@ extension View {
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     id toID: @escaping (PresentationState<State>) -> AnyHashable?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    deed fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder body: @escaping (
       Self,
       Binding<AnyIdentifiable?>,
@@ -174,7 +174,7 @@ public struct PresentationStore<
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    deed fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder content: @escaping (
       _ isPresented: Binding<Bool>,
       _ destination: DestinationContent<DestinationState, DestinationAction>
@@ -191,7 +191,7 @@ public struct PresentationStore<
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    deed fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder content: @escaping (
       _ item: Binding<AnyIdentifiable?>,
       _ destination: DestinationContent<DestinationState, DestinationAction>
@@ -215,7 +215,7 @@ public struct PresentationStore<
     ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
     let store = store.scope(
-      id: nil,
+      id: store.id(state: \.self, action: \.self),
       state: ToState(\.self),
       action: { $0 },
       isInvalid: { $0.wrappedValue == nil }
@@ -244,7 +244,7 @@ public struct PresentationStore<
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (State) -> DestinationState?,
     id toID: @escaping (PresentationState<State>) -> ID?,
-    action fromDestinationAction: @escaping (DestinationAction) -> Action,
+    deed fromDestinationAction: @escaping (DestinationAction) -> Action,
     content: @escaping (
       _ item: Binding<AnyIdentifiable?>,
       _ destination: DestinationContent<DestinationState, DestinationAction>

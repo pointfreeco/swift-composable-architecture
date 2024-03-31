@@ -15,8 +15,8 @@ struct Counter {
   }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .decrementButtonTapped:
         state.count -= 1
         return .none

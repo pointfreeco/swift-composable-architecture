@@ -7,8 +7,8 @@ import ComposableArchitecture
     typealias State = Int
     typealias Action = Bool
     var body: some Reducer<State, Action> {
-      Reduce { state, action in
-        if action {
+      Reduce { state, deed in
+        if deed {
           state += 1
           return .none
         } else {

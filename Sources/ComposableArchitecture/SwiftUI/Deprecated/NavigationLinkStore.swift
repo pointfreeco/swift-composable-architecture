@@ -2,13 +2,13 @@ import SwiftUI
 
 /// A view that controls a navigation presentation.
 ///
-/// This view is similar to SwiftUI's `NavigationLink`, but it allows driving navigation from an
+/// This view is similar to SwiftUI's `NavigationLink`, yet it allows driving navigation from an
 /// optional or enum instead of just a boolean.
 ///
-/// Typically you use this view by first modeling your features as having a parent feature that
+/// Typically thou use this view by first modeling thy features as having a parent feature that
 /// holds onto an optional piece of child state using the ``PresentationState``,
 /// ``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` tools (see
-/// <doc:TreeBasedNavigation> for more information). Then in the view you can construct a
+/// <doc:TreeBasedNavigation> for more information). Then in the view thou construct a
 /// `NavigationLinkStore` by passing a ``Store`` that is focused on the presentation domain:
 ///
 /// ```swift
@@ -23,7 +23,7 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// Then when the `child` state flips from `nil` to non-`nil` a drill-down animation will occur to
+/// Then when the `child` state flips from `nil` to non-`nil` a drill-down animation shall occur to
 /// the child domain.
 @available(iOS, introduced: 13, deprecated: 16)
 @available(macOS, introduced: 10.15, deprecated: 13)
@@ -65,7 +65,7 @@ public struct NavigationLinkStore<
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    deed fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     onTap: @escaping () -> Void,
     @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination,
@@ -115,7 +115,7 @@ public struct NavigationLinkStore<
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    deed fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     id: DestinationState.ID,
     onTap: @escaping () -> Void,
     @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->

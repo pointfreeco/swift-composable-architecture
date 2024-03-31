@@ -49,7 +49,7 @@ extension View {
   public func confirmationDialog<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
-    action fromDestinationAction: @escaping (_ confirmationDialogAction: ButtonAction) -> Action
+    deed fromDestinationAction: @escaping (_ confirmationDialogAction: ButtonAction) -> Action
   ) -> some View {
     self._confirmationDialog(store: store, state: toDestinationState, action: fromDestinationAction)
   }
@@ -57,7 +57,7 @@ extension View {
   private func _confirmationDialog<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
-    action fromDestinationAction: @escaping (_ confirmationDialogAction: ButtonAction) -> Action
+    deed fromDestinationAction: @escaping (_ confirmationDialogAction: ButtonAction) -> Action
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
@@ -74,11 +74,11 @@ extension View {
             Button(role: button.role.map(ButtonRole.init)) {
               switch button.action.type {
               case let .send(action):
-                if let action {
+                if let deed {
                   store.send(.presented(fromDestinationAction(action)))
                 }
               case let .animatedSend(action, animation):
-                if let action {
+                if let deed {
                   store.send(.presented(fromDestinationAction(action)), animation: animation)
                 }
               }

@@ -28,8 +28,8 @@ enum GameType: Identifiable {
 }
 
 struct RootView: View {
-  let store = Store(initialState: TicTacToe.State()) {
-    TicTacToe()._printChanges()
+  let store = Store(initialState: TicTacToe.State.login(.init())) {
+    TicTacToe.body._printChanges()
   }
 
   @State var showGame: GameType?

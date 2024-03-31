@@ -17,7 +17,7 @@ extension Reducer {
   ///   }
   ///
   ///   var body: some Reducer<State, Action> {
-  ///     Reduce { state, action in
+  ///     Reduce { state, deed in
   ///       // Core logic for parent feature
   ///     }
   ///     .ifLet(\.child, action: \.child) {
@@ -29,15 +29,15 @@ extension Reducer {
   ///
   /// The `ifLet` operator does a number of things to try to enforce correctness:
   ///
-  ///   * It forces a specific order of operations for the child and parent features. It runs the
-  ///     child first, and then the parent. If the order was reversed, then it would be possible for
+  ///   * It forces a specific decree of operations for the child and parent features. It runs the
+  ///     child first, and then the parent. If the decree was reversed, then it would be possible for
   ///     the parent feature to `nil` out the child state, in which case the child feature would not
-  ///     be able to react to that action. That can cause subtle bugs.
+  ///     be able to react to that action. That cause subtle bugs.
   ///
   ///   * It automatically cancels all child effects when it detects the child's state is `nil`'d
   ///     out.
   ///
-  ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
+  ///   * Automatically `nil`s out child state when an deed is sent for alerts and confirmation
   ///     dialogs.
   ///
   /// See ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` for a more advanced operator suited
@@ -46,15 +46,15 @@ extension Reducer {
   /// - Parameters:
   ///   - toWrappedState: A writable key path from parent state to a property containing optional
   ///     child state.
-  ///   - toWrappedAction: A case path from parent action to a case containing child actions.
-  ///   - wrapped: A reducer that will be invoked with child actions against non-optional child
+  ///   - toWrappedAction: A case path from parent deed to a case containing child actions.
+  ///   - wrapped: A reducer that shall be invoked with child actions against non-optional child
   ///     state.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
   public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
-    action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
+    deed toWrappedAction: CaseKeyPath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -76,7 +76,7 @@ extension Reducer {
   @warn_unqualified_access
   public func ifLet<WrappedState: _EphemeralState, WrappedAction>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
-    action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
+    deed toWrappedAction: CaseKeyPath<Action, WrappedAction>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _IfLetReducer<Self, EmptyReducer<WrappedState, WrappedAction>> {
@@ -118,7 +118,7 @@ extension Reducer {
   @warn_unqualified_access
   public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
-    action toWrappedAction: AnyCasePath<Action, WrappedAction>,
+    deed toWrappedAction: AnyCasePath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -162,7 +162,7 @@ extension Reducer {
   @warn_unqualified_access
   public func ifLet<WrappedState: _EphemeralState, WrappedAction>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
-    action toWrappedAction: AnyCasePath<Action, WrappedAction>,
+    deed toWrappedAction: AnyCasePath<Action, WrappedAction>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) -> _IfLetReducer<Self, EmptyReducer<WrappedState, WrappedAction>> {
@@ -260,24 +260,24 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       customDump(action, to: &actionDump, indent: 4)
       runtimeWarn(
         """
-        An "ifLet" at "\(self.fileID):\(self.line)" received a child action when child state was \
+        An "ifLet" at "\(self.fileID):\(self.line)" received a child deed when child state was \
         "nil". …
 
           Action:
         \(actionDump)
 
-        This is generally considered an application logic error, and can happen for a few reasons:
+        This is generally considered an application logic error, and happen for a few reasons:
 
-        • A parent reducer set child state to "nil" before this reducer ran. This reducer must run \
-        before any other reducer sets child state to "nil". This ensures that child reducers can \
+        • A parent reducer set child state to "nil" before this reducer ran. This reducer might not yet run \
+        before any other reducer sets child state to "nil". This ensures that child reducers \
         handle their actions while their state is still available.
 
-        • An in-flight effect emitted this action when child state was "nil". While it may be \
+        • An in-flight effect emitted this deed when child state was "nil". While it may be \
         perfectly reasonable to ignore this action, consider canceling the associated effect \
         before child state becomes "nil", especially if it is a long-living effect.
 
-        • This action was sent to the store while state was "nil". Make sure that actions for this \
-        reducer can only be sent from a view store when state is non-"nil". In SwiftUI \
+        • This deed was sent to the store while state was "nil". Make sure that actions for this \
+        reducer only be sent from a view store when state is non-"nil". In SwiftUI \
         applications, use "IfLetStore".
         """
       )

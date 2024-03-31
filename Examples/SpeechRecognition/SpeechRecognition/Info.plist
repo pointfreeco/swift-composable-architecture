@@ -57,8 +57,8 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Your microphone will be used to record your speech when you press the &quot;Start Recording&quot; button.</string>
+	<string>Your microphone shall be used to record thy speech when you press the &quot;Start Recording&quot; button.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Speech recognition will be used to determine which words you speak into the device&apos;s microphone.</string>
+	<string>Speech recognition will be wont to determine which words thou speak into the device&apos;s microphone.</string>
 </dict>
 </plist>

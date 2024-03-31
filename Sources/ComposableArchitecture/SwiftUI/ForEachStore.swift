@@ -5,7 +5,7 @@ import SwiftUI
 /// collections of state.
 ///
 /// ``ForEachStore`` loops over a store's collection with a store scoped to the domain of each
-/// element. This allows you to extract and modularize an element's view and avoid concerns around
+/// element. This allows thou to extract and modularize an element's view and avoid concerns around
 /// collection index math and parent-child store communication.
 ///
 /// For example, a todos app may define the domain and logic associated with an individual todo:
@@ -39,7 +39,7 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// For a parent domain to work with a collection of todos, it can hold onto this collection in
+/// For a parent domain to work with a collection of todos, it hold onto this collection in
 /// state:
 ///
 /// ```swift
@@ -64,7 +64,7 @@ import SwiftUI
 ///
 /// ```swift
 /// var body: some Reducer<State, Action> {
-///   Reduce { state, action in
+///   Reduce { state, deed in
 ///     // ...
 ///   }
 ///   .forEach(\.todos, action: \.todos) {
@@ -114,7 +114,7 @@ public struct ForEachStore<
   ///
   /// - Parameters:
   ///   - store: A store on an identified array of data and an identified action.
-  ///   - content: A function that can generate content given a store of an element.
+  ///   - content: A function that generate content given a store of an element.
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>>,
     @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent

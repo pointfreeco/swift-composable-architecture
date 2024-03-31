@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 private let readMe = """
-  This screen demonstrates how `Reducer` bodies can recursively nest themselves.
+  This screen demonstrates how `Reducer` bodies recursively nest themselves.
 
   Tap "Add row" to add a row to the current screen's list. Tap the left-hand side of a row to edit \
   its name, or tap the right-hand side of a row to navigate to its own associated list of rows.
@@ -34,8 +34,8 @@ struct Nested {
   @Dependency(\.uuid) var uuid
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .addRowButtonTapped:
         state.rows.append(State(id: self.uuid()))
         return .none

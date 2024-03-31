@@ -1,8 +1,8 @@
 @Tutorials(name: "The Composable Architecture") {
   @Intro(title: "Meet the Composable Architecture") {
     The Composable Architecture (TCA, for short) is a library for building applications in a 
-    consistent and understandable way, with composition, testing, and ergonomics in mind. It can be 
-    used in SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).  
+    consistent and understandable way, with composition, testing, and ergonomics in mind. It be 
+    wont in SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).  
   }
   
   @Chapter(name: "Essentials") {
@@ -18,7 +18,7 @@
   }
   
   @Chapter(name: "Navigation") {
-    Learn how to model your domains for navigation from parent feature to child feature, and how to
+    Learn how to model thy domains for navigation from parent feature to child feature, and how to
     do so in a concise manner using optionals, enums and collections.
     
     @Image(source: "02-homepage.png")

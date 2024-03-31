@@ -97,7 +97,7 @@ code in the following way:
 -  }
  
    var body: some View {
--    WithViewStore(store, observe: ViewState.init) { store in
+-    WithViewStore(store, observe: ViewState.init) { viewStore in
 +    WithPerceptionTracking {
        Form {
 -        Text(viewStore.count.description)
@@ -125,7 +125,7 @@ apply all of the updates above, but with one additional simplification to the `b
 
 ```diff
  var body: some View {
--  WithViewStore(store, observe: ViewState.init) { store in
+-  WithViewStore(store, observe: ViewState.init) { viewStore in
      Form {
 -      Text(viewStore.count.description)
 -      Button("+") { viewStore.send(.incrementButtonTapped) }
@@ -204,27 +204,34 @@ struct Feature {
 Then you would have made use of ``ForEachStore`` in the view like this:
 
 ```swift
-ForEachStore(store.scope(state: \.rows, action: \.rows)) { childStore in
+ForEachStore(
+  store.scope(state: \.rows, action: \.rows)
+) { childStore in
   ChildView(store: childStore)
 }
 ```
 
 This can now be updated to use the vanilla `ForEach` view in SwiftUI, along with 
-``Store/scope(state:action:)-1nelp``:
+``Store/scope(state:action:)-1nelp``, identified by the state of each row:
 
 ```swift
-ForEach(store.scope(state: \.rows, action: \.rows)) { childStore in
+ForEach(
+  store.scope(state: \.rows, action: \.rows),
+  id: \.state.id
+) { childStore in
   ChildView(store: childStore)
 }
 ```
 
-If your usage of `ForEachStore` relied on the identity of the state of each row (_e.g._, the state's
-`id` is also associated with a selection binding), you must explicitly use the `id` parameter:
+If your usage of `ForEachStore` did not depend on the identity of the state of each row (_e.g._, the
+state's `id` is not associated with a selection binding), you can omit the `id` parameter, as the
+`Store` type is identifiable by its object identity:
 
 ```diff
  ForEach(
-   store.scope(state: \.rows, action: \.rows),
-+  id: \.state.id
+-  store.scope(state: \.rows, action: \.rows),
+-  id: \.state.id,
++  store.scope(state: \.rows, action: \.rows)
  ) { childStore in
    ChildView(store: childStore)
  }
@@ -628,8 +635,8 @@ In the view you must start holding onto the `store` in a bindable manner, which 
 @Bindable var store: StoreOf<Feature>
 ```
 
-> Note: If targeting older Apple platorms where `@Bindable` is not available, you can use our
-backport of the property wrapper:
+> Note: If targeting older Apple platforms where `@Bindable` is not available, you can use our
+> backport of the property wrapper:
 >
 > ```swift
 > @Perception.Bindable var store: StoreOf<Feature>
@@ -798,7 +805,7 @@ First, you must make your `View` action enum conform to the ``ViewAction`` proto
 
 ```swift
 @Reducer
-struct Feature
+struct Feature {
   // ...
   enum Action: ViewAction {  // 👈
     // ...

@@ -40,8 +40,8 @@ struct VoiceMemo {
   private enum CancelID { case play }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .audioPlayerClient(.failure):
         state.mode = .notPlaying
         return .merge(

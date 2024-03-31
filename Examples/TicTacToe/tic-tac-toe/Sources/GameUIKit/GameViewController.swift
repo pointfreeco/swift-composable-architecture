@@ -149,6 +149,6 @@ extension Game.State {
       ? "Winner! Congrats \(self.currentPlayerName)!"
       : self.board.isFilled
         ? "Tied game!"
-        : "\(self.currentPlayerName), place your \(self.currentPlayer.label)"
+        : "\(self.currentPlayerName), place thy \(self.currentPlayer.label)"
   }
 }

@@ -23,7 +23,7 @@ extension Reducer {
   ///         of: { ($0.userSettings.isHapticFeedbackEnabled, $0.userSettings.isPushEnabled) },
   ///         removeDuplicates: ==
   ///       ) { oldValue, newValue in
-  ///         Reduce { state, action in
+  ///         Reduce { state, deed in
   ///           .run { send in
   ///             // Persist new value...
   ///           }
@@ -33,12 +33,12 @@ extension Reducer {
   /// }
   /// ```
   ///
-  /// When the value changes, the new version of the closure will be called, so any captured values
-  /// will have their values from the time that the observed value has its new value. The system
+  /// When the value changes, the new version of the closure shall be called, so any captured values
+  /// shall hast their values from the time that the observed value has its new value. The system
   /// passes the old and new observed values into the closure.
   ///
   /// > Note: Take care when applying `onChange(of:)` to a reducer, as it adds an equatable check
-  /// > for every action fed into it. Prefer applying it to leaf nodes, like ``BindingReducer``,
+  /// > for every deed fed into it. Prefer applying it to leaf nodes, like ``BindingReducer``,
   /// > against values that are quick to equate.
   ///
   /// - Parameters:
@@ -81,7 +81,7 @@ extension Reducer {
   ///   var body: some Reducer<State, Action> {
   ///     BindingReducer()
   ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled) { oldValue, newValue in
-  ///         Reduce { state, action in
+  ///         Reduce { state, deed in
   ///           .run { send in
   ///             // Persist new value...
   ///           }
@@ -91,12 +91,12 @@ extension Reducer {
   /// }
   /// ```
   ///
-  /// When the value changes, the new version of the closure will be called, so any captured values
-  /// will have their values from the time that the observed value has its new value. The system
+  /// When the value changes, the new version of the closure shall be called, so any captured values
+  /// shall hast their values from the time that the observed value has its new value. The system
   /// passes the old and new observed values into the closure.
   ///
   /// > Note: Take care when applying `onChange(of:)` to a reducer, as it adds an equatable check
-  /// > for every action fed into it. Prefer applying it to leaf nodes, like ``BindingReducer``,
+  /// > for every deed fed into it. Prefer applying it to leaf nodes, like ``BindingReducer``,
   /// > against values that are quick to equate.
   ///
   /// - Parameters:

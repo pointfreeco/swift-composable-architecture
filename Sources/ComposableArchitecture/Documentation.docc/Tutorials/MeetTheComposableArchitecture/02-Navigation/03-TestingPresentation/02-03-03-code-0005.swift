@@ -20,7 +20,7 @@ final class ContactsFeatureTests: XCTestCase {
     await store.send(.deleteButtonTapped(id: UUID(1))) {
       $0.destination = .alert(
         AlertState {
-          TextState("Are you sure?")
+          TextState("Are thou sure?")
         } actions: {
           ButtonState(role: .destructive, action: .confirmDeletion(id: UUID(1))) {
             TextState("Delete")

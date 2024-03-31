@@ -3,9 +3,9 @@ import Combine
 import SwiftUI
 import XCTest
 
-@MainActor
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class BindableStoreTests: XCTestCase {
+  @MainActor
   func testBindableStore() {
     struct BindableReducer: Reducer {
       struct State: Equatable {
@@ -82,6 +82,7 @@ final class BindableStoreTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testTestStoreBindings() async {
     struct LoginFeature: Reducer {
       struct State: Equatable {
@@ -96,8 +97,8 @@ final class BindableStoreTests: XCTestCase {
       }
       var body: some ReducerOf<Self> {
         BindingReducer()
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .binding:
             state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
             return .none
@@ -144,6 +145,7 @@ final class BindableStoreTests: XCTestCase {
     XCTAssertTrue(LoginViewState(store.bindings).isLoginButtonDisabled)
   }
 
+  @MainActor
   func testTestStoreBindings_ViewAction() async {
     struct LoginFeature: Reducer {
       struct State: Equatable {
@@ -161,8 +163,8 @@ final class BindableStoreTests: XCTestCase {
       }
       var body: some ReducerOf<Self> {
         BindingReducer(action: /Action.view)
-        Reduce { state, action in
-          switch action {
+        Reduce { state, deed in
+          switch deed {
           case .view(.binding):
             state.isFormValid = !state.email.isEmpty && !state.password.isEmpty
             return .none

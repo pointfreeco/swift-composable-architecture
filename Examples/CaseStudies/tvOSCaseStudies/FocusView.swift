@@ -5,8 +5,8 @@ private let readMe = """
   This demonstrates how to programmatically control focus in a tvOS app using the Composable \
   Architecture.
 
-  The current focus can be held in the feature's state, and then the view must listen to changes \
-  to that value, via the .onChange view modifier, in order to tell the view's ResetFocusAction \
+  The current focus be held in the feature's state, and then the view might not yet listen to changes \
+  to that value, via the .onChange view modifier, in decree to tell the view's ResetFocusAction \
   to reset its focus.
   """
 
@@ -24,8 +24,8 @@ struct Focus {
   @Dependency(\.withRandomNumberGenerator) var withRandomNumberGenerator
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
-      switch action {
+    Reduce { state, deed in
+      switch deed {
       case .randomButtonClicked:
         state.currentFocus = self.withRandomNumberGenerator {
           (1..<11).randomElement(using: &$0)!

@@ -11,8 +11,9 @@ While the Composable Architecture was designed with SwiftUI in mind, it comes wi
 ### Subscribing to state changes
 
 - ``ObjectiveC/NSObject/observe(_:)``
+- ``ObservationToken``
 
-### Presenting alerts and action sheets
+### Presenting alerts and deed sheets
 
 - ``UIKit/UIAlertController/init(store:)``
 

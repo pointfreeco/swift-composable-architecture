@@ -3,8 +3,8 @@ import XCTest
 
 @testable import Search
 
-@MainActor
 final class SearchTests: XCTestCase {
+  @MainActor
   func testSearchAndClearQuery() async {
     let store = TestStore(initialState: Search.State()) {
       Search()
@@ -25,11 +25,15 @@ final class SearchTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testSearchFailure() async {
     let store = TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
-      $0.weatherClient.search = { @Sendable _ in throw SomethingWentWrong() }
+      $0.weatherClient.search = { @Sendable _ in
+        struct SomethingWentWrong: Error {}
+        throw SomethingWentWrong()
+      }
     }
 
     await store.send(.searchQueryChanged("S")) {
@@ -39,6 +43,7 @@ final class SearchTests: XCTestCase {
     await store.receive(\.searchResponse.failure)
   }
 
+  @MainActor
   func testClearQueryCancelsInFlightSearchRequest() async {
     let store = TestStore(initialState: Search.State()) {
       Search()
@@ -55,6 +60,7 @@ final class SearchTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testTapOnLocation() async {
     let specialResult = GeocodingSearch.Result(
       country: "Special Country",
@@ -107,6 +113,7 @@ final class SearchTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testTapOnLocationCancelsInFlightRequest() async {
     let specialResult = GeocodingSearch.Result(
       country: "Special Country",
@@ -168,13 +175,17 @@ final class SearchTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testTapOnLocationFailure() async {
     let results = GeocodingSearch.mock.results
 
     let store = TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
-      $0.weatherClient.forecast = { @Sendable _ in throw SomethingWentWrong() }
+      $0.weatherClient.forecast = { @Sendable _ in
+        struct SomethingWentWrong: Error {}
+        throw SomethingWentWrong()
+      }
     }
 
     await store.send(.searchResultTapped(results.first!)) {
@@ -185,5 +196,3 @@ final class SearchTests: XCTestCase {
     }
   }
 }
-
-private struct SomethingWentWrong: Equatable, Error {}

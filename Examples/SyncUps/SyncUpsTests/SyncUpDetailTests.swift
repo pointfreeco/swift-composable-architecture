@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SyncUps
 
-@MainActor
 final class SyncUpDetailTests: XCTestCase {
+  @MainActor
   func testSpeechRestricted() async {
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: .mock)) {
       SyncUpDetail()
@@ -17,6 +17,7 @@ final class SyncUpDetailTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testSpeechDenied() async throws {
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: .mock)) {
       SyncUpDetail()
@@ -31,6 +32,7 @@ final class SyncUpDetailTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testOpenSettings() async {
     let settingsOpened = LockIsolated(false)
 
@@ -46,12 +48,13 @@ final class SyncUpDetailTests: XCTestCase {
       $0.speechClient.authorizationStatus = { .denied }
     }
 
-    await store.send(.destination(.presented(.alert(.openSettings)))) {
+    await store.send(\.destination.alert.openSettings) {
       $0.destination = nil
     }
     XCTAssertEqual(settingsOpened.value, true)
   }
 
+  @MainActor
   func testContinueWithoutRecording() async throws {
     let store = TestStore(
       initialState: SyncUpDetail.State(
@@ -64,13 +67,14 @@ final class SyncUpDetailTests: XCTestCase {
       $0.speechClient.authorizationStatus = { .denied }
     }
 
-    await store.send(.destination(.presented(.alert(.continueWithoutRecording)))) {
+    await store.send(\.destination.alert.continueWithoutRecording) {
       $0.destination = nil
     }
 
     await store.receive(\.delegate.startMeeting)
   }
 
+  @MainActor
   func testSpeechAuthorized() async throws {
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: .mock)) {
       SyncUpDetail()
@@ -83,6 +87,7 @@ final class SyncUpDetailTests: XCTestCase {
     await store.receive(\.delegate.startMeeting)
   }
 
+  @MainActor
   func testEdit() async {
     var syncUp = SyncUp.mock
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: syncUp)) {
@@ -96,8 +101,8 @@ final class SyncUpDetailTests: XCTestCase {
     }
 
     syncUp.title = "Blob's Meeting"
-    await store.send(.destination(.presented(.edit(.set(\.syncUp, syncUp))))) {
-      $0.$destination[case: \.edit]?.syncUp.title = "Blob's Meeting"
+    await store.send(\.destination.edit.binding.syncUp, syncUp) {
+      $0.destination?.edit?.syncUp.title = "Blob's Meeting"
     }
 
     await store.send(.doneEditingButtonTapped) {
@@ -108,6 +113,7 @@ final class SyncUpDetailTests: XCTestCase {
     await store.receive(\.delegate.syncUpUpdated)
   }
 
+  @MainActor
   func testDelete() async {
     let didDismiss = LockIsolated(false)
     defer { XCTAssertEqual(didDismiss.value, true) }
@@ -124,7 +130,7 @@ final class SyncUpDetailTests: XCTestCase {
     await store.send(.deleteButtonTapped) {
       $0.destination = .alert(.deleteSyncUp)
     }
-    await store.send(.destination(.presented(.alert(.confirmDeletion)))) {
+    await store.send(\.destination.alert.confirmDeletion) {
       $0.destination = nil
     }
     await store.receive(\.delegate.deleteSyncUp)

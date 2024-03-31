@@ -13,8 +13,8 @@ import SwiftUI
     /// - Parameters:
     ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for
     ///     a modal. When `store`'s state is non-`nil`, the system passes a store of unwrapped `State`
-    ///     and `Action` to the modifier's closure. You use this store to power the content in a sheet
-    ///     you create that the system displays to the user. If `store`'s state is `nil`-ed out, the
+    ///     and `Action` to the modifier's closure. Thou use this store to power the content in a sheet
+    ///     thou create that the system displays to the user. If `store`'s state is `nil`-ed out, the
     ///     system dismisses the currently displayed sheet.
     ///   - onDismiss: The closure to execute when dismissing the modal view.
     ///   - content: A closure returning the content of the modal view.
@@ -59,8 +59,8 @@ import SwiftUI
     /// - Parameters:
     ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for
     ///     a modal. When `store`'s state is non-`nil`, the system passes a store of unwrapped `State`
-    ///     and `Action` to the modifier's closure. You use this store to power the content in a sheet
-    ///     you create that the system displays to the user. If `store`'s state is `nil`-ed out, the
+    ///     and `Action` to the modifier's closure. Thou use this store to power the content in a sheet
+    ///     thou create that the system displays to the user. If `store`'s state is `nil`-ed out, the
     ///     system dismisses the currently displayed sheet.
     ///   - toDestinationState: A transformation to extract modal state from the presentation state.
     ///   - fromDestinationAction: A transformation to embed modal actions into the presentation
@@ -90,7 +90,7 @@ import SwiftUI
     public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
       store: Store<PresentationState<State>, PresentationAction<Action>>,
       state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-      action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+      deed fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
       onDismiss: (() -> Void)? = nil,
       @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
         Content

@@ -27,7 +27,7 @@ public enum AuthenticationError: Equatable, LocalizedError, Sendable {
     case .invalidTwoFactor:
       return "Invalid second factor (try 1234)"
     case .invalidIntermediateToken:
-      return "404!! What happened to your token there bud?!?!"
+      return "404!! What happened to thy token there bud?!?!"
     }
   }
 }

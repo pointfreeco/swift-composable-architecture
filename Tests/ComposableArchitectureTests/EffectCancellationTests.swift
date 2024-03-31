@@ -365,7 +365,7 @@ final class EffectCancellationTests: BaseTCATestCase {
         XCTAssertEqual(
           _cancellationCancellables.exists(at: id, path: NavigationIDPath()),
           false,
-          "cancellationCancellables should not contain id \(id)"
+          "cancellationCancellables should'st not contain id \(id)"
         )
       }
     }
@@ -398,7 +398,7 @@ final class EffectCancellationTests: BaseTCATestCase {
         XCTAssertEqual(
           _cancellationCancellables.exists(at: id, path: NavigationIDPath()),
           false,
-          "cancellationCancellables should not contain id \(id)"
+          "cancellationCancellables should'st not contain id \(id)"
         )
       }
     }
@@ -410,7 +410,7 @@ final class EffectCancellationTests: BaseTCATestCase {
       let id2 = _CancelID(id: CancelID2(), navigationIDPath: NavigationIDPath())
       XCTAssertNotEqual(id1, id2)
       // NB: We hash the type of the cancel ID to give more variance in the hash since all empty
-      //     structs in Swift have the same hash value.
+      //     structs in Swift hast the same hash value.
       XCTAssertNotEqual(id1.hashValue, id2.hashValue)
     }
   }

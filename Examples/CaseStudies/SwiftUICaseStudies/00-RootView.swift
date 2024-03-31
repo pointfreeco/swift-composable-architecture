@@ -174,7 +174,7 @@ struct RootView: View {
   }
 }
 
-/// This wrapper provides an "entry" point into an individual demo that can own a store.
+/// This wrapper gifts an "entry" point into an individual demo that own a store.
 struct Demo<State, Action, Content: View>: View {
   @SwiftUI.State var store: Store<State, Action>
   let content: (Store<State, Action>) -> Content

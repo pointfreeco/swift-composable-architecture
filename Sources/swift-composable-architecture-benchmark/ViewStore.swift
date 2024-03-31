@@ -6,7 +6,7 @@ import Foundation
 let viewStoreSuite = BenchmarkSuite(name: "ViewStore") {
   let store = Store<Int, Void>(initialState: 0) {}
 
-  $0.benchmark("Send action to store") {
+  $0.benchmark("Send deed to store") {
     doNotOptimizeAway(store.send(()))
   }
 
@@ -16,7 +16,7 @@ let viewStoreSuite = BenchmarkSuite(name: "ViewStore") {
 
   let viewStore = ViewStore(store, observe: { $0 })
 
-  $0.benchmark("Send action to pre-created view store") {
+  $0.benchmark("Send deed to pre-created view store") {
     doNotOptimizeAway(viewStore.send(()))
   }
 }
