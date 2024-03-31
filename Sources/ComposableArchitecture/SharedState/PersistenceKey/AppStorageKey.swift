@@ -76,6 +76,16 @@
       AppStorageKey(key)
     }
 
+    /// Creates a persistence key that can read and write to a data user default, transforming
+    /// that to a `RawRepresentable` data type.
+    ///
+    /// - Parameter key: The key to read and write the value to in the user defaults store.
+    /// - Returns: A user defaults persistence key.
+    public static func appStorage<Value: RawRepresentable>(_ key: String) -> Self
+    where Value.RawValue == Data, Self == AppStorageKey<Value> {
+      AppStorageKey(key)
+    }
+
     /// Creates a persistence key that can read and write to an optional boolean user default.
     ///
     /// - Parameter key: The key to read and write the value to in the user defaults store.
@@ -149,6 +159,16 @@
     where Value.RawValue == String, Self == AppStorageKey<Value?> {
       AppStorageKey(key)
     }
+
+    /// Creates a persistence key that can read and write to an optional data user default,
+    /// transforming that to a `RawRepresentable` data type.
+    ///
+    /// - Parameter key: The key to read and write the value to in the user defaults store.
+    /// - Returns: A user defaults persistence key.
+    public static func appStorage<Value: RawRepresentable>(_ key: String) -> Self
+    where Value.RawValue == Data, Self == AppStorageKey<Value?> {
+      AppStorageKey(key)
+    }
   }
 
   /// A type defining a user defaults persistence strategy.
@@ -217,6 +237,14 @@
       self.store = store
     }
 
+    public init(_ key: String)
+    where Value: RawRepresentable, Value.RawValue == Data {
+      @Dependency(\.defaultAppStorage) var store
+      self.lookup = RawRepresentableLookup(base: CastableLookup())
+      self.key = key
+      self.store = store
+    }
+
     public init(_ key: String) where Value == Bool? {
       @Dependency(\.defaultAppStorage) var store
       self.lookup = OptionalLookup(base: CastableLookup())
@@ -269,6 +297,14 @@
 
     public init<R: RawRepresentable>(_ key: String)
     where R.RawValue == String, Value == R? {
+      @Dependency(\.defaultAppStorage) var store
+      self.lookup = OptionalLookup(base: RawRepresentableLookup(base: CastableLookup()))
+      self.key = key
+      self.store = store
+    }
+
+    public init<R: RawRepresentable>(_ key: String)
+    where R.RawValue == Data, Value == R? {
       @Dependency(\.defaultAppStorage) var store
       self.lookup = OptionalLookup(base: RawRepresentableLookup(base: CastableLookup()))
       self.key = key
