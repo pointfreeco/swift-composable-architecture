@@ -172,21 +172,22 @@ private actor Speech {
         recognitionTask?.finish()
       }
 
-      self.audioEngine?.inputNode.installTap(
-        onBus: 0,
-        bufferSize: 1024,
-        format: self.audioEngine?.inputNode.outputFormat(forBus: 0)
-      ) { buffer, when in
-        request.append(buffer)
-      }
-
-      self.audioEngine?.prepare()
-      do {
-        try self.audioEngine?.start()
-      } catch {
-        continuation.finish(throwing: error)
-        return
-      }
+      return 
+//      self.audioEngine?.inputNode.installTap(
+//        onBus: 0,
+//        bufferSize: 1024,
+//        format: self.audioEngine?.inputNode.outputFormat(forBus: 0)
+//      ) { buffer, when in
+//        request.append(buffer)
+//      }
+//
+//      self.audioEngine?.prepare()
+//      do {
+//        try self.audioEngine?.start()
+//      } catch {
+//        continuation.finish(throwing: error)
+//        return
+//      }
     }
   }
 }

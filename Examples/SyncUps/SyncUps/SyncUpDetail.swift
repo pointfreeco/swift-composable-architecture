@@ -37,6 +37,7 @@ struct SyncUpDetail {
       case deleteSyncUp
       case syncUpUpdated(SyncUp)
       case startMeeting
+      case goToMeeting(Meeting, syncUp: SyncUp)
     }
   }
 
@@ -153,9 +154,12 @@ struct SyncUpDetailView: View {
       if !store.syncUp.meetings.isEmpty {
         Section {
           ForEach(store.syncUp.meetings) { meeting in
-            NavigationLink(
-              state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
-            ) {
+//            NavigationLink(
+//              state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
+//            ) {
+            Button {
+              store.send(.delegate(.goToMeeting(meeting, syncUp: store.syncUp)))
+            } label: {
               HStack {
                 Image(systemName: "calendar")
                 Text(meeting.date, style: .date)

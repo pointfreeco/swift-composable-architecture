@@ -1,14 +1,10 @@
-import ComposableArchitecture
+@testable @_spi(Internals) import ComposableArchitecture
 import SwiftUI
 
 @main
 struct SyncUpsApp: App {
   let store = Store(
-    initialState: AppFeature.State(
-      path: StackState([
-        .syncUpsList(SyncUpsList.State.init())
-      ])
-    )
+    initialState: AppFeature.State()
   ) {
     AppFeature()
       ._printChanges()
@@ -30,6 +26,18 @@ struct SyncUpsApp: App {
       } else {
         //AppView(store: store)
         AppViewRepresentable(store: store)
+          .task {
+            try? await Task.sleep(for: .seconds(2))
+            store.path = StackState([
+              .someFeature
+//              .detail(SyncUpDetail.State.init(syncUp: .mock)),
+//              .meeting(SyncUp.mock.meetings[0], syncUp: .mock),
+            ])
+//            try? await Task.sleep(for: .seconds(2))
+//            store.path.removeLast()
+//            try? await Task.sleep(for: .seconds(2))
+//            store.path.removeLast()
+          }
       }
     }
   }
