@@ -146,11 +146,13 @@ struct RootView: View {
 
         Section {
           NavigationLink("Reusable favoriting component") {
-            Demo(store: Store(
-              initialState: Episodes.State(episodes: .mocks)
-            ) {
-              Episodes()
-            }) { store in
+            Demo(
+              store: Store(
+                initialState: Episodes.State(episodes: .mocks)
+              ) {
+                Episodes()
+              }
+            ) { store in
               EpisodesView(store: store)
             }
           }
