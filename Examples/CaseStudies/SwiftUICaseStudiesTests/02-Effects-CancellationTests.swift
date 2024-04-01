@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class EffectsCancellationTests: XCTestCase {
+  @MainActor
   func testTrivia_SuccessfulRequest() async {
     let store = TestStore(initialState: EffectsCancellation.State()) {
       EffectsCancellation()
@@ -27,6 +27,7 @@ final class EffectsCancellationTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testTrivia_FailedRequest() async {
     struct FactError: Equatable, Error {}
     let store = TestStore(initialState: EffectsCancellation.State()) {
@@ -49,6 +50,7 @@ final class EffectsCancellationTests: XCTestCase {
   // in the `.cancelButtonTapped` action of the `effectsCancellationReducer`. This will cause the
   // test to fail, showing that we are exhaustively asserting that the effect truly is canceled and
   // will never emit.
+  @MainActor
   func testTrivia_CancelButtonCancelsRequest() async {
     let store = TestStore(initialState: EffectsCancellation.State()) {
       EffectsCancellation()
@@ -64,6 +66,7 @@ final class EffectsCancellationTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testTrivia_PlusMinusButtonsCancelsRequest() async {
     let store = TestStore(initialState: EffectsCancellation.State()) {
       EffectsCancellation()

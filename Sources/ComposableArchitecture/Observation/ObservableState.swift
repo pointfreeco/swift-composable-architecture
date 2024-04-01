@@ -52,15 +52,13 @@
 
     @inlinable
     public static func _$id<T>(for value: T) -> Self {
-      (value as? any ObservableState)?._$id ?? ._$inert
+      (value as? any ObservableState)?._$id ?? Self()
     }
 
     @inlinable
     public static func _$id(for value: some ObservableState) -> Self {
       value._$id
     }
-
-    public static let _$inert = Self()
 
     public func _$tag(_ tag: Int) -> Self {
       Self(storage: Storage(id: .tag(tag, self.storage.id)))

@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SyncUps
 
-@MainActor
 final class SyncUpsListTests: XCTestCase {
+  @MainActor
   func testAdd() async throws {
     let store = TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()
@@ -25,8 +25,8 @@ final class SyncUpsListTests: XCTestCase {
     }
 
     syncUp.title = "Engineering"
-    await store.send(\.destination.add.syncUp, syncUp) {
-      $0.$destination[case: \.add]?.syncUp.title = "Engineering"
+    await store.send(\.destination.add.binding.syncUp, syncUp) {
+      $0.destination?.add?.syncUp.title = "Engineering"
     }
 
     await store.send(.confirmAddSyncUpButtonTapped) {
@@ -35,6 +35,7 @@ final class SyncUpsListTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testAdd_ValidatedAttendees() async throws {
     @Dependency(\.uuid) var uuid
 
@@ -75,6 +76,7 @@ final class SyncUpsListTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testLoadingDataDecodingFailed() async throws {
     let store = TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()
@@ -97,6 +99,7 @@ final class SyncUpsListTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testLoadingDataFileNotFound() async throws {
     let store = TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()

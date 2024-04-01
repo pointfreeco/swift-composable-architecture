@@ -295,10 +295,10 @@ let store = TestStore(initialState: Settings.State()) {
   Settings()
 }
 
-store.send(\.displayName, "Blob") {
+store.send(\.binding.displayName, "Blob") {
   $0.displayName = "Blob"
 }
-store.send(\.protectMyPosts, true) {
+store.send(\.binding.protectMyPosts, true) {
   $0.protectMyPosts = true
 )
 ```

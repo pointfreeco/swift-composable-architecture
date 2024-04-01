@@ -2,11 +2,11 @@ import Combine
 @_spi(Internals) import ComposableArchitecture
 import XCTest
 
-@MainActor
 final class StoreInvalidationTests: BaseTCATestCase {
-  var cancellables: Set<AnyCancellable> = []
-
+  @MainActor
   func testInvalidation() {
+    var cancellables: Set<AnyCancellable> = []
+
     let store = Store<Int?, Void>(initialState: nil) {}
       .scope(
         id: nil,
@@ -18,7 +18,7 @@ final class StoreInvalidationTests: BaseTCATestCase {
     var count = 0
     viewStore.publisher
       .sink { _ in count += 1 }
-      .store(in: &self.cancellables)
+      .store(in: &cancellables)
 
     XCTAssertEqual(count, 1)
     viewStore.send(())

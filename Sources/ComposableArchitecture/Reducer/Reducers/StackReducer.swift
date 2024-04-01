@@ -306,7 +306,7 @@ extension Reducer {
   ///     // ...
   ///   }
   ///   enum Action {
-  ///     case path(StackAction<Path.State, Path.Action>)
+  ///     case path(StackActionOf<Path>)
   ///     // ...
   ///   }
   ///   var body: some ReducerOf<Self> {
@@ -411,6 +411,21 @@ extension Reducer {
     )
   }
 }
+
+/// A convenience type alias for referring to a stack action of a given reducer's domain.
+///
+/// Instead of specifying two generics:
+///
+/// ```swift
+///     case path(StackAction<Path.State, Path.Action>)
+/// ```
+///
+/// You can specify a single generic:
+///
+/// ```swift
+///     case path(StackActionOf<Path>)
+/// ```
+public typealias StackActionOf<R: Reducer> = StackAction<R.State, R.Action>
 
 public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
   let base: Base

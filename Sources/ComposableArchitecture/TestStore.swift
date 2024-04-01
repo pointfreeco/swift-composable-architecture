@@ -261,11 +261,11 @@ import XCTestDynamicOverlay
 /// complete before the test is finished. To turn off exhaustivity you can set ``exhaustivity``
 /// to ``Exhaustivity/off``. When that is done the ``TestStore``'s behavior changes:
 ///
-///   * The trailing closures of ``send(_:assert:file:line:)`` and
+///   * The trailing closures of ``send(_:assert:file:line:)-2co21`` and
 ///     ``receive(_:timeout:assert:file:line:)-6325h`` no longer need to assert on all state
 ///     changes. They can assert on any subset of changes, and only if they make an incorrect
 ///     mutation will a test failure be reported.
-///   * The ``send(_:assert:file:line:)`` and ``receive(_:timeout:assert:file:line:)-6325h``
+///   * The ``send(_:assert:file:line:)-2co21`` and ``receive(_:timeout:assert:file:line:)-6325h``
 ///     methods are allowed to be called even when actions have been received from effects that have
 ///     not been asserted on yet. Any pending actions will be cleared.
 ///   * Tests are allowed to finish with unasserted, received actions and in-flight effects. No test
@@ -474,7 +474,7 @@ public final class TestStore<State, Action> {
 
   /// The current state of the test store.
   ///
-  /// When read from a trailing closure assertion in ``send(_:assert:file:line:)`` or
+  /// When read from a trailing closure assertion in ``send(_:assert:file:line:)-2co21`` or
   /// ``receive(_:timeout:assert:file:line:)-6325h``, it will equal the `inout` state passed to the
   /// closure.
   public var state: State {
@@ -499,13 +499,17 @@ public final class TestStore<State, Action> {
   ///
   /// - Parameters:
   ///   - initialState: The state the feature starts in.
-  ///   - reducer: The reducer that powers the runtime of the feature.
+  ///   - reducer: The reducer that powers the runtime of the feature. Unlike
+  ///     ``Store/init(initialState:reducer:withDependencies:)``, this is _not_ a builder closure
+  ///     due to a [Swift bug](https://github.com/apple/swift/issues/72399) that is more likely to
+  ///     affect test store initialization. If you must compose multiple reducers in this closure,
+  ///     wrap them in ``CombineReducers``.
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be
   ///     accessed during the test. These dependencies will be used when producing the initial
   ///     state.
   public init<R: Reducer>(
-    initialState: @autoclosure () -> R.State,
-    @ReducerBuilder<State, Action> reducer: () -> R,
+    initialState: @autoclosure () -> State,
+    reducer: () -> R,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
     },
     file: StaticString = #file,
@@ -515,43 +519,6 @@ public final class TestStore<State, Action> {
     R.State == State,
     R.Action == Action,
     State: Equatable
-  {
-    let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      Dependencies.withDependencies(prepareDependencies) {
-        TestReducer(Reduce(reducer()), initialState: initialState())
-      }
-    }
-    self.file = file
-    self.line = line
-    self.reducer = reducer
-    self.store = Store(initialState: reducer.state) { reducer }
-    self.timeout = 1 * NSEC_PER_SEC
-    self.useMainSerialExecutor = true
-  }
-
-  /// Creates a test store with an initial state and a reducer powering its runtime.
-  ///
-  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
-  /// use a test store.
-  ///
-  /// - Parameters:
-  ///   - initialState: The state the feature starts in.
-  ///   - reducer: The reducer that powers the runtime of the feature.
-  ///   - prepareDependencies: A closure that can be used to override dependencies that will be
-  ///     accessed during the test. These dependencies will be used when producing the initial
-  ///     state.
-  @available(*, deprecated, message: "State must be equatable to perform assertions.")
-  public init<R: Reducer>(
-    initialState: @autoclosure () -> R.State,
-    @ReducerBuilder<State, Action> reducer: () -> R,
-    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
-    },
-    file: StaticString = #file,
-    line: UInt = #line
-  )
-  where
-    R.State == State,
-    R.Action == Action
   {
     let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
       Dependencies.withDependencies(prepareDependencies) {

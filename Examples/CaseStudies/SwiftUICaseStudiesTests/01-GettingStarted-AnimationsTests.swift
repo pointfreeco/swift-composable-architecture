@@ -4,8 +4,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class AnimationTests: XCTestCase {
+  @MainActor
   func testRainbow() async {
     let clock = TestClock()
 
@@ -58,6 +58,7 @@ final class AnimationTests: XCTestCase {
     await clock.run()
   }
 
+  @MainActor
   func testReset() async {
     let clock = TestClock()
 

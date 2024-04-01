@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SyncUps
 
-@MainActor
 final class AppFeatureTests: XCTestCase {
+  @MainActor
   func testDelete() async throws {
     let syncUp = SyncUp.mock
 
@@ -22,11 +22,11 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(\.path[id:0].detail.deleteButtonTapped) {
-      $0.path[id: 0, case: \.detail]?.destination = .alert(.deleteSyncUp)
+      $0.path[id: 0]?.detail?.destination = .alert(.deleteSyncUp)
     }
 
     await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
-      $0.path[id: 0, case: \.detail]?.destination = nil
+      $0.path[id: 0]?.detail?.destination = nil
     }
 
     await store.receive(\.path[id:0].detail.delegate.deleteSyncUp) {
@@ -37,6 +37,7 @@ final class AppFeatureTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testDetailEdit() async throws {
     var syncUp = SyncUp.mock
     let savedData = LockIsolated(Data?.none)
@@ -59,19 +60,19 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(\.path[id:0].detail.editButtonTapped) {
-      $0.path[id: 0, case: \.detail]?.destination = .edit(
+      $0.path[id: 0]?.detail?.destination = .edit(
         SyncUpForm.State(syncUp: syncUp)
       )
     }
 
     syncUp.title = "Blob"
-    await store.send(\.path[id:0].detail.destination.edit.syncUp, syncUp) {
-      $0.path[id: 0, case: \.detail]?.$destination[case: \.edit]?.syncUp.title = "Blob"
+    await store.send(\.path[id:0].detail.destination.edit.binding.syncUp, syncUp) {
+      $0.path[id: 0]?.detail?.destination?.edit?.syncUp.title = "Blob"
     }
 
     await store.send(\.path[id:0].detail.doneEditingButtonTapped) {
-      $0.path[id: 0, case: \.detail]?.destination = nil
-      $0.path[id: 0, case: \.detail]?.syncUp.title = "Blob"
+      $0.path[id: 0]?.detail?.destination = nil
+      $0.path[id: 0]?.detail?.syncUp.title = "Blob"
     }
 
     await store.receive(\.path[id:0].detail.delegate.syncUpUpdated) {
@@ -86,6 +87,7 @@ final class AppFeatureTests: XCTestCase {
     )
   }
 
+  @MainActor
   func testRecording() async {
     let speechResult = SpeechRecognitionResult(
       bestTranscription: Transcription(formattedString: "I completed the project"),
@@ -127,7 +129,7 @@ final class AppFeatureTests: XCTestCase {
 
     await store.send(\.path[id:1].record.onTask)
     await store.receive(\.path[id:1].record.delegate.save) {
-      $0.path[id: 0, case: \.detail]?.syncUp.meetings = [
+      $0.path[id: 0]?.detail?.syncUp.meetings = [
         Meeting(
           id: Meeting.ID(UUID(0)),
           date: Date(timeIntervalSince1970: 1_234_567_890),

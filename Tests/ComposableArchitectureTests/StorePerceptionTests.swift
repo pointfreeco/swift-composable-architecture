@@ -4,8 +4,8 @@
   import XCTest
 
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-  @MainActor
   final class StorePerceptionTests: BaseTCATestCase {
+    @MainActor
     func testPerceptionCheck_SkipWhenOutsideView() {
       let store = Store(initialState: Feature.State()) {
         Feature()
@@ -13,6 +13,7 @@
       store.send(.tap)
     }
 
+    @MainActor
     func testPerceptionCheck_SkipWhenActionClosureOfView() {
       struct FeatureView: View {
         let store = Store(initialState: Feature.State()) {
@@ -27,6 +28,7 @@
     }
 
     #if DEBUG
+      @MainActor
       func testPerceptionCheck_AccessStateWithoutTracking() {
         if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10) {
           struct FeatureView: View {
@@ -49,6 +51,7 @@
       }
     #endif
 
+    @MainActor
     func testPerceptionCheck_AccessStateWithTracking() {
       struct FeatureView: View {
         let store = Store(initialState: Feature.State()) {
@@ -63,6 +66,7 @@
       render(FeatureView())
     }
 
+    @MainActor
     private func render(_ view: some View) {
       let image = ImageRenderer(content: view).cgImage
       _ = image

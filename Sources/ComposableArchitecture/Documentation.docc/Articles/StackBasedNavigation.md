@@ -409,7 +409,7 @@ stack in order to confirm that the count goes up by one, but in order to do so w
 an ID:
 
 ```swift
-await store.send(\.path[id: ???].incrementButtonTapped) {
+await store.send(\.path[id: ???].counter.incrementButtonTapped) {
   // ...
 }
 ```
@@ -423,7 +423,7 @@ This means that when the ``TestStore`` were constructed with a single element al
 that it was given an ID of 0, and so that is the ID we can use when sending an action:
 
 ```swift
-await store.send(\.path[id: 0].incrementButtonTapped) {
+await store.send(\.path[id: 0].counter.incrementButtonTapped) {
   // ...
 }
 ```
@@ -437,7 +437,7 @@ The library provides two different tools to perform all of these steps in a sing
 use the `XCTModify` helper:
 
 ```swift
-await store.send(\.path[id: 0].incrementButtonTapped) {
+await store.send(\.path[id: 0].counter.incrementButtonTapped) {
   XCTModify(&$0.path[id: 0], case: \.counter) {
     $0.count = 4
   }
@@ -455,7 +455,7 @@ Another option is to use ``StackState/subscript(id:case:)-7gczr`` to simultaneou
 ID on the stack _and_ a case of the path enum:
 
 ```swift
-await store.send(\.path[id: 0].incrementButtonTapped) {
+await store.send(\.path[id: 0].counter.incrementButtonTapped) {
   $0.path[id: 0, case: \.counter]?.count = 4
 }
 ```
@@ -466,7 +466,7 @@ The `XCTModify` style is best when you have many things you need to modify on th
 Continuing with the test, we can send it one more time to see that the count goes up to 5:
 
 ```swift
-await store.send(\.path[id: 0].incrementButtonTapped) {
+await store.send(\.path[id: 0].counter.incrementButtonTapped) {
   XCTModify(&$0.path[id: 0], case: \.counter) {
     $0.count = 5
   }
@@ -525,8 +525,8 @@ func testDismissal() {
   }
   store.exhaustivity = .off
 
-  await store.send(\.path[id: 0].incrementButtonTapped)
-  await store.send(\.path[id: 0].incrementButtonTapped)
+  await store.send(\.path[id: 0].counter.incrementButtonTapped)
+  await store.send(\.path[id: 0].counter.incrementButtonTapped)
   await store.receive(\.path.popFrom)
 }
 ```

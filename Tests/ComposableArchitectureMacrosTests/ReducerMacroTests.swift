@@ -298,11 +298,11 @@
             case activity(Activity.Action)
             case timeline(Timeline.Action)
             case tweet(Tweet.Action)
-            case alert(AlertState<Alert>.Action)
+            case alert(AlertState<Alert> .Action)
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Activity>, ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>>, ComposableArchitecture.Scope<Self.State, Self.Action, Tweet>> {
+          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action> ._Sequence<ComposableArchitecture.ReducerBuilder<Self.State, Self.Action> ._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Activity>, ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>>, ComposableArchitecture.Scope<Self.State, Self.Action, Tweet>> {
             ComposableArchitecture.Scope(state: \Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
               Activity()
             }
@@ -387,6 +387,106 @@
       }
     }
 
+    func testEnum_Empty_AccessControl_Package() {
+      assertMacro {
+        """
+        @Reducer
+        package enum Destination {
+        }
+        """
+      } expansion: {
+        """
+        package enum Destination {
+
+            @CasePathable
+            @dynamicMemberLookup
+            @ObservableState
+
+            package enum State: ComposableArchitecture.CaseReducerState {
+
+                package typealias StateReducer = Destination
+
+            }
+
+            @CasePathable
+
+            package enum Action {
+
+            }
+
+            @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+
+            package static var body: ComposableArchitecture.EmptyReducer<Self.State, Self.Action> {
+                ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+            }
+
+            package enum CaseScope {
+
+            }
+
+            package static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+                switch store.state {
+
+                }
+            }
+        }
+
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
+        }
+        """
+      }
+    }
+
+    func testEnum_Empty_AccessControl_Public() {
+      assertMacro {
+        """
+        @Reducer
+        public enum Destination {
+        }
+        """
+      } expansion: {
+        """
+        public enum Destination {
+
+            @CasePathable
+            @dynamicMemberLookup
+            @ObservableState
+
+            public enum State: ComposableArchitecture.CaseReducerState {
+
+                public typealias StateReducer = Destination
+
+            }
+
+            @CasePathable
+
+            public enum Action {
+
+            }
+
+            @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+
+            public static var body: ComposableArchitecture.EmptyReducer<Self.State, Self.Action> {
+                ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+            }
+
+            public enum CaseScope {
+
+            }
+
+            public static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+                switch store.state {
+
+                }
+            }
+        }
+
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
+        }
+        """
+      }
+    }
+
     func testEnum_OneAlertCase() {
       assertMacro {
         """
@@ -411,7 +511,7 @@
 
           @CasePathable
           enum Action {
-            case alert(AlertState<Never>.Action)
+            case alert(AlertState<Never> .Action)
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
@@ -468,7 +568,7 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Activity>, ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>> {
+          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action> ._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Activity>, ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>> {
             ComposableArchitecture.Scope(state: \Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
               Activity()
             }
@@ -527,6 +627,7 @@
           @CasePathable
           enum Action {
             case timeline(Timeline.Action)
+            case meeting(Swift.Never)
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
@@ -589,8 +690,9 @@
 
           @CasePathable
           enum Action {
-            case alert(AlertState<Alert>.Action)
-            case dialog(ConfirmationDialogState<Dialog>.Action)
+            case alert(AlertState<Alert> .Action)
+            case dialog(ConfirmationDialogState<Dialog> .Action)
+            case meeting(Swift.Never)
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
@@ -657,7 +759,7 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Counter>, ComposableArchitecture.Scope<Self.State, Self.Action, Counter>>, ComposableArchitecture.Scope<Self.State, Self.Action, Counter>> {
+          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action> ._Sequence<ComposableArchitecture.ReducerBuilder<Self.State, Self.Action> ._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Counter>, ComposableArchitecture.Scope<Self.State, Self.Action, Counter>>, ComposableArchitecture.Scope<Self.State, Self.Action, Counter>> {
             ComposableArchitecture.Scope(state: \Self.State.Cases.drillDown, action: \Self.Action.Cases.drillDown) {
               Counter()
             }
@@ -1020,17 +1122,18 @@
             case child(ChildFeature.Action)
             #if os(macOS)
             case mac(MacFeature.Action)
-            case macAlert(AlertState<MacAlert>.Action)
+            case macAlert(AlertState<MacAlert> .Action)
             #elseif os(iOS)
             case phone(PhoneFeature.Action)
             #else
             case other(OtherFeature.Action)
+            case another(Swift.Never)
             #endif
 
             #if DEBUG
             #if INNER
             case inner(InnerFeature.Action)
-            case innerDialog(ConfirmationDialogState<InnerDialog>.Action)
+            case innerDialog(ConfirmationDialogState<InnerDialog> .Action)
             #endif
             #endif
 

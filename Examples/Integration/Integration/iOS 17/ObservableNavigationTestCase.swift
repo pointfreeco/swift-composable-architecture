@@ -35,7 +35,7 @@ struct ObservableNavigationTestCaseView: View {
     }
     enum Action {
       case path(
-        StackAction<ObservableBasicsView.Feature.State, ObservableBasicsView.Feature.Action>
+        StackActionOf<ObservableBasicsView.Feature>
       )
     }
     var body: some ReducerOf<Self> {

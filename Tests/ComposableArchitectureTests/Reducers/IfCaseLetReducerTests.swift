@@ -1,9 +1,9 @@
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class IfCaseLetReducerTests: BaseTCATestCase {
+  @MainActor
   func testChildAction() async {
     struct SomeError: Error, Equatable {}
 
@@ -32,6 +32,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
   }
 
   #if DEBUG
+    @MainActor
     func testNilChild() async {
       struct SomeError: Error, Equatable {}
 
@@ -70,6 +71,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
     }
   #endif
 
+  @MainActor
   func testEffectCancellation_Siblings() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -150,6 +152,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testIdentifiableChild() async {
     struct Feature: Reducer {
       enum State: Equatable {
