@@ -26,18 +26,6 @@ struct SyncUpsApp: App {
       } else {
         //AppView(store: store)
         AppViewRepresentable(store: store)
-          .task {
-            try? await Task.sleep(for: .seconds(2))
-            store.path = StackState([
-              .someFeature
-//              .detail(SyncUpDetail.State.init(syncUp: .mock)),
-//              .meeting(SyncUp.mock.meetings[0], syncUp: .mock),
-            ])
-//            try? await Task.sleep(for: .seconds(2))
-//            store.path.removeLast()
-//            try? await Task.sleep(for: .seconds(2))
-//            store.path.removeLast()
-          }
       }
     }
   }

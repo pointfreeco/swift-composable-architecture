@@ -8,8 +8,6 @@ struct AppFeature {
     case detail(SyncUpDetail)
     case meeting(Meeting, syncUp: SyncUp)
     case record(RecordMeeting)
-    @ReducerCaseIgnored
-    case someFeature
   }
 
   @ObservableState
@@ -133,8 +131,6 @@ struct AppView: View {
         MeetingView(meeting: meeting, syncUp: syncUp)
       case let .record(store):
         RecordMeetingView(store: store)
-      case .someFeature:
-        EmptyView()
       }
     }
   }
@@ -163,33 +159,10 @@ struct AppViewRepresentable: UIViewControllerRepresentable {
         UIHostingController(rootView: MeetingView(meeting: meeting, syncUp: syncUp))
       case let .record(store):
         UIHostingController(rootView: RecordMeetingView(store: store))
-      case .someFeature:
-        SomeFeatureViewController()
       }
     }
   }
 
   func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
-  }
-}
-
-class SomeFeatureViewController: UIViewController {
-  override func viewDidLoad() {
-    let button = UIButton(type: .system)
-    button.setTitle("Go to detail", for: .normal)
-    button.frame = .init(x: 100, y: 100, width: 200, height: 200)
-    button.addAction(
-      UIAction.init(handler: {
-        [weak self] _ in
-        guard let self else { return }
-        self.navigationController?.push(
-          state: AppFeature.Path.State.detail(
-            SyncUpDetail.State.init(syncUp: .mock)
-          )
-        )
-      }),
-      for: .touchUpInside
-    )
-    view.addSubview(button)
   }
 }
