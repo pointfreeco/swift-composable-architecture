@@ -130,7 +130,7 @@ struct EpisodeView: View {
 @Reducer
 struct Episodes {
   struct State: Equatable {
-    var episodes: IdentifiedArrayOf<Episode.State> = .mocks
+    var episodes: IdentifiedArrayOf<Episode.State> = []
   }
 
   enum Action {
@@ -195,7 +195,7 @@ extension IdentifiedArray where ID == Episode.State.ID, Element == Episode.State
 #Preview {
   NavigationStack {
     EpisodesView(
-      store: Store(initialState: Episodes.State()) {
+      store: Store(initialState: Episodes.State(episodes: .mocks)) {
         Episodes()
       }
     )
