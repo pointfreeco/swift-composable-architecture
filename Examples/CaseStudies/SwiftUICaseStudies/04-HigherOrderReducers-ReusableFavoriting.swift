@@ -130,7 +130,7 @@ struct EpisodeView: View {
 @Reducer
 struct Episodes {
   struct State: Equatable {
-    var episodes: IdentifiedArrayOf<Episode.State> = []
+    var episodes: IdentifiedArrayOf<Episode.State> = .mocks
   }
 
   enum Action {
