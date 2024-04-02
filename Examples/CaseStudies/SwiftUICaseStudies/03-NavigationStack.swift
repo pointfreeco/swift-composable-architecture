@@ -7,6 +7,13 @@ private let readMe = """
 
 @Reducer
 struct NavigationDemo {
+  @Reducer(state: .equatable)
+  enum Path {
+    case screenA(ScreenA)
+    case screenB(ScreenB)
+    case screenC(ScreenC)
+  }
+
   @ObservableState
   struct State: Equatable {
     var path = StackState<Path.State>()
@@ -15,7 +22,7 @@ struct NavigationDemo {
   enum Action {
     case goBackToScreen(id: StackElementID)
     case goToABCButtonTapped
-    case path(StackAction<Path.State, Path.Action>)
+    case path(StackActionOf<Path>)
     case popToRoot
   }
 
@@ -27,23 +34,23 @@ struct NavigationDemo {
         return .none
 
       case .goToABCButtonTapped:
-        state.path.append(.screenA())
-        state.path.append(.screenB())
-        state.path.append(.screenC())
+        state.path.append(.screenA(ScreenA.State()))
+        state.path.append(.screenB(ScreenB.State()))
+        state.path.append(.screenC(ScreenC.State()))
         return .none
 
       case let .path(action):
         switch action {
         case .element(id: _, action: .screenB(.screenAButtonTapped)):
-          state.path.append(.screenA())
+          state.path.append(.screenA(ScreenA.State()))
           return .none
 
         case .element(id: _, action: .screenB(.screenBButtonTapped)):
-          state.path.append(.screenB())
+          state.path.append(.screenB(ScreenB.State()))
           return .none
 
         case .element(id: _, action: .screenB(.screenCButtonTapped)):
-          state.path.append(.screenC())
+          state.path.append(.screenC(ScreenC.State()))
           return .none
 
         default:
@@ -55,37 +62,7 @@ struct NavigationDemo {
         return .none
       }
     }
-    .forEach(\.path, action: \.path) {
-      Path()
-    }
-  }
-
-  @Reducer
-  struct Path {
-    @ObservableState
-    enum State: Equatable {
-      case screenA(ScreenA.State = .init())
-      case screenB(ScreenB.State = .init())
-      case screenC(ScreenC.State = .init())
-    }
-
-    enum Action {
-      case screenA(ScreenA.Action)
-      case screenB(ScreenB.Action)
-      case screenC(ScreenC.Action)
-    }
-
-    var body: some Reducer<State, Action> {
-      Scope(state: \.screenA, action: \.screenA) {
-        ScreenA()
-      }
-      Scope(state: \.screenB, action: \.screenB) {
-        ScreenB()
-      }
-      Scope(state: \.screenC, action: \.screenC) {
-        ScreenC()
-      }
-    }
+    .forEach(\.path, action: \.path)
   }
 }
 
@@ -100,15 +77,15 @@ struct NavigationDemoView: View {
         Section {
           NavigationLink(
             "Go to screen A",
-            state: NavigationDemo.Path.State.screenA()
+            state: NavigationDemo.Path.State.screenA(ScreenA.State())
           )
           NavigationLink(
             "Go to screen B",
-            state: NavigationDemo.Path.State.screenB()
+            state: NavigationDemo.Path.State.screenB(ScreenB.State())
           )
           NavigationLink(
             "Go to screen C",
-            state: NavigationDemo.Path.State.screenC()
+            state: NavigationDemo.Path.State.screenC(ScreenC.State())
           )
         }
 
@@ -120,19 +97,13 @@ struct NavigationDemoView: View {
       }
       .navigationTitle("Root")
     } destination: { store in
-      switch store.state {
-      case .screenA:
-        if let store = store.scope(state: \.screenA, action: \.screenA) {
-          ScreenAView(store: store)
-        }
-      case .screenB:
-        if let store = store.scope(state: \.screenB, action: \.screenB) {
-          ScreenBView(store: store)
-        }
-      case .screenC:
-        if let store = store.scope(state: \.screenC, action: \.screenC) {
-          ScreenCView(store: store)
-        }
+      switch store.case {
+      case let .screenA(store):
+        ScreenAView(store: store)
+      case let .screenB(store):
+        ScreenBView(store: store)
+      case let .screenC(store):
+        ScreenCView(store: store)
       }
     }
     .safeAreaInset(edge: .bottom) {
@@ -318,15 +289,15 @@ struct ScreenAView: View {
       Section {
         NavigationLink(
           "Go to screen A",
-          state: NavigationDemo.Path.State.screenA(.init(count: store.count))
+          state: NavigationDemo.Path.State.screenA(ScreenA.State(count: store.count))
         )
         NavigationLink(
           "Go to screen B",
-          state: NavigationDemo.Path.State.screenB()
+          state: NavigationDemo.Path.State.screenB(ScreenB.State())
         )
         NavigationLink(
           "Go to screen C",
-          state: NavigationDemo.Path.State.screenC(.init(count: store.count))
+          state: NavigationDemo.Path.State.screenC(ScreenC.State(count: store.count))
         )
       }
     }
@@ -460,11 +431,11 @@ struct ScreenCView: View {
         )
         NavigationLink(
           "Go to screen B",
-          state: NavigationDemo.Path.State.screenB()
+          state: NavigationDemo.Path.State.screenB(ScreenB.State())
         )
         NavigationLink(
           "Go to screen C",
-          state: NavigationDemo.Path.State.screenC()
+          state: NavigationDemo.Path.State.screenC(ScreenC.State())
         )
       }
     }
@@ -476,13 +447,7 @@ struct ScreenCView: View {
 
 #Preview {
   NavigationDemoView(
-    store: Store(
-      initialState: NavigationDemo.State(
-        path: StackState([
-          .screenA(ScreenA.State())
-        ])
-      )
-    ) {
+    store: Store(initialState: NavigationDemo.State()) {
       NavigationDemo()
     }
   )

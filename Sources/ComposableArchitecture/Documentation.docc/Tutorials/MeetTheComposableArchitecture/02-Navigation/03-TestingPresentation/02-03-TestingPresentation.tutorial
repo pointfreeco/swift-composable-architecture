@@ -103,6 +103,9 @@
         Emulate the user typing into the name text field of the contact. The trailing closure is
         where we can assert on how state changed after sending the action.
         
+        > Tip: The payload of an action can be sent as a second argument when using case key path
+        > syntax.
+        
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0010.swift)
       }
       
@@ -110,12 +113,12 @@
         Assert on how state changed by mutating the `destination` through the `addContact` case of
         the destination enum. 
         
-        To do this we use a special subscript defined on 
-        ``ComposableArchitecture/PresentationState`` that allows you to modify the data in the case
-        of any enum.
+        To do this we can chain into the `addContact` case name directly and mutate a part of its
+        associated value.
         
-        > Tip: See ``ComposableArchitecture/PresentationState/subscript(case:)-7uqte`` for 
-        > documentation on this subscript.
+        > Tip: To chain into an enum and mutate an associated value, the enum must be annotated with
+        > `@CasePathable` _and_ `@dynamicMemberLookup`. The `@Reducer` macro automatically applies
+        > these annotations to enum-based `State`, but you must manually apply it to other enums.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0011.swift)
       }

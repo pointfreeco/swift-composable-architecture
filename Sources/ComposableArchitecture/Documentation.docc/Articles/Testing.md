@@ -68,8 +68,8 @@ concise. It's called ``TestStore``, and it is constructed similarly to ``Store``
 initial state of the feature and the ``Reducer`` that runs the feature's logic:
 
 ```swift
-@MainActor
 class CounterTests: XCTestCase {
+  @MainActor
   func testBasics() async {
     let store = TestStore(initialState: Feature.State(count: 0)) {
       Feature()
@@ -78,11 +78,11 @@ class CounterTests: XCTestCase {
 }
 ```
 
-> Tip: Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should
-be marked as `async` since most assertion helpers on ``TestStore`` can suspend.
+> Tip: Tests that use ``TestStore`` should be annotated as `@MainActor` and marked as `async` since
+> most assertion helpers on ``TestStore`` can suspend.
 
-Test stores have a ``TestStore/send(_:assert:file:line:)`` method, but it behaves differently from
-stores and view stores. You provide an action to send into the system, but then you must also
+Test stores have a ``TestStore/send(_:assert:file:line:)-2co21`` method, but it behaves differently
+from stores and view stores. You provide an action to send into the system, but then you must also
 provide a trailing closure to describe how the state of the feature changed after sending the
 action:
 
@@ -102,8 +102,8 @@ await store.send(.incrementButtonTapped) {
 }
 ```
 
-> The ``TestStore/send(_:assert:file:line:)`` method is `async` for technical reasons that we do not
-> have to worry about right now.
+> The ``TestStore/send(_:assert:file:line:)-2co21`` method is `async` for technical reasons that we
+> do not have to worry about right now.
 
 If your mutation is incorrect, meaning you perform a mutation that is different from what happened
 in the ``Reducer``, then you will get a test failure with a nicely formatted message showing exactly
@@ -156,7 +156,7 @@ await store.send(.decrementButtonTapped) {
 > by one, but we haven't proven we know the precise value of `count` at each step of the way.
 >
 > In general, the less logic you have in the trailing closure of
-> ``TestStore/send(_:assert:file:line:)``, the stronger your assertion will be. It is best to
+> ``TestStore/send(_:assert:file:line:)-2co21``, the stronger your assertion will be. It is best to
 > use simple, hard-coded data for the mutation.
 
 Test stores do expose a ``TestStore/state`` property, which can be useful for performing assertions
@@ -170,7 +170,7 @@ store.send(.incrementButtonTapped) {
 XCTAssertTrue(store.state.isPrime)
 ```
 
-However, when inside the trailing closure of ``TestStore/send(_:assert:file:line:)``, the
+However, when inside the trailing closure of ``TestStore/send(_:assert:file:line:)-2co21``, the
 ``TestStore/state`` property is equal to the state _before_ sending the action, not after. That
 prevents you from being able to use an escape hatch to get around needing to actually describe the
 state mutation, like so:
@@ -233,8 +233,8 @@ To test this we can start off similar to how we did in the [previous section][Te
 when testing state mutations:
 
 ```swift
-@MainActor
 class TimerTests: XCTestCase {
+  @MainActor
   func testBasics() async {
     let store = TestStore(initialState: Feature.State(count: 0)) {
       Feature()
@@ -276,9 +276,9 @@ await store.receive(\.timerTick) {
 ```
 
 > Note: We are using key path syntax `\.timerTick` to specify the case of the action we expect to 
-receive. This works because the ``ComposableArchitecture/Reducer()`` macro automatically applies the 
-`@CasePathable` macro to the `Action` enum, and `@CasePathable` comes from our 
-[CasePaths][swift-case-paths] library which brings key path syntax to enum cases.
+> receive. This works because the ``ComposableArchitecture/Reducer()`` macro automatically applies
+> the `@CasePathable` macro to the `Action` enum, and `@CasePathable` comes from our
+> [CasePaths][swift-case-paths] library which brings key path syntax to enum cases.
 
 However, if we run this test we still get a failure because we asserted a `timerTick` action was
 going to be received, but after waiting around for a small amount of time no action was received:
@@ -452,7 +452,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 }
 
 // 1️⃣ Emulate user tapping on submit button.
-await store.send(.login(.submitButtonTapped)) {
+await store.send(\.login.submitButtonTapped) {
   // 2️⃣ Assert how all state changes in the login feature
   $0.login?.isLoading = true
   // ...
@@ -500,7 +500,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 }
 store.exhaustivity = .off  // ⬅️
 
-await store.send(.login(.submitButtonTapped))
+await store.send(\.login.submitButtonTapped)
 await store.receive(\.login.delegate.didLogin) {
   $0.selectedTab = .activity
 }
@@ -522,7 +522,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 }
 store.exhaustivity = .off(showSkippedAssertions: true)  // ⬅️
 
-await store.send(.login(.submitButtonTapped))
+await store.send(\.login.submitButtonTapped)
 await store.receive(\.login.delegate.didLogin) {
   $0.selectedTab = .activity
 }
@@ -571,7 +571,7 @@ It can be important to understand how non-exhaustive testing works under the hoo
 limit the ways in which you can assert on state changes.
 
 When you construct an _exhaustive_ test store, which is the default, the `$0` used inside the
-trailing closure of ``TestStore/send(_:assert:file:line:)`` represents the state _before_ the 
+trailing closure of ``TestStore/send(_:assert:file:line:)-2co21`` represents the state _before_ the 
 action is sent:
 
 ```swift
@@ -663,10 +663,10 @@ await store.send(.removeButtonTapped) {
 
 Further, when using non-exhaustive test stores that also show skipped assertions (via
 ``Exhaustivity/off(showSkippedAssertions:)``), then there is another caveat to keep in mind. In
-such test stores, the trailing closure of ``TestStore/send(_:assert:file:line:)`` is invoked _twice_
-by the test store. First with `$0` representing the state after the action is sent to see if it does
-not match the true state, and then again with `$0` representing the state before the action is sent
-so that we can show what state assertions were skipped.
+such test stores, the trailing closure of ``TestStore/send(_:assert:file:line:)-2co21`` is invoked
+_twice_ by the test store. First with `$0` representing the state after the action is sent to see if
+it does not match the true state, and then again with `$0` representing the state before the action
+is sent so that we can show what state assertions were skipped.
 
 Because the test store can invoke your trailing assertion closure twice you must be careful if your
 closure performs any side effects, because those effects will be executed twice. For example,

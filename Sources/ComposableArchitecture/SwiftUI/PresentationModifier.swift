@@ -215,7 +215,7 @@ public struct PresentationStore<
     ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
     let store = store.scope(
-      id: nil,
+      id: store.id(state: \.self, action: \.self),
       state: ToState(\.self),
       action: { $0 },
       isInvalid: { $0.wrappedValue == nil }

@@ -3,8 +3,8 @@ import ComposableArchitecture
 import TwoFactorCore
 import XCTest
 
-@MainActor
 final class TwoFactorCoreTests: XCTestCase {
+  @MainActor
   func testFlow_Success() async {
     let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
       TwoFactor()
@@ -14,20 +14,20 @@ final class TwoFactorCoreTests: XCTestCase {
       }
     }
 
-    await store.send(.view(.set(\.code, "1"))) {
+    await store.send(\.view.binding.code, "1") {
       $0.code = "1"
     }
-    await store.send(.view(.set(\.code, "12"))) {
+    await store.send(\.view.binding.code, "12") {
       $0.code = "12"
     }
-    await store.send(.view(.set(\.code, "123"))) {
+    await store.send(\.view.binding.code, "123") {
       $0.code = "123"
     }
-    await store.send(.view(.set(\.code, "1234"))) {
+    await store.send(\.view.binding.code, "1234") {
       $0.code = "1234"
       $0.isFormValid = true
     }
-    await store.send(.view(.submitButtonTapped)) {
+    await store.send(\.view.submitButtonTapped) {
       $0.isTwoFactorRequestInFlight = true
     }
     await store.receive(\.twoFactorResponse.success) {
@@ -35,6 +35,7 @@ final class TwoFactorCoreTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testFlow_Failure() async {
     let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
       TwoFactor()
@@ -44,11 +45,11 @@ final class TwoFactorCoreTests: XCTestCase {
       }
     }
 
-    await store.send(.view(.set(\.code, "1234"))) {
+    await store.send(\.view.binding.code, "1234") {
       $0.code = "1234"
       $0.isFormValid = true
     }
-    await store.send(.view(.submitButtonTapped)) {
+    await store.send(\.view.submitButtonTapped) {
       $0.isTwoFactorRequestInFlight = true
     }
     await store.receive(\.twoFactorResponse.failure) {
@@ -57,7 +58,7 @@ final class TwoFactorCoreTests: XCTestCase {
       }
       $0.isTwoFactorRequestInFlight = false
     }
-    await store.send(.alert(.dismiss)) {
+    await store.send(\.alert.dismiss) {
       $0.alert = nil
     }
     await store.finish()

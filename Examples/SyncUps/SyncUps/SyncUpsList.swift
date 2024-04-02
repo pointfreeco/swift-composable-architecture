@@ -3,14 +3,23 @@ import SwiftUI
 
 @Reducer
 struct SyncUpsList {
+  @Reducer(state: .equatable)
+  enum Destination {
+    case add(SyncUpForm)
+    case alert(AlertState<Alert>)
+
+    @CasePathable
+    enum Alert {
+      case confirmLoadMockData
+    }
+  }
+
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
     var syncUps: IdentifiedArrayOf<SyncUp> = []
 
-    init(
-      destination: Destination.State? = nil
-    ) {
+    init(destination: Destination.State? = nil) {
       self.destination = destination
 
       do {
@@ -29,30 +38,6 @@ struct SyncUpsList {
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
     case onDelete(IndexSet)
-  }
-
-  @Reducer
-  struct Destination {
-    @ObservableState
-    enum State: Equatable {
-      case add(SyncUpForm.State)
-      case alert(AlertState<Action.Alert>)
-    }
-
-    enum Action {
-      case add(SyncUpForm.Action)
-      case alert(Alert)
-
-      enum Alert {
-        case confirmLoadMockData
-      }
-    }
-
-    var body: some ReducerOf<Self> {
-      Scope(state: \.add, action: \.add) {
-        SyncUpForm()
-      }
-    }
   }
 
   @Dependency(\.continuousClock) var clock
@@ -102,9 +87,7 @@ struct SyncUpsList {
         return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
   }
 }
 
@@ -155,7 +138,7 @@ struct SyncUpsListView: View {
   }
 }
 
-extension AlertState where Action == SyncUpsList.Destination.Action.Alert {
+extension AlertState where Action == SyncUpsList.Destination.Alert {
   static let dataFailedToLoad = Self {
     TextState("Data failed to load")
   } actions: {

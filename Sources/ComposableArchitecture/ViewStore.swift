@@ -65,25 +65,25 @@ import SwiftUI
   iOS,
   deprecated: 9999,
   message:
-    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 @available(
   macOS,
   deprecated: 9999,
   message:
-    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 @available(
   tvOS,
   deprecated: 9999,
   message:
-    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 @available(
   watchOS,
   deprecated: 9999,
   message:
-    "Use '@ObservableState', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 @dynamicMemberLookup
 public final class ViewStore<ViewState, ViewAction>: ObservableObject {
@@ -156,9 +156,9 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       action: fromViewAction,
       isInvalid: nil
     )
-    self._state = CurrentValueRelay(self.store.currentState)
+    self._state = CurrentValueRelay(self.store.withState { $0 })
     self.viewCancellable = self.store.rootStore.didSet
-      .compactMap { [weak self] in self?.store.currentState }
+      .compactMap { [weak self] in self?.store.withState { $0 } }
       .removeDuplicates(by: isDuplicate)
       .dropFirst()
       .sink { [weak self] in

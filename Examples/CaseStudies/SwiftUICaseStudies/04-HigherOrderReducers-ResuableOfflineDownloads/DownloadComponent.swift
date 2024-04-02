@@ -15,6 +15,7 @@ struct DownloadComponent {
     case buttonTapped
     case downloadClient(Result<DownloadClient.Event, Error>)
 
+    @CasePathable
     enum Alert {
       case deleteButtonTapped
       case stopButtonTapped

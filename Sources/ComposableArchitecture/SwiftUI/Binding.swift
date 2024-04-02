@@ -19,25 +19,25 @@ import SwiftUI
   iOS,
   deprecated: 9999,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 @available(
   macOS,
   deprecated: 9999,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 @available(
   tvOS,
   deprecated: 9999,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 @available(
   watchOS,
   deprecated: 9999,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 @propertyWrapper
 public struct BindingState<Value> {
@@ -184,7 +184,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
       ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
         AnyCasePath(
           embed: { .set(keyPath, $0) },
-          extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
+          extract: { $0.keyPath == keyPath ? $0.value.base as? Value : nil }
         )
       }
     #endif

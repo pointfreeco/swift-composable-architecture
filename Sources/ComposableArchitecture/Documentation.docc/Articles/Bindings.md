@@ -288,17 +288,17 @@ var body: some Reducer<State, Action> {
 Binding actions can also be tested in much the same way regular actions are tested. Rather than send
 a specific action describing how a binding changed, such as `.displayNameChanged("Blob")`, you will
 send a ``BindingAction`` action that describes which key path is being set to what value, such as
-`.set(\.displayName, "Blob")`:
+`\.displayName, "Blob"`:
 
 ```swift
 let store = TestStore(initialState: Settings.State()) {
   Settings()
 }
 
-store.send(.set(\.displayName, "Blob")) {
+store.send(\.binding.displayName, "Blob") {
   $0.displayName = "Blob"
 }
-store.send(.set(\.protectMyPosts, true)) {
+store.send(\.binding.protectMyPosts, true) {
   $0.protectMyPosts = true
 )
 ```

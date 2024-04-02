@@ -57,6 +57,29 @@ To debug this, expand the warning in the Issue Navigator of Xcode (⌘5), and cl
 frames displayed to find the line in your view where you are accessing state without being inside
 `WithPerceptionTracking`.
 
+## Bindings
+
+If you want to derive bindings from the store (see <doc:Bindings> for more information), then you
+would typically use the `@Bindable` property wrapper that comes with SwiftUI:
+
+```swift
+struct MyView: View {
+  @Bindable var store: StoreOf<MyFeature>
+  // ...
+}
+```
+
+However, `@Bindable` is iOS 17+. So, the Perception library comes with a tool that can be used in
+its place until you can target iOS 17 and later. You just have to qualify `@Bindable` with the
+`Perception` namespace:
+
+```swift
+struct MyView: View {
+  @Perception.Bindable var store: StoreOf<MyFeature>
+  // ...
+}
+```
+
 ## Gotchas
 
 There are a few gotchas to be aware of when using `WithPerceptionTracking`.
@@ -71,7 +94,7 @@ This means that even if you wrap the body of the view in `WithPerceptionTracking
 
 ```swift
 WithPerceptionTracking {
-  ForEach(store.scope(state: \.rows, action: \.rows) { store in
+  ForEach(store.scope(state: \.rows, action: \.rows), id: \.state.id) { store in
     Text(store.title)
   }
 }
@@ -84,7 +107,7 @@ The fix for this is to wrap the content of the trailing closure in another `With
 
 ```swift
 WithPerceptionTracking {
-  ForEach(store.scope(state: \.rows, action: \.rows) { store in
+  ForEach(store.scope(state: \.rows, action: \.rows), id: \.state.id) { store in
     WithPerceptionTracking {
       Text(store.title)
     }

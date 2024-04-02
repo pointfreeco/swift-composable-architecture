@@ -5,8 +5,8 @@
   extension Store where State: ObservableState {
     /// Scopes the store of an identified collection to a collection of stores.
     ///
-    /// This operator is most often used with SwiftUI's `ForEach` view. For example, suppose you have
-    /// a feature that contains an `IdentifiedArray` of child features like so:
+    /// This operator is most often used with SwiftUI's `ForEach` view. For example, suppose you
+    /// have a feature that contains an `IdentifiedArray` of child features like so:
     ///
     /// ```swift
     /// @Reducer
@@ -38,13 +38,27 @@
     ///
     ///   var body: some View {
     ///     List {
-    ///       ForEach(store.scope(state: \.rows, action: \.rows) { store in
+    ///       ForEach(store.scope(state: \.rows, action: \.rows), id: \.state.id) { store in
     ///         ChildView(store: store)
     ///       }
     ///     }
     ///   }
     /// }
     /// ```
+    ///
+    /// > Tip: If you do not depend on the identity of the state of each row (_e.g._, the state's
+    /// > `id` is not associated with a selection binding), you can omit the `id` parameter, as the
+    /// > `Store` type is identifiable by its object identity:
+    /// >
+    /// > ```diff
+    /// >  ForEach(
+    /// > -  store.scope(state: \.rows, action: \.rows),
+    /// > -  id: \.state.id,
+    /// > +  store.scope(state: \.rows, action: \.rows)
+    /// >  ) { childStore in
+    /// >    ChildView(store: childStore)
+    /// >  }
+    /// > ```
     ///
     /// - Parameters:
     ///   - state: A key path to an identified array of child state.
@@ -55,17 +69,9 @@
       state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
       action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>
     ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
-      #if DEBUG
-        if !self.canCacheChildren {
-          runtimeWarn(
-            """
-            Scoping from uncached \(self) is not compatible with observation. Ensure that all \
-            parent store scoping operations take key paths and case key paths instead of transform \
-            functions, which have been deprecated.
-            """
-          )
-        }
-      #endif
+      if !self.canCacheChildren {
+        runtimeWarn(uncachedStoreWarning(self))
+      }
       return _StoreCollection(self.scope(state: state, action: action))
     }
   }

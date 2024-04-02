@@ -24,18 +24,15 @@ struct ContactsFeature {
         )
         return .none
         
-      case let .addContact(.presented(.delegate(.saveContact(contact)))):
+      case let .destination(.presented(.addContact(.delegate(.saveContact(contact))))):
         state.contacts.append(contact)
         return .none
         
-      case .addContact:
-        return .none
-        
-      case let .alert(.presented(.confirmDeletion(id: id))):
+      case let .destination(.presented(.alert(.confirmDeletion(id: id)))):
         state.contacts.remove(id: id)
         return .none
         
-      case .alert:
+      case .destination:
         return .none
         
       case let .deleteButtonTapped(id: id):

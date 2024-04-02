@@ -2,14 +2,15 @@ import Integration
 import TestCases
 import XCTest
 
-@MainActor
 final class LegacyNavigationTests: BaseIntegrationTests {
+  @MainActor
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
     self.app.buttons[TestCase.navigationStack.rawValue].tap()
   }
 
+  @MainActor
   func testChildLogic() {
     self.app.buttons["Go to counter"].tap()
     XCTAssertEqual(self.app.staticTexts["0"].exists, true)
@@ -19,6 +20,7 @@ final class LegacyNavigationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["0"].exists, true)
   }
 
+  @MainActor
   func testPushAndDismiss() {
     XCTAssertEqual(self.app.staticTexts["Root"].exists, true)
     self.app.buttons["Go to counter"].tap()
@@ -41,6 +43,7 @@ final class LegacyNavigationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Root"].find().exists, true)
   }
 
+  @MainActor
   func testPopToRoot() {
     XCTAssertEqual(self.app.staticTexts["Root"].exists, true)
     self.app.buttons["Go to counter"].tap()
@@ -59,6 +62,7 @@ final class LegacyNavigationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Root"].exists, true)
   }
 
+  @MainActor
   func testChildEffectsCancelOnDismiss() {
     self.app.buttons["Go to counter"].tap()
     self.app.buttons["Run effect"].tap()
@@ -69,6 +73,7 @@ final class LegacyNavigationTests: BaseIntegrationTests {
     )
   }
 
+  @MainActor
   func testChildViewIdentity() {
     self.app.buttons["Go to counter"].tap()
     XCTAssertEqual(self.app.staticTexts["Has appeared"].exists, true)
@@ -76,6 +81,7 @@ final class LegacyNavigationTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Has appeared"].exists, true)
   }
 
+  @MainActor
   func testSimultaneousDismissAlertAndPop() async throws {
     self.app.buttons["Go to counter"].tap()
     self.app.buttons["Show alert"].tap()
@@ -85,6 +91,7 @@ final class LegacyNavigationTests: BaseIntegrationTests {
     try await Task.sleep(for: .seconds(1))
   }
 
+  @MainActor
   func testNavigationDestination() async throws {
     self.app.buttons["Go to counter"].tap()
     self.app.buttons["Open navigation destination"].tap()

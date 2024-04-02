@@ -2,7 +2,6 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class DependencyKeyWritingReducerTests: BaseTCATestCase {
     func testWritingFusion() async {
       let reducer: _DependencyKeyWritingReducer<Feature> = Feature()
@@ -26,6 +25,7 @@
       XCTAssertTrue((reducer as Any) is _DependencyKeyWritingReducer<Feature>)
     }
 
+    @MainActor
     func testWritingFusionOrder() async {
       let store = TestStore(initialState: Feature.State()) {
         Feature()
@@ -38,6 +38,7 @@
       }
     }
 
+    @MainActor
     func testTransformFusionOrder() async {
       let store = TestStore(initialState: Feature.State()) {
         Feature()
@@ -50,6 +51,7 @@
       }
     }
 
+    @MainActor
     func testWritingOrder() async {
       let store = TestStore(initialState: Feature.State()) {
         CombineReducers {
@@ -64,6 +66,7 @@
       }
     }
 
+    @MainActor
     func testTransformOrder() async {
       let store = TestStore(initialState: Feature.State()) {
         CombineReducers {
@@ -106,6 +109,7 @@
         }
       }
     }
+    @MainActor
     func testDependency_EffectOfEffect() async {
       let store = TestStore(initialState: Feature_testDependency_EffectOfEffect.State()) {
         Feature_testDependency_EffectOfEffect()

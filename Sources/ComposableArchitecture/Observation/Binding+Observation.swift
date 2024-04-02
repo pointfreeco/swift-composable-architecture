@@ -68,7 +68,6 @@
   }
 
   extension Store where State: ObservableState, Action: BindableAction, Action.State == State {
-    @_disfavoredOverload
     public subscript<Value: Equatable>(
       dynamicMember keyPath: WritableKeyPath<State, Value>
     ) -> Value {
@@ -88,9 +87,8 @@
     Action: BindableAction,
     Action.State == State
   {
-    @_disfavoredOverload
     public var state: State {
-      get { self.state }
+      get { self.observableState }
       set {
         BindingLocal.$isActive.withValue(true) {
           self.send(.binding(.set(\.self, newValue)))
@@ -106,7 +104,6 @@
     Action.ViewAction: BindableAction,
     Action.ViewAction.State == State
   {
-    @_disfavoredOverload
     public subscript<Value: Equatable>(
       dynamicMember keyPath: WritableKeyPath<State, Value>
     ) -> Value {
@@ -127,9 +124,8 @@
     Action.ViewAction: BindableAction,
     Action.ViewAction.State == State
   {
-    @_disfavoredOverload
     public var state: State {
-      get { self.state }
+      get { self.observableState }
       set {
         BindingLocal.$isActive.withValue(true) {
           self.send(.view(.binding(.set(\.self, newValue))))

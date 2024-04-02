@@ -2,8 +2,8 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class ForEachReducerTests: BaseTCATestCase {
+    @MainActor
     func testElementAction() async {
       let store = TestStore(
         initialState: Elements.State(
@@ -17,10 +17,10 @@
         Elements()
       }
 
-      await store.send(.rows(.element(id: 1, action: "Blob Esq."))) {
+      await store.send(\.rows[id:1], "Blob Esq.") {
         $0.rows[id: 1]?.value = "Blob Esq."
       }
-      await store.send(.rows(.element(id: 2, action: ""))) {
+      await store.send(\.rows[id:2], "") {
         $0.rows[id: 2]?.value = ""
       }
       await store.receive(\.rows[id:2]) {
@@ -28,6 +28,7 @@
       }
     }
 
+    @MainActor
     func testNonElementAction() async {
       let store = TestStore(initialState: Elements.State()) {
         Elements()
@@ -37,6 +38,7 @@
     }
 
     #if DEBUG
+      @MainActor
       func testMissingElement() async {
         let store = TestStore(initialState: Elements.State()) {
           EmptyReducer<Elements.State, Elements.Action>()
@@ -66,10 +68,11 @@
             """
         }
 
-        await store.send(.rows(.element(id: 1, action: "Blob Esq.")))
+        await store.send(\.rows[id:1], "Blob Esq.")
       }
     #endif
 
+    @MainActor
     func testAutomaticEffectCancellation() async {
       if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
         struct Timer: Reducer {

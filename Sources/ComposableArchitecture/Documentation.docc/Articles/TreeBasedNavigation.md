@@ -18,10 +18,10 @@ the rest.
 
 ## Basics
 
-The tools for this style of navigation include the ``PresentationState`` property wrapper,
-``PresentationAction``, the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator, and 
-a bunch of APIs that mimic SwiftUI's regular tools, such as `.sheet`, `.popover`, etc., but tuned 
-specifically for the Composable Architecture.
+The tools for this style of navigation include the ``Presents()`` macro,
+``PresentationAction``, the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator, 
+and that is all. Once your feature is properly integrated with those tools you can use all of 
+SwiftUI's normal navigation view modifiers, such as `sheet(item:)`, `popover(item:)`, etc.
 
 The process of integrating two features together for navigation largely consists of 2 steps:
 integrating the features' domains together and integrating the features' views together. One
@@ -31,7 +31,7 @@ into the parent.
 
 For example, suppose you have a list of items and you want to be able to show a sheet to display a
 form for adding a new item. We can integrate state and actions together by utilizing the 
-``PresentationState`` and ``PresentationAction`` types:
+``Presents()`` macro and ``PresentationAction`` type:
 
 ```swift
 @Reducer
@@ -172,8 +172,9 @@ This gives us compile-time proof that only one single destination can be active 
 
 In order to utilize this style of domain modeling you must take a few extra steps. First you model a
 "destination" reducer that encapsulates the domains and behavior of all of the features that you can
-navigate to. And typically it's best to nest this reducer inside the feature that can perform the
-navigation:
+navigate to. Typically it's best to nest this reducer inside the feature that can perform the
+navigation, and the ``Reducer()`` macro can do most of the heavy lifting for us by implementing the
+entire reducer from a simple description of the features that can be navigated to:
 
 ```swift
 @Reducer
@@ -181,40 +182,20 @@ struct InventoryFeature {
   // ...
 
   @Reducer
-  struct Destination {
-    @ObservableState
-    enum State {
-      case addItem(AddFeature.State)
-      case detailItem(DetailFeature.State)
-      case editItem(EditFeature.State)
-    }
-    enum Action {
-      case addItem(AddFeature.Action)
-      case detailItem(DetailFeature.Action)
-      case editItem(EditFeature.Action)
-    }
-    var body: some ReducerOf<Self> {
-      Scope(state: \.addItem, action: \.addItem) { 
-        AddFeature()
-      }
-      Scope(state: \.editItem, action: \.editItem) { 
-        EditFeature()
-      }
-      Scope(state: \.detailItem, action: \.detailItem) { 
-        DetailFeature()
-      }
-    }
+  enum Destination {
+    case addItem(AddFeature)
+    case detailItem(DetailFeature)
+    case editItem(EditFeature)
   }
 }
 ```
 
-> Note: Both the `State` and `Action` types nested in the reducer are enums, with a case for each
-> screen that can be navigated to. Further, the `body` computed property has a ``Scope`` reducer for
-> each feature, and uses case paths for focusing in on the specific case of the state and action
-> enums.
+> Note: The ``Reducer()`` macro takes this simple enum description of destination features and
+> expands it into a fully composed feature that operates on enum state with a case for each
+> feature's state. You can expand the macro code in Xcode to see everything that is written for you.
 
 With that done we can now hold onto a _single_ piece of optional state in our feature, using the
-``PresentationState`` property wrapper, and we hold onto the destination actions using the
+``Presents()`` macro, and we hold onto the destination actions using the
 ``PresentationAction`` type:
 
 ```swift
@@ -234,7 +215,7 @@ struct InventoryFeature {
 }
 ```
 
-And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator
+And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)-8qzye`` operator
 to integrate the domain of the destination with the domain of the parent feature:
 
 ```swift
@@ -246,12 +227,14 @@ struct InventoryFeature {
     Reduce { state, action in 
       // ...
     }
-    .ifLet(\.$destination, action: \.destination) { 
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination) 
   }
 }
 ```
+
+> Note: It's not necessary to specify `Destination` in a trialing closure of `ifLet` because it can
+> automatically be inferred due to how the `Destination` enum was defined with the ``Reducer()``
+> macro.
 
 That completes the steps for integrating the child and parent features together.
 
@@ -382,33 +365,27 @@ project:
 
 ```swift
 extension View {
-  @available(iOS, introduced: 13, deprecated: 16)
-  @available(macOS, introduced: 10.15, deprecated: 13)
-  @available(tvOS, introduced: 13, deprecated: 16)
-  @available(watchOS, introduced: 6, deprecated: 9)
+  @available(iOS, introduced: 16, deprecated: 17)
+  @available(macOS, introduced: 13, deprecated: 14)
+  @available(tvOS, introduced: 16, deprecated: 17)
+  @available(watchOS, introduced: 9, deprecated: 10)
   @ViewBuilder
   func navigationDestinationWrapper<D: Hashable, C: View>(
     item: Binding<D?>,
     @ViewBuilder destination: @escaping (D) -> C
   ) -> some View {
-    if #available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *) {
-      navigationDestination(item: item, destination: destination)
-    } else {
-      navigationDestination(
-        isPresented: Binding(
-          get: { item.wrappedValue != nil },
-          set: { isPresented, transaction in
-            if !isPresented {
-              item.transaction(transaction).wrappedValue = nil
-            }
-          }
-        )
-      ) {
-        if let item = item.wrappedValue {
-          destination(item)
-        }
+    navigationDestination(isPresented: item.isPresented) {
+      if let item = item.wrappedValue {
+        destination(item)
       }
     }
+  }
+}
+
+fileprivate extension Optional where Wrapped: Hashable {
+  var isPresented: Bool {
+    get { self != nil }
+    set { if !newValue { self = nil } }
   }
 }
 ```
@@ -464,7 +441,7 @@ additional logic, such as closing the "edit" feature and saving the edited item 
 
 ```swift
 case .destination(.presented(.editItem(.saveButtonTapped))):
-  guard case let .editItem(editItemState) = self.destination
+  guard case let .editItem(editItemState) = state.destination
   else { return .none }
 
   state.destination = nil
@@ -501,7 +478,7 @@ struct ChildView: View {
 }
 ```
 
-When `self.dismiss()` is invoked, SwiftUI finds the closet parent view with a presentation, and
+When `self.dismiss()` is invoked, SwiftUI finds the closest parent view with a presentation, and
 causes it to dismiss by writing `false` or `nil` to the binding that drives the presentation. This 
 can be incredibly useful, but it is also relegated to the view layer. It is not possible to use 
 `dismiss` elsewhere, like in an observable object, which would allow you to have nuanced logic
@@ -600,8 +577,9 @@ struct CounterFeature {
 }
 ```
 
-And then let's embed that feature into a parent feature using ``PresentationState``, 
-``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``:
+And then let's embed that feature into a parent feature using the ``Presents()`` macro, 
+``PresentationAction`` type and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``
+operator:
 
 ```swift
 @Reducer
@@ -644,7 +622,7 @@ Then we can send the `.incrementButtonTapped` action in the counter child featur
 that the count goes up by one:
 
 ```swift
-await store.send(.counter(.presented(.incrementButtonTapped))) {
+await store.send(\.counter.incrementButtonTapped) {
   $0.counter?.count = 4
 }
 ```
@@ -652,7 +630,7 @@ await store.send(.counter(.presented(.incrementButtonTapped))) {
 And then we can send it one more time to see that the count goes up to 5:
 
 ```swift 
-await store.send(.counter(.presented(.incrementButtonTapped))) {
+await store.send(\.counter.incrementButtonTapped) {
   $0.counter?.count = 5
 }
 ```
@@ -694,8 +672,8 @@ func testDismissal() {
   }
   store.exhaustivity = .off
 
-  await store.send(.counter(.presented(.incrementButtonTapped)))
-  await store.send(.counter(.presented(.incrementButtonTapped)))
+  await store.send(\.counter.incrementButtonTapped)
+  await store.send(\.counter.incrementButtonTapped)
   await store.receive(\.counter.dismiss) 
 }
 ```
@@ -706,18 +684,10 @@ lines and is more resilient to future changes in the features that we don't nece
 That is the basics of testing, but things get a little more complicated when you leverage the 
 concepts outlined in <doc:TreeBasedNavigation#Enum-state> in which you model multiple destinations
 as an enum instead of multiple optionals. In order to assert on state changes when using enum
-state you must be able to extract the associated state from the enum, make a mutation, and then
-embed the new state back into the enum.
-
-The library provides a tool to perform these steps in a single step. It's the
-``PresentationState/subscript(case:)-7uqte`` defined on ``PresentationState`` which allows you to
-modify the data inside a case of the destination enum:
+state you must chain into the particular case to make a mutation:
 
 ```swift
-await store.send(.destination(.presented(.counter(.incrementButtonTapped)))) {
-  $0.$destination[case: \.counter]?.count = 4
+await store.send(\.destination.counter.incrementButtonTapped) {
+  $0.destination?.counter?.count = 4
 }
 ```
-
-Further, if `destination` is not of the `.counter` case when this test runs, then it will trigger
-a test failure letting you know that you cannot modify an unrelated case.

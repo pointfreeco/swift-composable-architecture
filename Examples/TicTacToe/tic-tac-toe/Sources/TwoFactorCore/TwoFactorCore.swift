@@ -25,6 +25,7 @@ public struct TwoFactor: Sendable {
 
     public enum Alert: Equatable, Sendable {}
 
+    @CasePathable
     public enum View: BindableAction, Sendable {
       case binding(BindingAction<State>)
       case submitButtonTapped

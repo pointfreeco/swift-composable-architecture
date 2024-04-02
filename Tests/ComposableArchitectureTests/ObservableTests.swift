@@ -3,7 +3,6 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class ObservableTests: BaseTCATestCase {
     func testBasics() async {
       var state = ChildState()
@@ -199,7 +198,7 @@
 
       state.destination = .child1(ChildState(count: 42))
       await self.fulfillment(of: [destinationDidChange], timeout: 0)
-      XCTAssertEqual(state.destination?[case: \.child1]?.count, 42)
+      XCTAssertEqual(state.destination?.child1?.count, 42)
     }
 
     func testDismissDestination() async {
@@ -229,7 +228,7 @@
 
       state.destination = .child2(ChildState(count: 42))
       await self.fulfillment(of: [destinationDidChange], timeout: 0)
-      XCTAssertEqual(state.destination?[case: \.child2]?.count, 42)
+      XCTAssertEqual(state.destination?.child2?.count, 42)
     }
 
     func testChangeDestination_KeepIdentity() async {
@@ -245,20 +244,22 @@
 
       state.destination = .child2(childState)
       await self.fulfillment(of: [destinationDidChange], timeout: 0)
-      XCTAssertEqual(state.destination?[case: \.child2]?.count, 42)
+      XCTAssertEqual(state.destination?.child2?.count, 42)
     }
 
     func testMutatingDestination_NonObservableCase() async {
+      let expectation = self.expectation(description: "destination.didChange")
       var state = ParentState(destination: .inert(0))
 
       withPerceptionTracking {
         _ = state.destination
       } onChange: {
-        XCTFail("destination should not change")
+        expectation.fulfill()
       }
 
       state.destination = .inert(1)
       XCTAssertEqual(state.destination, .inert(1))
+      await self.fulfillment(of: [expectation])
     }
 
     func testReplaceWithCopy() async {
@@ -281,6 +282,7 @@
       XCTAssertEqual(state.sibling.count, 2)
     }
 
+    @MainActor
     func testStore_ReplaceChild() async {
       let store = Store<ParentState, Void>(initialState: ParentState()) {
         Reduce { state, _ in
@@ -301,6 +303,7 @@
       XCTAssertEqual(store.child.count, 42)
     }
 
+    @MainActor
     func testStore_Replace() async {
       let store = Store<ChildState, Void>(initialState: ChildState()) {
         Reduce { state, _ in
@@ -321,6 +324,7 @@
       XCTAssertEqual(store.count, 42)
     }
 
+    @MainActor
     func testStore_ResetChild() async {
       let store = Store<ParentState, Void>(initialState: ParentState(child: ChildState(count: 42)))
       {
@@ -342,6 +346,7 @@
       XCTAssertEqual(store.child.count, 0)
     }
 
+    @MainActor
     func testStore_Reset() async {
       let store = Store<ChildState, Void>(initialState: ChildState(count: 42)) {
         Reduce { state, _ in
@@ -537,6 +542,63 @@
 
       state.children[0].count += 1
     }
+
+    func testEnumStateWithInertCases() {
+      let store = Store<EnumState, Void>(initialState: EnumState.count(.one)) {
+        Reduce { state, _ in
+          state = .count(.two)
+          return .none
+        }
+      }
+      let onChangeExpectation = self.expectation(description: "onChange")
+      withPerceptionTracking {
+        _ = store.state
+      } onChange: {
+        onChangeExpectation.fulfill()
+      }
+
+      store.send(())
+
+      self.wait(for: [onChangeExpectation], timeout: 0)
+    }
+
+    func testEnumStateWithInertCasesTricky() {
+      let store = Store<EnumState, Void>(initialState: EnumState.count(.one)) {
+        Reduce { state, _ in
+          state = .anotherCount(.one)
+          return .none
+        }
+      }
+      let onChangeExpectation = self.expectation(description: "onChange")
+      withPerceptionTracking {
+        _ = store.state
+      } onChange: {
+        onChangeExpectation.fulfill()
+      }
+
+      store.send(())
+
+      self.wait(for: [onChangeExpectation], timeout: 0)
+    }
+
+    func testEnumStateWithIntCase() {
+      let store = Store<EnumState, Void>(initialState: EnumState.int(0)) {
+        Reduce { state, _ in
+          state = .int(1)
+          return .none
+        }
+      }
+      let onChangeExpectation = self.expectation(description: "onChange")
+      withPerceptionTracking {
+        _ = store.state
+      } onChange: {
+        onChangeExpectation.fulfill()
+      }
+
+      store.send(())
+
+      self.wait(for: [onChangeExpectation], timeout: 0)
+    }
   }
 
   @ObservableState
@@ -569,11 +631,22 @@
       self.sibling = childCopy
     }
   }
+  @dynamicMemberLookup
   @CasePathable
   @ObservableState
   private enum DestinationState: Equatable {
     case child1(ChildState)
     case child2(ChildState)
     case inert(Int)
+  }
+  @ObservableState
+  private enum EnumState: Equatable {
+    case count(Count)
+    case anotherCount(Count)
+    case int(Int)
+    @ObservableState
+    enum Count: String {
+      case one, two
+    }
   }
 #endif

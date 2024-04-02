@@ -269,13 +269,13 @@ the store. The code is a bit longer than the SwiftUI version, so we have collaps
     }
 
     @objc private func incrementButtonTapped() {
-      self.viewStore.send(.incrementButtonTapped)
+      self.store.send(.incrementButtonTapped)
     }
     @objc private func decrementButtonTapped() {
-      self.viewStore.send(.decrementButtonTapped)
+      self.store.send(.decrementButtonTapped)
     }
     @objc private func factButtonTapped() {
-      self.viewStore.send(.numberFactButtonTapped)
+      self.store.send(.numberFactButtonTapped)
     }
   }
   ```
@@ -532,16 +532,18 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/)
-* [1.7.0](https://pointfreeco.github.io/swift-composable-architecture/1.7.0/documentation/composablearchitecture/)
+* [1.9.0](https://pointfreeco.github.io/swift-composable-architecture/1.9.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.9))
 
 <details>
   <summary>
   Other versions
   </summary>
 
-  * [1.6.0](https://pointfreeco.github.io/swift-composable-architecture/1.6.0/documentation/composablearchitecture/)
-  * [1.5.0](https://pointfreeco.github.io/swift-composable-architecture/1.5.0/documentation/composablearchitecture/)
-  * [1.4.0](https://pointfreeco.github.io/swift-composable-architecture/1.4.0/documentation/composablearchitecture/)
+  * [1.8.0](https://pointfreeco.github.io/swift-composable-architecture/1.8.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.8))
+  * [1.7.0](https://pointfreeco.github.io/swift-composable-architecture/1.7.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7))
+  * [1.6.0](https://pointfreeco.github.io/swift-composable-architecture/1.6.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6))
+  * [1.5.0](https://pointfreeco.github.io/swift-composable-architecture/1.5.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5))
+  * [1.4.0](https://pointfreeco.github.io/swift-composable-architecture/1.4.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4))
   * [1.3.0](https://pointfreeco.github.io/swift-composable-architecture/1.3.0/documentation/composablearchitecture/)
   * [1.2.0](https://pointfreeco.github.io/swift-composable-architecture/1.2.0/documentation/composablearchitecture/)
   * [1.1.0](https://pointfreeco.github.io/swift-composable-architecture/1.1.0/documentation/composablearchitecture/)
@@ -597,8 +599,10 @@ community-supported libraries available to enhance your applications:
 
 * [Composable Architecture Extras](https://github.com/Ryu0118/swift-composable-architecture-extras):
   A companion library to the Composable Architecture.
+* [TCAComposer](https://github.com/mentalflux/tca-composer): A macro framework for generating
+  boiler-plate code in the Composable Architecture.
 * [TCACoordinators](https://github.com/johnpatrickmorgan/TCACoordinators): The coordinator pattern
-  in the Composable Architecture
+  in the Composable Architecture.
 
 If you'd like to contribute a library, please [open a
 PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link

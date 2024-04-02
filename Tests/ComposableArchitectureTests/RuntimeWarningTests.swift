@@ -3,8 +3,8 @@
   import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class RuntimeWarningTests: BaseTCATestCase {
+    @MainActor
     func testStoreCreationMainThread() async {
       uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
@@ -22,6 +22,7 @@
       .value
     }
 
+    @MainActor
     func testEffectFinishedMainThread() async throws {
       XCTExpectFailure {
         $0.compactDescription == """
@@ -78,7 +79,7 @@
 
       let store = Store<Int, Void>(initialState: 0) {}
       await Task.detached {
-        _ = store.scope(state: { $0 }, action: { $0 })
+        _ = store.scope(state: \.self, action: \.self)
       }
       .value
     }
@@ -104,6 +105,7 @@
     }
 
     #if os(macOS)
+      @MainActor
       func testEffectEmitMainThread() async throws {
         try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] != nil)
         XCTExpectFailure {
@@ -176,6 +178,7 @@
       }
     #endif
 
+    @MainActor
     func testBindingUnhandledAction() {
       let line = #line + 2
       struct State: Equatable {
@@ -201,6 +204,7 @@
       }
     }
 
+    @MainActor
     func testBindingUnhandledAction_BindingState() {
       struct State: Equatable {
         @BindingState var value = 0

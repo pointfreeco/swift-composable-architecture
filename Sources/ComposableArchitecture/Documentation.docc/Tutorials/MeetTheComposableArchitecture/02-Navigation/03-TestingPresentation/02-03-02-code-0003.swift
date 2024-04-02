@@ -14,6 +14,6 @@ final class ContactsFeatureTests: XCTestCase {
     store.exhaustivity = .off
     
     await store.send(.addButtonTapped)
-    await store.send(.destination(.presented(.addContact(.setName("Blob Jr.")))))
+    await store.send(\.destination.addContact.setName, "Blob Jr.")
   }
 }

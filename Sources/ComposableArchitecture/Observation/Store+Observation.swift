@@ -15,10 +15,14 @@
   #endif
 
   extension Store where State: ObservableState {
-    /// Direct access to state in the store when `State` conforms to ``ObservableState``.
-    public var state: State {
+    var observableState: State {
       self._$observationRegistrar.access(self, keyPath: \.currentState)
       return self.currentState
+    }
+
+    /// Direct access to state in the store when `State` conforms to ``ObservableState``.
+    public var state: State {
+      self.observableState
     }
 
     public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
@@ -82,17 +86,9 @@
       state: KeyPath<State, ChildState?>,
       action: CaseKeyPath<Action, ChildAction>
     ) -> Store<ChildState, ChildAction>? {
-      #if DEBUG
-        if !self.canCacheChildren {
-          runtimeWarn(
-            """
-            Scoping from uncached \(self) is not compatible with observation. Ensure that all \
-            parent store scoping operations take key paths and case key paths instead of transform \
-            functions, which have been deprecated.
-            """
-          )
-        }
-      #endif
+      if !self.canCacheChildren {
+        runtimeWarn(uncachedStoreWarning(self))
+      }
       guard var childState = self.state[keyPath: state]
       else { return nil }
       return self.scope(
@@ -302,4 +298,24 @@
       }
     }
   }
+
+  func uncachedStoreWarning<State, Action>(_ store: Store<State, Action>) -> String {
+    """
+    Scoping from uncached \(store) is not compatible with observation.
+
+    This can happen for one of two reasons:
+
+    • A parent view scopes on a store using transform functions, which has been \
+    deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
+    to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
+    main/documentation/composablearchitecture/migratingto1.5
+
+    • A parent feature is using deprecated navigation APIs, such as 'IfLetStore', \
+    'SwitchStore', 'ForEachStore', or any navigation view modifiers taking stores instead of \
+    bindings. Read the migration guide for 1.7 to update those APIs: \
+    https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
+    composablearchitecture/migratingto1.7
+    """
+  }
+
 #endif

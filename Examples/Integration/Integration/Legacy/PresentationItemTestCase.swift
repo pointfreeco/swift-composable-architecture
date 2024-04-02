@@ -1,68 +1,70 @@
 import ComposableArchitecture
 import SwiftUI
 
-@Reducer
-private struct PresentationItemTestCase {
+private enum PresentationItemTestCase {
   @Reducer
-  struct Destination {
-    enum State: Equatable {
-      case childA(Child.State)
-      case childB(Child.State)
+  struct Feature {
+    @Reducer
+    struct Destination {
+      enum State: Equatable {
+        case childA(Child.State)
+        case childB(Child.State)
+      }
+      enum Action: Equatable {
+        case childA(Child.Action)
+        case childB(Child.Action)
+      }
+      var body: some Reducer<State, Action> {
+        Scope(state: \.childA, action: \.childA) {
+          Child()
+        }
+        Scope(state: \.childB, action: \.childB) {
+          Child()
+        }
+      }
+    }
+    struct State: Equatable {
+      @PresentationState var destination: Destination.State?
     }
     enum Action: Equatable {
-      case childA(Child.Action)
-      case childB(Child.Action)
+      case childAButtonTapped
+      case childBButtonTapped
+      case destination(PresentationAction<Destination.Action>)
     }
-    var body: some Reducer<State, Action> {
-      Scope(state: \.childA, action: \.childA) {
-        Child()
+    var body: some ReducerOf<Self> {
+      Reduce { state, action in
+        switch action {
+        case .childAButtonTapped, .destination(.presented(.childB(.swapButtonTapped))):
+          state.destination = .childA(Child.State())
+          return .none
+        case .childBButtonTapped, .destination(.presented(.childA(.swapButtonTapped))):
+          state.destination = .childB(Child.State())
+          return .none
+        case .destination:
+          return .none
+        }
       }
-      Scope(state: \.childB, action: \.childB) {
-        Child()
-      }
-    }
-  }
-  struct State: Equatable {
-    @PresentationState var destination: Destination.State?
-  }
-  enum Action: Equatable {
-    case childAButtonTapped
-    case childBButtonTapped
-    case destination(PresentationAction<Destination.Action>)
-  }
-  var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
-      case .childAButtonTapped, .destination(.presented(.childB(.swapButtonTapped))):
-        state.destination = .childA(Child.State())
-        return .none
-      case .childBButtonTapped, .destination(.presented(.childA(.swapButtonTapped))):
-        state.destination = .childB(Child.State())
-        return .none
-      case .destination:
-        return .none
+      .ifLet(\.$destination, action: \.destination) {
+        Destination()
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
   }
-}
 
-@Reducer
-private struct Child {
-  struct State: Equatable {}
-  enum Action: Equatable {
-    case swapButtonTapped
-  }
-  var body: some ReducerOf<Self> {
-    EmptyReducer()
+  @Reducer
+  struct Child {
+    struct State: Equatable {}
+    enum Action: Equatable {
+      case swapButtonTapped
+    }
+    var body: some ReducerOf<Self> {
+      EmptyReducer()
+    }
   }
 }
 
 struct PresentationItemTestCaseView: View {
-  private let store = Store(initialState: PresentationItemTestCase.State()) {
-    PresentationItemTestCase()
+  private let store = Store(initialState: PresentationItemTestCase.Feature.State()) {
+    PresentationItemTestCase.Feature()
   }
 
   enum Behavior {
@@ -95,8 +97,8 @@ struct PresentationItemTestCaseView: View {
           switch $0 {
           case .childA:
             CaseLet(
-              \PresentationItemTestCase.Destination.State.childA,
-              action: PresentationItemTestCase.Destination.Action.childA
+              \PresentationItemTestCase.Feature.Destination.State.childA,
+              action: PresentationItemTestCase.Feature.Destination.Action.childA
             ) { store in
               Text("Child A")
               Button("Swap") {
@@ -105,8 +107,8 @@ struct PresentationItemTestCaseView: View {
             }
           case .childB:
             CaseLet(
-              \PresentationItemTestCase.Destination.State.childB,
-              action: PresentationItemTestCase.Destination.Action.childB
+              \PresentationItemTestCase.Feature.Destination.State.childB,
+              action: PresentationItemTestCase.Feature.Destination.Action.childB
             ) { store in
               Text("Child B")
               Button("Swap") {

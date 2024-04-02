@@ -1,14 +1,15 @@
 import TestCases
 import XCTest
 
-@MainActor
 final class IfLetStoreTests: BaseIntegrationTests {
+  @MainActor
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
     self.app.buttons[TestCase.ifLetStore.rawValue].tap()
   }
 
+  @MainActor
   func testBasics() async throws {
     XCTAssertEqual(
       self.app.buttons["Show"].waitForExistence(timeout: 1),

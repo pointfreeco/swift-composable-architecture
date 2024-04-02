@@ -4,8 +4,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class AnimationTests: XCTestCase {
+  @MainActor
   func testRainbow() async {
     let clock = TestClock()
 
@@ -58,6 +58,7 @@ final class AnimationTests: XCTestCase {
     await clock.run()
   }
 
+  @MainActor
   func testReset() async {
     let clock = TestClock()
 
@@ -93,7 +94,7 @@ final class AnimationTests: XCTestCase {
       }
     }
 
-    await store.send(.alert(.presented(.resetConfirmationButtonTapped))) {
+    await store.send(\.alert.resetConfirmationButtonTapped) {
       $0 = Animations.State()
     }
 
