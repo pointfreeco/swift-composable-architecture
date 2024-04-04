@@ -170,19 +170,6 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
-    // TODO: Better way to prevent app entry point from affecting preview shared state?
-    #if DEBUG
-      let originalPrepareDependencies = prepareDependencies
-      var prepareDependencies = prepareDependencies
-      if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-        #if canImport(Perception)
-          prepareDependencies = {
-            $0[PersistentReferencesKey.self] = LockIsolated([:])
-            originalPrepareDependencies?(&$0)
-          }
-        #endif
-      }
-    #endif
     if let prepareDependencies {
       let (initialState, reducer, dependencies) = withDependencies(prepareDependencies) {
         @Dependency(\.self) var dependencies

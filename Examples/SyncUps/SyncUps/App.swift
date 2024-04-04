@@ -15,8 +15,8 @@ struct SyncUpsApp: App {
   var body: some Scene {
     WindowGroup {
       if _XCTIsTesting || ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-        // NB: Don't run application when testing so that it doesn't interfere with tests, or in
-        //     previews so that it doesn't interfere with previews.
+        // NB: Don't run application in tests/previews to avoid interference between the app and the
+        //     test/preview.
         EmptyView()
       } else {
         AppView(store: store)
