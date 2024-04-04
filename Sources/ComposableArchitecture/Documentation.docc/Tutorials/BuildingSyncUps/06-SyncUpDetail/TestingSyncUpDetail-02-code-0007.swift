@@ -1,8 +1,10 @@
 import ComposableArchitecture
-import SyncUps
 import XCTest
 
+@testable import SyncUps
+
 class SyncUpDetailTests: XCTestCase {
+  @MainActor
   func testDelete() async {
     let didDismiss = LockIsolated(false)
     defer { XCTAssertEqual(didDismiss.value, true) }
@@ -28,6 +30,7 @@ class SyncUpDetailTests: XCTestCase {
     await store.receive(\.delegate.deleteSyncUp, syncUp.id)
   }
   
+  @MainActor
   func testEdit() async {
     // ...
   }

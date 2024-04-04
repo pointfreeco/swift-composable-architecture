@@ -4,7 +4,7 @@ import SwiftUI
 @Reducer
 struct SyncUpForm {
   @ObservableState
-  struct State {
+  struct State: Equatable {
     var focus: Field? = .title
     var syncUp: SyncUp
 
@@ -35,9 +35,9 @@ struct SyncUpForm {
         return .none
 
       case let .onDeleteAttendees(indexSet):
-        state.attendees.remove(atOffsets: indexSet)
-        if state.attendees.isEmpty {
-          state.attendees.insert(
+        state.syncUp.attendees.remove(atOffsets: indexSet)
+        if state.syncUp.attendees.isEmpty {
+          state.syncUp.attendees.append(
             Attendee(id: Attendee.ID())
           )
         }

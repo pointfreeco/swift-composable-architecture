@@ -1,14 +1,16 @@
 import ComposableArchitecture
-import SyncUps
 import XCTest
 
+@testable import SyncUps
+
 class SyncUpsListTests: XCTestCase {
+  @MainActor
   func testAddSyncUp() async {
     let store = TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()
     }
 
-    await store.send(.addButtonTapped) {
+    await store.send(.addSyncUpButtonTapped) {
       $0.addSyncUp = SyncUpForm.State(syncUp: SyncUp(id: SyncUp.ID()))
     }
     // ❌ A state change does not match expectation: …
@@ -32,6 +34,7 @@ class SyncUpsListTests: XCTestCase {
     // (Expected: −, Actual: +)
   }
 
+  @MainActor
   func testDeletion() async {
     // ...
   }

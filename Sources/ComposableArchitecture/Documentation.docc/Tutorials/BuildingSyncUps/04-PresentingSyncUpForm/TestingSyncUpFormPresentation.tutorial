@@ -31,8 +31,8 @@
       
       @Step {
         Emulate the user tapping on the "+" button in the top-right of the interface by sending
-        the `addButtonTapped` action. When that action is sent we expect the `addSyncUp` state to
-        be populated, representing that the sheet should appear.
+        the `addSyncUpButtonTapped` action. When that action is sent we expect the `addSyncUp` state 
+        to be populated, representing that the sheet should appear.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-01-code-0003.swift)
       }
@@ -87,26 +87,26 @@
       @Step {
         Emulate the user editing some details of the sync-up. To do this we need to send an action
         in the sync-up form's domain, which can be done by sending a nested enum action that 
-        represents an action in the `addSyncUp` domain when it is 
-        ``ComposableArchitecture/PresentationAction/presented(_:)``.
+        represents an action in the `addSyncUp` domain.
+        
+        > Note: We are using key path syntax to describe the nested action to send. 
         
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-01-code-0009.swift)
       }
       
       @Step {
-        Inside the `.presented` case we can send any action in the `SyncUpForm` domain. In 
+        Inside the `.addSyncUp` case we can send any action in the `SyncUpForm` domain. In 
         particular we know that the `SyncUpForm` has a ``ComposableArchitecture/BindingAction``
         that was used to bind the `syncUp` to various UI controls in the view. We can send a binding
-        action using the shortcut ``ComposableArchitecture/BindingAction/set(_:_:)-35tzw`` 
-        function.
+        action by chaining onto ``ComposableArchitecture/BindableAction/binding(_:)``:
         
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-01-code-0010.swift)
       }
       
       @Step {
-        Construct a new `SyncUp` that represents the edits to be made, and send it in the `.set`
-        action. Also assert on how we expect the state to change, which is that the `syncUp` held
-        inside the `addSyncUp` should change to be the newly edited sync-up.
+        Inside the `.binding` case we can further chain onto any field in the feature's state
+        to update it. Construct a new `SyncUp` that represents the edits that are made by the user,
+        and assert on how we expect the state to change.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-01-code-0011.swift)
       }
@@ -191,7 +191,7 @@
       }
       
       @Step {
-        Emulate the user tapping the "+" button in the UI by sending the `.addButtonTapped` action.
+        Emulate the user tapping the "+" button in the UI by sending the `.addSyncUpButtonTapped` action.
         
         Run the test to see that it passes.
         

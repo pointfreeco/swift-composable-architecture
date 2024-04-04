@@ -1,9 +1,11 @@
 import ComposableArchitecture
-import SyncUps
 import XCTest
 
+@testable import SyncUps
+
 class SyncUpFormTests: XCTestCase {
-  func testRemoveAttendee() {
+  @MainActor
+  func testRemoveAttendee() async {
     let store = TestStore(
       initialState: SyncUpForm.State(
         syncUp: SyncUp(
@@ -19,7 +21,7 @@ class SyncUpFormTests: XCTestCase {
     }
 
     await store.send(.onDeleteAttendees([0])) {
-      state.syncUp.attendees.removeFirst()
+      $0.syncUp.attendees.removeFirst()
     }
   }
 }

@@ -10,6 +10,7 @@
     recreation of the Apple's Scrumdinger demo application. 
     
     @TutorialReference(tutorial: "doc:WhatIsSyncUps")
+    @Image(source: "chapter1.png")
   }
   
   @Chapter(name: "Lists of sync-ups") {
@@ -19,6 +20,7 @@
     
     @TutorialReference(tutorial: "doc:ListsOfSyncUps")
     @TutorialReference(tutorial: "doc:TestingListOfSyncUps")
+    @Image(source: "chapter2.png")
   }
   
   @Chapter(name: "New sync-up form") {
@@ -28,6 +30,7 @@
     
     @TutorialReference(tutorial: "doc:SyncUpForm")
     @TutorialReference(tutorial: "doc:TestingSyncUpForm")
+    @Image(source: "chapter3.png")
   }
   
   @Chapter(name: "Presenting the sync-up form") {
@@ -38,13 +41,15 @@
     
     @TutorialReference(tutorial: "doc:PresentingSyncUpForm")
     @TutorialReference(tutorial: "doc:TestingSyncUpFormPresentation")
+    @Image(source: "chapter4.png")
   }
   
   @Chapter(name: "Persisting sync-ups to disk") {
     Applications typically need to persist data across application launches. The Composable 
-    Architecture comes with all the tools you need to persist your application's data.
+    Architecture comes with tools to help you persist your application's data.
     
     @TutorialReference(tutorial: "doc:PersistingSyncUps")
+    @Image(source: "chapter5.png")
   }
   
   @Chapter(name: "Sync-up detail") {
@@ -55,6 +60,7 @@
     @TutorialReference(tutorial: "doc:SyncUpDetail")
     @TutorialReference(tutorial: "doc:EditingAndDeletingSyncUp")
     @TutorialReference(tutorial: "doc:TestingSyncUpDetail")
+    @Image(source: "chapter6.png")
   }
   
   @Chapter(name: "Navigating to sync-up detail") {
@@ -64,6 +70,7 @@
     @TutorialReference(tutorial: "doc:SyncUpDetailNavigation")
     @TutorialReference(tutorial: "doc:MeetingNavigation")
     @TutorialReference(tutorial: "doc:TestingNavigation")
+    @Image(source: "chapter7.png")
   }
   
   @Chapter(name: "Record meeting") {
@@ -73,6 +80,7 @@
     test coverage on.
    
     @TutorialReference(tutorial: "doc:RecordMeeting")
+    @Image(source: "chapter8.png")
   }
 }
 

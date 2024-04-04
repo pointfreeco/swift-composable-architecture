@@ -4,7 +4,7 @@ import SwiftUI
 @Reducer
 struct SyncUpsList {
   @ObservableState
-  struct State {
-    var syncUps: IdentifiedArrayOf<SyncUps> = []
+  struct State: Equatable {
+    var syncUps: IdentifiedArrayOf<SyncUp> = []
   }
 }

@@ -13,9 +13,11 @@ than reference types, sharing state can be tricky.
 
 This is why the library comes with a few tools for sharing state with many parts of your
 application. There are two main kinds of shared state in the library: explicitly passed state and
-persisted state. And there are 3 persistence strategies shipped with the library: in-memory,
-user defaults, and file storage. You can also implement your own persistence strategy if
-you want to use something other than user defaults or the file system, such as SQLite.
+persisted state. And there are 3 persistence strategies shipped with the library: 
+[in-memory](<doc:PersistenceKey/inMemory(_:)>),
+[user defaults](<doc:PersistenceKey/appStorage(_:)-2gb5m>), and 
+[file storage](<doc:PersistenceKey/fileStorage(_:)>). You can also implement your own persistence 
+strategy if you want to use something other than user defaults or the file system, such as SQLite.
 
 * ["Source of truth"](#Source-of-truth)
 * [Explicit shared state](#Explicit-shared-state)
@@ -79,7 +81,8 @@ struct ParentFeature {
 ```
 
 > Important: It is not possible to provide a default to a `@Shared` value. It must be passed to the
-> feature's state from the outside.
+> feature's state from the outside. See <doc:SharingState#Initialization-rules> for more 
+> information about how to initialize types that use `@Shared`.
 
 Then suppose that this feature can present a child feature that wants access to this shared `count`
 value. It too would hold onto an `@Shared` property to a count:
@@ -220,10 +223,10 @@ wrapper, including those that ship with vanilla SwiftUI (e.g. `@State`, `@StateO
 but the rules can be quite confusing and so below we describe the various ways to initialize
 shared state.
 
-It is common to need to provide a custom initialize to your feature's 
+It is common to need to provide a custom initializer to your feature's 
 ``Reducer/State`` type, especially when modularizing. When using
 [`@Shared`](<doc:Shared>) in your `State` that can become complicated.
-Depending on your exact situation you can do what of the following:
+Depending on your exact situation you can do one of the following:
 
 * You are using non-persisted shared state (i.e. no argument is passed to `@Shared`), and the 
 "source of truth" of the state lives with the parent feature. Then the initializer should take a 

@@ -31,10 +31,6 @@ struct SyncUpsListView: View {
   }
 }
 
-extension Theme {
-  var mainColor: Color { Color(self.rawValue) }
-}
-
 struct CardView: View {
   let syncUp: SyncUp
 
@@ -56,18 +52,6 @@ struct CardView: View {
   }
 }
 
-extension Theme {
-  var accentColor: Color {
-    switch self {
-    case .bubblegum, .buttercup, .lavender, .orange, .periwinkle, .poppy, .seafoam, .sky, .tan,
-        .teal, .yellow:
-      return .black
-    case .indigo, .magenta, .navy, .oxblood, .purple:
-      return .white
-    }
-  }
-}
-
 struct TrailingIconLabelStyle: LabelStyle {
   func makeBody(configuration: Configuration) -> some View {
     HStack {
@@ -82,23 +66,25 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 }
 
 #Preview {
-  SyncUpsListView(
-    store: Store(
-      initialState: SyncUpsList.State(
-        syncUps: [
-          SyncUp(
-            id: SyncUp.ID(),
-            attendees: [
-              Attendee(id: Attendee.ID(), name: "Blob"),
-              Attendee(id: Attendee.ID(), name: "Blob Jr."),
-              Attendee(id: Attendee.ID(), name: "Blob Sr."),
-            ],
-            title: "Point-Free Morning Sync"
-          )
-        ]
-      )
-    ) {
-      SyncUpsList()
-    }
-  )
+  NavigationStack {
+    SyncUpsListView(
+      store: Store(
+        initialState: SyncUpsList.State(
+          syncUps: [
+            SyncUp(
+              id: SyncUp.ID(),
+              attendees: [
+                Attendee(id: Attendee.ID(), name: "Blob"),
+                Attendee(id: Attendee.ID(), name: "Blob Jr."),
+                Attendee(id: Attendee.ID(), name: "Blob Sr."),
+              ],
+              title: "Point-Free Morning Sync"
+            )
+          ]
+        )
+      ) {
+        SyncUpsList()
+      }
+    )
+  }
 }

@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
@@ -18,9 +19,9 @@ struct SyncUpDetail {
     case editButtonTapped
     // case editSyncUp(PresentationAction<SyncUpForm.Action>)
     case startMeetingButtonTapped
-    enum Alert {
-      case confirmButtonTapped
-    }
+    // enum Alert {
+    //   case confirmButtonTapped
+    // }
   }
 
   @Dependency(\.dismiss) var dismiss
@@ -52,10 +53,14 @@ struct SyncUpDetail {
         guard let editedSyncUp = state.editSyncUp?.syncUp
         else { return .none }
         state.syncUp = editedSyncUp
+        state.editSyncUp = nil
         return .none
 
       case .editButtonTapped:
         state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
+        return .none
+
+      case .editSyncUp:
         return .none
 
       case .startMeetingButtonTapped:

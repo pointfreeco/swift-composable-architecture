@@ -1,8 +1,10 @@
 import ComposableArchitecture
-import SyncUps
 import XCTest
 
+@testable import SyncUps
+
 class SyncUpDetailTests: XCTestCase {
+  @MainActor
   func testEdit() async {
     let syncUp = SyncUp(
       id: SyncUp.ID(),

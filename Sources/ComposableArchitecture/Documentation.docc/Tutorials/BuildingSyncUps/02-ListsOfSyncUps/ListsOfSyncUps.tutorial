@@ -47,11 +47,11 @@
       @Step {
         Replace all plain arrays with an `IdentifiedArray`. This type comes from our 
         [IdentifiedCollections][identified-array-gh] library, which is automatically included with
-        the Composable Architecture.
-        
-        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0003.swift)
+        the Composable Architecture.        
         
         [identified-array-gh]: http://github.com/pointfreeco/swift-identified-collections
+        
+        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0003.swift)
       }
       
       There's another improvement that can be made to our domain models, but this one is completely
@@ -130,6 +130,9 @@
         type with the ``ComposableArchitecture/ObservableState`` macro so that the view can 
         automatically observe changes to state.
         
+        > Note: We are pre-emptively making `State` conform to `Equatable` because it will be useful
+        for tests later in this tutorial.
+        
         @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0003.swift)
       }
       
@@ -142,7 +145,7 @@
         
         > Important: As we saw in <doc:MeetComposableArchitecture>, we prefer to name our actions
         > after exactly what happens in the view rather than what logic we want to execute. So we
-        > prefer `addButtonTapped` over something like `showAddSheet`.
+        > prefer `addSyncUpButtonTapped` over something like `showAddSheet`.
         
         @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0004.swift)
       }
@@ -150,7 +153,7 @@
       @Step {
         Implement the ``ComposableArchitecture/Reducer/body-8lumc`` of the reducer by using the 
         ``ComposableArchitecture/Reduce`` type to implement each action. We will leave the 
-        `addButtonTapped` and `syncUpTapped` actions unimplemented for now since it requires more
+        `addSyncUpButtonTapped` and `syncUpTapped` actions unimplemented for now since it requires more
         work to present a sheet and drill down to a sync-up.
         
         > Note: Due to a bug in the Swift compiler it can often happen that you lose type inference
@@ -192,9 +195,9 @@
         `store` and send actions to it.
         
         > Note: In order to get the colors for each `Theme` value you will need to copy the 
-        > [Assets.xcassets][assets] directory into your project.
+        > [Assets.xcassets][assets] from the completed demo project into your project.
         
-        [assets]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SyncUps/SyncUps
+        [assets]: https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/SyncUps/SyncUps/Assets.xcassets
         
         @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0008.swift)
       }
@@ -214,6 +217,31 @@
         populated in the list. You can also swipe on the row to delete it.
         
         @Video(source: ListsOfSyncUps-02-code-0010.mp4)
+      }
+    }
+  }
+  
+  @Section(title: "A handy debugging tool") {
+    @ContentAndMedia {
+      With this little bit of work done we can already demonstrate a powerful debugging tool of the
+      Composable Architecture. It is possible to print a nicely formatted diff of your features'
+      state whenever it is mutated.
+    }
+    
+    @Steps {
+      @Step {
+        At the bottom fo the file, where the `#Preview` is constructed, apply the `_printChanges`
+        reducer operator to `SyncUpsList`. 
+        
+        @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-03-code-0001.swift, previousFile: ListsOfSyncUps-03-code-0001-previous.swift)
+      }
+      
+      @Step {
+        Run the preview again and delete the row. View the logs in the console to see that a nicely
+        formatted message has been printed to the console to show what action was sent and how
+        the state changed.
+        
+        @Code(name: "console-output.diff", file: ListsOfSyncUps-03-code-0002.diff)
       }
     }
   }

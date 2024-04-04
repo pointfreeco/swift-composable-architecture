@@ -2639,4 +2639,51 @@ final class PresentationReducerTests: BaseTCATestCase {
     XCTAssertEqual($state, $state)
     XCTAssertLessThan(Date().timeIntervalSince(start), 0.1)
   }
+
+  @MainActor
+  func testNestedDismiss() async {
+    let store = TestStore(initialState: NestedDismissFeature.State()) {
+      NestedDismissFeature()
+    }
+
+    await store.send(\.presentButtonTapped) {
+      $0.child = NestedDismissFeature.State()
+    }
+    await store.send(\.child.presentButtonTapped) {
+      $0.child?.child = NestedDismissFeature.State()
+    }
+    await store.send(\.child.child.dismissButtonTapped)
+    await store.receive(\.child.child.dismiss) {
+      $0.child?.child = nil
+    }
+  }
+}
+
+@Reducer
+private struct NestedDismissFeature {
+  struct State: Equatable {
+    @PresentationState var child: NestedDismissFeature.State?
+  }
+  enum Action {
+    case child(PresentationAction<NestedDismissFeature.Action>)
+    case dismissButtonTapped
+    case presentButtonTapped
+  }
+  @Dependency(\.dismiss) var dismiss
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .child:
+        return .none
+      case .dismissButtonTapped:
+        return .run { _ in await dismiss() }
+      case .presentButtonTapped:
+        state.child = State()
+        return .none
+      }
+    }
+    .ifLet(\.$child, action: \.child) {
+      Self()
+    }
+  }
 }

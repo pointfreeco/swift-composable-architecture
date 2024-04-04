@@ -5,36 +5,6 @@ import XCTest
 
 final class AppFeatureTests: XCTestCase {
   @MainActor
-  func testDelete() async throws {
-    let syncUp = SyncUp.mock
-
-    let store = TestStore(
-      initialState: AppFeature.State(syncUpsList: SyncUpsList.State(syncUps: [syncUp]))
-    ) {
-      AppFeature()
-    }
-
-    await store.send(
-      \.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])))
-    ) {
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
-    }
-
-    await store.send(\.path[id:0].detail.deleteButtonTapped) {
-      $0.path[id: 0]?.detail?.destination = .alert(.deleteSyncUp)
-    }
-
-    await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
-      $0.path[id: 0, case: \.detail]?.destination = nil
-      $0.syncUpsList.syncUps = []
-    }
-
-    await store.receive(\.path.popFrom) {
-      $0.path = StackState()
-    }
-  }
-
-  @MainActor
   func testDetailEdit() async throws {
     var syncUp = SyncUp.mock
 
@@ -66,6 +36,36 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0]?.detail?.syncUp.title = "Blob"
     }
     .finish()
+  }
+
+  @MainActor
+  func testDelete() async throws {
+    let syncUp = SyncUp.mock
+
+    let store = TestStore(
+      initialState: AppFeature.State(syncUpsList: SyncUpsList.State(syncUps: [syncUp]))
+    ) {
+      AppFeature()
+    }
+
+    await store.send(
+      \.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])))
+    ) {
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
+    }
+
+    await store.send(\.path[id:0].detail.deleteButtonTapped) {
+      $0.path[id: 0]?.detail?.destination = .alert(.deleteSyncUp)
+    }
+
+    await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
+      $0.path[id: 0, case: \.detail]?.destination = nil
+      $0.syncUpsList.syncUps = []
+    }
+
+    await store.receive(\.path.popFrom) {
+      $0.path = StackState()
+    }
   }
 
   @MainActor

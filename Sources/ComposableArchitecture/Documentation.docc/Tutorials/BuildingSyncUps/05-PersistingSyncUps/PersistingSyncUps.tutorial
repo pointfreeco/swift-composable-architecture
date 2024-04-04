@@ -1,4 +1,4 @@
-@Tutorial(time: 10) {
+@Tutorial(time: 5) {
   @Intro(title: "Persisting sync-ups") {
     Now that we have the ability to add and remove sync-ups from the application, let's add some 
     persistence. This will involve using the "shared state" tools from the library, such as 
@@ -54,11 +54,22 @@
       types, and earlier in the tutorial when add models to Models.swift we made them codable from
       the beginning.
       
+      To confirm that persistence works we need to run the app in the simulator, but we haven't
+      done that yet in this tutorial. To do that we need to update the entry point of the app
+      to use the `SyncUpsListView`.
+      
+      @Step {
+        Go to SyncUpsApp.swift and update the root view to be a `NavigationStack` wrapping a 
+        `SyncUpsListView`.
+        
+        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0004.swift)
+      }
+      
       @Step {
         Run the app in the simulator, add a sync-up, and then relaunch the application to see that
         it restores the previously created sync-up. This shows that data is persisting.
         
-        @Video(source: PersistingSyncUps-01-video-0004.mov)
+        @Video(source: PersistingSyncUps-01-video-0005.mov)
       }
     }
   }

@@ -154,8 +154,8 @@
   /// A ``FileStorage`` conformance that interacts directly with the file system for saving, loading
   /// and listening for file changes.
   ///
-  /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency that
-  /// is used by default when running your app in the simulator or on device.
+  /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency 
+  /// that is used by default when running your app in the simulator or on device.
   final public class LiveFileStorage: FileStorage {
     private let queue: DispatchQueue
     public init(queue: DispatchQueue) {

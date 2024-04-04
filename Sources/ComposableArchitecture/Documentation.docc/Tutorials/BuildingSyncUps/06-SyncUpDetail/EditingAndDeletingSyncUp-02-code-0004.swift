@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
@@ -25,6 +26,9 @@ struct SyncUpDetail {
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
+      case .alert:
+        return .none
+        
       case .cancelEditButtonTapped:
         state.editSyncUp = nil
         return .none
@@ -36,10 +40,14 @@ struct SyncUpDetail {
         guard let editedSyncUp = state.editSyncUp?.syncUp
         else { return .none }
         state.syncUp = editedSyncUp
+        state.editSyncUp = nil
         return .none
 
       case .editButtonTapped:
         state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
+        return .none
+
+      case .editSyncUp:
         return .none
 
       case .startMeetingButtonTapped:

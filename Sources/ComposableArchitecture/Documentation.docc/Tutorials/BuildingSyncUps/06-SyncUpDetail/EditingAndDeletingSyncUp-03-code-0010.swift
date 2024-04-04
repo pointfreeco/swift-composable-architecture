@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
@@ -33,7 +34,7 @@ struct SyncUpDetail {
           await dismiss()
         }
 
-      case .destination(.dismiss):
+      case .destination:
         return .none
 
       case .cancelEditButtonTapped:
@@ -48,12 +49,10 @@ struct SyncUpDetail {
         return .none
 
       case .doneEditingButtonTapped:
-        // guard let editedSyncUp = state.editSyncUp?.syncUp
-        // else { return .none }
-        // state.syncUp = editedSyncUp
-        guard case let .edit(syncUpForm) = state.destination
+        guard let editedSyncUp = state.destination?.edit?.syncUp
         else { return .none }
-        state.syncUp = syncUpForm.syncUp
+        state.syncUp = editedSyncUp
+        state.destination = nil
         return .none
 
       case .editButtonTapped:
