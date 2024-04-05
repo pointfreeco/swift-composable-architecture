@@ -67,7 +67,7 @@ struct RootFeature {
 }
 ```
 
-> Note: ``StackAction`` is generic over both state and action of the `Path` domain, and so you can
+> Tip: ``StackAction`` is generic over both state and action of the `Path` domain, and so you can
 > use the ``StackActionOf`` typealias to simplify the syntax a bit. This is different from
 > ``PresentationAction``, which only has a single generic of `Action`.
 
