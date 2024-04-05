@@ -36,35 +36,17 @@ struct RootFeature {
   // ...
 
   @Reducer
-  struct Path {
-    @ObservableState
-    enum State {
-      case addItem(AddFeature.State)
-      case detailItem(DetailFeature.State)
-      case editItem(EditFeature.State)
-    }
-    enum Action {
-      case addItem(AddFeature.Action)
-      case detailItem(DetailFeature.Action)
-      case editItem(EditFeature.Action)
-    }
-    var body: some ReducerOf<Self> {
-      Scope(state: \.addItem, action: \.addItem) { 
-        AddFeature()
-      }
-      Scope(state: \.editItem, action: \.editItem) { 
-        EditFeature()
-      }
-      Scope(state: \.detailItem, action: \.detailItem) { 
-        DetailFeature()
-      }
-    }
+  enum Path {
+    case addItem(AddFeature)
+    case detailItem(DetailFeature)
+    case editItem(EditFeature)
   }
 }
 ```
 
-> Note: The `Path` reducer is identical to the `Destination` reducer that one creates for tree-based 
-> navigation when using enums. See <doc:TreeBasedNavigation#Enum-state> for more information.
+> Note: The `Path` reducer is identical to the `Destination` reducer that one creates for 
+> tree-based navigation when using enums. See <doc:TreeBasedNavigation#Enum-state> for more
+> information.
 
 Once the `Path` reducer is defined we can then hold onto ``StackState`` and ``StackAction`` in the 
 feature that manages the navigation stack:
@@ -78,18 +60,18 @@ struct RootFeature {
     // ...
   }
   enum Action {
-    case path(StackAction<Path.State, Path.Action>)
+    case path(StackActionOf<Path>)
     // ...
   }
 }
 ```
 
-> Note: ``StackAction`` is generic over both state and action of the `Path` domain. This is 
-> different from ``PresentationAction``, which only has a single generic.
+> Note: ``StackAction`` is generic over both state and action of the `Path` domain, and so you can
+> use the ``StackActionOf`` typealias to simplify the syntax a bit. This is different from
+> ``PresentationAction``, which only has a single generic of `Action`.
 
-And then we must make use of the ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``
-method to integrate the domains of all the features that can be navigated to with the domain of the
-parent feature:
+And then we must make use of the ``Reducer/forEach(_:action:)`` method to integrate the domains of
+all the features that can be navigated to with the domain of the parent feature:
 
 ```swift
 @Reducer
@@ -100,12 +82,13 @@ struct RootFeature {
     Reduce { state, action in 
       // Core logic for root feature
     }
-    .forEach(\.path, action: \.path) { 
-      Path()
-    }
+    .forEach(\.path, action: \.path)
   }
 }
 ```
+
+> Note: You do not need to specify `Path()` in a trailing closure of `forEach` because it can be
+> automatically inferred from `@Reducer enum Path`.
 
 That completes the steps to integrate the child and parent features together for a navigation stack.
 
@@ -365,7 +348,7 @@ struct Feature {
     var path = StackState<Path.State>()
   }
   enum Action {
-    case path(StackAction<Path.State, Path.Action>)
+    case path(StackActionOf<Path>)
   }
 
   @Reducer  
