@@ -10,17 +10,6 @@
       self.init(reference: ValueReference(value, fileID: fileID, line: line))
     }
 
-    @_disfavoredOverload
-    @available(
-      *,
-      deprecated,
-      message: "Use '@Shared' with a value type or supported reference type"
-    )
-    public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line)
-    where Value: AnyObject {
-      self.init(reference: ValueReference(value, fileID: fileID, line: line))
-    }
-
     public init(
       wrappedValue value: Value,
       _ persistenceKey: some PersistenceKey<Value>,
@@ -67,21 +56,6 @@
         throw LoadError()
       }
       self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
-    }
-
-    @_disfavoredOverload
-    @available(
-      *,
-      deprecated,
-      message: "Use '@Shared' with a value type or supported reference type"
-    )
-    public init(
-      wrappedValue value: Value,
-      _ persistenceKey: some PersistenceKey<Value>,
-      fileID: StaticString = #fileID,
-      line: UInt = #line
-    ) where Value: AnyObject {
-      self.init(wrappedValue: value, persistenceKey, fileID: fileID, line: line)
     }
   }
 
