@@ -687,10 +687,7 @@ private enum PartialToState<State> {
       guard let appended = lhs.appending(path: rhs) else {
         fatalError("""
           ℹ️ Key path has failed to append. This can occur if the \
-          root or value types have been replaced. If you are using \
-          InjectionIII.app v4.8.4+, you can create an environment \
-          variable INJECTION_KEYPATHS in your scheme to avoid this \
-          problem.
+          root or value types have been replaced.
           """)
       }
       return .keyPath(appended)
