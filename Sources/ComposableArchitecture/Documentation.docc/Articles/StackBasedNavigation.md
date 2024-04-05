@@ -213,10 +213,13 @@ Form {
 }
 ```
 
-Then the root feature
+Then the root feature can listen for that action and append to the `path` with new state in order
+to drive navigation:
 
 ```swift
-case .path(.element(id: _, action: .detail(.detailButtonTapped)
+case .path(.element(id: _, action: .list(.detailButtonTapped))):
+  state.path.append(.detail(DetailFeature.State()))
+  return .none
 ```
 
 ## Integration
@@ -239,7 +242,7 @@ additional logic, such as popping the "edit" feature and saving the edited item 
 
 ```swift
 case let .path(.element(id: id, action: .editItem(.saveButtonTapped))):
-  guard case let .editItem(editItemState) = state.path[id: id]
+  guard let editItemState = state.path[id: id]?.editItem
   else { return .none }
 
   state.path.pop(from: id)
