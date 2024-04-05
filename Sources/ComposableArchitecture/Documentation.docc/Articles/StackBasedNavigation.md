@@ -154,7 +154,7 @@ scope the store down to a specific case of the `Path.State` enum:
 
 ```swift
 } destination: { store in
-  switch store.state {
+  switch store.case {
   case .addItem(let store):
     AddView(store: store)
   case .detailItem(let store):
