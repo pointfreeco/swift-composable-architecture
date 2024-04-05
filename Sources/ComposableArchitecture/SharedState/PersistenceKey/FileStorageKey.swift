@@ -230,7 +230,7 @@
   ///
   /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency that
   /// is used by default when running your app in tests and previews.
-  public final class EphemeralFileStorage: FileStorage, Sendable {
+  public final class InMemoryFileStorage: FileStorage, Sendable {
     private let _isSetting = LockIsolated<Bool?>(nil)
     public let fileSystem = LockIsolated<[URL: Data]>([:])
     private let scheduler: AnySchedulerOf<DispatchQueue>
@@ -299,10 +299,10 @@
         queue: DispatchQueue(label: "co.pointfree.ComposableArchitecture.FileStorage"))
     }
     static var previewValue: any FileStorage {
-      EphemeralFileStorage()
+      InMemoryFileStorage()
     }
     static var testValue: any FileStorage {
-      EphemeralFileStorage()
+      InMemoryFileStorage()
     }
   }
 

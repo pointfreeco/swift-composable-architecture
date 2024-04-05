@@ -5,7 +5,7 @@ import XCTest
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 final class FileStorageTests: XCTestCase {
   func testBasics() throws {
-    let fileStorage = EphemeralFileStorage(scheduler: .immediate)
+    let fileStorage = InMemoryFileStorage(scheduler: .immediate)
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -18,7 +18,7 @@ final class FileStorageTests: XCTestCase {
 
   func testDebounce() throws {
     let testScheduler = DispatchQueue.test
-    let fileStorage = EphemeralFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
+    let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -38,7 +38,7 @@ final class FileStorageTests: XCTestCase {
 
   func testThrottle() throws {
     let testScheduler = DispatchQueue.test
-    let fileStorage = EphemeralFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
+    let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -78,7 +78,7 @@ final class FileStorageTests: XCTestCase {
   func testWillResign() throws {
     guard let willResignNotificationName else { return }
     let testScheduler = DispatchQueue.test
-    let fileStorage = EphemeralFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
+    let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -97,7 +97,7 @@ final class FileStorageTests: XCTestCase {
   func testWillResignAndDebounce() async throws {
     guard let willResignNotificationName else { return }
     let testScheduler = DispatchQueue.test
-    let fileStorage = EphemeralFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
+    let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -124,7 +124,7 @@ final class FileStorageTests: XCTestCase {
   }
 
   func testMultipleFiles() throws {
-    let fileStorage = EphemeralFileStorage()
+    let fileStorage = InMemoryFileStorage()
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -165,7 +165,7 @@ final class FileStorageTests: XCTestCase {
 
   func testInitialValue() async throws {
     try await withMainSerialExecutor {
-      let fileStorage = EphemeralFileStorage()
+      let fileStorage = InMemoryFileStorage()
       try fileStorage.save(JSONEncoder().encode([User.blob]), to: .fileURL)
       try await withDependencies {
         $0.defaultFileStorage = fileStorage
@@ -221,7 +221,7 @@ final class FileStorageTests: XCTestCase {
   func testWriteFileWhileDebouncing() async throws {
     try await withMainSerialExecutor {
       let scheduler = DispatchQueue.test
-      let fileStorage = EphemeralFileStorage(scheduler: scheduler.eraseToAnyScheduler())
+      let fileStorage = InMemoryFileStorage(scheduler: scheduler.eraseToAnyScheduler())
 
       try await withDependencies {
         $0.defaultFileStorage = fileStorage

@@ -45,7 +45,7 @@ struct SharedStateSandboxing {
           let defaultAppStorage = UserDefaults(suiteName: suiteName)!
           defaultAppStorage.removePersistentDomain(forName: suiteName)
           $0.defaultAppStorage = defaultAppStorage
-          $0.defaultFileStorage = EphemeralFileStorage()
+          $0.defaultFileStorage = InMemoryFileStorage()
         } operation: {
           SharedStateSandboxing.State()
         }
