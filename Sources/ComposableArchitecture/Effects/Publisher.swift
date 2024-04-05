@@ -13,7 +13,7 @@ extension Effect {
       )
     )
   }
-  }
+}
 
 public struct _EffectPublisher<Action>: Publisher {
   public typealias Output = Action
