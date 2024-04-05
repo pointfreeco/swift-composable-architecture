@@ -11,6 +11,7 @@ flat collection of data, handing it off to SwiftUI, and letting it take care of 
 It also allows for complex and recursive navigation paths in your application.
 
   * [Basics](#Basics)
+  * [Pushing features onto the stack](#Pushing-features-onto-the-stack)
   * [Integration](#Integration)
   * [Dismissal](#Dismissal)
   * [Testing](#Testing)
@@ -36,35 +37,17 @@ struct RootFeature {
   // ...
 
   @Reducer
-  struct Path {
-    @ObservableState
-    enum State {
-      case addItem(AddFeature.State)
-      case detailItem(DetailFeature.State)
-      case editItem(EditFeature.State)
-    }
-    enum Action {
-      case addItem(AddFeature.Action)
-      case detailItem(DetailFeature.Action)
-      case editItem(EditFeature.Action)
-    }
-    var body: some ReducerOf<Self> {
-      Scope(state: \.addItem, action: \.addItem) { 
-        AddFeature()
-      }
-      Scope(state: \.editItem, action: \.editItem) { 
-        EditFeature()
-      }
-      Scope(state: \.detailItem, action: \.detailItem) { 
-        DetailFeature()
-      }
-    }
+  enum Path {
+    case addItem(AddFeature)
+    case detailItem(DetailFeature)
+    case editItem(EditFeature)
   }
 }
 ```
 
-> Note: The `Path` reducer is identical to the `Destination` reducer that one creates for tree-based 
-> navigation when using enums. See <doc:TreeBasedNavigation#Enum-state> for more information.
+> Note: The `Path` reducer is identical to the `Destination` reducer that one creates for 
+> tree-based navigation when using enums. See <doc:TreeBasedNavigation#Enum-state> for more
+> information.
 
 Once the `Path` reducer is defined we can then hold onto ``StackState`` and ``StackAction`` in the 
 feature that manages the navigation stack:
@@ -78,18 +61,18 @@ struct RootFeature {
     // ...
   }
   enum Action {
-    case path(StackAction<Path.State, Path.Action>)
+    case path(StackActionOf<Path>)
     // ...
   }
 }
 ```
 
-> Note: ``StackAction`` is generic over both state and action of the `Path` domain. This is 
-> different from ``PresentationAction``, which only has a single generic.
+> Tip: ``StackAction`` is generic over both state and action of the `Path` domain, and so you can
+> use the ``StackActionOf`` typealias to simplify the syntax a bit. This is different from
+> ``PresentationAction``, which only has a single generic of `Action`.
 
-And then we must make use of the ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``
-method to integrate the domains of all the features that can be navigated to with the domain of the
-parent feature:
+And then we must make use of the ``Reducer/forEach(_:action:)`` method to integrate the domains of
+all the features that can be navigated to with the domain of the parent feature:
 
 ```swift
 @Reducer
@@ -100,12 +83,13 @@ struct RootFeature {
     Reduce { state, action in 
       // Core logic for root feature
     }
-    .forEach(\.path, action: \.path) { 
-      Path()
-    }
+    .forEach(\.path, action: \.path)
   }
 }
 ```
+
+> Note: You do not need to specify `Path()` in a trailing closure of `forEach` because it can be
+> automatically inferred from `@Reducer enum Path`.
 
 That completes the steps to integrate the child and parent features together for a navigation stack.
 
@@ -148,14 +132,16 @@ struct RootView: View {
 The root view can be anything you want, and would typically have some `NavigationLink`s or other
 buttons that push new data onto the ``StackState`` held in your domain.
 
-And the last trailing closure is provided a store of `Path` domain so that you can switch on it:
+And the last trailing closure is provided a store of `Path` domain, and you can use the 
+``Store/case`` computed property to destructure each case of the `Path` to obtain a store focused
+on just that case:
 
 ```swift
 } destination: { store in
-  switch store.state {
-  case .addItem:
-  case .detailItem:
-  case .editItem:
+  switch store.case {
+  case .addItem(let store):
+  case .detailItem(let store):
+  case .editItem(let store):
   }
 }
 ```
@@ -168,19 +154,13 @@ scope the store down to a specific case of the `Path.State` enum:
 
 ```swift
 } destination: { store in
-  switch store.state {
-  case .addItem:
-    if let store = store.scope(state: \.addItem, action: \.addItem) {
-      AddView(store: store)
-    }
-  case .detailItem:
-    if let store = store.scope(state: \.detailItem, action: \.detailItem) {
-      DetailView(store: store)
-    }
-  case .editItem:
-    if let store = store.scope(state: \.editItem, action: \.editItem) {
-      EditView(store: store)
-    }
+  switch store.case {
+  case .addItem(let store):
+    AddView(store: store)
+  case .detailItem(let store):
+    DetailView(store: store)
+  case .editItem(let store):
+    EditView(store: store)
   }
 }
 ```
@@ -190,6 +170,57 @@ and done so with concisely modeled domains. Once those steps are taken you can e
 additional features to the stack by adding a new case to the `Path` reducer state and action enums, 
 and you get complete introspection into what is happening in each child feature from the parent. 
 Continue reading into <doc:StackBasedNavigation#Integration> for more information on that.
+
+## Pushing features onto the stack
+
+There are two primary ways to push features onto the stack once you have their domains integrated
+and `NavigationStack` in the view, as described above. The simplest way is to use the 
+``SwiftUI/NavigationLink/init(state:label:fileID:line:)`` initializer on `NavigationLink`, which
+requires you to specify the state of the feature you want to push onto the stack. You must specify
+the full state, going all the way back to the `Path` reducer's state:
+
+```swift
+Form {
+  NavigationLink(
+    state: RootFeature.Path.State.detail(DetailFeature.State())
+  ) {
+    Text("Detail")
+  }
+}
+```
+
+When the link is tapped a ``StackAction/push(id:state:)`` action will be sent, causing the `path`
+collection to be mutated and appending the `.detail` state to the stack.
+
+This is by far the simplest way to navigate to a screen, but it also has its drawbacks. In 
+particular, it makes modularity difficult since the view that holds onto the `NavigationLink` must
+have access to the `Path.State` type, which means it needs to build all of the `Path` reducer, 
+including _every_ feature that can be navigated to.
+
+This hurts modularity because it is no longer possible to build each feature that can be presented
+in the stack individually, in full isolation. You must build them all together. Technically you can
+move all features' `State` types (and only the `State` types) to a separate module, and then
+features can depend on only that module without needing to build every feature's reducer.
+
+Another alternative is to forgo `NavigationLink` entirely and just use `Button` that sends an action
+in the child feature's domain:
+
+```swift
+Form {
+  Button("Detail") {
+    store.send(.detailButtonTapped)
+  }
+}
+```
+
+Then the root feature can listen for that action and append to the `path` with new state in order
+to drive navigation:
+
+```swift
+case .path(.element(id: _, action: .list(.detailButtonTapped))):
+  state.path.append(.detail(DetailFeature.State()))
+  return .none
+```
 
 ## Integration
 
@@ -211,7 +242,7 @@ additional logic, such as popping the "edit" feature and saving the edited item 
 
 ```swift
 case let .path(.element(id: id, action: .editItem(.saveButtonTapped))):
-  guard case let .editItem(editItemState) = state.path[id: id]
+  guard let editItemState = state.path[id: id]?.editItem
   else { return .none }
 
   state.path.pop(from: id)
@@ -365,7 +396,7 @@ struct Feature {
     var path = StackState<Path.State>()
   }
   enum Action {
-    case path(StackAction<Path.State, Path.Action>)
+    case path(StackActionOf<Path>)
   }
 
   @Reducer  
