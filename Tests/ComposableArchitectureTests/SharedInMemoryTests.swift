@@ -65,7 +65,8 @@ final class SharedInMemoryTests: XCTestCase {
                 _child2: Feature.State(
             −     _count: #1 Int(↩︎)
             +     _count: #1 Int(↩︎)
-                )
+                ),
+                _child3: Feature.State(…)
               )
 
         (Expected: −, Actual: +)
