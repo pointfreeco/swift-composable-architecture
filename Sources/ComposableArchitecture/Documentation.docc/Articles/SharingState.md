@@ -219,15 +219,40 @@ With those steps done you can make use of the strategy in the same way one does 
 ## Observing changes to shared state
 
 The ``Shared`` property wrapper exposes a ``Shared/publisher`` property so that you can observe
-changes to the reference from any part of your application.
+changes to the reference from any part of your application. For example, if some feature in your
+app wants to listen for changes to some shared `count` value, then it can introduce an `onAppear`
+action that kicks off a long-living effect that subscribes to changes of `count`:
 
 ```swift
 case .onAppear:
   return .publisher {
+    state.$count.publisher
+      .map(Action.countUpdated)
   }
 
-case 
+case .countUpdated(let count):
+  print("Count updated to \(count)")
+  return .none
 ```
+
+Note that you will have to be careful for features that both hold onto shared state and subscribe
+to changes to that state. It is possible to introduce an infinite loop if you do something like 
+this:
+
+```swift
+case .onAppear:
+  return .publisher {
+    state.$count.publisher
+      .map(Action.countUpdated)
+  }
+
+case .countUpdated(let count):
+  state.count = count + 1
+  return .none
+```
+
+If `count` changes, then `$count.publisher` emits, causing the `countUpdated` action to be sent, 
+causing the shared `count` to be mutated, causing `$count.publisher` to emit, and so on. 
 
 ## Initialization rules
 
