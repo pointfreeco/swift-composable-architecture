@@ -26,6 +26,7 @@ strategy if you want to use something other than user defaults or the file syste
   * [User defaults](#User-defaults)
   * [File storage](#File-storage)
   * [Custom persistence](#Custom-persistence)
+* [Observing changes to shared state](#Observing-changes-to-shared-state)
 * [Initialization rules](#Initialization-rules)
 * [Deriving shared state](#Deriving-shared-state)
 * [Testing](#Testing)
@@ -213,6 +214,19 @@ With those steps done you can make use of the strategy in the same way one does 
 
 ```swift
 @Shared(.custom(/* ... */)) var myValue: Value
+```
+
+## Observing changes to shared state
+
+The ``Shared`` property wrapper exposes a ``Shared/publisher`` property so that you can observe
+changes to the reference from any part of your application.
+
+```swift
+case .onAppear:
+  return .publisher {
+  }
+
+case 
 ```
 
 ## Initialization rules
