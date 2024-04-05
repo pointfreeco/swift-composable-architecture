@@ -104,7 +104,7 @@ struct RecordMeeting {
 
         let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
-          if state.speakerIndex == state.syncUp.attendees.count - 1 {
+          if state.secondsElapsed == state.syncUp.duration.components.seconds {
             return .run { [transcript = state.transcript] send in
               await send(.delegate(.save(transcript: transcript)))
               await self.dismiss()
