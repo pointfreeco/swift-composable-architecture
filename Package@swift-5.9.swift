@@ -51,7 +51,7 @@ let package = Package(
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ],
       resources: [
-        .process("PrivacyInfo.xcprivacy")
+        .process("Resources/PrivacyInfo.xcprivacy")
       ]
     ),
     .testTarget(
