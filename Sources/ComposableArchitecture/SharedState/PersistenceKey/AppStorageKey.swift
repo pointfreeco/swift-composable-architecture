@@ -369,10 +369,12 @@
     func loadValue(
       from store: UserDefaults, at key: String, default defaultValue: Value?
     ) -> Value? {
-      if let defaultValue {
-        store.register(defaults: [key: defaultValue])
+      guard let value = store.object(forKey: key) as? Value
+      else {
+        store.setValue(defaultValue, forKey: key)
+        return defaultValue
       }
-      return store.object(forKey: key) as? Value ?? defaultValue
+      return value
     }
     func saveValue(_ newValue: Value, to store: UserDefaults, at key: String) {
       store.setValue(newValue, forKey: key)
