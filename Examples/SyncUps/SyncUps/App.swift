@@ -3,7 +3,8 @@ import SwiftUI
 
 @main
 struct SyncUpsApp: App {
-  let store = Store(initialState: AppFeature.State()) {
+  @MainActor
+  static let store = Store(initialState: AppFeature.State()) {
     AppFeature()
       ._printChanges()
   } withDependencies: {
@@ -19,7 +20,7 @@ struct SyncUpsApp: App {
         //     test/preview.
         EmptyView()
       } else {
-        AppView(store: store)
+        AppView(store: Self.store)
       }
     }
   }
