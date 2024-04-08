@@ -33,6 +33,7 @@
 		CAA9ADCC2446615B0003A984 /* 03-Effects-LongLivingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADCB2446615B0003A984 /* 03-Effects-LongLivingTests.swift */; };
 		CABC4F3926AEE00C00D5FA2C /* 03-Effects-Refreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3826AEE00C00D5FA2C /* 03-Effects-Refreshable.swift */; };
 		CABC4F3B26AEE20200D5FA2C /* 03-Effects-RefreshableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3A26AEE20200D5FA2C /* 03-Effects-RefreshableTests.swift */; };
+		CACB7FF72BC4B81D005238BB /* SharedState-Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACB7FF62BC4B81D005238BB /* SharedState-Notifications.swift */; };
 		CADECDB62B5CA228009DC881 /* 02-SharedState-InMemory.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADECDB52B5CA228009DC881 /* 02-SharedState-InMemory.swift */; };
 		CADECDB82B5CA425009DC881 /* 02-SharedState-FileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADECDB72B5CA425009DC881 /* 02-SharedState-FileStorage.swift */; };
 		CADECDBA2B5CA613009DC881 /* 02-GettingStarted-SharedStateUserDefaultsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADECDB92B5CA613009DC881 /* 02-GettingStarted-SharedStateUserDefaultsTests.swift */; };
@@ -179,6 +180,7 @@
 		CAA9ADCB2446615B0003A984 /* 03-Effects-LongLivingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-LongLivingTests.swift"; sourceTree = "<group>"; };
 		CABC4F3826AEE00C00D5FA2C /* 03-Effects-Refreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-Refreshable.swift"; sourceTree = "<group>"; };
 		CABC4F3A26AEE20200D5FA2C /* 03-Effects-RefreshableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-RefreshableTests.swift"; sourceTree = "<group>"; };
+		CACB7FF62BC4B81D005238BB /* SharedState-Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SharedState-Notifications.swift"; sourceTree = "<group>"; };
 		CADECDB52B5CA228009DC881 /* 02-SharedState-InMemory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-SharedState-InMemory.swift"; sourceTree = "<group>"; };
 		CADECDB72B5CA425009DC881 /* 02-SharedState-FileStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-SharedState-FileStorage.swift"; sourceTree = "<group>"; };
 		CADECDB92B5CA613009DC881 /* 02-GettingStarted-SharedStateUserDefaultsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-GettingStarted-SharedStateUserDefaultsTests.swift"; sourceTree = "<group>"; };
@@ -410,6 +412,7 @@
 				CADECDBF2B5DE7C1009DC881 /* 02-SharedState-Onboarding.swift */,
 				CAA0CC3D2B8D3B4A00D7AF54 /* 02-SharedState-Sandboxing.swift */,
 				CA7BC8ED245CCFE4001FB69F /* 02-SharedState-UserDefaults.swift */,
+				CACB7FF62BC4B81D005238BB /* SharedState-Notifications.swift */,
 				CAA9ADC12446587C0003A984 /* 03-Effects-Basics.swift */,
 				CAA9ADC524465C810003A984 /* 03-Effects-Cancellation.swift */,
 				CAA9ADC92446605B0003A984 /* 03-Effects-LongLiving.swift */,
@@ -756,6 +759,7 @@
 				DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */,
 				CA6AC2672451135C00C71CB3 /* DownloadClient.swift in Sources */,
 				CADECDB62B5CA228009DC881 /* 02-SharedState-InMemory.swift in Sources */,
+				CACB7FF72BC4B81D005238BB /* SharedState-Notifications.swift in Sources */,
 				CAA9ADC624465C810003A984 /* 03-Effects-Cancellation.swift in Sources */,
 				CA5ECF92267A79F0002067FF /* FactClient.swift in Sources */,
 				DC9EB4172450CBD2005F413B /* UIViewRepresented.swift in Sources */,

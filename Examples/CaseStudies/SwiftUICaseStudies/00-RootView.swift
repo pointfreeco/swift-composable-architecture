@@ -90,6 +90,13 @@ struct RootView: View {
               SharedStateSandboxingView(store: store)
             }
           }
+          NavigationLink("Notifications") {
+            Demo(
+              store: Store(initialState: SharedStateNotifications.State()) { SharedStateNotifications() }
+            ) { store in
+              SharedStateNotificationsView(store: store)
+            }
+          }
           Button("Sign up flow") {
             isSignUpCaseStudyPresented = true
           }

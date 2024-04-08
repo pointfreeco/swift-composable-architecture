@@ -14,34 +14,46 @@ public protocol PersistenceReaderKey<Value>: Hashable {
 
 extension PersistenceReaderKey where Self == NotificationReaderKey<Bool> {
   public static var isLowPowerEnabled: Self {
-    NotificationReaderKey(name: .NSProcessInfoPowerStateDidChange) { _ in
-      ProcessInfo.processInfo.isLowPowerModeEnabled
+    NotificationReaderKey(
+      initialValue: false,
+      name: .NSProcessInfoPowerStateDidChange
+    ) { value, _ in
+      value = ProcessInfo.processInfo.isLowPowerModeEnabled
     }
   }
 }
 
 public struct NotificationReaderKey<Value>: PersistenceReaderKey {
+  private let initialValue: Value
   public let name: Notification.Name
-  public let transform: (Notification) -> Value
+  public let transform: (inout Value, Notification) -> Void
 
-  public init(name: Notification.Name, transform: @escaping (Notification) -> Value) {
+  public init(
+    initialValue: Value,
+    name: Notification.Name,
+    transform: @escaping (inout Value, Notification) -> Void
+  ) {
+    self.initialValue = initialValue
     self.name = name
     self.transform = transform
   }
 
   public func load(initialValue: Value?) -> Value? {
-    initialValue
+    initialValue ?? self.initialValue
   }
 
   public func subscribe(
     initialValue: Value?,
     didSet: @escaping (Value?) -> Void
   ) -> Shared<Value>.Subscription {
+    var value = self.initialValue
     let token = NotificationCenter.default.addObserver(
       forName: name,
       object: nil,
       queue: nil,
       using: { notification in
+        self.transform(&value, notification)
+        didSet(value)
       }
     )
     return Shared.Subscription {
