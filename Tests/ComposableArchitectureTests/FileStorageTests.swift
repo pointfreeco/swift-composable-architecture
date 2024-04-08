@@ -318,18 +318,41 @@ final class FileStorageTests: XCTestCase {
     XCTAssertEqual(users1, [User(id: 1, name: "Blob")])
     XCTAssertEqual(users2, [])
   }
+
+  func testTwoInMemoryFileStorages() {
+    let shared1 = withDependencies {
+      $0.defaultFileStorage = InMemoryFileStorage()
+    } operation: {
+      @Shared(.fileStorage(.userURL)) var user = User(id: 1, name: "Blob")
+      return $user
+    }
+    let shared2 = withDependencies {
+      $0.defaultFileStorage = InMemoryFileStorage()
+    } operation: {
+      @Shared(.fileStorage(.userURL)) var user = User(id: 1, name: "Blob")
+      return $user
+    }
+
+    shared1.wrappedValue.name = "Blob Jr"
+    XCTAssertEqual(shared1.wrappedValue.name, "Blob Jr")
+    XCTAssertEqual(shared2.wrappedValue.name, "Blob")
+    shared2.wrappedValue.name = "Blob Sr"
+    XCTAssertEqual(shared1.wrappedValue.name, "Blob Jr")
+    XCTAssertEqual(shared2.wrappedValue.name, "Blob Sr")
+  }
 }
 
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 extension URL {
   fileprivate static let fileURL = Self.temporaryDirectory.appending(component: "file.json")
+  fileprivate static let userURL = Self.temporaryDirectory.appending(component: "user.json")
   fileprivate static let anotherFileURL = Self.temporaryDirectory
     .appending(component: "another-file.json")
 }
 
 private struct User: Codable, Equatable, Identifiable {
   let id: Int
-  let name: String
+  var name: String
   static let blob = User(id: 1, name: "Blob")
   static let blobJr = User(id: 1, name: "Blob Jr.")
   static let blobSr = User(id: 1, name: "Blob Sr.")
