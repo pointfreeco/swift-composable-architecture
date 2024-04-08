@@ -4,10 +4,115 @@
     import Combine
   #endif
 
+  private struct EmptyKey<Value>: PersistenceKey {
+    func save(_ value: Value) {}
+    func load(initialValue: Value?) -> Value? { nil }
+  }
+
+  extension SharedReader {
+    @_disfavoredOverload
+    public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
+      self.init(
+        reference: ValueReference<Value, EmptyKey<Value>>(
+          value,
+          fileID: fileID,
+          line: line
+        )
+      )
+    }
+
+    @_disfavoredOverload
+    public init(
+      wrappedValue value: Value,
+      _ persistenceKey: some PersistenceKey<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) {
+      self.init(
+        wrappedValue: value,
+        persistenceKey,
+        fileID: fileID,
+        line: line
+      )
+    }
+
+    public init(
+      wrappedValue value: Value,
+      _ persistenceKey: some PersistenceReaderKey<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) {
+      self.init(
+        reference: {
+          @Dependency(PersistentReferencesKey.self) var references
+          return references.withValue {
+            if let reference = $0[persistenceKey] {
+              return reference
+            } else {
+              let reference = ValueReference(
+                initialValue: value,
+                persistenceKey: persistenceKey,
+                fileID: fileID,
+                line: line
+              )
+              $0[persistenceKey] = reference
+              return reference
+            }
+          }
+        }(),
+        keyPath: \Value.self
+      )
+    }
+
+    @_disfavoredOverload
+    public init<Wrapped>(
+      _ persistenceKey: some PersistenceKey<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) where Value == Wrapped? {
+      self.init(persistenceKey, fileID: fileID, line: line)
+    }
+
+    public init<Wrapped>(
+      _ persistenceKey: some PersistenceReaderKey<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) where Value == Wrapped? {
+      self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
+    }
+
+    @_disfavoredOverload
+    public init(
+      _ persistenceKey: some PersistenceKey<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) throws {
+      try self.init(persistenceKey, fileID: fileID, line: line)
+    }
+
+    public init(
+      _ persistenceKey: some PersistenceReaderKey<Value>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) throws {
+      guard let initialValue = persistenceKey.load(initialValue: nil)
+      else {
+        throw LoadError()
+      }
+      self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+    }
+  }
+
   extension Shared {
     @_disfavoredOverload
     public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
-      self.init(reference: ValueReference(value, fileID: fileID, line: line))
+      self.init(
+        reference: ValueReference<Value, EmptyKey<Value>>(
+          value,
+          fileID: fileID,
+          line: line
+        )
+      )
     }
 
     public init(
@@ -61,14 +166,14 @@
 
   private struct LoadError: Error {}
 
-  private final class ValueReference<Value>: Reference {
+  private final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Reference {
     private var _currentValue: Value {
       didSet {
         self._subject.send(self._currentValue)
       }
     }
     private var _snapshot: Value?
-    fileprivate var persistenceKey: (any PersistenceKey<Value>)?  // TODO: Should this not be an `any`?
+    fileprivate var persistenceKey: Persistence?  // TODO: Should this not be an `any`?
     private var subscription: Shared<Value>.Subscription?
     private let fileID: StaticString
     private let line: UInt
@@ -82,7 +187,7 @@
 
     init(
       initialValue: Value,
-      persistenceKey: some PersistenceKey<Value>,
+      persistenceKey: Persistence,
       fileID: StaticString,
       line: UInt
     ) {
@@ -128,16 +233,25 @@
         self.lock.lock()
         defer { self.lock.unlock() }
         yield &self._currentValue
-        self.persistenceKey?.save(self._currentValue)
+        self.saveCurrentValue()
       }
       set {
         self._$perceptionRegistrar.withMutation(of: self, keyPath: \.currentValue) {
           self.lock.withLock {
             self._currentValue = newValue
-            self.persistenceKey?.save(self._currentValue)
+            self.saveCurrentValue()
           }
         }
       }
+    }
+
+    private func saveCurrentValue() {
+      func open<A>(_ persistence: some PersistenceKey<A>) {
+        persistence.save(self._currentValue as! A)
+      }
+      guard let persistenceKey = self.persistenceKey as? any PersistenceKey
+      else { return }
+      open(persistenceKey)
     }
 
     var snapshot: Value? {

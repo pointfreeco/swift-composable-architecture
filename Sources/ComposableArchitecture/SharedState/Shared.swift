@@ -96,7 +96,19 @@ import Foundation
     public subscript<Member>(
       dynamicMember keyPath: WritableKeyPath<Value, Member>
     ) -> Shared<Member> {
-      Shared<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
+      Shared<Member>(
+        reference: self.reference,
+        keyPath: self.keyPath.appending(path: keyPath)!
+      )
+    }
+
+    public subscript<Member>(
+      dynamicMember keyPath: KeyPath<Value, Member>
+    ) -> SharedReader<Member> {
+      SharedReader<Member>(
+        reference: self.reference,
+        keyPath: self.keyPath.appending(path: keyPath)!
+      )
     }
 
     public subscript<Member>(
@@ -191,6 +203,10 @@ import Foundation
         }
         return open(self.reference)
       }
+    }
+
+    public var reader: SharedReader<Value> {
+      SharedReader(reference: self.reference, keyPath: self.keyPath)
     }
   }
 
@@ -330,39 +346,4 @@ final class SharedChangeTracker {
 extension SharedChangeTracker: DependencyKey {
   static let liveValue: SharedChangeTracker? = nil
   static let testValue: SharedChangeTracker? = nil
-}
-
-extension Optional {
-  fileprivate subscript(default defaultSubscript: DefaultSubscript<Wrapped>) -> Wrapped {
-    get { self ?? defaultSubscript.value }
-    set {
-      defaultSubscript.value = newValue
-      if self != nil { self = newValue }
-    }
-  }
-}
-
-extension RandomAccessCollection where Self: MutableCollection {
-  fileprivate subscript(
-    position: Index, default defaultSubscript: DefaultSubscript<Element>
-  ) -> Element {
-    get { self.indices.contains(position) ? self[position] : defaultSubscript.value }
-    set {
-      defaultSubscript.value = newValue
-      if self.indices.contains(position) { self[position] = newValue }
-    }
-  }
-}
-
-private final class DefaultSubscript<Value>: Hashable {
-  var value: Value
-  init(_ value: Value) {
-    self.value = value
-  }
-  static func == (lhs: DefaultSubscript, rhs: DefaultSubscript) -> Bool {
-    lhs === rhs
-  }
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(ObjectIdentifier(self))
-  }
 }

@@ -81,6 +81,7 @@ extension SharedStateFileStorage {
     struct State: Equatable {
       @Presents var alert: AlertState<Action.Alert>?
       @Shared(.stats) var stats = Stats()
+      @SharedReader(.stats) var readOnlyStats = Stats()
     }
 
     enum Action {
@@ -160,6 +161,9 @@ private struct CounterTabView: View {
           }
 
           Text("\(store.stats.count)")
+            .monospacedDigit()
+
+          Text("Read only: \(store.readOnlyStats.count)")
             .monospacedDigit()
 
           Button {
