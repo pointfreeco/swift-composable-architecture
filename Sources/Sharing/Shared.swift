@@ -53,8 +53,11 @@ public struct Shared<Value> {
     self.keyPath = keyPath
   }
 
-  public init(_ value: Value) {
-    self.init(reference: ValueReference(initialValue: value), keyPath: \Value.self)
+  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
+    self.init(
+      reference: ValueReference(initialValue: value, fileID: fileID, line: line),
+      keyPath: \Value.self
+    )
   }
 
   public init(projectedValue: Shared) {

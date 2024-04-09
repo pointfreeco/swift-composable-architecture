@@ -1,3 +1,4 @@
+import CustomDump
 import Dependencies
 
 public func withSharedChangeTracking<T>(
@@ -22,7 +23,39 @@ public func withSharedChangeTracking<T>(
   }
 }
 
-struct Change<Value> {
+protocol Change<Value> {
+  associatedtype Value
+  var reference: any Reference<Value> { get }
+  var snapshot: Value { get set }
+}
+
+extension Change {
+  func assertUnchanged() {
+    if let difference = diff(snapshot, self.reference.value, format: .proportional) {
+      XCTFail(
+        """
+        Tracked changes to '\(self.reference.description)' but failed to assert: …
+
+        \(difference.indent(by: 2))
+
+        (Before: −, After: +)
+
+        Call 'Shared<\(Value.self)>.assert' to exhaustively test these changes, or call \
+        'skipChanges' to ignore them.
+        """
+      )
+    }
+  }
+}
+
+extension String {
+  fileprivate func indent(by indent: Int) -> String {
+    let indentation = String(repeating: " ", count: indent)
+    return indentation + self.replacingOccurrences(of: "\n", with: "\n\(indentation)")
+  }
+}
+
+struct AnyChange<Value>: Change {
   let reference: any Reference<Value>
   var snapshot: Value
 
@@ -38,15 +71,23 @@ struct Change<Value> {
   @_spi(Internals) public var hasChanges: Bool { !self.changes.isEmpty }
   @_spi(Internals) public init() {}
   @_spi(Internals) public func resetChanges() { self.changes.removeAll() }
+  @_spi(Internals) public func assertUnchanged() {
+    for change in self.changes.values {
+      if let change = change as? any Change {
+        change.assertUnchanged()
+      }
+    }
+    self.changes.removeAll()
+  }
   func track<Value>(_ reference: some Reference<Value>) {
     if !self.changes.keys.contains(ObjectIdentifier(reference)) {
-      self.changes[ObjectIdentifier(reference)] = Change(reference)
+      self.changes[ObjectIdentifier(reference)] = AnyChange(reference)
     }
   }
-  subscript<Value>(_ reference: some Reference<Value>) -> Change<Value>? {
-    _read { yield self.changes[ObjectIdentifier(reference)] as? Change<Value> }
+  subscript<Value>(_ reference: some Reference<Value>) -> AnyChange<Value>? {
+    _read { yield self.changes[ObjectIdentifier(reference)] as? AnyChange<Value> }
     _modify {
-      var change = self.changes[ObjectIdentifier(reference)] as? Change<Value>
+      var change = self.changes[ObjectIdentifier(reference)] as? AnyChange<Value>
       yield &change
       self.changes[ObjectIdentifier(reference)] = change
     }

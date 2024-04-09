@@ -24,7 +24,9 @@ extension Shared {
           } else {
             let reference = ValueReference(
               initialValue: value,
-              persistenceKey: persistenceKey
+              persistenceKey: persistenceKey,
+              fileID: fileID,
+              line: line
             )
             $0[persistenceKey] = reference
             return reference
@@ -59,18 +61,24 @@ extension Shared {
 private struct LoadError: Error {}
 
 final class ValueReference<Value>: Reference, @unchecked Sendable {
-  private var _value: Value
+  private let lock = NSRecursiveLock()
   private let persistenceKey: (any PersistenceKey<Value>)?
   #if canImport(Combine)
     private let subject: CurrentValueRelay<Value>
   #endif
   private var subscription: Shared<Value>.Subscription?
+  private var _value: Value {
+    didSet {
+      self.subject.send(self._value)
+    }
+  }
   #if canImport(Perception)
     private let _$perceptionRegistrar = PerceptionRegistrar(
       isPerceptionCheckingEnabled: true  // TODO: Disable?
     )
   #endif
-  let lock = NSRecursiveLock()
+  private let fileID: StaticString
+  private let line: UInt
   var value: Value {
     get {
       #if canImport(Perception)
@@ -86,7 +94,6 @@ final class ValueReference<Value>: Reference, @unchecked Sendable {
       self.lock.withLock {
         self._value = newValue
         self.persistenceKey?.save(self._value)
-        self.subject.send(self._value)
       }
     }
   }
@@ -95,12 +102,19 @@ final class ValueReference<Value>: Reference, @unchecked Sendable {
       self.subject.dropFirst().eraseToAnyPublisher()
     }
   #endif
-  init(initialValue: Value, persistenceKey: (any PersistenceKey<Value>)? = nil) {
+  init(
+    initialValue: Value,
+    persistenceKey: (any PersistenceKey<Value>)? = nil,
+    fileID: StaticString,
+    line: UInt
+  ) {
     self._value = persistenceKey?.load(initialValue: initialValue) ?? initialValue
     self.persistenceKey = persistenceKey
     #if canImport(Combine)
       self.subject = CurrentValueRelay(initialValue)
     #endif
+    self.fileID = fileID
+    self.line = line
     if let persistenceKey {
       self.subscription = persistenceKey.subscribe(
         initialValue: initialValue
@@ -109,6 +123,9 @@ final class ValueReference<Value>: Reference, @unchecked Sendable {
         self.lock.withLock { self._value = value ?? initialValue }
       }
     }
+  }
+  var description: String {
+    "Shared<\(Value.self)>@\(self.fileID):\(self.line)"
   }
 }
 

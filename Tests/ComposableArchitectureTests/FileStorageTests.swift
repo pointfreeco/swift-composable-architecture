@@ -219,23 +219,20 @@ final class FileStorageTests: XCTestCase {
   }
 
   @MainActor
-  func testWriteFileWhileDebouncing() async throws {
-    try await withMainSerialExecutor {
-      let scheduler = DispatchQueue.test
-      let fileStorage = InMemoryFileStorage(scheduler: scheduler.eraseToAnyScheduler())
+  func testWriteFileWhileDebouncing() throws {
+    let scheduler = DispatchQueue.test
+    let fileStorage = InMemoryFileStorage(scheduler: scheduler.eraseToAnyScheduler())
 
-      try await withDependencies {
-        $0.defaultFileStorage = fileStorage
-      } operation: {
-        @Shared(.fileStorage(.fileURL)) var users = [User]()
-        await Task.yield()
+    try withDependencies {
+      $0.defaultFileStorage = fileStorage
+    } operation: {
+      @Shared(.fileStorage(.fileURL)) var users = [User]()
 
-        users.append(.blob)
-        try fileStorage.save(Data(), to: .fileURL)
-        await scheduler.run()
-        XCTAssertNoDifference(users, [])
-        try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [])
-      }
+      users.append(.blob)
+      try fileStorage.save(Data(), to: .fileURL)
+      scheduler.run()
+      XCTAssertNoDifference(users, [])
+      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [])
     }
   }
 

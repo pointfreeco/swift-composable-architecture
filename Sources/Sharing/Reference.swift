@@ -2,7 +2,7 @@
   import Combine
 #endif
 
-protocol Reference<Value>: AnyObject {
+protocol Reference<Value>: AnyObject, CustomStringConvertible {
   associatedtype Value
   var value: Value { get set }
 
