@@ -523,6 +523,7 @@ public final class TestStore<State, Action> {
   {
     let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
       Dependencies.withDependencies {
+        $0[SharedChangeTrackerKey.self] = SharedChangeTracker()
         prepareDependencies(&$0)
       } operation: {
         TestReducer(Reduce(reducer()), initialState: initialState())
@@ -957,15 +958,16 @@ extension TestStore where State: Equatable {
     file: StaticString,
     line: UInt
   ) throws {
+    let changeTracker = self.reducer.dependencies[SharedChangeTrackerKey.self]
     let skipUnnecessaryModifyFailure =
       skipUnnecessaryModifyFailure
-      || SharedLocals.changeTracker?.hasChanges == true
+        || changeTracker?.hasChanges == true
     if self.exhaustivity != .on {
-      SharedLocals.changeTracker?.resetChanges()
+      changeTracker?.resetChanges()
     }
-    let wasAsserting = SharedLocals.changeTracker?.isAsserting
-    SharedLocals.changeTracker?.isAsserting = true
-    defer { SharedLocals.changeTracker?.isAsserting = wasAsserting ?? false }
+    let wasAsserting = changeTracker?.isAsserting
+    changeTracker?.isAsserting = true
+    defer { changeTracker?.isAsserting = wasAsserting ?? false }
 
     let current = expected
     var expected = expected
@@ -1099,7 +1101,7 @@ extension TestStore where State: Equatable {
         line: line
       )
     }
-    SharedLocals.changeTracker?.resetChanges()
+    self.reducer.dependencies[SharedChangeTrackerKey.self]?.resetChanges()
   }
 }
 

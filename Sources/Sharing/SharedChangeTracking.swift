@@ -1,8 +1,12 @@
+import Dependencies
+
 public func withSharedChangeTracking<T>(
   _ apply: () throws -> T
 ) rethrows -> T {
-  let changeTracker = SharedLocals.changeTracker?.copy() ?? SharedChangeTracker()
-  return try SharedLocals.$changeTracker.withValue(changeTracker) {
+  try withDependencies {
+    $0[SharedChangeTrackerKey.self] = $0[SharedChangeTrackerKey.self]?.copy()
+      ?? SharedChangeTracker()
+  } operation: {
     try apply()
   }
 }
@@ -10,8 +14,10 @@ public func withSharedChangeTracking<T>(
 public func withSharedChangeTracking<T>(
   _ apply: () async throws -> T
 ) async rethrows -> T {
-  let changeTracker = SharedLocals.changeTracker?.copy() ?? SharedChangeTracker()
-  return try await SharedLocals.$changeTracker.withValue(changeTracker) {
+  try await withDependencies {
+    $0[SharedChangeTrackerKey.self] = $0[SharedChangeTrackerKey.self]?.copy()
+      ?? SharedChangeTracker()
+  } operation: {
     try await apply()
   }
 }
@@ -30,6 +36,7 @@ struct Change<Value> {
   var changes: [ObjectIdentifier: Any] = [:]
   @_spi(Internals) public var isAsserting = false
   @_spi(Internals) public var hasChanges: Bool { !self.changes.isEmpty }
+  @_spi(Internals) public init() {}
   @_spi(Internals) public func resetChanges() { self.changes.removeAll() }
   func track<Value>(_ reference: some Reference<Value>) {
     if !self.changes.keys.contains(ObjectIdentifier(reference)) {
@@ -49,4 +56,9 @@ struct Change<Value> {
     changeTracker.changes = self.changes
     return changeTracker
   }
+}
+
+@_spi(Internals) public enum SharedChangeTrackerKey: DependencyKey {
+  @_spi(Internals) public static var liveValue: SharedChangeTracker? { nil }
+  @_spi(Internals) public static var testValue: SharedChangeTracker? { SharedChangeTracker() }
 }

@@ -1,4 +1,5 @@
 import CustomDump
+import Dependencies
 import XCTestDynamicOverlay
 
 #if canImport(Combine)
@@ -13,17 +14,19 @@ public struct Shared<Value> {
 
   public var wrappedValue: Value {
     get {
-      if SharedLocals.changeTracker?.isAsserting == true {
+      @Dependency(SharedChangeTrackerKey.self) var changeTracker
+      if changeTracker?.isAsserting == true {
         return self.snapshot ?? self.currentValue
       } else {
         return self.currentValue
       }
     }
     nonmutating set {
-      if SharedLocals.changeTracker?.isAsserting == true {
+      @Dependency(SharedChangeTrackerKey.self) var changeTracker
+      if changeTracker?.isAsserting == true {
         self.snapshot = newValue
       } else {
-        SharedLocals.changeTracker?.track(self.reference)
+        changeTracker?.track(self.reference)
         self.currentValue = newValue
       }
     }
@@ -82,7 +85,8 @@ public struct Shared<Value> {
     file: StaticString = #file,
     line: UInt = #line
   ) rethrows where Value: Equatable {
-    guard let changeTracker = SharedLocals.changeTracker
+    @Dependency(SharedChangeTrackerKey.self) var changeTracker
+    guard let changeTracker
     else {
       XCTFail(
         "Use 'withSharedChangeTracking' to track changes to assert against.",
@@ -127,7 +131,8 @@ public struct Shared<Value> {
   private var snapshot: Value? {
     get {
       func open<Root>(_ reference: some Reference<Root>) -> Value? {
-        SharedLocals.changeTracker?[reference]?.snapshot[
+        @Dependency(SharedChangeTrackerKey.self) var changeTracker
+        return changeTracker?[reference]?.snapshot[
           keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
         ]
       }
@@ -135,11 +140,12 @@ public struct Shared<Value> {
     }
     nonmutating set {
       func open<Root>(_ reference: some Reference<Root>) {
+        @Dependency(SharedChangeTrackerKey.self) var changeTracker
         guard let newValue else {
-          SharedLocals.changeTracker?[reference] = nil
+          changeTracker?[reference] = nil
           return
         }
-        SharedLocals.changeTracker?[reference]?.snapshot[
+        changeTracker?[reference]?.snapshot[
           keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
         ] = newValue
       }
@@ -152,7 +158,8 @@ extension Shared: @unchecked Sendable where Value: Sendable {}
 
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
-    if SharedLocals.changeTracker?.isAsserting == true, lhs.reference === rhs.reference {
+    @Dependency(SharedChangeTrackerKey.self) var changeTracker
+    if changeTracker?.isAsserting == true, lhs.reference === rhs.reference {
       if let lhsReference = lhs.reference as? any Equatable {
         func open<T: Equatable>(_ lhsReference: T) -> Bool {
           lhsReference == rhs.reference as? T
