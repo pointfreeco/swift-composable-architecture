@@ -96,16 +96,16 @@ extension PersistenceReaderKey where Self == NotificationReaderKey<Int> {
   }
 }
 
-extension PersistenceReaderKey where Self == NotificationReaderKey<Bool> {
-  static var isLowPowerEnabled: Self {
-    NotificationReaderKey(
-      initialValue: false,
-      name: .NSProcessInfoPowerStateDidChange
-    ) { value, _ in
-      value = ProcessInfo.processInfo.isLowPowerModeEnabled
-    }
-  }
-}
+//extension PersistenceReaderKey where Self == NotificationReaderKey<Bool> {
+//  static var isLowPowerEnabled: Self {
+//    NotificationReaderKey(
+//      initialValue: false,
+//      name: .NSProcessInfoPowerStateDidChange
+//    ) { value, _ in
+//      value = ProcessInfo.processInfo.isLowPowerModeEnabled
+//    }
+//  }
+//}
 
 struct NotificationReaderKey<Value: Sendable>: PersistenceReaderKey {
   let name: Notification.Name
