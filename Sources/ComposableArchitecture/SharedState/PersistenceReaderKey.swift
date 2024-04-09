@@ -24,36 +24,34 @@ extension PersistenceReaderKey where Self == NotificationReaderKey<Bool> {
 }
 
 public struct NotificationReaderKey<Value>: PersistenceReaderKey {
-  private let initialValue: Value
   public let name: Notification.Name
-  public let transform: (inout Value, Notification) -> Void
+  private let transform: (Notification) -> Value
 
   public init(
     initialValue: Value,
     name: Notification.Name,
     transform: @escaping (inout Value, Notification) -> Void
   ) {
-    self.initialValue = initialValue
     self.name = name
-    self.transform = transform
+    var value = initialValue
+    self.transform = { notification in
+      transform(&value, notification)
+      return value
+    }
   }
 
-  public func load(initialValue: Value?) -> Value? {
-    initialValue ?? self.initialValue
-  }
+  public func load(initialValue: Value?) -> Value? { nil }
 
   public func subscribe(
     initialValue: Value?,
     didSet: @escaping (Value?) -> Void
   ) -> Shared<Value>.Subscription {
-    var value = self.initialValue
     let token = NotificationCenter.default.addObserver(
       forName: name,
       object: nil,
       queue: nil,
       using: { notification in
-        self.transform(&value, notification)
-        didSet(value)
+        didSet(self.transform(notification))
       }
     )
     return Shared.Subscription {
