@@ -74,7 +74,7 @@ final class ValueReference<Value>: Reference, @unchecked Sendable {
   }
   #if canImport(Perception)
     private let _$perceptionRegistrar = PerceptionRegistrar(
-      isPerceptionCheckingEnabled: true  // TODO: Disable?
+      isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
     )
   #endif
   private let fileID: StaticString
