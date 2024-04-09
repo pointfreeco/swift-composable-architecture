@@ -3,7 +3,6 @@ import Combine
 import ConcurrencyExtras
 import CustomDump
 import Foundation
-@_spi(Internals) import Sharing
 import XCTestDynamicOverlay
 
 /// A testable runtime for a reducer.

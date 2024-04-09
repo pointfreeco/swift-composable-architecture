@@ -1,6 +1,5 @@
 import Combine
 import Dispatch
-@_spi(Internals) import Sharing
 
 extension Reducer {
   #if swift(>=5.8)

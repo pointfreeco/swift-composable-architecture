@@ -6,6 +6,10 @@ import XCTestDynamicOverlay
   import Combine
 #endif
 
+/// A property wrapper type that shares a value with multiple parts of an application.
+///
+/// See the <doc:SharingState> article for more detailed information on how to use this property
+/// wrapper.
 @dynamicMemberLookup
 @propertyWrapper
 public struct Shared<Value> {
@@ -32,6 +36,29 @@ public struct Shared<Value> {
     }
   }
 
+  /// A projection of the shared value that returns a shared reference.
+  ///
+  /// Use the projected value to pass a shared value down to another feature. This is most
+  /// commonly done to share a value from one feature to another:
+  ///
+  /// ```swift
+  /// case .nextButtonTapped:
+  ///   state.path.append(
+  ///     PersonalInfoFeature(signUpData: state.$signUpData)
+  ///   )
+  /// ```
+  ///
+  /// Further you can use dot-chaining syntax to derive a smaller piece of shared state to hand
+  /// to another feature:
+  ///
+  /// ```swift
+  /// case .nextButtonTapped:
+  ///   state.path.append(
+  ///     PhoneNumberFeature(phoneNumber: state.$signUpData.phoneNumber)
+  ///   )
+  /// ```
+  ///
+  /// See <doc:SharingState#Deriving-shared-state> for more details.
   public var projectedValue: Shared {
     get { self }
     set { self = newValue }
@@ -218,12 +245,56 @@ extension Shared: _CustomDiffObject {
   }
 }
 
+extension Shared
+where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable & Sendable {
+  /// Derives a collection of shared elements from a shared collection of elements.
+  ///
+  /// This can be useful when used in conjunction with `ForEach` in order to derive a shared
+  /// reference for each element of a collection:
+  ///
+  /// ```swift
+  /// struct State {
+  ///   @Shared(.fileStorage(.todos)) var todos: IdentifiedArrayOf<Todo> = []
+  ///   // ...
+  /// }
+  ///
+  /// // ...
+  ///
+  /// ForEach(store.$todos.elements) { $todo in
+  ///   NavigationLink(
+  ///     // $todo: Shared<Todo>
+  ///     //  todo: Todo
+  ///     state: Path.State.todo(TodoFeature.State(todo: $todo))
+  ///   ) {
+  ///     Text(todo.title)
+  ///   }
+  /// }
+  /// ```
+  public var elements: some RandomAccessCollection<Shared<Value.Element>> {
+    zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
+      self[index, default: DefaultSubscript(element)]
+    }
+  }
+}
+
 extension Optional {
   fileprivate subscript(default defaultSubscript: DefaultSubscript<Wrapped>) -> Wrapped {
     get { self ?? defaultSubscript.value }
     set {
       defaultSubscript.value = newValue
       if self != nil { self = newValue }
+    }
+  }
+}
+
+extension RandomAccessCollection where Self: MutableCollection {
+  fileprivate subscript(
+    position: Index, default defaultSubscript: DefaultSubscript<Element>
+  ) -> Element {
+    get { self.indices.contains(position) ? self[position] : defaultSubscript.value }
+    set {
+      defaultSubscript.value = newValue
+      if self.indices.contains(position) { self[position] = newValue }
     }
   }
 }
