@@ -58,11 +58,65 @@ extension Shared {
   }
 }
 
+func foo() {
+  @SharedReader(.appStorage("count")) var count = 0
+}
+
+extension SharedReader {
+  public init(
+    wrappedValue value: Value,
+    _ persistenceKey: some PersistenceReaderKey<Value>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.init(
+      reference: {
+        @Dependency(PersistentReferencesKey.self) var references
+        return references.withValue {
+          if let reference = $0[persistenceKey] {
+            return reference
+          } else {
+            let reference = ValueReference(
+              initialValue: value,
+              persistenceKey: persistenceKey,
+              fileID: fileID,
+              line: line
+            )
+            $0[persistenceKey] = reference
+            return reference
+          }
+        }
+      }(),
+      keyPath: \Value.self
+    )
+  }
+
+  public init<Wrapped>(
+    _ persistenceKey: some PersistenceReaderKey<Value>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Value == Wrapped? {
+    self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
+  }
+  
+  public init(
+    _ persistenceKey: some PersistenceReaderKey<Value>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) throws {
+    guard let initialValue = persistenceKey.load(initialValue: nil)
+    else {
+      throw LoadError()
+    }
+    self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+  }
+}
+
 private struct LoadError: Error {}
 
-final class ValueReference<Value>: Reference, @unchecked Sendable {
+final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Reference, @unchecked Sendable {
   private let lock = NSRecursiveLock()
-  private let persistenceKey: (any PersistenceKey<Value>)?
+  private let persistenceKey: Persistence?
   #if canImport(Combine)
     private let subject: CurrentValueRelay<Value>
   #endif
@@ -93,7 +147,12 @@ final class ValueReference<Value>: Reference, @unchecked Sendable {
       #endif
       self.lock.withLock {
         self._value = newValue
-        self.persistenceKey?.save(self._value)
+        func open<A>(_ key: some PersistenceKey<A>) {
+          key.save(self._value as! A)
+        }
+        guard let key = self.persistenceKey as? any PersistenceKey
+        else { return }
+        open(key)
       }
     }
   }
@@ -104,7 +163,7 @@ final class ValueReference<Value>: Reference, @unchecked Sendable {
   #endif
   init(
     initialValue: Value,
-    persistenceKey: (any PersistenceKey<Value>)? = nil,
+    persistenceKey: Persistence? = nil,
     fileID: StaticString,
     line: UInt
   ) {

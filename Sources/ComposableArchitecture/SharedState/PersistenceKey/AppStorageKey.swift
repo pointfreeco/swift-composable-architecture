@@ -1,7 +1,7 @@
 import Dependencies
 import Foundation
 
-extension PersistenceKey {
+extension PersistenceReaderKey {
   /// Creates a persistence key that can read and write to a boolean user default.
   ///
   /// - Parameter key: The key to read and write the value to in the user defaults store.

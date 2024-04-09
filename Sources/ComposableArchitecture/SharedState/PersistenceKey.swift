@@ -1,3 +1,16 @@
+public protocol PersistenceReaderKey<Value>: Hashable {
+  associatedtype Value
+
+  /// Loads the freshest value from storage. Returns `nil` if there is no value in storage.
+  func load(initialValue: Value?) -> Value?  // TODO: Should this be throwing?
+
+  /// Subscribes to external updates.
+  func subscribe(
+    initialValue: Value?,
+    didSet: @Sendable @escaping (_ newValue: Value?) -> Void
+  ) -> Shared<Value>.Subscription
+}
+
 /// A type that can persist shared state to an external storage.
 ///
 /// Conform to this protocol to express persistence to some external storage by describing how to
@@ -8,19 +21,9 @@
 ///
 /// See the article <doc:SharingState> for more information, in particular the
 /// <doc:SharingState#Custom-persistence> section.
-public protocol PersistenceKey<Value>: Hashable {
-  associatedtype Value
-
-  /// Loads the freshest value from storage. Returns `nil` if there is no value in storage.
-  func load(initialValue: Value?) -> Value?  // TODO: Should this be throwing?
-
+public protocol PersistenceKey<Value>: PersistenceReaderKey {
   /// Saves a value to storage.
   func save(_ value: Value)
-
-  /// Subscribes to external updates.
-  func subscribe(
-    initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
-  ) -> Shared<Value>.Subscription
 }
 
 extension PersistenceKey {

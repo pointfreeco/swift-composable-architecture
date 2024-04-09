@@ -47,6 +47,7 @@ public struct ObservableStateMacro {
   static let presentsMacroName = "Presents"
   static let presentationStatePropertyWrapperName = "PresentationState"
   static let sharedPropertyWrapperName = "Shared"
+  static let sharedReaderPropertyWrapperName = "SharedReader"
 
   static let registrarVariableName = "_$observationRegistrar"
 
@@ -447,6 +448,7 @@ extension ObservableStateMacro: MemberAttributeMacro {
 
     if property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
       || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.sharedReaderPropertyWrapperName)
     {
       return [
         AttributeSyntax(
