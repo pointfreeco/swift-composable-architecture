@@ -12,7 +12,7 @@ import Foundation
   import WatchKit
 #endif
 
-extension PersistenceKey {
+extension PersistenceReaderKey {
   /// Creates a persistence key that can read and write to a `Codable` value to the file system.
   ///
   /// - Parameter url: The file URL from which to read and write the value.

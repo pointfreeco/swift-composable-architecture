@@ -1,7 +1,7 @@
 import Dependencies
 import Foundation
 
-extension PersistenceKey {
+extension PersistenceReaderKey {
   /// Creates a persistence key for sharing data in user defaults given a key path.
   ///
   /// For example, one could initialize a key with the date and time at which the application was

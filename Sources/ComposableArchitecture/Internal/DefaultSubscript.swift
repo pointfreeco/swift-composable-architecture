@@ -1,3 +1,16 @@
+final class DefaultSubscript<Value>: Hashable {
+  var value: Value
+  init(_ value: Value) {
+    self.value = value
+  }
+  static func == (lhs: DefaultSubscript, rhs: DefaultSubscript) -> Bool {
+    lhs === rhs
+  }
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(ObjectIdentifier(self))
+  }
+}
+
 extension Optional {
   subscript(default defaultSubscript: DefaultSubscript<Wrapped>) -> Wrapped {
     get { self ?? defaultSubscript.value }
@@ -17,18 +30,5 @@ extension RandomAccessCollection where Self: MutableCollection {
       defaultSubscript.value = newValue
       if self.indices.contains(position) { self[position] = newValue }
     }
-  }
-}
-
-final class DefaultSubscript<Value>: Hashable {
-  var value: Value
-  init(_ value: Value) {
-    self.value = value
-  }
-  static func == (lhs: DefaultSubscript, rhs: DefaultSubscript) -> Bool {
-    lhs === rhs
-  }
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(ObjectIdentifier(self))
   }
 }

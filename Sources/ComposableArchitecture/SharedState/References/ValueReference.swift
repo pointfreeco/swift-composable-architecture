@@ -58,10 +58,6 @@ extension Shared {
   }
 }
 
-func foo() {
-  @SharedReader(.appStorage("count")) var count = 0
-}
-
 extension SharedReader {
   public init(
     wrappedValue value: Value,

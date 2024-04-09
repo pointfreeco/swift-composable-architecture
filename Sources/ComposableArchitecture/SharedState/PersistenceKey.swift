@@ -11,6 +11,14 @@ public protocol PersistenceReaderKey<Value>: Hashable {
   ) -> Shared<Value>.Subscription
 }
 
+extension PersistenceReaderKey {
+  public func subscribe(
+    initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
+  ) -> Shared<Value>.Subscription {
+    Shared.Subscription {}
+  }
+}
+
 /// A type that can persist shared state to an external storage.
 ///
 /// Conform to this protocol to express persistence to some external storage by describing how to
@@ -24,14 +32,6 @@ public protocol PersistenceReaderKey<Value>: Hashable {
 public protocol PersistenceKey<Value>: PersistenceReaderKey {
   /// Saves a value to storage.
   func save(_ value: Value)
-}
-
-extension PersistenceKey {
-  public func subscribe(
-    initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
-  ) -> Shared<Value>.Subscription {
-    Shared.Subscription {}
-  }
 }
 
 extension Shared {

@@ -119,12 +119,12 @@ struct SharedStateSandboxingView: View {
   }
 }
 
-extension PersistenceKey where Self == AppStorageKey<Int> {
+extension PersistenceReaderKey where Self == AppStorageKey<Int> {
   static var appStorageCount: Self {
     Self("appStorageCount")
   }
 }
-extension PersistenceKey where Self == FileStorageKey<Int> {
+extension PersistenceReaderKey where Self == FileStorageKey<Int> {
   static var fileStorageCount: Self {
     Self(url: URL.documentsDirectory.appending(path: "fileStorageCount.json"))
   }

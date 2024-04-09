@@ -202,7 +202,7 @@ And then define a static function on the ``PersistenceKey`` protocol for creatin
 persistence strategy:
 
 ```swift
-extension PersistenceKey {
+extension PersistenceReaderKey {
   public static func custom<Value>(/*...*/) -> Self
   where Self == CustomPersistence<Value> {
     CustomPersistence(/* ... */)
@@ -663,7 +663,7 @@ To add some type-safety and reusability to this process you can extend the ``Fil
 to add a static variable for describing the details of your persistence:
 
 ```swift
-extension PersistenceKey where Self == FileStorageKey<IdentifiedArrayOf<User>> {
+extension PersistenceReaderKey where Self == FileStorageKey<IdentifiedArrayOf<User>> {
   static let users: Self {
     fileStorage(URL(/* ... */))
   }
@@ -694,7 +694,7 @@ This technique works for all types of persistence strategies. For example, a typ
 key can be constructed like so:
 
 ```swift
-extension PersistenceKey where Self == InMemoryKey<IdentifiedArrayOf<User>> {
+extension PersistenceReaderKey where Self == InMemoryKey<IdentifiedArrayOf<User>> {
   static var users: Self {
     inMemory("users")
   }
@@ -704,7 +704,7 @@ extension PersistenceKey where Self == InMemoryKey<IdentifiedArrayOf<User>> {
 And a type-safe `.appStorage` key can be constructed like so:
 
 ```swift
-extension PersistenceKey where Self == AppStorageKey<Int> {
+extension PersistenceReaderKey where Self == AppStorageKey<Int> {
   static var count: Self {
     appStorage("count")
   }
