@@ -33,6 +33,7 @@ let package = Package(
     .target(
       name: "ComposableArchitecture",
       dependencies: [
+        "Sharing",
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
@@ -51,6 +52,18 @@ let package = Package(
       name: "ComposableArchitectureTests",
       dependencies: [
         "ComposableArchitecture"
+      ]
+    ),
+    .target(
+      name: "Sharing",
+      dependencies: [
+        .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
+        .product(name: "CustomDump", package: "swift-custom-dump"),
+        .product(name: "Dependencies", package: "swift-dependencies"),
+        .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
+      ],
+      resources: [
+        .process("Resources/PrivacyInfo.xcprivacy")
       ]
     ),
     .executableTarget(

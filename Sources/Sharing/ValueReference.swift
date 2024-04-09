@@ -1,0 +1,129 @@
+import Dependencies
+import Foundation
+
+#if canImport(Combine)
+  import Combine
+#endif
+#if canImport(Perception)
+  import Perception
+#endif
+
+extension Shared {
+  public init(
+    wrappedValue value: Value,
+    _ persistenceKey: some PersistenceKey<Value>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.init(
+      reference: {
+        @Dependency(PersistentReferencesKey.self) var references
+        return references.withValue {
+          if let reference = $0[persistenceKey] {
+            return reference
+          } else {
+            let reference = ValueReference(
+              initialValue: value,
+              persistenceKey: persistenceKey
+            )
+            $0[persistenceKey] = reference
+            return reference
+          }
+        }
+      }(),
+      keyPath: \Value.self
+    )
+  }
+
+  public init<Wrapped>(
+    _ persistenceKey: some PersistenceKey<Value>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Value == Wrapped? {
+    self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
+  }
+
+  public init(
+    _ persistenceKey: some PersistenceKey<Value>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) throws {
+    guard let initialValue = persistenceKey.load(initialValue: nil)
+    else {
+      throw LoadError()
+    }
+    self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+  }
+}
+
+private struct LoadError: Error {}
+
+final class ValueReference<Value>: Reference, @unchecked Sendable {
+  private var _value: Value
+  private let persistenceKey: (any PersistenceKey<Value>)?
+  #if canImport(Combine)
+    private let subject: CurrentValueRelay<Value>
+  #endif
+  private var subscription: Shared<Value>.Subscription?
+  #if canImport(Perception)
+    private let _$perceptionRegistrar = PerceptionRegistrar(
+      isPerceptionCheckingEnabled: true  // TODO: Disable?
+    )
+  #endif
+  let lock = NSRecursiveLock()
+  var value: Value {
+    get {
+      #if canImport(Perception)
+        self._$perceptionRegistrar.access(self, keyPath: \.value)
+      #endif
+      return self.lock.withLock { self._value }
+    }
+    set {
+      #if canImport(Perception)
+        self._$perceptionRegistrar.willSet(self, keyPath: \.value)
+        defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
+      #endif
+      self.lock.withLock {
+        self._value = newValue
+        self.persistenceKey?.save(self._value)
+        self.subject.send(self._value)
+      }
+    }
+  }
+  #if canImport(Combine)
+    var publisher: AnyPublisher<Value, Never> {
+      self.subject.dropFirst().eraseToAnyPublisher()
+    }
+  #endif
+  init(initialValue: Value, persistenceKey: (any PersistenceKey<Value>)? = nil) {
+    self._value = persistenceKey?.load(initialValue: initialValue) ?? initialValue
+    self.persistenceKey = persistenceKey
+    #if canImport(Combine)
+      self.subject = CurrentValueRelay(initialValue)
+    #endif
+    if let persistenceKey {
+      self.subscription = persistenceKey.subscribe(
+        initialValue: initialValue
+      ) { [weak self] value in
+        guard let self else { return }
+        self.lock.withLock { self._value = value ?? initialValue }
+      }
+    }
+  }
+}
+
+#if canImport(Observation)
+  extension ValueReference: Observable {}
+#endif
+#if canImport(Perception)
+  extension ValueReference: Perceptible {}
+#endif
+
+enum PersistentReferencesKey: DependencyKey {
+  static var liveValue: LockIsolated<[AnyHashable: any Reference]> {
+    LockIsolated([:])
+  }
+  static var testValue: LockIsolated<[AnyHashable: any Reference]> {
+    LockIsolated([:])
+  }
+}

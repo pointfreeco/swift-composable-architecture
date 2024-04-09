@@ -1,5 +1,6 @@
 @_spi(Internals) import ComposableArchitecture
 import Perception
+@_spi(Internals) import Sharing
 import XCTest
 
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)

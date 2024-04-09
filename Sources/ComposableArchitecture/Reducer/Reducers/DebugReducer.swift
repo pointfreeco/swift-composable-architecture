@@ -1,5 +1,6 @@
 import Combine
 import Dispatch
+@_spi(Internals) import Sharing
 
 extension Reducer {
   #if swift(>=5.8)
@@ -70,8 +71,6 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
 
   let printer: _ReducerPrinter<Base.State, Base.Action>?
 
-  let sharedChangeTracker = SharedChangeTracker()
-
   init(base: Base, printer: _ReducerPrinter<Base.State, Base.Action>?) {
     self.base = base
     self.printer = printer
@@ -82,32 +81,28 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
   ) -> Effect<Base.Action> {
     #if DEBUG
       if let printer = self.printer {
-        return withDependencies {
-          $0[SharedChangeTracker.self] = sharedChangeTracker
-        } operation: {
+        return withSharedChangeTracking {
           let oldState = state
           let effects = self.base.reduce(into: &state, action: action)
-          // TODO: Make not synchronous
-          if self.sharedChangeTracker.hasChanges {
-            SharedLocals.$isProcessingChanges.withValue(true) {
-              printer.printChange(receivedAction: action, oldState: oldState, newState: state)
-            }
-            self.sharedChangeTracker.clearChanges()
-            return effects
-          } else {
-            return effects.merge(
-              with: .publisher { [newState = state, queue = printer.queue] in
-                Deferred<Empty<Action, Never>> {
-                  queue.async {
+          guard let changeTracker = SharedLocals.changeTracker
+          else { return .none }
+          return effects.merge(
+            with: .publisher { [newState = state, queue = printer.queue] in
+              Deferred<Empty<Action, Never>> {
+                queue.async {
+                  SharedLocals.$changeTracker.withValue(changeTracker) {
+                    let wasAsserting = changeTracker.isAsserting
+                    changeTracker.isAsserting = true
+                    defer { changeTracker.isAsserting = wasAsserting }
                     printer.printChange(
                       receivedAction: action, oldState: oldState, newState: newState
                     )
                   }
-                  return Empty()
                 }
+                return Empty()
               }
-            )
-          }
+            }
+          )
         }
       }
     #endif
