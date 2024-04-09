@@ -148,6 +148,9 @@ public struct Shared<Value> {
           changeTracker?[reference] = nil
           return
         }
+        if changeTracker?[reference] == nil {
+          changeTracker?[reference] = AnyChange(reference)
+        }
         changeTracker?[reference]?.snapshot[
           keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
         ] = newValue
