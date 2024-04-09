@@ -93,7 +93,8 @@
     }
 
     public func subscribe(
-      initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
+      initialValue: Value?,
+      didSet: @Sendable @escaping (_ newValue: Value?) -> Void
     ) -> Shared<Value>.Subscription {
       // NB: Make sure there is a file to create a source for.
       if !self.storage.fileExists(at: self.url) {
