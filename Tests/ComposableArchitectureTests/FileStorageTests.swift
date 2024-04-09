@@ -232,7 +232,7 @@ final class FileStorageTests: XCTestCase {
       try fileStorage.save(Data(), to: .fileURL)
       scheduler.run()
       XCTAssertNoDifference(users, [])
-      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [])
+      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), nil)
     }
   }
 

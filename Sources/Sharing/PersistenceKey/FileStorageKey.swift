@@ -109,6 +109,8 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @u
       if self.storage.isSetting() == true {
         self.storage.setIsSetting(false)
       } else {
+        self.workItem?.cancel()
+        self.workItem = nil
         didSet(self.load(initialValue: initialValue))
       }
     }
