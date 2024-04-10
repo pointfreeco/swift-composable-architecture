@@ -94,7 +94,7 @@ extension SharedReader {
   ) where Value == Wrapped? {
     self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
   }
-  
+
   public init(
     _ persistenceKey: some PersistenceReaderKey<Value>,
     fileID: StaticString = #fileID,
@@ -110,7 +110,9 @@ extension SharedReader {
 
 private struct LoadError: Error {}
 
-final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Reference, @unchecked Sendable {
+final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Reference, @unchecked
+  Sendable
+{
   private let lock = NSRecursiveLock()
   private let persistenceKey: Persistence?
   #if canImport(Combine)
@@ -124,7 +126,7 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
   }
   #if canImport(Perception)
     private let _$perceptionRegistrar = PerceptionRegistrar(
-      isPerceptionCheckingEnabled: true  // TODO: Disable?
+      isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
     )
   #endif
   private let fileID: StaticString
@@ -175,7 +177,13 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
         initialValue: initialValue
       ) { [weak self] value in
         guard let self else { return }
-        self.lock.withLock { self._value = value ?? initialValue }
+        #if canImport(Perception)
+          self._$perceptionRegistrar.willSet(self, keyPath: \.value)
+          defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
+        #endif
+        self.lock.withLock {
+          self._value = value ?? initialValue
+        }
       }
     }
   }

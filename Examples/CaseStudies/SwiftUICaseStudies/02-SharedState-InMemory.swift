@@ -145,6 +145,7 @@ extension SharedStateInMemory {
 
 private struct CounterTabView: View {
   @Bindable var store: StoreOf<SharedStateInMemory.CounterTab>
+  @Shared(.stats) var stats = Stats()
 
   var body: some View {
     Form {
@@ -169,6 +170,9 @@ private struct CounterTabView: View {
         }
 
         Button("Is this prime?") { store.send(.isPrimeButtonTapped) }
+        Button("Direct +") {
+          stats.increment()
+        }
       }
     }
     .buttonStyle(.borderless)
