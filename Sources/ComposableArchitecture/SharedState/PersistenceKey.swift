@@ -13,7 +13,8 @@ public protocol PersistenceReaderKey<Value>: Hashable {
 
 extension PersistenceReaderKey {
   public func subscribe(
-    initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
+    initialValue: Value?,
+    didSet: @Sendable @escaping (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     Shared.Subscription {}
   }
