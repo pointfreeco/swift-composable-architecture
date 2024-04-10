@@ -11,6 +11,16 @@ extension PersistenceReaderKey {
   where Self == FileStorageKey<Value> {
     FileStorageKey(url: url)
   }
+  
+  /// Creates a persistence key that can read and write to a `Codable` value to the file system.
+  ///
+  /// - Parameter url: The file URL from which to read and write the value.
+  /// - Parameter defaultValue: The default value to use where no existing value exists on disk.
+  /// - Returns: A file persistence key.
+  public static func fileStorage<Value: Codable>(_ url: URL, defaultValue: Value) -> Self
+  where Self == DefaultProvidingKey<FileStorageKey<Value>> {
+    DefaultProvidingKey(.init(url: url), defaultValue: defaultValue)
+  }
 }
 
 // TODO: Audit unchecked sendable

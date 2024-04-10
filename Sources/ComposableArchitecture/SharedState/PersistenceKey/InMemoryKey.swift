@@ -18,6 +18,24 @@ extension PersistenceReaderKey {
   where Self == InMemoryKey<Value> {
     InMemoryKey(key)
   }
+    
+  /// Creates a persistence key for sharing data in-memory for the lifetime of an application.
+  ///
+  /// For example, one could initialize a key with the date and time at which the application was
+  /// most recently launched, and access this date from anywhere using the ``Shared`` property
+  /// wrapper:
+  ///
+  /// ```swift
+  /// @Shared(.inMemory("appLaunchedAt")) var appLaunchedAt = Date()
+  /// ```
+  ///
+  /// - Parameter key: A string key identifying a value to share in memory.
+  /// - Parameter defaultValue: The default value to use where no existing value can be loaded.
+  /// - Returns: An in-memory persistence key.
+  public static func inMemory<Value>(_ key: String, defaultValue: Value) -> Self
+  where Self == DefaultProvidingKey<InMemoryKey<Value>> {
+    DefaultProvidingKey(.init(key), defaultValue: defaultValue)
+  }
 }
 
 /// A type defining an in-memory persistence strategy
