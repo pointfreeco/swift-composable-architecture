@@ -120,6 +120,20 @@ extension SharedReader {
     }
     self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
   }
+  
+  public init<Key: PersistenceReaderKey>(
+    _ persistenceKey: DefaultProvidingKey<Key>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Key.Value == Value {
+    var initialValue: Key.Value
+    if let existingValue = persistenceKey.load(initialValue: nil) {
+      initialValue = existingValue
+    } else {
+      initialValue = persistenceKey.defaultValue
+    }
+    self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+  }
 }
 
 private struct LoadError: Error {}
