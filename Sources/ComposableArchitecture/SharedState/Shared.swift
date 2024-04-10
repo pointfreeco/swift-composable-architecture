@@ -82,7 +82,11 @@ public struct Shared<Value> {
 
   public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
     self.init(
-      reference: ValueReference(initialValue: value, fileID: fileID, line: line),
+      reference: ValueReference<Value, InMemoryKey<Value>>(
+        initialValue: value,
+        fileID: fileID,
+        line: line
+      ),
       keyPath: \Value.self
     )
   }
@@ -209,6 +213,8 @@ extension Shared: Equatable where Value: Equatable {
 extension Shared: Hashable where Value: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(self.wrappedValue)
+    // TODO: hash reference too?
+    // TODO: or should we only hash reference?
   }
 }
 
@@ -277,37 +283,30 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
   }
 }
 
-extension Optional {
-  fileprivate subscript(default defaultSubscript: DefaultSubscript<Wrapped>) -> Wrapped {
-    get { self ?? defaultSubscript.value }
-    set {
-      defaultSubscript.value = newValue
-      if self != nil { self = newValue }
-    }
+extension Shared {
+  public subscript<Member>(
+    dynamicMember keyPath: KeyPath<Value, Member>
+  ) -> SharedReader<Member> {
+    SharedReader<Member>(
+      reference: self.reference,
+      keyPath: self.keyPath.appending(path: keyPath)!
+    )
   }
-}
 
-extension RandomAccessCollection where Self: MutableCollection {
-  fileprivate subscript(
-    position: Index, default defaultSubscript: DefaultSubscript<Element>
-  ) -> Element {
-    get { self.indices.contains(position) ? self[position] : defaultSubscript.value }
-    set {
-      defaultSubscript.value = newValue
-      if self.indices.contains(position) { self[position] = newValue }
-    }
+  public var reader: SharedReader<Value> {
+    SharedReader(reference: self.reference, keyPath: self.keyPath)
   }
-}
 
-private final class DefaultSubscript<Value>: Hashable {
-  var value: Value
-  init(_ value: Value) {
-    self.value = value
-  }
-  static func == (lhs: DefaultSubscript, rhs: DefaultSubscript) -> Bool {
-    lhs === rhs
-  }
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(ObjectIdentifier(self))
+  public subscript<Member>(
+    dynamicMember keyPath: KeyPath<Value, Member?>
+  ) -> SharedReader<Member>? {
+    guard let initialValue = self.wrappedValue[keyPath: keyPath]
+    else { return nil }
+    return SharedReader<Member>(
+      reference: self.reference,
+      keyPath: self.keyPath.appending(
+        path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
+      )!
+    )
   }
 }

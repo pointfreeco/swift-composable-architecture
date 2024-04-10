@@ -1,7 +1,7 @@
 import Dependencies
 import Foundation
 
-extension PersistenceKey {
+extension PersistenceReaderKey {
   /// Creates a persistence key for sharing data in user defaults given a key path.
   ///
   /// For example, one could initialize a key with the date and time at which the application was
@@ -47,7 +47,8 @@ extension AppStorageKeyPathKey: PersistenceKey {
   }
 
   public func subscribe(
-    initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
+    initialValue: Value?,
+    didSet: @Sendable @escaping (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     let observer = self.store.observe(self.keyPath, options: .new) { _, change in
       guard

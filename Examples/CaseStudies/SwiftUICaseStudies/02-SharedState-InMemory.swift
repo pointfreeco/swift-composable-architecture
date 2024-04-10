@@ -211,7 +211,7 @@ private struct ProfileTabView: View {
   )
 }
 
-extension PersistenceKey where Self == InMemoryKey<Stats> {
+extension PersistenceReaderKey where Self == InMemoryKey<Stats> {
   fileprivate static var stats: Self {
     inMemory("stats")
   }

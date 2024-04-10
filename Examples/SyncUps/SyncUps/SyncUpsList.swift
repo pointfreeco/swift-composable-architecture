@@ -185,7 +185,7 @@ struct SyncUpsList_Previews: PreviewProvider {
   )
 }
 
-extension PersistenceKey where Self == FileStorageKey<IdentifiedArrayOf<SyncUp>> {
+extension PersistenceReaderKey where Self == FileStorageKey<IdentifiedArrayOf<SyncUp>> {
   static var syncUps: Self {
     fileStorage(.documentsDirectory.appending(component: "sync-ups.json"))
   }

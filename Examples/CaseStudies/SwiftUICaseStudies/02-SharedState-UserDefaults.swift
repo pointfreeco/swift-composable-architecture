@@ -199,7 +199,7 @@ private struct ProfileTabView: View {
   }
 }
 
-extension PersistenceKey where Self == AppStorageKey<Int> {
+extension PersistenceReaderKey where Self == AppStorageKey<Int> {
   fileprivate static var count: Self {
     appStorage("sharedStateDemoCount")
   }

@@ -2,7 +2,7 @@ import Combine
 import Dependencies
 import Foundation
 
-extension PersistenceKey {
+extension PersistenceReaderKey {
   /// Creates a persistence key that can read and write to a `Codable` value to the file system.
   ///
   /// - Parameter url: The file URL from which to read and write the value.
@@ -58,7 +58,8 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @u
   }
 
   public func subscribe(
-    initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
+    initialValue: Value?,
+    didSet: @Sendable @escaping (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     // NB: Make sure there is a file to create a source for.
     if !self.storage.fileExists(at: self.url) {

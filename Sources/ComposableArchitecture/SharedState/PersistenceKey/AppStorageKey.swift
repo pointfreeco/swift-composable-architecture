@@ -1,7 +1,7 @@
 import Dependencies
 import Foundation
 
-extension PersistenceKey {
+extension PersistenceReaderKey {
   /// Creates a persistence key that can read and write to a boolean user default.
   ///
   /// - Parameter key: The key to read and write the value to in the user defaults store.
@@ -288,7 +288,8 @@ extension AppStorageKey: PersistenceKey {
   }
 
   public func subscribe(
-    initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
+    initialValue: Value?,
+    didSet: @Sendable @escaping (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     let userDefaultsDidChange = NotificationCenter.default.addObserver(
       forName: UserDefaults.didChangeNotification,
