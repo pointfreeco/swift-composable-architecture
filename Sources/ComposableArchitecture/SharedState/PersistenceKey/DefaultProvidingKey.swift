@@ -1,6 +1,4 @@
-/// A decorator around an in-memory persistence strategy that provides a built-in default value.
-///
-/// See ``PersistenceKey/inMemory(_:)`` to create values of this type.
+/// A decorator around a persistence key that provides a built-in default value.
 public struct DefaultProvidingKey<UnderlyingKey: PersistenceReaderKey>: Hashable, PersistenceReaderKey, Sendable
 where UnderlyingKey: Hashable & Sendable, UnderlyingKey.Value: Hashable & Sendable {
   let key: UnderlyingKey
