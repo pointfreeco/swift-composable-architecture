@@ -11,6 +11,7 @@ final class SharedInMemoryTests: XCTestCase {
 
     await store.send(.incrementButtonTapped) {
       $0.count = 1
+      $0.countTwo = 1
     }
   }
 
@@ -22,28 +23,38 @@ final class SharedInMemoryTests: XCTestCase {
 
     await store.send(.child1(.incrementButtonTapped)) {
       $0.child1.count = 1
+      $0.child1.countTwo = 1
       XCTAssertEqual($0.child2.count, 1)
       XCTAssertEqual($0.child3.count, 0)
+      XCTAssertEqual($0.child3.countTwo, 0)
     }
     await store.send(.child2(.incrementButtonTapped)) {
       $0.child2.count = 2
+      $0.child2.countTwo = 2
       XCTAssertEqual($0.child1.count, 2)
       XCTAssertEqual($0.child3.count, 0)
+      XCTAssertEqual($0.child3.countTwo, 0)
     }
     await store.send(.child1(.incrementButtonTapped)) {
       $0.child2.count = 3
+      $0.child2.countTwo = 3
       XCTAssertEqual($0.child1.count, 3)
       XCTAssertEqual($0.child3.count, 0)
+      XCTAssertEqual($0.child3.countTwo, 0)
     }
     await store.send(.child2(.incrementButtonTapped)) {
       $0.child1.count = 4
+      $0.child1.countTwo = 4
       XCTAssertEqual($0.child2.count, 4)
       XCTAssertEqual($0.child3.count, 0)
+      XCTAssertEqual($0.child3.countTwo, 0)
     }
     await store.send(.child3(.incrementButtonTapped)) {
       $0.child3.count = 1
+      $0.child3.countTwo = 1
       XCTAssertEqual($0.child1.count, 4)
       XCTAssertEqual($0.child2.count, 4)
+      XCTAssertEqual($0.child2.countTwo, 4)
     }
   }
 
@@ -59,12 +70,16 @@ final class SharedInMemoryTests: XCTestCase {
 
               ParentFeature.State(
                 _child1: Feature.State(
-            −     _count: #1 0
-            +     _count: #1 1
+            −     _count: #1 0,
+            +     _count: #1 1,
+            −     _countTwo: #2 0
+            +     _countTwo: #2 1
                 ),
                 _child2: Feature.State(
-            −     _count: #1 Int(↩︎)
-            +     _count: #1 Int(↩︎)
+            −     _count: #1 Int(↩︎),
+            +     _count: #1 Int(↩︎),
+            −     _countTwo: #2 Int(↩︎)
+            +     _countTwo: #2 Int(↩︎)
                 ),
                 _child3: Feature.State(…)
               )
@@ -113,6 +128,7 @@ private struct Feature {
   @ObservableState
   struct State: Equatable {
     @Shared(.inMemory("count")) var count = 0
+    @Shared(.inMemory("countWithDefault", defaultValue: 0)) var countTwo
   }
   enum Action {
     case incrementButtonTapped
@@ -122,6 +138,7 @@ private struct Feature {
       switch action {
       case .incrementButtonTapped:
         state.count += 1
+        state.countTwo += 1
         return .none
       }
     }
