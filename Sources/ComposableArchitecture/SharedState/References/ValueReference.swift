@@ -33,6 +33,7 @@ extension Shared {
           }
         }
       }(),
+      keyPath: \Value.self
     )
   }
 
