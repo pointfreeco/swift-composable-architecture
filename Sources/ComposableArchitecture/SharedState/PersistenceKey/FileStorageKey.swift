@@ -2,16 +2,6 @@ import Combine
 import Dependencies
 import Foundation
 
-#if canImport(AppKit)
-  import AppKit
-#endif
-#if canImport(UIKit)
-  import UIKit
-#endif
-#if canImport(WatchKit)
-  import WatchKit
-#endif
-
 extension PersistenceKey {
   /// Creates a persistence key that can read and write to a `Codable` value to the file system.
   ///
@@ -33,35 +23,11 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @u
   let url: URL
   let value = LockIsolated<Value?>(nil)
   var workItem: DispatchWorkItem?
-  var notificationListener: Any!
 
   public init(url: URL) {
     @Dependency(\.defaultFileStorage) var storage
     self.storage = storage
     self.url = url
-    #if canImport(AppKit) || canImport(UIKit)
-      self.notificationListener = NotificationCenter.default.addObserver(
-        forName: willResignNotificationName,
-        object: nil,
-        queue: nil
-      ) { [weak self] _ in
-        guard
-          let self,
-          let workItem = self.workItem
-        else { return }
-        self.storage.async(execute: workItem)
-        self.storage.async(
-          execute: DispatchWorkItem {
-            self.workItem?.cancel()
-            self.workItem = nil
-          }
-        )
-      }
-    #endif
-  }
-
-  deinit {
-    NotificationCenter.default.removeObserver(self.notificationListener!)
   }
 
   public func load(initialValue: Value?) -> Value? {
@@ -114,8 +80,28 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @u
         didSet(self.load(initialValue: initialValue))
       }
     }
+    #if canImport(AppKit) || canImport(UIKit) || canImport(WatchKit)
+      let willResign = NotificationCenter.default.addObserver(
+        forName: willResignNotificationName,
+        object: nil,
+        queue: nil
+      ) { [weak self] _ in
+        guard
+          let self,
+          let workItem = self.workItem
+        else { return }
+        self.storage.async(execute: workItem)
+        self.storage.async(
+          execute: DispatchWorkItem {
+            self.workItem?.cancel()
+            self.workItem = nil
+          }
+        )
+      }
+    #endif
     return Shared.Subscription {
       cancellable.cancel()
+      NotificationCenter.default.removeObserver(willResign)
     }
   }
 }
@@ -312,23 +298,4 @@ extension DependencyValues {
     get { self[FileStorageQueueKey.self] }
     set { self[FileStorageQueueKey.self] = newValue }
   }
-}
-
-@_spi(Internals)
-public var willResignNotificationName: Notification.Name? {
-  #if os(iOS) || os(tvOS) || os(visionOS)
-    return UIApplication.willResignActiveNotification
-  #elseif os(macOS)
-    return NSApplication.willResignActiveNotification
-  #else
-    if #available(watchOS 7, *) {
-      return WKExtension.applicationWillResignActiveNotification
-    } else {
-      return nil
-    }
-  #endif
-}
-
-private var canListenForResignActive: Bool {
-  willResignNotificationName != nil
 }

@@ -290,31 +290,25 @@ extension AppStorageKey: PersistenceKey {
   public func subscribe(
     initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
-    let observer = Observer { value in
-      guard
-        !SharedAppStorageLocals.isSetting
+    let userDefaultsDidChange = NotificationCenter.default.addObserver(
+      forName: UserDefaults.didChangeNotification,
+      object: self.store,
+      queue: nil
+    ) { _ in
+      guard !SharedAppStorageLocals.isSetting
       else { return }
-      didSet(value ?? initialValue)
+      didSet(self.store.value(forKey: self.key) as? Value ?? initialValue)
     }
-    self.store.addObserver(observer, forKeyPath: key, options: .new, context: nil)
+    let willEnterForeground = NotificationCenter.default.addObserver(
+      forName: willEnterForegroundNotificationName,
+      object: nil,
+      queue: nil
+    ) { _ in
+      didSet(self.store.value(forKey: self.key) as? Value ?? initialValue)
+    }
     return Shared.Subscription {
-      self.store.removeObserver(observer, forKeyPath: key)
-    }
-  }
-
-  private class Observer: NSObject {
-    let didChange: (Value?) -> Void
-    init(didChange: @escaping (Value?) -> Void) {
-      self.didChange = didChange
-      super.init()
-    }
-    override func observeValue(
-      forKeyPath keyPath: String?,
-      of object: Any?,
-      change: [NSKeyValueChangeKey: Any]?,
-      context: UnsafeMutableRawPointer?
-    ) {
-      self.didChange(change?[.newKey] as? Value)
+      NotificationCenter.default.removeObserver(userDefaultsDidChange)
+      NotificationCenter.default.removeObserver(willEnterForeground)
     }
   }
 }
