@@ -115,29 +115,11 @@ extension SharedReader: CustomDumpRepresentable {
 
 extension SharedReader
 where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable & Sendable {
-  /// Derives a collection of shared elements from a shared collection of elements.
+  /// Derives a collection of read-only shared elements from a read-only shared collection of
+  /// elements.
   ///
-  /// This can be useful when used in conjunction with `ForEach` in order to derive a shared
-  /// reference for each element of a collection:
-  ///
-  /// ```swift
-  /// struct State {
-  ///   @Shared(.fileStorage(.todos)) var todos: IdentifiedArrayOf<Todo> = []
-  ///   // ...
-  /// }
-  ///
-  /// // ...
-  ///
-  /// ForEach(store.$todos.elements) { $todo in
-  ///   NavigationLink(
-  ///     // $todo: Shared<Todo>
-  ///     //  todo: Todo
-  ///     state: Path.State.todo(TodoFeature.State(todo: $todo))
-  ///   ) {
-  ///     Text(todo.title)
-  ///   }
-  /// }
-  /// ```
+  /// See the documentation for [`@Shared`](<doc:Shared>)'s ``Shared/elements`` for more
+  /// information.
   public var elements: some RandomAccessCollection<SharedReader<Value.Element>> {
     zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
       self[index, default: DefaultSubscript(element)]
