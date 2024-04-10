@@ -154,7 +154,7 @@ extension PersistenceKey {
 /// A type defining a user defaults persistence strategy.
 ///
 /// See ``PersistenceKey/appStorage(_:)-9zd2f`` to create values of this type.
-public struct AppStorageKey<Value> {
+public struct AppStorageKey<Value: Equatable> {
   private let lookup: any Lookup<Value>
   private let key: String
   private let store: UserDefaults
@@ -290,31 +290,17 @@ extension AppStorageKey: PersistenceKey {
   public func subscribe(
     initialValue: Value?, didSet: @escaping (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
-    let observer = Observer { value in
-      guard
-        !SharedAppStorageLocals.isSetting
+    let observation = NotificationCenter.default.addObserver(
+      forName: UserDefaults.didChangeNotification,
+      object: self.store,
+      queue: nil
+    ) { _ in
+      guard !SharedAppStorageLocals.isSetting
       else { return }
-      didSet(value ?? initialValue)
+      didSet(self.store.value(forKey: self.key) as? Value ?? initialValue)
     }
-    self.store.addObserver(observer, forKeyPath: key, options: .new, context: nil)
     return Shared.Subscription {
-      self.store.removeObserver(observer, forKeyPath: key)
-    }
-  }
-
-  private class Observer: NSObject {
-    let didChange: (Value?) -> Void
-    init(didChange: @escaping (Value?) -> Void) {
-      self.didChange = didChange
-      super.init()
-    }
-    override func observeValue(
-      forKeyPath keyPath: String?,
-      of object: Any?,
-      change: [NSKeyValueChangeKey: Any]?,
-      context: UnsafeMutableRawPointer?
-    ) {
-      self.didChange(change?[.newKey] as? Value)
+      NotificationCenter.default.removeObserver(observation)
     }
   }
 }
