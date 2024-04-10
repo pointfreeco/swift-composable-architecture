@@ -166,14 +166,6 @@ private struct CounterTabView: View {
         }
 
         Button("Is this prime?") { store.send(.isPrimeButtonTapped) }
-
-        Button("Direct +") {
-          UserDefaults.standard.setValue(
-            UserDefaults.standard.integer(forKey: "sharedStateDemoCount") + 1,
-            forKey: "sharedStateDemoCount"
-          )
-          //@Shared(.count) var count = 0
-        }
       }
     }
     .buttonStyle(.borderless)
