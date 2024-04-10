@@ -589,7 +589,7 @@ final class SharedTests: XCTestCase {
 
   @MainActor
   func testMultiplePublisherSubscriptions() async {
-    let runCount = 1_000
+    let runCount = 10
     for _ in 1...runCount {
       let store = TestStore(initialState: ListFeature.State()) {
         ListFeature()

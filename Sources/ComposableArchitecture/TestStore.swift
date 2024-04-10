@@ -522,7 +522,6 @@ public final class TestStore<State, Action> {
   {
     let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
       Dependencies.withDependencies {
-        $0[SharedChangeTracker.self] = SharedChangeTracker()
         prepareDependencies(&$0)
       } operation: {
         TestReducer(Reduce(reducer()), initialState: initialState())
@@ -659,7 +658,7 @@ public final class TestStore<State, Action> {
         line: effect.action.line
       )
     }
-    self.dependencies[SharedChangeTracker.self]?.assertUnchanged()
+    self.dependencies[SharedChangeTrackerKey.self]?.assertUnchanged()
   }
 
   /// Overrides the store's dependencies for a given operation.
@@ -958,13 +957,21 @@ extension TestStore where State: Equatable {
     file: StaticString,
     line: UInt
   ) throws {
-    let skipUnnecessaryModifyFailure =
-      skipUnnecessaryModifyFailure
-      || self.reducer.dependencies[SharedChangeTracker.self]?.hasChanges == true
-    if self.exhaustivity != .on {
-      self.reducer.dependencies[SharedChangeTracker.self]?.resetChanges()
-    }
-    try SharedLocals.$isProcessingChanges.withValue(true) {
+    let changeTracker = self.reducer.dependencies[SharedChangeTrackerKey.self]
+    try Dependencies.withDependencies {
+      $0[SharedChangeTrackerKey.self] = changeTracker
+    } operation: {
+      let wasAsserting = changeTracker?.isAsserting
+      changeTracker?.isAsserting = true
+      defer { changeTracker?.isAsserting = wasAsserting ?? false }
+
+      let skipUnnecessaryModifyFailure =
+        skipUnnecessaryModifyFailure
+        || changeTracker?.hasChanges == true
+      if self.exhaustivity != .on {
+        changeTracker?.resetChanges()
+      }
+
       let current = expected
       var expected = expected
 
@@ -1056,13 +1063,13 @@ extension TestStore where State: Equatable {
         let difference = self.withExhaustivity(.on) {
           diff(expected, actual, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-              ?? """
-              Expected:
-              \(String(describing: expected).indent(by: 2))
+            ?? """
+            Expected:
+            \(String(describing: expected).indent(by: 2))
 
-              Actual:
-              \(String(describing: actual).indent(by: 2))
-              """
+            Actual:
+            \(String(describing: actual).indent(by: 2))
+            """
         }
         let messageHeading =
           updateStateToExpectedResult != nil
@@ -1097,8 +1104,8 @@ extension TestStore where State: Equatable {
           line: line
         )
       }
+      self.reducer.dependencies[SharedChangeTrackerKey.self]?.resetChanges()
     }
-    self.reducer.dependencies[SharedChangeTracker.self]?.clearChanges()
   }
 }
 
@@ -1122,13 +1129,13 @@ extension TestStore where State: Equatable, Action: Equatable {
         TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-              ?? """
-              Expected:
-              \(String(describing: expectedAction).indent(by: 2))
+            ?? """
+            Expected:
+            \(String(describing: expectedAction).indent(by: 2))
 
-              Received:
-              \(String(describing: receivedAction).indent(by: 2))
-              """
+            Received:
+            \(String(describing: receivedAction).indent(by: 2))
+            """
         }
       },
       updateStateToExpectedResult,

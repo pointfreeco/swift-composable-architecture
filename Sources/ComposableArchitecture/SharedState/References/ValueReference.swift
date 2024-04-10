@@ -1,185 +1,146 @@
+import Dependencies
+import Foundation
+
+#if canImport(Combine)
+  import Combine
+#endif
 #if canImport(Perception)
-  import Foundation
-  #if canImport(Combine)
-    import Combine
-  #endif
+  import Perception
+#endif
 
-  extension Shared {
-    @_disfavoredOverload
-    public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
-      self.init(reference: ValueReference(value, fileID: fileID, line: line))
-    }
-
-    public init(
-      wrappedValue value: Value,
-      _ persistenceKey: some PersistenceKey<Value>,
-      fileID: StaticString = #fileID,
-      line: UInt = #line
-    ) {
-      self.init(
-        reference: {
-          @Dependency(PersistentReferencesKey.self) var references
-          return references.withValue {
-            if let reference = $0[persistenceKey] {
-              return reference
-            } else {
-              let reference = ValueReference(
-                initialValue: value,
-                persistenceKey: persistenceKey,
-                fileID: fileID,
-                line: line
-              )
-              $0[persistenceKey] = reference
-              return reference
-            }
+extension Shared {
+  public init(
+    wrappedValue value: Value,
+    _ persistenceKey: some PersistenceKey<Value>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) {
+    self.init(
+      reference: {
+        @Dependency(PersistentReferencesKey.self) var references
+        return references.withValue {
+          if let reference = $0[persistenceKey] {
+            return reference
+          } else {
+            let reference = ValueReference(
+              initialValue: value,
+              persistenceKey: persistenceKey,
+              fileID: fileID,
+              line: line
+            )
+            $0[persistenceKey] = reference
+            return reference
           }
-        }(),
-        keyPath: \Value.self
-      )
-    }
-
-    public init<Wrapped>(
-      _ persistenceKey: some PersistenceKey<Value>,
-      fileID: StaticString = #fileID,
-      line: UInt = #line
-    ) where Value == Wrapped? {
-      self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
-    }
-
-    public init(
-      _ persistenceKey: some PersistenceKey<Value>,
-      fileID: StaticString = #fileID,
-      line: UInt = #line
-    ) throws {
-      guard let initialValue = persistenceKey.load(initialValue: nil)
-      else {
-        throw LoadError()
-      }
-      self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
-    }
+        }
+      }(),
+      keyPath: \Value.self
+    )
   }
 
-  private struct LoadError: Error {}
+  public init<Wrapped>(
+    _ persistenceKey: some PersistenceKey<Value>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Value == Wrapped? {
+    self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
+  }
 
-  private final class ValueReference<Value>: Reference {
-    private var _currentValue: Value {
-      didSet {
-        self._subject.send(self._currentValue)
-      }
+  public init(
+    _ persistenceKey: some PersistenceKey<Value>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) throws {
+    guard let initialValue = persistenceKey.load(initialValue: nil)
+    else {
+      throw LoadError()
     }
-    private var _snapshot: Value?
-    fileprivate var persistenceKey: (any PersistenceKey<Value>)?  // TODO: Should this not be an `any`?
-    private var subscription: Shared<Value>.Subscription?
-    private let fileID: StaticString
-    private let line: UInt
-    private let lock = NSRecursiveLock()
+    self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+  }
+}
+
+private struct LoadError: Error {}
+
+final class ValueReference<Value>: Reference, @unchecked Sendable {
+  private let lock = NSRecursiveLock()
+  private let persistenceKey: (any PersistenceKey<Value>)?
+  #if canImport(Combine)
+    private let subject: CurrentValueRelay<Value>
+  #endif
+  private var subscription: Shared<Value>.Subscription?
+  private var _value: Value {
+    didSet {
+      self.subject.send(self._value)
+    }
+  }
+  #if canImport(Perception)
     private let _$perceptionRegistrar = PerceptionRegistrar(
       isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
     )
+  #endif
+  private let fileID: StaticString
+  private let line: UInt
+  var value: Value {
+    get {
+      #if canImport(Perception)
+        self._$perceptionRegistrar.access(self, keyPath: \.value)
+      #endif
+      return self.lock.withLock { self._value }
+    }
+    set {
+      #if canImport(Perception)
+        self._$perceptionRegistrar.willSet(self, keyPath: \.value)
+        defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
+      #endif
+      self.lock.withLock {
+        self._value = newValue
+        self.persistenceKey?.save(self._value)
+      }
+    }
+  }
+  #if canImport(Combine)
+    var publisher: AnyPublisher<Value, Never> {
+      self.subject.dropFirst().eraseToAnyPublisher()
+    }
+  #endif
+  init(
+    initialValue: Value,
+    persistenceKey: (any PersistenceKey<Value>)? = nil,
+    fileID: StaticString,
+    line: UInt
+  ) {
+    self._value = persistenceKey?.load(initialValue: initialValue) ?? initialValue
+    self.persistenceKey = persistenceKey
     #if canImport(Combine)
-      private let _subject: CurrentValueRelay<Value>
+      self.subject = CurrentValueRelay(initialValue)
     #endif
-
-    init(
-      initialValue: Value,
-      persistenceKey: some PersistenceKey<Value>,
-      fileID: StaticString,
-      line: UInt
-    ) {
-      self._currentValue = persistenceKey.load(initialValue: initialValue) ?? initialValue
-      self._subject = CurrentValueRelay(self._currentValue)
-      self.persistenceKey = persistenceKey
-      self.fileID = fileID
-      self.line = line
+    self.fileID = fileID
+    self.line = line
+    if let persistenceKey {
       self.subscription = persistenceKey.subscribe(
         initialValue: initialValue
       ) { [weak self] value in
-        self?.currentValue = value ?? initialValue
-      }
-    }
-
-    init(
-      _ value: Value,
-      fileID: StaticString,
-      line: UInt
-    ) {
-      self._currentValue = value
-      self._subject = CurrentValueRelay(value)
-      self.persistenceKey = nil
-      self.fileID = fileID
-      self.line = line
-    }
-
-    deinit {
-      self.assertUnchanged()
-    }
-
-    var currentValue: Value {
-      _read {
-        // TODO: write test for deadlock, unit test and UI test
-        self._$perceptionRegistrar.access(self, keyPath: \.currentValue)
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        yield self._currentValue
-      }
-      _modify {
-        self._$perceptionRegistrar.willSet(self, keyPath: \.currentValue)
-        defer { self._$perceptionRegistrar.didSet(self, keyPath: \.currentValue) }
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        yield &self._currentValue
-        self.persistenceKey?.save(self._currentValue)
-      }
-      set {
-        self._$perceptionRegistrar.withMutation(of: self, keyPath: \.currentValue) {
-          self.lock.withLock {
-            self._currentValue = newValue
-            self.persistenceKey?.save(self._currentValue)
-          }
-        }
-      }
-    }
-
-    var snapshot: Value? {
-      _read {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        yield self._snapshot
-      }
-      _modify {
-        self.lock.lock()
-        defer { self.lock.unlock() }
-        yield &self._snapshot
-      }
-      set {
-        self.lock.withLock { self._snapshot = newValue }
-      }
-    }
-
-    var publisher: AnyPublisher<Value, Never> {
-      self._subject.dropFirst().eraseToAnyPublisher()
-    }
-
-    var description: String {
-      "Shared<\(Value.self)>@\(self.fileID):\(self.line)"
-    }
-  }
-
-  extension ValueReference: Equatable where Value: Equatable {
-    static func == (lhs: ValueReference, rhs: ValueReference) -> Bool {
-      if lhs === rhs {
-        return lhs.snapshot ?? lhs.currentValue == rhs.currentValue
-      } else {
-        return lhs.currentValue == rhs.currentValue
+        guard let self else { return }
+        self.lock.withLock { self._value = value ?? initialValue }
       }
     }
   }
+  var description: String {
+    "Shared<\(Value.self)>@\(self.fileID):\(self.line)"
+  }
+}
 
-  #if !os(visionOS)
-    extension ValueReference: Perceptible {}
-  #endif
-
-  #if canImport(Observation)
-    extension ValueReference: Observable {}
-  #endif
+#if canImport(Observation)
+  extension ValueReference: Observable {}
 #endif
+#if canImport(Perception)
+  extension ValueReference: Perceptible {}
+#endif
+
+enum PersistentReferencesKey: DependencyKey {
+  static var liveValue: LockIsolated<[AnyHashable: any Reference]> {
+    LockIsolated([:])
+  }
+  static var testValue: LockIsolated<[AnyHashable: any Reference]> {
+    LockIsolated([:])
+  }
+}
