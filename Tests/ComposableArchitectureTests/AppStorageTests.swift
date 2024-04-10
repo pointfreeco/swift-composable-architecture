@@ -109,7 +109,7 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(count, 0)
   }
 
-  func testKeyPath() async throws {
+  func testKeyPath() {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage(\.count)) var count = 0
     defaults.count += 1
