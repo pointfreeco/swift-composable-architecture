@@ -48,9 +48,10 @@ final class AppFeatureTests: XCTestCase {
       AppFeature()
     }
 
-    await store.send(
-      \.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])))
-    ) {
+    guard let sharedSyncUp = store.state.syncUpsList.$syncUps[id: syncUp.id]
+    else { return }
+
+    await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
     }
 
