@@ -19,7 +19,7 @@ struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    @Shared var syncUp: SyncUp
+    @AnyShared var syncUp: SyncUp
   }
 
   enum Action: Sendable {

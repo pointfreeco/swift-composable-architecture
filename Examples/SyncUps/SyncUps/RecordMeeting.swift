@@ -9,7 +9,7 @@ struct RecordMeeting {
     @Presents var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
-    @Shared var syncUp: SyncUp
+    @AnyShared var syncUp: SyncUp
     var transcript = ""
 
     var durationRemaining: Duration {

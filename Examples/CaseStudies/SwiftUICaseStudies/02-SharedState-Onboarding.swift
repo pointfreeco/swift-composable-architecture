@@ -34,7 +34,7 @@ private struct SignUpFeature {
   @ObservableState
   struct State {
     var path = StackState<Path.State>()
-    @Shared var signUpData: SignUpData
+    @AnyShared var signUpData: SignUpData
   }
   enum Action {
     case path(StackAction<Path.State, Path.Action>)
@@ -130,7 +130,7 @@ private struct BasicsFeature {
   @ObservableState
   struct State {
     var isEditingFromSummary = false
-    @Shared var signUpData: SignUpData
+    @AnyShared var signUpData: SignUpData
   }
   enum Action: BindableAction {
     case binding(BindingAction<State>)
@@ -180,7 +180,7 @@ private struct PersonalInfoFeature {
   @ObservableState
   struct State {
     var isEditingFromSummary = false
-    @Shared var signUpData: SignUpData
+    @AnyShared var signUpData: SignUpData
   }
   enum Action: BindableAction {
     case binding(BindingAction<State>)
@@ -229,7 +229,7 @@ private struct TopicsFeature {
   struct State {
     @Presents var alert: AlertState<Never>?
     var isEditingFromSummary = false
-    @Shared var topics: Set<SignUpData.Topic>
+    @AnyShared var topics: Set<SignUpData.Topic>
   }
   enum Action: BindableAction {
     case alert(PresentationAction<Never>)
@@ -316,7 +316,7 @@ private struct SummaryFeature {
   @ObservableState
   struct State {
     @Presents var destination: Destination.State?
-    @Shared var signUpData: SignUpData
+    @AnyShared var signUpData: SignUpData
   }
   enum Action {
     case destination(PresentationAction<Destination.Action>)
