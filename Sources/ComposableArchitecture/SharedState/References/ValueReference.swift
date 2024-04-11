@@ -62,7 +62,7 @@ extension Shared where Persistence: PersistenceKey<Value> {
 extension SharedReader where Persistence: PersistenceReaderKey<Value> {
   public init(
     wrappedValue value: Value,
-    _ persistenceKey: some PersistenceReaderKey<Value>,
+    _ persistenceKey: Persistence,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
@@ -89,7 +89,7 @@ extension SharedReader where Persistence: PersistenceReaderKey<Value> {
   }
 
   public init<Wrapped>(
-    _ persistenceKey: some PersistenceReaderKey<Value>,
+    _ persistenceKey: Persistence,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Value == Wrapped? {
@@ -98,7 +98,7 @@ extension SharedReader where Persistence: PersistenceReaderKey<Value> {
 
   @_disfavoredOverload
   public init(
-    _ persistenceKey: some PersistenceReaderKey<Value>,
+    _ persistenceKey: Persistence,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) throws {
