@@ -12,7 +12,7 @@ import XCTestDynamicOverlay
 /// wrapper.
 @dynamicMemberLookup
 @propertyWrapper
-public struct Shared<Value> {
+public struct Shared<Value, Persistence> {
   private let reference: any Reference
   private let keyPath: AnyKeyPath
 
@@ -80,7 +80,11 @@ public struct Shared<Value> {
     self.keyPath = keyPath
   }
 
-  public init(value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
+  public init(
+    _ value: Value,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Persistence == Any {
     self.init(
       reference: ValueReference(
         initialValue: value,
@@ -97,16 +101,18 @@ public struct Shared<Value> {
 
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member>
-  ) -> Shared<Member> {
-    Shared<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
+  ) -> Shared<Member, Any> {
+    Shared<Member, Any>(
+      reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!
+    )
   }
 
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member?>
-  ) -> Shared<Member>? {
+  ) -> Shared<Member, Any>? {
     guard let initialValue = self.wrappedValue[keyPath: keyPath]
     else { return nil }
-    return Shared<Member>(
+    return Shared<Member, Any>(
       reference: self.reference,
       keyPath: self.keyPath.appending(
         path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
@@ -191,6 +197,12 @@ public struct Shared<Value> {
   }
 }
 
+extension Shared where Persistence: PersistenceReaderKey<Value> {
+  public var persistence: Persistence {
+    self.reference.persistence! as! Persistence
+  }
+}
+
 extension Shared: @unchecked Sendable where Value: Sendable {}
 
 extension Shared: Equatable where Value: Equatable {
@@ -209,6 +221,8 @@ extension Shared: Equatable where Value: Equatable {
     }
   }
 }
+
+public typealias AnyShared<Value> = Shared<Value, Any>
 
 extension Shared: Hashable where Value: Hashable {
   public func hash(into hasher: inout Hasher) {
@@ -276,7 +290,7 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
   ///   }
   /// }
   /// ```
-  public var elements: some RandomAccessCollection<Shared<Value.Element>> {
+  public var elements: some RandomAccessCollection<Shared<Value.Element, Any>> {
     zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
       self[index, default: DefaultSubscript(element)]
     }
@@ -286,23 +300,23 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
 extension Shared {
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member>
-  ) -> SharedReader<Member> {
-    SharedReader<Member>(
+  ) -> SharedReader<Member, Any> {
+    SharedReader<Member, Any>(
       reference: self.reference,
       keyPath: self.keyPath.appending(path: keyPath)!
     )
   }
 
-  public var reader: SharedReader<Value> {
+  public var reader: SharedReader<Value, Persistence> {
     SharedReader(reference: self.reference, keyPath: self.keyPath)
   }
 
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member?>
-  ) -> SharedReader<Member>? {
+  ) -> SharedReader<Member, Any>? {
     guard let initialValue = self.wrappedValue[keyPath: keyPath]
     else { return nil }
-    return SharedReader<Member>(
+    return SharedReader<Member, Any>(
       reference: self.reference,
       keyPath: self.keyPath.appending(
         path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])

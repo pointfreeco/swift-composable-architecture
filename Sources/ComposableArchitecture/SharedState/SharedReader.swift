@@ -4,7 +4,7 @@ import Combine
 
 @dynamicMemberLookup
 @propertyWrapper
-public struct SharedReader<Value> {
+public struct SharedReader<Value, Persistence> {
   fileprivate let reference: any Reference
   fileprivate let keyPath: AnyKeyPath
 
@@ -21,7 +21,8 @@ public struct SharedReader<Value> {
     self = projectedValue
   }
 
-  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
+  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line)
+  where Persistence == Any {
     self.init(
       reference: ValueReference(
         initialValue: value,
@@ -47,16 +48,19 @@ public struct SharedReader<Value> {
 
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member>
-  ) -> SharedReader<Member> {
-    SharedReader<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
+  ) -> SharedReader<Member, Any> {
+    SharedReader<Member, Any>(
+      reference: self.reference,
+      keyPath: self.keyPath.appending(path: keyPath)!
+    )
   }
 
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member?>
-  ) -> SharedReader<Member>? {
+  ) -> SharedReader<Member, Any>? {
     guard let initialValue = self.wrappedValue[keyPath: keyPath]
     else { return nil }
-    return SharedReader<Member>(
+    return SharedReader<Member, Any>(
       reference: self.reference,
       keyPath: self.keyPath.appending(
         path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
@@ -74,6 +78,14 @@ public struct SharedReader<Value> {
     return open(self.reference)
   }
 #endif
+}
+
+public typealias AnySharedReader<Value> = SharedReader<Value, Any>
+
+extension SharedReader where Persistence: PersistenceReaderKey<Value> {
+  public var persistence: Persistence {
+    self.reference.persistence! as! Persistence
+  }
 }
 
 extension SharedReader: @unchecked Sendable where Value: Sendable {}
@@ -120,7 +132,7 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
   ///
   /// See the documentation for [`@Shared`](<doc:Shared>)'s ``Shared/elements`` for more
   /// information.
-  public var elements: some RandomAccessCollection<SharedReader<Value.Element>> {
+  public var elements: some RandomAccessCollection<SharedReader<Value.Element, Any>> {
     zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
       self[index, default: DefaultSubscript(element)]
     }

@@ -46,6 +46,8 @@ public struct ObservableStateMacro {
   static let ignoredMacroName = "ObservationStateIgnored"
   static let presentsMacroName = "Presents"
   static let presentationStatePropertyWrapperName = "PresentationState"
+  static let anySharedPropertyWrapperName = "AnyShared"
+  static let anySharedReaderPropertyWrapperName = "AnySharedReader"
   static let sharedPropertyWrapperName = "Shared"
   static let sharedReaderPropertyWrapperName = "SharedReader"
 
@@ -446,7 +448,9 @@ extension ObservableStateMacro: MemberAttributeMacro {
       context: context
     )
 
-    if property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
+    if property.hasMacroApplication(ObservableStateMacro.anySharedPropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.anySharedReaderPropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
       || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.sharedReaderPropertyWrapperName)
     {
@@ -537,10 +541,13 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
       return []
     }
 
-    if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
+    if property.hasMacroApplication(ObservableStateMacro.anySharedPropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.anySharedReaderPropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
       || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
       || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.sharedReaderPropertyWrapperName)
     {
       return []
     }
@@ -596,10 +603,13 @@ extension ObservationStateTrackedMacro: PeerMacro {
       return []
     }
 
-    if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
+    if property.hasMacroApplication(ObservableStateMacro.anySharedPropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.anySharedReaderPropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
       || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
       || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.sharedReaderPropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.trackedMacroName)
     {
       return []

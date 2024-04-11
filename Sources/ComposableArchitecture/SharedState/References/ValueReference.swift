@@ -8,10 +8,10 @@ import Foundation
   import Perception
 #endif
 
-extension Shared {
+extension Shared where Persistence: PersistenceKey<Value> {
   public init(
     wrappedValue value: Value,
-    _ persistenceKey: some PersistenceKey<Value>,
+    _ persistenceKey: Persistence,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
@@ -38,15 +38,16 @@ extension Shared {
   }
 
   public init<Wrapped>(
-    _ persistenceKey: some PersistenceKey<Value>,
+    _ persistenceKey: Persistence,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Value == Wrapped? {
     self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
   }
 
+  @_disfavoredOverload
   public init(
-    _ persistenceKey: some PersistenceKey<Value>,
+    _ persistenceKey: Persistence,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) throws {
@@ -58,7 +59,7 @@ extension Shared {
   }
 }
 
-extension SharedReader {
+extension SharedReader where Persistence: PersistenceReaderKey<Value> {
   public init(
     wrappedValue value: Value,
     _ persistenceKey: some PersistenceReaderKey<Value>,
@@ -95,6 +96,7 @@ extension SharedReader {
     self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
   }
 
+  @_disfavoredOverload
   public init(
     _ persistenceKey: some PersistenceReaderKey<Value>,
     fileID: StaticString = #fileID,
@@ -105,20 +107,33 @@ extension SharedReader {
       throw LoadError()
     }
     self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+  }
+}
+
+extension Shared {
+  // NB: This initializer surfaces autocompletion of persistence keys to Xcode.
+  public init(_: some PersistenceKey<Value>, _: Never) {
+    fatalError()
+  }
+}
+
+extension SharedReader {
+  // NB: This initializer surfaces autocompletion of persistence keys to Xcode.
+  public init(_: some PersistenceReaderKey<Value>, _: Never) {
+    fatalError()
   }
 }
 
 private struct LoadError: Error {}
 
-final class ValueReference<Value, Persistence>: Reference, @unchecked
-  Sendable
-{
+final class ValueReference<Value, Persistence>: Reference, @unchecked Sendable {
   private let lock = NSRecursiveLock()
   private let persistenceKey: Persistence?
+  var persistence: Any? { self.persistenceKey }
   #if canImport(Combine)
     private let subject: CurrentValueRelay<Value>
   #endif
-  private var subscription: Shared<Value>.Subscription?
+  private var subscription: Shared<Value, Persistence>.Subscription?
   private var _value: Value {
     didSet {
       self.subject.send(self._value)
@@ -189,7 +204,7 @@ final class ValueReference<Value, Persistence>: Reference, @unchecked
     initialValue: Value,
     fileID: StaticString,
     line: UInt
-  ) where Persistence == Never {
+  ) where Persistence == Any {
     self._value = initialValue
     self.persistenceKey = nil
     #if canImport(Combine)

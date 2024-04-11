@@ -183,7 +183,7 @@
       )
 
       struct State {
-        @Shared var count: Int
+        @AnyShared var count: Int
       }
 
       let store = Store<State, Bool>(initialState: State(count: Shared(0))) {

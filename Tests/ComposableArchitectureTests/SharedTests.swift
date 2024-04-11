@@ -291,7 +291,7 @@ final class SharedTests: XCTestCase {
   func testComplexSharedEffect_ReducerMutation() async {
     struct Feature: Reducer {
       struct State: Equatable {
-        @Shared var count: Int
+        @AnyShared var count: Int
       }
       enum Action {
         case startTimer
@@ -338,7 +338,7 @@ final class SharedTests: XCTestCase {
   func testComplexSharedEffect_EffectMutation() async {
     struct Feature: Reducer {
       struct State: Equatable {
-        @Shared var count: Int
+        @AnyShared var count: Int
       }
       enum Action {
         case startTimer
@@ -436,8 +436,7 @@ final class SharedTests: XCTestCase {
   }
 
   func testObservation() {
-    @Shared var count: Int
-    _count = Shared(0)
+    @Shared(0) var count: Int
     let countDidChange = self.expectation(description: "countDidChange")
     withPerceptionTracking {
       _ = count
@@ -451,8 +450,7 @@ final class SharedTests: XCTestCase {
   @available(*, deprecated)
   @MainActor
   func testObservation_Object() {
-    @Shared var object: SharedObject
-    _object = Shared(SharedObject())
+    @Shared(SharedObject()) var object: SharedObject
     let countDidChange = self.expectation(description: "countDidChange")
     withPerceptionTracking {
       _ = object.count
@@ -670,9 +668,9 @@ private struct SharedFeature {
   @ObservableState
   struct State: Equatable {
     var count = 0
-    @Shared var profile: Profile
-    @Shared var sharedCount: Int
-    @Shared var stats: Stats
+    @AnyShared var profile: Profile
+    @AnyShared var sharedCount: Int
+    @AnyShared var stats: Stats
   }
   enum Action {
     case increment
@@ -720,12 +718,12 @@ private struct Stats: Codable, Equatable {
   var count = 0
 }
 private struct Profile: Equatable {
-  @Shared var stats: Stats
+  @AnyShared var stats: Stats
 }
 @Reducer
 private struct SimpleFeature {
   struct State: Equatable {
-    @Shared var count: Int
+    @AnyShared var count: Int
   }
   enum Action {
     case incrementInEffect
@@ -757,7 +755,7 @@ private struct RowFeature {
   struct State: Equatable, Identifiable {
     let id: Int
     var text: String
-    @Shared var value: Int
+    @AnyShared var value: Int
   }
 
   enum Action: Equatable {
@@ -787,7 +785,7 @@ private struct RowFeature {
 private struct ListFeature {
   @ObservableState
   struct State: Equatable {
-    @Shared var value: Int
+    @AnyShared var value: Int
     var children: IdentifiedArrayOf<RowFeature.State>
 
     init(value: Int = 0) {
@@ -826,7 +824,7 @@ private struct ListFeature {
 private struct EarlySharedStateMutation {
   @ObservableState
   struct State: Equatable {
-    @Shared var count: Int
+    @AnyShared var count: Int
   }
   enum Action {
     case action
