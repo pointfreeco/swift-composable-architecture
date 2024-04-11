@@ -12,16 +12,3 @@ struct TicTacToeApp: App {
 
 
 import ComposableArchitecture
-
-struct State1 {
-  @Shared<Int, None<Never>> var count: Int
-  @Shared var count: Int
-  //@Shared(ServerConfigKey()) var config = ServerConfig()
-
-  func foo() {
-    //    $config.persistence.reload()
-    //    let tmp = $config.identifier
-  }
-}
-
-

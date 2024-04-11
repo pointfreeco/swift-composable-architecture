@@ -333,18 +333,18 @@ struct ServerConfigKey: PersistenceKey, Hashable {
 }
 
 extension Shared where Persistence == None<Never> {
-//  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) where Persistence == None<Never> {
-//    self.init(
-//      reference: ValueReference<Value, None<Value>>(
-//        initialValue: value,
-//        fileID: fileID,
-//        line: line
-//      ),
-//      keyPath: \Value.self,
-//      persistence: None.none
-//    )
-//  }
-  public init(wrappedValue: Value, fileID: StaticString = #fileID, line: UInt = #line) where Persistence == None<Never> {
+  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
+    self.init(
+      reference: ValueReference<Value, None<Value>>(
+        initialValue: value,
+        fileID: fileID,
+        line: line
+      ),
+      keyPath: \Value.self,
+      persistence: None.none
+    )
+  }
+  private init(wrappedValue: Value, fileID: StaticString = #fileID, line: UInt = #line) {
     self.init(
       reference: ValueReference<Value, None<Value>>(
         initialValue: wrappedValue,
@@ -356,4 +356,18 @@ extension Shared where Persistence == None<Never> {
     )
   }
 }
+
+
+
+struct State1 {
+  @Shared<Int, None<Never>> var count: Int
+  //@Shared var count: Int
+  //@Shared(ServerConfigKey()) var config = ServerConfig()
+
+  func foo() {
+    //    $config.persistence.reload()
+    //    let tmp = $config.identifier
+  }
+}
+
 
