@@ -8,14 +8,14 @@ public protocol PersistenceReaderKey<Value>: Hashable {
   func subscribe(
     initialValue: Value?,
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
-  ) -> Shared<Value>.Subscription
+  ) -> Shared<Value, Self>.Subscription
 }
 
 extension PersistenceReaderKey {
   public func subscribe(
     initialValue: Value?,
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
-  ) -> Shared<Value>.Subscription {
+  ) -> Shared<Value, Self>.Subscription {
     Shared.Subscription {}
   }
 }

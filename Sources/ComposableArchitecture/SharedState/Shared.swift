@@ -2,6 +2,14 @@ import CustomDump
 import Dependencies
 import XCTestDynamicOverlay
 
+public enum None<Value>: PersistenceReaderKey {
+  public func load(initialValue: Value?) -> Value? { nil }
+  case none
+}
+extension None: PersistenceKey {
+  public func save(_ value: Value) {}
+}
+
 #if canImport(Combine)
   import Combine
 #endif
@@ -12,9 +20,10 @@ import XCTestDynamicOverlay
 /// wrapper.
 @dynamicMemberLookup
 @propertyWrapper
-public struct Shared<Value> {
+public struct Shared<Value, Persistence> {
   private let reference: any Reference
   private let keyPath: AnyKeyPath
+  private let _persistence: Persistence
 
   public var wrappedValue: Value {
     get {
@@ -75,42 +84,37 @@ public struct Shared<Value> {
     }
   #endif
 
-  init(reference: any Reference, keyPath: AnyKeyPath) {
+  init(reference: any Reference, keyPath: AnyKeyPath, persistence: Persistence) {
     self.reference = reference
     self.keyPath = keyPath
+    self._persistence = persistence
   }
 
-  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
-    self.init(
-      reference: ValueReference<Value, InMemoryKey<Value>>(
-        initialValue: value,
-        fileID: fileID,
-        line: line
-      ),
-      keyPath: \Value.self
-    )
-  }
-
-  public init(projectedValue: Shared) {
-    self = projectedValue
-  }
+//  public init(projectedValue: Shared) {
+//    self = projectedValue
+//  }
 
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member>
-  ) -> Shared<Member> {
-    Shared<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
+  ) -> Shared<Member, None<Member>> {
+    Shared<Member, None<Member>>(
+      reference: self.reference,
+      keyPath: self.keyPath.appending(path: keyPath)!,
+      persistence: None.none
+    )
   }
 
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member?>
-  ) -> Shared<Member>? {
+  ) -> Shared<Member, None<Member>>? {
     guard let initialValue = self.wrappedValue[keyPath: keyPath]
     else { return nil }
-    return Shared<Member>(
+    return Shared<Member, None<Member>>(
       reference: self.reference,
       keyPath: self.keyPath.appending(
         path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
-      )!
+      )!,
+      persistence: None.none
     )
   }
 
@@ -276,7 +280,7 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
   ///   }
   /// }
   /// ```
-  public var elements: some RandomAccessCollection<Shared<Value.Element>> {
+  public var elements: some RandomAccessCollection<Shared<Value.Element, None<Value.Element>>> {
     zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
       self[index, default: DefaultSubscript(element)]
     }
@@ -310,3 +314,46 @@ extension Shared {
     )
   }
 }
+
+extension Shared where Persistence: PersistenceReaderKey, Persistence.Value == Value {
+  public var persistence: Persistence { self._persistence }
+}
+
+
+struct ServerConfig {
+  var identifier = ""
+}
+struct ServerConfigKey: PersistenceKey, Hashable {
+  func load(initialValue: ServerConfig?) -> ServerConfig? {
+    nil
+  }
+  func save(_ value: ServerConfig) {
+  }
+  func reload() {}
+}
+
+extension Shared where Persistence == None<Never> {
+//  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) where Persistence == None<Never> {
+//    self.init(
+//      reference: ValueReference<Value, None<Value>>(
+//        initialValue: value,
+//        fileID: fileID,
+//        line: line
+//      ),
+//      keyPath: \Value.self,
+//      persistence: None.none
+//    )
+//  }
+  public init(wrappedValue: Value, fileID: StaticString = #fileID, line: UInt = #line) where Persistence == None<Never> {
+    self.init(
+      reference: ValueReference<Value, None<Value>>(
+        initialValue: wrappedValue,
+        fileID: fileID,
+        line: line
+      ),
+      keyPath: \Value.self,
+      persistence: None.none
+    )
+  }
+}
+

@@ -290,7 +290,7 @@ extension AppStorageKey: PersistenceKey {
   public func subscribe(
     initialValue: Value?,
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
-  ) -> Shared<Value>.Subscription {
+  ) -> Shared<Value, Self>.Subscription {
     let userDefaultsDidChange = NotificationCenter.default.addObserver(
       forName: UserDefaults.didChangeNotification,
       object: self.store,

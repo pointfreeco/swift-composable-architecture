@@ -9,53 +9,56 @@ import Foundation
 #endif
 
 extension Shared {
-  public init(
-    wrappedValue value: Value,
-    _ persistenceKey: some PersistenceKey<Value>,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) {
-    self.init(
-      reference: {
-        @Dependency(PersistentReferencesKey.self) var references
-        return references.withValue {
-          if let reference = $0[persistenceKey] {
-            return reference
-          } else {
-            let reference = ValueReference(
-              initialValue: value,
-              persistenceKey: persistenceKey,
-              fileID: fileID,
-              line: line
-            )
-            $0[persistenceKey] = reference
-            return reference
-          }
-        }
-      }(),
-      keyPath: \Value.self
-    )
-  }
-
-  public init<Wrapped>(
-    _ persistenceKey: some PersistenceKey<Value>,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) where Value == Wrapped? {
-    self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
-  }
-
-  public init(
-    _ persistenceKey: some PersistenceKey<Value>,
-    fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) throws {
-    guard let initialValue = persistenceKey.load(initialValue: nil)
-    else {
-      throw LoadError()
-    }
-    self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
-  }
+//  public init<P: PersistenceKey<Value>>(
+//    wrappedValue value: Value,
+//    _ persistenceKey: P,
+//    fileID: StaticString = #fileID,
+//    line: UInt = #line
+//  ) where Persistence == P {
+//    self.init(
+//      reference: {
+//        @Dependency(PersistentReferencesKey.self) var references
+//        return references.withValue {
+//          if let reference = $0[persistenceKey] {
+//            return reference
+//          } else {
+//            let reference = ValueReference(
+//              initialValue: value,
+//              persistenceKey: persistenceKey,
+//              fileID: fileID,
+//              line: line
+//            )
+//            $0[persistenceKey] = reference
+//            return reference
+//          }
+//        }
+//      }(),
+//      keyPath: \Value.self,
+//      persistence: persistenceKey
+//    )
+//  }
+//
+//  public init<Wrapped, P: PersistenceKey<Value>>(
+//    _ persistenceKey: P,
+//    fileID: StaticString = #fileID,
+//    line: UInt = #line
+//  ) where Value == Wrapped?, P == Persistence {
+//    self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
+//  }
+//
+//  public init<P: PersistenceKey<Value>>(
+//    _ persistenceKey: P,
+//    fileID: StaticString = #fileID,
+//    line: UInt = #line
+//  ) throws
+//  where Persistence == P
+//  {
+//    guard let initialValue = persistenceKey.load(initialValue: nil)
+//    else {
+//      throw LoadError()
+//    }
+//    self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+//  }
 }
 
 extension SharedReader {
@@ -118,7 +121,7 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
   #if canImport(Combine)
     private let subject: CurrentValueRelay<Value>
   #endif
-  private var subscription: Shared<Value>.Subscription?
+  private var subscription: Shared<Value, Persistence>.Subscription?
   private var _value: Value {
     didSet {
       self.subject.send(self._value)
