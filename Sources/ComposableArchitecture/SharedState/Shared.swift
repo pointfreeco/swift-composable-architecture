@@ -80,9 +80,9 @@ public struct Shared<Value> {
     self.keyPath = keyPath
   }
 
-  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
+  public init(value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
     self.init(
-      reference: ValueReference<Value, InMemoryKey<Value>>(
+      reference: ValueReference(
         initialValue: value,
         fileID: fileID,
         line: line

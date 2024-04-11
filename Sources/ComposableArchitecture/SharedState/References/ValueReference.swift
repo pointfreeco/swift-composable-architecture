@@ -110,7 +110,7 @@ extension SharedReader {
 
 private struct LoadError: Error {}
 
-final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Reference, @unchecked
+final class ValueReference<Value, Persistence>: Reference, @unchecked
   Sendable
 {
   private let lock = NSRecursiveLock()
@@ -161,31 +161,42 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
   #endif
   init(
     initialValue: Value,
-    persistenceKey: Persistence? = nil,
+    persistenceKey: Persistence,
     fileID: StaticString,
     line: UInt
-  ) {
-    self._value = persistenceKey?.load(initialValue: initialValue) ?? initialValue
+  ) where Persistence: PersistenceReaderKey<Value> {
+    self._value = persistenceKey.load(initialValue: initialValue) ?? initialValue
     self.persistenceKey = persistenceKey
     #if canImport(Combine)
       self.subject = CurrentValueRelay(initialValue)
     #endif
     self.fileID = fileID
     self.line = line
-    if let persistenceKey {
-      self.subscription = persistenceKey.subscribe(
-        initialValue: initialValue
-      ) { [weak self] value in
-        guard let self else { return }
-        #if canImport(Perception)
-          self._$perceptionRegistrar.willSet(self, keyPath: \.value)
-          defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
-        #endif
-        self.lock.withLock {
-          self._value = value ?? initialValue
-        }
+    self.subscription = persistenceKey.subscribe(
+      initialValue: initialValue
+    ) { [weak self] value in
+      guard let self else { return }
+      #if canImport(Perception)
+        self._$perceptionRegistrar.willSet(self, keyPath: \.value)
+        defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
+      #endif
+      self.lock.withLock {
+        self._value = value ?? initialValue
       }
     }
+  }
+  init(
+    initialValue: Value,
+    fileID: StaticString,
+    line: UInt
+  ) where Persistence == Never {
+    self._value = initialValue
+    self.persistenceKey = nil
+    #if canImport(Combine)
+      self.subject = CurrentValueRelay(initialValue)
+    #endif
+    self.fileID = fileID
+    self.line = line
   }
   var description: String {
     "Shared<\(Value.self)>@\(self.fileID):\(self.line)"

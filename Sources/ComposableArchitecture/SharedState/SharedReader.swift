@@ -23,7 +23,7 @@ public struct SharedReader<Value> {
 
   public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
     self.init(
-      reference: ValueReference<Value, InMemoryKey<Value>>(
+      reference: ValueReference(
         initialValue: value,
         fileID: fileID,
         line: line
