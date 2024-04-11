@@ -44,7 +44,8 @@ extension Shared {
     deinit {
       self.cancel()
     }
-    func cancel() {
+    /// Cancels this subscription.
+    public func cancel() {
       self.onCancel()
     }
   }
