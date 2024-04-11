@@ -20,10 +20,10 @@ extension None: PersistenceKey {
 /// wrapper.
 @dynamicMemberLookup
 @propertyWrapper
-public struct Shared<Value, Persistence> {
+public struct Shared<Value, Persistence: PersistenceKey<Value>> {
   private let reference: any Reference
   private let keyPath: AnyKeyPath
-  private let _persistence: Persistence
+  private let _persistence: Persistence?
 
   public var wrappedValue: Value {
     get {
@@ -84,7 +84,7 @@ public struct Shared<Value, Persistence> {
     }
   #endif
 
-  init(reference: any Reference, keyPath: AnyKeyPath, persistence: Persistence) {
+  init(reference: any Reference, keyPath: AnyKeyPath, persistence: Persistence?) {
     self.reference = reference
     self.keyPath = keyPath
     self._persistence = persistence
@@ -100,7 +100,7 @@ public struct Shared<Value, Persistence> {
     Shared<Member, None<Member>>(
       reference: self.reference,
       keyPath: self.keyPath.appending(path: keyPath)!,
-      persistence: None.none
+      persistence: nil
     )
   }
 
@@ -114,7 +114,7 @@ public struct Shared<Value, Persistence> {
       keyPath: self.keyPath.appending(
         path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
       )!,
-      persistence: None.none
+      persistence: nil
     )
   }
 
@@ -316,7 +316,7 @@ extension Shared {
 }
 
 extension Shared where Persistence: PersistenceReaderKey, Persistence.Value == Value {
-  public var persistence: Persistence { self._persistence }
+  public var persistence: Persistence { self._persistence! }
 }
 
 
@@ -332,8 +332,8 @@ struct ServerConfigKey: PersistenceKey, Hashable {
   func reload() {}
 }
 
-extension Shared where Persistence == None<Never> {
-  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
+extension Shared {
+  public init(value: Value, fileID: StaticString = #fileID, line: UInt = #line) where Persistence == None<Value> {
     self.init(
       reference: ValueReference<Value, None<Value>>(
         initialValue: value,
@@ -341,33 +341,56 @@ extension Shared where Persistence == None<Never> {
         line: line
       ),
       keyPath: \Value.self,
-      persistence: None.none
+      persistence: None<Value>.none
     )
   }
-  private init(wrappedValue: Value, fileID: StaticString = #fileID, line: UInt = #line) {
-    self.init(
-      reference: ValueReference<Value, None<Value>>(
-        initialValue: wrappedValue,
-        fileID: fileID,
-        line: line
-      ),
-      keyPath: \Value.self,
-      persistence: None.none
-    )
+  public enum Something { case unspecified }
+  public init(_: Something) where Persistence == None<Value> {
+    fatalError()
+  }
+  public init() where Persistence == None<Value> {
+    fatalError()
   }
 }
+
 
 
 
 struct State1 {
-  @Shared<Int, None<Never>> var count: Int
-  //@Shared var count: Int
-  //@Shared(ServerConfigKey()) var config = ServerConfig()
+//  @Shared(.)
+//  @Shared var
+//  @Shared(.unspecified) var count: Int
+//@Shared(.local) var count: Int
+
+//  @Shared(.appst)
+
+  //@Shared(<#T##persistenceKey: Persistence##Persistence#>)
+
+//  @Shared(wrappedValue: 1, .a)
+
+  @Shared(.appStorage("count")) var count = 0
+
+  @Shared(.unspecified) var outsideCount: Int
+  @Shared() var z: Int
+  //@Shared var x: Int
+
+  init(
+    count: Int = 0,
+    outsideCount: Shared<Int, None<Int>>,
+    z: Int
+  ) {
+    self.count = count
+    self._outsideCount = outsideCount
+    self.z = z
+  }
+
 
   func foo() {
-    //    $config.persistence.reload()
-    //    let tmp = $config.identifier
+    //State1.init(count: <#T##Int#>, outsideCount: <#T##Shared<Int, None<Int>>#>, z: <#T##Shared<Int, None<Int>>#>)
   }
 }
 
 
+
+
+//typealias SimpleShared<Value> = Shared<Value, Never>

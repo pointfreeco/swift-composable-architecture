@@ -49,14 +49,14 @@ extension AppStorageKeyPathKey: PersistenceKey {
   public func subscribe(
     initialValue: Value?,
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
-  ) -> Shared<Value, Self>.Subscription {
+  ) -> SharedSubscription {
     let observer = self.store.observe(self.keyPath, options: .new) { _, change in
       guard
         !SharedAppStorageLocals.isSetting
       else { return }
       didSet(change.newValue ?? initialValue)
     }
-    return Shared.Subscription {
+    return SharedSubscription {
       observer.invalidate()
     }
   }

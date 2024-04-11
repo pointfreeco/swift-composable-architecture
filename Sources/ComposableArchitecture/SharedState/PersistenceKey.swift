@@ -8,15 +8,15 @@ public protocol PersistenceReaderKey<Value>: Hashable {
   func subscribe(
     initialValue: Value?,
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
-  ) -> Shared<Value, Self>.Subscription
+  ) -> SharedSubscription
 }
 
 extension PersistenceReaderKey {
   public func subscribe(
     initialValue: Value?,
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
-  ) -> Shared<Value, Self>.Subscription {
-    Shared.Subscription {}
+  ) -> SharedSubscription {
+    SharedSubscription {}
   }
 }
 
@@ -35,17 +35,15 @@ public protocol PersistenceKey<Value>: PersistenceReaderKey {
   func save(_ value: Value)
 }
 
-extension Shared {
-  public class Subscription {
-    let onCancel: () -> Void
-    public init(onCancel: @escaping () -> Void) {
-      self.onCancel = onCancel
-    }
-    deinit {
-      self.cancel()
-    }
-    func cancel() {
-      self.onCancel()
-    }
+public class SharedSubscription {
+  let onCancel: () -> Void
+  public init(onCancel: @escaping () -> Void) {
+    self.onCancel = onCancel
+  }
+  deinit {
+    self.cancel()
+  }
+  func cancel() {
+    self.onCancel()
   }
 }

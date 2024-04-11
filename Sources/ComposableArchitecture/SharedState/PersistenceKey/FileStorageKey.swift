@@ -60,7 +60,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @u
   public func subscribe(
     initialValue: Value?,
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
-  ) -> Shared<Value, FileStorageKey<Value>>.Subscription {
+  ) -> SharedSubscription {
     // NB: Make sure there is a file to create a source for.
     if !self.storage.fileExists(at: self.url) {
       try? self.storage
@@ -100,7 +100,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @u
         )
       }
     #endif
-    return Shared.Subscription {
+    return SharedSubscription {
       cancellable.cancel()
       NotificationCenter.default.removeObserver(willResign)
     }
