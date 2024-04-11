@@ -107,7 +107,7 @@ struct NotificationReaderKey<Value: Sendable>: PersistenceReaderKey {
   func subscribe(
     initialValue: Value?,
     didSet: @Sendable @escaping (Value?) -> Void
-  ) -> Shared<Value>.Subscription {
+  ) -> Shared<Value, Self>.Subscription {
     let token = NotificationCenter.default.addObserver(
       forName: name,
       object: nil,
