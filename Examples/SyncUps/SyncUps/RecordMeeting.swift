@@ -92,7 +92,7 @@ struct RecordMeeting {
 
         let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
-          if state.speakerIndex == state.syncUp.attendees.count - 1 {
+          if state.secondsElapsed == state.syncUp.duration.components.seconds {
             state.syncUp.insert(transcript: state.transcript)
             return .run { _ in await self.dismiss() }
           }

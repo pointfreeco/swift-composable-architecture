@@ -5,18 +5,11 @@ extension Effect {
   ///
   /// - Parameter createPublisher: The closure to execute when the effect is performed.
   /// - Returns: An effect wrapping a Combine publisher.
-  public static func publisher<P: Publisher>(_ createPublisher: @escaping () -> P) -> Self
+  public static func publisher<P: Publisher>(_ createPublisher: () -> P) -> Self
   where P.Output == Action, P.Failure == Never {
     Self(
       operation: .publisher(
-        withEscapedDependencies { continuation in
-          Deferred {
-            continuation.yield {
-              createPublisher()
-            }
-          }
-        }
-        .eraseToAnyPublisher()
+        createPublisher().eraseToAnyPublisher()
       )
     )
   }
