@@ -2,6 +2,8 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
+@_spi(Internals) import ComposableArchitecture
+
 final class SharedTests: XCTestCase {
   @MainActor
   func testSharing() async {
@@ -662,6 +664,25 @@ final class SharedTests: XCTestCase {
     let decodedState = try JSONDecoder().decode(State.self, from: data)
 
     XCTAssertEqual(decodedState.count, 43)
+  }
+
+  @MainActor
+  func testObserveWithPrintChanges() async {
+    let store = TestStore(initialState: SimpleFeature.State(count: Shared(0))) {
+      SimpleFeature()._printChanges()
+    }
+
+    var observations: [Int] = []
+    observe {
+      observations.append(store.state.count)
+    }
+
+    XCTAssertEqual(observations, [0])
+    await store.send(.incrementInReducer) {
+      dump($0.$count)
+      $0.count += 1
+    }
+    XCTAssertEqual(observations, [0, 1])
   }
 }
 
