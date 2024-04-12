@@ -19,7 +19,7 @@ public struct Shared<Value> {
   public var wrappedValue: Value {
     get {
       @Dependency(SharedChangeTrackerKey.self) var changeTracker
-      if changeTracker?.isAsserting == true {
+      if changeTracker != nil {
         return self.snapshot ?? self.currentValue
       } else {
         return self.currentValue
@@ -27,10 +27,15 @@ public struct Shared<Value> {
     }
     nonmutating set {
       @Dependency(SharedChangeTrackerKey.self) var changeTracker
-      if changeTracker?.isAsserting == true {
+      if changeTracker != nil {
         self.snapshot = newValue
       } else {
-        changeTracker?.track(self.reference)
+        @Dependency(SharedChangeTrackersKey.self) var changeTrackers
+        changeTrackers.withValue { changeTrackers in
+          for changeTracker in changeTrackers {
+            changeTracker.track(self.reference)
+          }
+        }
         self.currentValue = newValue
       }
     }
@@ -119,28 +124,25 @@ public struct Shared<Value> {
     file: StaticString = #file,
     line: UInt = #line
   ) rethrows where Value: Equatable {
-    @Dependency(SharedChangeTrackerKey.self) var changeTracker
-    guard let changeTracker
+    @Dependency(SharedChangeTrackersKey.self) var changeTrackers
+    guard
+      let changeTracker = changeTrackers.value
+        .first(where: { $0.changes[ObjectIdentifier(self.reference)] != nil })
     else {
-      XCTFail(
-        "Use 'withSharedChangeTracking' to track changes to assert against.",
-        file: file,
-        line: line
-      )
-      return
-    }
-    let wasAsserting = changeTracker.isAsserting
-    changeTracker.isAsserting = true
-    defer { changeTracker.isAsserting = wasAsserting }
-    guard var snapshot = self.snapshot, snapshot != self.currentValue else {
       XCTFail("Expected changes, but none occurred.", file: file, line: line)
       return
     }
-    try updateValueToExpectedResult(&snapshot)
-    self.snapshot = snapshot
-    // TODO: Finesse error more than `XCTAssertNoDifference`
-    XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
-    self.snapshot = nil
+    try changeTracker.assert {
+      guard var snapshot = self.snapshot, snapshot != self.currentValue else {
+        XCTFail("Expected changes, but none occurred.", file: file, line: line)
+        return
+      }
+      try updateValueToExpectedResult(&snapshot)
+      self.snapshot = snapshot
+      // TODO: Finesse error more than `XCTAssertNoDifference`
+      XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
+      self.snapshot = nil
+    }
   }
 
   private var currentValue: Value {
@@ -196,7 +198,7 @@ extension Shared: @unchecked Sendable where Value: Sendable {}
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
     @Dependency(SharedChangeTrackerKey.self) var changeTracker
-    if changeTracker?.isAsserting == true, lhs.reference === rhs.reference {
+    if changeTracker != nil, lhs.reference === rhs.reference {
       if let lhsReference = lhs.reference as? any Equatable {
         func open<T: Equatable>(_ lhsReference: T) -> Bool {
           lhsReference == rhs.reference as? T
