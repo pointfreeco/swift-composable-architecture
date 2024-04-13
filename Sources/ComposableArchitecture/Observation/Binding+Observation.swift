@@ -74,6 +74,7 @@
       get { self.state[keyPath: keyPath] }
       set {
         BindingLocal.$isActive.withValue(true) {
+          self.objectWillChange.send()
           self.send(.binding(.set(keyPath, newValue)))
         }
       }
@@ -91,6 +92,7 @@
       get { self.observableState }
       set {
         BindingLocal.$isActive.withValue(true) {
+          self.objectWillChange.send()
           self.send(.binding(.set(\.self, newValue)))
         }
       }

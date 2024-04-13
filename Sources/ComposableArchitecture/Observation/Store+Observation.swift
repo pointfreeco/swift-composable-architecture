@@ -14,7 +14,7 @@
     extension Store: Observable {}
   #endif
 
-  extension Store where State: ObservableState {
+  extension Store: ObservableObject where State: ObservableState {
     var observableState: State {
       self._$observationRegistrar.access(self, keyPath: \.currentState)
       return self.currentState
@@ -293,6 +293,7 @@
       }
       set {
         if newValue == nil, self.state[keyPath: state] != nil {
+          self.objectWillChange.send()
           self.send(action(.dismiss))
         }
       }
