@@ -107,7 +107,7 @@ class LazyNavigationViewController: UIViewController {
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
 
-    if !isMovingToParent {
+    if !isMovingToParent && store.optionalCounter != nil {
       store.send(.setNavigation(isActive: false))
     }
   }
