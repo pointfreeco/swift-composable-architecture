@@ -63,7 +63,7 @@ public final class TwoFactorViewController: UIViewController {
       guard let self else { return }
       activityIndicator.isHidden = store.isActivityIndicatorHidden
       codeTextField.text = store.code
-      //loginButton.isEnabled = store.isLoginButtonEnabled
+      loginButton.isEnabled = store.isLoginButtonEnabled
 
       if let store = store.scope(state: \.alert, action: \.alert),
         alertController == nil

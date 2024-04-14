@@ -33,7 +33,6 @@ public struct TwoFactor: Sendable {
   }
 
   @Dependency(\.authenticationClient) var authenticationClient
-  @Dependency(\.dismiss) var dismiss
 
   public init() {}
 
@@ -58,8 +57,6 @@ public struct TwoFactor: Sendable {
         return .none
 
       case .view(.submitButtonTapped):
-        return .run { _ in await self.dismiss() }
-
         state.isTwoFactorRequestInFlight = true
         return .run { [code = state.code, token = state.token] send in
           await send(
