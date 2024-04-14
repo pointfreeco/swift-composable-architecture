@@ -109,13 +109,6 @@ final class SharedChangeTracker {
       try operation()
     }
   }
-  func assert<R>(_ operation: () async throws -> R) async rethrows -> R {
-    try await withDependencies {
-      $0[SharedChangeTrackerKey.self] = self
-    } operation: {
-      try await operation()
-    }
-  }
 }
 
 extension SharedChangeTracker: Hashable {
