@@ -324,3 +324,9 @@ extension Shared {
     )
   }
 }
+
+extension Shared {
+  public func eraseToAnyShared() -> AnyShared<Value> {
+    self[dynamicMember: \.self]
+  }
+}

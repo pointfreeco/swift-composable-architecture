@@ -138,3 +138,9 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
     }
   }
 }
+
+extension SharedReader {
+  public func eraseToAnySharedReader() -> AnySharedReader<Value> {
+    self[dynamicMember: \.self]
+  }
+}
