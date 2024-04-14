@@ -100,7 +100,7 @@ class EagerNavigationViewController: UIViewController {
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
 
-    if !isMovingToParent {
+    if !isMovingToParent && store.isNavigationActive {
       store.send(.setNavigation(isActive: false))
     }
   }
