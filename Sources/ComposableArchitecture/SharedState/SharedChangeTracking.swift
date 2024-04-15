@@ -54,22 +54,22 @@ struct AnyChange<Value>: Change {
   }
 }
 
-final class SharedChangeTracker {
-  var changes: [ObjectIdentifier: Any] = [:]
+final class SharedChangeTracker: Sendable {
+  let changes: LockIsolated<[ObjectIdentifier: Any]> = LockIsolated([:])
   var hasChanges: Bool { !self.changes.isEmpty }
   init() {}
-  func resetChanges() { self.changes.removeAll() }
+  func resetChanges() { self.changes.withValue { $0.removeAll() } }
   func assertUnchanged() {
     for change in self.changes.values {
       if let change = change as? any Change {
         change.assertUnchanged()
       }
     }
-    self.changes.removeAll()
+    self.resetChanges()
   }
   func track<Value>(_ reference: some Reference<Value>) {
     if !self.changes.keys.contains(ObjectIdentifier(reference)) {
-      self.changes[ObjectIdentifier(reference)] = AnyChange(reference)
+      self.changes.withValue { $0[ObjectIdentifier(reference)] = AnyChange(reference) }
     }
   }
   subscript<Value>(_ reference: some Reference<Value>) -> AnyChange<Value>? {
@@ -77,7 +77,7 @@ final class SharedChangeTracker {
     _modify {
       var change = self.changes[ObjectIdentifier(reference)] as? AnyChange<Value>
       yield &change
-      self.changes[ObjectIdentifier(reference)] = change
+      self.changes.withValue { [change] in $0[ObjectIdentifier(reference)] = change }
     }
   }
   func track<R>(_ operation: () throws -> R) rethrows -> R {
