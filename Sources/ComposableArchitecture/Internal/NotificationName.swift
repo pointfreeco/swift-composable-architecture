@@ -40,6 +40,17 @@ public var willEnterForegroundNotificationName: Notification.Name? {
   #endif
 }
 
+@_spi(Internals)
+public var willTerminateNotificationName: Notification.Name? {
+  #if os(iOS) || os(tvOS) || os(visionOS)
+    return UIApplication.willTerminateNotification
+  #elseif os(macOS)
+    return NSApplication.willTerminateNotification
+  #else
+    return nil
+  #endif
+}
+
 var canListenForResignActive: Bool {
   willResignNotificationName != nil
 }
