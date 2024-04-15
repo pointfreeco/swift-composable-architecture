@@ -95,6 +95,11 @@ public struct Shared<Value> {
     self = projectedValue
   }
 
+  public init?(_ base: Shared<Value?>) {
+    guard let shared = base[dynamicMember: \.self] else { return nil }
+    self = shared
+  }
+
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member>
   ) -> Shared<Member> {

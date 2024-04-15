@@ -21,6 +21,15 @@ public struct SharedReader<Value> {
     self = projectedValue
   }
 
+  public init?(_ base: SharedReader<Value?>) {
+    guard let shared = base[dynamicMember: \.self] else { return nil }
+    self = shared
+  }
+
+  public init(_ base: Shared<Value>) {
+    self = base.reader
+  }
+
   public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
     self.init(
       reference: ValueReference<Value, InMemoryKey<Value>>(
