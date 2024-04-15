@@ -26,7 +26,7 @@ public var willResignNotificationName: Notification.Name? {
 }
 
 @_spi(Internals)
-public var willEnterForegroundNotificationName: Notification.Name? {
+public let willEnterForegroundNotificationName: Notification.Name? = {
   #if os(iOS) || os(tvOS) || os(visionOS)
     return UIApplication.willEnterForegroundNotification
   #elseif os(macOS)
@@ -38,10 +38,10 @@ public var willEnterForegroundNotificationName: Notification.Name? {
       return nil
     }
   #endif
-}
+}()
 
 @_spi(Internals)
-public var willTerminateNotificationName: Notification.Name? {
+public let willTerminateNotificationName: Notification.Name? = {
   #if os(iOS) || os(tvOS) || os(visionOS)
     return UIApplication.willTerminateNotification
   #elseif os(macOS)
@@ -49,7 +49,7 @@ public var willTerminateNotificationName: Notification.Name? {
   #else
     return nil
   #endif
-}
+}()
 
 var canListenForResignActive: Bool {
   willResignNotificationName != nil
