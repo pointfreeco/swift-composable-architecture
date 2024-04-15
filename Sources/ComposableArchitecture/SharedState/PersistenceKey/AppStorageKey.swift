@@ -55,6 +55,15 @@ extension PersistenceReaderKey {
   where Self == AppStorageKey<Data> {
     AppStorageKey(key)
   }
+    
+  /// Creates a persistence key that can read and write to a user default as date.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<Date> {
+    AppStorageKey(key)
+  }
 
   /// Creates a persistence key that can read and write to an integer user default, transforming
   /// that to a `RawRepresentable` data type.
@@ -130,6 +139,15 @@ extension PersistenceReaderKey {
     AppStorageKey(key)
   }
 
+  /// Creates a persistence key that can read and write to a user default as optional date.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<Date?> {
+    AppStorageKey(key)
+  }
+
   /// Creates a persistence key that can read and write to an optional integer user default,
   /// transforming that to a `RawRepresentable` data type.
   ///
@@ -201,6 +219,13 @@ public struct AppStorageKey<Value> {
     self.store = store
   }
 
+  public init(_ key: String) where Value == Date {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = CastableLookup()
+    self.key = key
+    self.store = store
+  }
+
   public init(_ key: String)
   where Value: RawRepresentable, Value.RawValue == Int {
     @Dependency(\.defaultAppStorage) var store
@@ -253,6 +278,13 @@ public struct AppStorageKey<Value> {
   }
 
   public init(_ key: String) where Value == Data? {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = OptionalLookup(base: CastableLookup())
+    self.key = key
+    self.store = store
+  }
+
+  public init(_ key: String) where Value == Date? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key

@@ -33,6 +33,26 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(data, Data())
     XCTAssertEqual(defaults.data(forKey: "data"), Data())
   }
+    
+  func testDefaultsRegistered_Date() {
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("date")) var date: Date = Date(timeIntervalSince1970: 998877665544)
+    XCTAssertEqual(defaults.object(forKey: "date") as? Date, Date(timeIntervalSince1970: 998877665544))
+
+    date = Date(timeIntervalSince1970: 998877665555)
+    XCTAssertEqual(date, Date(timeIntervalSince1970: 998877665555))
+    XCTAssertEqual(defaults.object(forKey: "date") as? Date, Date(timeIntervalSince1970: 998877665555))
+  }
+    
+  func testDefaultsRegistered_OptionalDate() {
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("date")) var date: Date?
+    XCTAssertEqual(defaults.object(forKey: "date") as? Date, nil)
+
+    date = Date(timeIntervalSince1970: 998877665544)
+    XCTAssertEqual(date, Date(timeIntervalSince1970: 998877665544))
+    XCTAssertEqual(defaults.object(forKey: "date") as? Date, Date(timeIntervalSince1970: 998877665544))
+  }
 
   func testDefaultsRegistered_RawRepresentable() {
     enum Direction: String, CaseIterable {
