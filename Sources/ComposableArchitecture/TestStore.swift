@@ -490,7 +490,11 @@ public final class TestStore<State, Action> {
   private let file: StaticString
   private var line: UInt
   let reducer: TestReducer<State, Action>
-  private let sharedChangeTracker = DependencyValues._current[SharedChangeTrackersKey.self].first!
+  private let sharedChangeTracker = {
+    @Dependency(SharedChangeTrackersKey.self)
+    var sharedChangeTrackers: LockIsolated<Set<SharedChangeTracker>>
+    return sharedChangeTrackers.first!
+  }()
   private let store: Store<State, TestReducer<State, Action>.TestAction>
 
   /// Creates a test store with an initial state and a reducer powering its runtime.

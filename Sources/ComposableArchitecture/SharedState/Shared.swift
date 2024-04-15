@@ -30,7 +30,9 @@ public struct Shared<Value> {
       if changeTracker != nil {
         self.snapshot = newValue
       } else {
-        @Dependency(SharedChangeTrackersKey.self) var changeTrackers
+        @Dependency(SharedChangeTrackersKey.self)
+        var changeTrackers: LockIsolated<Set<SharedChangeTracker>>
+
         changeTrackers.withValue { changeTrackers in
           for changeTracker in changeTrackers {
             changeTracker.track(self.reference)

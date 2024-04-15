@@ -81,25 +81,17 @@ final class SharedChangeTracker {
     }
   }
   func track<R>(_ operation: () throws -> R) rethrows -> R {
-    DependencyValues._current[SharedChangeTrackersKey.self].withValue {
-      _ = $0.insert(self)
-    }
-    defer {
-      DependencyValues._current[SharedChangeTrackersKey.self].withValue {
-        _ = $0.remove(self)
-      }
-    }
+    @Dependency(SharedChangeTrackersKey.self)
+    var sharedChangeTrackers: LockIsolated<Set<SharedChangeTracker>>
+    sharedChangeTrackers.withValue { _ = $0.insert(self) }
+    defer { sharedChangeTrackers.withValue { _ = $0.remove(self) } }
     return try operation()
   }
   func track<R>(_ operation: () async throws -> R) async rethrows -> R {
-    DependencyValues._current[SharedChangeTrackersKey.self].withValue {
-      _ = $0.insert(self)
-    }
-    defer {
-      DependencyValues._current[SharedChangeTrackersKey.self].withValue {
-        _ = $0.remove(self)
-      }
-    }
+    @Dependency(SharedChangeTrackersKey.self)
+    var sharedChangeTrackers: LockIsolated<Set<SharedChangeTracker>>
+    sharedChangeTrackers.withValue { _ = $0.insert(self) }
+    defer { sharedChangeTrackers.withValue { _ = $0.remove(self) } }
     return try await operation()
   }
   func assert<R>(_ operation: () throws -> R) rethrows -> R {
