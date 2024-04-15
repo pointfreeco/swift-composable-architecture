@@ -71,18 +71,13 @@ struct AppView: View {
 }
 
 #Preview {
-  AppView(
-    store: Store(
-      initialState: AppFeature.State(
-        syncUpsList: SyncUpsList.State(
-          syncUps: [
-            .mock,
-            .productMock,
-            .engineeringMock,
-          ]
-        )
-      )
-    ) {
+  @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = [
+    .mock,
+    .productMock,
+    .engineeringMock
+  ]
+  return AppView(
+    store: Store(initialState: AppFeature.State()) {
       AppFeature()
     }
   )

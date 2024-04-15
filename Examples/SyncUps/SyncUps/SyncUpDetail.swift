@@ -65,13 +65,13 @@ struct SyncUpDetail {
         case .confirmDeletion:
           @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = []
           syncUps.remove(id: state.syncUp.id)
-          return .run { _ in await self.dismiss() }
+          return .run { _ in await dismiss() }
 
         case .continueWithoutRecording:
           return .send(.delegate(.startMeeting))
 
         case .openSettings:
-          return .run { _ in await self.openSettings() }
+          return .run { _ in await openSettings() }
         }
 
       case .destination:
@@ -89,7 +89,7 @@ struct SyncUpDetail {
         return .none
 
       case .startMeetingButtonTapped:
-        switch self.authorizationStatus() {
+        switch authorizationStatus() {
         case .notDetermined, .authorized:
           return .send(.delegate(.startMeeting))
 
