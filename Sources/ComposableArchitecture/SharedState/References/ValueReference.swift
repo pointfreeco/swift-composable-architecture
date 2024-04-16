@@ -56,19 +56,32 @@ extension Shared {
     }
     self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
   }
-  
+
   public init<Key: PersistenceKey>(
-    _ persistenceKey: DefaultProvidingKey<Key>,
+    _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Key.Value == Value {
-    var initialValue: Key.Value
-    if let existingValue = persistenceKey.load(initialValue: nil) {
-      initialValue = existingValue
-    } else {
-      initialValue = persistenceKey.defaultValue
-    }
-    self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+    self.init(
+      wrappedValue: persistenceKey.load(initialValue: nil) ?? persistenceKey.defaultValue,
+      persistenceKey.base,
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  public init<Key: PersistenceKey>(
+    wrappedValue: Value,
+    _ persistenceKey: PersistenceKeyDefault<Key>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Key.Value == Value {
+    self.init(
+      wrappedValue: wrappedValue,
+      persistenceKey.base,
+      fileID: fileID,
+      line: line
+    )
   }
 }
 
@@ -122,17 +135,30 @@ extension SharedReader {
   }
   
   public init<Key: PersistenceReaderKey>(
-    _ persistenceKey: DefaultProvidingKey<Key>,
+    _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Key.Value == Value {
-    var initialValue: Key.Value
-    if let existingValue = persistenceKey.load(initialValue: nil) {
-      initialValue = existingValue
-    } else {
-      initialValue = persistenceKey.defaultValue
-    }
-    self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+    self.init(
+      wrappedValue: persistenceKey.load(initialValue: nil) ?? persistenceKey.defaultValue,
+      persistenceKey.base,
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  public init<Key: PersistenceReaderKey>(
+    wrappedValue: Value,
+    _ persistenceKey: PersistenceKeyDefault<Key>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Key.Value == Value {
+    self.init(
+      wrappedValue: wrappedValue,
+      persistenceKey.base,
+      fileID: fileID,
+      line: line
+    )
   }
 }
 

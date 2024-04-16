@@ -663,6 +663,57 @@ final class SharedTests: XCTestCase {
 
     XCTAssertEqual(decodedState.count, 43)
   }
+
+  func testSharedDefaults_UseDefault() {
+    @Shared(.isOn) var isOn
+    XCTAssertEqual(isOn, false)
+  }
+
+  func testSharedDefaults_OverrideDefault() {
+    @Shared(.isOn) var isOn = true
+    XCTAssertEqual(isOn, true)
+  }
+
+  func testSharedDefaults_MultipleWithDifferentDefaults() async throws {
+    @Shared(.isOn) var isOn1
+    @Shared(.isOn) var isOn2 = true
+    @Shared(.appStorage("isOn")) var isOn3 = true
+
+    XCTAssertEqual(isOn1, false)
+    XCTAssertEqual(isOn2, false)
+    XCTAssertEqual(isOn3, false)
+
+    isOn2 = true
+    XCTAssertEqual(isOn1, true)
+    XCTAssertEqual(isOn2, true)
+    XCTAssertEqual(isOn3, true)
+
+    isOn1 = false
+    XCTAssertEqual(isOn1, false)
+    XCTAssertEqual(isOn2, false)
+    XCTAssertEqual(isOn3, false)
+
+    isOn3 = true
+    XCTAssertEqual(isOn1, true)
+    XCTAssertEqual(isOn2, true)
+    XCTAssertEqual(isOn3, true)
+  }
+
+  func testSharedReaderDefaults_MultipleWithDifferentDefaults() async throws {
+    @Shared(.appStorage("isOn")) var isOn = false
+    @SharedReader(.isOn) var isOn1
+    @SharedReader(.isOn) var isOn2 = true
+    @SharedReader(.appStorage("isOn")) var isOn3 = true
+
+    XCTAssertEqual(isOn1, false)
+    XCTAssertEqual(isOn2, false)
+    XCTAssertEqual(isOn3, false)
+
+    isOn = true
+    XCTAssertEqual(isOn1, true)
+    XCTAssertEqual(isOn2, true)
+    XCTAssertEqual(isOn3, true)
+  }
 }
 
 @Reducer
@@ -842,5 +893,11 @@ private struct EarlySharedStateMutation {
         return .none
       }
     }
+  }
+}
+
+extension PersistenceReaderKey where Self == PersistenceKeyDefault<AppStorageKey<Bool>> {
+  static var isOn: Self {
+    PersistenceKeyDefault(.appStorage("isOn"), false)
   }
 }
