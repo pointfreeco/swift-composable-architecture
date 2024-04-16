@@ -19,7 +19,7 @@ public struct Shared<Value> {
   public var wrappedValue: Value {
     get {
       @Dependency(SharedChangeTrackerKey.self) var changeTracker
-      if changeTracker?.isAsserting == true {
+      if changeTracker != nil {
         return self.snapshot ?? self.currentValue
       } else {
         return self.currentValue
@@ -27,10 +27,17 @@ public struct Shared<Value> {
     }
     nonmutating set {
       @Dependency(SharedChangeTrackerKey.self) var changeTracker
-      if changeTracker?.isAsserting == true {
+      if changeTracker != nil {
         self.snapshot = newValue
       } else {
-        changeTracker?.track(self.reference)
+        @Dependency(SharedChangeTrackersKey.self)
+        var changeTrackers: LockIsolated<Set<SharedChangeTracker>>
+
+        changeTrackers.withValue { changeTrackers in
+          for changeTracker in changeTrackers {
+            changeTracker.track(self.reference)
+          }
+        }
         self.currentValue = newValue
       }
     }
@@ -95,6 +102,11 @@ public struct Shared<Value> {
     self = projectedValue
   }
 
+  public init?(_ base: Shared<Value?>) {
+    guard let shared = base[dynamicMember: \.self] else { return nil }
+    self = shared
+  }
+
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member>
   ) -> Shared<Member> {
@@ -119,28 +131,25 @@ public struct Shared<Value> {
     file: StaticString = #file,
     line: UInt = #line
   ) rethrows where Value: Equatable {
-    @Dependency(SharedChangeTrackerKey.self) var changeTracker
-    guard let changeTracker
+    @Dependency(SharedChangeTrackersKey.self) var changeTrackers
+    guard
+      let changeTracker = changeTrackers.value
+        .first(where: { $0.changes[ObjectIdentifier(self.reference)] != nil })
     else {
-      XCTFail(
-        "Use 'withSharedChangeTracking' to track changes to assert against.",
-        file: file,
-        line: line
-      )
-      return
-    }
-    let wasAsserting = changeTracker.isAsserting
-    changeTracker.isAsserting = true
-    defer { changeTracker.isAsserting = wasAsserting }
-    guard var snapshot = self.snapshot, snapshot != self.currentValue else {
       XCTFail("Expected changes, but none occurred.", file: file, line: line)
       return
     }
-    try updateValueToExpectedResult(&snapshot)
-    self.snapshot = snapshot
-    // TODO: Finesse error more than `XCTAssertNoDifference`
-    XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
-    self.snapshot = nil
+    try changeTracker.assert {
+      guard var snapshot = self.snapshot, snapshot != self.currentValue else {
+        XCTFail("Expected changes, but none occurred.", file: file, line: line)
+        return
+      }
+      try updateValueToExpectedResult(&snapshot)
+      self.snapshot = snapshot
+      // TODO: Finesse error more than `XCTAssertNoDifference`
+      XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
+      self.snapshot = nil
+    }
   }
 
   private var currentValue: Value {
@@ -196,7 +205,7 @@ extension Shared: @unchecked Sendable where Value: Sendable {}
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
     @Dependency(SharedChangeTrackerKey.self) var changeTracker
-    if changeTracker?.isAsserting == true, lhs.reference === rhs.reference {
+    if changeTracker != nil, lhs.reference === rhs.reference {
       if let lhsReference = lhs.reference as? any Equatable {
         func open<T: Equatable>(_ lhsReference: T) -> Bool {
           lhsReference == rhs.reference as? T
@@ -281,6 +290,67 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
       self[index, default: DefaultSubscript(element)]
     }
   }
+}
+
+@available(
+  *,
+  unavailable,
+  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
+)
+extension Shared: Collection, Sequence
+where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
+  public var startIndex: Value.Index {
+    assertionFailure("Conformance of 'Shared<Value>' to 'Collection' is unavailable.")
+    return self.wrappedValue.startIndex
+  }
+  public var endIndex: Value.Index {
+    assertionFailure("Conformance of 'Shared<Value>' to 'Collection' is unavailable.")
+    return self.wrappedValue.endIndex
+  }
+  public func index(after i: Value.Index) -> Value.Index {
+    assertionFailure("Conformance of 'Shared<Value>' to 'Collection' is unavailable.")
+    return self.wrappedValue.index(after: i)
+  }
+}
+
+@available(
+  *,
+  unavailable,
+  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
+)
+extension Shared: MutableCollection
+where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
+  public subscript(position: Value.Index) -> Shared<Value.Element> {
+    get {
+      assertionFailure("Conformance of 'Shared<Value>' to 'MutableCollection' is unavailable.")
+      return self[position, default: DefaultSubscript(self.wrappedValue[position])]
+    }
+    set {
+      self.wrappedValue[position] = newValue.wrappedValue
+    }
+  }
+}
+
+@available(
+  *,
+  unavailable,
+  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
+)
+extension Shared: BidirectionalCollection
+where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
+  public func index(before i: Value.Index) -> Value.Index {
+    assertionFailure("Conformance of 'Shared<Value>' to 'BidirectionalCollection' is unavailable.")
+    return self.wrappedValue.index(before: i)
+  }
+}
+
+@available(
+  *,
+  unavailable,
+  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
+)
+extension Shared: RandomAccessCollection
+where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
 }
 
 extension Shared {

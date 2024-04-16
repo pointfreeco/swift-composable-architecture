@@ -664,6 +664,25 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(decodedState.count, 43)
   }
 
+  @MainActor
+  func testObserveWithPrintChanges() async {
+    let store = TestStore(initialState: SimpleFeature.State(count: Shared(0))) {
+      SimpleFeature()._printChanges()
+    }
+
+    var observations: [Int] = []
+    observe {
+      observations.append(store.state.count)
+    }
+
+    XCTAssertEqual(observations, [0])
+    await store.send(.incrementInReducer) {
+      dump($0.$count)
+      $0.count += 1
+    }
+    XCTAssertEqual(observations, [0, 1])
+  }
+
   func testSharedDefaults_UseDefault() {
     @Shared(.isOn) var isOn
     XCTAssertEqual(isOn, false)

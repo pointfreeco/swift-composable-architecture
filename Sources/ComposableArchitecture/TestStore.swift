@@ -490,6 +490,11 @@ public final class TestStore<State, Action> {
   private let file: StaticString
   private var line: UInt
   let reducer: TestReducer<State, Action>
+  private let sharedChangeTracker = {
+    @Dependency(SharedChangeTrackersKey.self)
+    var sharedChangeTrackers: LockIsolated<Set<SharedChangeTracker>>
+    return sharedChangeTrackers.first!
+  }()
   private let store: Store<State, TestReducer<State, Action>.TestAction>
 
   /// Creates a test store with an initial state and a reducer powering its runtime.
@@ -658,7 +663,7 @@ public final class TestStore<State, Action> {
         line: effect.action.line
       )
     }
-    self.dependencies[SharedChangeTrackerKey.self]?.assertUnchanged()
+    self.sharedChangeTracker.assertUnchanged()
   }
 
   /// Overrides the store's dependencies for a given operation.
@@ -957,19 +962,12 @@ extension TestStore where State: Equatable {
     file: StaticString,
     line: UInt
   ) throws {
-    let changeTracker = self.reducer.dependencies[SharedChangeTrackerKey.self]
-    try Dependencies.withDependencies {
-      $0[SharedChangeTrackerKey.self] = changeTracker
-    } operation: {
-      let wasAsserting = changeTracker?.isAsserting
-      changeTracker?.isAsserting = true
-      defer { changeTracker?.isAsserting = wasAsserting ?? false }
-
+    try self.sharedChangeTracker.assert {
       let skipUnnecessaryModifyFailure =
         skipUnnecessaryModifyFailure
-        || changeTracker?.hasChanges == true
+        ||  self.sharedChangeTracker.hasChanges == true
       if self.exhaustivity != .on {
-        changeTracker?.resetChanges()
+        self.sharedChangeTracker.resetChanges()
       }
 
       let current = expected
@@ -996,6 +994,7 @@ extension TestStore where State: Equatable {
         if let updateStateToExpectedResult {
           try Dependencies.withDependencies {
             $0 = self.reducer.dependencies
+            $0[SharedChangeTrackerKey.self] = self.sharedChangeTracker
           } operation: {
             try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
           }
@@ -1013,6 +1012,7 @@ extension TestStore where State: Equatable {
         if let updateStateToExpectedResult {
           try Dependencies.withDependencies {
             $0 = self.reducer.dependencies
+            $0[SharedChangeTrackerKey.self] = self.sharedChangeTracker
           } operation: {
             try updateStateToExpectedResult(&expectedWhenGivenActualState)
           }
@@ -1032,6 +1032,7 @@ extension TestStore where State: Equatable {
               do {
                 try Dependencies.withDependencies {
                   $0 = self.reducer.dependencies
+                  $0[SharedChangeTrackerKey.self] = self.sharedChangeTracker
                 } operation: {
                   try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
                 }
@@ -1104,7 +1105,7 @@ extension TestStore where State: Equatable {
           line: line
         )
       }
-      self.reducer.dependencies[SharedChangeTrackerKey.self]?.resetChanges()
+      self.sharedChangeTracker.resetChanges()
     }
   }
 }

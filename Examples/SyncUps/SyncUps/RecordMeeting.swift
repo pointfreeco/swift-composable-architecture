@@ -13,7 +13,7 @@ struct RecordMeeting {
     var transcript = ""
 
     var durationRemaining: Duration {
-      self.syncUp.duration - .seconds(self.secondsElapsed)
+      syncUp.duration - .seconds(secondsElapsed)
     }
   }
 
@@ -41,11 +41,11 @@ struct RecordMeeting {
     Reduce { state, action in
       switch action {
       case .alert(.presented(.confirmDiscard)):
-        return .run { _ in await self.dismiss() }
+        return .run { _ in await dismiss() }
 
       case .alert(.presented(.confirmSave)):
         state.syncUp.insert(transcript: state.transcript)
-        return .run { _ in await self.dismiss() }
+        return .run { _ in await dismiss() }
 
       case .alert:
         return .none
@@ -68,18 +68,18 @@ struct RecordMeeting {
       case .onTask:
         return .run { send in
           let authorization =
-            await self.speechClient.authorizationStatus() == .notDetermined
-            ? self.speechClient.requestAuthorization()
-            : self.speechClient.authorizationStatus()
+            await speechClient.authorizationStatus() == .notDetermined
+            ? speechClient.requestAuthorization()
+            : speechClient.authorizationStatus()
 
           await withTaskGroup(of: Void.self) { group in
             if authorization == .authorized {
               group.addTask {
-                await self.startSpeechRecognition(send: send)
+                await startSpeechRecognition(send: send)
               }
             }
             group.addTask {
-              await self.startTimer(send: send)
+              await startTimer(send: send)
             }
           }
         }
@@ -92,9 +92,9 @@ struct RecordMeeting {
 
         let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
-          if state.speakerIndex == state.syncUp.attendees.count - 1 {
+          if state.secondsElapsed == state.syncUp.duration.components.seconds {
             state.syncUp.insert(transcript: state.transcript)
-            return .run { _ in await self.dismiss() }
+            return .run { _ in await dismiss() }
           }
           state.speakerIndex += 1
         }
@@ -118,7 +118,7 @@ struct RecordMeeting {
 
   private func startSpeechRecognition(send: Send<Action>) async {
     do {
-      let speechTask = await self.speechClient.startTask(SFSpeechAudioBufferRecognitionRequest())
+      let speechTask = await speechClient.startTask(SFSpeechAudioBufferRecognitionRequest())
       for try await result in speechTask {
         await send(.speechResult(result))
       }
@@ -128,7 +128,7 @@ struct RecordMeeting {
   }
 
   private func startTimer(send: Send<Action>) async {
-    for await _ in self.clock.timer(interval: .seconds(1)) {
+    for await _ in clock.timer(interval: .seconds(1)) {
       await send(.timerTick)
     }
   }
@@ -138,7 +138,7 @@ extension SyncUp {
   fileprivate mutating func insert(transcript: String) {
     @Dependency(\.date.now) var now
     @Dependency(\.uuid) var uuid
-    self.meetings.insert(
+    meetings.insert(
       Meeting(
         id: Meeting.ID(uuid()),
         date: now,
@@ -239,14 +239,14 @@ struct MeetingHeaderView: View {
 
   var body: some View {
     VStack {
-      ProgressView(value: self.progress)
-        .progressViewStyle(MeetingProgressViewStyle(theme: self.theme))
+      ProgressView(value: progress)
+        .progressViewStyle(MeetingProgressViewStyle(theme: theme))
       HStack {
         VStack(alignment: .leading) {
           Text("Time Elapsed")
             .font(.caption)
           Label(
-            Duration.seconds(self.secondsElapsed).formatted(.units()),
+            Duration.seconds(secondsElapsed).formatted(.units()),
             systemImage: "hourglass.bottomhalf.fill"
           )
         }
@@ -254,7 +254,7 @@ struct MeetingHeaderView: View {
         VStack(alignment: .trailing) {
           Text("Time Remaining")
             .font(.caption)
-          Label(self.durationRemaining.formatted(.units()), systemImage: "hourglass.tophalf.fill")
+          Label(durationRemaining.formatted(.units()), systemImage: "hourglass.tophalf.fill")
             .font(.body.monospacedDigit())
             .labelStyle(.trailingIcon)
         }
@@ -264,12 +264,12 @@ struct MeetingHeaderView: View {
   }
 
   private var totalDuration: Duration {
-    .seconds(self.secondsElapsed) + self.durationRemaining
+    .seconds(secondsElapsed) + durationRemaining
   }
 
   private var progress: Double {
-    guard self.totalDuration > .seconds(0) else { return 0 }
-    return Double(self.secondsElapsed) / Double(self.totalDuration.components.seconds)
+    guard totalDuration > .seconds(0) else { return 0 }
+    return Double(secondsElapsed) / Double(totalDuration.components.seconds)
   }
 }
 
@@ -279,11 +279,11 @@ struct MeetingProgressViewStyle: ProgressViewStyle {
   func makeBody(configuration: Configuration) -> some View {
     ZStack {
       RoundedRectangle(cornerRadius: 10)
-        .fill(self.theme.accentColor)
+        .fill(theme.accentColor)
         .frame(height: 20)
 
       ProgressView(configuration)
-        .tint(self.theme.mainColor)
+        .tint(theme.mainColor)
         .frame(height: 12)
         .padding(.horizontal)
     }
@@ -300,8 +300,8 @@ struct MeetingTimerView: View {
       .overlay {
         VStack {
           Group {
-            if self.speakerIndex < self.syncUp.attendees.count {
-              Text(self.syncUp.attendees[self.speakerIndex].name)
+            if speakerIndex < syncUp.attendees.count {
+              Text(syncUp.attendees[speakerIndex].name)
             } else {
               Text("Someone")
             }
@@ -312,14 +312,14 @@ struct MeetingTimerView: View {
             .font(.largeTitle)
             .padding(.top)
         }
-        .foregroundStyle(self.syncUp.theme.accentColor)
+        .foregroundStyle(syncUp.theme.accentColor)
       }
       .overlay {
-        ForEach(Array(self.syncUp.attendees.enumerated()), id: \.element.id) { index, attendee in
-          if index < self.speakerIndex + 1 {
-            SpeakerArc(totalSpeakers: self.syncUp.attendees.count, speakerIndex: index)
+        ForEach(Array(syncUp.attendees.enumerated()), id: \.element.id) { index, attendee in
+          if index < speakerIndex + 1 {
+            SpeakerArc(totalSpeakers: syncUp.attendees.count, speakerIndex: index)
               .rotation(Angle(degrees: -90))
-              .stroke(self.syncUp.theme.mainColor, lineWidth: 12)
+              .stroke(syncUp.theme.mainColor, lineWidth: 12)
           }
         }
       }
@@ -339,21 +339,21 @@ struct SpeakerArc: Shape {
       path.addArc(
         center: center,
         radius: radius,
-        startAngle: self.startAngle,
-        endAngle: self.endAngle,
+        startAngle: startAngle,
+        endAngle: endAngle,
         clockwise: false
       )
     }
   }
 
   private var degreesPerSpeaker: Double {
-    360 / Double(self.totalSpeakers)
+    360 / Double(totalSpeakers)
   }
   private var startAngle: Angle {
-    Angle(degrees: self.degreesPerSpeaker * Double(self.speakerIndex) + 1)
+    Angle(degrees: degreesPerSpeaker * Double(speakerIndex) + 1)
   }
   private var endAngle: Angle {
-    Angle(degrees: self.startAngle.degrees + self.degreesPerSpeaker - 1)
+    Angle(degrees: startAngle.degrees + degreesPerSpeaker - 1)
   }
 }
 
@@ -365,13 +365,13 @@ struct MeetingFooterView: View {
   var body: some View {
     VStack {
       HStack {
-        if self.speakerIndex < self.syncUp.attendees.count - 1 {
-          Text("Speaker \(self.speakerIndex + 1) of \(self.syncUp.attendees.count)")
+        if speakerIndex < syncUp.attendees.count - 1 {
+          Text("Speaker \(speakerIndex + 1) of \(syncUp.attendees.count)")
         } else {
           Text("No more speakers.")
         }
         Spacer()
-        Button(action: self.nextButtonTapped) {
+        Button(action: nextButtonTapped) {
           Image(systemName: "forward.fill")
         }
       }

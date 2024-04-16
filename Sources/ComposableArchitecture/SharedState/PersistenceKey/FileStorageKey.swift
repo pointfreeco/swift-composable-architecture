@@ -81,29 +81,55 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @u
         didSet(self.load(initialValue: initialValue))
       }
     }
-    #if canImport(AppKit) || canImport(UIKit) || canImport(WatchKit)
-      let willResign = NotificationCenter.default.addObserver(
+    let willResign: (any NSObjectProtocol)?
+    if let willResignNotificationName {
+      willResign = NotificationCenter.default.addObserver(
         forName: willResignNotificationName,
         object: nil,
         queue: nil
       ) { [weak self] _ in
-        guard
-          let self,
-          let workItem = self.workItem
+        guard let self
         else { return }
-        self.storage.async(execute: workItem)
-        self.storage.async(
-          execute: DispatchWorkItem {
-            self.workItem?.cancel()
-            self.workItem = nil
-          }
-        )
+        self.performImmediately()
       }
-    #endif
+    } else {
+      willResign = nil
+    }
+    let willTerminate: (any NSObjectProtocol)?
+    if let willTerminateNotificationName {
+      willTerminate = NotificationCenter.default.addObserver(
+        forName: willTerminateNotificationName,
+        object: nil,
+        queue: nil
+      ) { [weak self] _ in
+        guard let self
+        else { return }
+        self.performImmediately()
+      }
+    } else {
+      willTerminate = nil
+    }
     return Shared.Subscription {
       cancellable.cancel()
-      NotificationCenter.default.removeObserver(willResign)
+      if let willResign {
+        NotificationCenter.default.removeObserver(willResign)
+      }
+      if let willTerminate {
+        NotificationCenter.default.removeObserver(willTerminate)
+      }
     }
+  }
+
+  private func performImmediately() {
+    guard let workItem = self.workItem
+    else { return }
+    self.storage.async(execute: workItem)
+    self.storage.async(
+      execute: DispatchWorkItem {
+        self.workItem?.cancel()
+        self.workItem = nil
+      }
+    )
   }
 }
 

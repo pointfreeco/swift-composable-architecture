@@ -7,19 +7,19 @@ struct MeetingView: View {
   var body: some View {
     Form {
       Section {
-        ForEach(self.syncUp.attendees) { attendee in
+        ForEach(syncUp.attendees) { attendee in
           Text(attendee.name)
         }
       } header: {
         Text("Attendees")
       }
       Section {
-        Text(self.meeting.transcript)
+        Text(meeting.transcript)
       } header: {
         Text("Transcript")
       }
     }
-    .navigationTitle(Text(self.meeting.date, style: .date))
+    .navigationTitle(Text(meeting.date, style: .date))
   }
 }
 

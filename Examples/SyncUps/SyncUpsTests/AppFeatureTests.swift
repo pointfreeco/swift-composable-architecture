@@ -14,10 +14,10 @@ final class AppFeatureTests: XCTestCase {
       AppFeature()
     }
 
-    await store.send(
-      \.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])))
-    ) {
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
+    let sharedSyncUp = try XCTUnwrap(store.state.syncUpsList.$syncUps[id: syncUp.id])
+
+    await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
     }
 
     await store.send(\.path[id:0].detail.editButtonTapped) {

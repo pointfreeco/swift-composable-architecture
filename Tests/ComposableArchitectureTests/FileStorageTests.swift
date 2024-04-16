@@ -77,6 +77,7 @@ final class FileStorageTests: XCTestCase {
 
   func testWillResign() throws {
     guard let willResignNotificationName else { return }
+
     let testScheduler = DispatchQueue.test
     let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
@@ -89,6 +90,26 @@ final class FileStorageTests: XCTestCase {
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       NotificationCenter.default.post(name: willResignNotificationName, object: nil)
+      testScheduler.advance()
+      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob])
+    }
+  }
+
+  func testWillTerminate() throws {
+    guard let willTerminateNotificationName else { return }
+    
+    let testScheduler = DispatchQueue.test
+    let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
+    try withDependencies {
+      $0.defaultFileStorage = fileStorage
+    } operation: {
+      @Shared(.fileStorage(.fileURL)) var users = [User]()
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
+
+      users.append(.blob)
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
+
+      NotificationCenter.default.post(name: willTerminateNotificationName, object: nil)
       testScheduler.advance()
       try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob])
     }
