@@ -920,3 +920,13 @@ extension PersistenceReaderKey where Self == PersistenceKeyDefault<AppStorageKey
     PersistenceKeyDefault(.appStorage("isOn"), false)
   }
 }
+
+// NB: This is a compile-time test to verify that optional shared state with defaults compiles.
+struct StateWithOptionalSharedAndDefault {
+  @Shared(.optionalValueWithDefault) var optionalValueWithDefault
+}
+extension PersistenceKey where Self == PersistenceKeyDefault<AppStorageKey<Bool?>> {
+  fileprivate static var optionalValueWithDefault: Self {
+    return PersistenceKeyDefault(.appStorage("optionalValueWithDefault"), nil)
+  }
+}

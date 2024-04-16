@@ -37,6 +37,7 @@ extension Shared {
     )
   }
 
+  @_disfavoredOverload
   public init<Wrapped>(
     _ persistenceKey: some PersistenceKey<Value>,
     fileID: StaticString = #fileID,
@@ -114,6 +115,7 @@ extension SharedReader {
     )
   }
 
+  @_disfavoredOverload
   public init<Wrapped>(
     _ persistenceKey: some PersistenceReaderKey<Value>,
     fileID: StaticString = #fileID,
