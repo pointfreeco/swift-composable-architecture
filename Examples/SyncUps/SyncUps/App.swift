@@ -15,7 +15,7 @@ struct SyncUpsApp: App {
 
   var body: some Scene {
     WindowGroup {
-      if _XCTIsTesting || ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+      if _XCTIsTesting {
         // NB: Don't run application in tests/previews to avoid interference between the app and the
         //     test/preview.
         EmptyView()
