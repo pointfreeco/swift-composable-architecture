@@ -123,7 +123,7 @@ struct ProfileTabView: View {
     Form {
       Text(
         template: """
-          This tab shows state from the previous tab, and it is capable of reseting all of the \
+          This tab shows state from the previous tab, and it is capable of resetting all of the \
           state back to 0.
 
           This shows that it is possible for each screen to model its state in the way that makes \
