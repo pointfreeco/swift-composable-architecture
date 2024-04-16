@@ -295,7 +295,7 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
 @available(
   *,
   unavailable,
-  message: "Derive shared elements using a stable subscript, like 'IdentifiedArray[id:]', or pass '$array.elements' to a 'ForEach' view."
+  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
 )
 extension Shared: Collection, Sequence
 where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
@@ -307,10 +307,6 @@ where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
     assertionFailure("Conformance of 'Shared<Value>' to 'Collection' is unavailable.")
     return self.wrappedValue.endIndex
   }
-  public subscript(position: Value.Index) -> Shared<Value.Element> {
-    assertionFailure("Conformance of 'Shared<Value>' to 'Collection' is unavailable.")
-    return self[position, default: DefaultSubscript(self.wrappedValue[position])]
-  }
   public func index(after i: Value.Index) -> Value.Index {
     assertionFailure("Conformance of 'Shared<Value>' to 'Collection' is unavailable.")
     return self.wrappedValue.index(after: i)
@@ -320,7 +316,25 @@ where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
 @available(
   *,
   unavailable,
-  message: "Derive shared elements using a stable subscript, like 'IdentifiedArray[id:]', or pass '$array.elements' to a 'ForEach' view."
+  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
+)
+extension Shared: MutableCollection
+where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
+  public subscript(position: Value.Index) -> Shared<Value.Element> {
+    get {
+      assertionFailure("Conformance of 'Shared<Value>' to 'MutableCollection' is unavailable.")
+      return self[position, default: DefaultSubscript(self.wrappedValue[position])]
+    }
+    set {
+      self.wrappedValue[position] = newValue.wrappedValue
+    }
+  }
+}
+
+@available(
+  *,
+  unavailable,
+  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
 )
 extension Shared: BidirectionalCollection
 where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
@@ -333,7 +347,7 @@ where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
 @available(
   *,
   unavailable,
-  message: "Derive shared elements using a stable subscript, like 'IdentifiedArray[id:]', or pass '$array.elements' to a 'ForEach' view."
+  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
 )
 extension Shared: RandomAccessCollection
 where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
