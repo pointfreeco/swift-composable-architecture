@@ -1,4 +1,4 @@
-/// A decorator around a persistence key that provides a built-in default value.
+/// A persistence key that provides a default value to an existing persistence key.
 public struct PersistenceKeyDefault<Base: PersistenceReaderKey>: PersistenceReaderKey {
   let base: Base
   let defaultValue: Base.Value
