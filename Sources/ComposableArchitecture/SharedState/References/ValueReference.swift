@@ -44,7 +44,7 @@ extension Shared {
   ) where Value == Wrapped? {
     self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
   }
-
+  
   public init(
     _ persistenceKey: some PersistenceKey<Value>,
     fileID: StaticString = #fileID,
@@ -55,6 +55,33 @@ extension Shared {
       throw LoadError()
     }
     self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+  }
+
+  public init<Key: PersistenceKey>(
+    _ persistenceKey: PersistenceKeyDefault<Key>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Key.Value == Value {
+    self.init(
+      wrappedValue: persistenceKey.load(initialValue: nil) ?? persistenceKey.defaultValue,
+      persistenceKey.base,
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  public init<Key: PersistenceKey>(
+    wrappedValue: Value,
+    _ persistenceKey: PersistenceKeyDefault<Key>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Key.Value == Value {
+    self.init(
+      wrappedValue: wrappedValue,
+      persistenceKey.base,
+      fileID: fileID,
+      line: line
+    )
   }
 }
 
@@ -105,6 +132,33 @@ extension SharedReader {
       throw LoadError()
     }
     self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
+  }
+  
+  public init<Key: PersistenceReaderKey>(
+    _ persistenceKey: PersistenceKeyDefault<Key>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Key.Value == Value {
+    self.init(
+      wrappedValue: persistenceKey.load(initialValue: nil) ?? persistenceKey.defaultValue,
+      persistenceKey.base,
+      fileID: fileID,
+      line: line
+    )
+  }
+
+  public init<Key: PersistenceReaderKey>(
+    wrappedValue: Value,
+    _ persistenceKey: PersistenceKeyDefault<Key>,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) where Key.Value == Value {
+    self.init(
+      wrappedValue: wrappedValue,
+      persistenceKey.base,
+      fileID: fileID,
+      line: line
+    )
   }
 }
 
