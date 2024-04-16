@@ -90,7 +90,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @u
       ) { [weak self] _ in
         guard let self
         else { return }
-        performImmediately()
+        self.performImmediately()
       }
     } else {
       willResign = nil
@@ -104,7 +104,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @u
       ) { [weak self] _ in
         guard let self
         else { return }
-        performImmediately()
+        self.performImmediately()
       }
     } else {
       willTerminate = nil
