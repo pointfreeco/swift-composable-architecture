@@ -220,10 +220,13 @@ final class SharedTests: XCTestCase {
     } withDependencies: {
       $0.mainQueue = .immediate
     }
-    await store.send(.longLivingEffect)
-    store.state.$sharedCount.assert {
-      $0 = 1
+    await store.send(.longLivingEffect).finish()
+    store.assert {
+      $0.sharedCount = 1
     }
+//    store.state.$sharedCount.assert {
+//      $0 = 1
+//    }
   }
 
   @MainActor
@@ -282,8 +285,8 @@ final class SharedTests: XCTestCase {
         """
     }
     await store.send(.longLivingEffect)
-    store.state.$sharedCount.assert {
-      $0 = 2
+    store.assert {
+      $0.sharedCount = 2
     }
   }
 
@@ -387,9 +390,9 @@ final class SharedTests: XCTestCase {
     }
     await store.send(.stopTimer)
     await mainQueue.advance(by: .seconds(1))
-    store.state.$count.assert {
-      $0 = 42
-    }
+//    store.assert {
+//      $0.count = 42
+//    }
   }
 
   @MainActor

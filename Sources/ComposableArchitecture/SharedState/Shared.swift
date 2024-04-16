@@ -31,12 +31,9 @@ public struct Shared<Value> {
         self.snapshot = newValue
       } else {
         @Dependency(SharedChangeTrackersKey.self)
-        var changeTrackers: LockIsolated<Set<SharedChangeTracker>>
-
-        changeTrackers.withValue { changeTrackers in
-          for changeTracker in changeTrackers {
-            changeTracker.track(self.reference)
-          }
+        var changeTrackers: Set<SharedChangeTracker>
+        for changeTracker in changeTrackers {
+          changeTracker.track(self.reference)
         }
         self.currentValue = newValue
       }
@@ -133,7 +130,7 @@ public struct Shared<Value> {
   ) rethrows where Value: Equatable {
     @Dependency(SharedChangeTrackersKey.self) var changeTrackers
     guard
-      let changeTracker = changeTrackers.value
+      let changeTracker = changeTrackers
         .first(where: { $0.changes[ObjectIdentifier(self.reference)] != nil })
     else {
       XCTFail("Expected changes, but none occurred.", file: file, line: line)
