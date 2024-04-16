@@ -292,6 +292,53 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
   }
 }
 
+@available(
+  *,
+  unavailable,
+  message: "Derive shared elements using a stable subscript, like 'IdentifiedArray[id:]', or pass '$array.elements' to a 'ForEach' view."
+)
+extension Shared: Collection, Sequence
+where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
+  public var startIndex: Value.Index {
+    assertionFailure("Conformance of 'Shared<Value>' to 'Collection' is unavailable.")
+    return self.wrappedValue.startIndex
+  }
+  public var endIndex: Value.Index {
+    assertionFailure("Conformance of 'Shared<Value>' to 'Collection' is unavailable.")
+    return self.wrappedValue.endIndex
+  }
+  public subscript(position: Value.Index) -> Shared<Value.Element> {
+    assertionFailure("Conformance of 'Shared<Value>' to 'Collection' is unavailable.")
+    return self[position, default: DefaultSubscript(self.wrappedValue[position])]
+  }
+  public func index(after i: Value.Index) -> Value.Index {
+    assertionFailure("Conformance of 'Shared<Value>' to 'Collection' is unavailable.")
+    return self.wrappedValue.index(after: i)
+  }
+}
+
+@available(
+  *,
+  unavailable,
+  message: "Derive shared elements using a stable subscript, like 'IdentifiedArray[id:]', or pass '$array.elements' to a 'ForEach' view."
+)
+extension Shared: BidirectionalCollection
+where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
+  public func index(before i: Value.Index) -> Value.Index {
+    assertionFailure("Conformance of 'Shared<Value>' to 'BidirectionalCollection' is unavailable.")
+    return self.wrappedValue.index(before: i)
+  }
+}
+
+@available(
+  *,
+  unavailable,
+  message: "Derive shared elements using a stable subscript, like 'IdentifiedArray[id:]', or pass '$array.elements' to a 'ForEach' view."
+)
+extension Shared: RandomAccessCollection
+where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
+}
+
 extension Shared {
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member>
