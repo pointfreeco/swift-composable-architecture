@@ -16,8 +16,7 @@ struct SyncUpsApp: App {
   var body: some Scene {
     WindowGroup {
       if _XCTIsTesting {
-        // NB: Don't run application in tests/previews to avoid interference between the app and the
-        //     test/preview.
+        // NB: Don't run application in tests to avoid interference between the app and the test.
         EmptyView()
       } else {
         AppView(store: Self.store)
