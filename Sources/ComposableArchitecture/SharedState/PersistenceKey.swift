@@ -1,3 +1,12 @@
+/// A type that can load and subscribe to state in an external system.
+///
+/// Conform to this protocol to express loading state from an external system, and subscribing to
+/// state changes in the external system. It is only necessary to conform to this protocol if the
+/// ``appStorage(_:)-2ntx6``, ``fileStorage(_:)`` or ``inMemory(_:)`` strategies are not sufficient
+/// for your use case.
+///
+/// See the article <doc:SharingState> for more information, in particular the
+/// <doc:SharingState#Custom-persistence> section.
 public protocol PersistenceReaderKey<Value>: Hashable {
   associatedtype Value
 
