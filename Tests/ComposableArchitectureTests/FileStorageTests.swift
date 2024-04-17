@@ -28,7 +28,7 @@ final class FileStorageTests: XCTestCase {
       users.append(.blob)
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
-      testScheduler.advance(by: .seconds(5) - .milliseconds(1))
+      testScheduler.advance(by: .seconds(1) - .milliseconds(1))
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       testScheduler.advance(by: .milliseconds(1))
@@ -48,27 +48,27 @@ final class FileStorageTests: XCTestCase {
       users.append(.blob)
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
-      testScheduler.advance(by: .seconds(3))
+      testScheduler.advance(by: .seconds(0.5))
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       users.append(.blobJr)
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
-      testScheduler.advance(by: .seconds(2))
+      testScheduler.advance(by: .seconds(0.5))
       try XCTAssertNoDifference(
         fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
 
-      testScheduler.advance(by: .seconds(1))
+      testScheduler.advance(by: .seconds(0.25))
 
       users.append(.blobSr)
       try XCTAssertNoDifference(
         fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
 
-      testScheduler.advance(by: .seconds(4))
+      testScheduler.advance(by: .seconds(0.5))
       try XCTAssertNoDifference(
         fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
 
-      testScheduler.advance(by: .seconds(1))
+      testScheduler.advance(by: .seconds(0.5))
       try XCTAssertNoDifference(
         fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr, .blobSr]
       )
@@ -128,7 +128,7 @@ final class FileStorageTests: XCTestCase {
       users.append(.blob)
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
-      testScheduler.advance(by: .seconds(3))
+      testScheduler.advance(by: .seconds(0.5))
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       NotificationCenter.default.post(name: willResignNotificationName, object: nil)

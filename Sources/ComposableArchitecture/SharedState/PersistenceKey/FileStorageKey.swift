@@ -50,7 +50,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @u
       }
       self.workItem = workItem
       if canListenForResignActive {
-        self.storage.asyncAfter(interval: .seconds(5), execute: workItem)
+        self.storage.asyncAfter(interval: .seconds(1), execute: workItem)
       } else {
         self.storage.async(execute: workItem)
       }
