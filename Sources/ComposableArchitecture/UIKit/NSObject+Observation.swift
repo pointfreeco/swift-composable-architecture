@@ -142,8 +142,10 @@
       if ObserveLocals.isApplying {
         runtimeWarn(
           """
-          An "observe" was called from another "observe" closure, which can lead to unintentional, \
-          over-observation.
+          An "observe" was called from another "observe" closure, which can lead to \
+          over-observation and unintended side effects.
+
+          Avoid nested closures by moving child observation into their own lifecycle methods.
           """
         )
       }
