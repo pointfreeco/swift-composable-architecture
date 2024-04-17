@@ -139,6 +139,9 @@
     /// ```
     @discardableResult
     public func observe(_ apply: @escaping () -> Void) -> ObservationToken {
+      if ObserveLocals.isApplying {
+        runtimeWarn("BAD")
+      }
       let token = ObservationToken()
       self.tokens.insert(token)
       @Sendable func onChange() {
@@ -149,7 +152,9 @@
           Task { @MainActor in
             guard !token.isCancelled
             else { return }
-            onChange()
+            ObserveLocals.$isApplying.withValue(true) {
+              onChange()
+            }
           }
         }
       }
@@ -191,3 +196,7 @@
     }
   }
 #endif
+
+private enum ObserveLocals {
+  @TaskLocal static var isApplying = false
+}
