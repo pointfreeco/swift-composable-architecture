@@ -140,7 +140,12 @@
     @discardableResult
     public func observe(_ apply: @escaping () -> Void) -> ObservationToken {
       if ObserveLocals.isApplying {
-        runtimeWarn("BAD")
+        runtimeWarn(
+          """
+          An "observe" was called from another "observe" closure, which can lead to unintentional, \
+          over-observation.
+          """
+        )
       }
       let token = ObservationToken()
       self.tokens.insert(token)
