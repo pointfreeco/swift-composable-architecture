@@ -241,7 +241,7 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        A state change does not match expectation: …
+        Test store completed before asserting against changes to shared state: …
 
               SharedFeature.State(
                 _count: 0,
@@ -252,6 +252,8 @@ final class SharedTests: XCTestCase {
               )
 
         (Expected: −, Actual: +)
+
+        Invoke "TestStore.assert" at the end of this test to assert against changes to shared state.
         """
     }
     await store.send(.longLivingEffect)
