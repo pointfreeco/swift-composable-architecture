@@ -220,15 +220,14 @@ final class SharedTests: XCTestCase {
     } withDependencies: {
       $0.mainQueue = .immediate
     }
-    await store.send(.longLivingEffect)
-    store.state.$sharedCount.assert {
-      $0 = 1
+    await store.send(.longLivingEffect).finish()
+    store.assert {
+      $0.sharedCount = 1
     }
   }
 
   @MainActor
   func testMutationOfSharedStateInLongLivingEffect_NoAssertion() async {
-    let sharedCountInitLine = #line + 4
     let store = TestStore(
       initialState: SharedFeature.State(
         profile: Shared(Profile(stats: Shared(Stats()))),
@@ -242,17 +241,19 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        Tracked changes to \
-        'Shared<Int>@ComposableArchitectureTests/SharedTests.swift:\(sharedCountInitLine)' \
-        but failed to assert: …
+        Test store completed before asserting against changes to shared state: …
 
-          − 0
-          + 1
+              SharedFeature.State(
+                _count: 0,
+                _profile: #1 Profile(…),
+            −   _sharedCount: #1 0,
+            +   _sharedCount: #1 1,
+                _stats: #1 Stats(count: 0)
+              )
 
-        (Before: −, After: +)
+        (Expected: −, Actual: +)
 
-        Call 'Shared<Int>.assert' to exhaustively test these changes, or call 'skipChanges' to \
-        ignore them.
+        Invoke "TestStore.assert" at the end of this test to assert against changes to shared state.
         """
     }
     await store.send(.longLivingEffect)
@@ -273,17 +274,22 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        XCTAssertNoDifference failed: …
+        A state change does not match expectation: …
 
-          − 1
-          + 2
+              SharedFeature.State(
+                _count: 0,
+                _profile: #1 Profile(…),
+            −   _sharedCount: #1 2,
+            +   _sharedCount: #1 1,
+                _stats: #1 Stats(count: 0)
+              )
 
-        (First: −, Second: +)
+        (Expected: −, Actual: +)
         """
     }
     await store.send(.longLivingEffect)
-    store.state.$sharedCount.assert {
-      $0 = 2
+    store.assert {
+      $0.sharedCount = 2
     }
   }
 
@@ -387,8 +393,8 @@ final class SharedTests: XCTestCase {
     }
     await store.send(.stopTimer)
     await mainQueue.advance(by: .seconds(1))
-    store.state.$count.assert {
-      $0 = 42
+    store.assert {
+      $0.count = 42
     }
   }
 
