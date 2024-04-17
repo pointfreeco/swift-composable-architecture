@@ -224,14 +224,10 @@ final class SharedTests: XCTestCase {
     store.assert {
       $0.sharedCount = 1
     }
-//    store.state.$sharedCount.assert {
-//      $0 = 1
-//    }
   }
 
   @MainActor
   func testMutationOfSharedStateInLongLivingEffect_NoAssertion() async {
-    let sharedCountInitLine = #line + 4
     let store = TestStore(
       initialState: SharedFeature.State(
         profile: Shared(Profile(stats: Shared(Stats()))),
@@ -245,17 +241,17 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        Tracked changes to \
-        'Shared<Int>@ComposableArchitectureTests/SharedTests.swift:\(sharedCountInitLine)' \
-        but failed to assert: …
+        A state change does not match expectation: …
 
-          − 0
-          + 1
+              SharedFeature.State(
+                _count: 0,
+                _profile: #1 Profile(…),
+            −   _sharedCount: #1 0,
+            +   _sharedCount: #1 1,
+                _stats: #1 Stats(count: 0)
+              )
 
-        (Before: −, After: +)
-
-        Call 'Shared<Int>.assert' to exhaustively test these changes, or call 'skipChanges' to \
-        ignore them.
+        (Expected: −, Actual: +)
         """
     }
     await store.send(.longLivingEffect)
@@ -276,12 +272,17 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        XCTAssertNoDifference failed: …
+        A state change does not match expectation: …
 
-          − 1
-          + 2
+              SharedFeature.State(
+                _count: 0,
+                _profile: #1 Profile(…),
+            −   _sharedCount: #1 2,
+            +   _sharedCount: #1 1,
+                _stats: #1 Stats(count: 0)
+              )
 
-        (First: −, Second: +)
+        (Expected: −, Actual: +)
         """
     }
     await store.send(.longLivingEffect)
@@ -390,9 +391,9 @@ final class SharedTests: XCTestCase {
     }
     await store.send(.stopTimer)
     await mainQueue.advance(by: .seconds(1))
-//    store.assert {
-//      $0.count = 42
-//    }
+    store.assert {
+      $0.count = 42
+    }
   }
 
   @MainActor

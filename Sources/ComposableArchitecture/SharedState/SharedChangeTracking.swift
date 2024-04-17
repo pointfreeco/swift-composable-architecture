@@ -81,10 +81,6 @@ final class SharedChangeTracker: Sendable {
     }
   }
   func track<R>(_ operation: () throws -> R) rethrows -> R {
-//    @Dependency(SharedChangeTrackersKey.self)
-//    var sharedChangeTrackers: LockIsolated<Set<SharedChangeTracker>>
-//    sharedChangeTrackers.withValue { _ = $0.insert(self) }
-//    defer { sharedChangeTrackers.withValue { _ = $0.remove(self) } }
     try withDependencies {
       $0[SharedChangeTrackersKey.self].insert(self)
     } operation: {
@@ -92,11 +88,6 @@ final class SharedChangeTracker: Sendable {
     }
   }
   func track<R>(_ operation: () async throws -> R) async rethrows -> R {
-//    @Dependency(SharedChangeTrackersKey.self)
-//    var sharedChangeTrackers: LockIsolated<Set<SharedChangeTracker>>
-//    sharedChangeTrackers.withValue { _ = $0.insert(self) }
-//    defer { sharedChangeTrackers.withValue { _ = $0.remove(self) } }
-//    return try await operation()
     try await withDependencies {
       $0[SharedChangeTrackersKey.self].insert(self)
     } operation: {
@@ -123,9 +114,7 @@ extension SharedChangeTracker: Hashable {
 
 enum SharedChangeTrackersKey: DependencyKey {
   static var liveValue: Set<SharedChangeTracker> { [] }
-  static var testValue: Set<SharedChangeTracker> {
-    [SharedChangeTracker()]
-  }
+  static var testValue: Set<SharedChangeTracker> { [SharedChangeTracker()] }
 }
 
 enum SharedChangeTrackerKey: DependencyKey {
