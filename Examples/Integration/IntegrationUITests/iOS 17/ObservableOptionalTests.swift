@@ -2,8 +2,8 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS17_ObservableOptionalTests: BaseIntegrationTests {
+  @MainActor
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 17"].tap()
@@ -12,6 +12,7 @@ final class iOS17_ObservableOptionalTests: BaseIntegrationTests {
     // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testBasics() {
     self.app.buttons["Toggle"].tap()
     XCTAssertEqual(self.app.staticTexts["0"].exists, true)
@@ -33,6 +34,7 @@ final class iOS17_ObservableOptionalTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testParentObserveChild() {
     self.app.buttons["Toggle"].tap()
     self.app.buttons["Increment"].tap()

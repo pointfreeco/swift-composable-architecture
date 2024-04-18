@@ -110,8 +110,8 @@ extension SharedStateFileStorage {
           state.alert = AlertState {
             TextState(
               isPrime(state.stats.count)
-              ? "👍 The number \(state.stats.count) is prime!"
-              : "👎 The number \(state.stats.count) is not prime :("
+                ? "👍 The number \(state.stats.count) is prime!"
+                : "👎 The number \(state.stats.count) is not prime :("
             )
           }
           return .none
@@ -223,7 +223,7 @@ struct Stats: Codable, Equatable {
   }
 }
 
-extension PersistenceKey where Self == FileStorageKey<Stats> {
+extension PersistenceReaderKey where Self == FileStorageKey<Stats> {
   fileprivate static var stats: Self {
     fileStorage(.documentsDirectory.appending(path: "stats.json"))
   }

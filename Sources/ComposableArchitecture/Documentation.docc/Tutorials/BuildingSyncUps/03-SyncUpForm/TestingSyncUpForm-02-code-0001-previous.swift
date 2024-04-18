@@ -1,14 +1,17 @@
 
 import ComposableArchitecture
-import SyncUps
 import XCTest
 
+@testable import SyncUps
+
 class SyncUpFormTests: XCTestCase {
-  func testRemoveFocusedAttendee() {
+  @MainActor
+  func testRemoveFocusedAttendee() async {
     // ...
   }
 
-  func testRemoveAttendee() {
+  @MainActor
+  func testRemoveAttendee() async {
     // ...
   }
 }

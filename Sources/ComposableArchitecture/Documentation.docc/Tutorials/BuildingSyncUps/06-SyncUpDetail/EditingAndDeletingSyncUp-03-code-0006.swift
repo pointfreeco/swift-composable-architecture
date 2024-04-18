@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
@@ -47,10 +48,14 @@ struct SyncUpDetail {
         state.alert = .deleteSyncUp
         return .none
 
+      case .destination:
+        return .none
+
       case .doneEditingButtonTapped:
         guard let editedSyncUp = state.editSyncUp?.syncUp
         else { return .none }
         state.syncUp = editedSyncUp
+        state.editSyncUp = nil
         return .none
 
       case .editButtonTapped:

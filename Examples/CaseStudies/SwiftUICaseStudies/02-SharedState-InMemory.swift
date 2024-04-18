@@ -109,8 +109,8 @@ extension SharedStateInMemory {
           state.alert = AlertState {
             TextState(
               isPrime(state.stats.count)
-              ? "👍 The number \(state.stats.count) is prime!"
-              : "👎 The number \(state.stats.count) is not prime :("
+                ? "👍 The number \(state.stats.count) is prime!"
+                : "👎 The number \(state.stats.count) is not prime :("
             )
           }
           return .none
@@ -211,7 +211,7 @@ private struct ProfileTabView: View {
   )
 }
 
-extension PersistenceKey where Self == InMemoryKey<Stats> {
+extension PersistenceReaderKey where Self == InMemoryKey<Stats> {
   fileprivate static var stats: Self {
     inMemory("stats")
   }

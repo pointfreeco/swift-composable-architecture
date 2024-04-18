@@ -1,6 +1,6 @@
 import ComposableArchitecture
 import GRDB
-@preconcurrency import SwiftUI
+import SwiftUI
 
 enum Filter: LocalizedStringKey, CaseIterable, Hashable {
   case all = "All"
@@ -29,7 +29,7 @@ struct Todos {
   struct State: Equatable {
     var editMode: EditMode = .inactive
     var filter: Filter = .all
-    @Shared(.query(TodosRequest(filter: .all))) var todos: IdentifiedArray = []
+    @SharedReader(.query(TodosRequest(filter: .all))) var todos: IdentifiedArray = []
   }
 
   enum Action: BindableAction, Sendable {
@@ -49,82 +49,76 @@ struct Todos {
   @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
 
   var body: some Reducer<State, Action> {
-    CombineReducers {
-      BindingReducer()
-      Reduce { state, action in
-        switch action {
-        case .addTodoButtonTapped:
-          return .run { _ in
-            try defaultDatabaseQueue.inDatabase { db in
-              try Todo().insert(db)
-            }
+    BindingReducer()
+    Reduce { state, action in
+      switch action {
+      case .addTodoButtonTapped:
+        return .run { _ in
+          try defaultDatabaseQueue.inDatabase { db in
+            try Todo().insert(db)
           }
-          
-        case .binding:
-          return .none
-          
-        case .clearCompletedButtonTapped:
-          let ids = state.todos.filter(\.isComplete).ids
-          return .run { _ in
-            try defaultDatabaseQueue.inDatabase { db in
-              _ = try Todo.deleteAll(db, ids: ids)
-            }
-          }
-
-        case let .delete(indexSet):
-          let ids = indexSet.map { state.todos[$0].id }
-          return .run { _ in
-            try defaultDatabaseQueue.inDatabase { db in
-              _ = try Todo.deleteAll(db, ids: ids)
-            }
-          }
-          
-        case var .move(source, destination):
-          //        if state.filter == .completed {
-          //          let filteredTodoIDs = state.filteredTodoIDs
-          //          source = IndexSet(
-          //            source
-          //              .map { filteredTodoIDs[$0] }
-          //              .compactMap { state.todos.index(id: $0) }
-          //          )
-          //          destination =
-          //            (destination < filteredTodoIDs.endIndex
-          //              ? state.todos.index(id: filteredTodoIDs[destination])
-          //              : state.todos.endIndex)
-          //            ?? destination
-          //        }
-          //        state.todos.move(fromOffsets: source, toOffset: destination)
-          return .none
-          
-        case .onAppear:
-          return .run { _ in
-            var migrator = DatabaseMigrator()
-            migrator.registerMigration("Create todos") { db in
-              try db.create(table: "todo") { t in
-                t.autoIncrementedPrimaryKey("id")
-                t.column("description", .text)
-                t.column("isComplete", .boolean)
-              }
-            }
-            try migrator.migrate(defaultDatabaseQueue)
-          }
-          
-        case .todos:
-          return .none
         }
-      }
-      .forEach(\.todos, action: \.todos) {
-        TodoFeature()
-      }
-    }
-    .onChange(of: \.filter) { _, filter in
-      Reduce { state, _ in
+
+      case .binding(\.filter):
         let todos = state.todos
-        state.$todos = Shared(
-          wrappedValue: todos, .query(TodosRequest(filter: filter))
-        )
+        state.$todos = SharedReader(wrappedValue: todos, .query(TodosRequest(filter: state.filter)))
+        return .none
+
+      case .binding:
+        return .none
+
+      case .clearCompletedButtonTapped:
+        let ids = state.todos.filter(\.isComplete).ids
+        return .run { _ in
+          try defaultDatabaseQueue.inDatabase { db in
+            _ = try Todo.deleteAll(db, ids: ids)
+          }
+        }
+
+      case let .delete(indexSet):
+        let ids = indexSet.map { state.todos[$0].id }
+        return .run { _ in
+          try defaultDatabaseQueue.inDatabase { db in
+            _ = try Todo.deleteAll(db, ids: ids)
+          }
+        }
+
+      case var .move(source, destination):
+        // if state.filter == .completed {
+        //   let filteredTodoIDs = state.filteredTodoIDs
+        //   source = IndexSet(
+        //     source
+        //       .map { filteredTodoIDs[$0] }
+        //       .compactMap { state.todos.index(id: $0) }
+        //   )
+        //   destination =
+        //     (destination < filteredTodoIDs.endIndex
+        //       ? state.todos.index(id: filteredTodoIDs[destination])
+        //       : state.todos.endIndex)
+        //     ?? destination
+        // }
+        // state.todos.move(fromOffsets: source, toOffset: destination)
+        return .none
+
+      case .onAppear:
+        return .run { _ in
+          var migrator = DatabaseMigrator()
+          migrator.registerMigration("Create todos") { db in
+            try db.create(table: "todo") { t in
+              t.autoIncrementedPrimaryKey("id")
+              t.column("description", .text)
+              t.column("isComplete", .boolean)
+            }
+          }
+          try migrator.migrate(defaultDatabaseQueue)
+        }
+
+      case .todos:
         return .none
       }
+    }
+    .forEach(\.todos, action: \.todos) {
+      TodoFeature()
     }
   }
 }
@@ -164,20 +158,11 @@ struct AppView: View {
         }
       )
       .environment(\.editMode, $store.editMode)
-      .onAppear {
-        store.send(.onAppear)
-      }
     }
   }
 }
 
-extension PersistenceKey where Self == FileStorageKey<IdentifiedArrayOf<Todo>> {
-  static var todos: Self {
-    Self(url: URL.documentsDirectory.appending(path: "todos.json"))
-  }
-}
-
-extension IdentifiedArrayOf<Todo> {
+extension IdentifiedArray where ID == Todo.ID, Element == Todo {
   static let mock: Self = [
     Todo(
       description: "Check Mail",

@@ -1,10 +1,12 @@
 
 import ComposableArchitecture
-import SyncUps
 import XCTest
 
+@testable import SyncUps
+
 class SyncUpFormTests: XCTestCase {
-  func testAddAttendee() {
+  @MainActor
+  func testAddAttendee() async {
     let store = TestStore(
       initialState: SyncUpForm.State(
         syncUp: SyncUp(id: SyncUp.ID())
@@ -16,16 +18,18 @@ class SyncUpFormTests: XCTestCase {
     }
 
     await store.send(.addAttendeeButtonTapped) {
-      state.focus = .attendee(Attendee.ID(UUID(0)))
-      state.syncUp.attendees.append(Attendee(id: Attendee.ID(UUID(0))))
+      state.focus = .attendee(Attendee.ID(0))
+      state.syncUp.attendees.append(Attendee(id: Attendee.ID(0)))
     }
   }
 
-  func testRemoveFocusedAttendee() {
+  @MainActor
+  func testRemoveFocusedAttendee() async {
     // ...
   }
 
-  func testRemoveAttendee() {
+  @MainActor
+  func testRemoveAttendee() async {
     // ...
   }
 }

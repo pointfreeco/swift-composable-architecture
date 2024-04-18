@@ -126,7 +126,7 @@ public class LoginViewController: UIViewController {
   public override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
 
-    if !isMovingToParent {
+    if !isMovingToParent && store.twoFactor != nil {
       store.twoFactorDismissed()
     }
   }

@@ -45,7 +45,7 @@ struct SharedStateSandboxing {
           let defaultAppStorage = UserDefaults(suiteName: suiteName)!
           defaultAppStorage.removePersistentDomain(forName: suiteName)
           $0.defaultAppStorage = defaultAppStorage
-          $0.defaultFileStorage = EphemeralFileStorage()
+          $0.defaultFileStorage = InMemoryFileStorage()
         } operation: {
           SharedStateSandboxing.State()
         }
@@ -57,7 +57,7 @@ struct SharedStateSandboxing {
     .ifLet(\.$sandboxed, action: \.sandboxed) {
       SharedStateSandboxing()
         .transformDependency(\.self) {
-          _ = $0 // TODO
+          _ = $0  // TODO
         }
     }
   }
@@ -119,12 +119,12 @@ struct SharedStateSandboxingView: View {
   }
 }
 
-extension PersistenceKey where Self == AppStorageKey<Int> {
+extension PersistenceReaderKey where Self == AppStorageKey<Int> {
   static var appStorageCount: Self {
     Self("appStorageCount")
   }
 }
-extension PersistenceKey where Self == FileStorageKey<Int> {
+extension PersistenceReaderKey where Self == FileStorageKey<Int> {
   static var fileStorageCount: Self {
     Self(url: URL.documentsDirectory.appending(path: "fileStorageCount.json"))
   }

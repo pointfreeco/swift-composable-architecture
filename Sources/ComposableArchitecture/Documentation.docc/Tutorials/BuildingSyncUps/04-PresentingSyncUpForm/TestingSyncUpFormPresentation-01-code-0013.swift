@@ -1,8 +1,10 @@
 import ComposableArchitecture
-import SyncUps
 import XCTest
 
+@testable import SyncUps
+
 class SyncUpsListTests: XCTestCase {
+  @MainActor
   func testAddSyncUp() async {
     let store = TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()
@@ -10,14 +12,14 @@ class SyncUpsListTests: XCTestCase {
       $0.uuid = .incrementing
     }
 
-    await store.send(.addButtonTapped) {
+    await store.send(.addSyncUpButtonTapped) {
       $0.addSyncUp = SyncUpForm.State(
-        syncUp: SyncUp(id: SyncUp.ID(UUID(0)))
+        syncUp: SyncUp(id: SyncUp.ID(0))
       )
     }
 
     let editedSyncUp = SyncUp(
-      id: SyncUp.ID(UUID(0)),
+      id: SyncUp.ID(0),
       attendees: [
         Attendee(id: Attendee.ID(), name: "Blob"),
         Attendee(id: Attendee.ID(), name: "Blob Jr."),
@@ -77,6 +79,7 @@ class SyncUpsListTests: XCTestCase {
     // (Expected: −, Actual: +)
   }
 
+  @MainActor
   func testDeletion() async {
     // ...
   }

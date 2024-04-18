@@ -1,9 +1,10 @@
 import ComposableArchitecture
+import SwiftUI
 
 @Reducer
 struct SyncUpForm {
   @ObservableState
-  struct State {
+  struct State: Equatable {
     var syncUp: SyncUp
   }
 

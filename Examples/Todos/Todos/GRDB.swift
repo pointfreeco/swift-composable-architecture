@@ -19,14 +19,14 @@ public protocol GRDBQuery: Hashable {
   func fetch(_ db: Database) throws -> Value
 }
 
-extension PersistenceKey {
+extension PersistenceReaderKey {
   public static func query<Query: GRDBQuery>(_ query: Query) -> Self
   where Self == GRDBQueryKey<Query> {
     Self(query)
   }
 }
 
-public final class GRDBQueryKey<Query: GRDBQuery>: PersistenceKey {
+public final class GRDBQueryKey<Query: GRDBQuery>: PersistenceReaderKey {
   let query: Query
 
   public init(_ query: Query) {
@@ -41,15 +41,13 @@ public final class GRDBQueryKey<Query: GRDBQuery>: PersistenceKey {
     hasher.combine(query)
   }
 
-  public func load() -> Query.Value? {
+  public func load(initialValue: Query.Value?) -> Query.Value? {
     @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
     return try? defaultDatabaseQueue.read(query.fetch(_:))
   }
 
-  public func save(_ value: Query.Value) {
-  }
-
   public func subscribe(
+    initialValue: Query.Value?,
     didSet: @escaping (Query.Value?) -> Void
   ) -> Shared<Query.Value>.Subscription {
     @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
@@ -66,12 +64,7 @@ public final class GRDBQueryKey<Query: GRDBQuery>: PersistenceKey {
 }
 
 extension FetchRequest where RowDecoder: FetchableRecord & Identifiable {
-    /// For example:
-    ///
-    /// ```
-    /// let players = try Player.all().fetchIdentifiedArray(db)
-    /// ```
-    public func fetchIdentifiedArray(_ db: Database) throws -> IdentifiedArrayOf<RowDecoder> {
-        try IdentifiedArray(fetchCursor(db))
-    }
+  public func fetchIdentifiedArray(_ db: Database) throws -> IdentifiedArrayOf<RowDecoder> {
+    try IdentifiedArray(fetchCursor(db))
+  }
 }

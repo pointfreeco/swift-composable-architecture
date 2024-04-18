@@ -17,7 +17,7 @@ struct AppFeature {
   }
 
   enum Action {
-    case path(StackAction<Path.State, Path.Action>)
+    case path(StackActionOf<Path>)
     case syncUpsList(SyncUpsList.Action)
   }
 
@@ -71,18 +71,13 @@ struct AppView: View {
 }
 
 #Preview {
-  AppView(
-    store: Store(
-      initialState: AppFeature.State(
-        syncUpsList: SyncUpsList.State(
-          syncUps: [
-            .mock,
-            .productMock,
-            .engineeringMock
-          ]
-        )
-      )
-    ) {
+  @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = [
+    .mock,
+    .productMock,
+    .engineeringMock
+  ]
+  return AppView(
+    store: Store(initialState: AppFeature.State()) {
       AppFeature()
     }
   )

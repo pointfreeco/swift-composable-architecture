@@ -67,14 +67,18 @@ struct RootView: View {
           }
           NavigationLink("User defaults") {
             Demo(
-              store: Store(initialState: SharedStateUserDefaults.State()) { SharedStateUserDefaults() }
+              store: Store(initialState: SharedStateUserDefaults.State()) {
+                SharedStateUserDefaults()
+              }
             ) { store in
               SharedStateUserDefaultsView(store: store)
             }
           }
           NavigationLink("File storage") {
             Demo(
-              store: Store(initialState: SharedStateFileStorage.State()) { SharedStateFileStorage() }
+              store: Store(initialState: SharedStateFileStorage.State()) {
+                SharedStateFileStorage()
+              }
             ) { store in
               SharedStateFileStorageView(store: store)
             }
@@ -84,6 +88,15 @@ struct RootView: View {
               store: Store(initialState: SharedStateSandboxing.State()) { SharedStateSandboxing() }
             ) { store in
               SharedStateSandboxingView(store: store)
+            }
+          }
+          NavigationLink("Notifications") {
+            Demo(
+              store: Store(
+                initialState: SharedStateNotifications.State()
+              ) { SharedStateNotifications() }
+            ) { store in
+              SharedStateNotificationsView(store: store)
             }
           }
           Button("Sign up flow") {
@@ -181,7 +194,13 @@ struct RootView: View {
 
         Section {
           NavigationLink("Reusable favoriting component") {
-            Demo(store: Store(initialState: Episodes.State()) { Episodes() }) { store in
+            Demo(
+              store: Store(
+                initialState: Episodes.State(episodes: .mocks)
+              ) {
+                Episodes()
+              }
+            ) { store in
               EpisodesView(store: store)
             }
           }

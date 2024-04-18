@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class LongLivingEffectsTests: XCTestCase {
+  @MainActor
   func testReducer() async {
     let (screenshots, takeScreenshot) = AsyncStream.makeStream(of: Void.self)
 

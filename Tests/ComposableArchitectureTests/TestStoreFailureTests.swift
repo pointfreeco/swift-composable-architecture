@@ -1,8 +1,8 @@
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 final class TestStoreFailureTests: BaseTCATestCase {
+  @MainActor
   func testNoStateChangeFailure() async {
     enum Action { case first, second }
     let store = TestStore(initialState: 0) {
@@ -35,6 +35,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.receive(.second) { _ = $0 }
   }
 
+  @MainActor
   func testStateChangeFailure() async {
     struct State: Equatable { var count = 0 }
     let store = TestStore(initialState: State()) {
@@ -57,6 +58,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.send(()) { $0.count = 0 }
   }
 
+  @MainActor
   func testUnexpectedStateChangeOnSendFailure() async {
     struct State: Equatable { var count = 0 }
     let store = TestStore(initialState: State()) {
@@ -79,6 +81,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.send(())
   }
 
+  @MainActor
   func testUnexpectedStateChangeOnReceiveFailure() async {
     struct State: Equatable { var count = 0 }
     enum Action { case first, second }
@@ -107,6 +110,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.receive(.second)
   }
 
+  @MainActor
   func testReceivedActionAfterDeinit() async {
     enum Action { case first, second }
     let store = TestStore(initialState: 0) {
@@ -120,7 +124,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        The store received 1 unexpected action after this one: …
+        The store received 1 unexpected action by the end of this test: …
 
           Unhandled actions:
             • .second
@@ -129,6 +133,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.send(.first)
   }
 
+  @MainActor
   func testEffectInFlightAfterDeinit() async {
     let store = TestStore(initialState: 0) {
       Reduce<Int, Void> { state, action in
@@ -162,6 +167,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.send(())
   }
 
+  @MainActor
   func testSendActionBeforeReceivingFailure() async {
     enum Action { case first, second }
     let store = TestStore(initialState: 0) {
@@ -190,6 +196,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.receive(.second)
   }
 
+  @MainActor
   func testReceiveNonExistentActionFailure() async {
     enum Action { case action }
     let store = TestStore(initialState: 0) {
@@ -206,6 +213,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.receive(.action)
   }
 
+  @MainActor
   func testReceiveUnexpectedActionFailure() async {
     enum Action { case first, second }
     let store = TestStore(initialState: 0) {
@@ -235,6 +243,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.receive(.first)
   }
 
+  @MainActor
   func testModifyClosureThrowsErrorFailure() async {
     let store = TestStore(initialState: 0) {
       Reduce<Int, Void> { _, _ in .none }
@@ -249,6 +258,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testExpectedStateEqualityMustModify() async {
     let store = TestStore(initialState: 0) {
       Reduce<Int, Bool> { state, action in

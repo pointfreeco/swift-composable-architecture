@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class SharedStateSandboxingTests: XCTestCase {
+  @MainActor
   func testBasics() async {
     let store = TestStore(initialState: SharedStateSandboxing.State()) {
       SharedStateSandboxing()
@@ -22,7 +22,7 @@ final class SharedStateSandboxingTests: XCTestCase {
         let defaultAppStorage = UserDefaults(suiteName: suiteName)!
         defaultAppStorage.removePersistentDomain(forName: suiteName)
         $0.defaultAppStorage = defaultAppStorage
-        $0.defaultFileStorage = EphemeralFileStorage()
+        $0.defaultFileStorage = InMemoryFileStorage()
       } operation: {
         SharedStateSandboxing.State()
       }

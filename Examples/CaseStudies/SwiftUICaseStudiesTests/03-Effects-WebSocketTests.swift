@@ -3,8 +3,8 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class WebSocketTests: XCTestCase {
+  @MainActor
   func testWebSocketHappyPath() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
     let messages = AsyncStream.makeStream(of: Result<WebSocketClient.Message, Error>.self)
@@ -56,6 +56,7 @@ final class WebSocketTests: XCTestCase {
     await store.finish()
   }
 
+  @MainActor
   func testWebSocketSendFailure() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
     let messages = AsyncStream.makeStream(of: Result<WebSocketClient.Message, Error>.self)
@@ -102,6 +103,7 @@ final class WebSocketTests: XCTestCase {
     await store.finish()
   }
 
+  @MainActor
   func testWebSocketPings() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
     let clock = TestClock()
@@ -136,6 +138,7 @@ final class WebSocketTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testWebSocketConnectError() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
 

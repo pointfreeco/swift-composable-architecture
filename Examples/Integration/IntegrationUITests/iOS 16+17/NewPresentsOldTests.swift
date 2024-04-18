@@ -2,8 +2,8 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
+  @MainActor
   override func setUp() {
     super.setUp()
     self.app.buttons["iOS 16 + 17"].tap()
@@ -12,6 +12,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testBasics() {
     self.app.buttons["Increment"].tap()
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
@@ -30,6 +31,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testPresentChild_NotObservingChildCount() {
     self.app.buttons["Present child"].tap()
     self.assertLogs {
@@ -44,10 +46,6 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -67,6 +65,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testDismissChild_NotObservingChildCount() {
     self.app.buttons["Present child"].tap()
     self.clearLogs()
@@ -74,8 +73,6 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      BasicsView.body
-      BasicsView.body
       NewPresentsOldTestCase.body
       NewPresentsOldTestCase.body
       PresentationStoreOf<BasicsView.Feature>.init
@@ -85,31 +82,11 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -120,38 +97,19 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       ViewPresentationStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.init
-      ViewStoreOf<BasicsView.Feature>.init
-      ViewStoreOf<BasicsView.Feature>.init
-      ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.init
-      ViewStoreOf<BasicsView.Feature?>.init
-      ViewStoreOf<BasicsView.Feature?>.init
-      ViewStoreOf<BasicsView.Feature?>.init
       ViewStoreOf<BasicsView.Feature?>.init
       ViewStoreOf<BasicsView.Feature?>.init
       WithViewStoreOf<BasicsView.Feature>.body
-      WithViewStoreOf<BasicsView.Feature>.body
-      WithViewStoreOf<BasicsView.Feature>.body
-      WithViewStoreOf<BasicsView.Feature?>.body
-      WithViewStoreOf<BasicsView.Feature?>.body
       WithViewStoreOf<BasicsView.Feature?>.body
       """
     }
   }
 
+  @MainActor
   func testObserveChildCount() {
     self.app.buttons["Toggle observe child count"].tap()
     XCTAssertEqual(self.app.staticTexts["Child count: N/A"].exists, true)
@@ -170,6 +128,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testPresentChild_ObservingChildCount() {
     self.app.buttons["Toggle observe child count"].tap()
     self.clearLogs()
@@ -188,10 +147,6 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -211,6 +166,7 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testIncrementChild_ObservingChildCount() {
     self.app.buttons["Toggle observe child count"].tap()
     self.app.buttons["Present child"].tap()
@@ -222,28 +178,17 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       """
       BasicsView.body
       BasicsView.body
-      BasicsView.body
       NewPresentsOldTestCase.body
       PresentationStoreOf<BasicsView.Feature>.init
       PresentationStoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -253,30 +198,21 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.init
-      ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.init
-      ViewStoreOf<BasicsView.Feature?>.init
       ViewStoreOf<BasicsView.Feature?>.init
       ViewStoreOf<BasicsView.Feature?>.init
       WithViewStoreOf<BasicsView.Feature>.body
       WithViewStoreOf<BasicsView.Feature>.body
-      WithViewStoreOf<BasicsView.Feature>.body
-      WithViewStoreOf<BasicsView.Feature?>.body
       WithViewStoreOf<BasicsView.Feature?>.body
       """
     }
   }
 
+  @MainActor
   func testDismissChild_ObservingChildCount() {
     self.app.buttons["Toggle observe child count"].tap()
     self.app.buttons["Present child"].tap()
@@ -285,8 +221,6 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
-      BasicsView.body
-      BasicsView.body
       NewPresentsOldTestCase.body
       NewPresentsOldTestCase.body
       PresentationStoreOf<BasicsView.Feature>.init
@@ -296,31 +230,11 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
       StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
-      StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature>.init
       StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
-      StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
       StoreOf<BasicsView.Feature?>.init
@@ -331,38 +245,19 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       ViewPresentationStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.deinit
       ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.init
-      ViewStoreOf<BasicsView.Feature>.init
-      ViewStoreOf<BasicsView.Feature>.init
-      ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature?>.deinit
       ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
-      ViewStoreOf<BasicsView.Feature?>.init
-      ViewStoreOf<BasicsView.Feature?>.init
-      ViewStoreOf<BasicsView.Feature?>.init
-      ViewStoreOf<BasicsView.Feature?>.init
       ViewStoreOf<BasicsView.Feature?>.init
       ViewStoreOf<BasicsView.Feature?>.init
       WithViewStoreOf<BasicsView.Feature>.body
-      WithViewStoreOf<BasicsView.Feature>.body
-      WithViewStoreOf<BasicsView.Feature>.body
-      WithViewStoreOf<BasicsView.Feature?>.body
-      WithViewStoreOf<BasicsView.Feature?>.body
       WithViewStoreOf<BasicsView.Feature?>.body
       """
     }
   }
 
+  @MainActor
   func testDeinit() {
     self.app.buttons["Toggle observe child count"].tap()
     self.app.buttons["Present child"].tap()
@@ -374,27 +269,8 @@ final class iOS16_17_NewPresentsOldTests: BaseIntegrationTests {
       """
       PresentationStoreOf<BasicsView.Feature>.deinit
       PresentationStoreOf<BasicsView.Feature>.deinit
-      PresentationStoreOf<BasicsView.Feature>.deinit
-      PresentationStoreOf<BasicsView.Feature>.deinit
-      PresentationStoreOf<BasicsView.Feature>.deinit
-      PresentationStoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
-      StoreOf<BasicsView.Feature?>.deinit
       StoreOf<BasicsView.Feature?>.deinit
       ViewPresentationStoreOf<BasicsView.Feature>.deinit
-      ViewPresentationStoreOf<BasicsView.Feature>.deinit
-      ViewPresentationStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature>.deinit
-      ViewStoreOf<BasicsView.Feature?>.deinit
       """
     }
   }

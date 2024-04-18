@@ -142,7 +142,7 @@ private struct NavigationStackTestCase {
     var childResponse: Int?
   }
   enum Action {
-    case child(StackAction<ChildFeature.State, ChildFeature.Action>)
+    case child(StackActionOf<ChildFeature>)
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in

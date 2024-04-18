@@ -44,15 +44,22 @@
       }
       
       @Step {
+        ``ComposableArchitecture/TestStore`` requires equatable state in order to make its
+        assertions, so we must add a conformance.
+        
+        @Code(name: "CounterFeature.swift", file: 01-03-01-code-0003.swift, previousFile: 01-03-01-code-0003-previous.swift)
+      }
+      
+      @Step {
         Then we can start sending actions into the store in order to emulate something the user is
         doing. For example, we can emulate tapping the increment button and then the decrement 
         button.
         
-        > Note: The ``ComposableArchitecture/TestStore/send(_:assert:file:line:)`` method on
+        > Note: The ``ComposableArchitecture/TestStore/send(_:assert:file:line:)-2co21`` method on
         the test store is async because most features involve asynchronous side effects, and the
         test store using the async context to track those effects.
         
-        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0003.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0004.swift, previousFile: file: 01-03-01-code-0002.swift)
       }
       
       @Step {
@@ -63,7 +70,7 @@
         failure message showing you exactly how state differed from what you expected (the lines
         with the minus "-") and the actual value (the lines with the plus "+").
         
-        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0004.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0005.swift)
       }
       
       @Step {
@@ -78,7 +85,7 @@
         know the exact state your feature is in rather than merely what transformation was applied
         to your state.
         
-        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0005.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0006.swift)
       }
       
       Now the test passes and so proves that the incrementing and decrementing logic does work

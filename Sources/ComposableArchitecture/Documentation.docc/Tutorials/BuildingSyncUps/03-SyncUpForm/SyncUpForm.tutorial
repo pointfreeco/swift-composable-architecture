@@ -1,4 +1,4 @@
-@Tutorial(time: 10) {
+@Tutorial(time: 15) {
   @Intro(title: "Sync-up form") {
     We will create a new feature with the Composable Architecture that is capable of editing the
     details of a new sync-up. We will also add some nuanced logic around how focus moves through

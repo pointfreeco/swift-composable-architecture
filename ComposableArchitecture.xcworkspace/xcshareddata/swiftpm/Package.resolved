@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/groue/GRDB.swift",
       "state" : {
-        "revision" : "bd9aea303d9dab3a4941ee838a0e4ff51c9448df",
-        "version" : "6.25.0"
+        "revision" : "77b85bed259b7f107710a0b78c439b1c5839dc45",
+        "version" : "6.26.0"
       }
     },
     {
@@ -77,8 +77,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-custom-dump",
       "state" : {
-        "revision" : "3ce83179e5f0c83ad54c305779c6b438e82aaf1d",
-        "version" : "1.2.1"
+        "revision" : "f01efb26f3a192a0e88dcdb7c3c391ec2fc25d9c",
+        "version" : "1.3.0"
       }
     },
     {

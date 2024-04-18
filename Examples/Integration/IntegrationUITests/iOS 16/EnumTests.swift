@@ -2,8 +2,8 @@ import InlineSnapshotTesting
 import TestCases
 import XCTest
 
-@MainActor
 final class iOS16_EnumTests: BaseIntegrationTests {
+  @MainActor
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["iOS 16"].tap()
@@ -12,6 +12,7 @@ final class iOS16_EnumTests: BaseIntegrationTests {
     // SnapshotTesting.isRecording = true
   }
 
+  @MainActor
   func testBasics() {
     self.app.buttons["Toggle feature 1 on"].tap()
     XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, true)
@@ -61,6 +62,7 @@ final class iOS16_EnumTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testToggle1On_Toggle1Off() {
     self.app.buttons["Toggle feature 1 on"].tap()
     XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, true)
@@ -80,6 +82,7 @@ final class iOS16_EnumTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testToggle1On_Toggle2On() {
     self.app.buttons["Toggle feature 1 on"].tap()
     XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, true)
@@ -126,6 +129,7 @@ final class iOS16_EnumTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testToggle1On_Increment_Toggle1OffOn() {
     self.app.buttons["Toggle feature 1 on"].tap()
     XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, true)
@@ -154,6 +158,7 @@ final class iOS16_EnumTests: BaseIntegrationTests {
     }
   }
 
+  @MainActor
   func testDismiss() {
     self.app.buttons["Toggle feature 1 on"].tap()
     XCTAssertEqual(self.app.staticTexts["FEATURE 1"].exists, true)

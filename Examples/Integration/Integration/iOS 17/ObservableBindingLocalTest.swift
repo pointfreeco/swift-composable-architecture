@@ -16,7 +16,7 @@ private struct ObservableBindingLocalTestCase {
     case fullScreenCoverButtonTapped
     case navigationDestination(PresentationAction<Child.Action>)
     case navigationDestinationButtonTapped
-    case path(StackAction<Child.State, Child.Action>)
+    case path(StackActionOf<Child>)
     case popover(PresentationAction<Child.Action>)
     case popoverButtonTapped
     case sheet(PresentationAction<Child.Action>)

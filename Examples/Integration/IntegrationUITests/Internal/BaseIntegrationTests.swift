@@ -1,10 +1,10 @@
 import Accessibility
 import CustomDump
-import InlineSnapshotTesting
+@preconcurrency import InlineSnapshotTesting
 import XCTest
 
-@MainActor
 class BaseIntegrationTests: XCTestCase {
+  @MainActor
   var app: XCUIApplication!
   var logs: XCUIElement!
   private var _expectRuntimeWarnings: (file: StaticString, line: UInt)?
@@ -13,8 +13,9 @@ class BaseIntegrationTests: XCTestCase {
     self._expectRuntimeWarnings = (file, line)
   }
 
+  @MainActor
   override func setUp() async throws {
-    //SnapshotTesting.isRecording = true
+    // SnapshotTesting.isRecording = true
     // self.continueAfterFailure = false
     self.app = XCUIApplication()
     self.app.launchEnvironment["UI_TEST"] = "true"
@@ -23,6 +24,7 @@ class BaseIntegrationTests: XCTestCase {
     self.logs = self.app.staticTexts["composable-architecture.debug.logs"]
   }
 
+  @MainActor
   override func tearDown() {
     super.tearDown()
     if let (file, line) = self._expectRuntimeWarnings {
@@ -41,6 +43,7 @@ class BaseIntegrationTests: XCTestCase {
     SnapshotTesting.isRecording = false
   }
 
+  @MainActor
   func clearLogs() {
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
       let alert = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts
@@ -54,6 +57,7 @@ class BaseIntegrationTests: XCTestCase {
     XCUIDevice.shared.system.open(URL(string: "integration:///clear-logs")!)
   }
 
+  @MainActor
   func assertLogs(
     _ logConfiguration: LogConfiguration = .unordered,
     matches expectedLogs: (() -> String)? = nil,
@@ -88,7 +92,7 @@ enum LogConfiguration {
 }
 
 extension Snapshotting where Value == String, Format == String {
-  fileprivate static let _lines = Snapshotting(
+  fileprivate static nonisolated(unsafe) let _lines = Snapshotting(
     pathExtension: "txt",
     diffing: Diffing(
       toData: { Data($0.utf8) },

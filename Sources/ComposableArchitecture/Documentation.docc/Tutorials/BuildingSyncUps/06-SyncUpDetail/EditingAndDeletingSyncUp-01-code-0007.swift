@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
@@ -49,9 +50,6 @@ struct SyncUpDetailView: View {
               }
             }
           }
-          .onDelete { indices in
-            store.send(.deleteMeetings(atOffsets: indices))
-          }
         } header: {
           Text("Past meetings")
         }
@@ -78,9 +76,9 @@ struct SyncUpDetailView: View {
         store.send(.editButtonTapped)
       }
     }
-    .sheet(item: $store.scope(state: \.editSyncUp, action: \.editSyncUp)) { store in
+    .sheet(item: $store.scope(state: \.editSyncUp, action: \.editSyncUp)) { editSyncUpStore in
       NavigationStack {
-        SyncUpFormView(store: store)
+        SyncUpFormView(store: editSyncUpStore)
           .navigationTitle(store.syncUp.title)
           .toolbar {
             ToolbarItem(placement: .cancellationAction) {
@@ -98,23 +96,25 @@ struct SyncUpDetailView: View {
 }
 
 #Preview {
-  SyncUpDetailView(
-    store: Store(
-      initialState: SyncUpDetail.State(
-        syncUp: SyncUp(
-          syncUp: SyncUp(
-            id: SyncUp.ID(),
-            attendees: [
-              Attendee(id: Attendee.ID(), name: "Blob"),
-              Attendee(id: Attendee.ID(), name: "Blob Jr."),
-              Attendee(id: Attendee.ID(), name: "Blob Sr."),
-            ],
-            title: "Point-Free Morning Sync"
+  NavigationStack {
+    SyncUpDetailView(
+      store: Store(
+        initialState: SyncUpDetail.State(
+          syncUp: Shared(
+            SyncUp(
+              id: SyncUp.ID(),
+              attendees: [
+                Attendee(id: Attendee.ID(), name: "Blob"),
+                Attendee(id: Attendee.ID(), name: "Blob Jr."),
+                Attendee(id: Attendee.ID(), name: "Blob Sr."),
+              ],
+              title: "Point-Free Morning Sync"
+            )
           )
         )
-      )
-    ) {
-      SyncUpDetail()
-    }
-  )
+      ) {
+        SyncUpDetail()
+      }
+    )
+  }
 }

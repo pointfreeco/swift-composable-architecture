@@ -3,36 +3,35 @@ import GameCore
 import NewGameCore
 import XCTest
 
-@MainActor
 final class NewGameCoreTests: XCTestCase {
-  let store = TestStore(initialState: NewGame.State()) {
-    NewGame()
-  }
-
+  @MainActor
   func testFlow_NewGame_Integration() async {
-    await self.store.send(\.binding.oPlayerName, "Blob Sr.") {
+    let store = TestStore(initialState: NewGame.State()) {
+      NewGame()
+    }
+    await store.send(\.binding.oPlayerName, "Blob Sr.") {
       $0.oPlayerName = "Blob Sr."
     }
-    await self.store.send(\.binding.xPlayerName, "Blob Jr.") {
+    await store.send(\.binding.xPlayerName, "Blob Jr.") {
       $0.xPlayerName = "Blob Jr."
     }
-    await self.store.send(.letsPlayButtonTapped) {
+    await store.send(.letsPlayButtonTapped) {
       $0.game = Game.State(oPlayerName: "Blob Sr.", xPlayerName: "Blob Jr.")
     }
-    await self.store.send(\.game.cellTapped, (row: 0, column: 0)) {
+    await store.send(\.game.cellTapped, (row: 0, column: 0)) {
       $0.game!.board[0][0] = .x
       $0.game!.currentPlayer = .o
     }
-    await self.store.send(\.game.quitButtonTapped)
-    await self.store.receive(\.game.dismiss) {
+    await store.send(\.game.quitButtonTapped)
+    await store.receive(\.game.dismiss) {
       $0.game = nil
     }
-    await self.store.send(.letsPlayButtonTapped) {
+    await store.send(.letsPlayButtonTapped) {
       $0.game = Game.State(oPlayerName: "Blob Sr.", xPlayerName: "Blob Jr.")
     }
-    await self.store.send(\.game.dismiss) {
+    await store.send(\.game.dismiss) {
       $0.game = nil
     }
-    await self.store.send(.logoutButtonTapped)
+    await store.send(.logoutButtonTapped)
   }
 }

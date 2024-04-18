@@ -47,6 +47,7 @@ public struct ObservableStateMacro {
   static let presentsMacroName = "Presents"
   static let presentationStatePropertyWrapperName = "PresentationState"
   static let sharedPropertyWrapperName = "Shared"
+  static let sharedReaderPropertyWrapperName = "SharedReader"
 
   static let registrarVariableName = "_$observationRegistrar"
 
@@ -312,7 +313,7 @@ enum ObservableStateCase {
       } else {
         return """
           case .\(element.name.text):
-          return ._$inert._$tag(\(tag))
+          return ObservableStateID()._$tag(\(tag))
           """
       }
     case let .ifConfig(configs):
@@ -447,6 +448,7 @@ extension ObservableStateMacro: MemberAttributeMacro {
 
     if property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
       || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
+      || property.hasMacroApplication(ObservableStateMacro.sharedReaderPropertyWrapperName)
     {
       return [
         AttributeSyntax(

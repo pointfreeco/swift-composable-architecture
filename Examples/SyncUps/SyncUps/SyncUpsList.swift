@@ -36,7 +36,7 @@ struct SyncUpsList {
       case .addSyncUpButtonTapped:
         state.destination = .add(
           SyncUpForm.State(
-            syncUp: SyncUp(id: SyncUp.ID(self.uuid()))
+            syncUp: SyncUp(id: SyncUp.ID(uuid()))
           )
         )
         return .none
@@ -51,7 +51,7 @@ struct SyncUpsList {
         if syncUp.attendees.isEmpty {
           syncUp.attendees.append(
             editState.syncUp.attendees.first
-              ?? Attendee(id: Attendee.ID(self.uuid()))
+              ?? Attendee(id: Attendee.ID(uuid()))
           )
         }
         state.syncUps.append(syncUp)
@@ -123,19 +123,19 @@ struct CardView: View {
 
   var body: some View {
     VStack(alignment: .leading) {
-      Text(self.syncUp.title)
+      Text(syncUp.title)
         .font(.headline)
       Spacer()
       HStack {
-        Label("\(self.syncUp.attendees.count)", systemImage: "person.3")
+        Label("\(syncUp.attendees.count)", systemImage: "person.3")
         Spacer()
-        Label(self.syncUp.duration.formatted(.units()), systemImage: "clock")
+        Label(syncUp.duration.formatted(.units()), systemImage: "clock")
           .labelStyle(.trailingIcon)
       }
       .font(.caption)
     }
     .padding()
-    .foregroundColor(self.syncUp.theme.accentColor)
+    .foregroundColor(syncUp.theme.accentColor)
   }
 }
 
@@ -152,23 +152,18 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
   static var trailingIcon: Self { Self() }
 }
 
-struct SyncUpsList_Previews: PreviewProvider {
-  static var previews: some View {
-    NavigationStack {
-      SyncUpsListView(
-        store: Store(
-          initialState: SyncUpsList.State(
-            syncUps: [
-              .mock,
-              .productMock,
-              .engineeringMock,
-            ]
-          )
-        ) {
-          SyncUpsList()
-        }
-      )
-    }
+#Preview("List") {
+  @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = [
+    .mock,
+    .productMock,
+    .engineeringMock
+  ]
+  return NavigationStack {
+    SyncUpsListView(
+      store: Store(initialState: SyncUpsList.State()) {
+        SyncUpsList()
+      }
+    )
   }
 }
 
@@ -185,7 +180,7 @@ struct SyncUpsList_Previews: PreviewProvider {
   )
 }
 
-extension PersistenceKey where Self == FileStorageKey<IdentifiedArrayOf<SyncUp>> {
+extension PersistenceReaderKey where Self == FileStorageKey<IdentifiedArrayOf<SyncUp>> {
   static var syncUps: Self {
     fileStorage(.documentsDirectory.appending(component: "sync-ups.json"))
   }

@@ -1,4 +1,4 @@
-@Tutorial(time: 10) {
+@Tutorial(time: 5) {
   @Intro(title: "Sync-up detail") {
     The "sync-up detail" screen shows all the information of a sync-up, and has many actions that
     can take place in the screen. The user can edit the sync-up, or start a new meeting in the sync

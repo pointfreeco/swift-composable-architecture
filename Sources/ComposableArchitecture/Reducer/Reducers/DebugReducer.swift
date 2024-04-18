@@ -70,8 +70,6 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
 
   let printer: _ReducerPrinter<Base.State, Base.Action>?
 
-  let sharedChangeTracker = SharedChangeTracker()
-
   init(base: Base, printer: _ReducerPrinter<Base.State, Base.Action>?) {
     self.base = base
     self.printer = printer
@@ -82,25 +80,21 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
   ) -> Effect<Base.Action> {
     #if DEBUG
       if let printer = self.printer {
-        return withDependencies {
-          $0[SharedChangeTracker.self] = sharedChangeTracker
-        } operation: {
+        return withSharedChangeTracking { changeTracker in
           let oldState = state
           let effects = self.base.reduce(into: &state, action: action)
-          if self.sharedChangeTracker.hasChanges {
-            SharedLocals.$exhaustivity.withValue(.on) {
-              printer.printChange(receivedAction: action, oldState: oldState, newState: state)
-            }
-            self.sharedChangeTracker.clearChanges()
-            return effects
-          } else {
-            return effects.merge(
+          return withEscapedDependencies { continuation in
+            effects.merge(
               with: .publisher { [newState = state, queue = printer.queue] in
                 Deferred<Empty<Action, Never>> {
                   queue.async {
-                    printer.printChange(
-                      receivedAction: action, oldState: oldState, newState: newState
-                    )
+                    continuation.yield {
+                      changeTracker.assert {
+                        printer.printChange(
+                          receivedAction: action, oldState: oldState, newState: newState
+                        )
+                      }
+                    }
                   }
                   return Empty()
                 }

@@ -139,6 +139,16 @@
     /// ```
     @discardableResult
     public func observe(_ apply: @escaping () -> Void) -> ObservationToken {
+      if ObserveLocals.isApplying {
+        runtimeWarn(
+          """
+          An "observe" was called from another "observe" closure, which can lead to \
+          over-observation and unintended side effects.
+
+          Avoid nested closures by moving child observation into their own lifecycle methods.
+          """
+        )
+      }
       let token = ObservationToken()
       self.tokens.insert(token)
       @Sendable func onChange() {
@@ -149,7 +159,9 @@
           Task { @MainActor in
             guard !token.isCancelled
             else { return }
-            onChange()
+            ObserveLocals.$isApplying.withValue(true) {
+              onChange()
+            }
           }
         }
       }
@@ -191,3 +203,7 @@
     }
   }
 #endif
+
+private enum ObserveLocals {
+  @TaskLocal static var isApplying = false
+}

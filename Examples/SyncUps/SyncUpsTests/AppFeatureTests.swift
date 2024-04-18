@@ -3,37 +3,8 @@ import XCTest
 
 @testable import SyncUps
 
-@MainActor
 final class AppFeatureTests: XCTestCase {
-  func testDelete() async throws {
-    let syncUp = SyncUp.mock
-
-    let store = TestStore(
-      initialState: AppFeature.State(syncUpsList: SyncUpsList.State(syncUps: [syncUp]))
-    ) {
-      AppFeature()
-    }
-
-    await store.send(
-      \.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])))
-    ) {
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
-    }
-
-    await store.send(\.path[id:0].detail.deleteButtonTapped) {
-      $0.path[id: 0]?.detail?.destination = .alert(.deleteSyncUp)
-    }
-
-    await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
-      $0.path[id: 0, case: \.detail]?.destination = nil
-      $0.syncUpsList.syncUps = []
-    }
-
-    await store.receive(\.path.popFrom) {
-      $0.path = StackState()
-    }
-  }
-
+  @MainActor
   func testDetailEdit() async throws {
     var syncUp = SyncUp.mock
 
@@ -43,10 +14,10 @@ final class AppFeatureTests: XCTestCase {
       AppFeature()
     }
 
-    await store.send(
-      \.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: store.state.syncUpsList.$syncUps[0])))
-    ) {
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
+    let sharedSyncUp = try XCTUnwrap(store.state.syncUpsList.$syncUps[id: syncUp.id])
+
+    await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
     }
 
     await store.send(\.path[id:0].detail.editButtonTapped) {
@@ -67,6 +38,38 @@ final class AppFeatureTests: XCTestCase {
     .finish()
   }
 
+  @MainActor
+  func testDelete() async throws {
+    let syncUp = SyncUp.mock
+
+    let store = TestStore(
+      initialState: AppFeature.State(syncUpsList: SyncUpsList.State(syncUps: [syncUp]))
+    ) {
+      AppFeature()
+    }
+
+    guard let sharedSyncUp = store.state.syncUpsList.$syncUps[id: syncUp.id]
+    else { return }
+
+    await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
+    }
+
+    await store.send(\.path[id:0].detail.deleteButtonTapped) {
+      $0.path[id: 0]?.detail?.destination = .alert(.deleteSyncUp)
+    }
+
+    await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
+      $0.path[id: 0, case: \.detail]?.destination = nil
+      $0.syncUpsList.syncUps = []
+    }
+
+    await store.receive(\.path.popFrom) {
+      $0.path = StackState()
+    }
+  }
+
+  @MainActor
   func testRecording() async {
     let speechResult = SpeechRecognitionResult(
       bestTranscription: Transcription(formattedString: "I completed the project"),
@@ -107,6 +110,15 @@ final class AppFeatureTests: XCTestCase {
     store.exhaustivity = .off
 
     await store.send(\.path[id:1].record.onTask)
+    store.assert {
+      $0.path[id: 0]?.detail?.syncUp.meetings = [
+        Meeting(
+          id: Meeting.ID(UUID(0)),
+          date: Date(timeIntervalSince1970: 1_234_567_890),
+          transcript: "I completed the project"
+        )
+      ]
+    }
     await store.receive(\.path.popFrom) {
       XCTAssertEqual($0.path.count, 1)
     }

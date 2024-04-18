@@ -500,7 +500,7 @@
           public var _$id: ComposableArchitecture.ObservableStateID {
             switch self {
             case .foo:
-              return ._$inert._$tag(0)
+              return ObservableStateID()._$tag(0)
             }
           }
 

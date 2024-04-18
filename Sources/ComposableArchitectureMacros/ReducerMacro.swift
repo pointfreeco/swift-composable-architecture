@@ -190,16 +190,18 @@ extension ReducerMacro: MemberMacro {
     providingMembersOf declaration: D,
     in context: C
   ) throws -> [DeclSyntax] {
-    let access = declaration.modifiers.first { $0.name.tokenKind == .keyword(.public) }
+    let access = declaration.modifiers.first {
+      [.keyword(.public), .keyword(.package)].contains($0.name.tokenKind)
+    }
     let typeNames = declaration.memberBlock.members.compactMap {
-      $0.as(MemberBlockItemSyntax.self)?.decl.as(StructDeclSyntax.self)?.name.text
-        ?? $0.as(MemberBlockItemSyntax.self)?.decl.as(TypeAliasDeclSyntax.self)?.name.text
-        ?? $0.as(MemberBlockItemSyntax.self)?.decl.as(EnumDeclSyntax.self)?.name.text
+      $0.decl.as(StructDeclSyntax.self)?.name.text
+        ?? $0.decl.as(TypeAliasDeclSyntax.self)?.name.text
+        ?? $0.decl.as(EnumDeclSyntax.self)?.name.text
     }
     let hasState = typeNames.contains("State")
     let hasAction = typeNames.contains("Action")
     let bindings = declaration.memberBlock.members.flatMap {
-      $0.as(MemberBlockItemSyntax.self)?.decl.as(VariableDeclSyntax.self)?.bindings ?? []
+      $0.decl.as(VariableDeclSyntax.self)?.bindings ?? []
     }
     let hasReduceMethod = declaration.memberBlock.members.contains {
       guard
@@ -245,9 +247,7 @@ extension ReducerMacro: MemberMacro {
 
       for enumCaseElement in enumCaseElements {
         stateCaseDecls.append(enumCaseElement.stateCaseDecl)
-        if let actionCaseDecl = enumCaseElement.actionCaseDecl {
-          actionCaseDecls.append(actionCaseDecl)
-        }
+        actionCaseDecls.append(enumCaseElement.actionCaseDecl)
         if let reducerScope = enumCaseElement.reducerScope {
           reducerScopes.append(reducerScope)
         }
@@ -371,7 +371,7 @@ extension ReducerMacro: MemberMacro {
         )
       }
       if !declaration.memberBlock.members.contains(
-        where: { $0.as(FunctionDeclSyntax.self)?.name.text == "scope" }
+        where: { $0.decl.as(FunctionDeclSyntax.self)?.name.text == "scope" }
       ) {
         decls.append(
           """
@@ -486,7 +486,7 @@ private enum ReducerCase {
     }
   }
 
-  var actionCaseDecl: String? {
+  var actionCaseDecl: String {
     switch self {
     case let .element(element, attribute):
       if attribute != .ignored,
@@ -497,14 +497,14 @@ private enum ReducerCase {
       {
         return "case \(element.suffixed("Action").trimmedDescription)"
       } else {
-        return nil
+        return "case \(element.name)(Swift.Never)"
       }
 
     case let .ifConfig(configs):
       return
         configs
         .map {
-          let actionCaseDecls = $0.cases.compactMap(\.actionCaseDecl)
+          let actionCaseDecls = $0.cases.map(\.actionCaseDecl)
           return """
             \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
             \(actionCaseDecls.joined(separator: "\n"))

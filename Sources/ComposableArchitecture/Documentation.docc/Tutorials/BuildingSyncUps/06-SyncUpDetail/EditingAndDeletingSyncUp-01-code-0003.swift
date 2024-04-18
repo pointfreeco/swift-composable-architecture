@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
@@ -22,6 +23,9 @@ struct SyncUpDetail {
         return .none
 
       case .editButtonTapped:
+        return .none
+
+      case .editSyncUp:
         return .none
 
       case .startMeetingButtonTapped:

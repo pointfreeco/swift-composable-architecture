@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
@@ -48,9 +49,6 @@ struct SyncUpDetailView: View {
                 Text(meeting.date, style: .time)
               }
             }
-          }
-          .onDelete { indices in
-            store.send(.deleteMeetings(atOffsets: indices))
           }
         } header: {
           Text("Past meetings")

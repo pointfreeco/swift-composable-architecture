@@ -4,18 +4,18 @@ import SwiftUI
 @Reducer
 struct SyncUpsList {
   @ObservableState
-  struct State {
-    var syncUps: IdentifiedArrayOf<SyncUps> = []
+  struct State: Equatable {
+    var syncUps: IdentifiedArrayOf<SyncUp> = []
   }
   enum Action {
-    case addButtonTapped
+    case addSyncUpButtonTapped
     case onDelete(IndexSet)
     case syncUpTapped(id: SyncUp.ID)
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      case .addButtonTapped:
+      case .addSyncUpButtonTapped:
         return .none
 
       case let .onDelete(indexSet):

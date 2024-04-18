@@ -26,4 +26,4 @@
 
 ### Key-path access
 
-- ``PersistenceKey/appStorage(_:)-97m43``
+- ``PersistenceKey/appStorage(_:)-4ly47``

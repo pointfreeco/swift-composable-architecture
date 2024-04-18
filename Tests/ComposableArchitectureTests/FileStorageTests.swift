@@ -5,7 +5,7 @@ import XCTest
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 final class FileStorageTests: XCTestCase {
   func testBasics() throws {
-    let fileStorage = EphemeralFileStorage(scheduler: .immediate)
+    let fileStorage = InMemoryFileStorage(scheduler: .immediate)
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -18,7 +18,7 @@ final class FileStorageTests: XCTestCase {
 
   func testDebounce() throws {
     let testScheduler = DispatchQueue.test
-    let fileStorage = EphemeralFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
+    let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -28,7 +28,7 @@ final class FileStorageTests: XCTestCase {
       users.append(.blob)
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
-      testScheduler.advance(by: .seconds(5) - .milliseconds(1))
+      testScheduler.advance(by: .seconds(1) - .milliseconds(1))
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       testScheduler.advance(by: .milliseconds(1))
@@ -36,9 +36,9 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  func testCancelInFlight() throws {
+  func testThrottle() throws {
     let testScheduler = DispatchQueue.test
-    let fileStorage = EphemeralFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
+    let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -48,26 +48,38 @@ final class FileStorageTests: XCTestCase {
       users.append(.blob)
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
-      testScheduler.advance(by: .seconds(3))
+      testScheduler.advance(by: .seconds(0.5))
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       users.append(.blobJr)
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
-      testScheduler.advance(by: .seconds(3))
-      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
-
-      testScheduler.advance(by: .seconds(2))
-
+      testScheduler.advance(by: .seconds(0.5))
       try XCTAssertNoDifference(
         fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+
+      testScheduler.advance(by: .seconds(0.25))
+
+      users.append(.blobSr)
+      try XCTAssertNoDifference(
+        fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+
+      testScheduler.advance(by: .seconds(0.5))
+      try XCTAssertNoDifference(
+        fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+
+      testScheduler.advance(by: .seconds(0.5))
+      try XCTAssertNoDifference(
+        fileStorage.fileSystem.value.users(for: .fileURL), [.blob, .blobJr, .blobSr]
+      )
     }
   }
 
   func testWillResign() throws {
     guard let willResignNotificationName else { return }
+
     let testScheduler = DispatchQueue.test
-    let fileStorage = EphemeralFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
+    let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -83,10 +95,11 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  func testWillResignAndDebounce() async throws {
-    guard let willResignNotificationName else { return }
+  func testWillTerminate() throws {
+    guard let willTerminateNotificationName else { return }
+    
     let testScheduler = DispatchQueue.test
-    let fileStorage = EphemeralFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
+    let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -96,7 +109,26 @@ final class FileStorageTests: XCTestCase {
       users.append(.blob)
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
-      testScheduler.advance(by: .seconds(3))
+      NotificationCenter.default.post(name: willTerminateNotificationName, object: nil)
+      testScheduler.advance()
+      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [.blob])
+    }
+  }
+
+  func testWillResignAndDebounce() async throws {
+    guard let willResignNotificationName else { return }
+    let testScheduler = DispatchQueue.test
+    let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
+    try withDependencies {
+      $0.defaultFileStorage = fileStorage
+    } operation: {
+      @Shared(.fileStorage(.fileURL)) var users = [User]()
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
+
+      users.append(.blob)
+      XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
+
+      testScheduler.advance(by: .seconds(0.5))
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
 
       NotificationCenter.default.post(name: willResignNotificationName, object: nil)
@@ -113,7 +145,7 @@ final class FileStorageTests: XCTestCase {
   }
 
   func testMultipleFiles() throws {
-    let fileStorage = EphemeralFileStorage()
+    let fileStorage = InMemoryFileStorage()
     try withDependencies {
       $0.defaultFileStorage = fileStorage
     } operation: {
@@ -154,7 +186,7 @@ final class FileStorageTests: XCTestCase {
 
   func testInitialValue() async throws {
     try await withMainSerialExecutor {
-      let fileStorage = EphemeralFileStorage()
+      let fileStorage = InMemoryFileStorage()
       try fileStorage.save(JSONEncoder().encode([User.blob]), to: .fileURL)
       try await withDependencies {
         $0.defaultFileStorage = fileStorage
@@ -200,30 +232,27 @@ final class FileStorageTests: XCTestCase {
         XCTAssertNoDifference(users, [.blob])
 
         try JSONEncoder().encode([User.blobJr]).write(to: .fileURL)
-        try await Task.sleep(nanoseconds: 1_000_000)
+        try await Task.sleep(nanoseconds: 10_000_000)
         XCTAssertNoDifference(users, [.blobJr])
       }
     }
   }
 
   @MainActor
-  func testWriteFileWhileDebouncing() async throws {
-    try await withMainSerialExecutor {
-      let scheduler = DispatchQueue.test
-      let fileStorage = EphemeralFileStorage(scheduler: scheduler.eraseToAnyScheduler())
+  func testWriteFileWhileDebouncing() throws {
+    let scheduler = DispatchQueue.test
+    let fileStorage = InMemoryFileStorage(scheduler: scheduler.eraseToAnyScheduler())
 
-      try await withDependencies {
-        $0.defaultFileStorage = fileStorage
-      } operation: {
-        @Shared(.fileStorage(.fileURL)) var users = [User]()
-        await Task.yield()
+    try withDependencies {
+      $0.defaultFileStorage = fileStorage
+    } operation: {
+      @Shared(.fileStorage(.fileURL)) var users = [User]()
 
-        users.append(.blob)
-        try fileStorage.save(Data(), to: .fileURL)
-        await scheduler.run()
-        XCTAssertNoDifference(users, [])
-        try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), [])
-      }
+      users.append(.blob)
+      try fileStorage.save(Data(), to: .fileURL)
+      scheduler.run()
+      XCTAssertNoDifference(users, [])
+      try XCTAssertNoDifference(fileStorage.fileSystem.value.users(for: .fileURL), nil)
     }
   }
 
@@ -307,18 +336,41 @@ final class FileStorageTests: XCTestCase {
     XCTAssertEqual(users1, [User(id: 1, name: "Blob")])
     XCTAssertEqual(users2, [])
   }
+
+  func testTwoInMemoryFileStorages() {
+    let shared1 = withDependencies {
+      $0.defaultFileStorage = InMemoryFileStorage()
+    } operation: {
+      @Shared(.fileStorage(.userURL)) var user = User(id: 1, name: "Blob")
+      return $user
+    }
+    let shared2 = withDependencies {
+      $0.defaultFileStorage = InMemoryFileStorage()
+    } operation: {
+      @Shared(.fileStorage(.userURL)) var user = User(id: 1, name: "Blob")
+      return $user
+    }
+
+    shared1.wrappedValue.name = "Blob Jr"
+    XCTAssertEqual(shared1.wrappedValue.name, "Blob Jr")
+    XCTAssertEqual(shared2.wrappedValue.name, "Blob")
+    shared2.wrappedValue.name = "Blob Sr"
+    XCTAssertEqual(shared1.wrappedValue.name, "Blob Jr")
+    XCTAssertEqual(shared2.wrappedValue.name, "Blob Sr")
+  }
 }
 
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 extension URL {
   fileprivate static let fileURL = Self.temporaryDirectory.appending(component: "file.json")
+  fileprivate static let userURL = Self.temporaryDirectory.appending(component: "user.json")
   fileprivate static let anotherFileURL = Self.temporaryDirectory
     .appending(component: "another-file.json")
 }
 
 private struct User: Codable, Equatable, Identifiable {
   let id: Int
-  let name: String
+  var name: String
   static let blob = User(id: 1, name: "Blob")
   static let blobJr = User(id: 1, name: "Blob Jr.")
   static let blobSr = User(id: 1, name: "Blob Sr.")
