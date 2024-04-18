@@ -39,12 +39,15 @@ struct Todos {
     case delete(IndexSet)
     case move(IndexSet, Int)
     case onAppear
-    case todos(IdentifiedActionOf<TodoFeature>)
+    case todoChanged(Todo)
   }
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.uuid) var uuid
-  private enum CancelID { case todoCompletion }
+  private enum CancelID {
+    case todoCompletion
+    case todoDebounce
+  }
 
   @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
 
@@ -113,12 +116,27 @@ struct Todos {
           try migrator.migrate(defaultDatabaseQueue)
         }
 
-      case .todos:
-        return .none
+      case .todoChanged(let todo):
+        return .run { _ in
+//          try await withTaskCancellation(id: CancelID.todoDebounce, cancelInFlight: true) {
+//            try await clock.sleep(for: .seconds(0.3))
+            try await defaultDatabaseQueue.write { db in
+              try todo.update(db)
+            }
+//          }
+        }
       }
     }
-    .forEach(\.todos, action: \.todos) {
-      TodoFeature()
+  }
+}
+
+extension IdentifiedArray {
+  subscript(id id: ID, default defaultElement: Element) -> Element {
+    get {
+      self[id: id] ?? defaultElement
+    }
+    set { 
+      self[id: id] = newValue
     }
   }
 }
@@ -138,8 +156,8 @@ struct AppView: View {
         .padding(.horizontal)
 
         List {
-          ForEach(store.scope(state: \.todos, action: \.todos), id: \.state.id) { store in
-            TodoView(store: store)
+          ForEach(store.todos, id: \.id) { todo in
+            TodoView(todo: $store.todos[id: todo.id, default: todo].sending(\.todoChanged))
           }
           .onDelete { store.send(.delete($0)) }
           .onMove { store.send(.move($0, $1)) }
