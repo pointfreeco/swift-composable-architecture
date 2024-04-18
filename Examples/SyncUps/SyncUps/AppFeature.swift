@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import GRDB
 import SwiftUI
 
 @Reducer
@@ -17,10 +18,12 @@ struct AppFeature {
   }
 
   enum Action {
+    case `init`
     case path(StackActionOf<Path>)
     case syncUpsList(SyncUpsList.Action)
   }
 
+  @Dependency(\.defaultDatabaseQueue) var databaseQueue
   @Dependency(\.date.now) var now
   @Dependency(\.uuid) var uuid
 
@@ -30,6 +33,22 @@ struct AppFeature {
     }
     Reduce { state, action in
       switch action {
+      case .`init`:
+        return .run { _ in
+          var migrator = DatabaseMigrator()
+          migrator.registerMigration("Create sync-ups") { db in
+            try db.create(table: SyncUp.databaseTableName) { t in
+              t.autoIncrementedPrimaryKey("id")
+              t.column("attendees", .jsonText)
+              t.column("meetings", .jsonText)
+              t.column("minutes", .integer)
+              t.column("theme", .text)
+              t.column("title", .text)
+            }
+          }
+          try migrator.migrate(databaseQueue)
+        }
+
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
         switch delegateAction {
         case .startMeeting:
@@ -71,7 +90,7 @@ struct AppView: View {
 }
 
 #Preview {
-  @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = [
+  @SharedReader(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = [
     .mock,
     .productMock,
     .engineeringMock

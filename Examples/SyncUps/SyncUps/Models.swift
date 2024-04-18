@@ -1,17 +1,29 @@
+import GRDB
 import IdentifiedCollections
 import SwiftUI
 import Tagged
 
 struct SyncUp: Equatable, Identifiable, Codable {
-  let id: Tagged<Self, UUID>
+  var id: Int?
   var attendees: IdentifiedArrayOf<Attendee> = []
-  var duration: Duration = .seconds(60 * 5)
   var meetings: IdentifiedArrayOf<Meeting> = []
+  var minutes: Int = 5
   var theme: Theme = .bubblegum
   var title = ""
 
+  var duration: Duration {
+    get { .seconds(60 * minutes) }
+    set { minutes = Int(newValue.components.seconds) / 60 }
+  }
+
   var durationPerAttendee: Duration {
     duration / attendees.count
+  }
+}
+
+extension SyncUp: TableRecord, PersistableRecord, FetchableRecord {
+  mutating func didInsert(_ inserted: InsertionSuccess) {
+    self.id = Int(inserted.rowID)
   }
 }
 
@@ -63,7 +75,6 @@ enum Theme: String, CaseIterable, Equatable, Identifiable, Codable {
 
 extension SyncUp {
   static let mock = Self(
-    id: SyncUp.ID(),
     attendees: [
       Attendee(id: Attendee.ID(), name: "Blob"),
       Attendee(id: Attendee.ID(), name: "Blob Jr"),
@@ -72,7 +83,6 @@ extension SyncUp {
       Attendee(id: Attendee.ID(), name: "Blob III"),
       Attendee(id: Attendee.ID(), name: "Blob I"),
     ],
-    duration: .seconds(60),
     meetings: [
       Meeting(
         id: Meeting.ID(),
@@ -87,28 +97,27 @@ extension SyncUp {
           """
       )
     ],
+    minutes: 1,
     theme: .orange,
     title: "Design"
   )
 
   static let engineeringMock = Self(
-    id: SyncUp.ID(),
     attendees: [
       Attendee(id: Attendee.ID(), name: "Blob"),
       Attendee(id: Attendee.ID(), name: "Blob Jr"),
     ],
-    duration: .seconds(60 * 10),
+    minutes: 10,
     theme: .periwinkle,
     title: "Engineering"
   )
 
   static let productMock = Self(
-    id: SyncUp.ID(),
     attendees: [
       Attendee(id: Attendee.ID(), name: "Blob Sr"),
       Attendee(id: Attendee.ID(), name: "Blob Jr"),
     ],
-    duration: .seconds(60 * 30),
+    minutes: 30,
     theme: .poppy,
     title: "Product"
   )

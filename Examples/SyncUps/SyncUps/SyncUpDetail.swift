@@ -19,7 +19,7 @@ struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    @Shared var syncUp: SyncUp
+    @SharedReader var syncUp: SyncUp
   }
 
   enum Action: Sendable {
@@ -38,6 +38,7 @@ struct SyncUpDetail {
     }
   }
 
+  @Dependency(\.defaultDatabaseQueue) var databaseQueue
   @Dependency(\.dismiss) var dismiss
   @Dependency(\.openSettings) var openSettings
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
@@ -57,15 +58,22 @@ struct SyncUpDetail {
         return .none
 
       case let .deleteMeetings(atOffsets: indices):
-        state.syncUp.meetings.remove(atOffsets: indices)
-        return .none
+        var syncUp = state.syncUp
+        syncUp.meetings.remove(atOffsets: indices)
+        return .run { [syncUp] _ in
+          try await databaseQueue.write { db in
+            try syncUp.update(db)
+          }
+        }
 
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
-          @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = []
-          syncUps.remove(id: state.syncUp.id)
-          return .run { _ in await dismiss() }
+          return .run { [syncUp = state.syncUp] _ in
+            _ = try await databaseQueue.write { db in
+              try syncUp.delete(db)
+            }
+          }
 
         case .continueWithoutRecording:
           return .send(.delegate(.startMeeting))
@@ -80,9 +88,12 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
-        state.syncUp = editState.syncUp
         state.destination = nil
-        return .none
+        return .run { _ in
+          try await databaseQueue.write { db in
+            try editState.syncUp.update(db)
+          }
+        }
 
       case .editButtonTapped:
         state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp))
@@ -263,7 +274,7 @@ extension AlertState where Action == SyncUpDetail.Destination.Alert {
 #Preview {
   NavigationStack {
     SyncUpDetailView(
-      store: Store(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
+      store: Store(initialState: SyncUpDetail.State(syncUp: SharedReader(.mock))) {
         SyncUpDetail()
       }
     )

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		CA14FF052B361C7400104A70 /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = CA14FF042B361C7400104A70 /* SwiftUINavigation */; };
+		DC34171E2BD1B6BA009AC4C9 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = DC34171D2BD1B6BA009AC4C9 /* GRDB */; };
+		DC3417202BD1B6C0009AC4C9 /* GRDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC34171F2BD1B6C0009AC4C9 /* GRDB.swift */; };
 		DC7CE4E729E9E6E4006B6263 /* ding.wav in Resources */ = {isa = PBXBuildFile; fileRef = DC7CE4E629E9E6E4006B6263 /* ding.wav */; };
 		DC808D7329E9C3AC0072B4A9 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D7229E9C3AC0072B4A9 /* App.swift */; };
 		DC808D7729E9C3AD0072B4A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC808D7629E9C3AD0072B4A9 /* Assets.xcassets */; };
@@ -48,6 +50,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DC34171F2BD1B6C0009AC4C9 /* GRDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRDB.swift; sourceTree = "<group>"; };
 		DC43064F2AE8CF7C005AFB1E /* SyncUps.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = SyncUps.xctestplan; sourceTree = "<group>"; };
 		DC7CE4E629E9E6E4006B6263 /* ding.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ding.wav; sourceTree = "<group>"; };
 		DC808D6F29E9C3AC0072B4A9 /* SyncUps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SyncUps.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -81,6 +84,7 @@
 				DC808DB629E9C58F0072B4A9 /* Tagged in Frameworks */,
 				DC808DA329E9C4490072B4A9 /* ComposableArchitecture in Frameworks */,
 				CA14FF052B361C7400104A70 /* SwiftUINavigation in Frameworks */,
+				DC34171E2BD1B6BA009AC4C9 /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,6 +177,7 @@
 		DC808D9E29E9C4040072B4A9 /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
+				DC34171F2BD1B6C0009AC4C9 /* GRDB.swift */,
 				DC808DA429E9C4C70072B4A9 /* OpenSettings.swift */,
 				DC808DA629E9C4D60072B4A9 /* SpeechRecognizer.swift */,
 			);
@@ -206,6 +211,7 @@
 				DC808DA229E9C4490072B4A9 /* ComposableArchitecture */,
 				DC808DB529E9C58F0072B4A9 /* Tagged */,
 				CA14FF042B361C7400104A70 /* SwiftUINavigation */,
+				DC34171D2BD1B6BA009AC4C9 /* GRDB */,
 			);
 			productName = SyncUps;
 			productReference = DC808D6F29E9C3AC0072B4A9 /* SyncUps.app */;
@@ -282,6 +288,7 @@
 			packageReferences = (
 				DC808DB429E9C58F0072B4A9 /* XCRemoteSwiftPackageReference "swift-tagged" */,
 				CA14FF032B361C7400104A70 /* XCRemoteSwiftPackageReference "swiftui-navigation" */,
+				DC34171C2BD1B6BA009AC4C9 /* XCRemoteSwiftPackageReference "GRDB" */,
 			);
 			productRefGroup = DC808D7029E9C3AC0072B4A9 /* Products */;
 			projectDirPath = "";
@@ -329,6 +336,7 @@
 				DC808DA729E9C4D60072B4A9 /* SpeechRecognizer.swift in Sources */,
 				DC80B1E929EDE5D1001CC0CC /* AppFeature.swift in Sources */,
 				DC808DA529E9C4C70072B4A9 /* OpenSettings.swift in Sources */,
+				DC3417202BD1B6C0009AC4C9 /* GRDB.swift in Sources */,
 				DC808DAD29E9C52A0072B4A9 /* Models.swift in Sources */,
 				DC808DB129E9C54A0072B4A9 /* SyncUpDetail.swift in Sources */,
 				DC808D7329E9C3AC0072B4A9 /* App.swift in Sources */,
@@ -672,6 +680,14 @@
 				minimumVersion = 1.2.0;
 			};
 		};
+		DC34171C2BD1B6BA009AC4C9 /* XCRemoteSwiftPackageReference "GRDB" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.26.0;
+			};
+		};
 		DC808DB429E9C58F0072B4A9 /* XCRemoteSwiftPackageReference "swift-tagged" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swift-tagged.git";
@@ -687,6 +703,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CA14FF032B361C7400104A70 /* XCRemoteSwiftPackageReference "swiftui-navigation" */;
 			productName = SwiftUINavigation;
+		};
+		DC34171D2BD1B6BA009AC4C9 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC34171C2BD1B6BA009AC4C9 /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
 		};
 		DC808DA229E9C4490072B4A9 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;

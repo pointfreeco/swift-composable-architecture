@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import GRDB
 import SwiftUI
 
 @Reducer
@@ -17,7 +18,7 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = []
+    @SharedReader(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = []
   }
 
   enum Action {
@@ -28,6 +29,7 @@ struct SyncUpsList {
     case onDelete(IndexSet)
   }
 
+  @Dependency(\.defaultDatabaseQueue) var databaseQueue
   @Dependency(\.uuid) var uuid
 
   var body: some ReducerOf<Self> {
@@ -36,7 +38,7 @@ struct SyncUpsList {
       case .addSyncUpButtonTapped:
         state.destination = .add(
           SyncUpForm.State(
-            syncUp: SyncUp(id: SyncUp.ID(uuid()))
+            syncUp: SyncUp()
           )
         )
         return .none
@@ -54,9 +56,12 @@ struct SyncUpsList {
               ?? Attendee(id: Attendee.ID(uuid()))
           )
         }
-        state.syncUps.append(syncUp)
         state.destination = nil
-        return .none
+        return .run { [syncUp] _ in
+          try await databaseQueue.write { db in
+            try syncUp.insert(db)
+          }
+        }
 
       case .destination:
         return .none
@@ -66,8 +71,12 @@ struct SyncUpsList {
         return .none
 
       case let .onDelete(indexSet):
-        state.syncUps.remove(atOffsets: indexSet)
-        return .none
+        let ids = indexSet.map { state.syncUps[$0].id }
+        return .run { _ in
+          try await databaseQueue.write { db in
+            _ = try SyncUp.deleteAll(db, ids: ids)
+          }
+        }
       }
     }
     .ifLet(\.$destination, action: \.destination)
@@ -140,7 +149,7 @@ struct CardView: View {
 }
 
 struct TrailingIconLabelStyle: LabelStyle {
-  func makeBody(configuration: Configuration) -> some View {
+  func makeBody(configuration: LabelStyleConfiguration) -> some View {
     HStack {
       configuration.title
       configuration.icon
@@ -153,7 +162,7 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 }
 
 #Preview("List") {
-  @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = [
+  @SharedReader(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = [
     .mock,
     .productMock,
     .engineeringMock
@@ -170,18 +179,23 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 #Preview("Card") {
   CardView(
     syncUp: SyncUp(
-      id: SyncUp.ID(),
       attendees: [],
-      duration: .seconds(60),
       meetings: [],
+      minutes: 1,
       theme: .bubblegum,
       title: "Point-Free Morning Sync"
     )
   )
 }
 
-extension PersistenceReaderKey where Self == FileStorageKey<IdentifiedArrayOf<SyncUp>> {
+extension PersistenceReaderKey where Self == GRDBQueryKey<SyncUpsRequest> {
   static var syncUps: Self {
-    fileStorage(.documentsDirectory.appending(component: "sync-ups.json"))
+    .query(SyncUpsRequest())
+  }
+}
+
+struct SyncUpsRequest: GRDBQuery {
+  func fetch(_ db: GRDB.Database) throws -> IdentifiedArrayOf<SyncUp> {
+    try SyncUp.all().order(Column("id").desc).fetchIdentifiedArray(db)
   }
 }

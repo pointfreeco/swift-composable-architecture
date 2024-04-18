@@ -9,7 +9,7 @@ struct RecordMeeting {
     @Presents var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
-    @Shared var syncUp: SyncUp
+    @SharedReader var syncUp: SyncUp
     var transcript = ""
 
     var durationRemaining: Duration {
@@ -34,6 +34,7 @@ struct RecordMeeting {
   }
 
   @Dependency(\.continuousClock) var clock
+  @Dependency(\.defaultDatabaseQueue) var databaseQueue
   @Dependency(\.dismiss) var dismiss
   @Dependency(\.speechClient) var speechClient
 
@@ -44,8 +45,14 @@ struct RecordMeeting {
         return .run { _ in await dismiss() }
 
       case .alert(.presented(.confirmSave)):
-        state.syncUp.insert(transcript: state.transcript)
-        return .run { _ in await dismiss() }
+        var syncUp = state.syncUp
+        syncUp.insert(transcript: state.transcript)
+        return .run { [syncUp] _ in
+          try await databaseQueue.write { db in
+            try syncUp.update(db)
+          }
+          await dismiss()
+        }
 
       case .alert:
         return .none
@@ -93,8 +100,14 @@ struct RecordMeeting {
         let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.secondsElapsed == state.syncUp.duration.components.seconds {
-            state.syncUp.insert(transcript: state.transcript)
-            return .run { _ in await dismiss() }
+            var syncUp = state.syncUp
+            syncUp.insert(transcript: state.transcript)
+            return .run { [syncUp] _ in
+              try await databaseQueue.write { db in
+                try syncUp.update(db)
+              }
+              await dismiss()
+            }
           }
           state.speakerIndex += 1
         }
@@ -383,7 +396,7 @@ struct MeetingFooterView: View {
 #Preview {
   NavigationStack {
     RecordMeetingView(
-      store: Store(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
+      store: Store(initialState: RecordMeeting.State(syncUp: SharedReader(.mock))) {
         RecordMeeting()
       }
     )
