@@ -57,7 +57,7 @@
         
         > Note: The ``ComposableArchitecture/TestStore/send(_:assert:file:line:)-2co21`` method on
         the test store is async because most features involve asynchronous side effects, and the
-        test store using the async context to track those effects.
+        test store uses the async context to track those effects.
         
         @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0004.swift, previousFile: file: 01-03-01-code-0002.swift)
       }
