@@ -314,7 +314,7 @@
       Now we see the problem with using uncontrolled dependencies in our feature code. It makes our
       code hard to test, and can make tests take a long time to run or become flakey.
       
-      For these reasons, and more, it is highly encouraged for you to control you dependency on
+      For these reasons, and more, it is highly encouraged for you to control your dependency on
       external systems (see <doc:DependencyManagement> for more information). The Composable 
       Architecture comes with a complete set of tools for controlling and propagating dependencies
       throughout an application.
