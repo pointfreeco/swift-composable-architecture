@@ -112,12 +112,17 @@ final class SyncUpDetailTests: XCTestCase {
   }
 
   @MainActor
-  func testDelete() async {
+  func testDelete() async throws {
     let didDismiss = LockIsolated(false)
     defer { XCTAssertEqual(didDismiss.value, true) }
 
     let syncUp = SyncUp.mock
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(syncUp))) {
+    @Shared(.syncUps) var syncUps: IdentifiedArray = [syncUp]
+    // TODO: Can this exhaustively be caught?
+    defer { XCTAssertEqual([], syncUps) }
+
+    let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: sharedSyncUp)) {
       SyncUpDetail()
     } withDependencies: {
       $0.dismiss = DismissEffect {

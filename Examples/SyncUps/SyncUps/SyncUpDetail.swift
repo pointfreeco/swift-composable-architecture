@@ -197,19 +197,21 @@ struct SyncUpDetailView: View {
     }
     .navigationTitle(store.syncUp.title)
     .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
-    .sheet(item: $store.scope(state: \.destination?.edit, action: \.destination.edit)) { store in
+    .sheet(
+      item: $store.scope(state: \.destination?.edit, action: \.destination.edit)
+    ) { editSyncUpStore in
       NavigationStack {
-        SyncUpFormView(store: store)
-          .navigationTitle(self.store.syncUp.title)
+        SyncUpFormView(store: editSyncUpStore)
+          .navigationTitle(store.syncUp.title)
           .toolbar {
             ToolbarItem(placement: .cancellationAction) {
               Button("Cancel") {
-                self.store.send(.cancelEditButtonTapped)
+                store.send(.cancelEditButtonTapped)
               }
             }
             ToolbarItem(placement: .confirmationAction) {
               Button("Done") {
-                self.store.send(.doneEditingButtonTapped)
+                store.send(.doneEditingButtonTapped)
               }
             }
           }

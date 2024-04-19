@@ -700,7 +700,7 @@ protocol to add a static variable for describing the details of your persistence
 
 ```swift
 extension PersistenceReaderKey where Self == FileStorageKey<IdentifiedArrayOf<User>> {
-  static let users: Self {
+  static var users: Self {
     fileStorage(.users)
   }
 }
@@ -753,7 +753,7 @@ persistence strategy described above, we can do the following:
 extension PersistenceReaderKey 
   where Self == PersistenceKeyDefault<FileStorageKey<IdentifiedArrayOf<User>>> 
 {
-  static let users: Self {
+  static var users: Self {
     PersistenceKeyDefault(.fileStorage(.users), [])
   }
 }

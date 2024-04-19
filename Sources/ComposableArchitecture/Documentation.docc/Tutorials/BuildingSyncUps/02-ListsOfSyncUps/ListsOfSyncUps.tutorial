@@ -1,8 +1,8 @@
 @Tutorial(time: 10) {
   @Intro(title: "Lists of sync-ups") {
-    We will begin building the SyncUps app from scratch by implementing the feature that powers
-    the list of sync-ups. It starts out as a simple feature, but it will become increasingly complex
-    as the app evolves.
+    We will begin building the SyncUps app from scratch by implementing the feature that powers the
+    list of sync-ups. It starts out as a simple feature, but it will become increasingly complex as
+    the app evolves.
   }
   
   @Section(title: "Domain models") {
@@ -20,8 +20,8 @@
       }
       
       @Step {
-        Copy and paste the following models into Models.swift. This code comes mostly verbatim
-        from Apple's Scrumdinger project.
+        Copy and paste the following models into Models.swift. This code comes mostly verbatim from
+        Apple's Scrumdinger project.
         
         The `SyncUp` type represents a recurring meeting for a set of attendees. The `Meeting` type
         represents a past recorded meeting, and includes a transcript if we were able to transcribe
@@ -32,11 +32,11 @@
       
       While these models would work well enough in our SyncUps application, we can do better. First
       it is not ideal to hold onto plain arrays in our domain. This leads us to a situation of 
-      referring to attendees and meetings by their positional index in the array, rather than
-      their inherent ID, as given by the `Identifiable` protocol. This becomes especially 
-      problematic when performing asynchronous effects in which the position of a value can change 
-      while the effect is being performed, making it possible to refer to the wrong value, leading 
-      to bugs, or a non-existent value, leading to crashes.
+      referring to attendees and meetings by their positional index in the array, rather than their
+      inherent ID, as given by the `Identifiable` protocol. This becomes especially problematic when
+      performing asynchronous effects in which the position of a value can change while the effect
+      is being performed, making it possible to refer to the wrong value, leading to bugs, or a
+      nonexistent value, leading to crashes.
       
       For this reason we recommend using our [`IdentifiedArray`][identified-array-gh] type, which
       behaves like an array, but allows you to refer to elements by their ID rather than their
@@ -79,9 +79,9 @@
         Go back to Models.swift, and import the `Tagged` library, and upgrade all usages of a plain
         `UUID` to be a tagged `UUID`.
         
-        > Note: The tag can even just be `Self`, but you can also have multiple tagged values in
-        a model by created dedicated tagged types. See the [Tagged repo][tag-collisions-gh] for more
-        information.
+        > Note: The tag can even just be `Self`, but you can also have multiple tagged values in a
+        > model by created dedicated tagged types. See the [Tagged repo][tag-collisions-gh] for more
+        > information.
         
         [tag-collisions-gh]: https://github.com/pointfreeco/swift-tagged#handling-tag-collisions
         
@@ -97,8 +97,8 @@
       eventually it will contain quite a bit of functionality, such as creating new sync-ups and
       drilling down to existing sync-ups.
       
-      But for now we will concentrate on just two very basic forms of functionality: displaying
-      the list, and allowing the user to swipe to delete a sync-up.
+      But for now we will concentrate on just two very basic forms of functionality: displaying the
+      list, and allowing the user to swipe to delete a sync-up.
       
       @Image(source: "ListsOfSyncUps-cover.png")
     }
@@ -130,15 +130,15 @@
         type with the ``ComposableArchitecture/ObservableState`` macro so that the view can 
         automatically observe changes to state.
         
-        > Note: We are pre-emptively making `State` conform to `Equatable` because it will be useful
-        for tests later in this tutorial.
+        > Note: We are preemptively making `State` conform to `Equatable` because it will be useful
+        > for tests later in this tutorial.
         
         @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-02-code-0003.swift)
       }
       
       Next we add an `Action` enum to represent all of the actions the user can perform in the UI.
-      Right now there only 3 actions: they can tap the "+" button in the top-right of the nav 
-      toolbar, they can tap a sync-up in the list, or they can swipe-to-delete on a row.
+      Right now there are only 3 actions: they can tap the "+" button in the top-right of the
+      navigation toolbar, they can tap a sync-up in the list, or they can swipe-to-delete on a row.
       
       @Step {
         Add an `Action` enum with a case for each action the user can perform in the UI.
@@ -153,8 +153,8 @@
       @Step {
         Implement the ``ComposableArchitecture/Reducer/body-8lumc`` of the reducer by using the 
         ``ComposableArchitecture/Reduce`` type to implement each action. We will leave the 
-        `addSyncUpButtonTapped` and `syncUpTapped` actions unimplemented for now since it requires more
-        work to present a sheet and drill down to a sync-up.
+        `addSyncUpButtonTapped` and `syncUpTapped` actions unimplemented for now since it requires
+        more work to present a sheet and drill down to a sync-up.
         
         > Note: Due to a bug in the Swift compiler it can often happen that you lose type inference
         > inside `Reduce`. If that happens you can specify the generics to restore inference and
@@ -164,11 +164,11 @@
       }
       
       That is all that is necessary for the `SyncUpsList` reducer for now. Later we will compose
-      more reducers into this to handle more functionality.
+      more reducers into this body to handle more functionality.
       
       Next, let's implement the view that will be powered by the `SyncUpsList` reducer. We will
-      need some helpers to break down the list view since it's quite complex, and most of
-      these helpers we will be taking directly from Apple's Scrumdinger code with few modifications.
+      need some helpers to break down the list view since it's quite complex, and most of these
+      helpers we will be taking directly from Apple's Scrumdinger code with few modifications.
       
       @Step {
         Add a `CardView` that represents a single row in the list of sync-ups.  
@@ -188,8 +188,8 @@
       }
       
       @Step {
-        Implement the `body` of the view as `List` with a `ForEach` that iterates over the
-        collection of sync-ups. We will also add a button to the tool bar that will eventually
+        Implement the `body` of the view as a `List` with a `ForEach` that iterates over the
+        collection of sync-ups. We will also add a button to the toolbar that will eventually
         present a sheet for adding a new sync-up. Since we marked the `State` type with the
         ``ComposableArchitecture/ObservableState`` macro we can access state directly in the
         `store` and send actions to it.
@@ -230,7 +230,7 @@
     
     @Steps {
       @Step {
-        At the bottom fo the file, where the `#Preview` is constructed, apply the `_printChanges`
+        At the bottom of the file, where the `#Preview` is constructed, apply the `_printChanges()`
         reducer operator to `SyncUpsList`. 
         
         @Code(name: "SyncUpsList.swift", file: ListsOfSyncUps-03-code-0001.swift, previousFile: ListsOfSyncUps-03-code-0001-previous.swift)
@@ -238,8 +238,8 @@
       
       @Step {
         Run the preview again and delete the row. View the logs in the console to see that a nicely
-        formatted message has been printed to the console to show what action was sent and how
-        the state changed.
+        formatted message has been printed to the console to show what action was sent and how the
+        state changed.
         
         @Code(name: "console-output.diff", file: ListsOfSyncUps-03-code-0002.diff)
       }

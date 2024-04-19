@@ -12,7 +12,6 @@ struct SyncUpDetail {
   enum Action {
     // case alert(PresentationAction<Alert>)
     case cancelEditButtonTapped
-    case delegate(Delegate)
     case deleteButtonTapped
     case destination(PresentationAction<Destination.Action>)
     case doneEditingButtonTapped

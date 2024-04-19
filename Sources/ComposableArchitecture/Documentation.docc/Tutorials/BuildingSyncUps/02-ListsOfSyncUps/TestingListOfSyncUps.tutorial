@@ -10,13 +10,13 @@
     @ContentAndMedia {
       Let's write a test to verify that when the `onDelete` action is sent that the corresponding
       sync-ups are indeed deleted. This will require us to become familiar with the testing tools
-      in the library, primarily `TestStore`.
+      in the library, primarily the `TestStore`.
     }
     
     @Steps {
       @Step {
-        Start by creating a new file in your test target called SyncUpsListTests.swift, and paste
-        in some basic scaffolding for a new test to verify the deletion logic.
+        Start by creating a new file in your test target called SyncUpsListTests.swift, and paste in
+        some basic scaffolding for a new test to verify the deletion logic.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingListOfSyncUps-01-code-0001.swift)
       }
@@ -28,9 +28,9 @@
       
       @Step {
         Construct a ``ComposableArchitecture/TestStore`` much like you would a regular `Store`, by 
-        providing the initial state for the feature to begin in as well as the reducer you want
-        to test. We'll start the feature with on sync-up already in its array so that we have 
-        something to delete.
+        providing the initial state for the feature to begin in as well as the reducer you want to
+        test. We'll start the feature with on sync-up already in its array so that we have something
+        to delete.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingListOfSyncUps-01-code-0002.swift)
       }
@@ -45,16 +45,16 @@
       
       As written, this test would fail if we ran it. Go ahead. Try it!
       
-      To get a passing test we must provide a trailing closure that describes how the state 
-      changes. The closure is handed a single, mutable argument that represents the state before
-      the action was sent. It is your job to mutate that argument to represent the state _after_ 
-      the action was processed by the reducer.
+      To get a passing test we must provide a trailing closure that describes how the state changes.
+      The closure is handed a single, mutable argument that represents the state before the action
+      was sent. It is your job to mutate that argument to represent the state _after_ the action was
+      processed by the reducer.
       
       @Step {
         Provide a trailing closure to
         ``ComposableArchitecture/TestStore/send(_:assert:file:line:)-2co21`` that mutates the state
         to its final value. In particular, we expect the `syncUps` to be an empty array, and for
-        no other changes to happen. 
+        no other changes to happen.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingListOfSyncUps-01-code-0004.swift)
       }
