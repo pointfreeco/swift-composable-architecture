@@ -1,19 +1,6 @@
 import ComposableArchitecture
 import GRDB
 
-private enum GRDBDefaultDatabaseQueueKey: TestDependencyKey {
-  static var testValue: DatabaseQueue {
-    try! DatabaseQueue()
-  }
-}
-
-extension DependencyValues {
-  public var defaultDatabaseQueue: DatabaseQueue {
-    get { self[GRDBDefaultDatabaseQueueKey.self] }
-    set { self[GRDBDefaultDatabaseQueueKey.self] = newValue }
-  }
-}
-
 public protocol GRDBQuery: Hashable {
   associatedtype Value
   func fetch(_ db: Database) throws -> Value
@@ -26,24 +13,22 @@ extension PersistenceReaderKey {
   }
 }
 
-public final class GRDBQueryKey<Query: GRDBQuery>: PersistenceReaderKey {
+public struct GRDBQueryKey<Query: GRDBQuery>: PersistenceReaderKey {
   let query: Query
 
   public init(_ query: Query) {
     self.query = query
   }
 
-  public static func == (lhs: GRDBQueryKey, rhs: GRDBQueryKey) -> Bool {
-    lhs.query == rhs.query
-  }
-
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(query)
-  }
-
   public func load(initialValue: Query.Value?) -> Query.Value? {
-    @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
-    return try? defaultDatabaseQueue.read(query.fetch(_:))
+    do {
+      @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
+      return try defaultDatabaseQueue.read { db in
+        try query.fetch(db)
+      }
+    } catch {
+      return initialValue
+    }
   }
 
   public func subscribe(
@@ -51,7 +36,9 @@ public final class GRDBQueryKey<Query: GRDBQuery>: PersistenceReaderKey {
     didSet: @escaping (Query.Value?) -> Void
   ) -> Shared<Query.Value>.Subscription {
     @Dependency(\.defaultDatabaseQueue) var defaultDatabaseQueue
-    let observation = ValueObservation.tracking(query.fetch(_:))
+    let observation = ValueObservation.tracking { db in
+      try query.fetch(db)
+    }
     let cancellable = observation.start(in: defaultDatabaseQueue) { error in
 
     } onChange: { newValue in
@@ -60,6 +47,19 @@ public final class GRDBQueryKey<Query: GRDBQuery>: PersistenceReaderKey {
     return Shared.Subscription {
       cancellable.cancel()
     }
+  }
+}
+
+private enum GRDBDefaultDatabaseQueueKey: TestDependencyKey {
+  static var testValue: DatabaseQueue {
+    try! DatabaseQueue()
+  }
+}
+
+extension DependencyValues {
+  public var defaultDatabaseQueue: DatabaseQueue {
+    get { self[GRDBDefaultDatabaseQueueKey.self] }
+    set { self[GRDBDefaultDatabaseQueueKey.self] = newValue }
   }
 }
 
