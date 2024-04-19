@@ -23,7 +23,7 @@ class SyncUpsListTests: XCTestCase {
       ],
       title: "Point-Free morning sync"
     )
-    await store.send(.addSyncUp(.presented(.set(\.syncUp, editedSyncUp))))
+    await store.send(\.addSyncUp.binding.syncUp, editedSyncUp)
   }
   
   @MainActor

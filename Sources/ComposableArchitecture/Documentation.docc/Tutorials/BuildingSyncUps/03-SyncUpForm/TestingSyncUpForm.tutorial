@@ -14,8 +14,8 @@
     
     @Steps {
       @Step {
-        Create a new test file called SyncUpFormTests.swift and paste in some basic scaffolding
-        for a new test case.
+        Create a new test file called SyncUpFormTests.swift and paste in some basic scaffolding for
+        a new test case.
         
         @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0001.swift)
       }
@@ -93,9 +93,9 @@
       }
       
       @Step {
-        Run the test suite to see that it unfortunately fails. The reason it fails is because in 
-        the reducer we are reaching out to an uncontrolled dependency for generating attendee IDs,
-        which are UUIDs under the hood.
+        Run the test suite to see that it unfortunately fails. The reason it fails is because in the
+        reducer we are reaching out to an uncontrolled dependency for generating attendee IDs, which
+        are UUIDs under the hood.
         
         @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-02-code-0003.swift)
       }
@@ -114,8 +114,8 @@
       makes it very easy to control and override dependencies.
       
       @Step {
-        Go back to SyncUpForm.swift, where the reducer is implemented, and add a new property to
-        the `SyncUpForm` type. It will use the `@Dependency` property wrapper to express that the
+        Go back to SyncUpForm.swift, where the reducer is implemented, and add a new property to the
+        `SyncUpForm` type. It will use the `@Dependency` property wrapper to express that the
         feature has a dependency, and we will provide the key path `\.uuid` to denote the dependence
         on UUID generation.
         

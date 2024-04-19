@@ -1,8 +1,8 @@
 @Tutorial(time: 15) {
   @Intro(title: "Sync-up form") {
     We will create a new feature with the Composable Architecture that is capable of editing the
-    details of a new sync-up. We will also add some nuanced logic around how focus moves through
-    the feature to make things a little more interesting.
+    details of a new sync-up. We will also add some nuanced logic around how focus moves through the
+    feature to make things a little more interesting.
   }
   
   @Section(title: "Sync-up form basics") {
@@ -63,10 +63,10 @@
       deleting attendees by swiping on their row, and we need a button for adding attendees.
       
       @Step {
-        Add an `onDeleteAttendees` action that we can send from the `onDelete` closure in the 
-        view. This is similar to what we did in the `SyncUpsList` reducer, but we have decided to
-        name it more explicitly as `onDeleteAttendees` since the "attendee" is not the core focus
-        of this feature.
+        Add an `onDeleteAttendees` action that we can send from the `onDelete` closure in the view.
+        This is similar to what we did in the `SyncUpsList` reducer, but we have decided to name it
+        more explicitly as `onDeleteAttendees` since the "attendee" is not the core focus of this
+        feature.
         
         We have also added some additional logic to make sure that the collection of attendees is
         not empty. This is the kind of logic we would like to get test coverage on eventually.
@@ -96,8 +96,8 @@
       
       @Step {
         Add a `store` property to the view, just as we did in the `SyncUpsListView`, but this time
-        we have annotated the variable with the SwiftUI `@Bindable` property wrapper. That will
-        allow us to derive bindings from the store.
+        we have annotated the variable with SwiftUI's `@Bindable` property wrapper. That will allow
+        us to derive bindings from the store.
         
         > Note: The `@Bindable` property wrapper is iOS 17+, and so if you are supporting older
         > platforms you can use the `@Perception.Bindable` property wrapper that comes with the
@@ -109,16 +109,16 @@
       @Step {
         Implement the rest of the form view by deriving bindings from the store to hand to the 
         various UI controls. This can be done by first getting a binding to the store via the 
-        `$store` syntax, and then dot-chaining onto that to derive bindings to any data inside
-        the store.
+        `$store` syntax, and then dot-chaining onto that to derive bindings to any data inside the
+        store.
         
         @Code(name: "SyncUpForm.swift", file: SyncUpForm-01-code-0009.swift)
       }
       
-      We now have the basics of the sync-up form view in place. We can edit any field, and even
-      add attendees to the sync-up. Before integrating this feature into the sync-ups list (so that
-      we can actually create new sync-ups and add them to the list), let's make this form feature
-      a bit more interesting by controlling how the focus flows through the view.
+      We now have the basics of the sync-up form view in place. We can edit any field, and even add
+      attendees to the sync-up. Before integrating this feature into the sync-ups list (so that we
+      can actually create new sync-ups and add them to the list), let's make this form feature a bit
+      more interesting by controlling how the focus flows through the view.
     }
   }
   
@@ -129,15 +129,15 @@
       begin entering the details of the new sync-up. Further, when an attendee is added the newly
       added text field is not focused, forcing the user again to tap the text field.
       
-      We can improve these small annoyances, and we will first star with an approach that puts
-      all the logic in the view, and then we will explore a better approach after.
+      We can improve these small annoyances, and we will first start with an approach that puts all
+      the logic in the view, and then we will explore a better approach after.
     }
     
     @Steps {
       @Step {
         Focus is handled in SwiftUI with the `@FocusState` property. Typically you start by modeling
         all of the fields that can be focused in the view with an enum, and then you hold onto
-        some optional enum state to represent what is currently focused, or if `nil` that nothing
+        some optional enum state to represent what is currently focused, or if `nil` then nothing
         is focused.
         
         @Code(name: "SyncUpForm.swift", file: SyncUpForm-02-code-0001.swift, previousFile: SyncUpForm-02-code-0001-previous.swift)
@@ -213,7 +213,7 @@
         @Video(source: SyncUpForm-02-video-0007.mp4)
       }
       
-      The focusing logic in the feature is now full implemented. But there are a few things to not 
+      The focusing logic in the feature is now fully implemented. But there are a few things to not 
       like about how we have accomplished things so far.
       
       * We now have logic implemented in two distinct places in the feature. The logic of adding

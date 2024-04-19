@@ -11,7 +11,6 @@ struct SyncUpDetail {
 
   enum Action {
     case cancelEditButtonTapped
-    case delegate(Delegate)
     case deleteButtonTapped
     case destination(PresentationAction<Destination.Action>)
     case doneEditingButtonTapped
@@ -39,9 +38,6 @@ struct SyncUpDetail {
 
       case .cancelEditButtonTapped:
         state.destination = nil
-        return .none
-
-      case .delegate:
         return .none
 
       case .deleteButtonTapped:

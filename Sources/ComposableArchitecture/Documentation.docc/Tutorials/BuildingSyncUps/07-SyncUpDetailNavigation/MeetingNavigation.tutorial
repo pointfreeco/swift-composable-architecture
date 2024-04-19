@@ -9,8 +9,8 @@
     @ContentAndMedia {
       The meeting screen is a static view that simply displays information. It has no logic or 
       behavior of its own. And for that reason it's not necessary to create a whole new Composable
-      Architecture feature for this screen. We can use a vanilla SwiftUI view, and then integrate
-      it into the rest of the application.
+      Architecture feature for this screen. We can use a vanilla SwiftUI view, and then integrate it
+      into the rest of the application.
       
       @Image(source: MeetingNavigation-01-cover.png)
     }
@@ -27,7 +27,7 @@
         hold onto both a `Meeting` and `SyncUp` so that we can display attendees and transcript.
         
         > Note: There's no need for a reducer or a ``ComposableArchitecture/Store`` here since the
-        view is logic-less and inert. We can have it just hold onto simple data.
+        > view is logic-less and inert. We can have it just hold onto simple data.
         
         @Code(name: "Meeting.swift", file: MeetingNavigation-01-code-0002.swift)
       }
@@ -64,8 +64,8 @@
       
       @Step {
         In the `AppView` we now need to add the `.meeting` case to our `switch` inside the
-        `NavigationStack`. Here we can bind to the data in the `.meeting` case and hand it to
-        the `MeetingView`.
+        `NavigationStack`. Here we can bind to the data in the `.meeting` case and hand it to the
+        `MeetingView`.
         
         @Code(name: "AppFeature.swift", file: MeetingNavigation-02-code-0003.swift, previousFile: MeetingNavigation-02-code-0003-previous.swift)
       }

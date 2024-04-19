@@ -1,9 +1,9 @@
 @Tutorial(time: 10) {
   @Intro(title: "Testing the add sync-up flow") {
-    We have now integrated two moderately complex features, the `SyncUpsList` and `SyncUpForm`,
-    and so its time to write some tests. This will give us the opportunity to prove that the
-    features work in tandem as we expect, and we will explore "non-exhaustive" testing to make
-    our tests less fragile.
+    We have now integrated two moderately complex features, the `SyncUpsList` and `SyncUpForm`, and
+    so its time to write some tests. This will give us the opportunity to prove that the features
+    work in tandem as we expect, and we will explore "non-exhaustive" testing to make our tests less
+    fragile.
   }
   
   @Section(title: "Adding a sync-up") {
@@ -14,9 +14,9 @@
     @Steps {
       @Step {
         These new tests will go in the SyncUpsListTests.swift file since we are testing the 
-        integration of the list feature with the form feature. We already have one, very simple
-        test in this file for the deletion logic (code is currently omitted from the snippet). Add
-        a new test method for the flow of adding a sync-up.
+        integration of the list feature with the form feature. We already have one, very simple test
+        in this file for the deletion logic (code is currently omitted from the snippet). Add a new
+        test method for the flow of adding a sync-up.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-01-code-0001.swift, previousFile: TestingSyncUpFormPresentation-01-code-0001-previous.swift)
       }
@@ -24,15 +24,15 @@
       @Step {
         As with every test in the Composable Architecture, we start by creating a 
         ``ComposableArchitecture/TestStore`` for the feature we are testing. We will start the 
-        feature in a state with no sync-ups in state.
+        feature in a state with no sync-ups.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-01-code-0002.swift)
       }
       
       @Step {
-        Emulate the user tapping on the "+" button in the top-right of the interface by sending
-        the `addSyncUpButtonTapped` action. When that action is sent we expect the `addSyncUp` state 
-        to be populated, representing that the sheet should appear.
+        Emulate the user tapping on the "+" button in the top-right of the interface by sending the
+        `addSyncUpButtonTapped` action. When that action is sent we expect the `addSyncUp` state to
+        be populated, representing that the sheet should appear.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-01-code-0003.swift)
       }
@@ -43,7 +43,7 @@
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-01-code-0004.swift)
       }
       
-      The problem is similar to what we encountered while writing tests for the `SyncUpForm` 
+      The problem is similar to what we encountered while writing tests for the `SyncUpForm`
       feature. We are using an uncontrolled dependency in the `SyncUpsList` feature for generating 
       UUIDs. We now need to control that dependency.
       
@@ -73,7 +73,7 @@
       
       @Step {
         Update the assertion to confirm that the newly created `SyncUp` should have an ID that is 
-        the UUID with all 0's.
+        the UUID with all 0s.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-01-code-0008.swift)
       }
@@ -81,8 +81,8 @@
       Now the test passes with flying colors!
       
       But we also haven't tested too much yet. We've just confirmed that when the user taps the "+"
-      that some state in the feature is populated. Let's now emulate the user making some changes
-      to the sync-up in the form, and then confirming the addition of the sync-up to the root list.
+      that some state in the feature is populated. Let's now emulate the user making some changes to
+      the sync-up in the form, and then confirming the addition of the sync-up to the root list.
       
       @Step {
         Emulate the user editing some details of the sync-up. To do this we need to send an action
@@ -146,29 +146,29 @@
       }
       
       We now have a passing test, and it exercises the integration of two features. We have emulated
-      the full flow of a user bringing up the "New sync-up" sheet, making some changes, tapping "Add",
-      and proving that the new sheet was added to the list and the sheet was dismissed. As long as
-      we have hooked everything up in the view properly, and as long as we trust SwiftUI to do its 
-      job, we can be confident this feature works the way we expect.
+      the full flow of a user bringing up the "New sync-up" sheet, making some changes, tapping
+      "Add", and proved that the new sheet was added to the list and the sheet was dismissed. As
+      long as we have hooked everything up in the view properly, and as long as we trust SwiftUI to
+      do its  job, we can be confident this feature works the way we expect.
     }
   }
   
   @Section(title: "Non-exhaustive testing") {
     @ContentAndMedia {
-      The test we wrote in the previous section is incredibly powerful, but also a bit verbose.
-      As the features you test get more complex, and as you test the integration of more features,
-      you may come to a point where you do not want to exhaustively assert on every little thing
+      The test we wrote in the previous section is incredibly powerful, but also a bit verbose. As
+      the features you test get more complex, and as you test the integration of more features, you
+      may come to a point where you do not want to exhaustively assert on every little thing
       happening inside the features.
       
       This is where non-exhaustive testing is helpful. It allows you to write tests in the same
-      style as before, but you can choose what state you want to assert on, and you can ignore
-      state that is not interesting to you.
+      style as before, but you can choose what state you want to assert on, and you can ignore state
+      that is not interesting to you.
       
       Typically you will have a mixture of exhaustive and non-exhaustive tests in your suite.
-      Exhaustive tests are a great default for testing leaf features, but every once in a while
-      you may want an exhaustive test on feature integrations. And then non-exhaustive tests are
-      a great default for testing the integration of features, and may make sense every once in 
-      a while on leaf features.
+      Exhaustive tests are a great default for testing leaf features, but every once in a while you
+      may want an exhaustive test on feature integrations. And then non-exhaustive tests are a great
+      default for testing the integration of features, and may make sense every once in a while on
+      leaf features.
     }
     
     @Steps {
@@ -184,22 +184,23 @@
         will set the store's ``ComposableArchitecture/TestStore/exhaustivity`` to `.off`. This
         puts the test store in "non-exhaustive" mode.
         
-        > Note: The default value of ``ComposableArchitecture/TestStore/exhaustivity`` is `.on`
-        and so typically it does not need to be set.
+        > Note: The default value of ``ComposableArchitecture/TestStore/exhaustivity`` is `.on` and
+        > so typically it does not need to be set.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-02-code-0002.swift)
       }
       
       @Step {
-        Emulate the user tapping the "+" button in the UI by sending the `.addSyncUpButtonTapped` action.
+        Emulate the user tapping the "+" button in the UI by sending the `.addSyncUpButtonTapped`
+        action.
         
         Run the test to see that it passes.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-02-code-0003.swift)
       }
       
-      Already we can see a difference between non-exhaustive and exhaustive test stores. We are 
-      not specifying the trailing closure in 
+      Already we can see a difference between non-exhaustive and exhaustive test stores. We are not
+      specifying the trailing closure in
       ``ComposableArchitecture/TestStore/send(_:assert:file:line:)-2co21`` to assert on state
       changes, yet the test will still pass.
       

@@ -81,9 +81,11 @@ struct SyncUpDetailView: View {
       }
     }
     .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
-    .sheet(item: $store.scope(state: \.destination?.edit, action: \.destination.edit)) { store in
+    .sheet(
+      item: $store.scope(state: \.destination?.edit, action: \.destination.edit)
+    ) { editSyncUpStore in
       NavigationStack {
-        SyncUpFormView(store: store)
+        SyncUpFormView(store: editSyncUpStore)
           .navigationTitle(store.syncUp.title)
           .toolbar {
             ToolbarItem(placement: .cancellationAction) {

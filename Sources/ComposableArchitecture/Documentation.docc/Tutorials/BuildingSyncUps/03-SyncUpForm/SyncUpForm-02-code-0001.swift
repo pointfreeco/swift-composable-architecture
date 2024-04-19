@@ -52,7 +52,7 @@ struct ThemePicker: View {
   @Binding var selection: Theme
 
   var body: some View {
-    Picker("Theme", selection: self.$selection) {
+    Picker("Theme", selection: $selection) {
       ForEach(Theme.allCases) { theme in
         ZStack {
           RoundedRectangle(cornerRadius: 4)
@@ -70,7 +70,7 @@ struct ThemePicker: View {
 
 extension Duration {
   fileprivate var minutes: Double {
-    get { Double(self.components.seconds / 60) }
+    get { Double(components.seconds / 60) }
     set { self = .seconds(newValue * 60) }
   }
 }

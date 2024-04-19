@@ -51,7 +51,7 @@ enum Theme: String, CaseIterable, Equatable, Identifiable, Codable {
     }
   }
 
-  var mainColor: Color { Color(self.rawValue) }
+  var mainColor: Color { Color(rawValue) }
 
-  var name: String { self.rawValue.capitalized }
+  var name: String { rawValue.capitalized }
 }
