@@ -56,6 +56,7 @@ public struct SharedReader<Value> {
 
   public var projectedValue: Self {
     get { self }
+    set { self = newValue }
   }
 
   public subscript<Member>(
