@@ -285,7 +285,7 @@ struct ChildView: View {
 }
 ```
 
-When `self.dismiss()` is invoked, SwiftUI finds the closet parent view that is presented in the
+When `self.dismiss()` is invoked, SwiftUI finds the closest parent view that is presented in the
 navigation stack, and removes that state from the collection powering the stack. This can be 
 incredibly useful, but it is also relegated to the view layer. It is not possible to use 
 `dismiss` elsewhere, like in an observable object, which would allow you to have nuanced logic
