@@ -19,7 +19,18 @@ struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
+    @SharedReader var meetings: IdentifiedArrayOf<Meeting>
     @SharedReader var syncUp: SyncUp
+
+    init(
+      destination: Destination.State? = nil,
+      meetings: IdentifiedArrayOf<Meeting> = [],
+      syncUp: SharedReader<SyncUp>
+    ) {
+      self.destination = destination
+      self._meetings = SharedReader(wrappedValue: meetings, .meetings(syncUpID: syncUp.id))
+      self._syncUp = syncUp
+    }
   }
 
   enum Action: Sendable {
@@ -58,11 +69,10 @@ struct SyncUpDetail {
         return .none
 
       case let .deleteMeetings(atOffsets: indices):
-        var syncUp = state.syncUp
-        syncUp.meetings.remove(atOffsets: indices)
-        return .run { [syncUp] _ in
-          try await databaseQueue.write { db in
-            try syncUp.update(db)
+        let ids = indices.map { state.meetings[$0].id }
+        return .run { _ in
+          _ = try await databaseQueue.write { db in
+            try Meeting.deleteAll(db, ids: ids)
           }
         }
 
@@ -153,9 +163,9 @@ struct SyncUpDetailView: View {
         Text("Sync-up Info")
       }
 
-      if !store.syncUp.meetings.isEmpty {
+      if !store.meetings.isEmpty {
         Section {
-          ForEach(store.syncUp.meetings) { meeting in
+          ForEach(store.meetings) { meeting in
             NavigationLink(
               state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
             ) {

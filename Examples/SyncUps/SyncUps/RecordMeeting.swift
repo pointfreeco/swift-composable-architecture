@@ -36,6 +36,7 @@ struct RecordMeeting {
   @Dependency(\.continuousClock) var clock
   @Dependency(\.defaultDatabaseQueue) var databaseQueue
   @Dependency(\.dismiss) var dismiss
+  @Dependency(\.date.now) var now
   @Dependency(\.speechClient) var speechClient
 
   var body: some ReducerOf<Self> {
@@ -45,11 +46,11 @@ struct RecordMeeting {
         return .run { _ in await dismiss() }
 
       case .alert(.presented(.confirmSave)):
-        var syncUp = state.syncUp
-        syncUp.insert(transcript: state.transcript)
-        return .run { [syncUp] _ in
-          try await databaseQueue.write { db in
-            try syncUp.update(db)
+        return .run { [syncUpID = state.syncUp.id, transcript = state.transcript] _ in
+          if let syncUpID {
+            try await databaseQueue.write { db in
+              try Meeting(date: now, syncUpID: syncUpID, transcript: transcript).insert(db)
+            }
           }
           await dismiss()
         }
@@ -100,11 +101,11 @@ struct RecordMeeting {
         let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.secondsElapsed == state.syncUp.duration.components.seconds {
-            var syncUp = state.syncUp
-            syncUp.insert(transcript: state.transcript)
-            return .run { [syncUp] _ in
-              try await databaseQueue.write { db in
-                try syncUp.update(db)
+            return .run { [syncUpID = state.syncUp.id, transcript = state.transcript] _ in
+              if let syncUpID {
+                try await databaseQueue.write { db in
+                  try Meeting(date: now, syncUpID: syncUpID, transcript: transcript).insert(db)
+                }
               }
               await dismiss()
             }
@@ -144,21 +145,6 @@ struct RecordMeeting {
     for await _ in clock.timer(interval: .seconds(1)) {
       await send(.timerTick)
     }
-  }
-}
-
-extension SyncUp {
-  fileprivate mutating func insert(transcript: String) {
-    @Dependency(\.date.now) var now
-    @Dependency(\.uuid) var uuid
-    meetings.insert(
-      Meeting(
-        id: Meeting.ID(uuid()),
-        date: now,
-        transcript: transcript
-      ),
-      at: 0
-    )
   }
 }
 

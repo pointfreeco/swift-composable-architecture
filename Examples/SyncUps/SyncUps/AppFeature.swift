@@ -46,6 +46,14 @@ struct AppFeature {
               t.column("title", .text)
             }
           }
+          migrator.registerMigration("Create meetings") { db in
+            try db.create(table: Meeting.databaseTableName) { t in
+              t.autoIncrementedPrimaryKey("id")
+              t.column("date", .datetime)
+              t.column("syncUpID", .integer)
+              t.column("transcript", .text)
+            }
+          }
           try migrator.migrate(databaseQueue)
         }
 
@@ -59,6 +67,13 @@ struct AppFeature {
 
       case .path:
         return .none
+
+      case let .syncUpsList(.delegate(action)):
+        switch action {
+        case let .goToSyncUp($syncUp):
+          state.path.append(.detail(SyncUpDetail.State(syncUp: $syncUp)))
+          return .none
+        }
 
       case .syncUpsList:
         return .none

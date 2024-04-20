@@ -24,9 +24,16 @@ struct SyncUpsList {
   enum Action {
     case addSyncUpButtonTapped
     case confirmAddSyncUpButtonTapped
+    case delegate(Delegate)
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
     case onDelete(IndexSet)
+    case syncUpTapped(SharedReader<SyncUp>)
+
+    @CasePathable
+    enum Delegate {
+      case goToSyncUp(SharedReader<SyncUp>)
+    }
   }
 
   @Dependency(\.defaultDatabaseQueue) var databaseQueue
@@ -63,6 +70,9 @@ struct SyncUpsList {
           }
         }
 
+      case .delegate:
+        return .none
+
       case .destination:
         return .none
 
@@ -77,6 +87,9 @@ struct SyncUpsList {
             _ = try SyncUp.deleteAll(db, ids: ids)
           }
         }
+
+      case let .syncUpTapped($syncUp):
+        return .send(.delegate(.goToSyncUp($syncUp)))
       }
     }
     .ifLet(\.$destination, action: \.destination)
@@ -89,7 +102,9 @@ struct SyncUpsListView: View {
   var body: some View {
     List {
       ForEach(store.$syncUps.elements) { $syncUp in
-        NavigationLink(state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: $syncUp))) {
+        Button {
+          store.send(.syncUpTapped($syncUp))
+        } label: {
           CardView(syncUp: syncUp)
         }
         .listRowBackground(syncUp.theme.mainColor)
@@ -180,22 +195,9 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
   CardView(
     syncUp: SyncUp(
       attendees: [],
-      meetings: [],
       minutes: 1,
       theme: .bubblegum,
       title: "Point-Free Morning Sync"
     )
   )
-}
-
-extension PersistenceReaderKey where Self == GRDBQueryKey<SyncUpsRequest> {
-  static var syncUps: Self {
-    .query(SyncUpsRequest())
-  }
-}
-
-struct SyncUpsRequest: GRDBQuery {
-  func fetch(_ db: GRDB.Database) throws -> IdentifiedArrayOf<SyncUp> {
-    try SyncUp.all().order(Column("id").desc).fetchIdentifiedArray(db)
-  }
 }

@@ -1,3 +1,4 @@
+import ComposableArchitecture
 import GRDB
 import IdentifiedCollections
 import SwiftUI
@@ -6,7 +7,6 @@ import Tagged
 struct SyncUp: Equatable, Identifiable, Codable {
   var id: Int?
   var attendees: IdentifiedArrayOf<Attendee> = []
-  var meetings: IdentifiedArrayOf<Meeting> = []
   var minutes: Int = 5
   var theme: Theme = .bubblegum
   var title = ""
@@ -27,15 +27,51 @@ extension SyncUp: TableRecord, PersistableRecord, FetchableRecord {
   }
 }
 
+extension PersistenceReaderKey where Self == GRDBQueryKey<SyncUpsRequest> {
+  static var syncUps: Self {
+    .query(SyncUpsRequest())
+  }
+}
+
+struct SyncUpsRequest: GRDBQuery {
+  func fetch(_ db: Database) throws -> IdentifiedArrayOf<SyncUp> {
+    try SyncUp.all().order(Column("id").desc).fetchIdentifiedArray(db)
+  }
+}
+
 struct Attendee: Equatable, Identifiable, Codable {
   let id: Tagged<Self, UUID>
   var name = ""
 }
 
 struct Meeting: Equatable, Identifiable, Codable {
-  let id: Tagged<Self, UUID>
-  let date: Date
+  var id: Int?
+  var date: Date
+  var syncUpID: SyncUp.ID
   var transcript: String
+}
+
+extension Meeting: TableRecord, PersistableRecord, FetchableRecord {
+  mutating func didInsert(_ inserted: InsertionSuccess) {
+    self.id = Int(inserted.rowID)
+  }
+}
+
+extension PersistenceReaderKey where Self == GRDBQueryKey<MeetingsRequest> {
+  static func meetings(syncUpID: SyncUp.ID) -> Self {
+    .query(MeetingsRequest(syncUpID: syncUpID))
+  }
+}
+
+struct MeetingsRequest: GRDBQuery {
+  let syncUpID: SyncUp.ID
+
+  func fetch(_ db: Database) throws -> IdentifiedArrayOf<Meeting> {
+    try Meeting.all()
+      .filter(Column("syncUpID") == syncUpID)
+      .order(Column("id").desc)
+      .fetchIdentifiedArray(db)
+  }
 }
 
 enum Theme: String, CaseIterable, Equatable, Identifiable, Codable {
@@ -83,20 +119,6 @@ extension SyncUp {
       Attendee(id: Attendee.ID(), name: "Blob III"),
       Attendee(id: Attendee.ID(), name: "Blob I"),
     ],
-    meetings: [
-      Meeting(
-        id: Meeting.ID(),
-        date: Date().addingTimeInterval(-60 * 60 * 24 * 7),
-        transcript: """
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
-          incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud \
-          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure \
-          dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. \
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt \
-          mollit anim id est laborum.
-          """
-      )
-    ],
     minutes: 1,
     theme: .orange,
     title: "Design"
@@ -120,5 +142,20 @@ extension SyncUp {
     minutes: 30,
     theme: .poppy,
     title: "Product"
+  )
+}
+
+extension Meeting {
+  static let mock = Self(
+    date: Date().addingTimeInterval(-60 * 60 * 24 * 7),
+    syncUpID: 1,
+    transcript: """
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
+      incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud \
+      exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure \
+      dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. \
+      Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt \
+      mollit anim id est laborum.
+      """
   )
 }
