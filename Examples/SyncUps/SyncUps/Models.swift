@@ -47,6 +47,7 @@ struct Attendee: Equatable, Identifiable, Codable {
 struct Meeting: Equatable, Identifiable, Codable {
   var id: Int?
   var date: Date
+  var isArchived: Bool = false
   var syncUpID: SyncUp.ID
   var transcript: String
 }
@@ -58,17 +59,22 @@ extension Meeting: TableRecord, PersistableRecord, FetchableRecord {
 }
 
 extension PersistenceReaderKey where Self == GRDBQueryKey<MeetingsRequest> {
-  static func meetings(syncUpID: SyncUp.ID) -> Self {
-    .query(MeetingsRequest(syncUpID: syncUpID))
+  static func meetings(syncUpID: SyncUp.ID, includeArchived: Bool = false) -> Self {
+    .query(MeetingsRequest(syncUpID: syncUpID, includeArchived: includeArchived))
   }
 }
 
 struct MeetingsRequest: GRDBQuery {
   let syncUpID: SyncUp.ID
+  let includeArchived: Bool
 
   func fetch(_ db: Database) throws -> IdentifiedArrayOf<Meeting> {
-    try Meeting.all()
-      .filter(Column("syncUpID") == syncUpID)
+    var filter: SQLExpression = Column("syncUpID") == syncUpID
+    if !includeArchived {
+      filter = filter && !Column("isArchived")
+    }
+    return try Meeting.all()
+      .filter(filter)
       .order(Column("id").desc)
       .fetchIdentifiedArray(db)
   }

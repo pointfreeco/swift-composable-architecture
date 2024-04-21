@@ -20,20 +20,24 @@ struct SyncUpDetail {
   struct State: Equatable {
     @Presents var destination: Destination.State?
     @SharedReader var meetings: IdentifiedArrayOf<Meeting>
+    var showArchivedMeetings: Bool
     @SharedReader var syncUp: SyncUp
 
     init(
       destination: Destination.State? = nil,
       meetings: IdentifiedArrayOf<Meeting> = [],
+      showArchivedMeetings: Bool = false,
       syncUp: SharedReader<SyncUp>
     ) {
       self.destination = destination
       self._meetings = SharedReader(wrappedValue: meetings, .meetings(syncUpID: syncUp.id))
+      self.showArchivedMeetings = showArchivedMeetings
       self._syncUp = syncUp
     }
   }
 
   enum Action: Sendable {
+    case archiveButtonTapped(Meeting)
     case cancelEditButtonTapped
     case delegate(Delegate)
     case deleteButtonTapped
@@ -41,6 +45,7 @@ struct SyncUpDetail {
     case destination(PresentationAction<Destination.Action>)
     case doneEditingButtonTapped
     case editButtonTapped
+    case showArchivedMeetingsButtonTapped
     case startMeetingButtonTapped
 
     @CasePathable
@@ -55,19 +60,29 @@ struct SyncUpDetail {
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
 
   var body: some ReducerOf<Self> {
-    Reduce { state, action in
+    Reduce {
+      state,
+      action in
       switch action {
+      case var .archiveButtonTapped(meeting):
+        meeting.isArchived = true
+        return .run { [meeting] _ in
+          _ = try await databaseQueue.write { db in
+            try meeting.update(db)
+          }
+        }
+        
       case .cancelEditButtonTapped:
         state.destination = nil
         return .none
-
+        
       case .delegate:
         return .none
-
+        
       case .deleteButtonTapped:
         state.destination = .alert(.deleteSyncUp)
         return .none
-
+        
       case let .deleteMeetings(atOffsets: indices):
         let ids = indices.map { state.meetings[$0].id }
         return .run { _ in
@@ -75,7 +90,7 @@ struct SyncUpDetail {
             try Meeting.deleteAll(db, ids: ids)
           }
         }
-
+        
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
@@ -84,17 +99,17 @@ struct SyncUpDetail {
               try syncUp.delete(db)
             }
           }
-
+          
         case .continueWithoutRecording:
           return .send(.delegate(.startMeeting))
-
+          
         case .openSettings:
           return .run { _ in await openSettings() }
         }
-
+        
       case .destination:
         return .none
-
+        
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
@@ -104,14 +119,22 @@ struct SyncUpDetail {
             try editState.syncUp.update(db)
           }
         }
-
+        
       case .editButtonTapped:
         state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp))
         return .none
-
+        
+      case .showArchivedMeetingsButtonTapped:
+        state.$meetings = SharedReader(
+          wrappedValue: state.meetings,
+          .meetings(syncUpID: state.syncUp.id, includeArchived: true)
+        )
+        return .none
+        
       case .startMeetingButtonTapped:
         switch authorizationStatus() {
-        case .notDetermined, .authorized:
+        case .notDetermined,
+            .authorized:
           return .send(.delegate(.startMeeting))
 
         case .denied:
@@ -163,24 +186,41 @@ struct SyncUpDetailView: View {
         Text("Sync-up Info")
       }
 
-      if !store.meetings.isEmpty {
-        Section {
-          ForEach(store.meetings) { meeting in
-            NavigationLink(
-              state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
-            ) {
-              HStack {
-                Image(systemName: "calendar")
-                Text(meeting.date, style: .date)
-                Text(meeting.date, style: .time)
-              }
+      Section {
+        ForEach(store.meetings) { meeting in
+          NavigationLink(
+            state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
+          ) {
+            HStack {
+              Image(systemName: "calendar")
+              Text(meeting.date, style: .date)
+              Text(meeting.date, style: .time)
             }
           }
-          .onDelete { indices in
-            store.send(.deleteMeetings(atOffsets: indices))
+          .swipeActions {
+            if !meeting.isArchived {
+              Button {
+                store.send(.archiveButtonTapped(meeting))
+              } label: {
+                Image(systemName: "archivebox")
+              }
+              .tint(.yellow)
+            }
           }
-        } header: {
+        }
+        .onDelete { indices in
+          store.send(.deleteMeetings(atOffsets: indices))
+        }
+      } header: {
+        HStack {
           Text("Past meetings")
+          if !store.showArchivedMeetings {
+            Spacer()
+            Button("Archive") {
+              store.send(.showArchivedMeetingsButtonTapped)
+            }
+            .font(.caption)
+          }
         }
       }
 

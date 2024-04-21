@@ -17,7 +17,7 @@ struct SyncUpsApp: App {
         db.trace { logger.debug("\($0)") }
       }
       $0.defaultDatabaseQueue = try! DatabaseQueue(
-        path: URL.documentsDirectory.appending(path: "db.sqlite").path,
+        path: dump(URL.documentsDirectory.appending(path: "db.sqlite").path),
         configuration: configuration
       )
     } else {

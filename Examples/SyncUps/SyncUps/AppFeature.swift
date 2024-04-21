@@ -50,6 +50,7 @@ struct AppFeature {
             try db.create(table: Meeting.databaseTableName) { t in
               t.autoIncrementedPrimaryKey("id")
               t.column("date", .datetime)
+              t.column("isArchived", .boolean)
               t.column("syncUpID", .integer)
               t.column("transcript", .text)
             }
