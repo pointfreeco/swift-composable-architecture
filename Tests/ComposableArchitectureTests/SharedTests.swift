@@ -506,6 +506,7 @@ final class SharedTests: XCTestCase {
     var counts = [Int]()
     sharedCount.publisher.sink { _ in
     } receiveValue: { count in
+      XCTAssertEqual(sharedCount.wrappedValue, count - 1)
       counts.append(count)
     }
     .store(in: &cancellables)

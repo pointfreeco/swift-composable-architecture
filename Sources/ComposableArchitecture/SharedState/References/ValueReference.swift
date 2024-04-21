@@ -178,8 +178,8 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
   #endif
   private var subscription: Shared<Value>.Subscription?
   private var _value: Value {
-    didSet {
-      self.subject.send(self._value)
+    willSet {
+      self.subject.send(newValue)
     }
   }
   #if canImport(Perception)
