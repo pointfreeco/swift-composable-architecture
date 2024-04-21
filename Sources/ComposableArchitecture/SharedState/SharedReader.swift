@@ -34,17 +34,6 @@ public struct SharedReader<Value> {
     self = base.reader
   }
 
-  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
-    self.init(
-      reference: ValueReference<Value, InMemoryKey<Value>>(
-        initialValue: value,
-        fileID: fileID,
-        line: line
-      ),
-      keyPath: \Value.self
-    )
-  }
-
   public var wrappedValue: Value {
     func open<Root>(_ reference: some Reference<Root>) -> Value {
       reference.value[
@@ -55,8 +44,15 @@ public struct SharedReader<Value> {
   }
 
   public var projectedValue: Self {
-    get { self }
-    set { self = newValue }
+    get {
+      reference.access()
+      return self
+    }
+    set {
+      reference.withMutation {
+        self = newValue
+      }
+    }
   }
 
   public subscript<Member>(
@@ -79,6 +75,7 @@ public struct SharedReader<Value> {
   }
 
 #if canImport(Combine)
+  // TODO: Should this be wrapped in a type we own instead of `AnyPublisher`?
   public var publisher: AnyPublisher<Value, Never> {
     func open<R: Reference>(_ reference: R) -> AnyPublisher<Value, Never> {
       return reference.publisher

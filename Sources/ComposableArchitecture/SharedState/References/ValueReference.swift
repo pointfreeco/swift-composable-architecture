@@ -245,6 +245,12 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
       }
     }
   }
+  func access() {
+    _$perceptionRegistrar.access(self, keyPath: \.value)
+  }
+  func withMutation<T>(_ mutation: () throws -> T) rethrows -> T {
+    try _$perceptionRegistrar.withMutation(of: self, keyPath: \.value, mutation)
+  }
   var description: String {
     "Shared<\(Value.self)>@\(self.fileID):\(self.line)"
   }

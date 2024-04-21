@@ -16,6 +16,31 @@ public struct Shared<Value> {
   private let reference: any Reference
   private let keyPath: AnyKeyPath
 
+  init(reference: any Reference, keyPath: AnyKeyPath) {
+    self.reference = reference
+    self.keyPath = keyPath
+  }
+
+  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
+    self.init(
+      reference: ValueReference<Value, InMemoryKey<Value>>(
+        initialValue: value,
+        fileID: fileID,
+        line: line
+      ),
+      keyPath: \Value.self
+    )
+  }
+
+  public init(projectedValue: Shared) {
+    self = projectedValue
+  }
+
+  public init?(_ base: Shared<Value?>) {
+    guard let shared = base[dynamicMember: \.self] else { return nil }
+    self = shared
+  }
+
   public var wrappedValue: Value {
     get {
       @Dependency(SharedChangeTrackerKey.self) var changeTracker
@@ -62,12 +87,20 @@ public struct Shared<Value> {
   /// ```
   ///
   /// See <doc:SharingState#Deriving-shared-state> for more details.
-  public var projectedValue: Shared {
-    get { self }
-    set { self = newValue }
+  public var projectedValue: Self {
+    get {
+      reference.access()
+      return self
+    }
+    set {
+      reference.withMutation {
+        self = newValue
+      }
+    }
   }
 
   #if canImport(Combine)
+    // TODO: Should this be wrapped in a type we own instead of `AnyPublisher`?
     public var publisher: AnyPublisher<Value, Never> {
       func open<Root>(_ reference: some Reference<Root>) -> AnyPublisher<Value, Never> {
         reference.publisher
@@ -77,31 +110,6 @@ public struct Shared<Value> {
       return open(self.reference)
     }
   #endif
-
-  init(reference: any Reference, keyPath: AnyKeyPath) {
-    self.reference = reference
-    self.keyPath = keyPath
-  }
-
-  public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
-    self.init(
-      reference: ValueReference<Value, InMemoryKey<Value>>(
-        initialValue: value,
-        fileID: fileID,
-        line: line
-      ),
-      keyPath: \Value.self
-    )
-  }
-
-  public init(projectedValue: Shared) {
-    self = projectedValue
-  }
-
-  public init?(_ base: Shared<Value?>) {
-    guard let shared = base[dynamicMember: \.self] else { return nil }
-    self = shared
-  }
 
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member>

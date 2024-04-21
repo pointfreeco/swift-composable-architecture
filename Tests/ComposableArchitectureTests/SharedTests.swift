@@ -454,6 +454,19 @@ final class SharedTests: XCTestCase {
     self.wait(for: [countDidChange], timeout: 0)
   }
 
+  func testObservation_projected() {
+    @Shared var count: Int
+    _count = Shared(0)
+    let countDidChange = self.expectation(description: "countDidChange")
+    withPerceptionTracking {
+      _ = $count
+    } onChange: {
+      countDidChange.fulfill()
+    }
+    $count = Shared(1)
+    self.wait(for: [countDidChange], timeout: 0)
+  }
+
   @available(*, deprecated)
   @MainActor
   func testObservation_Object() {
