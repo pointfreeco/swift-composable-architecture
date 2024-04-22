@@ -35,6 +35,7 @@
       _ = observation
     }
 
+    #if DEBUG
     @MainActor
     func testNestedObservation() async throws {
       XCTExpectFailure {
@@ -71,6 +72,7 @@
       try await Task.sleep(nanoseconds: 1_000_000)
       XCTAssertEqual(counts, [0, 1, 1])
     }
+    #endif
   }
 
   @Perceptible
