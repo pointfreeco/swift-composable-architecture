@@ -2562,7 +2562,7 @@ extension TestStore {
   @available(
     *,
     unavailable,
-    message: "'Action' must conform to 'Equatable' to assert against received actions."
+    message: "Provide a key path to the case you expect to receive (like 'store.receive(\\.tap)'), or conform 'Action' to 'Equatable' to assert against it directly."
   )
   public func receive(
     _ expectedAction: Action,
