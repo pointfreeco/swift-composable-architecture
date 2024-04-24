@@ -10,6 +10,7 @@ extension Reducer {
     ///
     /// - Parameter printer: A printer for printing debug messages.
     /// - Returns: A reducer that prints debug messages for all received actions.
+    @inlinable
     @warn_unqualified_access
     @_documentation(visibility:public)
     public func _printChanges(
@@ -18,6 +19,7 @@ extension Reducer {
       _PrintChangesReducer<Self>(base: self, printer: printer)
     }
   #else
+    @inlinable
     @warn_unqualified_access
     public func _printChanges(
       _ printer: _ReducerPrinter<State, Action>? = .customDump
@@ -31,6 +33,7 @@ private let printQueue = DispatchQueue(label: "co.pointfree.swift-composable-arc
 
 public struct _ReducerPrinter<State, Action> {
   private let _printChange: (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void
+  @usableFromInline
   let queue: DispatchQueue
 
   public init(
@@ -66,15 +69,19 @@ extension _ReducerPrinter {
 }
 
 public struct _PrintChangesReducer<Base: Reducer>: Reducer {
+  @usableFromInline
   let base: Base
 
+  @usableFromInline
   let printer: _ReducerPrinter<Base.State, Base.Action>?
 
+  @usableFromInline
   init(base: Base, printer: _ReducerPrinter<Base.State, Base.Action>?) {
     self.base = base
     self.printer = printer
   }
 
+  @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> Effect<Base.Action> {

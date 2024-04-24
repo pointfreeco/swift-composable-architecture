@@ -1,6 +1,7 @@
 import CustomDump
 import Dependencies
 
+@usableFromInline
 func withSharedChangeTracking<T>(
   _ apply: (SharedChangeTracker) throws -> T
 ) rethrows -> T {
@@ -10,6 +11,7 @@ func withSharedChangeTracking<T>(
   }
 }
 
+@usableFromInline
 func withSharedChangeTracking<T>(
   _ apply: (SharedChangeTracker) async throws -> T
 ) async rethrows -> T {
@@ -54,6 +56,7 @@ struct AnyChange<Value>: Change {
   }
 }
 
+@usableFromInline
 final class SharedChangeTracker: Sendable {
   let changes: LockIsolated<[ObjectIdentifier: Any]> = LockIsolated([:])
   var hasChanges: Bool { !self.changes.isEmpty }
@@ -94,6 +97,7 @@ final class SharedChangeTracker: Sendable {
       try await operation()
     }
   }
+  @usableFromInline
   func assert<R>(_ operation: () throws -> R) rethrows -> R {
     try withDependencies {
       $0[SharedChangeTrackerKey.self] = self
@@ -104,9 +108,11 @@ final class SharedChangeTracker: Sendable {
 }
 
 extension SharedChangeTracker: Hashable {
+  @usableFromInline
   static func == (lhs: SharedChangeTracker, rhs: SharedChangeTracker) -> Bool {
     lhs === rhs
   }
+  @usableFromInline
   func hash(into hasher: inout Hasher) {
     hasher.combine(ObjectIdentifier(self))
   }
