@@ -153,7 +153,7 @@ extension PersistenceReaderKey {
 
 /// A type defining a user defaults persistence strategy.
 ///
-/// See ``PersistenceKey/appStorage(_:)-9zd2f`` to create values of this type.
+/// See ``PersistenceReaderKey/appStorage(_:)-4l5b`` to create values of this type.
 public struct AppStorageKey<Value> {
   private let lookup: any Lookup<Value>
   private let key: String

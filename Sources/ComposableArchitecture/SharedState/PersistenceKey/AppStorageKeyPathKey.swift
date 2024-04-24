@@ -23,7 +23,7 @@ extension PersistenceReaderKey {
 
 /// A type defining a user defaults persistence strategy via key path.
 ///
-/// See ``PersistenceKey/appStorage(_:)-4ly47`` to create values of this type.
+/// See ``PersistenceReaderKey/appStorage(_:)-5jsie`` to create values of this type.
 public struct AppStorageKeyPathKey<Value> {
   private let keyPath: ReferenceWritableKeyPath<UserDefaults, Value>
   private let store: UserDefaults

@@ -244,14 +244,14 @@
       
       However, remember that in <doc:PersistingSyncUps> we showed to how to persist the collection
       of sync-ups using the [`@Shared`](<doc:Shared>) property wrapper with the
-      ``ComposableArchitecture/PersistenceKey/fileStorage(_:)`` persistence strategy. This gives the
-      app _global_ access to that state, and we can make edits to it from anywhere. We can even
-      do it directly inline in the `.confirmButtonTapped` action.
+      ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` persistence strategy. This
+      gives the app _global_ access to that state, and we can make edits to it from anywhere. We can
+      even do it directly inline in the `.confirmButtonTapped` action.
       
       @Step {
         Use the ``Shared`` property wrapper with the 
-        ``ComposableArchitecture/PersistenceKey/fileStorage(_:)`` persistence strategy to get a
-        reference to the sync-ups loaded from disk.
+        ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` persistence strategy to get
+        a reference to the sync-ups loaded from disk.
         
         > Note: This does not actually load data from disk. The data has already been loaded from
         > disk and cached in the [`@Shared`](<doc:Shared>) reference. This is only giving us access

@@ -22,7 +22,7 @@ extension PersistenceReaderKey {
 
 /// A type defining an in-memory persistence strategy
 ///
-/// See ``PersistenceKey/inMemory(_:)`` to create values of this type.
+/// See ``PersistenceReaderKey/inMemory(_:)`` to create values of this type.
 public struct InMemoryKey<Value>: Hashable, PersistenceKey, Sendable {
   let key: String
   let store: InMemoryStorage

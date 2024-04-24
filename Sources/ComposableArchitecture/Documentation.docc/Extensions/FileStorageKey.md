@@ -4,4 +4,4 @@
 
 ### Storing a value
 
-- ``PersistenceKey/fileStorage(_:)``
+- ``PersistenceReaderKey/fileStorage(_:)``

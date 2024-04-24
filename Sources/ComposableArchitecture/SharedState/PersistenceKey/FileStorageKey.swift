@@ -17,7 +17,7 @@ extension PersistenceReaderKey {
 
 /// A type defining a file persistence strategy
 ///
-/// Use ``PersistenceKey/fileStorage(_:)`` to create values of this type.
+/// Use ``PersistenceReaderKey/fileStorage(_:)`` to create values of this type.
 public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @unchecked Sendable {
   let storage: any FileStorage
   let url: URL

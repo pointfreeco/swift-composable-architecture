@@ -4,26 +4,26 @@
 
 ### Storing a value
 
-- ``PersistenceKey/appStorage(_:)-9zd2f``
-- ``PersistenceKey/appStorage(_:)-6nc2t``
-- ``PersistenceKey/appStorage(_:)-39qtv``
-- ``PersistenceKey/appStorage(_:)-2gb5m``
-- ``PersistenceKey/appStorage(_:)-2ntx6``
-- ``PersistenceKey/appStorage(_:)-29j79``
-- ``PersistenceKey/appStorage(_:)-2eaa8``
-- ``PersistenceKey/appStorage(_:)-11o1l``
+- ``PersistenceReaderKey/appStorage(_:)-4l5b``
+- ``PersistenceReaderKey/appStorage(_:)-6d47p``
+- ``PersistenceReaderKey/appStorage(_:)-6tsph``
+- ``PersistenceReaderKey/appStorage(_:)-69h4r``
+- ``PersistenceReaderKey/appStorage(_:)-xphy``
+- ``PersistenceReaderKey/appStorage(_:)-617ld``
+- ``PersistenceReaderKey/appStorage(_:)-6lnxu``
+- ``PersistenceReaderKey/appStorage(_:)-ibg0``
 
 ### Storing an optional value
 
-- ``PersistenceKey/appStorage(_:)-7m17q``
-- ``PersistenceKey/appStorage(_:)-1hq0p``
-- ``PersistenceKey/appStorage(_:)-81ami``
-- ``PersistenceKey/appStorage(_:)-66vk8``
-- ``PersistenceKey/appStorage(_:)-2ttbm``
-- ``PersistenceKey/appStorage(_:)-6ag7x``
-- ``PersistenceKey/appStorage(_:)-3bvca``
-- ``PersistenceKey/appStorage(_:)-7s0o2``
+- ``PersistenceReaderKey/appStorage(_:)-4s3s5``
+- ``PersistenceReaderKey/appStorage(_:)-2dfnh``
+- ``PersistenceReaderKey/appStorage(_:)-5wv8g``
+- ``PersistenceReaderKey/appStorage(_:)-40e42``
+- ``PersistenceReaderKey/appStorage(_:)-4veqp``
+- ``PersistenceReaderKey/appStorage(_:)-7rox5``
+- ``PersistenceReaderKey/appStorage(_:)-2keyn``
+- ``PersistenceReaderKey/appStorage(_:)-7u49u``
 
 ### Key-path access
 
-- ``PersistenceKey/appStorage(_:)-4ly47``
+- ``PersistenceReaderKey/appStorage(_:)-5jsie``

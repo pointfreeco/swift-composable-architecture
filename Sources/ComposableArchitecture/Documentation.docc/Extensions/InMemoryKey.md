@@ -4,4 +4,4 @@
 
 ### Storing a value
 
-- ``PersistenceKey/inMemory(_:)``
+- ``PersistenceReaderKey/inMemory(_:)``
