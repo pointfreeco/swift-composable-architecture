@@ -6,7 +6,7 @@ struct ContactDetailView: View {
   var body: some View {
     Form {
     }
-    .navigationBarTitle(Text(store.contact.name))
+    .navigationTitle(Text(store.contact.name))
   }
 }
 

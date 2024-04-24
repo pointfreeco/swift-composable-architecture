@@ -9,7 +9,7 @@ struct ContactDetailView: View {
         store.send(.deleteButtonTapped)
       }
     }
-    .navigationBarTitle(Text(store.contact.name))
+    .navigationTitle(Text(store.contact.name))
     .alert($store.scope(state: \.alert, action: \.alert))
   }
 }

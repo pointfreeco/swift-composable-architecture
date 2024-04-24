@@ -306,7 +306,7 @@
       }
       
       @Step {
-        Make use of the new `deleteConfirmation` static alert function in the `CounterFeature` 
+        Make use of the new `deleteConfirmation` static alert function in the `ContactsFeature` 
         reducer, rather than building `AlertState` from scratch.
         
         @Code(name: "ContactsFeature.swift", file: 02-03-03-code-0007.swift, previousFile: 02-03-03-code-0007-previous.swift)
