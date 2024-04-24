@@ -113,7 +113,7 @@ struct NotificationReaderKey<Value: Sendable>: PersistenceReaderKey {
       object: nil,
       queue: nil,
       using: { notification in
-        didSet(self.transform(notification))
+        didSet(transform(notification))
       }
     )
     return Shared.Subscription {

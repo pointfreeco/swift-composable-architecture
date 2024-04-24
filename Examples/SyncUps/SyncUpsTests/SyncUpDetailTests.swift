@@ -117,7 +117,7 @@ final class SyncUpDetailTests: XCTestCase {
     defer { XCTAssertEqual(didDismiss.value, true) }
 
     let syncUp = SyncUp.mock
-    @Shared(.syncUps) var syncUps: IdentifiedArray = [syncUp]
+    @Shared(.syncUps) var syncUps = [syncUp]
     // TODO: Can this exhaustively be caught?
     defer { XCTAssertEqual([], syncUps) }
 

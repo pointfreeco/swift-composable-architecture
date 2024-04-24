@@ -71,7 +71,7 @@ struct AppView: View {
 }
 
 #Preview {
-  @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = [
+  @Shared(.syncUps) var syncUps = [
     .mock,
     .productMock,
     .engineeringMock

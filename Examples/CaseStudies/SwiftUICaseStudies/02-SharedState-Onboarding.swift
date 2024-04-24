@@ -31,13 +31,20 @@ struct SignUpData: Equatable {
 
 @Reducer
 private struct SignUpFeature {
+  @Reducer
+  enum Path {
+    case basics(BasicsFeature)
+    case personalInfo(PersonalInfoFeature)
+    case summary(SummaryFeature)
+    case topics(TopicsFeature)
+  }
   @ObservableState
   struct State {
     var path = StackState<Path.State>()
     @Shared var signUpData: SignUpData
   }
   enum Action {
-    case path(StackAction<Path.State, Path.Action>)
+    case path(StackActionOf<Path>)
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -50,40 +57,7 @@ private struct SignUpFeature {
         return .none
       }
     }
-    .forEach(\.path, action: \.path) {
-      Path()
-    }
-  }
-
-  @Reducer
-  struct Path {
-    @ObservableState
-    enum State {
-      case basics(BasicsFeature.State)
-      case personalInfo(PersonalInfoFeature.State)
-      case summary(SummaryFeature.State)
-      case topics(TopicsFeature.State)
-    }
-    enum Action {
-      case basics(BasicsFeature.Action)
-      case personalInfo(PersonalInfoFeature.Action)
-      case summary(SummaryFeature.Action)
-      case topics(TopicsFeature.Action)
-    }
-    var body: some ReducerOf<Self> {
-      Scope(state: \.basics, action: \.basics) {
-        BasicsFeature()
-      }
-      Scope(state: \.personalInfo, action: \.personalInfo) {
-        PersonalInfoFeature()
-      }
-      Scope(state: \.summary, action: \.summary) {
-        SummaryFeature()
-      }
-      Scope(state: \.topics, action: \.topics) {
-        TopicsFeature()
-      }
-    }
+    .forEach(\.path, action: \.path)
   }
 }
 
@@ -111,15 +85,15 @@ struct SignUpFlow: View {
       }
       .navigationTitle("Sign up")
     } destination: { store in
-      switch store.state {
-      case .basics:
-        store.scope(state: \.basics, action: \.basics).map(BasicsStep.init)
-      case .personalInfo:
-        store.scope(state: \.personalInfo, action: \.personalInfo).map(PersonalInfoStep.init)
-      case .summary:
-        store.scope(state: \.summary, action: \.summary).map(SummaryStep.init)
-      case .topics:
-        store.scope(state: \.topics, action: \.topics).map(TopicsStep.init)
+      switch store.case {
+      case let .basics(store):
+        BasicsStep(store: store)
+      case let .personalInfo(store):
+        PersonalInfoStep(store: store)
+      case let .summary(store):
+        SummaryStep(store: store)
+      case let .topics(store):
+        TopicsStep(store: store)
       }
     }
   }
@@ -286,7 +260,7 @@ private struct TopicsStep: View {
       }
       Section {
         ForEach(SignUpData.Topic.allCases) { topic in
-          Toggle(isOn: $store.topics.isOn(topic)) {
+          Toggle(isOn: $store.topics[contains: topic]) {
             Text(topic.rawValue)
           }
         }
@@ -313,6 +287,13 @@ private struct TopicsStep: View {
 
 @Reducer
 private struct SummaryFeature {
+  @Reducer
+  enum Destination {
+    case alert(AlertState<Never>)
+    case basics(BasicsFeature)
+    case personalInfo(PersonalInfoFeature)
+    case topics(TopicsFeature)
+  }
   @ObservableState
   struct State {
     @Presents var destination: Destination.State?
@@ -363,37 +344,7 @@ private struct SummaryFeature {
         return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
-  }
-
-  @Reducer
-  struct Destination {
-    @ObservableState
-    enum State {
-      case alert(AlertState<Never>)
-      case basics(BasicsFeature.State)
-      case personalInfo(PersonalInfoFeature.State)
-      case topics(TopicsFeature.State)
-    }
-    enum Action {
-      case alert(Never)
-      case basics(BasicsFeature.Action)
-      case personalInfo(PersonalInfoFeature.Action)
-      case topics(TopicsFeature.Action)
-    }
-    var body: some ReducerOf<Self> {
-      Scope(state: \.basics, action: \.basics) {
-        BasicsFeature()
-      }
-      Scope(state: \.personalInfo, action: \.personalInfo) {
-        PersonalInfoFeature()
-      }
-      Scope(state: \.topics, action: \.topics) {
-        TopicsFeature()
-      }
-    }
+    .ifLet(\.$destination, action: \.destination)
   }
 }
 
@@ -457,7 +408,7 @@ private struct SummaryStep: View {
     .navigationTitle("Summary")
     .sheet(
       item: $store.scope(state: \.destination?.basics, action: \.destination.basics)
-    ) { (basicsStore: StoreOf<BasicsFeature>) in
+    ) { basicsStore in
       NavigationStack {
         BasicsStep(store: basicsStore)
       }
@@ -545,19 +496,15 @@ private struct SummaryStep: View {
   }
 }
 
-extension Binding {
-  func isOn<T>(_ value: T) -> Binding<Bool> where Value == Set<T> {
-    Binding<Bool>(
-      get: {
-        self.wrappedValue.contains(value)
-      },
-      set: {
-        if $0 {
-          self.wrappedValue.insert(value)
-        } else {
-          self.wrappedValue.remove(value)
-        }
+fileprivate extension Set {
+  subscript(contains element: Element) -> Bool {
+    get { contains(element) }
+    set {
+      if newValue {
+        insert(element)
+      } else {
+        remove(element)
       }
-    )
+    }
   }
 }

@@ -63,7 +63,7 @@ struct SyncUpDetail {
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
-          @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = []
+          @Shared(.syncUps) var syncUps
           syncUps.remove(id: state.syncUp.id)
           return .run { _ in await dismiss() }
 

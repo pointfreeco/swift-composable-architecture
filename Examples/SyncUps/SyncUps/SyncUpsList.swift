@@ -17,7 +17,7 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = []
+    @Shared(.syncUps) var syncUps
   }
 
   enum Action {
@@ -97,19 +97,21 @@ struct SyncUpsListView: View {
       }
     }
     .navigationTitle("Daily Sync-ups")
-    .sheet(item: $store.scope(state: \.destination?.add, action: \.destination.add)) { store in
+    .sheet(
+      item: $store.scope(state: \.destination?.add, action: \.destination.add)
+    ) { addSyncUpStore in
       NavigationStack {
-        SyncUpFormView(store: store)
+        SyncUpFormView(store: addSyncUpStore)
           .navigationTitle("New sync-up")
           .toolbar {
             ToolbarItem(placement: .cancellationAction) {
               Button("Dismiss") {
-                self.store.send(.dismissAddSyncUpButtonTapped)
+                store.send(.dismissAddSyncUpButtonTapped)
               }
             }
             ToolbarItem(placement: .confirmationAction) {
               Button("Add") {
-                self.store.send(.confirmAddSyncUpButtonTapped)
+                store.send(.confirmAddSyncUpButtonTapped)
               }
             }
           }
@@ -153,7 +155,7 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 }
 
 #Preview("List") {
-  @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = [
+  @Shared(.syncUps) var syncUps = [
     .mock,
     .productMock,
     .engineeringMock
@@ -171,17 +173,18 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
   CardView(
     syncUp: SyncUp(
       id: SyncUp.ID(),
-      attendees: [],
       duration: .seconds(60),
-      meetings: [],
-      theme: .bubblegum,
       title: "Point-Free Morning Sync"
     )
   )
 }
 
-extension PersistenceReaderKey where Self == FileStorageKey<IdentifiedArrayOf<SyncUp>> {
+extension PersistenceReaderKey
+where Self == PersistenceKeyDefault<FileStorageKey<IdentifiedArrayOf<SyncUp>>> {
   static var syncUps: Self {
-    fileStorage(.documentsDirectory.appending(component: "sync-ups.json"))
+    PersistenceKeyDefault(
+      .fileStorage(.documentsDirectory.appending(component: "sync-ups.json")),
+      []
+    )
   }
 }

@@ -65,7 +65,7 @@ struct Animations {
         return .run { send in
           for color in [Color.red, .blue, .green, .orange, .pink, .purple, .yellow, .black] {
             await send(.setColor(color), animation: .linear)
-            try await self.clock.sleep(for: .seconds(1))
+            try await clock.sleep(for: .seconds(1))
           }
         }
         .cancellable(id: CancelID.rainbow)
