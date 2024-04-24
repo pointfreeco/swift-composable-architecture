@@ -7,7 +7,7 @@ final class FileStorageTests: XCTestCase {
   func testBasics() throws {
     let fileStorage = InMemoryFileStorage(scheduler: .immediate)
     try withDependencies {
-      $0.defaultFileStorage = fileStorage
+      $0.defaultFileStorage = FileStorage(rawValue: fileStorage)
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
@@ -20,7 +20,7 @@ final class FileStorageTests: XCTestCase {
     let testScheduler = DispatchQueue.test
     let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
-      $0.defaultFileStorage = fileStorage
+      $0.defaultFileStorage = FileStorage(rawValue: fileStorage)
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
@@ -40,7 +40,7 @@ final class FileStorageTests: XCTestCase {
     let testScheduler = DispatchQueue.test
     let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
-      $0.defaultFileStorage = fileStorage
+      $0.defaultFileStorage = FileStorage(rawValue: fileStorage)
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
@@ -81,7 +81,7 @@ final class FileStorageTests: XCTestCase {
     let testScheduler = DispatchQueue.test
     let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
-      $0.defaultFileStorage = fileStorage
+      $0.defaultFileStorage = FileStorage(rawValue: fileStorage)
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
@@ -101,7 +101,7 @@ final class FileStorageTests: XCTestCase {
     let testScheduler = DispatchQueue.test
     let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
-      $0.defaultFileStorage = fileStorage
+      $0.defaultFileStorage = FileStorage(rawValue: fileStorage)
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
@@ -120,7 +120,7 @@ final class FileStorageTests: XCTestCase {
     let testScheduler = DispatchQueue.test
     let fileStorage = InMemoryFileStorage(scheduler: testScheduler.eraseToAnyScheduler())
     try withDependencies {
-      $0.defaultFileStorage = fileStorage
+      $0.defaultFileStorage = FileStorage(rawValue: fileStorage)
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(fileStorage.fileSystem.value, [.fileURL: Data()])
@@ -147,7 +147,7 @@ final class FileStorageTests: XCTestCase {
   func testMultipleFiles() throws {
     let fileStorage = InMemoryFileStorage()
     try withDependencies {
-      $0.defaultFileStorage = fileStorage
+      $0.defaultFileStorage = FileStorage(rawValue: fileStorage)
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       @Shared(.fileStorage(.anotherFileURL)) var otherUsers = [User]()
@@ -168,7 +168,7 @@ final class FileStorageTests: XCTestCase {
     try? FileManager.default.removeItem(at: .fileURL)
 
     try await withDependencies {
-      $0.defaultFileStorage = LiveFileStorage(queue: DispatchQueue.main)
+      $0.defaultFileStorage = FileStorage(rawValue: LiveFileStorage(queue: .main))
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
 
@@ -189,7 +189,7 @@ final class FileStorageTests: XCTestCase {
       let fileStorage = InMemoryFileStorage()
       try fileStorage.save(JSONEncoder().encode([User.blob]), to: .fileURL)
       try await withDependencies {
-        $0.defaultFileStorage = fileStorage
+        $0.defaultFileStorage = FileStorage(rawValue: fileStorage)
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         _ = users
@@ -205,7 +205,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = LiveFileStorage(queue: DispatchQueue.main)
+        $0.defaultFileStorage = FileStorage(rawValue: LiveFileStorage(queue: .main))
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         _ = users
@@ -225,7 +225,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = LiveFileStorage(queue: DispatchQueue.main)
+        $0.defaultFileStorage = FileStorage(rawValue: LiveFileStorage(queue: .main))
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -244,7 +244,7 @@ final class FileStorageTests: XCTestCase {
     let fileStorage = InMemoryFileStorage(scheduler: scheduler.eraseToAnyScheduler())
 
     try withDependencies {
-      $0.defaultFileStorage = fileStorage
+      $0.defaultFileStorage = FileStorage(rawValue: fileStorage)
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
 
@@ -263,7 +263,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = LiveFileStorage(queue: DispatchQueue.main)
+        $0.defaultFileStorage = FileStorage(rawValue: LiveFileStorage(queue: .main))
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -284,7 +284,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = LiveFileStorage(queue: DispatchQueue.main)
+        $0.defaultFileStorage = FileStorage(rawValue: LiveFileStorage(queue: .main))
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -304,7 +304,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = LiveFileStorage(queue: DispatchQueue.main)
+        $0.defaultFileStorage = FileStorage(rawValue: LiveFileStorage(queue: .main))
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -339,13 +339,13 @@ final class FileStorageTests: XCTestCase {
 
   func testTwoInMemoryFileStorages() {
     let shared1 = withDependencies {
-      $0.defaultFileStorage = InMemoryFileStorage()
+      $0.defaultFileStorage = .inMemory
     } operation: {
       @Shared(.fileStorage(.userURL)) var user = User(id: 1, name: "Blob")
       return $user
     }
     let shared2 = withDependencies {
-      $0.defaultFileStorage = InMemoryFileStorage()
+      $0.defaultFileStorage = .inMemory
     } operation: {
       @Shared(.fileStorage(.userURL)) var user = User(id: 1, name: "Blob")
       return $user

@@ -19,14 +19,14 @@ extension PersistenceReaderKey {
 ///
 /// Use ``PersistenceReaderKey/fileStorage(_:)`` to create values of this type.
 public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, @unchecked Sendable {
-  let storage: any FileStorage
+  fileprivate let storage: any FileStorageProtocol
   let url: URL
   let value = LockIsolated<Value?>(nil)
   var workItem: DispatchWorkItem?
 
   public init(url: URL) {
     @Dependency(\.defaultFileStorage) var storage
-    self.storage = storage
+    self.storage = storage.rawValue
     self.url = url
   }
 
@@ -144,9 +144,57 @@ extension FileStorageKey: Hashable {
   }
 }
 
-// TODO: hide this thing from the public
 /// A type that encapsulates saving and loading data from disk.
-public protocol FileStorage: Sendable, AnyObject {
+public struct FileStorage {
+  @_spi(Internals) public let rawValue: any FileStorageProtocol
+
+  @_spi(Internals) public init(rawValue: some FileStorageProtocol) {
+    self.rawValue = rawValue
+  }
+
+  /// File storage that interacts directly with the file system for saving, loading and listening
+  /// for file changes.
+  ///
+  /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency
+  /// that is used by default when running your app in the simulator or on device.
+  public static var fileSystem: Self {
+    Self(
+      rawValue: LiveFileStorage(
+        queue: DispatchQueue(label: "co.pointfree.ComposableArchitecture.FileStorage")
+      )
+    )
+  }
+
+  /// File storage that emulates a file system without actually writing anything to disk.
+  ///
+  /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency
+  /// that is used by default when running your app in tests and previews.
+  public static var inMemory: Self {
+    Self(rawValue: InMemoryFileStorage())
+  }
+}
+
+private enum FileStorageQueueKey: DependencyKey {
+  static var liveValue: FileStorage {
+    .fileSystem
+  }
+  static var previewValue: FileStorage {
+    .inMemory
+  }
+  static var testValue: FileStorage {
+    .inMemory
+  }
+}
+
+extension DependencyValues {
+  /// File storage used by ``PersistenceReaderKey/fileStorage(_:)``.
+  public var defaultFileStorage: FileStorage {
+    get { self[FileStorageQueueKey.self] }
+    set { self[FileStorageQueueKey.self] = newValue }
+  }
+}
+
+@_spi(Internals) public protocol FileStorageProtocol: Sendable, AnyObject {
   func async(execute workItem: DispatchWorkItem)
   func asyncAfter(interval: DispatchTimeInterval, execute: DispatchWorkItem)
   func createDirectory(
@@ -165,28 +213,26 @@ public protocol FileStorage: Sendable, AnyObject {
   func setIsSetting(_ isSetting: Bool)
 }
 
-/// A ``FileStorage`` conformance that interacts directly with the file system for saving, loading
-/// and listening for file changes.
-///
-/// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency
-/// that is used by default when running your app in the simulator or on device.
-final public class LiveFileStorage: FileStorage {
+@_spi(Internals) public final class LiveFileStorage: FileStorageProtocol {
   private let queue: DispatchQueue
-  public init(queue: DispatchQueue) {
+  @_spi(Internals) public init(queue: DispatchQueue) {
     self.queue = queue
   }
 
   private static let isSettingKey = DispatchSpecificKey<Bool>()
 
-  public func async(execute workItem: DispatchWorkItem) {
+  @_spi(Internals) public func async(execute workItem: DispatchWorkItem) {
     self.queue.async(execute: workItem)
   }
 
-  public func asyncAfter(interval: DispatchTimeInterval, execute workItem: DispatchWorkItem) {
+  @_spi(Internals) public func asyncAfter(
+    interval: DispatchTimeInterval,
+    execute workItem: DispatchWorkItem
+  ) {
     self.queue.asyncAfter(deadline: .now() + interval, execute: workItem)
   }
 
-  public func createDirectory(
+  @_spi(Internals) public func createDirectory(
     at url: URL,
     withIntermediateDirectories createIntermediates: Bool
   ) throws {
@@ -196,17 +242,17 @@ final public class LiveFileStorage: FileStorage {
     )
   }
 
-  public func isSetting() -> Bool? {
+  @_spi(Internals) public func isSetting() -> Bool? {
     // TODO: Does this actually need to be a specific and be in the protocol, or could
     //      FileStorageKey just hold onto this state?
     self.queue.getSpecific(key: Self.isSettingKey)
   }
 
-  public func fileExists(at url: URL) -> Bool {
+  @_spi(Internals) public func fileExists(at url: URL) -> Bool {
     FileManager.default.fileExists(atPath: url.path)
   }
 
-  public func fileSystemSource(
+  @_spi(Internals) public func fileSystemSource(
     url: URL,
     eventMask: DispatchSource.FileSystemEvent,
     handler: @escaping () -> Void
@@ -224,60 +270,55 @@ final public class LiveFileStorage: FileStorage {
     }
   }
 
-  public func load(from url: URL) throws -> Data {
+  @_spi(Internals) public func load(from url: URL) throws -> Data {
     try Data(contentsOf: url)
   }
 
-  public func save(_ data: Data, to url: URL) throws {
+  @_spi(Internals) public func save(_ data: Data, to url: URL) throws {
     try FileManager.default
       .createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
     try data.write(to: url)
   }
 
-  public func setIsSetting(_ isSetting: Bool) {
+  @_spi(Internals) public func setIsSetting(_ isSetting: Bool) {
     self.queue.setSpecific(key: Self.isSettingKey, value: isSetting)
   }
 }
 
-/// A ``FileStorage`` conformance that emulates a file system without actually writing anything
-/// to disk.
-///
-/// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency that
-/// is used by default when running your app in tests and previews.
-public final class InMemoryFileStorage: FileStorage, Sendable {
+@_spi(Internals) public final class InMemoryFileStorage: FileStorageProtocol, Sendable {
   private let _isSetting = LockIsolated<Bool?>(nil)
-  public let fileSystem = LockIsolated<[URL: Data]>([:])
+  @_spi(Internals) public let fileSystem = LockIsolated<[URL: Data]>([:])
   private let scheduler: AnySchedulerOf<DispatchQueue>
   private let sourceHandlers = LockIsolated<[URL: (() -> Void)]>([:])
 
-  public init(scheduler: AnySchedulerOf<DispatchQueue> = .immediate) {
+  @_spi(Internals) public init(scheduler: AnySchedulerOf<DispatchQueue> = .immediate) {
     self.scheduler = scheduler
   }
 
-  public func asyncAfter(interval: DispatchTimeInterval, execute workItem: DispatchWorkItem) {
+  @_spi(Internals) public func asyncAfter(interval: DispatchTimeInterval, execute workItem: DispatchWorkItem) {
     self.scheduler.schedule(after: self.scheduler.now.advanced(by: .init(interval))) {
       workItem.perform()
     }
   }
 
-  public func async(execute workItem: DispatchWorkItem) {
+  @_spi(Internals) public func async(execute workItem: DispatchWorkItem) {
     self.scheduler.schedule(workItem.perform)
   }
 
-  public func createDirectory(
+  @_spi(Internals) public func createDirectory(
     at url: URL,
     withIntermediateDirectories createIntermediates: Bool
   ) throws {}
 
-  public func isSetting() -> Bool? {
+  @_spi(Internals) public func isSetting() -> Bool? {
     self._isSetting.value
   }
 
-  public func fileExists(at url: URL) -> Bool {
+  @_spi(Internals) public func fileExists(at url: URL) -> Bool {
     self.fileSystem.keys.contains(url)
   }
 
-  public func fileSystemSource(
+  @_spi(Internals) public func fileSystemSource(
     url: URL,
     eventMask: DispatchSource.FileSystemEvent,
     handler: @escaping () -> Void
@@ -288,7 +329,7 @@ public final class InMemoryFileStorage: FileStorage, Sendable {
     }
   }
 
-  public func load(from url: URL) throws -> Data {
+  @_spi(Internals) public func load(from url: URL) throws -> Data {
     guard let data = self.fileSystem[url]
     else {
       struct LoadError: Error {}
@@ -297,32 +338,12 @@ public final class InMemoryFileStorage: FileStorage, Sendable {
     return data
   }
 
-  public func save(_ data: Data, to url: URL) throws {
+  @_spi(Internals) public func save(_ data: Data, to url: URL) throws {
     self.fileSystem.withValue { $0[url] = data }
     self.sourceHandlers.value[url]?()
   }
 
-  public func setIsSetting(_ isSetting: Bool) {
+  @_spi(Internals) public func setIsSetting(_ isSetting: Bool) {
     self._isSetting.setValue(isSetting)
-  }
-}
-
-private enum FileStorageQueueKey: DependencyKey {
-  static var liveValue: any FileStorage {
-    LiveFileStorage(
-      queue: DispatchQueue(label: "co.pointfree.ComposableArchitecture.FileStorage"))
-  }
-  static var previewValue: any FileStorage {
-    InMemoryFileStorage()
-  }
-  static var testValue: any FileStorage {
-    InMemoryFileStorage()
-  }
-}
-
-extension DependencyValues {
-  public var defaultFileStorage: any FileStorage {
-    get { self[FileStorageQueueKey.self] }
-    set { self[FileStorageQueueKey.self] = newValue }
   }
 }
