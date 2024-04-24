@@ -2,8 +2,8 @@
 ///
 /// Conform to this protocol to express loading state from an external system, and subscribing to
 /// state changes in the external system. It is only necessary to conform to this protocol if the
-/// ``appStorage(_:)-2ntx6``, ``fileStorage(_:)`` or ``inMemory(_:)`` strategies are not sufficient
-/// for your use case.
+/// ``AppStorageKey``, ``FileStorageKey``, or ``InMemoryKey`` strategies are not sufficient for your
+/// use case.
 ///
 /// See the article <doc:SharingState> for more information, in particular the
 /// <doc:SharingState#Custom-persistence> section.
@@ -45,8 +45,8 @@ extension PersistenceReaderKey {
 /// Conform to this protocol to express persistence to some external storage by describing how to
 /// save to and load from the external storage, and providing a stream of values that represents
 /// when the external storage is changed from the outside. It is only necessary to conform to this
-/// protocol if the ``appStorage(_:)-2ntx6``, ``fileStorage(_:)`` or ``inMemory(_:)`` strategies are
-/// not sufficient for your use case.
+/// protocol if the ``AppStorageKey``, ``FileStorageKey``, or ``InMemoryKey`` strategies are not
+/// sufficient for your use case.
 ///
 /// See the article <doc:SharingState> for more information, in particular the
 /// <doc:SharingState#Custom-persistence> section.

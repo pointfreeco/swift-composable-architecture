@@ -266,10 +266,7 @@ extension Shared: _CustomDiffObject {
 
 extension Shared
 where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable & Sendable {
-  /// Derives a collection of shared elements from a shared collection of elements.
-  ///
-  /// This can be useful when used in conjunction with `ForEach` in order to derive a shared
-  /// reference for each element of a collection:
+  /// Allows a `ForEach` view to transform a shared collection into shared elements.
   ///
   /// ```swift
   /// struct State {
@@ -289,6 +286,10 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
   ///   }
   /// }
   /// ```
+  ///
+  /// > Warning: It is not appropriate to use this property outside of SwiftUI's `ForEach` view. If
+  /// > you need to derive a shared element from a shared collection, use a stable lookup, instead,
+  /// > like the `$array[id:]` subscript on `IdentifiedArray`.
   public var elements: some RandomAccessCollection<Shared<Value.Element>> {
     zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
       self[index, default: DefaultSubscript(element)]
