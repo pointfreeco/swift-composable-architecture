@@ -11,7 +11,7 @@ simplify the library, and make it more powerful. This version of the library onl
 APIs and did not deprecate any existing APIs.
 
 > Important: Before following this migration guide be sure you have fully migrated to the newest
-> tools of version 1.8. See <doc:MigrationGuides> for more information.
+> tools of version 1.9. See <doc:MigrationGuides> for more information.
 
 ## Sharing state
 
