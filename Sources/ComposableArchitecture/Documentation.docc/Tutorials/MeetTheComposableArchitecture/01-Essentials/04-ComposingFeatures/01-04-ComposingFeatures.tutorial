@@ -95,7 +95,7 @@
         and perform any state mutations necessary based on the action passed in. 
         
         We still want to do that for the core logic of the app feature, but we also want compose in
-        the  `CounterFeature` reducer so that it's logic can execute on the `tab1` and `tab2` state
+        the  `CounterFeature` reducer so that its logic can execute on the `tab1` and `tab2` state
         without the `AppFeature` having to recreate it.
         
         @Code(name: "AppFeature.swift", file: 01-04-02-code-0003.swift)

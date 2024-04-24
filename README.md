@@ -580,7 +580,7 @@ a particular problem, there are a number of places you can discuss with fellow
 
 You can add ComposableArchitecture to an Xcode project by adding it as a package dependency.
 
-  1. From the **File** menu, select **Add Packages...**
+  1. From the **File** menu, select **Add Package Dependencies...**
   2. Enter "https://github.com/pointfreeco/swift-composable-architecture" into the package 
      repository URL text field
   3. Depending on how your project is structured:
