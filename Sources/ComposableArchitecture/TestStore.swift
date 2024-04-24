@@ -422,7 +422,7 @@ import XCTestDynamicOverlay
 /// [merowing.info]: https://www.merowing.info
 /// [exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
 /// [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
-public final class TestStore<State: Equatable, Action> {
+public final class TestStore<State, Action> {
 
   /// The current dependencies of the test store.
   ///
@@ -516,7 +516,7 @@ public final class TestStore<State: Equatable, Action> {
     file: StaticString = #file,
     line: UInt = #line
   )
-  where R.State == State, R.Action == Action {
+  where State: Equatable, R.State == State, R.Action == Action {
     let sharedChangeTracker = SharedChangeTracker()
     let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
       Dependencies.withDependencies {
@@ -658,20 +658,26 @@ public final class TestStore<State: Equatable, Action> {
         line: effect.action.line
       )
     }
-    if self.sharedChangeTracker.hasChanges {
-      try? self.expectedStateShouldMatch(
-        preamble: "Test store completed before asserting against changes to shared state",
-        postamble: """
-          Invoke "TestStore.assert" at the end of this test to assert against changes to shared \
-          state.
-          """,
-        expected: self.state,
-        actual: self.state,
-        updateStateToExpectedResult: nil,
-        skipUnnecessaryModifyFailure: true,
-        file: self.file,
-        line: self.line
-      )
+    // NB: This existential opening can go away if we can constrain 'State: Equatable' at the
+    //     'TestStore' level, but for some reason this breaks DocC.
+    if self.sharedChangeTracker.hasChanges, let stateType = State.self as? any Equatable.Type {
+      func open<EquatableState: Equatable>(_: EquatableState.Type) {
+        let store = self as! TestStore<EquatableState, Action>
+        try? store.expectedStateShouldMatch(
+          preamble: "Test store completed before asserting against changes to shared state",
+          postamble: """
+            Invoke "TestStore.assert" at the end of this test to assert against changes to shared \
+            state.
+            """,
+          expected: store.state,
+          actual: store.state,
+          updateStateToExpectedResult: nil,
+          skipUnnecessaryModifyFailure: true,
+          file: store.file,
+          line: store.line
+        )
+      }
+      open(stateType)
     }
   }
 
@@ -753,9 +759,9 @@ public final class TestStore<State: Equatable, Action> {
 /// ```swift
 /// let testStore: TestStoreOf<Feature>
 /// ```
-public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action> where R.State: Equatable
+public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action>
 
-extension TestStore {
+extension TestStore where State: Equatable {
   /// Sends an action to the store and asserts when state changes.
   ///
   /// To assert on how state changes you can provide a trailing closure, and that closure is handed
@@ -1122,7 +1128,7 @@ extension TestStore {
   }
 }
 
-extension TestStore where Action: Equatable {
+extension TestStore where State: Equatable, Action: Equatable {
   private func _receive(
     _ expectedAction: Action,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
@@ -1269,7 +1275,7 @@ extension TestStore where Action: Equatable {
   }
 }
 
-extension TestStore {
+extension TestStore where State: Equatable {
   private func _receive(
     _ isMatching: (Action) -> Bool,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
@@ -1934,7 +1940,7 @@ extension TestStore {
   }
 }
 
-extension TestStore {
+extension TestStore where State: Equatable {
   /// Sends an action to the store and asserts when state changes.
   ///
   /// This method is similar to ``send(_:assert:file:line:)-2co21``, except it allows you to specify
