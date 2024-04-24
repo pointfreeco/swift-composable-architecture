@@ -9,7 +9,7 @@ struct SyncUpsApp: App {
       ._printChanges()
   } withDependencies: {
     if ProcessInfo.processInfo.environment["UITesting"] == "true" {
-      $0.defaultFileStorage = InMemoryFileStorage()
+      $0.defaultFileStorage = .inMemory
     }
   }
 
