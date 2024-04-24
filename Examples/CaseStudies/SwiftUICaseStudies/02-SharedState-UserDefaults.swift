@@ -55,13 +55,13 @@ struct SharedStateUserDefaultsView: View {
   var body: some View {
     TabView(selection: $store.currentTab.sending(\.selectTab)) {
       CounterTabView(
-        store: self.store.scope(state: \.counter, action: \.counter)
+        store: store.scope(state: \.counter, action: \.counter)
       )
       .tag(SharedStateUserDefaults.Tab.counter)
       .tabItem { Text("Counter") }
 
       ProfileTabView(
-        store: self.store.scope(state: \.profile, action: \.profile)
+        store: store.scope(state: \.profile, action: \.profile)
       )
       .tag(SharedStateUserDefaults.Tab.profile)
       .tabItem { Text("Profile") }
