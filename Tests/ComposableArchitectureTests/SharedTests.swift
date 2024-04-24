@@ -581,6 +581,7 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(counts, [1, 2])
     @Dependency(\.defaultAppStorage) var userDefaults
     // TODO: Should we runtime warn on re-entrant mutations?
+    XCTAssertEqual(count, 1)
     XCTAssertEqual(userDefaults.integer(forKey: "count"), 1)
   }
 
