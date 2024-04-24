@@ -8,12 +8,23 @@
 /// See the article <doc:SharingState> for more information, in particular the
 /// <doc:SharingState#Custom-persistence> section.
 public protocol PersistenceReaderKey<Value>: Hashable {
+  /// A type that can be loaded or subscribed to in an external system.
   associatedtype Value
 
   /// Loads the freshest value from storage. Returns `nil` if there is no value in storage.
+  ///
+  /// - Parameter initialValue: An initial value assigned to the `@Shared` property.
+  /// - Returns: An initial value provided by an external system, or `nil`.
   func load(initialValue: Value?) -> Value?  // TODO: Should this be throwing?
 
   /// Subscribes to external updates.
+  ///
+  /// - Parameters:
+  ///   - initialValue: An initial value assigned to the `@Shared` property.
+  ///   - didSet: A closure that is invoked with new values from an external system, or `nil` if the
+  ///     external system no longer holds a value.
+  /// - Returns: A subscription to updates from an external system. If it is cancelled or
+  ///   deinitialized, the `didSet` closure will no longer be invoked.
   func subscribe(
     initialValue: Value?,
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
@@ -33,9 +44,9 @@ extension PersistenceReaderKey {
 ///
 /// Conform to this protocol to express persistence to some external storage by describing how to
 /// save to and load from the external storage, and providing a stream of values that represents
-/// when the external storage is changed from the outside. It is only necessary to conform to
-/// this protocol if the ``appStorage(_:)-2ntx6``, ``fileStorage(_:)`` or ``inMemory(_:)``
-/// strategies are not sufficient for your use case.
+/// when the external storage is changed from the outside. It is only necessary to conform to this
+/// protocol if the ``appStorage(_:)-2ntx6``, ``fileStorage(_:)`` or ``inMemory(_:)`` strategies are
+/// not sufficient for your use case.
 ///
 /// See the article <doc:SharingState> for more information, in particular the
 /// <doc:SharingState#Custom-persistence> section.
@@ -45,15 +56,26 @@ public protocol PersistenceKey<Value>: PersistenceReaderKey {
 }
 
 extension Shared {
+  // TODO: Does this need to be `Sendable`?
+  /// A subscription to a ``PersistenceReaderKey``'s updates.
+  ///
+  /// This object is returned from ``PersistenceReaderKey/subscribe(initialValue:didSet:)``, which
+  /// will feed updates from an external system for its lifetime, or till ``cancel()`` is called.
   public class Subscription {
     let onCancel: () -> Void
-    public init(onCancel: @escaping () -> Void) {
-      self.onCancel = onCancel
+
+    /// Initializes the subscription with the given cancel closure.
+    ///
+    /// - Parameter cancel: A closure that the `cancel()` method executes.
+    public init(_ cancel: @escaping () -> Void) {
+      self.onCancel = cancel
     }
+
     deinit {
       self.cancel()
     }
-    /// Cancels this subscription.
+
+    /// Cancels the subscription.
     public func cancel() {
       self.onCancel()
     }
