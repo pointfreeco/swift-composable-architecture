@@ -222,7 +222,17 @@ public struct FileStorage: Sendable {
     fileSystem: LockIsolated<[URL: Data]>,
     scheduler: AnySchedulerOf<DispatchQueue> = .immediate
   ) -> Self {
-    let sourceHandlers = LockIsolated<[URL: (() -> Void)]>([:])
+    struct Handler: Hashable {
+      let id = UUID()
+      let operation: () -> Void
+      static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id
+      }
+      func hash(into hasher: inout Hasher) {
+        hasher.combine(self.id)
+      }
+    }
+    let sourceHandlers = LockIsolated<[URL: Set<Handler>]>([:])
     return Self(
       id: AnyHashableSendable(ObjectIdentifier(fileSystem)),
       async: { scheduler.schedule($0.perform) },
@@ -230,9 +240,10 @@ public struct FileStorage: Sendable {
       createDirectory: { _, _ in },
       fileExists: { fileSystem.keys.contains($0) },
       fileSystemSource: { url, _, handler in
-        sourceHandlers.withValue { $0[url] = handler }
+        let handler = Handler(operation: handler)
+        sourceHandlers.withValue { $0[url, default: []].insert(handler) }
         return AnyCancellable {
-          sourceHandlers.withValue { $0[url] = nil }
+          sourceHandlers.withValue { $0[url]?.remove(handler) }
         }
       },
       load: {
@@ -245,7 +256,7 @@ public struct FileStorage: Sendable {
       },
       save: { data, url in
         fileSystem.withValue { $0[url] = data }
-        sourceHandlers.value[url]?()
+        sourceHandlers.withValue { $0[url]?.forEach { $0() } }
       }
     )
   }

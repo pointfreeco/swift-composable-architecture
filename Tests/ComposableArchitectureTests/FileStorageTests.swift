@@ -346,7 +346,7 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  func testMismatchTypes() {
+  func testMismatchTypesSameCodability() {
     @Shared(.fileStorage(.fileURL)) var users: [User] = []
     @Shared(.fileStorage(.fileURL)) var users1: [User] = []
     @Shared(.fileStorage(.fileURL)) var users2: IdentifiedArrayOf<User> = []
@@ -354,7 +354,23 @@ final class FileStorageTests: XCTestCase {
     users.append(User(id: 1, name: "Blob"))
     XCTAssertEqual(users, [User(id: 1, name: "Blob")])
     XCTAssertEqual(users1, [User(id: 1, name: "Blob")])
-    XCTAssertEqual(users2, [])
+    XCTAssertEqual(users2, [User(id: 1, name: "Blob")])
+  }
+
+  func testMismatchTypesDifferentCodability() {
+    @Shared(.fileStorage(.fileURL)) var users: [User] = []
+    @Shared(.fileStorage(.fileURL)) var users1: [User] = []
+    @Shared(.fileStorage(.fileURL)) var users2 = false
+
+    users.append(User(id: 1, name: "Blob"))
+    XCTAssertEqual(users, [User(id: 1, name: "Blob")])
+    XCTAssertEqual(users1, [User(id: 1, name: "Blob")])
+    XCTAssertEqual(users2, false)
+
+    users2 = true
+    XCTAssertEqual(users, [])
+    XCTAssertEqual(users1, [])
+    XCTAssertEqual(users2, true)
   }
 
   func testTwoInMemoryFileStorages() {

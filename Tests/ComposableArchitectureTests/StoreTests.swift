@@ -1047,7 +1047,7 @@
       let store = Store(initialState: Feature.State()) {
         Feature()
       }
-      let task = store.send(.onAppear)
+      store.send(.onAppear)
       store.send(.tap)
       try? await Task.sleep(nanoseconds: 1_000_000)
       XCTAssertEqual(
