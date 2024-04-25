@@ -256,7 +256,7 @@ public struct FileStorage: Sendable {
       },
       save: { data, url in
         fileSystem.withValue { $0[url] = data }
-        sourceHandlers.withValue { $0[url]?.forEach { $0() } }
+        sourceHandlers.withValue { $0[url]?.forEach { $0.operation() } }
       }
     )
   }
