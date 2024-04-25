@@ -241,9 +241,9 @@ public struct FileStorage: Sendable {
       fileExists: { fileSystem.keys.contains($0) },
       fileSystemSource: { url, _, handler in
         let handler = Handler(operation: handler)
-        sourceHandlers.withValue { $0[url, default: []].insert(handler) }
+        sourceHandlers.withValue { _ = $0[url, default: []].insert(handler) }
         return AnyCancellable {
-          sourceHandlers.withValue { $0[url]?.remove(handler) }
+          sourceHandlers.withValue { _ = $0[url]?.remove(handler) }
         }
       },
       load: {
