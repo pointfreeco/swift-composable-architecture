@@ -755,6 +755,30 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(isOn2, true)
     XCTAssertEqual(isOn3, true)
   }
+
+  @MainActor
+  func testPrivateSharedState() async {
+    let isOn = Shared(false)
+    let store = TestStore(
+      initialState: SharedFeature.State(
+        profile: Shared(Profile(stats: Shared(Stats()))),
+        sharedCount: Shared(0),
+        stats: Shared(Stats()),
+        isOn: isOn
+      )
+    ) {
+      SharedFeature()
+    }
+
+    await store.send(.toggleIsOn) {
+      _ = $0
+      isOn.wrappedValue = true
+    }
+    await store.send(.toggleIsOn) {
+      _ = $0
+      isOn.wrappedValue = false
+    }
+  }
 }
 
 @Reducer
@@ -765,14 +789,29 @@ private struct SharedFeature {
     @Shared var profile: Profile
     @Shared var sharedCount: Int
     @Shared var stats: Stats
+    @Shared fileprivate var isOn: Bool
+    init(
+      count: Int = 0,
+      profile: Shared<Profile>,
+      sharedCount: Shared<Int>,
+      stats: Shared<Stats>,
+      isOn: Shared<Bool> = Shared(false)
+    ) {
+      self.count = count
+      self._profile = profile
+      self._sharedCount = sharedCount
+      self._stats = stats
+      self._isOn = isOn
+    }
   }
   enum Action {
     case increment
     case incrementStats
     case longLivingEffect
     case noop
-    case sharedIncrement
     case request
+    case sharedIncrement
+    case toggleIsOn
   }
   @Dependency(\.mainQueue) var mainQueue
   var body: some ReducerOf<Self> {
@@ -792,13 +831,16 @@ private struct SharedFeature {
         }
       case .noop:
         return .none
-      case .sharedIncrement:
-        state.sharedCount += 1
-        return .none
       case .request:
         return .run { send in
           await send(.sharedIncrement)
         }
+      case .sharedIncrement:
+        state.sharedCount += 1
+        return .none
+      case .toggleIsOn:
+        state.isOn.toggle()
+        return .none
       }
     }
   }

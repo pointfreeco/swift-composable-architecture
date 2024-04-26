@@ -105,6 +105,9 @@ final class AppFeatureTests: XCTestCase {
     store.exhaustivity = .off
 
     await store.send(\.path[id:1].record.onTask)
+    await store.receive(\.path.popFrom) {
+      XCTAssertEqual($0.path.count, 1)
+    }
     store.assert {
       $0.path[id: 0]?.detail?.syncUp.meetings = [
         Meeting(
@@ -113,9 +116,6 @@ final class AppFeatureTests: XCTestCase {
           transcript: "I completed the project"
         )
       ]
-    }
-    await store.receive(\.path.popFrom) {
-      XCTAssertEqual($0.path.count, 1)
     }
   }
 }

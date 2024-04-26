@@ -464,9 +464,9 @@ cause serious problems with testing, especially exhaustive testing that the libr
 <doc:Testing>), because references cannot be copied and so one cannot inspect the changes before and
 after an action is sent.
 
-For this reason, the ``Shared`` macro does extra work during testing to preserve a previous snapshot 
-of the state so that one can still exhaustively assert on shared state, even though it is a 
-reference.
+For this reason, the ``Shared`` property wrapper does extra work during testing to preserve a 
+previous snapshot of the state so that one can still exhaustively assert on shared state, even 
+though it is a reference.
 
 For the most part, shared state can be tested just like any regular state held in your features. For
 example, consider the following simple counter feature that uses in-memory shared state for the
