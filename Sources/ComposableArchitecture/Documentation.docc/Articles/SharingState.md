@@ -704,12 +704,9 @@ await store.send(.feature1(.buttonTapped)) {
 }
 ```
 
-This would catch the bug of accidentally removing `@Shared`, but it wouldn't catch the reverse of 
-the bug of accidentally _adding_ `@Shared` where not appropriate.
-
 If you are worried about these kinds of bugs you can make your tests more robust by not asserting
 on the shared state in the argument handed to the trailing closure of ``TestStore``'s `send, and
-instead capturing a reference to the shared state in the test and mutating it in the trailing
+instead capture a reference to the shared state in the test and mutate it in the trailing
 closure:
 
 
@@ -720,7 +717,6 @@ func testIncrement() async {
     ParentFeature()
   }
 
-
   await store.send(.feature1(.buttonTapped)) {
     // Mutate $0 to expected value.
     count = 1
@@ -728,7 +724,7 @@ func testIncrement() async {
 }
 ```
 
-This will fail if you accidetally add _or_ remove a `@Shared` from one of your features.
+This will fail if you accidetally remove a `@Shared` from one of your features.
 
 Further, you can enforce this pattern in your codebase by making all `@Shared` properties 
 `fileprivate` so that they can never be mutated outside their file scope:
