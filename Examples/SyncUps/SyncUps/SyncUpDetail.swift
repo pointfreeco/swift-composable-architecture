@@ -34,7 +34,7 @@ struct SyncUpDetail {
 
     @CasePathable
     enum Delegate {
-      case startMeeting
+      case startMeeting(Shared<SyncUp>)
     }
   }
 
@@ -68,7 +68,7 @@ struct SyncUpDetail {
           return .run { _ in await dismiss() }
 
         case .continueWithoutRecording:
-          return .send(.delegate(.startMeeting))
+          return .send(.delegate(.startMeeting(state.$syncUp)))
 
         case .openSettings:
           return .run { _ in await openSettings() }
@@ -91,7 +91,7 @@ struct SyncUpDetail {
       case .startMeetingButtonTapped:
         switch authorizationStatus() {
         case .notDetermined, .authorized:
-          return .send(.delegate(.startMeeting))
+          return .send(.delegate(.startMeeting(state.$syncUp)))
 
         case .denied:
           state.destination = .alert(.speechRecognitionDenied)

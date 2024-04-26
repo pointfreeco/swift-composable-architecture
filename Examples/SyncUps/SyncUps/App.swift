@@ -3,6 +3,8 @@ import SwiftUI
 
 @main
 struct SyncUpsApp: App {
+  // NB: This is static to avoid interference with Xcode previews, which create this entry
+  //     point each time they are run.
   @MainActor
   static let store = Store(initialState: AppFeature.State()) {
     AppFeature()
