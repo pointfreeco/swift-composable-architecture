@@ -15,7 +15,7 @@ public protocol PersistenceReaderKey<Value>: Hashable {
   ///
   /// - Parameter initialValue: An initial value assigned to the `@Shared` property.
   /// - Returns: An initial value provided by an external system, or `nil`.
-  func load(initialValue: Value?) -> Value?  // TODO: Should this be throwing?
+  func load(initialValue: Value?) -> Value?
 
   /// Subscribes to external updates.
   ///
@@ -56,7 +56,6 @@ public protocol PersistenceKey<Value>: PersistenceReaderKey {
 }
 
 extension Shared {
-  // TODO: Does this need to be `Sendable`?
   /// A subscription to a ``PersistenceReaderKey``'s updates.
   ///
   /// This object is returned from ``PersistenceReaderKey/subscribe(initialValue:didSet:)``, which

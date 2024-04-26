@@ -34,6 +34,7 @@ as SQLite.
   * [Testing when using persistence](#Testing-when-using-persistence)
   * [Testing when using custom persistence strategies](#Testing-when-using-custom-persistence-strategies)
   * [Overriding shared state in tests](#Overriding-shared-state-in-tests)
+  * [UI Testing](#UI-Testing)
   * [Testing tips](#Testing-tips)
 * [Read-only shared state](#Read-only-shared-state)
 * [Type-safe keys](#Type-safe-keys)
@@ -699,6 +700,32 @@ func testFeature() {
 
   // Shared state will be 42 for all features using it.
   let store = TestStore(…)
+}
+```
+
+#### UI Testing
+
+When UI testing your app you must take extra care so that shared state is not persisted across
+app runs because that can cause one test to bleed over into another test, making it difficult to
+write deterministic tests that always pass. To fix this, you can set an environment value from
+your UI test target, and then if that value is present in the app target you can override the
+``Dependencies/DependencyValues/defaultAppStorage`` and 
+``Dependencies/DependencyValues/defaultFileStorage`` dependencies so that they use in-memory 
+storage, i.e. they do not persist ever:
+
+```swift
+@main
+struct EntryPoint: App {
+  let store = Store(initialState: AppFeature.State()) {
+    AppFeature()
+  } withDependencies: {
+    if ProcessInfo.processInfo.environment["UITesting"] == "true" {
+      $0.defaultAppStorage = UserDefaults(
+        suiteName:"\(NSTemporaryDirectory())\(UUID().uuidString)"
+      )!
+      $0.defaultFileStorage = .inMemory
+    }
+  }
 }
 ```
 

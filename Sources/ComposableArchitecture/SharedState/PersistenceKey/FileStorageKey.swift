@@ -142,7 +142,7 @@ extension FileStorageKey: Hashable {
   }
 }
 
-private enum FileStorageQueueKey: DependencyKey {
+private enum FileStorageDependencyKey: DependencyKey {
   static var liveValue: FileStorage {
     .fileSystem
   }
@@ -155,10 +155,31 @@ private enum FileStorageQueueKey: DependencyKey {
 }
 
 extension DependencyValues {
-  /// File storage used by ``PersistenceReaderKey/fileStorage(_:)``.
+  /// Default file storage used by ``PersistenceReaderKey/fileStorage(_:)``.
+  ///
+  /// Use this dependency to override the manner in which ``PersistenceReaderKey/fileStorage(_:)``
+  /// interacts with file storage. For example, while your app is running for UI tests you
+  /// probably do not want your features writing changes to disk, which would cause that data to
+  /// bleed over from test to test.
+  ///
+  /// So, for that situation you can use the ``FileStorage/inMemory`` file storage so that each
+  /// run of the app starts with a fresh "file system" that will never interfer with other tests:
+  ///
+  /// ```swift
+  /// @main
+  /// struct EntryPoint: App {
+  ///   let store = Store(initialState: AppFeature.State()) {
+  ///     AppFeature()
+  ///   } withDependencies: {
+  ///     if ProcessInfo.processInfo.environment["UITesting"] == "true" {
+  ///       $0.defaultFileStorage = .inMemory
+  ///     }
+  ///   }
+  /// }
+  /// ```
   public var defaultFileStorage: FileStorage {
-    get { self[FileStorageQueueKey.self] }
-    set { self[FileStorageQueueKey.self] = newValue }
+    get { self[FileStorageDependencyKey.self] }
+    set { self[FileStorageDependencyKey.self] = newValue }
   }
 }
 

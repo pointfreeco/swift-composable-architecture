@@ -1,8 +1,8 @@
 import CustomDump
 import Dependencies
 
-@usableFromInline
-func withSharedChangeTracking<T>(
+@_spi(Internals)
+public func withSharedChangeTracking<T>(
   _ apply: (SharedChangeTracker) throws -> T
 ) rethrows -> T {
   let changeTracker = SharedChangeTracker()
@@ -11,8 +11,8 @@ func withSharedChangeTracking<T>(
   }
 }
 
-@usableFromInline
-func withSharedChangeTracking<T>(
+@_spi(Internals)
+public func withSharedChangeTracking<T>(
   _ apply: (SharedChangeTracker) async throws -> T
 ) async rethrows -> T {
   let changeTracker = SharedChangeTracker()
@@ -56,11 +56,11 @@ struct AnyChange<Value>: Change {
   }
 }
 
-@usableFromInline
-final class SharedChangeTracker: Sendable {
+@_spi(Internals)
+public final class SharedChangeTracker: Sendable {
   let changes: LockIsolated<[ObjectIdentifier: Any]> = LockIsolated([:])
   var hasChanges: Bool { !self.changes.isEmpty }
-  init() {}
+  @_spi(Internals) public init() {}
   func resetChanges() { self.changes.withValue { $0.removeAll() } }
   func assertUnchanged() {
     for change in self.changes.values {
@@ -85,22 +85,22 @@ final class SharedChangeTracker: Sendable {
   }
   func track<R>(_ operation: () throws -> R) rethrows -> R {
     try withDependencies {
-      $0[SharedChangeTrackersKey.self].insert(self)
+      $0.sharedChangeTrackers.insert(self)
     } operation: {
       try operation()
     }
   }
   func track<R>(_ operation: () async throws -> R) async rethrows -> R {
     try await withDependencies {
-      $0[SharedChangeTrackersKey.self].insert(self)
+      $0.sharedChangeTrackers.insert(self)
     } operation: {
       try await operation()
     }
   }
-  @usableFromInline
-  func assert<R>(_ operation: () throws -> R) rethrows -> R {
+  @_spi(Internals)
+  public func assert<R>(_ operation: () throws -> R) rethrows -> R {
     try withDependencies {
-      $0[SharedChangeTrackerKey.self] = self
+      $0.sharedChangeTracker = self
     } operation: {
       try operation()
     }
@@ -108,12 +108,12 @@ final class SharedChangeTracker: Sendable {
 }
 
 extension SharedChangeTracker: Hashable {
-  @usableFromInline
-  static func == (lhs: SharedChangeTracker, rhs: SharedChangeTracker) -> Bool {
+  @_spi(Internals)
+  public static func == (lhs: SharedChangeTracker, rhs: SharedChangeTracker) -> Bool {
     lhs === rhs
   }
-  @usableFromInline
-  func hash(into hasher: inout Hasher) {
+  @_spi(Internals)
+  public func hash(into hasher: inout Hasher) {
     hasher.combine(ObjectIdentifier(self))
   }
 }
@@ -129,11 +129,13 @@ private enum SharedChangeTrackerKey: DependencyKey {
 }
 
 extension DependencyValues {
-  var sharedChangeTrackers: Set<SharedChangeTracker> {
+  @_spi(Internals)
+  public var sharedChangeTrackers: Set<SharedChangeTracker> {
     get { self[SharedChangeTrackersKey.self] }
     set { self[SharedChangeTrackersKey.self] = newValue }
   }
-  var sharedChangeTracker: SharedChangeTracker? {
+  @_spi(Internals)
+  public var sharedChangeTracker: SharedChangeTracker? {
     get { self[SharedChangeTrackerKey.self] }
     set { self[SharedChangeTrackerKey.self] = newValue }
   }

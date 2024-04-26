@@ -1,5 +1,5 @@
 import Combine
-import ComposableArchitecture
+@_spi(Internals) import ComposableArchitecture
 import XCTest
 
 final class SharedTests: XCTestCase {
@@ -783,6 +783,77 @@ final class SharedTests: XCTestCase {
     await store.send(.toggleIsOn) {
       _ = $0
       isOn.wrappedValue = false
+    }
+  }
+
+  func testEquatability_Reference() {
+    let count = Shared(0)
+    @Shared(.appStorage("count")) var appStorageCount = 0
+    @Shared(.fileStorage(.temporaryDirectory.appending(path: "count.json"))) var fileStorageCount = 0
+    @Shared(.inMemory("count")) var inMemoryCount = 0
+
+    XCTAssertNotEqual(count, $appStorageCount)
+    XCTAssertNotEqual($appStorageCount, $fileStorageCount)
+    XCTAssertNotEqual($fileStorageCount, $inMemoryCount)
+    XCTAssertNotEqual($inMemoryCount, count)
+  }
+
+  func testEquatable_KeyPath() {
+    struct Settings {
+      var isOn = false
+      var hasSeen = false
+    }
+    @Shared(.inMemory("settings")) var settings = Settings()
+    XCTAssertNotEqual($settings.isOn, $settings.hasSeen)
+    XCTAssertNotEqual($settings.isOn.hashValue, $settings.hasSeen.hashValue)
+  }
+
+  func testSelfEqualityInAnAssertion() {
+    let count = Shared(0)
+    withSharedChangeTracking { tracker in
+      count.wrappedValue += 1
+      tracker.assert {
+        XCTAssertNotEqual(count, count)
+        XCTAssertEqual(count.wrappedValue, count.wrappedValue)
+      }
+      XCTAssertEqual(count, count)
+      XCTAssertEqual(count.wrappedValue, count.wrappedValue)
+    }
+    XCTAssertEqual(count, count)
+    XCTAssertEqual(count.wrappedValue, count.wrappedValue)
+  }
+
+  func testBasicAssertion() {
+    let count = Shared(0)
+    withSharedChangeTracking { tracker in
+      count.wrappedValue += 1
+      tracker.assert {
+        count.wrappedValue += 1
+        XCTAssertEqual(count, count)
+        XCTAssertEqual(count.wrappedValue, count.wrappedValue)
+      }
+      XCTAssertEqual(count, count)
+      XCTAssertEqual(count.wrappedValue, count.wrappedValue)
+    }
+    XCTAssertEqual(count, count)
+    XCTAssertEqual(count.wrappedValue, count.wrappedValue)
+  }
+
+  func testHashableSoundness() {
+    for _ in 1...1_000 {
+      var set: Set<Shared<Int>> = []
+      let count = Shared(0)
+      set.insert(count)
+      withSharedChangeTracking { tracker in
+        count.wrappedValue += 1
+        set.insert(count)
+        tracker.assert {
+          count.wrappedValue += 1
+          set.insert(count)
+        }
+        set.insert(count)
+      }
+      set.insert(count)
     }
   }
 }

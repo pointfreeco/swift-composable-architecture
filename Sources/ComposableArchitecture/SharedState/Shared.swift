@@ -125,7 +125,7 @@ public struct Shared<Value> {
     return Shared<Member>(
       reference: self.reference,
       keyPath: self.keyPath.appending(
-        path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
+        path: keyPath.appending(path: \.[default: DefaultSubscript(initialValue)])
       )!
     )
   }
@@ -137,7 +137,8 @@ public struct Shared<Value> {
   ) rethrows where Value: Equatable {
     @Dependency(\.sharedChangeTrackers) var changeTrackers
     guard
-      let changeTracker = changeTrackers
+      let changeTracker =
+        changeTrackers
         .first(where: { $0.changes[ObjectIdentifier(self.reference)] != nil })
     else {
       XCTFail("Expected changes, but none occurred.", file: file, line: line)
@@ -208,8 +209,16 @@ extension Shared: @unchecked Sendable where Value: Sendable {}
 
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
+    guard
+      lhs.reference === rhs.reference,
+      lhs.keyPath == rhs.keyPath
+    else {
+      // TODO: Runtime warn?
+      return false
+    }
+
     @Dependency(\.sharedChangeTracker) var changeTracker
-    if changeTracker != nil, lhs.reference === rhs.reference {
+    if changeTracker != nil {
       if let lhsReference = lhs.reference as? any Equatable {
         func open<T: Equatable>(_ lhsReference: T) -> Bool {
           lhsReference == rhs.reference as? T
@@ -218,16 +227,15 @@ extension Shared: Equatable where Value: Equatable {
       }
       return lhs.snapshot ?? lhs.currentValue == rhs.currentValue
     } else {
-      return lhs.wrappedValue == rhs.wrappedValue
+      return true
     }
   }
 }
 
-extension Shared: Hashable where Value: Hashable {
+extension Shared: Hashable where Value: Equatable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.wrappedValue)
-    // TODO: hash reference too?
-    // TODO: or should we only hash reference?
+    hasher.combine(keyPath)
+    hasher.combine(ObjectIdentifier(reference))
   }
 }
 
@@ -300,7 +308,8 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
 @available(
   *,
   unavailable,
-  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
+  message:
+    "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
 )
 extension Shared: Collection, Sequence
 where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
@@ -321,7 +330,8 @@ where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
 @available(
   *,
   unavailable,
-  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
+  message:
+    "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
 )
 extension Shared: MutableCollection
 where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
@@ -339,7 +349,8 @@ where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
 @available(
   *,
   unavailable,
-  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
+  message:
+    "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
 )
 extension Shared: BidirectionalCollection
 where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
@@ -352,7 +363,8 @@ where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
 @available(
   *,
   unavailable,
-  message: "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
+  message:
+    "Derive shared elements from a stable subscript, like '$array[id:]' on 'IdentifiedArray', or pass '$array.elements' to a 'ForEach' view."
 )
 extension Shared: RandomAccessCollection
 where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
@@ -380,7 +392,7 @@ extension Shared {
     return SharedReader<Member>(
       reference: self.reference,
       keyPath: self.keyPath.appending(
-        path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
+        path: keyPath.appending(path: \.[default: DefaultSubscript(initialValue)])
       )!
     )
   }

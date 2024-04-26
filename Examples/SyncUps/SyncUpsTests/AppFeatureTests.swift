@@ -47,7 +47,7 @@ final class AppFeatureTests: XCTestCase {
     let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
 
     await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
     }
 
     await store.send(\.path[id:0].detail.deleteButtonTapped) {

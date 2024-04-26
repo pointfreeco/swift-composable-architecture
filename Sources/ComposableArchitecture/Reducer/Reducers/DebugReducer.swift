@@ -81,36 +81,42 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
     self.printer = printer
   }
 
+#if DEBUG
+  public func reduce(
+    into state: inout Base.State, action: Base.Action
+  ) -> Effect<Base.Action> {
+    if let printer = self.printer {
+      return withSharedChangeTracking { changeTracker in
+        let oldState = state
+        let effects = self.base.reduce(into: &state, action: action)
+        return withEscapedDependencies { continuation in
+          effects.merge(
+            with: .publisher { [newState = state, queue = printer.queue] in
+              Deferred<Empty<Action, Never>> {
+                queue.async {
+                  continuation.yield {
+                    changeTracker.assert {
+                      printer.printChange(
+                        receivedAction: action, oldState: oldState, newState: newState
+                      )
+                    }
+                  }
+                }
+                return Empty()
+              }
+            }
+          )
+        }
+      }
+    }
+    return self.base.reduce(into: &state, action: action)
+  }
+  #else
   @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
   ) -> Effect<Base.Action> {
-    #if DEBUG
-      if let printer = self.printer {
-        return withSharedChangeTracking { changeTracker in
-          let oldState = state
-          let effects = self.base.reduce(into: &state, action: action)
-          return withEscapedDependencies { continuation in
-            effects.merge(
-              with: .publisher { [newState = state, queue = printer.queue] in
-                Deferred<Empty<Action, Never>> {
-                  queue.async {
-                    continuation.yield {
-                      changeTracker.assert {
-                        printer.printChange(
-                          receivedAction: action, oldState: oldState, newState: newState
-                        )
-                      }
-                    }
-                  }
-                  return Empty()
-                }
-              }
-            )
-          }
-        }
-      }
-    #endif
     return self.base.reduce(into: &state, action: action)
   }
+  #endif
 }
