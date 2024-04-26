@@ -643,6 +643,102 @@ dependency will forgo any interaction with the file system and instead write dat
 dictionary, and load data from that dictionary. That emulates how the file system works, but without
 persisting any data to the global file system, which can bleed over into other tests.
 
+#### Testing tips
+
+There is something you can do to make testing features with shared state more robust and catch
+more potential future problems when you refactor your code. Right now suppose you have two features
+using `@Shared(.appStorage("count"))`:
+
+```swift
+@Reducer
+struct Feature1 {
+  struct State {
+    @Shared(.appStorage("count")) var count = 0
+  }
+  // ...
+}
+
+@Reducer
+struct Feature2 {
+  struct State {
+    @Shared(.appStorage("count")) var count = 0
+  }
+  // ...
+}
+```
+
+And suppose you wrote a test that proves one of these counts is incremented when a button is tapped:
+
+```swift
+await store.send(.feature1(.buttonTapped)) {
+  $0.feature1.count = 1
+}
+```
+
+Because both features are using `@Shared` you can be sure that both counts are kept in sync, and
+so you do not need to assert on `feature2.count`.
+
+However, if someday during a long, complex refactor you accidentally removed `@Shared` from 
+the second feature:
+
+```swift
+@Reducer
+struct Feature2 {
+  struct State {
+    var count = 0
+  }
+  // ...
+}
+```
+
+…then all of your code would continue compiling, and the test would still pass, but you may have
+introduced a bug by not having these two pieces of state in sync anymore.
+
+You could also fix this by forcing yourself to assert on all shared state in your features, even
+though technically it's not necessary:
+
+```swift
+await store.send(.feature1(.buttonTapped)) {
+  $0.feature1.count = 1
+  $0.feature2.count = 1
+}
+```
+
+This would catch the bug of accidentally removing `@Shared`, but it wouldn't catch the reverse of 
+the bug of accidentally _adding_ `@Shared` where not appropriate.
+
+If you are worried about these kinds of bugs you can make your tests more robust by not asserting
+on the shared state in the argument handed to the trailing closure of ``TestStore``'s `send, and
+instead capturing a reference to the shared state in the test and mutating it in the trailing
+closure:
+
+
+```swift
+func testIncrement() async {
+  @Shared(.appStorage("count")) var count = 0
+  let store = TestStore(initialState: ParentFeature.State()) {
+    ParentFeature()
+  }
+
+
+  await store.send(.feature1(.buttonTapped)) {
+    // Mutate $0 to expected value.
+    count = 1
+  }
+}
+```
+
+This will fail if you accidetally add _or_ remove a `@Shared` from one of your features.
+
+Further, you can enforce this pattern in your codebase by making all `@Shared` properties 
+`fileprivate` so that they can never be mutated outside their file scope:
+
+```swift
+struct State {
+  @Shared(.appStorage("count")) fileprivate var count = 0
+}
+```
+
 ## Read-only shared state
 
 The [`@Shared`](<doc:Shared>) property wrapper described above gives you access to a piece of shared

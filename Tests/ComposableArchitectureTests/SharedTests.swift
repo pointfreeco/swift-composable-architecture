@@ -44,7 +44,8 @@ final class SharedTests: XCTestCase {
                 _profile: #1 Profile(…),
             −   _sharedCount: #1 2,
             +   _sharedCount: #1 1,
-                _stats: #1 Stats(count: 0)
+                _stats: #1 Stats(count: 0),
+                _isOn: #1 false
               )
 
         (Expected: −, Actual: +)
@@ -81,7 +82,8 @@ final class SharedTests: XCTestCase {
                 _profile: #1 Profile(…),
             −   _sharedCount: #1 3,
             +   _sharedCount: #1 2,
-                _stats: #1 Stats(count: 0)
+                _stats: #1 Stats(count: 0),
+                _isOn: #1 false
               )
 
         (Expected: −, Actual: +)
@@ -149,7 +151,8 @@ final class SharedTests: XCTestCase {
                 _profile: #1 Profile(…),
             −   _sharedCount: #1 2,
             +   _sharedCount: #1 1,
-                _stats: #1 Stats(count: 0)
+                _stats: #1 Stats(count: 0),
+                _isOn: #1 false
               )
 
         (Expected: −, Actual: +)
@@ -197,7 +200,8 @@ final class SharedTests: XCTestCase {
                 _profile: #1 Profile(…),
             −   _sharedCount: #1 0,
             +   _sharedCount: #1 1,
-                _stats: #1 Stats(count: 0)
+                _stats: #1 Stats(count: 0),
+                _isOn: #1 false
               )
 
         (Expected: −, Actual: +)
@@ -248,7 +252,8 @@ final class SharedTests: XCTestCase {
                 _profile: #1 Profile(…),
             −   _sharedCount: #1 0,
             +   _sharedCount: #1 1,
-                _stats: #1 Stats(count: 0)
+                _stats: #1 Stats(count: 0),
+                _isOn: #1 false
               )
 
         (Expected: −, Actual: +)
@@ -281,7 +286,8 @@ final class SharedTests: XCTestCase {
                 _profile: #1 Profile(…),
             −   _sharedCount: #1 2,
             +   _sharedCount: #1 1,
-                _stats: #1 Stats(count: 0)
+                _stats: #1 Stats(count: 0),
+                _isOn: #1 false
               )
 
         (Expected: −, Actual: +)
