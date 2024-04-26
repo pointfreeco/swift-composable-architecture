@@ -183,8 +183,7 @@ extension StackState: Hashable where Element: Hashable {
   }
 }
 
-// NB: We can remove `@unchecked` when swift-collections 1.1 is released.
-extension StackState: @unchecked Sendable where Element: Sendable {}
+extension StackState: Sendable where Element: Sendable {}
 
 extension StackState: Decodable where Element: Decodable {
   public init(from decoder: Decoder) throws {
