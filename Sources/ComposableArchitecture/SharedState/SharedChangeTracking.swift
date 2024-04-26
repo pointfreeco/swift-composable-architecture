@@ -118,12 +118,23 @@ extension SharedChangeTracker: Hashable {
   }
 }
 
-enum SharedChangeTrackersKey: DependencyKey {
+private enum SharedChangeTrackersKey: DependencyKey {
   static var liveValue: Set<SharedChangeTracker> { [] }
   static var testValue: Set<SharedChangeTracker> { [SharedChangeTracker()] }
 }
 
-enum SharedChangeTrackerKey: DependencyKey {
+private enum SharedChangeTrackerKey: DependencyKey {
   static var liveValue: SharedChangeTracker? { nil }
   static var testValue: SharedChangeTracker? { nil }
+}
+
+extension DependencyValues {
+  var sharedChangeTrackers: Set<SharedChangeTracker> {
+    get { self[SharedChangeTrackersKey.self] }
+    set { self[SharedChangeTrackersKey.self] = newValue }
+  }
+  var sharedChangeTracker: SharedChangeTracker? {
+    get { self[SharedChangeTrackerKey.self] }
+    set { self[SharedChangeTrackerKey.self] = newValue }
+  }
 }

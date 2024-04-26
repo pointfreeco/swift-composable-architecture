@@ -521,7 +521,7 @@ public final class TestStore<State, Action> {
     let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
       Dependencies.withDependencies {
         prepareDependencies(&$0)
-        $0[SharedChangeTrackersKey.self].insert(sharedChangeTracker)
+        $0.sharedChangeTrackers.insert(sharedChangeTracker)
       } operation: {
         TestReducer(Reduce(reducer()), initialState: initialState())
       }
@@ -1010,7 +1010,7 @@ extension TestStore where State: Equatable {
         if let updateStateToExpectedResult {
           try Dependencies.withDependencies {
             $0 = self.reducer.dependencies
-            $0[SharedChangeTrackerKey.self] = self.sharedChangeTracker
+            $0.sharedChangeTracker = self.sharedChangeTracker
           } operation: {
             try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
           }
@@ -1028,7 +1028,7 @@ extension TestStore where State: Equatable {
         if let updateStateToExpectedResult {
           try Dependencies.withDependencies {
             $0 = self.reducer.dependencies
-            $0[SharedChangeTrackerKey.self] = self.sharedChangeTracker
+            $0.sharedChangeTracker = self.sharedChangeTracker
           } operation: {
             try updateStateToExpectedResult(&expectedWhenGivenActualState)
           }
@@ -1048,7 +1048,7 @@ extension TestStore where State: Equatable {
               do {
                 try Dependencies.withDependencies {
                   $0 = self.reducer.dependencies
-                  $0[SharedChangeTrackerKey.self] = self.sharedChangeTracker
+                  $0.sharedChangeTracker = self.sharedChangeTracker
                 } operation: {
                   try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
                 }

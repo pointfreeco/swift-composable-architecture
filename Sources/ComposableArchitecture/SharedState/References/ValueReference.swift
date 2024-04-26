@@ -17,7 +17,7 @@ extension Shared {
   ) {
     self.init(
       reference: {
-        @Dependency(PersistentReferencesKey.self) var references
+        @Dependency(\.persistentReferences) var references
         return references.withValue {
           if let reference = $0[persistenceKey] {
             return reference
@@ -96,7 +96,7 @@ extension SharedReader {
   ) {
     self.init(
       reference: {
-        @Dependency(PersistentReferencesKey.self) var references
+        @Dependency(\.persistentReferences) var references
         return references.withValue {
           if let reference = $0[persistenceKey] {
             return reference
@@ -269,11 +269,18 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
   extension ValueReference: Perceptible {}
 #endif
 
-enum PersistentReferencesKey: DependencyKey {
+private enum PersistentReferencesKey: DependencyKey {
   static var liveValue: LockIsolated<[AnyHashable: any Reference]> {
     LockIsolated([:])
   }
   static var testValue: LockIsolated<[AnyHashable: any Reference]> {
     LockIsolated([:])
+  }
+}
+
+extension DependencyValues {
+  var persistentReferences: LockIsolated<[AnyHashable: any Reference]> {
+    get { self[PersistentReferencesKey.self] }
+    set { self[PersistentReferencesKey.self] = newValue }
   }
 }

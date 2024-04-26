@@ -43,7 +43,7 @@ public struct Shared<Value> {
 
   public var wrappedValue: Value {
     get {
-      @Dependency(SharedChangeTrackerKey.self) var changeTracker
+      @Dependency(\.sharedChangeTracker) var changeTracker
       if changeTracker != nil {
         return self.snapshot ?? self.currentValue
       } else {
@@ -51,11 +51,11 @@ public struct Shared<Value> {
       }
     }
     nonmutating set {
-      @Dependency(SharedChangeTrackerKey.self) var changeTracker
+      @Dependency(\.sharedChangeTracker) var changeTracker
       if changeTracker != nil {
         self.snapshot = newValue
       } else {
-        @Dependency(SharedChangeTrackersKey.self) var changeTrackers: Set<SharedChangeTracker>
+        @Dependency(\.sharedChangeTrackers) var changeTrackers: Set<SharedChangeTracker>
         for changeTracker in changeTrackers {
           changeTracker.track(self.reference)
         }
@@ -135,7 +135,7 @@ public struct Shared<Value> {
     file: StaticString = #file,
     line: UInt = #line
   ) rethrows where Value: Equatable {
-    @Dependency(SharedChangeTrackersKey.self) var changeTrackers
+    @Dependency(\.sharedChangeTrackers) var changeTrackers
     guard
       let changeTracker = changeTrackers
         .first(where: { $0.changes[ObjectIdentifier(self.reference)] != nil })
@@ -178,7 +178,7 @@ public struct Shared<Value> {
   private var snapshot: Value? {
     get {
       func open<Root>(_ reference: some Reference<Root>) -> Value? {
-        @Dependency(SharedChangeTrackerKey.self) var changeTracker
+        @Dependency(\.sharedChangeTracker) var changeTracker
         return changeTracker?[reference]?.snapshot[
           keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
         ]
@@ -187,7 +187,7 @@ public struct Shared<Value> {
     }
     nonmutating set {
       func open<Root>(_ reference: some Reference<Root>) {
-        @Dependency(SharedChangeTrackerKey.self) var changeTracker
+        @Dependency(\.sharedChangeTracker) var changeTracker
         guard let newValue else {
           changeTracker?[reference] = nil
           return
@@ -208,7 +208,7 @@ extension Shared: @unchecked Sendable where Value: Sendable {}
 
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
-    @Dependency(SharedChangeTrackerKey.self) var changeTracker
+    @Dependency(\.sharedChangeTracker) var changeTracker
     if changeTracker != nil, lhs.reference === rhs.reference {
       if let lhsReference = lhs.reference as? any Equatable {
         func open<T: Equatable>(_ lhsReference: T) -> Bool {
