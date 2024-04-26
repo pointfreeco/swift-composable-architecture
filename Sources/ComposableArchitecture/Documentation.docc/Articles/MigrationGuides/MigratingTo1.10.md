@@ -1,8 +1,7 @@
 # Migrating to 1.10
 
 Update your code to make use of the new state sharing tools in the library, such as the ``Shared``
-property wrapper, and the ``PersistenceReaderKey/appStorage(_:)-4l5b`` and
-``PersistenceReaderKey/fileStorage(_:)`` persistence strategies.
+property wrapper, and the ``AppStorageKey`` and ``FileStorageKey`` persistence strategies.
 
 ## Overview
 

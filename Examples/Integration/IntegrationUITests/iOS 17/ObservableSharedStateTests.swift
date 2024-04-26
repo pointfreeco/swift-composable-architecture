@@ -124,7 +124,7 @@ final class iOS17_ObservableSharedStateTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["File Storage #2 ✅"].exists, true)
     self.assertLogs {
       """
-      ObservableSharedStateView.body
+
       """
     }
   }
