@@ -705,7 +705,7 @@ await store.send(.feature1(.buttonTapped)) {
 ```
 
 If you are worried about these kinds of bugs you can make your tests more robust by not asserting
-on the shared state in the argument handed to the trailing closure of ``TestStore``'s `send, and
+on the shared state in the argument handed to the trailing closure of ``TestStore``'s `send`, and
 instead capture a reference to the shared state in the test and mutate it in the trailing
 closure:
 
