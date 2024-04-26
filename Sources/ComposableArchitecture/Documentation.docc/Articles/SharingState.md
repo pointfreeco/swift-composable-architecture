@@ -865,6 +865,17 @@ struct MainApp: App {
 }
 ```
 
+Alternatively you can take an extra step to override shared state in your previews:
+
+```swift
+#Preview {
+  @Shared(.appStorage("isOn")) var isOn = true
+  isOn = true
+}
+```
+
+The second assignment of `isOn` will guarantee that it holds a value of `true`.
+
 ## Topics
 
 ### Essentials
