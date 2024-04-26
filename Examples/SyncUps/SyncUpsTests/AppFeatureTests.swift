@@ -7,14 +7,12 @@ final class AppFeatureTests: XCTestCase {
   @MainActor
   func testDetailEdit() async throws {
     var syncUp = SyncUp.mock
-
-    let store = TestStore(
-      initialState: AppFeature.State(syncUpsList: SyncUpsList.State(syncUps: [syncUp]))
-    ) {
+    @Shared(.syncUps) var syncUps = [syncUp]
+    let store = TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
 
-    let sharedSyncUp = try XCTUnwrap(store.state.syncUpsList.$syncUps[id: syncUp.id])
+    let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
 
     await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
@@ -41,15 +39,12 @@ final class AppFeatureTests: XCTestCase {
   @MainActor
   func testDelete() async throws {
     let syncUp = SyncUp.mock
-
-    let store = TestStore(
-      initialState: AppFeature.State(syncUpsList: SyncUpsList.State(syncUps: [syncUp]))
-    ) {
+    @Shared(.syncUps) var syncUps = [syncUp]
+    let store = TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
 
-    guard let sharedSyncUp = store.state.syncUpsList.$syncUps[id: syncUp.id]
-    else { return }
+    let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
 
     await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: Shared(syncUp)))

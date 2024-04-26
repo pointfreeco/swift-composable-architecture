@@ -27,3 +27,4 @@
 ### Key-path access
 
 - ``PersistenceReaderKey/appStorage(_:)-5jsie``
+- ``AppStorageKeyPathKey``
