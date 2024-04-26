@@ -31,6 +31,10 @@ as SQLite.
 * [Initialization rules](#Initialization-rules)
 * [Deriving shared state](#Deriving-shared-state)
 * [Testing](#Testing)
+  * [Testing when using persistence](#Testing-when-using-persistence)
+  * [Testing when using custom persistence strategies](#Testing-when-using-custom-persistence-strategies)
+  * [Overriding shared state in tests](#Overriding-shared-state-in-tests)
+  * [Testing tips](#Testing-tips)
 * [Read-only shared state](#Read-only-shared-state)
 * [Type-safe keys](#Type-safe-keys)
 * [Shared state in pre-observation apps](#Shared-state-in-pre-observation-apps)
@@ -241,7 +245,7 @@ case .onAppear:
   }
 
 case .countUpdated(let count):
-  print("Count updated to \(count)")
+  // Do something with count
   return .none
 ```
 
@@ -262,7 +266,9 @@ case .countUpdated(let count):
 ```
 
 If `count` changes, then `$count.publisher` emits, causing the `countUpdated` action to be sent, 
-causing the shared `count` to be mutated, causing `$count.publisher` to emit, and so on. 
+causing the shared `count` to be mutated, causing `$count.publisher` to emit, and so on.
+
+
 
 ## Initialization rules
 
@@ -427,14 +433,26 @@ shared `currentUser`, and further those changes will be automatically persisted 
 needs access to shared state without describing the persistence strategy, and the parent can be
 responsible for persisting and deriving shared state to pass to the child.
 
-<!-- TODO: Remove this next section so folks don't reach for the tool outside of `ForEach`? -->
+If your shared state is a collection, and in particular an `IdentifiedArray`, then we have another
+tool for deriving shared state to a particular element of the array. You can subscript into a 
+``Shared`` collection with the `[id:]` subscript, and that will give a piece of optional shared
+state (thanks to a dynamic member overload ``Shared/subscript(dynamicMember:)-7ibhr``), which you
+can then unwrap to turn into honest shared state:
+
+```swift
+@Shared(.fileStorage(.todos)) var todos: IdentifiedArrayOf<Todo> = []
+
+guard let todo = $todos[id: todoID]
+else { return }
+todo // Shared<Todo>
+```
 
 There is another tool for deriving shared state, and it is the computed property ``Shared/elements``
 that is defined on shared collections. It derives a collection of shared elements so that you can
 get access to a shared reference of just one particular element in a collection. 
 
-This can be useful when used in conjunction with `ForEach` in order to derive a shared reference for 
-each element of a collection:
+However, it is only appropriate to use this in conjunction with `ForEach` in order to derive a 
+shared reference for each element of a collection:
 
 ```swift
 struct State {
@@ -454,6 +472,9 @@ ForEach(store.$todos.elements) { $todo in
   }
 }
 ```
+
+> Important: We do not recommend using ``Shared/elements`` outside of using it with `ForEach`, 
+> `List`, and other SwiftUI views that take collections.
 
 ## Testing
 
@@ -642,6 +663,44 @@ dependency for changing how files are written to the disk and loaded from disk. 
 dependency will forgo any interaction with the file system and instead write data to a `[URL: Data]`
 dictionary, and load data from that dictionary. That emulates how the file system works, but without
 persisting any data to the global file system, which can bleed over into other tests.
+
+#### Overriding shared state in tests
+
+When testing features that use `@Shared` with a persistence strategy you may want to set the initial
+value of that state for the test. Typically this can be done by declaring the shared state at 
+the beginning of the test so that its default value can be specified:
+
+```swift
+func testFeature() {
+  @Shared(.appStorage("count")) var count = 42
+
+  // Shared state will be 42 for all features using it.
+  let store = TestStore(…)
+}
+```
+
+However, if your test suite is apart of an app target, then the entry point of the app will execute
+and potentially cause an early access of `@Shared`, thus capturing a different default value than
+what is specified above. This quirk of tests in app targets is documented in
+<doc:Testing#Testing-gotchas> of the <doc:Testing> article, and a similar quirk exists for Xcode
+previews and is discussed below in <doc:SharingState#Gotchas-of-Shared>.
+
+The most robust workaround to this issue is to simply not execute your app's entry point when tests
+are running, which we detail in <doc:Testing#Testing-host-application>. This makes it so that you
+are not accidentally execute network requests, tracking analytics, etc. while running tests.
+
+You can also work around this issue by simply setting the shared state again after initializing
+it:
+
+```swift
+func testFeature() {
+  @Shared(.appStorage("count")) var count = 42
+  count = 42  // NB: Set again to override any value set by the app target.
+
+  // Shared state will be 42 for all features using it.
+  let store = TestStore(…)
+}
+```
 
 #### Testing tips
 
