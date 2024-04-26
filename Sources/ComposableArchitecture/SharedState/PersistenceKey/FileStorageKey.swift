@@ -222,16 +222,6 @@ public struct FileStorage: Sendable {
     fileSystem: LockIsolated<[URL: Data]>,
     scheduler: AnySchedulerOf<DispatchQueue> = .immediate
   ) -> Self {
-    struct Handler: Hashable {
-      let id = UUID()
-      let operation: () -> Void
-      static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.id == rhs.id
-      }
-      func hash(into hasher: inout Hasher) {
-        hasher.combine(self.id)
-      }
-    }
     let sourceHandlers = LockIsolated<[URL: Set<Handler>]>([:])
     return Self(
       id: AnyHashableSendable(ObjectIdentifier(fileSystem)),
@@ -259,5 +249,16 @@ public struct FileStorage: Sendable {
         sourceHandlers.withValue { $0[url]?.forEach { $0.operation() } }
       }
     )
+  }
+
+  fileprivate struct Handler: Hashable {
+    let id = UUID()
+    let operation: () -> Void
+    static func == (lhs: Self, rhs: Self) -> Bool {
+      lhs.id == rhs.id
+    }
+    func hash(into hasher: inout Hasher) {
+      hasher.combine(self.id)
+    }
   }
 }
