@@ -298,7 +298,7 @@ extension AppStorageKey: PersistenceKey {
     ) { _ in
       guard !SharedAppStorageLocals.isSetting
       else { return }
-      didSet(self.store.value(forKey: self.key) as? Value ?? initialValue)
+      didSet(load(initialValue: initialValue))
     }
     let willEnterForeground: (any NSObjectProtocol)?
     if let willEnterForegroundNotificationName {
@@ -307,7 +307,7 @@ extension AppStorageKey: PersistenceKey {
         object: nil,
         queue: nil
       ) { _ in
-        didSet(self.store.value(forKey: self.key) as? Value ?? initialValue)
+        didSet(load(initialValue: initialValue))
       }
     } else {
       willEnterForeground = nil

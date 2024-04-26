@@ -111,6 +111,16 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(count, 42)
   }
 
+  func testChangeUserDefaultsDirectly_RawRepresentable() {
+    enum Direction: String, CaseIterable {
+      case north, south, east, west
+    }
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("direction")) var direction: Direction = .south
+    defaults.set("east", forKey: "direction")
+    XCTAssertEqual(direction, .east)
+  }
+
   func testChangeUserDefaultsDirectly_KeyWithPeriod() {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage("pointfreeco.count")) var count = 0
