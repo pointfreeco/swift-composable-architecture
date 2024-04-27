@@ -230,17 +230,6 @@ extension Shared: Identifiable where Value: Identifiable {
   }
 }
 
-extension Shared: Encodable where Value: Encodable {
-  public func encode(to encoder: Encoder) throws {
-    do {
-      var container = encoder.singleValueContainer()
-      try container.encode(self.wrappedValue)
-    } catch {
-      try self.wrappedValue.encode(to: encoder)
-    }
-  }
-}
-
 extension Shared: CustomDumpRepresentable {
   public var customDumpValue: Any {
     self.currentValue
