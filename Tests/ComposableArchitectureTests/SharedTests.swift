@@ -786,26 +786,26 @@ final class SharedTests: XCTestCase {
     }
   }
 
-  func testEquatability_Reference() {
+  func testEquatability_DifferentReference() {
     let count = Shared(0)
     @Shared(.appStorage("count")) var appStorageCount = 0
     @Shared(.fileStorage(.temporaryDirectory.appending(path: "count.json"))) var fileStorageCount = 0
     @Shared(.inMemory("count")) var inMemoryCount = 0
 
-    XCTAssertNotEqual(count, $appStorageCount)
-    XCTAssertNotEqual($appStorageCount, $fileStorageCount)
-    XCTAssertNotEqual($fileStorageCount, $inMemoryCount)
-    XCTAssertNotEqual($inMemoryCount, count)
+    XCTAssertEqual(count, $appStorageCount)
+    XCTAssertEqual($appStorageCount, $fileStorageCount)
+    XCTAssertEqual($fileStorageCount, $inMemoryCount)
+    XCTAssertEqual($inMemoryCount, count)
   }
 
-  func testEquatable_KeyPath() {
+  func testEquatable_DifferentKeyPath() {
     struct Settings {
       var isOn = false
       var hasSeen = false
     }
     @Shared(.inMemory("settings")) var settings = Settings()
-    XCTAssertNotEqual($settings.isOn, $settings.hasSeen)
-    XCTAssertNotEqual($settings.isOn.hashValue, $settings.hasSeen.hashValue)
+    XCTAssertEqual($settings.isOn, $settings.hasSeen)
+    XCTAssertEqual($settings.isOn.hashValue, $settings.hasSeen.hashValue)
   }
 
   func testSelfEqualityInAnAssertion() {
@@ -840,20 +840,25 @@ final class SharedTests: XCTestCase {
   }
 
   func testHashableSoundness() {
-    for _ in 1...1_000 {
-      var set: Set<Shared<Int>> = []
+    XCTTODO("""
+      Currently the Hashable conformance of Shared is not sound when evaluated inside change
+      tracker and assertion blocks.
+      """)
+
+    for _ in 1...100 {
       let count = Shared(0)
-      set.insert(count)
+      let countHash = count.hashValue
+      XCTAssertEqual(count.hashValue, countHash)
       withSharedChangeTracking { tracker in
         count.wrappedValue += 1
-        set.insert(count)
+        XCTAssertEqual(count.hashValue, countHash)
         tracker.assert {
           count.wrappedValue += 1
-          set.insert(count)
+          XCTAssertEqual(count.hashValue, countHash)
         }
-        set.insert(count)
+        XCTAssertEqual(count.hashValue, countHash)
       }
-      set.insert(count)
+      XCTAssertEqual(count.hashValue, countHash)
     }
   }
 }

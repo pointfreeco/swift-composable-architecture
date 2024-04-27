@@ -209,16 +209,8 @@ extension Shared: @unchecked Sendable where Value: Sendable {}
 
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
-    guard
-      lhs.reference === rhs.reference,
-      lhs.keyPath == rhs.keyPath
-    else {
-      // TODO: Runtime warn?
-      return false
-    }
-
     @Dependency(\.sharedChangeTracker) var changeTracker
-    if changeTracker != nil {
+    if changeTracker != nil, lhs.reference === rhs.reference, lhs.keyPath == rhs.keyPath {
       if let lhsReference = lhs.reference as? any Equatable {
         func open<T: Equatable>(_ lhsReference: T) -> Bool {
           lhsReference == rhs.reference as? T
@@ -227,15 +219,14 @@ extension Shared: Equatable where Value: Equatable {
       }
       return lhs.snapshot ?? lhs.currentValue == rhs.currentValue
     } else {
-      return true
+      return lhs.wrappedValue == rhs.wrappedValue
     }
   }
 }
 
-extension Shared: Hashable where Value: Equatable {
+extension Shared: Hashable where Value: Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(keyPath)
-    hasher.combine(ObjectIdentifier(reference))
+    hasher.combine(self.wrappedValue)
   }
 }
 
