@@ -856,6 +856,11 @@ final class SharedTests: XCTestCase {
       set.insert(count)
     }
   }
+
+  func testSharedCreation() {
+    let count = Shared(0)
+    XCTAssertEqual(count, Shared(0))
+  }
 }
 
 @Reducer

@@ -23,11 +23,7 @@ public struct Shared<Value> {
 
   public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
     self.init(
-      reference: ValueReference<Value, InMemoryKey<Value>>(
-        initialValue: value,
-        fileID: fileID,
-        line: line
-      ),
+      reference: NonPersistedReference(initialValue: value),
       keyPath: \Value.self
     )
   }
@@ -209,8 +205,9 @@ extension Shared: @unchecked Sendable where Value: Sendable {}
 
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
+    print("!!!")
     guard
-      lhs.reference === rhs.reference,
+      (lhs.reference === rhs.reference) || (lhs.reference is NonPersistedReference<Value> && rhs.reference is NonPersistedReference<Value>),
       lhs.keyPath == rhs.keyPath
     else {
       // TODO: Runtime warn?
