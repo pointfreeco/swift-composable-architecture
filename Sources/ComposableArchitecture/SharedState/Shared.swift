@@ -224,12 +224,6 @@ extension Shared: Equatable where Value: Equatable {
   }
 }
 
-extension Shared: Hashable where Value: Hashable {
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.wrappedValue)
-  }
-}
-
 extension Shared: Identifiable where Value: Identifiable {
   public var id: Value.ID {
     self.wrappedValue.id

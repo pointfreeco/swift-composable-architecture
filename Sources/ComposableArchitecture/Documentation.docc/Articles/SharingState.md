@@ -995,6 +995,10 @@ struct FeatureView: View {
 
 There are a few gotchas to be aware of when using shared state in the Composable Architecture.
 
+#### Hashability
+
+Because the `@Shared` type is equatable based on its wrapped value, and because the value is held in a reference and can change over time, it cannot be hashable. This also means that types containing `@Shared` properties should not compute their hashes from shared values.
+
 #### Previews
 
 When a preview is run in an app target, the entry point is also created. This means if your entry
