@@ -806,6 +806,21 @@ final class SharedTests: XCTestCase {
     @Shared(.inMemory("settings")) var settings = Settings()
     XCTAssertEqual($settings.isOn, $settings.hasSeen)
     XCTAssertEqual($settings.isOn.hashValue, $settings.hasSeen.hashValue)
+    withSharedChangeTracking { tracker in
+      settings.isOn.toggle()
+      XCTAssertNotEqual(settings.isOn, settings.hasSeen)
+      XCTAssertNotEqual($settings.isOn, $settings.hasSeen)
+      XCTAssertNotEqual($settings.hasSeen, $settings.isOn)
+      tracker.assert {
+        XCTAssertEqual(settings.isOn, settings.hasSeen)
+        XCTAssertEqual($settings.isOn, $settings.hasSeen)
+        XCTAssertEqual($settings.hasSeen, $settings.isOn)
+        settings.hasSeen.toggle()
+        XCTAssertNotEqual(settings.isOn, settings.hasSeen)
+        XCTAssertNotEqual($settings.isOn, $settings.hasSeen)
+        XCTAssertNotEqual($settings.hasSeen, $settings.isOn)
+      }
+    }
   }
 
   func testSelfEqualityInAnAssertion() {
@@ -840,10 +855,12 @@ final class SharedTests: XCTestCase {
   }
 
   func testHashableSoundness() {
-    XCTTODO("""
+    XCTTODO(
+      """
       Currently the Hashable conformance of Shared is not sound when evaluated inside change
       tracker and assertion blocks.
-      """)
+      """
+    )
 
     for _ in 1...100 {
       let count = Shared(0)
