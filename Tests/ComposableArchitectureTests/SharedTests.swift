@@ -900,7 +900,6 @@ private struct SharedFeature {
 
   // TODO: Show that we expect Send should suspend to avoid processing shared mutations
   // TODO: Show that we expect TestStore.receive to receive incremental updates
-  // TODO: Show that you get failure if you do `store.$shared.assert` when there's nothing to assert on
 }
 
 private struct Stats: Codable, Equatable {

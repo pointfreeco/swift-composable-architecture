@@ -115,16 +115,11 @@ final class iOS17_ObservableSharedStateTests: BaseIntegrationTests {
     self.clearLogs()
 
     self.app.buttons["Write directly to file system"].tap()
-    XCTTODO(
-      """
-      This should pass, but does not currently because deleting a file breaks the dispatch
-      source.
-      """)
     XCTAssertEqual(self.app.staticTexts["File Storage #1 ✅"].exists, true)
     XCTAssertEqual(self.app.staticTexts["File Storage #2 ✅"].exists, true)
     self.assertLogs {
       """
-
+      ObservableSharedStateView.body
       """
     }
   }
