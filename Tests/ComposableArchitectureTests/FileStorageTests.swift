@@ -396,11 +396,12 @@ final class FileStorageTests: XCTestCase {
   }
 }
 
-@available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 extension URL {
-  fileprivate static let fileURL = Self.temporaryDirectory.appending(component: "file.json")
-  fileprivate static let userURL = Self.temporaryDirectory.appending(component: "user.json")
-  fileprivate static let anotherFileURL = Self.temporaryDirectory
+  fileprivate static let fileURL = Self(fileURLWithPath: NSTemporaryDirectory())
+    .appending(component: "file.json")
+  fileprivate static let userURL = Self(fileURLWithPath: NSTemporaryDirectory())
+    .appending(component: "user.json")
+  fileprivate static let anotherFileURL = Self(fileURLWithPath: NSTemporaryDirectory())
     .appending(component: "another-file.json")
 }
 

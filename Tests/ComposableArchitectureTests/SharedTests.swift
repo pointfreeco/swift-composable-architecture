@@ -766,7 +766,10 @@ final class SharedTests: XCTestCase {
   func testEquatability_DifferentReference() {
     let count = Shared(0)
     @Shared(.appStorage("count")) var appStorageCount = 0
-    @Shared(.fileStorage(.temporaryDirectory.appending(path: "count.json"))) var fileStorageCount = 0
+    @Shared(
+      .fileStorage(URL(fileURLWithPath: NSTemporaryDirectory()).appending(path: "count.json"))
+    )
+    var fileStorageCount = 0
     @Shared(.inMemory("count")) var inMemoryCount = 0
 
     XCTAssertEqual(count, $appStorageCount)
