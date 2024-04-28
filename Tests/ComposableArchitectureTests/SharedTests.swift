@@ -897,9 +897,6 @@ private struct SharedFeature {
       }
     }
   }
-
-  // TODO: Show that we expect Send should suspend to avoid processing shared mutations
-  // TODO: Show that we expect TestStore.receive to receive incremental updates
 }
 
 private struct Stats: Codable, Equatable {
