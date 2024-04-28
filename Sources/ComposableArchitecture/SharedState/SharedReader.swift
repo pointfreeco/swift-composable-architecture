@@ -5,7 +5,7 @@ import Combine
 /// A property wrapper type that shares a value with multiple parts of an application.
 ///
 /// See the <doc:SharingState> article for more detailed information on how to use this property
-/// wrapper.
+/// wrapper, in particular <doc:SharingState#Read-only-shared-state>.
 @dynamicMemberLookup
 @propertyWrapper
 public struct SharedReader<Value> {
