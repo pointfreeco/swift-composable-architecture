@@ -16,29 +16,6 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  func testDebounce() throws {
-    let fileSystem = LockIsolated<[URL: Data]>([:])
-    let testScheduler = DispatchQueue.test
-    try withDependencies {
-      $0.defaultFileStorage = .inMemory(
-        fileSystem: fileSystem,
-        scheduler: testScheduler.eraseToAnyScheduler()
-      )
-    } operation: {
-      @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
-
-      users.append(.blob)
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
-
-      testScheduler.advance(by: .seconds(1) - .milliseconds(1))
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
-
-      testScheduler.advance(by: .milliseconds(1))
-      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
-    }
-  }
-
   func testThrottle() throws {
     let fileSystem = LockIsolated<[URL: Data]>([:])
     let testScheduler = DispatchQueue.test
@@ -49,34 +26,32 @@ final class FileStorageTests: XCTestCase {
       )
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), nil)
 
       users.append(.blob)
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
-
-      testScheduler.advance(by: .seconds(0.5))
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
 
       users.append(.blobJr)
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
-
-      testScheduler.advance(by: .seconds(0.5))
-      try XCTAssertNoDifference(
-        fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
-
-      testScheduler.advance(by: .seconds(0.25))
+      testScheduler.advance(by: .seconds(1) - .milliseconds(1))
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
 
       users.append(.blobSr)
-      try XCTAssertNoDifference(
-        fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+      testScheduler.advance(by: .milliseconds(1))
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob, .blobJr, .blobSr])
+
+      testScheduler.advance(by: .seconds(1))
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob, .blobJr, .blobSr])
 
       testScheduler.advance(by: .seconds(0.5))
+      users.append(.blobEsq)
       try XCTAssertNoDifference(
-        fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
-
-      testScheduler.advance(by: .seconds(0.5))
-      try XCTAssertNoDifference(
-        fileSystem.value.users(for: .fileURL), [.blob, .blobJr, .blobSr]
+        fileSystem.value.users(for: .fileURL),
+        [
+          .blob,
+          .blobJr,
+          .blobSr,
+          .blobEsq
+        ]
       )
     }
   }
@@ -93,14 +68,15 @@ final class FileStorageTests: XCTestCase {
       )
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), nil)
 
       users.append(.blob)
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
+      users.append(.blobJr)
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
 
       NotificationCenter.default.post(name: willResignNotificationName, object: nil)
       testScheduler.advance()
-      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
     }
   }
 
@@ -116,46 +92,16 @@ final class FileStorageTests: XCTestCase {
       )
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), nil)
 
       users.append(.blob)
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
+      users.append(.blobJr)
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
 
       NotificationCenter.default.post(name: willTerminateNotificationName, object: nil)
       testScheduler.advance()
-      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
-    }
-  }
-
-  func testWillResignAndDebounce() async throws {
-    guard let willResignNotificationName else { return }
-    let fileSystem = LockIsolated<[URL: Data]>([:])
-    let testScheduler = DispatchQueue.test
-    try withDependencies {
-      $0.defaultFileStorage = .inMemory(
-        fileSystem: fileSystem,
-        scheduler: testScheduler.eraseToAnyScheduler()
-      )
-    } operation: {
-      @Shared(.fileStorage(.fileURL)) var users = [User]()
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
-
-      users.append(.blob)
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
-
-      testScheduler.advance(by: .seconds(0.5))
-      XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
-
-      NotificationCenter.default.post(name: willResignNotificationName, object: nil)
-      testScheduler.advance()
-      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
-
-      users.append(.blobJr)
-      testScheduler.run()
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
     }
-
-    try await Task.sleep(nanoseconds: 1_000_000)
   }
 
   func testMultipleFiles() throws {
@@ -408,8 +354,9 @@ private struct User: Codable, Equatable, Identifiable {
   let id: Int
   var name: String
   static let blob = User(id: 1, name: "Blob")
-  static let blobJr = User(id: 1, name: "Blob Jr.")
-  static let blobSr = User(id: 1, name: "Blob Sr.")
+  static let blobJr = User(id: 2, name: "Blob Jr.")
+  static let blobSr = User(id: 3, name: "Blob Sr.")
+  static let blobEsq = User(id: 4, name: "Blob Esq.")
 }
 
 extension [URL: Data] {

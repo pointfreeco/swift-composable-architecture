@@ -38,8 +38,9 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
   }
 
   public func save(_ value: Value) {
-    self.value.setValue(value)
     if self.workItem.value == nil {
+      self.isSetting.setValue(true)
+      try? self.storage.save(JSONEncoder().encode(value), self.url)
       let workItem = DispatchWorkItem { [weak self] in
         guard let self, let value = self.value.value else { return }
         self.isSetting.setValue(true)
@@ -53,6 +54,8 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
       } else {
         self.storage.async(workItem)
       }
+    } else {
+      self.value.setValue(value)
     }
   }
 
