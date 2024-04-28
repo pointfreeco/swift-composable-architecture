@@ -60,12 +60,12 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
     initialValue: Value?,
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
-    // NB: Make sure there is a file to create a source for.
     let cancellable = LockIsolated<AnyCancellable?>(nil)
     @Sendable func setUpSources() {
       cancellable.withValue { [weak self] in
         $0?.cancel()
         guard let self else { return }
+        // NB: Make sure there is a file to create a source for.
         if !self.storage.fileExists(self.url) {
           try? self.storage.createDirectory(self.url.deletingLastPathComponent(), true)
           try? self.storage.save(Data(), self.url)
