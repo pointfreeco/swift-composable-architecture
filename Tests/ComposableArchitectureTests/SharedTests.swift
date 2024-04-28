@@ -767,7 +767,10 @@ final class SharedTests: XCTestCase {
     let count = Shared(0)
     @Shared(.appStorage("count")) var appStorageCount = 0
     @Shared(
-      .fileStorage(URL(fileURLWithPath: NSTemporaryDirectory()).appending(path: "count.json"))
+      .fileStorage(
+        URL(fileURLWithPath: NSTemporaryDirectory())
+          .appendingPathComponent("count.json")
+      )
     )
     var fileStorageCount = 0
     @Shared(.inMemory("count")) var inMemoryCount = 0

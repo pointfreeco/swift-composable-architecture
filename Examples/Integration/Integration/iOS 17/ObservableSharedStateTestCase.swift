@@ -132,7 +132,7 @@ private struct Feature {
   }
 }
 
-private let storageURL = URL.documentsDirectory.appending(path: "file.json")
+private let storageURL = URL.documentsDirectory.appending(component: "file.json")
 
 private struct Settings: Codable, Equatable {
   var isOn = false

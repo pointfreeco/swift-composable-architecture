@@ -225,7 +225,7 @@ struct Stats: Codable, Equatable {
 
 extension PersistenceReaderKey where Self == FileStorageKey<Stats> {
   fileprivate static var stats: Self {
-    fileStorage(.documentsDirectory.appending(path: "stats.json"))
+    fileStorage(.documentsDirectory.appending(component: "stats.json"))
   }
 }
 
