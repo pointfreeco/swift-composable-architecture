@@ -81,7 +81,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
             didSet(self.load(initialValue: initialValue))
           }
         }
-        let deleteCancellable = self.storage.fileSystemSource(self.url, [.delete]) {
+        let deleteCancellable = self.storage.fileSystemSource(self.url, [.delete, .rename]) {
           `didSet`(self.load(initialValue: initialValue))
           setUpSources()
         }

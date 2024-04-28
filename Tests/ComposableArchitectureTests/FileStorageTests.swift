@@ -312,6 +312,11 @@ final class FileStorageTests: XCTestCase {
         try FileManager.default.moveItem(at: .fileURL, to: .anotherFileURL)
         try await Task.sleep(nanoseconds: 1_000_000)
         XCTAssertNoDifference(users, [])
+
+        try FileManager.default.removeItem(at: .fileURL)
+        try FileManager.default.moveItem(at: .anotherFileURL, to: .fileURL)
+        try await Task.sleep(nanoseconds: 1_000_000)
+        XCTAssertNoDifference(users, [.blob])
       }
     }
   }
