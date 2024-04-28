@@ -392,11 +392,11 @@ final class FileStorageTests: XCTestCase {
 
 extension URL {
   fileprivate static let fileURL = Self(fileURLWithPath: NSTemporaryDirectory())
-    .appending(component: "file.json")
+    .appendingPathComponent("file.json")
   fileprivate static let userURL = Self(fileURLWithPath: NSTemporaryDirectory())
-    .appending(component: "user.json")
+    .appendingPathComponent("user.json")
   fileprivate static let anotherFileURL = Self(fileURLWithPath: NSTemporaryDirectory())
-    .appending(component: "another-file.json")
+    .appendingPathComponent("another-file.json")
 }
 
 private struct User: Codable, Equatable, Identifiable {
