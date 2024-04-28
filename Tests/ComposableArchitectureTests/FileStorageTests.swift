@@ -335,12 +335,6 @@ final class FileStorageTests: XCTestCase {
 
         try JSONEncoder().encode([User.blobJr]).write(to: .fileURL)
         try await Task.sleep(nanoseconds: 1_000_000)
-        XCTTODO(
-          """
-          This fails but ideally it wouldn't. If you delete a file then you can't listen for writes
-          to that file in the future. Perhaps we have to recreate the dispatch source?
-          """
-        )
         XCTAssertNoDifference(users, [.blobJr])
       }
     }

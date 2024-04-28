@@ -61,22 +61,37 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     // NB: Make sure there is a file to create a source for.
-    if !self.storage.fileExists(self.url) {
-      try? self.storage.createDirectory(self.url.deletingLastPathComponent(), true)
-      try? self.storage.save(Data(), self.url)
-    }
-    // TODO: detect deletion separately and restart source
-    let cancellable = self.storage.fileSystemSource(self.url, [.write, .delete, .rename]) {
-      if self.isSetting.value == true {
-        self.isSetting.setValue(false)
-      } else {
-        self.workItem.withValue {
-          $0?.cancel()
-          $0 = nil
+    let cancellable = LockIsolated<AnyCancellable?>(nil)
+    @Sendable func setUpSources() {
+      cancellable.withValue { [weak self] in
+        $0?.cancel()
+        guard let self else { return }
+        if !self.storage.fileExists(self.url) {
+          try? self.storage.createDirectory(self.url.deletingLastPathComponent(), true)
+          try? self.storage.save(Data(), self.url)
         }
-        didSet(self.load(initialValue: initialValue))
+        let writeCancellable = self.storage.fileSystemSource(self.url, [.write]) {
+          if self.isSetting.value == true {
+            self.isSetting.setValue(false)
+          } else {
+            self.workItem.withValue {
+              $0?.cancel()
+              $0 = nil
+            }
+            didSet(self.load(initialValue: initialValue))
+          }
+        }
+        let deleteCancellable = self.storage.fileSystemSource(self.url, [.delete]) {
+          `didSet`(self.load(initialValue: initialValue))
+          setUpSources()
+        }
+        $0 = AnyCancellable {
+          writeCancellable.cancel()
+          deleteCancellable.cancel()
+        }
       }
     }
+    setUpSources()
     let willResign: (any NSObjectProtocol)?
     if let willResignNotificationName {
       willResign = NotificationCenter.default.addObserver(
@@ -106,7 +121,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
       willTerminate = nil
     }
     return Shared.Subscription {
-      cancellable.cancel()
+      cancellable.withValue { $0?.cancel() }
       if let willResign {
         NotificationCenter.default.removeObserver(willResign)
       }
