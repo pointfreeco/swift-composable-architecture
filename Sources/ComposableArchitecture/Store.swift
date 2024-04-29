@@ -695,7 +695,7 @@ private enum PartialToState<State> {
 }
 
 #if canImport(Perception)
-  private let _isStorePerceptionCheckingEnabled: Bool = {
+  let _isStorePerceptionCheckingEnabled: Bool = {
     if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
       return false
     } else {

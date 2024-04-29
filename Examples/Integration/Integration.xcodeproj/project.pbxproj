@@ -30,6 +30,7 @@
 		CA8B2EB02AC5A8CC008272E0 /* PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA8B2EAF2AC5A8CC008272E0 /* PresentationTests.swift */; };
 		CA8B2EB22AC5AD63008272E0 /* NavigationTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA8B2EB12AC5AD63008272E0 /* NavigationTestCase.swift */; };
 		CA8B2EB42AC5AF70008272E0 /* NavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA8B2EB32AC5AF70008272E0 /* NavigationTests.swift */; };
+		CA9632012B5C64F400C44458 /* ObservableSharedStateTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9632002B5C64F400C44458 /* ObservableSharedStateTestCase.swift */; };
 		CAA1CAF5296DEE78000665B1 /* IntegrationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA1CAF4296DEE78000665B1 /* IntegrationApp.swift */; };
 		CAA1CAF9296DEE79000665B1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAA1CAF8296DEE79000665B1 /* Assets.xcassets */; };
 		CAA1CAFC296DEE79000665B1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAA1CAFB296DEE79000665B1 /* Preview Assets.xcassets */; };
@@ -41,6 +42,7 @@
 		CAA6BEB52ADAE08A00FF83BC /* NewPresentsOldTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA6BEB42ADAE08A00FF83BC /* NewPresentsOldTestCase.swift */; };
 		CAA6BEB72ADAF0DF00FF83BC /* NewPresentsOldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA6BEB62ADAF0DF00FF83BC /* NewPresentsOldTests.swift */; };
 		CAA6BEB92ADAF61A00FF83BC /* OldPresentsNewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA6BEB82ADAF61A00FF83BC /* OldPresentsNewTests.swift */; };
+		CADECDB42B5C939E009DC881 /* ObservableSharedStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADECDB32B5C939E009DC881 /* ObservableSharedStateTests.swift */; };
 		CAE2E9232B23417000EE370B /* IfLetStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE2E9222B23417000EE370B /* IfLetStoreTestCase.swift */; };
 		CAE2E9252B2341AB00EE370B /* IfLetStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE2E9242B2341AB00EE370B /* IfLetStoreTests.swift */; };
 		CAE961792B0EE0A8007A66F5 /* ObservableBindingLocalTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE961782B0EE0A8007A66F5 /* ObservableBindingLocalTest.swift */; };
@@ -142,6 +144,7 @@
 		CA8B2EAF2AC5A8CC008272E0 /* PresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationTests.swift; sourceTree = "<group>"; };
 		CA8B2EB12AC5AD63008272E0 /* NavigationTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTestCase.swift; sourceTree = "<group>"; };
 		CA8B2EB32AC5AF70008272E0 /* NavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTests.swift; sourceTree = "<group>"; };
+		CA9632002B5C64F400C44458 /* ObservableSharedStateTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableSharedStateTestCase.swift; sourceTree = "<group>"; };
 		CAA1CAF1296DEE78000665B1 /* Integration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Integration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAA1CAF4296DEE78000665B1 /* IntegrationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationApp.swift; sourceTree = "<group>"; };
 		CAA1CAF8296DEE79000665B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -155,6 +158,7 @@
 		CAA6BEB42ADAE08A00FF83BC /* NewPresentsOldTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPresentsOldTestCase.swift; sourceTree = "<group>"; };
 		CAA6BEB62ADAF0DF00FF83BC /* NewPresentsOldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPresentsOldTests.swift; sourceTree = "<group>"; };
 		CAA6BEB82ADAF61A00FF83BC /* OldPresentsNewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OldPresentsNewTests.swift; sourceTree = "<group>"; };
+		CADECDB32B5C939E009DC881 /* ObservableSharedStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableSharedStateTests.swift; sourceTree = "<group>"; };
 		CAE2E9222B23417000EE370B /* IfLetStoreTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IfLetStoreTestCase.swift; sourceTree = "<group>"; };
 		CAE2E9242B2341AB00EE370B /* IfLetStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IfLetStoreTests.swift; sourceTree = "<group>"; };
 		CAE961782B0EE0A8007A66F5 /* ObservableBindingLocalTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableBindingLocalTest.swift; sourceTree = "<group>"; };
@@ -378,6 +382,7 @@
 				DC6E2D8F2AD5C56F005ACC26 /* ObservableNavigationTestCase.swift */,
 				DC6E2D922AD5C56F005ACC26 /* ObservableOptionalTestCase.swift */,
 				DC6E2D912AD5C56F005ACC26 /* ObservablePresentationTestCase.swift */,
+				CA9632002B5C64F400C44458 /* ObservableSharedStateTestCase.swift */,
 				DC6E2D902AD5C56F005ACC26 /* ObservableSiblingTestCase.swift */,
 			);
 			path = "iOS 17";
@@ -407,6 +412,7 @@
 				DC6E2DA02AD5C677005ACC26 /* ObservableNavigationTests.swift */,
 				DC6E2DA22AD5C677005ACC26 /* ObservableOptionalTests.swift */,
 				DC6E2DA42AD5C677005ACC26 /* ObservablePresentationTests.swift */,
+				CADECDB32B5C939E009DC881 /* ObservableSharedStateTests.swift */,
 				DC6E2DA12AD5C677005ACC26 /* ObservableSiblingTests.swift */,
 			);
 			path = "iOS 17";
@@ -583,6 +589,7 @@
 				DCFFB8E72A156488006AF839 /* BindingLocalTestCase.swift in Sources */,
 				DC6E2D992AD5C56F005ACC26 /* ObservableOptionalTestCase.swift in Sources */,
 				CA7BDDA12ADB543400277984 /* NewContainsOldTestCase.swift in Sources */,
+				CA9632012B5C64F400C44458 /* ObservableSharedStateTestCase.swift in Sources */,
 				CAF5802529A5651D0042FB62 /* LegacyPresentationTestCase.swift in Sources */,
 				DC6E2D9A2AD5C56F005ACC26 /* ObservableEnumTestCase.swift in Sources */,
 				CA7BDDA32ADB575F00277984 /* OldContainsNewTestCase.swift in Sources */,
@@ -609,6 +616,7 @@
 			files = (
 				CA8B2EAC2AC58AD9008272E0 /* IdentifiedListTests.swift in Sources */,
 				CA8B2EB02AC5A8CC008272E0 /* PresentationTests.swift in Sources */,
+				CADECDB42B5C939E009DC881 /* ObservableSharedStateTests.swift in Sources */,
 				DC6E2DA92AD5C677005ACC26 /* ObservableOptionalTests.swift in Sources */,
 				CA4BA5EB29E76F110004FF9D /* LegacyNavigationTests.swift in Sources */,
 				CA8B2EB42AC5AF70008272E0 /* NavigationTests.swift in Sources */,

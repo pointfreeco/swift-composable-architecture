@@ -42,6 +42,9 @@ let package = Package(
         .product(name: "OrderedCollections", package: "swift-collections"),
         .product(name: "SwiftUINavigationCore", package: "swiftui-navigation"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
+      ],
+      resources: [
+        .process("Resources/PrivacyInfo.xcprivacy")
       ]
     ),
     .testTarget(

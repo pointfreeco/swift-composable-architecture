@@ -1005,6 +1005,56 @@
       store.send(.child(.dismiss))
       _ = (childViewStore1, childViewStore2, childStore1, childStore2)
     }
+
+    @MainActor
+    func testReEntrantAction() async {
+      struct Feature: Reducer {
+        let subject = PassthroughSubject<Void, Never>()
+
+        struct State: Equatable {
+          var count = 0
+          var isOn = false
+          var subjectCount = 0
+        }
+        enum Action: Equatable {
+          case onAppear
+          case subjectEmitted
+          case tap
+        }
+        var body: some ReducerOf<Self> {
+          Reduce { state, action in
+            switch action {
+            case .onAppear:
+              return .publisher {
+                subject.map { .subjectEmitted }
+              }
+            case .subjectEmitted:
+              if state.isOn {
+                state.count += 1
+              }
+              state.subjectCount += 1
+              return .none
+            case .tap:
+              state.isOn = true
+              subject.send()
+              state.isOn = false
+              return .none
+            }
+          }
+        }
+      }
+
+      let store = Store(initialState: Feature.State()) {
+        Feature()
+      }
+      store.send(.onAppear)
+      store.send(.tap)
+      try? await Task.sleep(nanoseconds: 1_000_000)
+      XCTAssertEqual(
+        store.withState { $0 },
+        Feature.State(count: 0, isOn: false, subjectCount: 1)
+      )
+    }
   }
 
   private struct Count: TestDependencyKey {

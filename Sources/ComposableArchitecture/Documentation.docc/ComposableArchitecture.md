@@ -51,6 +51,7 @@ day-to-day when building applications, such as:
 - <doc:DependencyManagement>
 - <doc:Testing>
 - <doc:Navigation>
+- <doc:SharingState>
 - <doc:Performance>
 
 ### Tutorials
@@ -62,10 +63,12 @@ day-to-day when building applications, such as:
 - <doc:Reducers>
 - ``Effect``
 - ``Store``
+- <doc:SharingState>
 
 ### Testing
 
 - ``TestStore``
+- <doc:Testing>
 
 ### Integrations
 

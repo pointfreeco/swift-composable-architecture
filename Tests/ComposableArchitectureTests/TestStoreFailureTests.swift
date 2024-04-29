@@ -124,7 +124,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        The store received 1 unexpected action after this one: …
+        The store received 1 unexpected action by the end of this test: …
 
           Unhandled actions:
             • .second

@@ -10,7 +10,7 @@ private struct DestinationView: View {
 
 @Reducer
 private struct ChildFeature {
-  struct State: Hashable {
+  struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     @PresentationState var navigationDestination: Int?
     var count = 0

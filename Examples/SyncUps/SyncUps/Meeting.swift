@@ -1,4 +1,3 @@
-import ComposableArchitecture
 import SwiftUI
 
 struct MeetingView: View {
@@ -6,22 +5,24 @@ struct MeetingView: View {
   let syncUp: SyncUp
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading) {
-        Divider()
-          .padding(.bottom)
-        Text("Attendees")
-          .font(.headline)
-        ForEach(self.syncUp.attendees) { attendee in
+    Form {
+      Section {
+        ForEach(syncUp.attendees) { attendee in
           Text(attendee.name)
         }
+      } header: {
+        Text("Attendees")
+      }
+      Section {
+        Text(meeting.transcript)
+      } header: {
         Text("Transcript")
-          .font(.headline)
-          .padding(.top)
-        Text(self.meeting.transcript)
       }
     }
-    .navigationTitle(Text(self.meeting.date, style: .date))
-    .padding()
+    .navigationTitle(Text(meeting.date, style: .date))
   }
+}
+
+#Preview {
+  MeetingView(meeting: SyncUp.mock.meetings[0], syncUp: .mock)
 }

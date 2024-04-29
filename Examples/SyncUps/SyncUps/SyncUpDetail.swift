@@ -19,7 +19,7 @@ struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    var syncUp: SyncUp
+    @Shared var syncUp: SyncUp
   }
 
   enum Action: Sendable {
@@ -34,9 +34,7 @@ struct SyncUpDetail {
 
     @CasePathable
     enum Delegate {
-      case deleteSyncUp
-      case syncUpUpdated(SyncUp)
-      case startMeeting
+      case startMeeting(Shared<SyncUp>)
     }
   }
 
@@ -65,16 +63,15 @@ struct SyncUpDetail {
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
-          return .run { send in
-            await send(.delegate(.deleteSyncUp), animation: .default)
-            await self.dismiss()
-          }
+          @Shared(.syncUps) var syncUps
+          syncUps.remove(id: state.syncUp.id)
+          return .run { _ in await dismiss() }
+
         case .continueWithoutRecording:
-          return .send(.delegate(.startMeeting))
+          return .send(.delegate(.startMeeting(state.$syncUp)))
+
         case .openSettings:
-          return .run { _ in
-            await self.openSettings()
-          }
+          return .run { _ in await openSettings() }
         }
 
       case .destination:
@@ -92,9 +89,9 @@ struct SyncUpDetail {
         return .none
 
       case .startMeetingButtonTapped:
-        switch self.authorizationStatus() {
+        switch authorizationStatus() {
         case .notDetermined, .authorized:
-          return .send(.delegate(.startMeeting))
+          return .send(.delegate(.startMeeting(state.$syncUp)))
 
         case .denied:
           state.destination = .alert(.speechRecognitionDenied)
@@ -110,11 +107,6 @@ struct SyncUpDetail {
       }
     }
     .ifLet(\.$destination, action: \.destination)
-    .onChange(of: \.syncUp) { oldValue, newValue in
-      Reduce { state, action in
-        .send(.delegate(.syncUpUpdated(newValue)))
-      }
-    }
   }
 }
 
@@ -194,19 +186,21 @@ struct SyncUpDetailView: View {
     }
     .navigationTitle(store.syncUp.title)
     .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
-    .sheet(item: $store.scope(state: \.destination?.edit, action: \.destination.edit)) { store in
+    .sheet(
+      item: $store.scope(state: \.destination?.edit, action: \.destination.edit)
+    ) { editSyncUpStore in
       NavigationStack {
-        SyncUpFormView(store: store)
-          .navigationTitle(self.store.syncUp.title)
+        SyncUpFormView(store: editSyncUpStore)
+          .navigationTitle(store.syncUp.title)
           .toolbar {
             ToolbarItem(placement: .cancellationAction) {
               Button("Cancel") {
-                self.store.send(.cancelEditButtonTapped)
+                store.send(.cancelEditButtonTapped)
               }
             }
             ToolbarItem(placement: .confirmationAction) {
               Button("Done") {
-                self.store.send(.doneEditingButtonTapped)
+                store.send(.doneEditingButtonTapped)
               }
             }
           }
@@ -271,7 +265,7 @@ extension AlertState where Action == SyncUpDetail.Destination.Alert {
 #Preview {
   NavigationStack {
     SyncUpDetailView(
-      store: Store(initialState: SyncUpDetail.State(syncUp: .mock)) {
+      store: Store(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
         SyncUpDetail()
       }
     )

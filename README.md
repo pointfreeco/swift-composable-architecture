@@ -562,6 +562,7 @@ comfortable with the library:
 * [Dependencies][dependencies-article]
 * [Testing][testing-article]
 * [Navigation][navigation-article]
+* [Sharing state][sharing-state-article]
 * [Performance][performance-article]
 * [Concurrency][concurrency-article]
 * [Bindings][bindings-article]
@@ -715,4 +716,5 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [performance-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance
 [concurrency-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/swiftconcurrency
 [bindings-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/bindings
+[sharing-state-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/sharingstate
 [meet-tca]: https://pointfreeco.github.io/swift-composable-architecture/main/tutorials/meetcomposablearchitecture
