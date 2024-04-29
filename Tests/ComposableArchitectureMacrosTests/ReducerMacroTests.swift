@@ -341,6 +341,67 @@
       }
     }
 
+    func testEnum_DefaultInitializer() {
+      assertMacro {
+        """
+        @Reducer
+        enum Destination {
+          case timeline(Timeline)
+          case meeting(Meeting = Meeting(context: .sheet))
+        }
+        """
+      } expansion: {
+        #"""
+        enum Destination {
+          case timeline(Timeline)
+          case meeting(Meeting = Meeting(context: .sheet))
+
+          @CasePathable
+          @dynamicMemberLookup
+          @ObservableState
+          enum State: ComposableArchitecture.CaseReducerState {
+            typealias StateReducer = Destination
+            case timeline(Timeline.State)
+            case meeting(Meeting.State)
+          }
+
+          @CasePathable
+          enum Action {
+            case timeline(Timeline.Action)
+            case meeting(Meeting.Action)
+          }
+
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>, ComposableArchitecture.Scope<Self.State, Self.Action, Meeting>> {
+            ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+              Timeline()
+            }
+            ComposableArchitecture.Scope(state: \Self.State.Cases.meeting, action: \Self.Action.Cases.meeting) {
+              Meeting(context: .sheet)
+            }
+          }
+
+          enum CaseScope {
+            case timeline(ComposableArchitecture.StoreOf<Timeline>)
+            case meeting(ComposableArchitecture.StoreOf<Meeting>)
+          }
+
+          static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            switch store.state {
+            case .timeline:
+              return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
+            case .meeting:
+              return .meeting(store.scope(state: \.meeting, action: \.meeting)!)
+            }
+          }
+        }
+
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
+        }
+        """#
+      }
+    }
+
     func testEnum_Empty() {
       assertMacro {
         """

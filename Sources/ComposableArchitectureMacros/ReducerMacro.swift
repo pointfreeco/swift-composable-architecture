@@ -467,7 +467,7 @@ private enum ReducerCase {
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
-        let stateCase = attribute == .ephemeral ? element : element.suffixed("State")
+        let stateCase = attribute == .ephemeral ? element : element.suffixed("State").type
         return "case \(stateCase.trimmedDescription)"
       } else {
         return "case \(element.trimmedDescription)"
@@ -495,7 +495,7 @@ private enum ReducerCase {
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
-        return "case \(element.suffixed("Action").trimmedDescription)"
+        return "case \(element.suffixed("Action").type.trimmedDescription)"
       } else {
         return "case \(element.name)(Swift.Never)"
       }
@@ -544,11 +544,12 @@ private enum ReducerCase {
       {
         let name = element.name.text
         let type = parameter.type
+        let reducer = parameter.defaultValue?.value.trimmedDescription ?? "\(type.trimmed)()"
         return """
           ComposableArchitecture.Scope(\
           state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
           ) {
-          \(type.trimmed)()
+          \(reducer)
           }
           """
       } else {
@@ -750,12 +751,21 @@ extension EnumCaseDeclSyntax {
 }
 
 extension EnumCaseElementSyntax {
+  fileprivate var type: Self {
+    var element = self
+    if var parameterClause = element.parameterClause {
+      parameterClause.parameters[parameterClause.parameters.startIndex].defaultValue = nil
+      element.parameterClause = parameterClause
+    }
+    return element
+  }
+
   fileprivate func suffixed(_ suffix: TokenSyntax) -> Self {
     var element = self
     if var parameterClause = element.parameterClause,
       let type = parameterClause.parameters.first?.type
     {
-      let type = MemberTypeSyntax(baseType: type, name: suffix)
+      let type = MemberTypeSyntax(baseType: type.trimmed, name: suffix)
       parameterClause.parameters[parameterClause.parameters.startIndex].type = TypeSyntax(type)
       element.parameterClause = parameterClause
     }
