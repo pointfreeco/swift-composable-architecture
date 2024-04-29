@@ -6,12 +6,6 @@ public protocol CaseReducer<State, Action>: Reducer
 where State: CaseReducerState, Body: Reducer, Body.State == State, Body.Action == Action {
   associatedtype State = State
   associatedtype Action = Action
-  #if DEBUG
-    associatedtype _Body = _Body
-    typealias Body = _Body
-  #else
-    associatedtype Body
-  #endif
   associatedtype CaseScope
 
   @ReducerBuilder<State, Action>
