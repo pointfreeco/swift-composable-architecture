@@ -21,7 +21,7 @@
   }
 
   #if canImport(Observation)
-    @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+    @available(iOS 17.0.1, macOS 14, tvOS 17.0.1, watchOS 10.0.1, *)
     extension ObservationStateRegistrar {
       /// Registers access to a specific property for observation.
       ///
