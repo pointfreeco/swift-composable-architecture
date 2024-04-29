@@ -41,44 +41,42 @@
       }
     }
 
-    #if DEBUG
-      @MainActor
-      func testNilChild() async {
-        let store = TestStoreOf<Child2>(initialState: Child2.State.count(0)) {
-          Scope(state: \.name, action: \.name) {}
-        }
-
-        XCTExpectFailure {
-          $0.compactDescription == """
-            A "Scope" at "\(#fileID):\(#line - 5)" received a child action when child state was set to \
-            a different case. …
-
-              Action:
-                Child2.Action.name
-              State:
-                Child2.State.count
-
-            This is generally considered an application logic error, and can happen for a few reasons:
-
-            • A parent reducer set "Child2.State" to a different case before the scoped reducer ran. \
-            Child reducers must run before any parent reducer sets child state to a different case. \
-            This ensures that child reducers can handle their actions while their state is still \
-            available. Consider using "Reducer.ifCaseLet" to embed this child reducer in the \
-            parent reducer that change its state to ensure the child reducer runs first.
-
-            • An in-flight effect emitted this action when child state was unavailable. While it may \
-            be perfectly reasonable to ignore this action, consider canceling the associated effect \
-            before child state changes to another case, especially if it is a long-living effect.
-
-            • This action was sent to the store while state was another case. Make sure that actions \
-            for this reducer can only be sent from a view store when state is set to the appropriate \
-            case. In SwiftUI applications, use "SwitchStore".
-            """
-        }
-
-        await store.send(.name("Blob"))
+    @MainActor
+    func testNilChild() async {
+      let store = TestStoreOf<Child2>(initialState: Child2.State.count(0)) {
+        Scope(state: \.name, action: \.name) {}
       }
-    #endif
+
+      XCTExpectFailure {
+        $0.compactDescription == """
+          A "Scope" at "\(#fileID):\(#line - 5)" received a child action when child state was set to \
+          a different case. …
+
+            Action:
+              Child2.Action.name
+            State:
+              Child2.State.count
+
+          This is generally considered an application logic error, and can happen for a few reasons:
+
+          • A parent reducer set "Child2.State" to a different case before the scoped reducer ran. \
+          Child reducers must run before any parent reducer sets child state to a different case. \
+          This ensures that child reducers can handle their actions while their state is still \
+          available. Consider using "Reducer.ifCaseLet" to embed this child reducer in the \
+          parent reducer that change its state to ensure the child reducer runs first.
+
+          • An in-flight effect emitted this action when child state was unavailable. While it may \
+          be perfectly reasonable to ignore this action, consider canceling the associated effect \
+          before child state changes to another case, especially if it is a long-living effect.
+
+          • This action was sent to the store while state was another case. Make sure that actions \
+          for this reducer can only be sent from a view store when state is set to the appropriate \
+          case. In SwiftUI applications, use "SwitchStore".
+          """
+      }
+
+      await store.send(.name("Blob"))
+    }
   }
 
   @Reducer
