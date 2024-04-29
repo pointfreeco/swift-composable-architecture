@@ -79,7 +79,9 @@
     and timer, and requires some subtle behavior that we are definitely going to want to get 
     test coverage on.
    
-    @TutorialReference(tutorial: "doc:RecordMeeting")
+    @TutorialReference(tutorial: "doc:RecordMeetingFeature")
+    @TutorialReference(tutorial: "doc:ImplementingTimer")
+    @TutorialReference(tutorial: "doc:ImplementingSpeechRecognizer")
     @Image(source: "chapter8.png")
   }
 }

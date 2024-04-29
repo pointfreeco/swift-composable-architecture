@@ -11,6 +11,7 @@ extension SyncUpDetail {
   enum Destination {
     case alert(AlertState<Alert>)
     case edit(SyncUpForm)
+    @CasePathable
     enum Alert {
       case confirmButtonTapped
     }

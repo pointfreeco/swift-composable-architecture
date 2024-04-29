@@ -1,6 +1,6 @@
 @Tutorial(time: 10) {
   @Intro(title: "Recording a meeting") {
-    <#text#>
+    We have just one feature left to implement, and it's one of the most complicated ones.
     
     @Image(source: <#file#>, alt: "<#accessible description#>")
   }

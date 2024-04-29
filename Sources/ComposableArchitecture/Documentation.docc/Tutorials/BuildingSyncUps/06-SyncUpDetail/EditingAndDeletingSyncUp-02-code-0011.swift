@@ -18,6 +18,7 @@ struct SyncUpDetail {
     case editButtonTapped
     case editSyncUp(PresentationAction<SyncUpForm.Action>)
     case startMeetingButtonTapped
+    @CasePathable
     enum Alert {
       case confirmButtonTapped
     }

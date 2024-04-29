@@ -33,13 +33,13 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0]?.detail?.destination = nil
       $0.path[id: 0]?.detail?.syncUp.title = "Blob"
     }
-    .finish()
   }
 
   @MainActor
   func testDelete() async throws {
     let syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
+
     let store = TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }

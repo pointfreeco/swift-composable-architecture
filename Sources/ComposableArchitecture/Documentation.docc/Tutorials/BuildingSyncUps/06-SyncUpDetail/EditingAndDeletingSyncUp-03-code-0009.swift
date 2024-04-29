@@ -16,6 +16,7 @@ struct SyncUpDetail {
     case doneEditingButtonTapped
     case editButtonTapped
     case startMeetingButtonTapped
+    @CasePathable
     enum Alert {
       case confirmButtonTapped
     }
