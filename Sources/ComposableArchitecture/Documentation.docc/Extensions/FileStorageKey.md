@@ -9,3 +9,8 @@
 ### Overriding storage
 
 - ``FileStorage``
+
+### Deprecations
+
+- ``LiveFileStorage()``
+- ``InMemoryFileStorage()``

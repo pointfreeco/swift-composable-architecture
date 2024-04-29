@@ -1116,3 +1116,7 @@ The second assignment of `isOn` will guarantee that it holds a value of `true`.
 
 - ``SharedReader``
 - ``PersistenceReaderKey``
+
+### Default values
+
+- ``PersistenceKeyDefault``
