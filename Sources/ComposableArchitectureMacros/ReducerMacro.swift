@@ -759,7 +759,7 @@ extension EnumCaseElementSyntax {
     }
     return element
   }
-  
+
   fileprivate func suffixed(_ suffix: TokenSyntax) -> Self {
     var element = self
     if var parameterClause = element.parameterClause,

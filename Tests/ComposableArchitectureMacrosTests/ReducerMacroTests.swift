@@ -340,7 +340,7 @@
         """#
       }
     }
-    
+
     func testEnum_DefaultInitializer() {
       assertMacro {
         """
