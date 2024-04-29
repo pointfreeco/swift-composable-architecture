@@ -43,6 +43,10 @@ func runtimeWarn(
         fputs("\(formatter.string(from: Date())) [\(category)] \(message)\n", stderr)
       #endif
     }
+  #else
+    if _XCTIsTesting {
+      XCTFail(message())
+    }
   #endif
 }
 

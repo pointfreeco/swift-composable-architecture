@@ -27,29 +27,27 @@
       render(FeatureView())
     }
 
-    #if DEBUG
-      @MainActor
-      func testPerceptionCheck_AccessStateWithoutTracking() {
-        if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10) {
-          struct FeatureView: View {
-            let store = Store(initialState: Feature.State()) {
-              Feature()
-            }
-            var body: some View {
-              Text(store.count.description)
-            }
+    @MainActor
+    func testPerceptionCheck_AccessStateWithoutTracking() {
+      if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10) {
+        struct FeatureView: View {
+          let store = Store(initialState: Feature.State()) {
+            Feature()
           }
-          XCTExpectFailure {
-            render(FeatureView())
-          } issueMatcher: {
-            $0.compactDescription == """
-              Perceptible state was accessed but is not being tracked. Track changes to state by \
-              wrapping your view in a 'WithPerceptionTracking' view.
-              """
+          var body: some View {
+            Text(store.count.description)
           }
         }
+        XCTExpectFailure {
+          render(FeatureView())
+        } issueMatcher: {
+          $0.compactDescription == """
+            Perceptible state was accessed but is not being tracked. Track changes to state by \
+            wrapping your view in a 'WithPerceptionTracking' view.
+            """
+        }
       }
-    #endif
+    }
 
     @MainActor
     func testPerceptionCheck_AccessStateWithTracking() {

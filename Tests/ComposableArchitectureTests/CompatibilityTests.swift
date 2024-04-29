@@ -82,6 +82,7 @@ final class CompatibilityTests: BaseTCATestCase {
   @MainActor
   func testCaseStudy_ActionReentranceFromStateObservation() {
     var cancellables: Set<AnyCancellable> = []
+    defer { _ = cancellables }
 
     let store = Store<Int, Int>(initialState: 0) {
       Reduce { state, action in
