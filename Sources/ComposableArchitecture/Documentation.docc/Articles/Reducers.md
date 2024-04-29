@@ -364,6 +364,34 @@ In those cases you can use the ``ReducerCaseIgnored()`` and ``ReducerCaseEphemer
 annotate cases that are not powered by reducers. See the documentation for those macros for more
 details.
 
+As an example, suppose that you have a feature that can navigate to multiple features, all of 
+which are Composable Architecture features except for one:
+
+```swift
+@Reducer
+enum Destination {
+  case add(AddItemFeature)
+  case edit(EditItemFeature)
+  @ReduceCaserIgnored
+  case item(Item)
+}
+```
+
+In this situation the `.item` case holds onto a plain item and not a full reducer, and for that 
+reason we have to ignore it from some of `@Reducer`'s macro expansion.
+
+Then, to present a view from this case one can do:
+
+```swift
+.sheet(item: $store.scope(state: \.destination?.item, action: \.destination.item)) { store in
+  ItemView(item: store.withState { $0 })
+}
+```
+
+> Note: The ``Store/withState(_:)`` is necessary because the value held inside the `.item` case
+does not have the ``ObservableState()`` macro applied, nor should it. And so using `withState`
+is a way to get access to the state in the store without any observation taking place.
+
 #### Synthesizing protocol conformances on State and Action
 
 Since the `State` and `Action` types are generated automatically for you when using `@Reducer` on an
