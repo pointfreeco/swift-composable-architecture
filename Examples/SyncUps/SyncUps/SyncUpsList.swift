@@ -158,7 +158,7 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
   @Shared(.syncUps) var syncUps = [
     .mock,
     .productMock,
-    .engineeringMock
+    .engineeringMock,
   ]
   return NavigationStack {
     SyncUpsListView(

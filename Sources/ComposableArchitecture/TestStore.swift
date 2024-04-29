@@ -1080,13 +1080,13 @@ extension TestStore where State: Equatable {
         let difference = self.withExhaustivity(.on) {
           diff(expected, actual, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Actual: +)" }
-            ?? """
-            Expected:
-            \(String(describing: expected).indent(by: 2))
+              ?? """
+              Expected:
+              \(String(describing: expected).indent(by: 2))
 
-            Actual:
-            \(String(describing: actual).indent(by: 2))
-            """
+              Actual:
+              \(String(describing: actual).indent(by: 2))
+              """
         }
         let messageHeading =
           !preamble.isEmpty
@@ -1148,13 +1148,13 @@ extension TestStore where State: Equatable, Action: Equatable {
         TaskResultDebugging.$emitRuntimeWarnings.withValue(false) {
           diff(expectedAction, receivedAction, format: .proportional)
             .map { "\($0.indent(by: 4))\n\n(Expected: −, Received: +)" }
-            ?? """
-            Expected:
-            \(String(describing: expectedAction).indent(by: 2))
+              ?? """
+              Expected:
+              \(String(describing: expectedAction).indent(by: 2))
 
-            Received:
-            \(String(describing: receivedAction).indent(by: 2))
-            """
+              Received:
+              \(String(describing: receivedAction).indent(by: 2))
+              """
         }
       },
       updateStateToExpectedResult,
@@ -2568,7 +2568,8 @@ extension TestStore {
   @available(
     *,
     unavailable,
-    message: "Provide a key path to the case you expect to receive (like 'store.receive(\\.tap)'), or conform 'Action' to 'Equatable' to assert against it directly."
+    message:
+      "Provide a key path to the case you expect to receive (like 'store.receive(\\.tap)'), or conform 'Action' to 'Equatable' to assert against it directly."
   )
   public func receive(
     _ expectedAction: Action,

@@ -45,7 +45,7 @@ extension Shared {
   ) where Value == Wrapped? {
     self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
   }
-  
+
   @_disfavoredOverload
   public init(
     _ persistenceKey: some PersistenceKey<Value>,
@@ -137,7 +137,7 @@ extension SharedReader {
     }
     self.init(wrappedValue: initialValue, persistenceKey, fileID: fileID, line: line)
   }
-  
+
   public init<Key: PersistenceReaderKey>(
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,

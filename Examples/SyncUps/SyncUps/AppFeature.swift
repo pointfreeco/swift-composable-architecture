@@ -73,7 +73,7 @@ struct AppView: View {
   @Shared(.syncUps) var syncUps = [
     .mock,
     .productMock,
-    .engineeringMock
+    .engineeringMock,
   ]
   return AppView(
     store: Store(initialState: AppFeature.State()) {

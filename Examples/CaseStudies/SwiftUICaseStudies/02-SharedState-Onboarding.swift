@@ -496,8 +496,8 @@ private struct SummaryStep: View {
   }
 }
 
-fileprivate extension Set {
-  subscript(contains element: Element) -> Bool {
+extension Set {
+  fileprivate subscript(contains element: Element) -> Bool {
     get { contains(element) }
     set {
       if newValue {

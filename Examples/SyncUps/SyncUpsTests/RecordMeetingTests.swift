@@ -27,7 +27,7 @@ final class RecordMeetingTests: XCTestCase {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
-      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       $0.dismiss = DismissEffect {
         dismissed.fulfill()
       }
@@ -79,7 +79,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.syncUp.meetings.insert(
         Meeting(
           id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1234567890),
+          date: Date(timeIntervalSince1970: 1_234_567_890),
           transcript: ""
         ),
         at: 0
@@ -117,7 +117,7 @@ final class RecordMeetingTests: XCTestCase {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
-      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       $0.dismiss = DismissEffect { dismissed.fulfill() }
       $0.speechClient.authorizationStatus = { .authorized }
       $0.speechClient.startTask = { @Sendable _ in
@@ -168,7 +168,7 @@ final class RecordMeetingTests: XCTestCase {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
-      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       $0.dismiss = DismissEffect { dismissed.fulfill() }
       $0.speechClient.authorizationStatus = { .denied }
       $0.uuid = .incrementing
@@ -190,7 +190,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.syncUp.meetings.insert(
         Meeting(
           id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1234567890),
+          date: Date(timeIntervalSince1970: 1_234_567_890),
           transcript: ""
         ),
         at: 0
@@ -257,7 +257,7 @@ final class RecordMeetingTests: XCTestCase {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
-      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       $0.dismiss = DismissEffect { dismissed.fulfill() }
       $0.speechClient.authorizationStatus = { .denied }
       $0.uuid = .incrementing
@@ -284,7 +284,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.syncUp.meetings.insert(
         Meeting(
           id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1234567890),
+          date: Date(timeIntervalSince1970: 1_234_567_890),
           transcript: ""
         ),
         at: 0
@@ -321,7 +321,7 @@ final class RecordMeetingTests: XCTestCase {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
-      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       $0.dismiss = DismissEffect { dismissed.fulfill() }
       $0.speechClient.authorizationStatus = { .authorized }
       $0.speechClient.startTask = { @Sendable _ in

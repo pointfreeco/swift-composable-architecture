@@ -391,7 +391,7 @@ where Value.RawValue == Base.Value {
   ) -> Value? {
     base.loadValue(from: store, at: key, default: defaultValue?.rawValue)
       .flatMap(Value.init(rawValue:))
-    ?? defaultValue
+      ?? defaultValue
   }
   func saveValue(_ newValue: Value, to store: UserDefaults, at key: String) {
     base.saveValue(newValue.rawValue, to: store, at: key)

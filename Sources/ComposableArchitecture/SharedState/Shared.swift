@@ -125,7 +125,7 @@ public struct Shared<Value> {
     return Shared<Member>(
       reference: self.reference,
       keyPath: self.keyPath.appending(
-        path: keyPath.appending(path: \.[default: DefaultSubscript(initialValue)])
+        path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
       )!
     )
   }
@@ -366,7 +366,7 @@ extension Shared {
     return SharedReader<Member>(
       reference: self.reference,
       keyPath: self.keyPath.appending(
-        path: keyPath.appending(path: \.[default: DefaultSubscript(initialValue)])
+        path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
       )!
     )
   }

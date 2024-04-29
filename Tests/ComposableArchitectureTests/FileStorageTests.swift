@@ -50,7 +50,7 @@ final class FileStorageTests: XCTestCase {
           .blob,
           .blobJr,
           .blobSr,
-          .blobEsq
+          .blobEsq,
         ]
       )
     }
@@ -82,7 +82,7 @@ final class FileStorageTests: XCTestCase {
 
   func testWillTerminate() throws {
     guard let willTerminateNotificationName else { return }
-    
+
     let fileSystem = LockIsolated<[URL: Data]>([:])
     let testScheduler = DispatchQueue.test
     try withDependencies {

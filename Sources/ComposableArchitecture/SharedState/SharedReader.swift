@@ -1,5 +1,5 @@
 #if canImport(Combine)
-import Combine
+  import Combine
 #endif
 
 /// A property wrapper type that shares a value with multiple parts of an application.
@@ -74,17 +74,17 @@ public struct SharedReader<Value> {
     )
   }
 
-#if canImport(Combine)
-  // TODO: Should this be wrapped in a type we own instead of `AnyPublisher`?
-  public var publisher: AnyPublisher<Value, Never> {
-    func open<R: Reference>(_ reference: R) -> AnyPublisher<Value, Never> {
-      return reference.publisher
-        .compactMap { $0[keyPath: self.keyPath] as? Value }
-        .eraseToAnyPublisher()
+  #if canImport(Combine)
+    // TODO: Should this be wrapped in a type we own instead of `AnyPublisher`?
+    public var publisher: AnyPublisher<Value, Never> {
+      func open<R: Reference>(_ reference: R) -> AnyPublisher<Value, Never> {
+        return reference.publisher
+          .compactMap { $0[keyPath: self.keyPath] as? Value }
+          .eraseToAnyPublisher()
+      }
+      return open(self.reference)
     }
-    return open(self.reference)
-  }
-#endif
+  #endif
 }
 
 extension SharedReader: @unchecked Sendable where Value: Sendable {}
