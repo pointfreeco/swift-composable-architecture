@@ -28,4 +28,15 @@
       #endif
     }
   }
+
+  private enum TestEnumReducer_DefaultInitializer {
+    @Reducer
+    struct Feature {
+      let context: String
+    }
+    @Reducer
+    enum Destination1 {
+      case feature1(Feature = Feature(context: "context"))
+    }
+  }
 #endif
