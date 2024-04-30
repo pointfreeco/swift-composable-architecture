@@ -142,6 +142,13 @@ final class AppStorageTests: XCTestCase {
     defaults.count += 1
     XCTAssertEqual(count, 1)
   }
+
+  func testOptionalInitializers() {
+    @Shared(.appStorage("count1")) var count1: Int?
+    XCTAssertEqual(count1, nil)
+    @Shared(.appStorage("count")) var count2: Int? = nil
+    XCTAssertEqual(count2, nil)
+  }
 }
 
 extension UserDefaults {
