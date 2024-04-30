@@ -292,7 +292,7 @@
         #endif
       }
       set {
-        if newValue == nil, self.state[keyPath: state] != nil {
+        if newValue == nil, self.state[keyPath: state] != nil, !self._isInvalidated() {
           self.send(action(.dismiss))
         }
       }
