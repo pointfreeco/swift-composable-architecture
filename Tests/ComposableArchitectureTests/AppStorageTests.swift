@@ -143,7 +143,7 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(count, 1)
   }
 
-  func testOptional() {
+  func testOptionalInitializers() {
     @Shared(.appStorage("count1")) var count1: Int?
     XCTAssertEqual(count1, nil)
     @Shared(.appStorage("count")) var count2: Int? = nil
