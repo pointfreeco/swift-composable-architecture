@@ -282,9 +282,7 @@ extension AppStorageKey: PersistenceKey {
   }
 
   public func save(_ value: Value) {
-    SharedAppStorageLocals.$isSetting.withValue(true) {
-      self.lookup.saveValue(value, to: self.store, at: self.key)
-    }
+    self.lookup.saveValue(value, to: self.store, at: self.key)
   }
 
   public func subscribe(
@@ -373,13 +371,18 @@ private struct CastableLookup<Value>: Lookup {
   ) -> Value? {
     guard let value = store.object(forKey: key) as? Value
     else {
-      store.setValue(defaultValue, forKey: key)
+      SharedAppStorageLocals.$isSetting.withValue(true) {
+        store.setValue(defaultValue, forKey: key)
+      }
       return defaultValue
     }
     return value
   }
+
   func saveValue(_ newValue: Value, to store: UserDefaults, at key: String) {
-    store.setValue(newValue, forKey: key)
+    SharedAppStorageLocals.$isSetting.withValue(true) {
+      store.setValue(newValue, forKey: key)
+    }
   }
 }
 
