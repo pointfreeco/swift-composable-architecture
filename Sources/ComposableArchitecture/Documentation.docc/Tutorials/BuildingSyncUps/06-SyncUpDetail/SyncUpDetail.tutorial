@@ -41,7 +41,7 @@
       
       @Step {
         Add an action for each of the buttons in the UI, including tapping the "Delete" button,
-        the "Edit" button, the "Start meeting" button.
+        and the "Edit" button.
         
         @Code(name: "SyncUpDetail.swift", file: SyncUpDetail-01-code-0003.swift)
       }

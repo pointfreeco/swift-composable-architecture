@@ -1,5 +1,5 @@
 @Tutorial(time: 10) {
-  @Intro(title: "Adding a speech recognizer") {
+  @Intro(title: "Testing the RecordMeeting feature") {
     We have just one feature left to implement, and it's one of the most complicated ones.
     
     @Image(source: <#file#>, alt: "<#accessible description#>")

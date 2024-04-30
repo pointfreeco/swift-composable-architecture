@@ -15,7 +15,6 @@ struct SyncUpDetail {
     case destination(PresentationAction<Destination.Action>)
     case doneEditingButtonTapped
     case editButtonTapped
-    case startMeetingButtonTapped
     @CasePathable
     enum Alert {
       case confirmButtonTapped
@@ -55,9 +54,6 @@ struct SyncUpDetail {
 
       case .editButtonTapped:
         state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
-        return .none
-
-      case .startMeetingButtonTapped:
         return .none
       }
     }

@@ -15,7 +15,6 @@ struct SyncUpDetail {
     case doneEditingButtonTapped
     case editButtonTapped
     case editSyncUp(PresentationAction<SyncUpForm.Action>)
-    case startMeetingButtonTapped
   }
 
   var body: some ReducerOf<Self> {
@@ -33,9 +32,6 @@ struct SyncUpDetail {
         return .none
 
       case .editSyncUp:
-        return .none
-
-      case .startMeetingButtonTapped:
         return .none
       }
     }

@@ -1,5 +1,5 @@
 @Tutorial(time: 10) {
-  @Intro(title: "Recording a meeting") {
+  @Intro(title: "Adding a meeting timer") {
     We have just one feature left to implement, and it's one of the most complicated ones.
     
     @Image(source: <#file#>, alt: "<#accessible description#>")

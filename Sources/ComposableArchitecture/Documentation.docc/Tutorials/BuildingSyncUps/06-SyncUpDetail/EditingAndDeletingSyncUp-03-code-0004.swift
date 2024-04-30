@@ -17,7 +17,6 @@ struct SyncUpDetail {
     case doneEditingButtonTapped
     case editButtonTapped
     // case editSyncUp(PresentationAction<SyncUpForm.Action>)
-    case startMeetingButtonTapped
     // enum Alert {
     //   case confirmButtonTapped
     // }
@@ -60,9 +59,6 @@ struct SyncUpDetail {
         return .none
 
       case .editSyncUp:
-        return .none
-
-      case .startMeetingButtonTapped:
         return .none
       }
     }

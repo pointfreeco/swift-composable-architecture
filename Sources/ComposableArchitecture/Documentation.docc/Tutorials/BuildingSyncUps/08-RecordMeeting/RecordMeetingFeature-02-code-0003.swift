@@ -26,7 +26,6 @@ struct SyncUpDetail {
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
-      // case .alert(.presented(.confirmButtonTapped)):
       case .destination(.presented(.alert(.confirmButtonTapped))):
         return .run { send in
           await send(.delegate(.deleteSyncUp(id: state.syncUp.id)))
@@ -40,22 +39,19 @@ struct SyncUpDetail {
         state.destination = nil
         return .none
 
-      case .delegate:
-        return .none
-
       case .deleteButtonTapped:
-        state.alert = .deleteSyncUp
+        state.destination = .alert(.deleteSyncUp)
         return .none
 
       case .doneEditingButtonTapped:
-        guard let editedSyncUp = state.editSyncUp?.syncUp
+        guard let editedSyncUp = state.destination?.edit?.syncUp
         else { return .none }
         state.syncUp = editedSyncUp
-        state.editSyncUp = nil
+        state.destination = nil
         return .none
 
       case .editButtonTapped:
-        state.editSyncUp = SyncUpForm.State(syncUp: state.syncUp)
+        state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp))
         return .none
       }
     }
@@ -63,19 +59,8 @@ struct SyncUpDetail {
   }
 }
 
-extension AlertState where Action == SyncUpDetail.Action.Alert {
-  static let deleteSyncUp = Self {
-    TextState("Delete?")
-  } actions: {
-    ButtonState(role: .destructive, action: .confirmButtonTapped) {
-      TextState("Yes")
-    }
-    ButtonState(role: .cancel) {
-      TextState("Nevermind")
-    }
-  } message: {
-    TextState("Are you sure you want to delete this meeting?")
-  }
+extension AlertState where Action == SyncUpDetail.Destination.Alert {
+  // ...
 }
 
 struct SyncUpDetail.Destination {

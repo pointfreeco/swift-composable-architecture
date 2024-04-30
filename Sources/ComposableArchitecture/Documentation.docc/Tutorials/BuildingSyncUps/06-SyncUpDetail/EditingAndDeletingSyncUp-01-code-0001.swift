@@ -12,7 +12,6 @@ struct SyncUpDetail {
   enum Action {
     case deleteButtonTapped
     case editButtonTapped
-    case startMeetingButtonTapped
   }
 
   var body: some ReducerOf<Self> {
@@ -22,9 +21,6 @@ struct SyncUpDetail {
         return .none
 
       case .editButtonTapped:
-        return .none
-
-      case .startMeetingButtonTapped:
         return .none
       }
     }
