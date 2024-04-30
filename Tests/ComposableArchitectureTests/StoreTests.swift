@@ -1068,9 +1068,9 @@
       }
       var body: some ReducerOf<Self> {
         EmptyReducer()
-        .ifLet(\.$child, action: \.child) {
-          InvalidatedStoreScopeChildFeature()
-        }
+          .ifLet(\.$child, action: \.child) {
+            InvalidatedStoreScopeChildFeature()
+          }
       }
     }
     @Reducer
@@ -1107,7 +1107,7 @@
         InvalidatedStoreScopeParentFeature()
       }
       store.send(.tap)
-      
+
       @Perception.Bindable var childStore = store.scope(state: \.child, action: \.child)!
       let grandchildStoreBinding = $childStore.scope(state: \.grandchild, action: \.grandchild)
 
