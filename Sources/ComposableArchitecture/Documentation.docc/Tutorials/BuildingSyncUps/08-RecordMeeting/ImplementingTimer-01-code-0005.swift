@@ -17,6 +17,27 @@ struct RecordMeeting {
   enum Action {
     case endMeetingButtonTapped
     case nextButtonTapped
+    case onAppear
+    case timerTick
+  }
+
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .endMeetingButtonTapped:
+        return .none
+
+      case .nextButtonTapped:
+        return .none
+
+      case .onAppear:
+        return .run { send in
+          while true {
+            try await Task.sleep(for: seconds(1))
+          }
+        }
+      }
+    }
   }
 }
 
@@ -58,6 +79,7 @@ struct RecordMeetingView: View {
       }
     }
     .navigationBarBackButtonHidden(true)
+    .onAppear { store.send(.onAppear) }
   }
 }
 

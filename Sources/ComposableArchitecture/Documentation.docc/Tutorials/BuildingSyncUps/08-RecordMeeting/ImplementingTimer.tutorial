@@ -1,28 +1,72 @@
 @Tutorial(time: 10) {
   @Intro(title: "Adding a meeting timer") {
-    We have just one feature left to implement, and it's one of the most complicated ones.
+    The first major piece of logic and behavior we will introduce to the record meeting feature is
+    the timer. This is a long-living effect that runs in parallel to the rest of the feature, 
+    and we need to implement nuanced logic to figure out when to proceed to the next speaker. 
     
-    @Image(source: <#file#>, alt: "<#accessible description#>")
+<!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->
   }
   
-  @Section(title: "<#text#>") {
+  @Section(title: "A basic timer") {
     @ContentAndMedia {
-      <#text#>
+      Let's start with getting the very basics of a timer into place. This will be the first time
+      we have dealt with an effect that emits actions back into the system, as the only other 
+      effect dealt with so far was the ``Dependencies/DependencyValues/dismiss`` effect for 
+      dismissing a feature.
       
-      @Image(source: <#file#>, alt: "<#accessible description#>")
+<!--      @Image(source: <#file#>, alt: "<#accessible description#>")-->
     }
     
     @Steps {
+      In order to start an effect we need an action to kick off the process. One can use either
+      SwiftUI's `onAppear` or `task` view modifiers.
+      
       @Step {
-        <#text#>
+        Add an `onAppear` action to the `RecordMeeting.Action` enum and send it from the view.
         
-        @Image(source: <#file#>, alt: "<#accessible description#>")
+        > Note: Be sure to scroll down in the code snippet to see that we are sending the action
+        from the view.
+        
+        @Code(name: "RecordMeeting.swift", file: ImplementingTimer-01-code-0001.swift, previousFile: ImplementingTimer-01-code-0001-previous.swift)
       }
       
       @Step {
-        <#text#>
+        Add a `body` property to the reducer, and stub out a `Reduce` for us to implement the 
+        logic and behavior of the feature.
         
-        @Code(name: "<#display name#>", file: <#filename.swift#>)
+        @Code(name: "RecordMeeting.swift", file: ImplementingTimer-01-code-0002.swift)
+      }
+      
+      In the `onAppear` action we want to start up a long-living effect that represents a timer.
+      Timers can be easily handled using an asynchronous context, and the 
+      ``ComposableArchitecture/Effect/run(priority:operation:catch:fileID:line:)`` helper is
+      what gives us an asynchronous context to work in.
+      
+      @Step {
+        Return a `.run` effect from the `onAppear` action in order to create an asynchronous
+        context to perform work in.
+        
+        @Code(name: "RecordMeeting.swift", file: ImplementingTimer-01-code-0003.swift)
+      }
+      
+      @Step {
+        In the asynchronous context perform an infinite `while` loop with a 1 second `Task.sleep`
+        inside.
+        
+        @Code(name: "RecordMeeting.swift", file: ImplementingTimer-01-code-0004.swift)
+      }
+      
+      This is a very crude way to create a timer, but it will suite our needs for the time being.
+      
+      After each `Task.sleep` finishes we want to send an action back into the system to let the
+      feature know the timer ticked, which will allow us to execute additional logic. To do this
+      we must first add a new action that can be sent from the effect.
+      
+      @Step {
+        Add a `timerTick` to the feature's domain that represents when a second passes in the
+        timer.
+        
+        @Code(name: "RecordMeeting.swift", file: ImplementingTimer-01-code-0005.swift)
       }
     }
   }

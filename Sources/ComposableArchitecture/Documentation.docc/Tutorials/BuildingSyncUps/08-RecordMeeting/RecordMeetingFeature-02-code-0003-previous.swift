@@ -16,9 +16,8 @@ struct SyncUpDetailView: View {
   var body: some View {
     Form {
       Section {
-        NavigationLink(
-          state: AppFeature.Path.State.record(RecordMeeting.State(syncUp: store.$syncUp))
-        ) {
+        NavigationLink {
+        } label: {
           Label("Start Meeting", systemImage: "timer")
             .font(.headline)
             .foregroundColor(.accentColor)

@@ -116,7 +116,8 @@ struct SyncUpDetailView: View {
   var body: some View {
     Form {
       Section {
-        NavigationLink {
+        Button {
+          store.send(.startMeetingButtonTapped)
         } label: {
           Label("Start Meeting", systemImage: "timer")
             .font(.headline)

@@ -17,6 +17,7 @@ struct RecordMeeting {
   enum Action {
     case endMeetingButtonTapped
     case nextButtonTapped
+    case onAppear
   }
 }
 
@@ -58,6 +59,7 @@ struct RecordMeetingView: View {
       }
     }
     .navigationBarBackButtonHidden(true)
+    .onAppear { store.send(.onAppear) }
   }
 }
 

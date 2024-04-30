@@ -87,6 +87,24 @@
       
       That gets the app building again, but we still haven't implemented logic to actually
       navigate to the record meeting feature.
+      
+      @Step {
+        Update the `NavigationLink` in the `SyncUpDetailView` so that when it is tapped it pushes
+        `Path` state to the stack.
+        
+        @Code(name: "SyncUpDetail.swift", file: RecordMeetingFeature-02-code-0003.swift, previousFile: RecordMeetingFeature-02-code-0003-previous.swift)
+      }
+
+      @Step {
+        Run the app in the simulator to see that you can tap the "Start meeting" button to drill
+        down to the record meeting feature.
+        
+        @Video(source: RecordMeetingFeature-02-video-0004.mov)
+      }
+      
+      We now have the basic scaffolding of a record meeting feature in place, and we can even 
+      navigate to it. It's now time to start implementing some of the complex logic and behavior
+      of the feature, starting with timers.
     }
   }
 }
