@@ -372,7 +372,7 @@ which are Composable Architecture features except for one:
 enum Destination {
   case add(AddItemFeature)
   case edit(EditItemFeature)
-  @ReduceCaserIgnored
+  @ReducerCaseIgnored
   case item(Item)
 }
 ```
