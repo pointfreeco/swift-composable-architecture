@@ -1055,6 +1055,65 @@
         Feature.State(count: 0, isOn: false, subjectCount: 1)
       )
     }
+
+    @Reducer
+    struct InvalidatedStoreScopeParentFeature: Reducer {
+      @ObservableState
+      struct State {
+        @Presents var child: InvalidatedStoreScopeChildFeature.State?
+      }
+      enum Action {
+        case child(PresentationAction<InvalidatedStoreScopeChildFeature.Action>)
+        case tap
+      }
+      var body: some ReducerOf<Self> {
+        EmptyReducer()
+        .ifLet(\.$child, action: \.child) {
+          InvalidatedStoreScopeChildFeature()
+        }
+      }
+    }
+    @Reducer
+    struct InvalidatedStoreScopeChildFeature: Reducer {
+      @ObservableState
+      struct State {
+        @Presents var grandchild: InvalidatedStoreScopeGrandchildFeature.State?
+      }
+      enum Action {
+        case grandchild(PresentationAction<InvalidatedStoreScopeGrandchildFeature.Action>)
+      }
+      var body: some ReducerOf<Self> {
+        EmptyReducer()
+          .ifLet(\.$grandchild, action: \.grandchild) {
+            InvalidatedStoreScopeGrandchildFeature()
+          }
+      }
+    }
+    @Reducer
+    struct InvalidatedStoreScopeGrandchildFeature: Reducer {
+      struct State {}
+      enum Action {}
+      var body: some ReducerOf<Self> { EmptyReducer() }
+    }
+    @MainActor
+    func testInvalidatedStoreScope() async throws {
+      @Perception.Bindable var store = Store(
+        initialState: InvalidatedStoreScopeParentFeature.State(
+          child: InvalidatedStoreScopeChildFeature.State(
+            grandchild: InvalidatedStoreScopeGrandchildFeature.State()
+          )
+        )
+      ) {
+        InvalidatedStoreScopeParentFeature()
+      }
+      store.send(.tap)
+      
+      @Perception.Bindable var childStore = store.scope(state: \.child, action: \.child)!
+      let grandchildStoreBinding = $childStore.scope(state: \.grandchild, action: \.grandchild)
+
+      store.send(.child(.dismiss))
+      grandchildStoreBinding.wrappedValue = nil
+    }
   }
 
   private struct Count: TestDependencyKey {
