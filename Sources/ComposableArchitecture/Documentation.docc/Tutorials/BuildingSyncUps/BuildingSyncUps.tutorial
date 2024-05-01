@@ -82,7 +82,6 @@
     @TutorialReference(tutorial: "doc:RecordMeetingFeature")
     @TutorialReference(tutorial: "doc:ImplementingTimer")
     @TutorialReference(tutorial: "doc:ImplementingSpeechRecognizer")
-    @TutorialReference(tutorial: "doc:TestingRecordMeeting")
     @Image(source: "chapter8.png")
   }
 }
