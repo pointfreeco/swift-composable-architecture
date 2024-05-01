@@ -22,9 +22,12 @@ final class RecordMeetingTests: XCTestCase {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
+      $0.date.now = Date(timeIntervalSince1970: 1234567890)
+      $0.dismiss = DismissEffect {}
+      $0.uuid = .incrementing
     }
 
-    await store.send(.onAppear)
+    let onAppearTask = await store.send(.onAppear)
     await clock.advance(by: .seconds(1))
     await store.receive(\.timerTick) {
       $0.secondsElapsed = 1
@@ -35,5 +38,25 @@ final class RecordMeetingTests: XCTestCase {
       $0.speakerIndex = 1
       $0.secondsElapsed = 2
     }
+
+    await clock.advance(by: .seconds(1))
+    await store.receive(\.timerTick) {
+      $0.secondsElapsed = 3
+    }
+
+    await clock.advance(by: .seconds(1))
+    await store.receive(\.timerTick) {
+      $0.secondsElapsed = 4
+      $0.syncUp.meetings.insert(
+        Meeting(
+          id: UUID(0),
+          date: Date(timeIntervalSince1970: 1234567890),
+          transcript: ""
+        ),
+        at: 0
+      )
+    }
+
+    await onAppearTask.cancel()
   }
 }

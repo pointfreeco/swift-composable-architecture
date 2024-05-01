@@ -35,5 +35,10 @@ final class RecordMeetingTests: XCTestCase {
       $0.speakerIndex = 1
       $0.secondsElapsed = 2
     }
+
+    await clock.advance(by: .seconds(1))
+    await store.receive(\.timerTick) {
+      $0.secondsElapsed = 3
+    }
   }
 }

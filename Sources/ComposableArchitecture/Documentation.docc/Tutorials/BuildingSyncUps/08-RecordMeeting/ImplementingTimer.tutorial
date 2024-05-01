@@ -312,15 +312,15 @@
     @ContentAndMedia {
       We have now introduced quite a bit of logic and behavior to this feature, so it would be nice
       to get some test coverage on it to make sure it works as we expect. There are a lot of 
-      different things we could test, but we will focus on two major user flows:
-      
-      * A meeting ending due to time running out, and
-      * the user ending a meeting early by tapping the "End meeting" button.
-      
-      <!-- @Image(source: <#file#>, alt: "<#accessible description#>")-->
+      different things we could test, but we will focus on just one major flow, and leave the
+      other flows as an exercise for the reader.
     }
     
     @Steps {
+      We are going to write a test that asserts on everything that happens when the user arrives
+      at the record meeting feature, the timer counts to the end, and a new meeting is inserted 
+      into the sync up and the feature is dismissed from the navigation stack.
+      
       @Step {
         Create a new file called RecordMeetingTests.swift, which will hold the tests for the 
         record meeting feature.
@@ -402,8 +402,116 @@
       the meeting ends.
       
       @Step {
+        Advance the clock 1 more second to assert that we receive another `timerTick` action, 
+        causing the `secondsElapsed` to increment again, but also causing the `speakerIndex`
+        to increment since it is now the next speaker's turn.
         
+        @Code(name: "RecordMeetingTests.swift", file: ImplementingTimer-04-code-0009.swift)
       }
+      
+      @Step {
+        Advance the clock 1 more second to assert that we receive another `timerTick` action,
+        and this time only the `secondsElapsed` increments.
+        
+        @Code(name: "RecordMeetingTests.swift", file: ImplementingTimer-04-code-0010.swift)
+      }
+      
+      @Step {
+        And finally, advance the clock 1 more second to assert that we receive another `timerTick`
+        action, causing the `secondsElapsed` to increment again, and further causing the meeting
+        to end by inserting the meeting into the sync up.
+        
+        @Code(name: "RecordMeetingTests.swift", file: ImplementingTimer-04-code-0011.swift)
+      }
+      
+      We have now played out a full script of user actions, along side a full script of effect
+      actions and state change expectations. Ideally this would just pass, but there are still a
+      few behavioral things happening that the ``ComposableArchitecture/TestStore`` wants us to
+      assert on. To see what needs to be asserted, let's run the test again.
+      
+      @Step {
+        Run the test case to see that we still have failures.
+        
+        > Note: Scroll to the bottom of the code snippet to see the test failures.
+        
+        @Code(name: "RecordMeetingTests.swift", file: ImplementingTimer-04-code-0012.swift)
+      }
+      
+      There are quite a few failures, but luckily they are all straightfoward to fix.
+      
+      The last three failures are all related. The first two complain of using the `\.date` and
+      `\.uuid` dependencies without having overriden them. This helps us understand what 
+      dependencies are used in the user flow we are testing. And then the last failure is due to
+      our state change expectation not being correct since we didn't override those dependencies.
+      
+      To fix we need to override the `\.uuid` and `\.date` dependencies so that we can predict the
+      values they will produce when our feature code is run.
+      
+      @Step {
+        Set the `date` and `uuid` dependencies in the `withDependencies` trailing closure.
+        
+        @Code(name: "RecordMeetingTests.swift", file: ImplementingTimer-04-code-0013.swift)
+      }
+      
+      @Step {
+        Run tests to see that we are down to just 2 test failures now.
+        
+        > Note: Scroll to the bottom of the code snippet to see the test failures.
+        
+        @Code(name: "RecordMeetingTests.swift", file: ImplementingTimer-04-code-0014.swift)
+      }
+      
+      The first failure is due to the timer effect still running. The 
+      ``ComposableArchitecture/TestStore`` requires that you explicitly make all effects finish
+      before the test is over in order to make sure that you are not accidentally missing out on
+      future behavior. However, in this case the timer effect is cancelled when the feature is
+      dismissed, causing the record meeting feature to be popped off the stack. Since we are only
+      testing the record meeting feature, and not the full stack, we can explicitly get a handle
+      on the effect created when sending `onAppear` in the test, and manually cancel it at the
+      end of the test.
+      
+      @Step {
+        Assign a variable to `store.send(.onAppear)` and cancel that handle at the end of the test.
+        
+        @Code(name: "RecordMeetingTests.swift", file: ImplementingTimer-04-code-0015.swift)
+      }
+      
+      And the second failure to fix is due to the `dismiss` dependency being used when the timer
+      finishes, and we are not asserting on that behavior. This is a great failure to have because 
+      it forces us to consider how the child features dismisses itself, and if ever in the future
+      we mess up this logic we would have a test in place to keep us in check.
+      
+      To fix the test we need to override the ``Dependencies/DependencyValues/dismiss`` dependency.
+      
+      @Step {
+        Override the `dismiss` dependecy in the `withDependencies` trailer closure.
+        
+        @Code(name: "RecordMeetingTests.swift", file: ImplementingTimer-04-code-0016.swift)
+      }
+      
+      This techincally gets the test passing, but we aren't actually asserting that the `dismiss`
+      dependency was invoked. We are just overridding the dependency to quiet the test failure.
+      
+      In order to _prove_ that the `dismiss` effect is invoked, we will create an test expectation,
+      fulfill it in the ``ComposableArchitecture/DismissEffect``, and then wait for its 
+      fulfillment at the end of the test.
+      
+      @Step {
+        Create an expectation at the top of the test, fulfill it in the 
+        ``ComposableArchitecture/DismissEffect``, and then await its fulfillment at the end
+        of the test.
+        
+        @Code(name: "RecordMeetingTests.swift", file: ImplementingTimer-04-code-0017.swift)
+      }
+      
+      Now the entire test is passing, and we have proven that the 
+      ``Dependencies/DependencyValues/dismiss`` effect is invoked, and so as long as everything is
+      hooked up correctly in the parent we can be sure that the feature will indeed be popped off
+      the stack.
+      
+      By why leave it to chance that the parent and child features are correctly integrated 
+      together? We can write a test that proves it! And we highly encourage you to give it a 
+      shot. 🙂 
     }
   }
 }
