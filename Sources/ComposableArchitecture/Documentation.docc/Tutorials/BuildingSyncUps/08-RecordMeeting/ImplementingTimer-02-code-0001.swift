@@ -21,6 +21,10 @@ struct RecordMeeting {
     case timerTick
   }
 
+  @Dependency(\.dismiss) var dismiss
+  @Dependency(\.date.now) var now
+  @Dependency(\.uuid) var uuid
+
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
@@ -39,6 +43,18 @@ struct RecordMeeting {
         }
 
       case .timerTick:
+        state.secondsElapsed += 1
+        let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
+        if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
+          if state.secondsElapsed == state.syncUp.duration.components.seconds {
+            state.syncUp.meetings.insert(
+              Meeting(id: Meeting.ID(), date: Date(), transcript: transcript),
+              at: 0
+            )
+            return .run { _ in await dismiss() }
+          }
+          state.speakerIndex += 1
+        }
         return .none
       }
     }

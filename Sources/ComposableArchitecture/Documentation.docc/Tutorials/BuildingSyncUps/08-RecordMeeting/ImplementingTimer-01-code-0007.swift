@@ -39,6 +39,7 @@ struct RecordMeeting {
         }
 
       case .timerTick:
+        state.secondsElapsed += 1
         return .none
       }
     }

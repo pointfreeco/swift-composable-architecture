@@ -4,6 +4,7 @@ import ComposableArchitecture
 struct RecordMeeting {
   @ObservableState
   struct State: Equatable {
+    @Presents var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
     @Shared var syncUp: SyncUp
@@ -21,24 +22,48 @@ struct RecordMeeting {
     case timerTick
   }
 
+  @Dependency(\.continuousClock) var clock
+  @Dependency(\.dismiss) var dismiss
+  @Dependency(\.date.now) var now
+  @Dependency(\.uuid) var uuid
+
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .endMeetingButtonTapped:
+        // TODO: Alert to confirm ending meeting
         return .none
 
       case .nextButtonTapped:
+        guard state.speakerIndex < state.syncUp.attendees.count - 1
+        else {
+          // TODO: Alert to confirm ending meeting
+          return .none
+        }
+        state.speakerIndex += 1
+        state.secondsElapsed = state.speakerIndex * Int(state.syncUp.durationPerAttendee.components.seconds)
         return .none
 
       case .onAppear:
         return .run { send in
-          while true {
-            try await Task.sleep(for: seconds(1))
+          for await _ in clock.timer(interval: .seconds(1)) {
             await send(.timerTick)
           }
         }
 
       case .timerTick:
+        state.secondsElapsed += 1
+        let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
+        if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
+          if state.secondsElapsed == state.syncUp.duration.components.seconds {
+            state.syncUp.meetings.insert(
+              Meeting(id: uuid(), date: now, transcript: transcript),
+              at: 0
+            )
+            return .run { _ in await dismiss() }
+          }
+          state.speakerIndex += 1
+        }
         return .none
       }
     }

@@ -62,7 +62,10 @@
         Go to SyncUpsApp.swift and update the root view to be a `NavigationStack` wrapping a 
         `SyncUpsListView`.
         
-        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0004.swift)
+        > Note: We construct the ``ComposableArchitecture/Store`` as a static so that it is 
+        initialized only one time, and so that it is not created while running Xcode previews.
+        
+        @Code(name: "SyncUpsApp.swift", file: PersistingSyncUps-01-code-0004.swift)
       }
       
       @Step {

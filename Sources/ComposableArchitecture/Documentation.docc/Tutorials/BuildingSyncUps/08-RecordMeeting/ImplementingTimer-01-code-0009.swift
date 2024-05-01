@@ -39,6 +39,17 @@ struct RecordMeeting {
         }
 
       case .timerTick:
+        state.secondsElapsed += 1
+        let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
+        if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
+          if state.secondsElapsed == state.syncUp.duration.components.seconds {
+            state.syncUp.meetings.insert(
+              Meeting(id: Meeting.ID(), date: Date(), transcript: transcript),
+              at: 0
+            )
+          }
+          state.speakerIndex += 1
+        }
         return .none
       }
     }

@@ -194,6 +194,12 @@
         @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0006.swift)
       }
       
+      @Step {
+        Add a preview to the bottom of the file.
+        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0006.swift)
+      }
+      
       That's all it takes to build the root `AppView` that holds onto a `NavigationStack`. But
       currently we do not have any buttons to actually navigate to the detail screen from the list
       screen.
