@@ -1,4 +1,4 @@
-@Tutorial(time: 10) {
+@Tutorial(time: 5) {
   @Intro(title: "The RecordMeeting feature") {
     Let's get the basics of a new feature into place that we can navigate to, and then we will 
     slowly layer on its complex logic and behavior, such as the timer and speech recognizer.

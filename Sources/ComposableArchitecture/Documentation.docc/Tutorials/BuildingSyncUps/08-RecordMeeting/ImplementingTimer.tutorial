@@ -1,4 +1,4 @@
-@Tutorial(time: 10) {
+@Tutorial(time: 25) {
   @Intro(title: "Adding a meeting timer") {
     The first major piece of logic and behavior we will introduce to the record meeting feature is
     the timer. This is a long-living effect that runs in parallel to the rest of the feature, 

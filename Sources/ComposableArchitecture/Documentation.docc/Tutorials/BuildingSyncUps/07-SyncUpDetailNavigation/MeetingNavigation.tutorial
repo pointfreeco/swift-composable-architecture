@@ -1,4 +1,4 @@
-@Tutorial(time: 10) {
+@Tutorial(time: 5) {
   @Intro(title: "Navigating to a meeting") {
     Now that we have a navigation stack in place we can start navigating to other features in the
     application. The simplest is the meeting screen, which allows you to see the details of a 
