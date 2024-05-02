@@ -492,6 +492,7 @@ public final class TestStore<State, Action> {
   let reducer: TestReducer<State, Action>
   private let sharedChangeTracker: SharedChangeTracker
   private let store: Store<State, TestReducer<State, Action>.TestAction>
+  private var isDismissed = false
 
   /// Creates a test store with an initial state and a reducer powering its runtime.
   ///
@@ -533,6 +534,14 @@ public final class TestStore<State, Action> {
     self.timeout = 1 * NSEC_PER_SEC
     self.sharedChangeTracker = sharedChangeTracker
     self.useMainSerialExecutor = true
+    let dismiss = self.reducer.dependencies.dismiss.dismiss
+    self.reducer.dependencies.dismiss = DismissEffect { [weak self] in
+      self?.withExhaustivity(.off) {
+        dismiss?()
+        self?._skipInFlightEffects(strict: false)
+        self?.isDismissed = true
+      }
+    }
   }
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
@@ -846,6 +855,10 @@ extension TestStore where State: Equatable {
     line: UInt = #line
   ) async -> TestStoreTask {
     await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+      guard !self.isDismissed else {
+        XCTFail("Can't send action to dismissed test store.", file: file, line: line)
+        return TestStoreTask(rawValue: nil, timeout: self.timeout)
+      }
       if !self.reducer.receivedActions.isEmpty {
         var actions = ""
         customDump(self.reducer.receivedActions.map(\.action), to: &actions)
