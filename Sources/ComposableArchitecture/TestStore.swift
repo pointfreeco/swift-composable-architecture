@@ -492,6 +492,8 @@ public final class TestStore<State, Action> {
   let reducer: TestReducer<State, Action>
   private let sharedChangeTracker: SharedChangeTracker
   private let store: Store<State, TestReducer<State, Action>.TestAction>
+
+  /// Returns `true` if the store's feature has been dismissed.
   public fileprivate(set) var isDismissed = false
 
   /// Creates a test store with an initial state and a reducer powering its runtime.
