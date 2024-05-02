@@ -444,7 +444,7 @@
       }
       
       @Step {
-        Update the `.doneEditingButtonTapped` action by grabbing the edited sync up from the `.edit`
+        Update the `.doneEditingButtonTapped` action by grabbing the edited sync-up from the `.edit`
         case of the `destination` enum.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-03-code-0010.swift)

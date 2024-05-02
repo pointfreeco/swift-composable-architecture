@@ -27,14 +27,14 @@
       @Step {
         Add properties to the `State` struct inside `RecordMeeting` that the feature needs to do
         its job, including the current attendee that is speaking, the number of seconds elapsed,
-        the transcript of the meeting, and the current sync up we are meeting about.
+        the transcript of the meeting, and the current sync-up we are meeting about.
         
         Also add cases to the `Action` enum for what things the user can do in the view, which 
         currently is just tapping the "End meeting" button to end a meeting early, and the "Next"
         button for skipping a speaker's turn.
         
-        > Note: We are using [`@Shared`](<doc:ComposableArchitecture/Shared>) on the sync up so
-        that this feature can make mutations to sync up that are visible to other parts of the 
+        > Note: We are using [`@Shared`](<doc:ComposableArchitecture/Shared>) on the sync-up so
+        that this feature can make mutations to sync-up that are visible to other parts of the 
         application.
         
         @Code(name: "RecordMeeting.swift", file: RecordMeetingFeature-01-code-0002.swift)
