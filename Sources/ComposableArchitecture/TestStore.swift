@@ -492,7 +492,7 @@ public final class TestStore<State, Action> {
   let reducer: TestReducer<State, Action>
   private let sharedChangeTracker: SharedChangeTracker
   private let store: Store<State, TestReducer<State, Action>.TestAction>
-  private var isDismissed = false
+  public fileprivate(set) var isDismissed = false
 
   /// Creates a test store with an initial state and a reducer powering its runtime.
   ///
@@ -535,13 +535,7 @@ public final class TestStore<State, Action> {
     self.sharedChangeTracker = sharedChangeTracker
     self.useMainSerialExecutor = true
     let dismiss = self.reducer.dependencies.dismiss.dismiss
-    self.reducer.dependencies.dismiss = DismissEffect { [weak self] in
-      self?.withExhaustivity(.off) {
-        dismiss?()
-        self?._skipInFlightEffects(strict: false)
-        self?.isDismissed = true
-      }
-    }
+    self.reducer.store = self
   }
 
   // NB: Only needed until Xcode ships a macOS SDK that uses the 5.7 standard library.
@@ -2127,7 +2121,7 @@ extension TestStore {
     _ = { self._skipInFlightEffects(strict: strict, file: file, line: line) }()
   }
 
-  private func _skipInFlightEffects(
+  fileprivate func _skipInFlightEffects(
     strict: Bool = true,
     file: StaticString = #file,
     line: UInt = #line
@@ -2438,6 +2432,7 @@ class TestReducer<State, Action>: Reducer {
   var inFlightEffects: Set<LongLivingEffect> = []
   var receivedActions: [(action: Action, state: State)] = []
   var state: State
+  weak var store: TestStore<State, Action>?
 
   init(
     _ base: Reduce<State, Action>,
@@ -2450,8 +2445,16 @@ class TestReducer<State, Action>: Reducer {
   }
 
   func reduce(into state: inout State, action: TestAction) -> Effect<TestAction> {
-    let reducer = self.base
-      .dependency(\.self, self.dependencies)
+    var dependencies = self.dependencies
+    let dismiss = dependencies.dismiss.dismiss
+    dependencies.dismiss = DismissEffect { [weak store] in
+      store?.withExhaustivity(.off) {
+        dismiss?()
+        store?._skipInFlightEffects(strict: false)
+        store?.isDismissed = true
+      }
+    }
+    let reducer = self.base.dependency(\.self, dependencies)
 
     let effects: Effect<Action>
     switch action.origin {
