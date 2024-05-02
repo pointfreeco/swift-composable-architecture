@@ -3,10 +3,6 @@ import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
-  // ...
-}
-
-extension SyncUpDetail {
   @Reducer
   enum Destination {
     case alert(AlertState<Alert>)
@@ -16,6 +12,7 @@ extension SyncUpDetail {
       case confirmButtonTapped
     }
   }
+  // ...
 }
 
 struct SyncUpDetailView: View {

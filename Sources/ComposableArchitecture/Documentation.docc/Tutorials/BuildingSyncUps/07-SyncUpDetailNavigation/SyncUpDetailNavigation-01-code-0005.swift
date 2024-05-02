@@ -3,15 +3,27 @@ import SwiftUI
 
 @Reducer
 struct App {
-  // ...
-}
-
-extension App {
   @Reducer
-  struct Path {
-    @ObservableState
-    enum State {
-      case detail(SyncUpDetail.State)
+  enum Path {
+    case detail(SyncUpDetail)
+  }
+  @ObservableState
+  struct State {
+    var path = StackState<SyncUpDetail.State>()
+    var syncUpsList = SyncUpsList.State()
+  }
+  enum Action {
+    case syncUpsList(SyncUpsList.Action)
+  }
+  var body: some ReducerOf<Self> {
+    Scope(state: \.syncUpsList, action: \.syncUpsList) {
+      SyncUpsList()
+    }
+    Reduce { state, action in
+      switch action {
+      case .syncUpsList:
+        return .none
+      }
     }
   }
 }

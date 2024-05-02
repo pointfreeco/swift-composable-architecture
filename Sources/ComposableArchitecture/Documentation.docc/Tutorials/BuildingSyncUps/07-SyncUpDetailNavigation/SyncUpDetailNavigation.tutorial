@@ -63,38 +63,23 @@
       in <doc:EditingAndDeletingSyncUp>.
       
       @Step {
-        Create a new `Path` reducer inside `App`. We have currently done this by extending `App`,
-        but you can also add it directly inside `App` too.
-        
-        > Note: We have temporarily collapsed the code in `App`.
-        
-        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0004.swift, previousFile: SyncUpDetailNavigation-01-code-0004-previous.swift)        
+        Create a new `Path` reducer inside `App`. Like the `Destination` reducer we defined for the
+        sync-up detail screen, `Path` type will be an _enum_ so that it can compose all of the
+        screens you can navigate to into a single reducer.
+
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0004.swift)        
       }
       
       @Step {
-        Add an _enum_ for the `State` of the feature with a case for the `SyncUpDetail` state. In
-        the future more cases will be added to this enum for each kind of feature that can be 
-        pushed onto the stack.
+        Add a case to the path for the `SyncUpDetail` feature. In the future more cases will be
+        added to this enum for each kind of feature that can be pushed onto the stack.
         
         @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0005.swift)        
       }
       
-      @Step {
-        Add an enum for the `Action` with a case for the `SyncUpDetail` action.
-        
-        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0006.swift)        
-      }
-      
-      @Step {
-        Compose `SyncUpDetail` into the body of `Path` using the ``ComposableArchitecture/Scope``
-        reducer.
-        
-        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0007.swift)        
-      }
-      
       That's all it takes to create a single reducer that encapsulates all of the logic and behavior
       of each screen in the navigation stack. In the future as we add more screens to the stack
-      we will just add more cases and more `Scope`s to this reducer.
+      we will just add more cases to this reducer.
       
       Next we will integrate the `Path` reducer into the `App` reducer.
       
@@ -102,17 +87,19 @@
         Update the `path` variable to hold onto ``ComposableArchitecture/StackState`` of 
         `Path.State`.
 
-        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0008.swift, previousFile: SyncUpDetailNavigation-01-code-0008-previous.swift)        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0006.swift, previousFile: SyncUpDetailNavigation-01-code-0006-previous.swift)        
       }
       
       @Step {
         Integrate the `Path`'s actions into `App` by adding a case to its `Action` enum, and using
-        the ``ComposableArchitecture/StackAction``.
+        the ``ComposableArchitecture/StackAction``. We can use the
+        ``ComposableArchitecture/StackActionOf`` type alias to specify a single generic of the path
+        reducer.
         
-        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0009.swift)
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0007.swift)
         
         > Note: Right now we don't need to perform any logic in the `.path` action so we can return
-        `.none` in it.
+        > `.none` in it.
       }
       
       ``ComposableArchitecture/StackAction`` is a type that represents the most 
@@ -123,12 +110,12 @@
       
       @Step {
         Integrate the `Path` reducer into the `body` of the `App` reducer by using the 
-        ``ComposableArchitecture/Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` operator.
+        ``ComposableArchitecture/Reducer/forEach(_:action:)`` operator.
         
-        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0010.swift)
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0008.swift)
       }
       
-      The ``ComposableArchitecture/Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` 
+      The ``ComposableArchitecture/Reducer/forEach(_:action:)`` 
       operator takes care of processing an incoming ``ComposableArchitecture/StackAction``, routing
       it to the current reducer in the stack, and automatically cancelling effects when a feature
       is popped from the stack.

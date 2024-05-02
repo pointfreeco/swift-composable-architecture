@@ -3,6 +3,16 @@ import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
+  @Reducer
+  enum Destination {
+    case alert(AlertState<Alert>)
+    case edit(SyncUpForm)
+    @CasePathable
+    enum Alert {
+      case confirmButtonTapped
+    }
+  }
+
   @ObservableState
   struct State {
     @Presents var destination: Destination.State?
@@ -82,10 +92,6 @@ extension AlertState where Action == SyncUpDetail.Action.Alert {
   } message: {
     TextState("Are you sure you want to delete this meeting?")
   }
-}
-
-struct SyncUpDetail.Destination {
-  // ...
 }
 
 struct SyncUpDetailView: View {

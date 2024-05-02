@@ -6,10 +6,6 @@ struct SyncUpDetail {
   // ...
 }
 
-struct SyncUpDetail.Destination {
-  // ...
-}
-
 struct SyncUpDetailView: View {
   @Bindable var store: StoreOf<SyncUpDetail>
 
