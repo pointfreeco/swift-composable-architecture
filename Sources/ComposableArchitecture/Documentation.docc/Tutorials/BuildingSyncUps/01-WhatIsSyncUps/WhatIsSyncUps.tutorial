@@ -123,6 +123,8 @@
       @Step {
         Tap "Yes" to confirm deleting the sync-up. You will be popped back to the root list of
         sync-ups, which will be empty now that the sync-up was deleted.
+        
+        @Image(source: TourOfSyncUps-0014-image.png)
       }
       
       That completes the tour! Another feature of the app that was working behind the scenes without
