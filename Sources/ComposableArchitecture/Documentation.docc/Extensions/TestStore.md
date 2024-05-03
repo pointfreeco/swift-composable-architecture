@@ -25,6 +25,7 @@
 - ``receive(_:timeout:assert:file:line:)-7md3m``
 - ``assert(_:file:line:)``
 - ``finish(timeout:file:line:)-53gi5``
+- ``isDismissed``
 - ``TestStoreTask``
 
 ### Skipping actions and effects
