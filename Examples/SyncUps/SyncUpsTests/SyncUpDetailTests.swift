@@ -113,9 +113,6 @@ final class SyncUpDetailTests: XCTestCase {
 
   @MainActor
   func testDelete() async throws {
-    let didDismiss = LockIsolated(false)
-    defer { XCTAssertEqual(didDismiss.value, true) }
-
     let syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
     // TODO: Can this exhaustively be caught?
@@ -124,11 +121,8 @@ final class SyncUpDetailTests: XCTestCase {
     let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: sharedSyncUp)) {
       SyncUpDetail()
-    } withDependencies: {
-      $0.dismiss = DismissEffect {
-        didDismiss.setValue(true)
-      }
     }
+    defer { XCTAssert(store.isDismissed) }
 
     await store.send(.deleteButtonTapped) {
       $0.destination = .alert(.deleteSyncUp)

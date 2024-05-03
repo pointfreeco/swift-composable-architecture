@@ -628,6 +628,53 @@
         $0.isOn = true
       }
     }
+
+    @Reducer
+    struct TestDismissCancelsEffects {
+      struct State: Equatable {}
+      enum Action {
+        case dismiss
+        case onTask
+      }
+      @Dependency(\.dismiss) var dismiss
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .dismiss:
+            return .run { _ in
+              await dismiss()
+            }
+          case .onTask:
+            return .run { _ in
+              try await Task.never()
+            }
+          }
+        }
+      }
+    }
+
+    @MainActor
+    func testDismissCancelsEffects() async {
+      let store = TestStore(initialState: TestDismissCancelsEffects.State()) {
+        TestDismissCancelsEffects()
+      }
+      await store.send(.onTask)
+      await store.send(.dismiss)
+    }
+
+    @MainActor
+    func testDismissedStoreSend() async {
+      let store = TestStore(initialState: TestDismissCancelsEffects.State()) {
+        TestDismissCancelsEffects()
+      }
+      await store.send(.dismiss)
+      XCTExpectFailure {
+        $0.compactDescription == """
+          Can't send action to dismissed test store.
+          """
+      }
+      await store.send(.onTask)
+    }
   }
 
   private struct Client: DependencyKey {

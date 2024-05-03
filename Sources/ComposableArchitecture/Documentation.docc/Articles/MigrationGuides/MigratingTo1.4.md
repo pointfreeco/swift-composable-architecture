@@ -103,7 +103,30 @@ things:
  }
 ```
 
-Further, if the feature's `State` is an enum, `@CasePathable` will also be applied.
+Further, if the feature's `State` is an enum, `@CasePathable` will also be applied, along with
+`@dynamicMemberLookup`:
+
+```diff
++@CasePathable
++@dynamicMemberLookup
+ enum State {
+   // ...
+ }
+```
+
+Dynamic member lookups allows a state's associated value to be accessed via dot-syntax, which can be
+useful when scoping a store's state to a specific case:
+
+```diff
+ IfLetStore(
+   store.scope(
+-    state: /Feature.State.tray, action: Feature.Action.tray
++    state: \.tray, action: { .tray($0) }
+   )
+) { store in
+  // ...
+}
+```
 
 To form a case key path for any other enum, you must apply the `@CasePathable` macro explicitly:
 
@@ -114,11 +137,21 @@ enum DelegateAction {
 }
 ```
 
+And to access its associated values, you must also apply the `@dynamicMemberLookup` attributes:
+
+```swift
+@CasePathable
+@dynamicMemberLookup
+enum DestinationState {
+  case tray(Tray.State)
+}
+```
+
 Anywhere you previously used the `/` prefix operator for case paths you should now be able to use
 key path syntax, so long as all of the enums involved are `@CasePathable`.
 
-If you encounter any problems, create a [discussion][tca-discussions] on the
-Composable Architecture repo.
+If you encounter any problems, create a [discussion][tca-discussions] on the Composable Architecture
+repo.
 
 ### Receiving test store actions
 
