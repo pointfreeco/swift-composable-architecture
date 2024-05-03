@@ -684,6 +684,16 @@ public final class TestStore<State, Action> {
       }
       open(stateType)
     }
+    switch self.exhaustivity {
+    case .off(showSkippedAssertions: false):
+      break
+    case .off(showSkippedAssertions: true):
+      XCTExpectFailure(strict: false) {
+        self.sharedChangeTracker.assertUnchanged()
+      }
+    case .on:
+      self.sharedChangeTracker.assertUnchanged()
+    }
   }
 
   /// Overrides the store's dependencies for a given operation.
@@ -1132,7 +1142,6 @@ extension TestStore where State: Equatable {
           line: line
         )
       }
-      self.sharedChangeTracker.resetChanges()
     }
   }
 }

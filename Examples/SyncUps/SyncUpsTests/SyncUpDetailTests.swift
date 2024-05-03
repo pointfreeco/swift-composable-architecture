@@ -115,8 +115,6 @@ final class SyncUpDetailTests: XCTestCase {
   func testDelete() async throws {
     let syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
-    // TODO: Can this exhaustively be caught?
-    defer { XCTAssertEqual([], syncUps) }
 
     let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: sharedSyncUp)) {
@@ -129,6 +127,7 @@ final class SyncUpDetailTests: XCTestCase {
     }
     await store.send(\.destination.alert.confirmDeletion) {
       $0.destination = nil
+      syncUps = []
     }
   }
 }
