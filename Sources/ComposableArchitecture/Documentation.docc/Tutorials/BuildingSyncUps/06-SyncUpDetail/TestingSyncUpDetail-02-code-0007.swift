@@ -6,9 +6,6 @@ import XCTest
 class SyncUpDetailTests: XCTestCase {
   @MainActor
   func testDelete() async {
-    let didDismiss = LockIsolated(false)
-    defer { XCTAssertEqual(didDismiss.value, true) }
-
     let syncUp = SyncUp(
       id: SyncUp.ID(),
       title: "Point-Free Morning Sync"
@@ -16,9 +13,6 @@ class SyncUpDetailTests: XCTestCase {
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: syncUp)) {
       SyncUpDetail()
     } withDependencies: {
-      $0.dismiss = DismissEffect { 
-        didDismiss.setValue(true)
-      }
     }
 
     await store.send(.deleteButtonTapped) {

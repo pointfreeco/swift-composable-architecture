@@ -26,7 +26,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.uuid = .incrementing
     }
 
-    let onAppearTask = await store.send(.onAppear)
+    await store.send(.onAppear)
     await clock.advance(by: .seconds(1))
     await store.receive(\.timerTick) {
       $0.secondsElapsed = 1

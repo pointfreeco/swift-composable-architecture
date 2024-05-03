@@ -12,8 +12,6 @@ class SyncUpDetailTests: XCTestCase {
     )
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: syncUp)) {
       SyncUpDetail()
-    } withDependencies: {
-      $0.dismiss = DismissEffect { }
     }
 
     await store.send(.deleteButtonTapped) {

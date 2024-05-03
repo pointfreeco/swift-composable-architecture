@@ -73,6 +73,10 @@
     }
   }
   
+  <!--
+  This is all old now that we are using @Shared and deleting directly in the reducer. We can
+  either omit this or update it.
+  
   @Section(title: "Testing the delete flow") {
     @ContentAndMedia {
       Next we will test the flow of the user deleting the sync-up. This involves asserting that the
@@ -101,36 +105,27 @@
         `.confirmButtonTapped` action. Also assert that the alert will be dismissed by setting the
         `destination` state to `nil`.
         
-        <!-- TODO: Make alert action case-pathable -->
+        TODO: Make alert action case-pathable
         
         @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0003.swift)
       }
       
       @Step {
-        Run the test suite again to see that now it does _not_ pass. We actually have a few
-        failures.
+        Run the test suite again to see that now it does _not_ pass. We have a test failure.
         
         @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0004.swift)
       }
       
-      These failures are happening because we are now making use of dependencies and effects, and by
+      This failure is happening because we are now making use effects that emit actions, and by
       default the ``ComposableArchitecture/TestStore`` forces us to assert on _everything_ happening
       in the feature. This is really great because it helps us catch potential problems when new
       logic and behavior is added to our features.
       
-      The first failure is letting us know that we are using the `\.dismiss` dependency but we 
-      haven't explicitly overridden that dependency in tests. This is a great failure to have 
-      because it forces us to prove that we know which dependencies are used and how they are used
-      in our feature.
+      The failure is letting us know that the system received an action that we did not
+      assert against. This is also a great failure to have because it forces us to prove that we
+      know how effects execute and feed their data back in the system.
       
-      <!-- TODO: Update to not test delegate action -->
-      
-      The second failure is letting us know that the system received an action that we did not
-      assert again. This is also a great failure to have because it forces us to prove that we know
-      how effects execute and feed their data back in the system.
-      
-      Let's fix these test failures by asserting on more of what is happening in the system. Let's
-      start with the second failure, as it is the easier one to fix.
+      Let's fix this test failure by asserting on more of what is happening in the system. 
       
       @Step {
         Use the ``ComposableArchitecture/TestStore/receive(_:_:timeout:assert:file:line:)-dkei``
@@ -144,42 +139,11 @@
         @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0005.swift)
       }
       
-      To fix the dismissal test failure we need to override the `\.dismiss` dependency when
-      constructing the ``ComposableArchitecture/TestStore`` so that we prove that we know the
-      dependency is being used.
-      
-      @Step {
-        Override the `\.dismiss` dependency in the `withDependencies` trailing closure. We can
-        override it with a ``ComposableArchitecture/DismissEffect`` that simply does nothing.
-        
-        Run the test suite to see that everything now passes.
-        
-        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0006.swift)
-      }
-      
-      This test technically now passes, but it is not as strong as it could be. By overriding the
-      dependency we are proving that the dependency _may_ be called, but we are not proving that it
-      is definitely called. To do that we must manage a bit of local state that is mutated inside
-      ``ComposableArchitecture/DismissEffect``, and then we can assert on that mutation.
-      
-      @Step {
-        Create a mutable boolean that starts as `false` and is flipped to `true` inside the
-        ``ComposableArchitecture/DismissEffect``, and assert that the value is `true` at the end of
-        the test.
-        
-        Run the test suite to see that everything still passes.
-        
-        > Note: We are using a `LockIsolated<Bool>` value rather than a plain `Bool` because the
-        > closure of ``ComposableArchitecture/DismissEffect`` is `@Sendable`, and therefore can only
-        > capture sendable data. In particular, that means it cannot capture mutable data.
-        
-        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0007.swift)
-      }
-      
-      Now that this test passes we have definitively proven that the `dismiss` effect is invoked and
+      Now that this test passes we have definitively proven that
       the `.deleteSyncUp` delegate action is sent when the user confirms deletion of the sync-up.
       That will communicate to the parent that it should finish deleting the sync-up _and_ it should
       dismiss the presented sheet.
     }
   }
+  -->
 }

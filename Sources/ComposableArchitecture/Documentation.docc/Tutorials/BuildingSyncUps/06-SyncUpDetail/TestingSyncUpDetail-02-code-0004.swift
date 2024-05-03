@@ -20,9 +20,6 @@ class SyncUpDetailTests: XCTestCase {
     await store.send(.destination(.presented(.alert(.confirmButtonTapped)))) {
       $0.destination = nil
     }
-    // ❌ A reducer requested dismissal at "SyncUps/SyncUpDetail.swift:92", but
-    //    couldn't be dismissed. …
-    //
     // ❌ The store received 1 unexpected action after this one: …
     //
     //      Unhandled actions:

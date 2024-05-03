@@ -25,11 +25,10 @@ final class RecordMeetingTests: XCTestCase {
     } withDependencies: {
       $0.continuousClock = clock
       $0.date.now = Date(timeIntervalSince1970: 1234567890)
-      $0.dismiss = DismissEffect { dismissed.fulfill() }
       $0.uuid = .incrementing
     }
 
-    let onAppearTask = await store.send(.onAppear)
+    await store.send(.onAppear)
     await clock.advance(by: .seconds(1))
     await store.receive(\.timerTick) {
       $0.secondsElapsed = 1

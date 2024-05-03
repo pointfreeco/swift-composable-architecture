@@ -56,6 +56,5 @@ final class RecordMeetingTests: XCTestCase {
       )
     }
     // ❌ An effect returned for this action is still running. It must complete before the end of the test. …
-    // ❌ A reducer requested dismissal at "SyncUps/RecordMeeting.swift:97", but couldn't be dismissed. …
   }
 }
