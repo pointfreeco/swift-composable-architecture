@@ -287,7 +287,8 @@ import SwiftUI
   }
 
   extension Store {
-    @_spi(Internals) public subscript<ElementState, ElementAction>(
+    @_spi(Internals)
+    public subscript<ElementState, ElementAction>(
       fileID fileID: String,
       line line: UInt
     ) -> StackState<ElementState>.PathView
