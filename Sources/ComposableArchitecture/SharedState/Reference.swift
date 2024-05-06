@@ -12,3 +12,9 @@ protocol Reference<Value>: AnyObject, CustomStringConvertible {
     var publisher: AnyPublisher<Value, Never> { get }
   #endif
 }
+
+extension Reference {
+  var valueType: Any.Type {
+    Value.self
+  }
+}

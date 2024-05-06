@@ -242,7 +242,7 @@ import SwiftUI
         self.label.onAppear {
           if self.navigationDestinationType != State.self {
             let elementType =
-              self.navigationDestinationType.map(typeName)
+              self.navigationDestinationType.map { typeName($0) }
                 ?? """
                 (None found in view hierarchy. Is this link inside a store-powered \
                 'NavigationStack'?)

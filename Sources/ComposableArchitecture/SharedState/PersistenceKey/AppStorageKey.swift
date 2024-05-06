@@ -159,6 +159,10 @@ public struct AppStorageKey<Value> {
   private let key: String
   private let store: UserDefaults
 
+  public var id: AnyHashable {
+    AppStorageKeyID(key: self.key, store: self.store)
+  }
+
   public init(_ key: String) where Value == Bool {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
@@ -319,15 +323,9 @@ extension AppStorageKey: PersistenceKey {
   }
 }
 
-extension AppStorageKey: Hashable {
-  public static func == (lhs: AppStorageKey, rhs: AppStorageKey) -> Bool {
-    lhs.key == rhs.key && lhs.store == rhs.store
-  }
-
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.key)
-    hasher.combine(self.store)
-  }
+private struct AppStorageKeyID: Hashable {
+  let key: String
+  let store: UserDefaults
 }
 
 extension DependencyValues {
