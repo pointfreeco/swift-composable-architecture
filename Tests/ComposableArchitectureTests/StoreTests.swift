@@ -1114,6 +1114,32 @@
       store.send(.child(.dismiss))
       grandchildStoreBinding.wrappedValue = nil
     }
+
+    @MainActor
+    func testSurroundingDependencies() {
+      let store = withDependencies {
+        $0.uuid = .incrementing
+      } operation: {
+        Store<UUID, Void>(initialState: UUID()) {
+          Reduce { state, _ in
+            @Dependency(\.uuid) var uuid
+            state = uuid()
+            return .none
+          }
+        }
+      }
+
+      store.send(())
+      XCTAssertEqual(
+        store.withState { $0 },
+        UUID(0)
+      )
+      store.send(())
+      XCTAssertEqual(
+        store.withState { $0 },
+        UUID(1)
+      )
+    }
   }
 
   private struct Count: TestDependencyKey {

@@ -170,21 +170,14 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) where R.State == State, R.Action == Action {
-    if let prepareDependencies {
-      let (initialState, reducer, dependencies) = withDependencies(prepareDependencies) {
-        @Dependency(\.self) var dependencies
-        return (initialState(), reducer(), dependencies)
-      }
-      self.init(
-        initialState: initialState,
-        reducer: reducer.dependency(\.self, dependencies)
-      )
-    } else {
-      self.init(
-        initialState: initialState(),
-        reducer: reducer()
-      )
+    let (initialState, reducer, dependencies) = withDependencies(prepareDependencies ?? { _ in }) {
+      @Dependency(\.self) var dependencies
+      return (initialState(), reducer(), dependencies)
     }
+    self.init(
+      initialState: initialState,
+      reducer: reducer.dependency(\.self, dependencies)
+    )
   }
 
   init() {
