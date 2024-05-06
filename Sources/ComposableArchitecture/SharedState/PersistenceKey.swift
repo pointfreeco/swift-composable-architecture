@@ -11,8 +11,12 @@ public protocol PersistenceReaderKey<Value> {
   /// A type that can be loaded or subscribed to in an external system.
   associatedtype Value
 
+  /// A type representing the hashable identity of a persistence key.
   associatedtype ID: Hashable = Self
 
+  /// The hashable identity of a persistence key.
+  ///
+  /// Used to look up existing shared references associated with this persistence key.
   var id: ID { get }
 
   /// Loads the freshest value from storage. Returns `nil` if there is no value in storage.
