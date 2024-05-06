@@ -1,6 +1,6 @@
 #if DEBUG
   import Combine
-  import ComposableArchitecture
+  @_spi(Internals) import ComposableArchitecture
   import XCTest
 
   final class RuntimeWarningTests: BaseTCATestCase {
@@ -229,5 +229,50 @@
           """
       }
     }
+
+    #if swift(>=5.9)
+      @Reducer
+      struct TestStorePath_NotIntegrated {
+        @ObservableState
+        struct State: Equatable {
+          var path = StackState<Int>()
+        }
+        enum Action {
+          case path(StackAction<Int, Void>)
+        }
+      }
+      @MainActor
+      func testStorePath_NotIntegrated() {
+        let store = Store(initialState: TestStorePath_NotIntegrated.State()) {
+          TestStorePath_NotIntegrated()
+        }
+
+        XCTExpectFailure {
+          store.scope(state: \.path, action: \.path)[fileID: "file.swift", line: 1] = .init()
+        } issueMatcher: {
+          $0.compactDescription == """
+            SwiftUI wrote to a "NavigationStack" binding at "file.swift:1" with a path that has \
+            the same number of elements that already exist in the store. SwiftUI should only write \
+            to this binding with a path that has pushed a new element onto the stack, or popped \
+            one or more elements from the stack.
+
+            This usually means the "forEach" has not been integrated with the reducer powering the \
+            store, and this reducer is responsible for handling stack actions.
+
+            To fix this, ensure that "forEach" is invoked from the reducer's "body":
+
+                Reduce { state, action in
+                  // ...
+                }
+                .forEach(\\.path, action: \\.path) {
+                  Path()
+                }
+
+            And ensure that every parent reducer is integrated into the root reducer that powers \
+            the store.
+            """
+        }
+      }
+    #endif
   }
 #endif
