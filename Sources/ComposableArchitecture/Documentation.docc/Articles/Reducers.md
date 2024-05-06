@@ -19,6 +19,7 @@ more concise and more powerful.
   * [Destination and path reducers](#Destination-and-path-reducers)
     * [Navigating to non-reducer features](#Navigating-to-non-reducer-features)
     * [Synthesizing protocol conformances on State and Action](#Synthesizing-protocol-conformances-on-State-and-Action)
+    * [Nested enum reducers](#Nested-enum-reducers)
   * [Gotchas](#Gotchas)
     * [Autocomplete](#Autocomplete)
     * [Circular reference errors](#Circular-reference-errors)
@@ -181,7 +182,7 @@ conformance:
 
 There are a number of things the ``Reducer()`` macro does for you:
 
-#### @CasePathable and @dynamicMemberLookup enums
+### @CasePathable and @dynamicMemberLookup enums
 
 The `@Reducer` macro automatically applies the [`@CasePathable`][casepathable-docs] macro to your
 `Action` enum:
@@ -229,7 +230,7 @@ enum of options:
 The syntax `state: \.destination?.editForm` is only possible due to both `@dynamicMemberLookup` and
 `@CasePathable` being applied to the `State` enum.
 
-#### Automatic fulfillment of reducer requirements
+### Automatic fulfillment of reducer requirements
 
 The ``Reducer()`` macro will automatically fill in any ``Reducer`` protocol requirements that you
 leave off. For example, something as simple as this compiles:
@@ -248,7 +249,7 @@ with their real implementations. For example, this `Feature` reducer could be in
 domain using the library's navigation tools, all without having implemented any of the domain yet.
 Then, once we are ready we can start implementing the real logic and behavior of the feature.
 
-#### Destination and path reducers
+### Destination and path reducers
 
 There is a common pattern in the Composable Architecture of representing destinations a feature can
 navigate to as a reducer that operates on enum state, with a case for each feature that can be
@@ -427,6 +428,21 @@ You can provide any combination of
 ``ComposableArchitecture/_SynthesizedConformance/equatable``,
 ``ComposableArchitecture/_SynthesizedConformance/hashable``, or
 ``ComposableArchitecture/_SynthesizedConformance/sendable``.
+
+#### Nested enum reducers
+
+There may be times when an enum reducer may want to nest another enum reducer. To do so, the parent
+enum reducer must specify the child's `Body` associated value and `body` static property explicitly:
+
+```swift
+@Reducer
+enum Modal { /* ... */ }
+
+@Reducer
+enum Destination {
+  case modal(Modal.Body = Modal.body)
+}
+```
 
 ### Gotchas
 
