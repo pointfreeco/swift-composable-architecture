@@ -19,6 +19,7 @@ more concise and more powerful.
   * [Destination and path reducers](#Destination-and-path-reducers)
     * [Navigating to non-reducer features](#Navigating-to-non-reducer-features)
     * [Synthesizing protocol conformances on State and Action](#Synthesizing-protocol-conformances-on-State-and-Action)
+    * [Nested enum reducers](#Nested-enum-reducers)
   * [Gotchas](#Gotchas)
     * [Autocomplete](#Autocomplete)
     * [Circular reference errors](#Circular-reference-errors)
@@ -392,21 +393,6 @@ Then, to present a view from this case one can do:
 does not have the ``ObservableState()`` macro applied, nor should it. And so using `withState`
 is a way to get access to the state in the store without any observation taking place.
 
-#### Nested enum reducers
-
-There may be times when an enum reducer may want to nest another enum reducer. To do so, the parent
-enum reducer must specify the child's `Body` associated value and `body` static property explicitly:
-
-```swift
-@Reducer
-enum Modal { /* ... */ }
-
-@Reducer
-enum Destination {
-  case modal(Modal.Body = Modal.body)
-}
-```
-
 #### Synthesizing protocol conformances on State and Action
 
 Since the `State` and `Action` types are generated automatically for you when using `@Reducer` on an
@@ -442,6 +428,21 @@ You can provide any combination of
 ``ComposableArchitecture/_SynthesizedConformance/equatable``,
 ``ComposableArchitecture/_SynthesizedConformance/hashable``, or
 ``ComposableArchitecture/_SynthesizedConformance/sendable``.
+
+#### Nested enum reducers
+
+There may be times when an enum reducer may want to nest another enum reducer. To do so, the parent
+enum reducer must specify the child's `Body` associated value and `body` static property explicitly:
+
+```swift
+@Reducer
+enum Modal { /* ... */ }
+
+@Reducer
+enum Destination {
+  case modal(Modal.Body = Modal.body)
+}
+```
 
 ### Gotchas
 
