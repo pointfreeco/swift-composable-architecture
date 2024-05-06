@@ -109,13 +109,15 @@ import SwiftUI
     public init<State, Action, Destination: View, R>(
       path: Binding<Store<StackState<State>, StackAction<State, Action>>>,
       root: () -> R,
-      @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination
+      @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
     )
     where
       Data == StackState<State>.PathView,
       Root == ModifiedContent<R, _NavigationDestinationViewModifier<State, Action, Destination>>
     {
-      self.init(path: path[]) {
+      self.init(path: path[fileID: "\(fileID)", line: line]) {
         root()
           .modifier(
             _NavigationDestinationViewModifier(store: path.wrappedValue, destination: destination)
@@ -285,11 +287,40 @@ import SwiftUI
   }
 
   extension Store {
-    fileprivate subscript<ElementState, ElementAction>() -> StackState<ElementState>.PathView
+    fileprivate subscript<ElementState, ElementAction>(
+      fileID fileID: String,
+      line line: UInt
+    ) -> StackState<ElementState>.PathView
     where State == StackState<ElementState>, Action == StackAction<ElementState, ElementAction> {
       get { self.currentState.path }
       set {
         let newCount = newValue.count
+        guard newCount != self.currentState.count else {
+          runtimeWarn(
+            """
+            SwiftUI wrote to a "NavigationStack" binding at "\(fileID):\(line)" with a path that \
+            has the same number of elements that already exist in the store. SwiftUI should only \
+            write to this binding with a path that has pushed a new element onto the stack, or \
+            popped one or more elements from the stack.
+
+            This usually means the "forEach" has not been integrated with the reducer powering the \
+            store, and this reducer is responsible for handling stack actions.
+
+            To fix this, ensure that "forEach" is invoked from the reducer's "body":
+
+                Reduce { state, action in
+                  // ...
+                }
+                .forEach(\\.path, action: \\.path) {
+                  Path()
+                }
+
+            And ensure that every parent reducer is integrated into the root reducer that powers \
+            the store.
+            """
+          )
+          return
+        }
         if newCount > self.currentState.count, let component = newValue.last {
           self.send(.push(id: component.id, state: component.element))
         } else {

@@ -785,7 +785,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
         customDump(self.value, to: &value, maxDepth: 0)
         runtimeWarn(
           """
-          A binding action sent from a view store \
+          A binding action sent from a store \
           \(self.context == .bindingState ? "for binding state defined " : "")at \
           "\(self.fileID):\(self.line)" was not handled. …
 
