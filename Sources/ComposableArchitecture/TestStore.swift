@@ -536,7 +536,6 @@ public final class TestStore<State, Action> {
     self.timeout = 1 * NSEC_PER_SEC
     self.sharedChangeTracker = sharedChangeTracker
     self.useMainSerialExecutor = true
-    let dismiss = self.reducer.dependencies.dismiss.dismiss
     self.reducer.store = self
   }
 
