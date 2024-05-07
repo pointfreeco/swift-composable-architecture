@@ -873,6 +873,43 @@ transitively get access to it through the app itself. In Xcode, go to "Build Pha
 "ComposableArchitecture" from the "Link Binary With Libraries" section. When using SwiftPM, remove 
 the "ComposableArchitecture" entry from the `testTarget`'s' `dependencies` array in `Package.swift`.
 
+### Long-living test stores
+
+Test stores should always be created in individual tests when possible, rather than as a shared
+instance variable on the test class:
+
+```diff
+ final class FeatureTests: XCTestCase {
+   // 👎 Don't do this:
+-  let store = TestStore(initialState: Feature.State()) {
+-    Feature()
+-  }
+
+   func testBasics() async {
+     // 👍 Do this:
++    let store = TestStore(initialState: Feature.State()) {
++      Feature()
++    }
+     // ...
+   }
+ }
+```
+
+This allows you to be very precise in each test: you can start the store in a very specific state,
+and override just the dependencies a test cares about.
+
+More crucially, test stores that are held onto by the test class will not be deinitialized during a
+test run, and so various exhaustive assertions made during deinitialization will not be made,
+_e.g._ that the test store has unreceived actions that should be asserted against, or in-flight
+effects that should complete.
+
+If a test store does _not_ deinitialize at the end of a test, you must explicitly call
+``TestStore/finish(timeout:file:line:)-53gi5`` at the end of the test to retain exhaustive coverage:
+
+```swift
+await store.finish()
+```
+
 [xctest-dynamic-overlay-gh]: http://github.com/pointfreeco/xctest-dynamic-overlay
 [Testing-state-changes]: #Testing-state-changes
 [Testing-effects]: #Testing-effects
