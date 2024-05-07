@@ -31,6 +31,10 @@ public struct PersistenceKeyDefault<Base: PersistenceReaderKey>: PersistenceRead
     self.defaultValue = value
   }
 
+  public var id: Base.ID {
+    self.base.id
+  }
+
   public func load(initialValue: Base.Value?) -> Base.Value? {
     self.base.load(initialValue: initialValue ?? self.defaultValue)
   }
@@ -40,13 +44,6 @@ public struct PersistenceKeyDefault<Base: PersistenceReaderKey>: PersistenceRead
     didSet: @Sendable @escaping (Base.Value?) -> Void
   ) -> Shared<Base.Value>.Subscription {
     self.base.subscribe(initialValue: initialValue, didSet: didSet)
-  }
-
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.base)
-  }
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.base == rhs.base
   }
 }
 

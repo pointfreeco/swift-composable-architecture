@@ -7,9 +7,17 @@
 ///
 /// See the article <doc:SharingState> for more information, in particular the
 /// <doc:SharingState#Custom-persistence> section.
-public protocol PersistenceReaderKey<Value>: Hashable {
+public protocol PersistenceReaderKey<Value> {
   /// A type that can be loaded or subscribed to in an external system.
   associatedtype Value
+
+  /// A type representing the hashable identity of a persistence key.
+  associatedtype ID: Hashable = Self
+
+  /// The hashable identity of a persistence key.
+  ///
+  /// Used to look up existing shared references associated with this persistence key.
+  var id: ID { get }
 
   /// Loads the freshest value from storage. Returns `nil` if there is no value in storage.
   ///
@@ -29,6 +37,10 @@ public protocol PersistenceReaderKey<Value>: Hashable {
     initialValue: Value?,
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription
+}
+
+extension PersistenceReaderKey where ID == Self {
+  public var id: ID { self }
 }
 
 extension PersistenceReaderKey {

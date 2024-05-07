@@ -19,7 +19,15 @@ extension Shared {
       reference: {
         @Dependency(\.persistentReferences) var references
         return references.withValue {
-          if let reference = $0[persistenceKey] {
+          if let reference = $0[persistenceKey.id] {
+            precondition(
+              reference.valueType == Value.self,
+              """
+              "\(typeName(Value.self, genericsAbbreviated: false))" does not match existing \
+              persistent reference "\(typeName(reference.valueType, genericsAbbreviated: false))" \
+              (key: "\(persistenceKey.id)")
+              """
+            )
             return reference
           } else {
             let reference = ValueReference(
@@ -28,7 +36,7 @@ extension Shared {
               fileID: fileID,
               line: line
             )
-            $0[persistenceKey] = reference
+            $0[persistenceKey.id] = reference
             return reference
           }
         }
@@ -98,7 +106,14 @@ extension SharedReader {
       reference: {
         @Dependency(\.persistentReferences) var references
         return references.withValue {
-          if let reference = $0[persistenceKey] {
+          if let reference = $0[persistenceKey.id] {
+            precondition(
+              reference.valueType == Value.self,
+              """
+              Type mismatch at persistence key "\(persistenceKey.id)": \
+              \(reference.valueType) != \(Value.self)
+              """
+            )
             return reference
           } else {
             let reference = ValueReference(
@@ -107,7 +122,7 @@ extension SharedReader {
               fileID: fileID,
               line: line
             )
-            $0[persistenceKey] = reference
+            $0[persistenceKey.id] = reference
             return reference
           }
         }

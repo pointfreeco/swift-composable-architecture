@@ -23,13 +23,16 @@ extension PersistenceReaderKey {
 /// A type defining an in-memory persistence strategy
 ///
 /// See ``PersistenceReaderKey/inMemory(_:)`` to create values of this type.
-public struct InMemoryKey<Value>: Hashable, PersistenceKey, Sendable {
+public struct InMemoryKey<Value>: PersistenceKey, Sendable {
   let key: String
   let store: InMemoryStorage
   public init(_ key: String) {
     @Dependency(\.defaultInMemoryStorage) var defaultInMemoryStorage
     self.key = key
     self.store = defaultInMemoryStorage
+  }
+  public var id: AnyHashable {
+    InMemoryKeyID(key: self.key, store: self.store)
   }
   public func load(initialValue: Value?) -> Value? { initialValue }
   public func save(_ value: Value) {}
@@ -38,6 +41,11 @@ public struct InMemoryKey<Value>: Hashable, PersistenceKey, Sendable {
 public struct InMemoryStorage: Hashable, Sendable {
   private let id = UUID()
   public init() {}
+}
+
+private struct InMemoryKeyID: Hashable {
+  let key: String
+  let store: InMemoryStorage
 }
 
 private enum DefaultInMemoryStorageKey: DependencyKey {

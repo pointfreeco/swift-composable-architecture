@@ -599,6 +599,7 @@ func storeTypeName<State, Action>(of store: Store<State, Action>) -> String {
 }
 
 // NB: From swift-custom-dump. Consider publicizing interface in some way to keep things in sync.
+@usableFromInline
 func typeName(
   _ type: Any.Type,
   qualified: Bool = true,

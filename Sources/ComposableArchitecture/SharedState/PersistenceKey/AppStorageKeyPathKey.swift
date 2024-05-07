@@ -35,7 +35,7 @@ public struct AppStorageKeyPathKey<Value> {
   }
 }
 
-extension AppStorageKeyPathKey: PersistenceKey {
+extension AppStorageKeyPathKey: PersistenceKey, Hashable {
   public func load(initialValue _: Value?) -> Value? {
     self.store[keyPath: self.keyPath]
   }

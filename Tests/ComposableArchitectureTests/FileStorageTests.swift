@@ -291,31 +291,57 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  func testMismatchTypesSameCodability() {
-    @Shared(.fileStorage(.fileURL)) var users: [User] = []
-    @Shared(.fileStorage(.fileURL)) var users1: [User] = []
-    @Shared(.fileStorage(.fileURL)) var users2: IdentifiedArrayOf<User> = []
+  func testMismatchTypes() {
+    XCTAssertEqual(
+      FileStorageKey<Int>.fileStorage(.fileURL).id,
+      FileStorageKey<Bool>.fileStorage(.fileURL).id
+    )
+    XCTAssertNotEqual(
+      FileStorageKey<Int>.fileStorage(.fileURL).id,
+      FileStorageKey<Int>.fileStorage(.anotherFileURL).id
+    )
+    XCTAssertNotEqual(
+      FileStorageKey<Int>.fileStorage(.fileURL).id,
+      withDependencies {
+        $0.defaultFileStorage = .fileSystem
+      } operation: {
+        FileStorageKey<Int>.fileStorage(.fileURL).id
+      }
+    )
 
-    users.append(User(id: 1, name: "Blob"))
-    XCTAssertEqual(users, [User(id: 1, name: "Blob")])
-    XCTAssertEqual(users1, [User(id: 1, name: "Blob")])
-    XCTAssertEqual(users2, [User(id: 1, name: "Blob")])
-  }
+    XCTAssertEqual(
+      AppStorageKey<Int>.appStorage("key").id,
+      AppStorageKey<Bool>.appStorage("key").id
+    )
+    XCTAssertNotEqual(
+      AppStorageKey<Int>.appStorage("key").id,
+      AppStorageKey<Int>.appStorage("key2").id
+    )
+    XCTAssertNotEqual(
+      AppStorageKey<Int>.appStorage("key").id,
+      withDependencies {
+        $0.defaultAppStorage = UserDefaults(suiteName: "\(NSTemporaryDirectory())test-mismatch")!
+      } operation: {
+        AppStorageKey<Int>.appStorage("key").id
+      }
+    )
 
-  func testMismatchTypesDifferentCodability() {
-    @Shared(.fileStorage(.fileURL)) var users: [User] = []
-    @Shared(.fileStorage(.fileURL)) var users1: [User] = []
-    @Shared(.fileStorage(.fileURL)) var users2 = false
-
-    users.append(User(id: 1, name: "Blob"))
-    XCTAssertEqual(users, [User(id: 1, name: "Blob")])
-    XCTAssertEqual(users1, [User(id: 1, name: "Blob")])
-    XCTAssertEqual(users2, false)
-
-    users2 = true
-    XCTAssertEqual(users, [])
-    XCTAssertEqual(users1, [])
-    XCTAssertEqual(users2, true)
+    XCTAssertEqual(
+      InMemoryKey<Int>.inMemory("key").id,
+      InMemoryKey<Bool>.inMemory("key").id
+    )
+    XCTAssertNotEqual(
+      InMemoryKey<Int>.inMemory("key").id,
+      InMemoryKey<Int>.inMemory("key2").id
+    )
+    XCTAssertNotEqual(
+      InMemoryKey<Int>.inMemory("key").id,
+      withDependencies {
+        $0.defaultInMemoryStorage = InMemoryStorage()
+      } operation: {
+        InMemoryKey<Int>.inMemory("key").id
+      }
+    )
   }
 
   func testTwoInMemoryFileStorages() {
