@@ -899,7 +899,7 @@
               • If using async/await in your effect, it may need a little bit of time to properly \
               finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
-              • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", \
+              • If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", \
               etc.), make sure that you wait enough time for it to perform the effect. If you are \
               using a test clock/scheduler, advance it so that the effects may complete, or \
               consider using an immediate clock/scheduler to immediately perform the effect instead.
@@ -908,6 +908,10 @@
               then make sure those effects are torn down by marking the effect ".cancellable" and \
               returning a corresponding cancellation effect ("Effect.cancel") from another action, \
               or, if your effect is driven by a Combine subject, send it a completion.
+
+              • If you do not wish to assert on these effects, perform "await \
+              store.skipInFlightEffects()", or consider using a non-exhaustive test store: \
+              "store.exhaustivity = .off".
               """
       }
     }

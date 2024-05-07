@@ -124,14 +124,48 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        The store received 1 unexpected action by the end of this test: …
+        The store received 1 unexpected action: …
 
           Unhandled actions:
             • .second
+
+        To fix, explicitly assert against these actions using "store.receive", skip these actions \
+        by performing "await store.skipReceivedActions()", or consider using a non-exhaustive test \
+        store: "store.exhaustivity = .off".
         """
     }
     await store.send(.first)
   }
+
+  @MainActor
+  func testReceivedActionBeforeFinish() async {
+    enum Action { case first, second }
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
+        switch action {
+        case .first: return .send(.second)
+        case .second: return .none
+        }
+      }
+    }
+    self.longLivingStore = store
+
+    await store.send(.first)
+    XCTExpectFailure {
+      $0.compactDescription == """
+        The store received 1 unexpected action: …
+
+          Unhandled actions:
+            • .second
+
+        To fix, explicitly assert against these actions using "store.receive", skip these actions \
+        by performing "await store.skipReceivedActions()", or consider using a non-exhaustive test \
+        store: "store.exhaustivity = .off".
+        """
+    }
+    await store.finish()
+  }
+  private var longLivingStore: AnyObject?
 
   @MainActor
   func testEffectInFlightAfterDeinit() async {
@@ -153,15 +187,19 @@ final class TestStoreFailureTests: BaseTCATestCase {
         • If using async/await in your effect, it may need a little bit of time to properly \
         finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
-        • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", etc.), \
-        make sure that you wait enough time for it to perform the effect. If you are using a \
-        test clock/scheduler, advance it so that the effects may complete, or consider using an \
+        • If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", etc.), \
+        make sure that you wait enough time for it to perform the effect. If you are using a test \
+        clock/scheduler, advance it so that the effects may complete, or consider using an \
         immediate clock/scheduler to immediately perform the effect instead.
 
-        • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
-        then make sure those effects are torn down by marking the effect ".cancellable" and \
-        returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
-        if your effect is driven by a Combine subject, send it a completion.
+        • If you are returning a long-living effect (timers, notifications, subjects, etc.), then \
+        make sure those effects are torn down by marking the effect ".cancellable" and returning a \
+        corresponding cancellation effect ("Effect.cancel") from another action, or, if your \
+        effect is driven by a Combine subject, send it a completion.
+
+        • If you do not wish to assert on these effects, perform "await \
+        store.skipInFlightEffects()", or consider using a non-exhaustive test store: \
+        "store.exhaustivity = .off".
         """
     }
     await store.send(())

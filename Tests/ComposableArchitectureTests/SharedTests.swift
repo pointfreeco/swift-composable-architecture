@@ -245,7 +245,7 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        Test store completed before asserting against changes to shared state: …
+        Test store finished before asserting against changes to shared state: …
 
               SharedFeature.State(
                 _count: 0,
