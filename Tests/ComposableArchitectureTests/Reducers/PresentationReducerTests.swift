@@ -2298,22 +2298,26 @@ final class PresentationReducerTests: BaseTCATestCase {
             An effect returned for this action is still running. It must complete before the end \
             of the test. …
 
-            To fix, inspect any effects the reducer returns for this action and ensure that all \
-            of them complete by the end of the test. There are a few reasons why an effect may \
-            not have completed:
+            To fix, inspect any effects the reducer returns for this action and ensure that all of \
+            them complete by the end of the test. There are a few reasons why an effect may not \
+            have completed:
 
             • If using async/await in your effect, it may need a little bit of time to properly \
             finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
-            • If an effect uses a clock/scheduler (via "receive(on:)", "delay", "debounce", \
+            • If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", \
             etc.), make sure that you wait enough time for it to perform the effect. If you are \
-            using a test clock/scheduler, advance it so that the effects may complete, or \
-            consider using an immediate clock/scheduler to immediately perform the effect instead.
+            using a test clock/scheduler, advance it so that the effects may complete, or consider \
+            using an immediate clock/scheduler to immediately perform the effect instead.
 
             • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
             then make sure those effects are torn down by marking the effect ".cancellable" and \
             returning a corresponding cancellation effect ("Effect.cancel") from another action, \
             or, if your effect is driven by a Combine subject, send it a completion.
+
+            • If you do not wish to assert on these effects, perform "await \
+            store.skipInFlightEffects()", or consider using a non-exhaustive test store: \
+            "store.exhaustivity = .off".
             """
     }
   }
