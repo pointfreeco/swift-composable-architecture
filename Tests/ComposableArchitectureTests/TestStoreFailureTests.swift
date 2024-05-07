@@ -138,6 +138,36 @@ final class TestStoreFailureTests: BaseTCATestCase {
   }
 
   @MainActor
+  func testReceivedActionBeforeFinish() async {
+    enum Action { case first, second }
+    let store = TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
+        switch action {
+        case .first: return .send(.second)
+        case .second: return .none
+        }
+      }
+    }
+    self.longLivingStore = store
+
+    await store.send(.first)
+    XCTExpectFailure {
+      $0.compactDescription == """
+        The store received 1 unexpected action: …
+
+          Unhandled actions:
+            • .second
+
+        To fix, explicitly assert against these actions using "store.receive", skip these actions \
+        by performing "await store.skipReceivedActions()", or consider using a non-exhaustive test \
+        store: "store.exhaustivity = .off".
+        """
+    }
+    await store.finish()
+  }
+  private var longLivingStore: AnyObject?
+
+  @MainActor
   func testEffectInFlightAfterDeinit() async {
     let store = TestStore(initialState: 0) {
       Reduce<Int, Void> { state, action in
