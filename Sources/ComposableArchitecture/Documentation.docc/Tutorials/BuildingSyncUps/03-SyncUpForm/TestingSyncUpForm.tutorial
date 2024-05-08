@@ -1,0 +1,167 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Testing the sync-up form") {
+    We now have a moderately complex feature for editing the details of a sync-up, the `SyncUpForm`
+    reducer. Let's get some test coverage on the feature, and doing so will force us to come 
+    face-to-face with dependencies for the first time in this tutorial.
+  }
+  
+  @Section(title: "Removing attendees") {
+    @ContentAndMedia {
+      The first significant logic we added to our feature was that of adding and removing attendees.
+      Let's start by testing the logic for removing attendees since it's quite similar to what
+      we already did in `SyncUpsList` feature.
+    }
+    
+    @Steps {
+      @Step {
+        Create a new test file called SyncUpFormTests.swift and paste in some basic scaffolding for
+        a new test case.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0001.swift)
+      }
+      
+      @Step {
+        Construct a ``ComposableArchitecture/TestStore`` with the initial state that has two 
+        attendees so that we can delete one of them.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0002.swift)
+      }
+      
+      @Step {
+        Emulate the user deleting the attendee by sending the `onDeleteAttendees` action and assert
+        that the attendee is indeed removed from the array, leaving only the other attendee in the
+        array.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0003.swift)
+      }
+      
+      Run the test suite to make sure everything passes.
+      
+      That's all it takes to test the very basic functionality of removing an attendee. But there's
+      additional logic that we haven't yet covered in the test, which is how the focus changes.
+      Let's also test that logic.
+      
+      @Step {
+        Add a new test method for testing what happens when we delete a focused attendee. This time
+        the initial state with start with two attendees, which have been pulled out into variables
+        so that we can reference them. The first attendee will also be focused.
+        
+        > Note: We have collapsed the `testRemoveAttendee` method in the code snippet.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0004.swift, previousFile: TestingSyncUpForm-01-code-0004-previous.swift)
+      }
+      
+      @Step {
+        Emulate the user deleting the first attendee by sending the `onDeleteAttendees` action.
+        This time the state will change a little differently. The `attendees` array will hold a 
+        single element, the 2nd attendee, and further the focus will change to the 2nd attendee.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0005.swift)
+      }
+      
+      Run the test suite to make sure everything passes.
+      
+      We have now verified that the focus correctly changes when removing an attendee. There is 
+      still an edge case we have not tested. What happens when there are two attendees, neither of
+      which is focused, and you delete one? We would expect that the focus does _not_ change, but
+      the best way to prove that is to write a test. We leave that test as an exercise for the 
+      reader.
+    }
+  }
+  
+  @Section(title: "Adding attendees") {
+    @ContentAndMedia {
+      Let's move on to the next bit of functionality in the feature: adding an attendee. This turns
+      out to be trickier than you might expect due to an uncontrolled dependency.
+    }
+    
+    @Steps {
+      @Step {
+        Add a new test method for testing the flow of adding a new attendee. We can start in an
+        initial state with no attendees.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-02-code-0001.swift, previousFile: TestingSyncUpForm-02-code-0001-previous.swift)
+      }
+      
+      @Step {
+        Emulate the user tapping on "Add attendee" button by sending the `addAttendeeButtonTapped`
+        action. When the action is sent we expect the state to be mutated in a way that causes
+        an attendee to be added to the `attendees` array, and the focus should also point at that
+        new attendee. 
+
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-02-code-0002.swift)        
+      }
+      
+      @Step {
+        Run the test suite to see that it unfortunately fails. The reason it fails is because in the
+        reducer we are reaching out to an uncontrolled dependency for generating attendee IDs, which
+        are UUIDs under the hood.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-02-code-0003.swift)
+      }
+      
+      There are two ways one can fix this test. You can use the library's "non-exhaustive" testing
+      tools (see <doc:Testing#Non-exhaustive-testing> for more info), which allows you to assert
+      on only the bits of state you care about. That can be handy, but we don't feel it is 
+      appropriate in such a simple feature like `SyncUpForm`. We think non-exhaustive testing is 
+      best saved for testing the integration of features, and that exhaustive testing is best for
+      testing isolated, leaf features.
+      
+      The other way to test this feature is to control our feature's dependence on UUID generation.
+      That way we can predict what UUIDs will be generated during the test, and then we will be
+      able to write a passing, fully exhaustive test. And luckily the Composable Architecture comes
+      with a full dependency management system (see <doc:DependencyManagement> for more info) that
+      makes it very easy to control and override dependencies.
+      
+      @Step {
+        Go back to SyncUpForm.swift, where the reducer is implemented, and add a new property to the
+        `SyncUpForm` type. It will use the `@Dependency` property wrapper to express that the
+        feature has a dependency, and we will provide the key path `\.uuid` to denote the dependence
+        on UUID generation.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-02-code-0004.swift, previousFile: TestingSyncUpForm-02-code-0004-previous.swift)
+      }
+      
+      @Step {
+        Then, in the reducer's logic, any place we reached out to the uncontrolled UUID generator,
+        for example `Attendee.ID()`, we will instead use the `uuid` dependency.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-02-code-0005.swift)
+      }
+      
+      With that one change, if you were to run the test suite again you would get the same test
+      failures as before, but there would also be a new one letting you know that the 
+      `uuid` dependency was used in a testing context without being overridden. That is a great
+      test failure to have because it keeps you from accidentally using live dependencies in a 
+      testing context, which can be very problematic for things like API clients, analytics,
+      and more.
+      
+      To fix this we will override the `uuid` dependency when when construct the `TestStore` in the
+      test.
+      
+      @Step {
+        The initializer on ``ComposableArchitecture/TestStore`` has an optional trailing closure
+        that can be provided to override any dependencies for the test. Use it to override the
+        `uuid` dependency with an "incrementing" UUID generator. This is a generator that when 
+        invoked simply chooses the next UUID starting at 00000000-0000-0000-0000-000000000000.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-02-code-0006.swift, previousFile: TestingSyncUpForm-02-code-0006-previous.swift)
+      }
+      
+      @Step {
+        We can now deterministically predict the UUID that will be generated for the new attendee
+        when the button is tapped. It will be 00000000-0000-0000-0000-0000000000000000, but there 
+        is also a helper on `UUID` provided to generate a UUID from an integer.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-02-code-0007.swift)
+      }
+      
+      Run the test suite to see that it passes. We now have a lot of test coverage on adding
+      and removing attendees, and how the focus changes during those actions. There is one more
+      edge case that we do not have test coverage for: removing the last attendee. We had added
+      extra logic in the reducer so that when you remove the last attendee we insert a new one so
+      that the list is never empty. We leave writing a test for that scenario as an exercise for the
+      reader.
+    }
+  }
+}

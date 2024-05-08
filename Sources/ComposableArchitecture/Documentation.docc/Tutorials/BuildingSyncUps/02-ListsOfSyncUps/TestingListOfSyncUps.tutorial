@@ -1,0 +1,68 @@
+@Tutorial(time: 5) {
+  @Intro(title: "Testing the list of sync-ups") {
+    The SyncUpsList feature we have built so far isn't very complex. In fact, it only has one
+    primary action, that of deleting sync-ups from its collection. However, it can be good practice
+    to test new features as you add them, and in the future we will have much more complicated
+    behavior to test.
+  }
+  
+  @Section(title: "Writing your first test") {
+    @ContentAndMedia {
+      Let's write a test to verify that when the `onDelete` action is sent that the corresponding
+      sync-ups are indeed deleted. This will require us to become familiar with the testing tools
+      in the library, primarily the `TestStore`.
+    }
+    
+    @Steps {
+      @Step {
+        Start by creating a new file in your test target called SyncUpsListTests.swift, and paste in
+        some basic scaffolding for a new test to verify the deletion logic.
+        
+        @Code(name: "SyncUpsListTests.swift", file: TestingListOfSyncUps-01-code-0001.swift)
+      }
+      
+      The first step to writing a new test is to construct a ``ComposableArchitecture/TestStore``,
+      which is a testable runtime for your feature. It allows you to emulate a series of actions
+      your user takes in your feature, while asserting on how state changes each step of the way,
+      and asserting how effects execute and feed their data back into the system.
+      
+      @Step {
+        Construct a ``ComposableArchitecture/TestStore`` much like you would a regular `Store`, by 
+        providing the initial state for the feature to begin in as well as the reducer you want to
+        test. We'll start the feature with on sync-up already in its array so that we have something
+        to delete.
+        
+        @Code(name: "SyncUpsListTests.swift", file: TestingListOfSyncUps-01-code-0002.swift)
+      }
+      
+      @Step {
+        Send an action into the test store to emulate the user doing something. In this case we are
+        going to send the `onDelete` action to simulate the user swiping on the row and tapping
+        "Delete". And we can provide an `IndexSet` that represents deleting the first row.
+        
+        @Code(name: "SyncUpsListTests.swift", file: TestingListOfSyncUps-01-code-0003.swift)
+      }
+      
+      As written, this test would fail if we ran it. Go ahead. Try it!
+      
+      To get a passing test we must provide a trailing closure that describes how the state changes.
+      The closure is handed a single, mutable argument that represents the state before the action
+      was sent. It is your job to mutate that argument to represent the state _after_ the action was
+      processed by the reducer.
+      
+      @Step {
+        Provide a trailing closure to
+        ``ComposableArchitecture/TestStore/send(_:assert:file:line:)-2co21`` that mutates the state
+        to its final value. In particular, we expect the `syncUps` to be an empty array, and for
+        no other changes to happen.
+        
+        @Code(name: "SyncUpsListTests.swift", file: TestingListOfSyncUps-01-code-0004.swift)
+      }
+      
+      That is the basics of writing a test for our feature. This test is quite simple because the
+      logic in the feature is still quite simple. Soon the logic and behavior of the feature will
+      become more complex, and then tests will start to give us more confidence that the feature
+      works as we expect.
+    }
+  }
+}
