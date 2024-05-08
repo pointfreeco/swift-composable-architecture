@@ -191,38 +191,32 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {
-      #if DEBUG
-        var actionDump = ""
-        customDump(action, to: &actionDump, indent: 4)
-        var stateDump = ""
-        customDump(state, to: &stateDump, indent: 4)
-        runtimeWarn(
-          """
-          An "ifCaseLet" at "\(self.fileID):\(self.line)" received a child action when child state \
-          was set to a different case. …
+      runtimeWarn(
+        """
+        An "ifCaseLet" at "\(self.fileID):\(self.line)" received a child action when child state \
+        was set to a different case. …
 
-            Action:
-          \(actionDump)
-            State:
-          \(stateDump)
+          Action:
+        \(String(customDumping: action).indent(by: 4))
+          State:
+        \(String(customDumping: state).indent(by: 4))
 
-          This is generally considered an application logic error, and can happen for a few reasons:
+        This is generally considered an application logic error, and can happen for a few reasons:
 
-          • A parent reducer set "\(typeName(Parent.State.self))" to a different case before this \
-          reducer ran. This reducer must run before any other reducer sets child state to a \
-          different case. This ensures that child reducers can handle their actions while their \
-          state is still available.
+        • A parent reducer set "\(typeName(Parent.State.self))" to a different case before this \
+        reducer ran. This reducer must run before any other reducer sets child state to a \
+        different case. This ensures that child reducers can handle their actions while their \
+        state is still available.
 
-          • An in-flight effect emitted this action when child state was unavailable. While it may \
-          be perfectly reasonable to ignore this action, consider canceling the associated effect \
-          before child state changes to another case, especially if it is a long-living effect.
+        • An in-flight effect emitted this action when child state was unavailable. While it may \
+        be perfectly reasonable to ignore this action, consider canceling the associated effect \
+        before child state changes to another case, especially if it is a long-living effect.
 
-          • This action was sent to the store while state was another case. Make sure that actions \
-          for this reducer can only be sent from a view store when state is set to the appropriate \
-          case. In SwiftUI applications, use "SwitchStore".
-          """
-        )
-      #endif
+        • This action was sent to the store while state was another case. Make sure that actions \
+        for this reducer can only be sent from a view store when state is set to the appropriate \
+        case. In SwiftUI applications, use "SwitchStore".
+        """
+      )
       return .none
     }
     defer { state = self.toChildState.embed(childState) }
