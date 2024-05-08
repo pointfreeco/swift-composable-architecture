@@ -73,7 +73,7 @@ extension Shared {
     line: UInt = #line
   ) where Key.Value == Value {
     self.init(
-      wrappedValue: persistenceKey.load(initialValue: nil) ?? persistenceKey.defaultValue,
+      wrappedValue: persistenceKey.load(initialValue: nil) ?? persistenceKey.defaultValue(),
       persistenceKey.base,
       fileID: fileID,
       line: line
@@ -159,7 +159,7 @@ extension SharedReader {
     line: UInt = #line
   ) where Key.Value == Value {
     self.init(
-      wrappedValue: persistenceKey.load(initialValue: nil) ?? persistenceKey.defaultValue,
+      wrappedValue: persistenceKey.load(initialValue: nil) ?? persistenceKey.defaultValue(),
       persistenceKey.base,
       fileID: fileID,
       line: line

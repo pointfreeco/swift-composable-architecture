@@ -24,9 +24,9 @@
 /// ```
 public struct PersistenceKeyDefault<Base: PersistenceReaderKey>: PersistenceReaderKey {
   let base: Base
-  let defaultValue: Base.Value
+  let defaultValue: () -> Base.Value
 
-  public init(_ key: Base, _ value: Base.Value) {
+  public init(_ key: Base, _ value: @autoclosure @escaping () -> Base.Value) {
     self.base = key
     self.defaultValue = value
   }
@@ -36,7 +36,7 @@ public struct PersistenceKeyDefault<Base: PersistenceReaderKey>: PersistenceRead
   }
 
   public func load(initialValue: Base.Value?) -> Base.Value? {
-    self.base.load(initialValue: initialValue ?? self.defaultValue)
+    self.base.load(initialValue: initialValue ?? self.defaultValue())
   }
 
   public func subscribe(

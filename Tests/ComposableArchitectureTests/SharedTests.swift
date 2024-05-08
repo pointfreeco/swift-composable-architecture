@@ -722,6 +722,28 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(isOn2, true)
     XCTAssertEqual(isOn3, true)
   }
+  
+  func testSharedDefaults_Used() {
+    let didAccess = LockIsolated(false)
+    let logDefault: () -> Bool = {
+      didAccess.setValue(true)
+      return true
+    }
+    @Shared(.isActive(default: logDefault)) var isActive
+    XCTAssertEqual(isActive, true)
+    XCTAssertEqual(didAccess.value, true)
+  }
+
+  func testSharedDefaults_Unused() {
+    let didAccess = LockIsolated(false)
+    let logDefault: () -> Bool = {
+      didAccess.setValue(true)
+      return true
+    }
+    @Shared(.isActive(default: logDefault)) var isActive = false
+    XCTAssertEqual(isActive, false)
+    XCTAssertEqual(didAccess.value, false)
+  }
 
   func testSharedReaderDefaults_MultipleWithDifferentDefaults() async throws {
     @Shared(.appStorage("isOn")) var isOn = false
@@ -1034,6 +1056,10 @@ private struct EarlySharedStateMutation {
 extension PersistenceReaderKey where Self == PersistenceKeyDefault<AppStorageKey<Bool>> {
   static var isOn: Self {
     PersistenceKeyDefault(.appStorage("isOn"), false)
+  }
+  
+  static func isActive(default keyDefault: @escaping () -> Bool) -> Self {
+    PersistenceKeyDefault(.appStorage("isActive"), keyDefault())
   }
 }
 
