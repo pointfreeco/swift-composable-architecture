@@ -24,9 +24,9 @@
 /// ```
 public struct PersistenceKeyDefault<Base: PersistenceReaderKey>: PersistenceReaderKey {
   let base: Base
-  let defaultValue: Base.Value
+  let defaultValue: () -> Base.Value
 
-  public init(_ key: Base, _ value: Base.Value) {
+  public init(_ key: Base, _ value: @autoclosure @escaping () -> Base.Value) {
     self.base = key
     self.defaultValue = value
   }
