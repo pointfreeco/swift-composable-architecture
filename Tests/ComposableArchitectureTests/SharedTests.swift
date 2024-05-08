@@ -722,7 +722,7 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(isOn2, true)
     XCTAssertEqual(isOn3, true)
   }
-  
+
   func testSharedDefaults_Used() {
     let didAccess = LockIsolated(false)
     let logDefault: () -> Bool = {
@@ -1057,7 +1057,7 @@ extension PersistenceReaderKey where Self == PersistenceKeyDefault<AppStorageKey
   static var isOn: Self {
     PersistenceKeyDefault(.appStorage("isOn"), false)
   }
-  
+
   static func isActive(default keyDefault: @escaping () -> Bool) -> Self {
     PersistenceKeyDefault(.appStorage("isActive"), keyDefault())
   }
