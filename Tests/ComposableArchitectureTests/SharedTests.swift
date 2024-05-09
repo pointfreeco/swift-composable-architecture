@@ -744,7 +744,7 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(isActive, false)
     XCTAssertEqual(didAccess.value, false)
   }
-  
+
   func testSharedInitialValueUnused() {
     let accessedIsOn1 = LockIsolated(false)
     let accessedIsOn2 = LockIsolated(false)
@@ -809,12 +809,12 @@ final class SharedTests: XCTestCase {
       return false
     }()
     @SharedReader(.isActive(default: logDefault)) var isActive2
-    
+
     XCTAssertEqual(isActive1, false)
     XCTAssertEqual(isActive2, false)
     XCTAssertEqual(accessedActive1.value, true)
   }
-  
+
   func testSharedThrowingInitialValueUnused() throws {
     try XCTAssertThrowsError(Shared(.noDefaultIsOn))
   }
