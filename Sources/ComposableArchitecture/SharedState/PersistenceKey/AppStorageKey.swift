@@ -38,6 +38,15 @@ extension PersistenceReaderKey {
     AppStorageKey(key)
   }
 
+  /// Creates a persistence key that can read and write to a string array user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<[String]> {
+    AppStorageKey(key)
+  }
+
   /// Creates a persistence key that can read and write to a URL user default.
   ///
   /// - Parameter key: The key to read and write the value to in the user defaults store.
@@ -73,6 +82,15 @@ extension PersistenceReaderKey {
   /// - Returns: A user defaults persistence key.
   public static func appStorage<Value: RawRepresentable>(_ key: String) -> Self
   where Value.RawValue == String, Self == AppStorageKey<Value> {
+    AppStorageKey(key)
+  }
+
+  /// Creates a persistence key that can read and write to an array of RawRepresentable user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage<Value: RawRepresentable>(_ key: String) -> Self
+  where Self == AppStorageKey<[Value]> {
     AppStorageKey(key)
   }
 
@@ -191,6 +209,13 @@ public struct AppStorageKey<Value> {
     self.store = store
   }
 
+  public init(_ key: String) where Value == [String] {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = CastableLookup()
+    self.key = key
+    self.store = store
+  }
+
   public init(_ key: String) where Value == URL {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
@@ -217,6 +242,14 @@ public struct AppStorageKey<Value> {
   where Value: RawRepresentable, Value.RawValue == String {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = RawRepresentableLookup(base: CastableLookup())
+    self.key = key
+    self.store = store
+  }
+
+  public init<Inner: RawRepresentable>(_ key: String)
+  where Value == [Inner] {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = RawRepresentableArrayLookup(base: CastableLookup())
     self.key = key
     self.store = store
   }
@@ -396,6 +429,22 @@ where Value.RawValue == Base.Value {
   }
   func saveValue(_ newValue: Value, to store: UserDefaults, at key: String) {
     base.saveValue(newValue.rawValue, to: store, at: key)
+  }
+}
+
+private struct RawRepresentableArrayLookup<Inner: RawRepresentable, Base: Lookup>: Lookup
+where [Inner.RawValue] == Base.Value {
+  typealias Value = [Inner]
+  let base: Base
+  func loadValue(
+    from store: UserDefaults, at key: String, default defaultValue: Value?
+  ) -> Value? {
+      base.loadValue(from: store, at: key, default: defaultValue?.map(\.rawValue))
+          .flatMap { $0.compactMap(Inner.init(rawValue:)) }
+      ?? defaultValue
+  }
+  func saveValue(_ newValue: Value, to store: UserDefaults, at key: String) {
+      base.saveValue(newValue.map(\.rawValue), to: store, at: key)
   }
 }
 

@@ -58,6 +58,18 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(defaults.string(forKey: "direction"), "south")
   }
 
+  func testDefaultsRegistered_RawRepresentableArray() {
+    enum Direction: String, CaseIterable {
+      case north, south, east, west
+    }
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("directionArray")) var direction: [Direction] = [.north]
+    XCTAssertEqual(defaults.array(forKey: "directionArray") as? [String], ["north"])
+
+    direction = [.north, .south]
+    XCTAssertEqual(defaults.array(forKey: "directionArray") as? [String], ["north", "south"])
+  }
+
   func testDefaultAppStorageOverride() {
     let defaults = UserDefaults(suiteName: "tests")!
     defaults.removePersistentDomain(forName: "tests")
@@ -121,6 +133,16 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(direction, .east)
   }
 
+  func testChangeUserDefaultsDirectly_RawRepresentableArray() {
+    enum Direction: String, CaseIterable {
+      case north, south, east, west
+    }
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("directionArray")) var direction: [Direction] = [.south]
+    defaults.set(["east"], forKey: "directionArray")
+    XCTAssertEqual(direction, [.east])
+  }
+  
   func testChangeUserDefaultsDirectly_KeyWithPeriod() {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage("pointfreeco.count")) var count = 0
