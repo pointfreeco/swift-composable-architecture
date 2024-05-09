@@ -744,6 +744,84 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(isActive, false)
     XCTAssertEqual(didAccess.value, false)
   }
+  
+  func testSharedInitialValueUnused() {
+    let accessedIsOn1 = LockIsolated(false)
+    let accessedIsOn2 = LockIsolated(false)
+    @Shared(.isOn) var isOn1 = {
+      accessedIsOn1.setValue(true)
+      return false
+    }()
+    @Shared(.isOn) var isOn2 = {
+      accessedIsOn2.setValue(true)
+      return true
+    }()
+    XCTAssertEqual(isOn1, false)
+    XCTAssertEqual(isOn2, false)
+    XCTAssertEqual(accessedIsOn1.value, true)
+    XCTAssertEqual(accessedIsOn2.value, false)
+  }
+
+  func testSharedOverrideDefault() {
+    let accessedActive1 = LockIsolated(false)
+    let accessedDefault = LockIsolated(false)
+    let logDefault: () -> Bool = {
+      accessedDefault.setValue(true)
+      return true
+    }
+    @Shared(.isActive(default: logDefault)) var isActive1 = {
+      accessedActive1.setValue(true)
+      return false
+    }()
+    @Shared(.isActive(default: logDefault)) var isActive2
+
+    XCTAssertEqual(isActive1, false)
+    XCTAssertEqual(isActive2, false)
+    XCTAssertEqual(accessedActive1.value, true)
+  }
+
+  func testSharedReaderInitialValueUnused() {
+    let accessedIsOn1 = LockIsolated(false)
+    let accessedIsOn2 = LockIsolated(false)
+    @SharedReader(.isOn) var isOn1 = {
+      accessedIsOn1.setValue(true)
+      return false
+    }()
+    @SharedReader(.isOn) var isOn2 = {
+      accessedIsOn2.setValue(true)
+      return true
+    }()
+    XCTAssertEqual(isOn1, false)
+    XCTAssertEqual(isOn2, false)
+    XCTAssertEqual(accessedIsOn1.value, true)
+    XCTAssertEqual(accessedIsOn2.value, false)
+  }
+
+  func testSharedReaderOverrideDefault() {
+    let accessedActive1 = LockIsolated(false)
+    let accessedDefault = LockIsolated(false)
+    let logDefault: () -> Bool = {
+      accessedDefault.setValue(true)
+      return true
+    }
+    @SharedReader(.isActive(default: logDefault)) var isActive1 = {
+      accessedActive1.setValue(true)
+      return false
+    }()
+    @SharedReader(.isActive(default: logDefault)) var isActive2
+    
+    XCTAssertEqual(isActive1, false)
+    XCTAssertEqual(isActive2, false)
+    XCTAssertEqual(accessedActive1.value, true)
+  }
+  
+  func testSharedThrowingInitialValueUnused() throws {
+    try XCTAssertThrowsError(Shared(.noDefaultIsOn))
+  }
+
+  func testSharedReaderThrowingInitialValueUnused() throws {
+    try XCTAssertThrowsError(SharedReader(.noDefaultIsOn))
+  }
 
   func testSharedReaderDefaults_MultipleWithDifferentDefaults() async throws {
     @Shared(.appStorage("isOn")) var isOn = false
@@ -1070,5 +1148,11 @@ struct StateWithOptionalSharedAndDefault {
 extension PersistenceKey where Self == PersistenceKeyDefault<AppStorageKey<Bool?>> {
   fileprivate static var optionalValueWithDefault: Self {
     return PersistenceKeyDefault(.appStorage("optionalValueWithDefault"), nil)
+  }
+}
+
+extension PersistenceReaderKey where Self == AppStorageKey<Bool> {
+  static var noDefaultIsOn: Self {
+    appStorage("noDefaultIsOn")
   }
 }
