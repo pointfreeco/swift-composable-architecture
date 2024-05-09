@@ -256,15 +256,13 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard state[keyPath: self.toChildState] != nil else {
-      var actionDump = ""
-      customDump(action, to: &actionDump, indent: 4)
       runtimeWarn(
         """
         An "ifLet" at "\(self.fileID):\(self.line)" received a child action when child state was \
         "nil". …
 
           Action:
-        \(actionDump)
+        \(String(customDumping: action).indent(by: 4))
 
         This is generally considered an application logic error, and can happen for a few reasons:
 

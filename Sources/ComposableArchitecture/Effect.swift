@@ -98,20 +98,16 @@ extension Effect {
               return
             } catch {
               guard let handler else {
-                #if DEBUG
-                  var errorDump = ""
-                  customDump(error, to: &errorDump, indent: 4)
-                  runtimeWarn(
-                    """
-                    An "Effect.run" returned from "\(fileID):\(line)" threw an unhandled error. …
+                runtimeWarn(
+                  """
+                  An "Effect.run" returned from "\(fileID):\(line)" threw an unhandled error. …
 
-                    \(errorDump)
+                  \(String(customDumping: error).indent(by: 4))
 
-                    All non-cancellation errors must be explicitly handled via the "catch" parameter \
-                    on "Effect.run", or via a "do" block.
-                    """
-                  )
-                #endif
+                  All non-cancellation errors must be explicitly handled via the "catch" parameter \
+                  on "Effect.run", or via a "do" block.
+                  """
+                )
                 return
               }
               await handler(error, send)
