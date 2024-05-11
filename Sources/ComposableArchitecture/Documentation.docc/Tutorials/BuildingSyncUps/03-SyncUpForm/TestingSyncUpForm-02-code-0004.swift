@@ -36,7 +36,7 @@ struct SyncUpForm {
       case .binding:
         return .none
 
-      case let .onDeleteAttendees(indexSet):
+      case let .onDeleteAttendees(indices):
         state.syncUp.attendees.remove(atOffsets: indices)
         guard let firstIndex = indices.first
         else { return .none }
