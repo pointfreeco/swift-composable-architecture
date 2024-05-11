@@ -56,6 +56,27 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
+  func testNoThrottling() throws {
+    let fileSystem = LockIsolated<[URL: Data]>([:])
+    let testScheduler = DispatchQueue.test
+    try withDependencies {
+      $0.defaultFileStorage = .inMemory(
+        fileSystem: fileSystem,
+        scheduler: testScheduler.eraseToAnyScheduler()
+      )
+    } operation: {
+      @Shared(.fileStorage(.fileURL)) var users = [User]()
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), nil)
+
+      users.append(.blob)
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
+
+      testScheduler.advance(by: .seconds(2))
+      users.append(.blobJr)
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
+    }
+  }
+
   func testWillResign() throws {
     guard let willResignNotificationName else { return }
 
