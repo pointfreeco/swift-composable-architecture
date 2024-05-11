@@ -38,13 +38,10 @@ struct SyncUpFormView: View {
             .focused($focus, equals: .attendee(attendee.id))
         }
         .onDelete { indices in
-          guard let firstDeletedIndex = indices.first
-          else { return }
-          let firstDeletedAttendee = store.syncUp.attendees[firstDeletedIndex]
           store.send(.onDeleteAttendees(indices))
-          guard focus == .attendee(firstDeletedAttendee.id)
-          else { return }
-          let index = min(firstDeletedIndex, store.syncUp.attendees.count - 1)
+          guard let firstIndex = indices.first
+          else { return .none }
+          let index = min(firstIndex, store.syncUp.attendees.count - 1)
           focus = .attendee(store.syncUp.attendees[index].id)
         }
 

@@ -45,12 +45,12 @@ struct SyncUpForm {
       case .binding:
         return .none
 
-      case let .deleteAttendees(atOffsets: indices):
-        state.syncUp.attendees.remove(atOffsets: indices)
+      case let .deleteAttendees(atOffsets: indexSet):
+        state.syncUp.attendees.remove(atOffsets: indexSet)
         if state.syncUp.attendees.isEmpty {
           state.syncUp.attendees.append(Attendee(id: Attendee.ID(uuid())))
         }
-        guard let firstIndex = indices.first
+        guard let firstIndex = indexSet.first
         else { return .none }
         let index = min(firstIndex, state.syncUp.attendees.count - 1)
         state.focus = .attendee(state.syncUp.attendees[index].id)
