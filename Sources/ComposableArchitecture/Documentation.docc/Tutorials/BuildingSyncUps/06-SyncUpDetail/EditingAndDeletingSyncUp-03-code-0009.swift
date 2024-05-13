@@ -25,10 +25,6 @@ struct SyncUpDetail {
     case destination(PresentationAction<Destination.Action>)
     case doneEditingButtonTapped
     case editButtonTapped
-    @CasePathable
-    enum Alert {
-      case confirmButtonTapped
-    }
   }
 
   @Dependency(\.dismiss) var dismiss
