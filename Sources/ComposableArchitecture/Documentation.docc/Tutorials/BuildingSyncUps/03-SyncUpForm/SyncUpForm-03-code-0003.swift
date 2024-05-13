@@ -36,7 +36,9 @@ struct SyncUpForm {
 
       case let .onDeleteAttendees(indices):
         state.syncUp.attendees.remove(atOffsets: indices)
-        guard let firstIndex = indices.first
+        guard
+          !state.syncUp.attendees.isEmpty,
+          let firstIndex = indices.first
         else { return .none }
         let index = min(firstIndex, state.syncUp.attendees.count - 1)
         state.focus = .attendee(state.syncUp.attendees[index].id)

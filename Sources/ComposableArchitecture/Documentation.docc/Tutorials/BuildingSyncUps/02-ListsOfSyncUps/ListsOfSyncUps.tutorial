@@ -54,6 +54,9 @@
         @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0003.swift)
       }
       
+      <!--
+      NB: Removing the Tagged discussion for now because it was too confusing for readers.
+      
       There's another improvement that can be made to our domain models, but this one is completely
       optional.
       
@@ -87,6 +90,7 @@
         
         @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0004.swift)
       }
+      -->
     }
   }
     

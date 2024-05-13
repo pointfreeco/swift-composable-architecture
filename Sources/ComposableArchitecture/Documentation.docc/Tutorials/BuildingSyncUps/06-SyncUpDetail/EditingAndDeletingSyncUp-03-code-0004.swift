@@ -38,10 +38,9 @@ struct SyncUpDetail {
     Reduce { state, action in
       switch action {
       case .alert(.presented(.confirmButtonTapped)):
-        return .run { send in
-          await send(.delegate(.deleteSyncUp(id: state.syncUp.id)))
-          await dismiss()
-        }
+        @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
+        syncUps.remove(id: state.syncUp.id)
+        return .run { _ in await dismiss() }
 
       case .alert(.dismiss):
         return .none

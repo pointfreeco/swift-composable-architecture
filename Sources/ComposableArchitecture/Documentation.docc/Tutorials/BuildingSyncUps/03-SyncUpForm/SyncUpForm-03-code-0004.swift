@@ -40,7 +40,9 @@ struct SyncUpFormView: View {
         .onDelete { indices in
           store.send(.onDeleteAttendees(indices))
           // store.send(.onDeleteAttendees(indices))
-          // guard let firstIndex = indices.first
+          // guard
+          //  !store.syncUp.attendees.isEmpty,
+          //  let firstIndex = indices.first
           // else { return .none }
           // let index = min(firstIndex, store.syncUp.attendees.count - 1)
           // focus = .attendee(store.syncUp.attendees[index].id)
@@ -48,7 +50,7 @@ struct SyncUpFormView: View {
 
         Button("New attendee") {
           store.send(.addAttendeeButtonTapped)
-          // focus = .attendee(store.attendees.last!.id)
+          // focus = .attendee(store.syncUp.attendees.last!.id)
         }
       } header: {
         Text("Attendees")
