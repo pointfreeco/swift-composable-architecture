@@ -73,7 +73,8 @@
       
       @Step {
         Add the `Tagged` library to your project by navigating to the build settings, and then to
-        the package dependencies tab.
+        the package dependencies tab, and input the GitHub URL:
+        [https://github.com/pointfreeco/swift-tagged](https://github.com/pointfreeco/swift-tagged).
         
         @Image(source: syncups-02-package-dependencies-tagged.png)
       }
@@ -90,6 +91,11 @@
         
         @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0004.swift)
       }
+      > Important: To keep things simple for the rest of this tutorial we will _not_ assume that
+      you have implemented the `Tagged` type into your domain. If you choose to use `Tagged` then
+      you will need to do some extra work to construct tagged values that is not covered in
+      the tutorial. For example, once we get to using dependencies to control UUIDs, you will need
+      to write `Attendee.ID(uuid())` instead of just `uuid()`.
       -->
     }
   }

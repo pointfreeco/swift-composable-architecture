@@ -46,11 +46,15 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
       self.isSetting.setValue(true)
       try? self.storage.save(JSONEncoder().encode(value), self.url)
       let workItem = DispatchWorkItem { [weak self] in
-        guard let self, let value = self.value.value else { return }
+        guard let self else { return }
+        defer {
+          self.value.setValue(nil)
+          self.workItem.setValue(nil)
+        }
+        guard let value = self.value.value
+        else { return }
         self.isSetting.setValue(true)
         try? self.storage.save(JSONEncoder().encode(value), self.url)
-        self.value.setValue(nil)
-        self.workItem.setValue(nil)
       }
       self.workItem.setValue(workItem)
       if canListenForResignActive {
