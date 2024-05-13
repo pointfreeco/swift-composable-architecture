@@ -283,7 +283,7 @@
       the other.
       
       Luckily this is easy to fix, using a tool that comes with the Composable Architecture called
-      `bind(_:to:)`. It allows you synchronize two bindings so that when one changes it immediately
+      `bind(_:to:)`. It allows you to synchronize two bindings so that when one changes it immediately
       changes the other. This is useful for dealing with SwiftUI property wrappers that only work
       in the view, such as `@FocusState`.
       
