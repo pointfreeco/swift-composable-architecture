@@ -8,7 +8,7 @@ struct App {
     case detail(SyncUpDetail)
   }
   @ObservableState
-  struct State {
+  struct State: Equatable {
     var path = StackState<SyncUpDetail.State>()
     var syncUpsList = SyncUpsList.State()
   }

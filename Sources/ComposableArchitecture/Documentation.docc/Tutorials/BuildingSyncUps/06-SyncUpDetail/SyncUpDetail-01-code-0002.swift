@@ -4,7 +4,7 @@ import SwiftUI
 @Reducer
 struct SyncUpDetail {
   @ObservableState
-  struct State {
+  struct State: Equatable {
     @Shared var syncUp: SyncUp
   }
 

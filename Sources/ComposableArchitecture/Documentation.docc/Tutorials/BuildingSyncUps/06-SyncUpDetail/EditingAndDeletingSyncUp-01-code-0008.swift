@@ -70,6 +70,7 @@ struct SyncUpDetailView: View {
         .frame(maxWidth: .infinity)
       }
     }
+    .navigationTitle(Text(store.syncUp.title))
     .toolbar {
       Button("Edit") {
         store.send(.editButtonTapped)
@@ -95,26 +96,26 @@ struct SyncUpDetailView: View {
   }
 }
 
-  #Preview {
-    NavigationStack {
-      SyncUpDetailView(
-        store: Store(
-          initialState: SyncUpDetail.State(
-            syncUp: Shared(
-              SyncUp(
-                id: SyncUp.ID(),
-                attendees: [
-                  Attendee(id: Attendee.ID(), name: "Blob"),
-                  Attendee(id: Attendee.ID(), name: "Blob Jr."),
-                  Attendee(id: Attendee.ID(), name: "Blob Sr."),
-                ],
-                title: "Point-Free Morning Sync"
-              )
+#Preview {
+  NavigationStack {
+    SyncUpDetailView(
+      store: Store(
+        initialState: SyncUpDetail.State(
+          syncUp: Shared(
+            SyncUp(
+              id: SyncUp.ID(),
+              attendees: [
+                Attendee(id: Attendee.ID(), name: "Blob"),
+                Attendee(id: Attendee.ID(), name: "Blob Jr."),
+                Attendee(id: Attendee.ID(), name: "Blob Sr."),
+              ],
+              title: "Point-Free Morning Sync"
             )
           )
-        ) {
-          SyncUpDetail()
-        }
-      )
-    }
+        )
+      ) {
+        SyncUpDetail()
+      }
+    )
   }
+}

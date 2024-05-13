@@ -3,7 +3,7 @@ import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
-  @Reducer
+  @Reducer(state: .equatable)
   enum Destination {
     case alert(AlertState<Alert>)
     case edit(SyncUpForm)
@@ -14,7 +14,7 @@ struct SyncUpDetail {
   }
 
   @ObservableState
-  struct State {
+  struct State: Equatable {
     @Presents var destination: Destination.State?
     @Shared var syncUp: SyncUp
   }

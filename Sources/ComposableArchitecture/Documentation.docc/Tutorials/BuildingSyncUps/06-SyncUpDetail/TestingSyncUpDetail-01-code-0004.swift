@@ -10,7 +10,7 @@ class SyncUpDetailTests: XCTestCase {
       id: SyncUp.ID(),
       title: "Point-Free Morning Sync"
     )
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: syncUp)) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(syncUp))) {
       SyncUpDetail()
     }
 

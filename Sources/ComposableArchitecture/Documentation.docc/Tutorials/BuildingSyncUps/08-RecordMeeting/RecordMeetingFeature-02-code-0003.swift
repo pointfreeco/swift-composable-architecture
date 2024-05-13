@@ -72,6 +72,7 @@ struct SyncUpDetailView: View {
         .frame(maxWidth: .infinity)
       }
     }
+    .navigationTitle(Text(store.syncUp.title))
     .toolbar {
       Button("Edit") {
         store.send(.editButtonTapped)

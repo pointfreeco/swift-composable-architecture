@@ -7,7 +7,7 @@ struct App {
   enum Path {
   }
   @ObservableState
-  struct State {
+  struct State: Equatable {
     var path = StackState<SyncUpDetail.State>()
     var syncUpsList = SyncUpsList.State()
   }
