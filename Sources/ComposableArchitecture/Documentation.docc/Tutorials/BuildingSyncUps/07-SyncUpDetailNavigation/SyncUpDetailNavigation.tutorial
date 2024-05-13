@@ -22,7 +22,7 @@
         @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0001.swift)
       }
       
-      This feature's primary responsibility will to integrate all the features that can be 
+      This feature's primary responsibility will be to integrate all the features that can be 
       presented in the navigation stack. Currently that is only the `SyncUpsList` feature, which
       is always at the root of the stack, and the `SyncUpDetail` feature. Soon there will be more
       features that can be presented in the stack, such as the record meeting feature and the past
@@ -59,7 +59,7 @@
       and in the future there may be more.
       
       For this reason it is best to do some upfront work to model a feature that can handle any
-      number of features on the stack. This works must like the `Destination` reducer we created
+      number of features on the stack. This works much like the `Destination` reducer we created
       in <doc:EditingAndDeletingSyncUp>.
       
       @Step {
