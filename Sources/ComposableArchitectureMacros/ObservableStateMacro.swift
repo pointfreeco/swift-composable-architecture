@@ -45,6 +45,7 @@ public struct ObservableStateMacro {
   static let trackedMacroName = "ObservationStateTracked"
   static let ignoredMacroName = "ObservationStateIgnored"
   static let presentsMacroName = "Presents"
+  static var macroNamesToIgnore: [String] = []
   static let presentationStatePropertyWrapperName = "PresentationState"
   static let sharedPropertyWrapperName = "Shared"
   static let sharedReaderPropertyWrapperName = "SharedReader"
@@ -213,6 +214,23 @@ extension VariableDeclSyntax {
   }
 }
 
+extension TokenKind {
+  var stringSegmentValue: String? {
+    if case .stringSegment(let string) = self {
+      return string
+    }
+    return nil
+  }
+}
+
+extension AttributeSyntax {
+  var parameterStringValues: [String] {
+    let args = arguments?.as(LabeledExprListSyntax.self) ?? []
+    let segments = args.compactMap { $0.expression.as(StringLiteralExprSyntax.self)?.segments }
+    return segments.compactMap { $0.first?.as(StringSegmentSyntax.self)?.content.tokenKind.stringSegmentValue }
+  }
+}
+
 extension ObservableStateMacro: MemberMacro {
   public static func expansion<
     Declaration: DeclGroupSyntax,
@@ -231,6 +249,7 @@ extension ObservableStateMacro: MemberMacro {
       return []
     }
 
+    Self.macroNamesToIgnore = node.parameterStringValues
     let observableType = identified.name.trimmed
 
     if declaration.isClass {
@@ -447,6 +466,7 @@ extension ObservableStateMacro: MemberAttributeMacro {
     )
 
     if property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.macroNamesToIgnore)
       || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.sharedReaderPropertyWrapperName)
     {
@@ -540,6 +560,7 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
       || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.macroNamesToIgnore)
       || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
     {
       return []
@@ -599,6 +620,7 @@ extension ObservationStateTrackedMacro: PeerMacro {
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
       || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
+      || property.hasMacroApplication(ObservableStateMacro.macroNamesToIgnore)
       || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.trackedMacroName)
     {

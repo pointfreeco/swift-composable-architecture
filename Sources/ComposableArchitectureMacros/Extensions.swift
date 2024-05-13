@@ -101,6 +101,20 @@ extension VariableDeclSyntax {
     return false
   }
 
+  func hasMacroApplication(_ names: [String]) -> Bool {
+    for attribute in attributes {
+      switch attribute {
+      case .attribute(let attr):
+        if attr.attributeName.tokens(viewMode: .all).map({ $0.tokenKind }) == names.map { .identifier($0) } {
+          return true
+        }
+      default:
+        break
+      }
+    }
+    return false
+  }
+
   func firstAttribute(for name: String) -> AttributeSyntax? {
     for attribute in attributes {
       switch attribute {

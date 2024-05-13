@@ -121,7 +121,7 @@
   @attached(extension, conformances: Observable, ObservableState)
   @attached(member, names: named(_$id), named(_$observationRegistrar), named(_$willModify))
   @attached(memberAttribute)
-  public macro ObservableState() =
+  public macro ObservableState(ignore: String...) =
     #externalMacro(module: "ComposableArchitectureMacros", type: "ObservableStateMacro")
 
   @attached(accessor, names: named(init), named(get), named(set))
