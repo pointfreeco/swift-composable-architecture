@@ -28,7 +28,7 @@ struct SyncUpForm {
     Reduce { state, action in
       switch action {
       case .addAttendeeButtonTapped:
-        let attendee = Attendee(id: uuid())
+        let attendee = Attendee(id: Attendee.ID(uuid()))
         state.syncUp.attendees.append(attendee)
         state.focus = .attendee(attendee.id)
         return .none
@@ -44,7 +44,7 @@ struct SyncUpForm {
         state.syncUp.attendees.remove(atOffsets: indexSet)
         if state.syncUp.attendees.isEmpty {
           state.syncUp.attendees.append(
-            Attendee(id: uuid())
+            Attendee(id: Attendee.ID(uuid()))
           )
         }
 
