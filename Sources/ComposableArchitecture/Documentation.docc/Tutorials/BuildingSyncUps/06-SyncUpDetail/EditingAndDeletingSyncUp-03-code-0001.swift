@@ -3,7 +3,7 @@ import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
-  @Reducer
+  @Reducer(state: .equatable)
   enum Destination {
   }
   // ...

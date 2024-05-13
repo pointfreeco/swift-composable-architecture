@@ -4,7 +4,7 @@ import SwiftUI
 @Reducer
 struct App {
   @ObservableState
-  struct State {
+  struct State: Equatable {
   }
   enum Action {
   }

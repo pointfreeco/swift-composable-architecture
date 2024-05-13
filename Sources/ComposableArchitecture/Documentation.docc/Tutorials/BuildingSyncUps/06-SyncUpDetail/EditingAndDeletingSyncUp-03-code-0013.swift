@@ -75,6 +75,7 @@ struct SyncUpDetailView: View {
         store.send(.editButtonTapped)
       }
     }
+    .navigationTitle(Text(store.syncUp.title))
     .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
     .sheet(
       item: $store.scope(state: \.destination?.edit, action: \.destination.edit)

@@ -10,7 +10,7 @@ class SyncUpDetailTests: XCTestCase {
       id: SyncUp.ID(),
       title: "Point-Free Morning Sync"
     )
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: syncUp)) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(syncUp))) {
       SyncUpDetail()
     }
 
@@ -21,7 +21,7 @@ class SyncUpDetailTests: XCTestCase {
     var editedSyncUp = syncUp
     editedSyncUp.title = "Point-Free Evening Sync"
     await store.send(\.destination.edit.binding.syncUp, editedSyncUp) {
-      $0.$destination?.edit?.syncUp = editedSyncUp
+      $0.destination?.edit?.syncUp = editedSyncUp
     }
 
     await store.send(.doneEditingButtonTapped) {

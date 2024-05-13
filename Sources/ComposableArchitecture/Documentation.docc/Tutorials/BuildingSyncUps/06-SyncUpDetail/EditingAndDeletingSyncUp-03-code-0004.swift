@@ -3,7 +3,7 @@ import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
-  @Reducer
+  @Reducer(state: .equatable)
   enum Destination {
     case alert(AlertState<Alert>)
     case edit(SyncUpForm)
@@ -14,7 +14,7 @@ struct SyncUpDetail {
   }
 
   @ObservableState
-  struct State {
+  struct State: Equatable {
     @Presents var destination: Destination.State?
     @Shared var syncUp: SyncUp
   }
@@ -38,10 +38,9 @@ struct SyncUpDetail {
     Reduce { state, action in
       switch action {
       case .alert(.presented(.confirmButtonTapped)):
-        return .run { send in
-          await send(.delegate(.deleteSyncUp(id: state.syncUp.id)))
-          await dismiss()
-        }
+        @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
+        syncUps.remove(id: state.syncUp.id)
+        return .run { _ in await dismiss() }
 
       case .alert(.dismiss):
         return .none

@@ -153,6 +153,11 @@
         deletion, and we do not have to model the cancel action. That is automatically taken care of
         by the library's navigation tools.
         
+        > Note: We are pre-emptively applying the `@CasePathable` macro to make it possible to write
+        tests against these actions in a keypath-like syntax. The `@CasePathable` macro is 
+        automatically applied to `Action` enums inside reducers, but macros cannot recursive apply
+        themselves and so we must do it manually sometimes.
+        
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0001.swift, previousFile: EditingAndDeletingSyncUp-02-code-0001-previous.swift)
       }
       
@@ -358,6 +363,13 @@
         _Further_, the `Destination` type will be an _enum_. This is different than other reducers
         we have encountered so far. The [`@Reducer`](<doc:Reducer()>) has special behavior when
         applied to enums that allows one to compose multiple reducers into a single package.
+        
+        > Important: As we have seen it is important for `State` types to be `Equatable` for 
+        testing, and so we are proactively making the `State` type generated for the `Destination`
+        reducer equatable via the `state` argument of 
+        ``ComposableArchitecture/Reducer(state:action:)``. See the article 
+        <doc:Reducers#Circular-reference-errors> for more information of why this is the necessary 
+        way to make `State` equatable.
         
         > Note: We have collapsed the implementation of `SyncUpDetail` and `SyncUpDetailView` in
         > this code snippet.
