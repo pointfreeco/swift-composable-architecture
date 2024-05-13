@@ -1771,6 +1771,42 @@ final class PresentationReducerTests: BaseTCATestCase {
 
     await store.send(.child(.dismiss))
   }
+    
+  @MainActor
+  func test_GivenShouldIgnoreWarningsTrue_WhenSendingDismissActionToNilChild_ThenDoesNotGenerateRuntimeWarning() {
+    struct Child: Reducer {
+      struct State: Equatable {}
+      enum Action: Equatable {}
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
+      }
+    }
+    
+    struct Parent: Reducer {
+      struct State: Equatable {
+        @PresentationState var child: Child.State?
+      }
+      enum Action: Equatable {
+        case child(PresentationAction<Child.Action>)
+      }
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+            .none
+        }
+        .ifLet(\.$child, action: /Action.child) {
+          Child()
+        }
+      }
+    }
+    
+    let store = Store(initialState: Parent.State()) {
+      Parent()
+    }
+    
+    withoutWarnings {
+      store.send(.child(.dismiss))
+    }
+  }
 
   @MainActor
   func testRuntimeWarn_NilChild_SendChildAction() async {

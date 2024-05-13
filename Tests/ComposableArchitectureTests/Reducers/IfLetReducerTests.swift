@@ -37,7 +37,19 @@ final class IfLetReducerTests: BaseTCATestCase {
 
     await store.send(())
   }
-
+    
+  @MainActor
+  func test_GivenShouldIgnoreWarningsTrue_WhenSendingActionToNilChild_ThenDoesNotGenerateRuntimeWarning() async {
+    let store = Store(initialState: Int?.none) {
+      EmptyReducer<Int?, Void>()
+        .ifLet(\.self, action: \.self) {}
+    }
+    
+    withoutWarnings {
+      store.send(())
+    }
+  }
+  
   @MainActor
   func testEffectCancellation() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
