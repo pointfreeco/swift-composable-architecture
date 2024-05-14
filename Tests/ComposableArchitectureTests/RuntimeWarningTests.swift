@@ -273,6 +273,57 @@
             """
         }
       }
+
+      @Reducer
+      struct TestStoreDestination_NotIntegrated {
+        @Reducer
+        struct Destination {}
+        @ObservableState
+        struct State: Equatable {
+          @Presents var destination: Destination.State?
+        }
+        enum Action {
+          case destination(PresentationAction<Destination.Action>)
+        }
+      }
+      @MainActor
+      func testStoreDestination_NotIntegrated() {
+        let store = Store(
+          initialState: TestStoreDestination_NotIntegrated.State(destination: .init())
+        ) {
+          TestStoreDestination_NotIntegrated()
+        }
+
+        XCTExpectFailure {
+          store[
+            state: \.destination,
+            action: \.destination,
+            isInViewBody: false,
+            fileID: "file.swift",
+            line: 1
+          ] = nil
+        } issueMatcher: {
+          $0.compactDescription == """
+            SwiftUI dismissed a view through a binding at "file.swift:1", but the store \
+            destination wasn't set to "nil".
+
+            This usually means an "ifLet" has not been integrated with the reducer powering the \
+            store, and this reducer is responsible for handling presentation actions.
+
+            To fix this, ensure that "ifLet" is invoked from the reducer's "body":
+
+                Reduce { state, action in
+                  // ...
+                }
+                .ifLet(\\.destination, action: \\.destination) {
+                  Destination()
+                }
+
+            And ensure that every parent reducer is integrated into the root reducer that powers \
+            the store.
+            """
+        }
+      }
     #endif
   }
 #endif
