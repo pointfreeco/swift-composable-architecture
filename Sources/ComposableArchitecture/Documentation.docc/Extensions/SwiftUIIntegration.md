@@ -17,7 +17,7 @@ designed with SwiftUI in mind, and comes with many powerful tools to integrate i
 
 ### Presentation
 
-- ``SwiftUI/Binding/scope(state:action:)-4mj4d``
+- ``SwiftUI/Binding/scope(state:action:fileID:line:)``
 
 ### Navigation stacks and links
 
