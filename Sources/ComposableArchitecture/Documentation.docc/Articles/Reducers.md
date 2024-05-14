@@ -31,7 +31,7 @@ more concise and more powerful.
 The bare minimum of conforming to the ``Reducer`` protocol is to provide a ``Reducer/State`` type
 that represents the state your feature needs to do its job, a ``Reducer/Action`` type that
 represents the actions users can perform in your feature (as well as actions that effects can
-feed back into the system), and a ``Reducer/body-8lumc`` property that compose your feature
+feed back into the system), and a ``Reducer`` property that compose your feature
 together with any other features that are needed (such as for navigation).
 
 As a very simple example, a "counter" feature could model its state as a struct holding an integer:
