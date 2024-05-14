@@ -765,8 +765,8 @@ example:
   }
 }
 
-> **Tip:** When possible, consider moving complex binding logic into the reducer so that it can be
-> more easily tested.
+> Tip: When possible, consider moving complex binding logic into the reducer so that it can be more
+> easily tested.
 
 ## Computed view state
 
