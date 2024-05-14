@@ -70,7 +70,7 @@
       
       @Step {
         At the very bottom of the view use the `sheet(item:)` modifier by deriving a binding to the 
-        `SyncUpForm` domain using ``SwiftUI/Binding/scope(state:action:)-4mj4d``.
+        `SyncUpForm` domain using ``SwiftUI/Binding/scope(state:action:fileID:line:)``.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0006.swift)
       }

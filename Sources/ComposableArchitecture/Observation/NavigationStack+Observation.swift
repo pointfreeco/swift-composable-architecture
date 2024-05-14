@@ -70,7 +70,7 @@ import SwiftUI
   extension SwiftUI.Bindable {
     /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
     ///
-    /// See ``SwiftUI/Binding/scope(state:action:)-4mj4d`` defined on `Binding` for more
+    /// See ``SwiftUI/Binding/scope(state:action:fileID:line:)`` defined on `Binding` for more
     /// information.
     public func scope<State: ObservableState, Action, ElementState, ElementAction>(
       state: KeyPath<State, StackState<ElementState>>,
@@ -88,7 +88,7 @@ import SwiftUI
   extension Perception.Bindable {
     /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
     ///
-    /// See ``SwiftUI/Binding/scope(state:action:)-4mj4d`` defined on `Binding` for more
+    /// See ``SwiftUI/Binding/scope(state:action:fileID:line:)`` defined on `Binding` for more
     /// information.
     public func scope<State: ObservableState, Action, ElementState, ElementAction>(
       state: KeyPath<State, StackState<ElementState>>,

@@ -112,8 +112,8 @@
       
       Luckily the library comes with the tools necessary. Just as there is a scoping operation on
       stores for focusing on sub-domains of a parent domain, there is also a scope on _bindings_ of
-      stores for doing the same: ``SwiftUI/Binding/scope(state:action:)-4mj4d``. This tool can be
-      used to derive a binding that is appropriate to pass to `sheet(item:)`.
+      stores for doing the same: ``SwiftUI/Binding/scope(state:action:fileID:line:)``. This tool can
+      be used to derive a binding that is appropriate to pass to `sheet(item:)`.
       
       @Step {
         Since we want to derive bindings from the store we need to decorate the property in the view
@@ -127,8 +127,8 @@
       }
       
       @Step {
-        Use the ``SwiftUI/Binding/scope(state:action:)-4mj4d`` operator on `$store` to focus the
-        binding to the presentation domain of the `SyncUpForm`. The `sheet(item:)` modifier will 
+        Use the ``SwiftUI/Binding/scope(state:action:fileID:line:)`` operator on `$store` to focus
+        the binding to the presentation domain of the `SyncUpForm`. The `sheet(item:)` modifier will
         hand the trailing closure a `StoreOf<SyncUpForm>`, and that is exactly what can be handed to
         the `SyncUpFormView`.
         
