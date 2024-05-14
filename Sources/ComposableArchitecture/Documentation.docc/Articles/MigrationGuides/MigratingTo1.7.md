@@ -736,7 +736,7 @@ example:
         flag.description,
         isOn: viewStore.binding(
           get: { store.featureFlags.contains(flag) }
-          send: { store.send(.toggleFeature(flag)) }
+          send: { store.send(.flagToggled(flag, isOn: $0)) }
         )
       )
     }
@@ -748,9 +748,9 @@ example:
 
     // In the file:
     extension StoreOf<Feature> {
-      subscript(hasFeatureFlag flag: Flag) {
+      subscript(hasFeatureFlag flag: Flag) -> Bool {
         get { featureFlags.contains(flag) }
-        set { send(.toggleFeature(flag) }
+        set { send(.flagToggled(flag, isOn: newValue)) }
       }
     }
 
