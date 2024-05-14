@@ -5,7 +5,7 @@ import SwiftUI
     /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
     ///
     /// This operator is most used in conjunction with `NavigationStack`, and in particular
-    /// the initializer ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` that 
+    /// the initializer ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` that
     /// ships with this library.
     ///
     /// For example, suppose you have a feature that holds onto ``StackState`` in its state in order
