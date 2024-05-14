@@ -35,7 +35,7 @@
       }
       
       @Step {
-        Implement a basic ``ComposableArchitecture/Reducer/body-8lumc`` property to fulfill that 
+        Implement a basic ``ComposableArchitecture/Reducer/body-20w8t`` property to fulfill that 
         requirement of ``ComposableArchitecture/Reducer`` protocol. Since there are no actions in 
         this feature there is nothing we can do in the reducer. More will be added to this later.
         
@@ -121,8 +121,8 @@
       
       @Step {
         Go to the `ContactsView` that holds the view for the contacts list. Swap out the
-        `NavigationStack` for ``SwiftUI/NavigationStack/init(path:root:destination:)``, which is a
-        special initializer that is specifically tuned for driving stacks from a
+        `NavigationStack` for ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)``, 
+        which is a special initializer that is specifically tuned for driving stacks from a
         ``ComposableArchitecture/Store``. 
         You hand it a binding to a store that is scoped down to
         ``ComposableArchitecture/StackState`` and ``ComposableArchitecture/StackAction``, and it
@@ -132,10 +132,10 @@
       }
       
       @Step {
-        ``SwiftUI/NavigationStack/init(path:root:destination:)`` takes two trailing closures. The
-        first is for the root of the stack, which is our list of contacts. The second is to describe
-        the destinations that can be navigated to. It is handled a store that is focused on the
-        domain of just a single element in the stack.
+        ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` takes two trailing 
+        closures. The first is for the root of the stack, which is our list of contacts. The second 
+        is to describe the destinations that can be navigated to. It is handled a store that is 
+        focused on the domain of just a single element in the stack.
         
         @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0004.swift) 
       }

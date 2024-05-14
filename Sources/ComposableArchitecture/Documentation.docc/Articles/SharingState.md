@@ -319,7 +319,7 @@ should take a plain, non-`Shared` value and you construct the `Shared` value in 
 * You are using a persistence strategy with shared state (_e.g._ 
 ``PersistenceReaderKey/appStorage(_:)-4l5b``, ``PersistenceReaderKey/fileStorage(_:)``, _etc._),
 then the initializer should take a plain, non-`Shared` value and you construct the `Shared` value in
-the initializer using ``Shared/init(wrappedValue:_:fileID:line:)-80rtq`` which takes a
+the initializer using ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` which takes a
 ``PersistenceKey`` as the second argument:
 
   ```swift
@@ -339,7 +339,7 @@ the initializer using ``Shared/init(wrappedValue:_:fileID:line:)-80rtq`` which t
 
   > Important: The value passed to this initializer is only used if the external storage does not
   > already have a value. If a value exists in the storage then it is not used. In fact, the
-  > `wrappedValue` argument of ``Shared/init(wrappedValue:_:fileID:line:)-80rtq`` is an
+  > `wrappedValue` argument of ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` is an
   > `@autoclosure` so that it is not even evaluated if not used. For that reason you
   > may prefer to make the argument to the initializer an `@autoclosure` so that it too is evaluated
   > only if actually used:
@@ -997,15 +997,24 @@ There are a few gotchas to be aware of when using shared state in the Composable
 
 #### Hashability
 
-Because the `@Shared` type is equatable based on its wrapped value, and because the value is held in a reference and can change over time, it cannot be hashable. This also means that types containing `@Shared` properties should not compute their hashes from shared values.
+Because the `@Shared` type is equatable based on its wrapped value, and because the value is held 
+in a reference and can change over time, it cannot be hashable. This also means that types 
+containing `@Shared` properties should not compute their hashes from shared values.
 
 #### Codability
 
-The `@Shared` type is not conditionally encodable or decodable because the source of truth of the wrapped value is rarely local: it might be derived from some other shared value, or it might rely on loading the value from a backing persistence strategy.
+The `@Shared` type is not conditionally encodable or decodable because the source of truth of the 
+wrapped value is rarely local: it might be derived from some other shared value, or it might rely on 
+loading the value from a backing persistence strategy.
 
-When introducing shared state to a data type that is encodable or decodable, you must provide your own implementations of `encode(to:)` and `init(from:)` that do the appropriate thing.
+When introducing shared state to a data type that is encodable or decodable, you must provide your 
+own implementations of `encode(to:)` and `init(from:)` that do the appropriate thing.
 
-For example, if the data type is sharing state with a persistence strategy, you can decode by delegating to the memberwise initializer that implicitly loads the shared value from the property wrapper's persistence strategy, or you can explicitly initialize a shared value via ``Shared/init(wrappedValue:_:fileID:line:)``. And for encoding you can often skip encoding the shared value:
+For example, if the data type is sharing state with a persistence strategy, you can decode by 
+delegating to the memberwise initializer that implicitly loads the shared value from the property 
+wrapper's persistence strategy, or you can explicitly initialize a shared value via
+``Shared/init(wrappedValue:_:fileID:line:)-512rh``. And for encoding you can often skip encoding 
+the shared value:
 
 ```swift
 struct AppState {

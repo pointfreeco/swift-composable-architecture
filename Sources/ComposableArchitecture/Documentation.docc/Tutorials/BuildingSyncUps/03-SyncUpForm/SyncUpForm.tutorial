@@ -48,7 +48,7 @@
       
       @Step {
         And second, compose the ``ComposableArchitecture/BindingReducer`` into your feature's 
-        ``ComposableArchitecture/Reducer/body-8lumc``. This is our first time encountering reducer
+        ``ComposableArchitecture/Reducer/body-20w8t``. This is our first time encountering reducer
         composition in this tutorial, and it is done by simply listing all the reducers you want
         to compose in the `body`. 
         

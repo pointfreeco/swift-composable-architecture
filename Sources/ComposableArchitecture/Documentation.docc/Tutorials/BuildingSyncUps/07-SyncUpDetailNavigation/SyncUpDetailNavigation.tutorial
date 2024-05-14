@@ -147,10 +147,10 @@
       @Step {
         Implement the `body` of the view by constructing a `NavigationStack`, but we will be using
         special initializer that comes with the library:
-        ``SwiftUI/NavigationStack/init(path:root:destination:)``. This initializer takes a binding
-        to a store focused on the stack domain, as well as two trailing closures. The first for
-        the root view that is always present, and the second for the destinations that can be 
-        pushed onto the stack.
+        ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)``. This initializer takes 
+        a binding to a store focused on the stack domain, as well as two trailing closures. The 
+        first for the root view that is always present, and the second for the destinations that 
+        can be  pushed onto the stack.
         
         @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0003.swift)
       }

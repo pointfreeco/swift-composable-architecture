@@ -31,7 +31,7 @@ more concise and more powerful.
 The bare minimum of conforming to the ``Reducer`` protocol is to provide a ``Reducer/State`` type
 that represents the state your feature needs to do its job, a ``Reducer/Action`` type that
 represents the actions users can perform in your feature (as well as actions that effects can
-feed back into the system), and a ``Reducer/body-8lumc`` property that compose your feature
+feed back into the system), and a ``Reducer/body-20w8t`` property that compose your feature
 together with any other features that are needed (such as for navigation).
 
 As a very simple example, a "counter" feature could model its state as a struct holding an integer:
@@ -63,7 +63,7 @@ struct CounterFeature: Reducer {
 
 The logic of your feature is implemented by mutating the feature's current state when an action
 comes into the system. This is most easily done by constructing a ``Reduce`` inside the
-``Reducer/body-8lumc`` of your reducer:
+``Reducer/body-20w8t`` of your reducer:
 
 ```swift
 struct CounterFeature: Reducer {
@@ -335,9 +335,9 @@ Reduce { state, action in
 
 Further, for `Path` reducers in particular, the ``Reducer()`` macro also helps you reduce
 boilerplate when using the initializer 
-``SwiftUI/NavigationStack/init(path:root:destination:)`` that comes with the library. In the last
-trailing closure you can use the ``Store/case`` computed property to switch on the `Path.State` enum
-and extract out a store for each case:
+``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` that comes with the library. 
+In the last trailing closure you can use the ``Store/case`` computed property to switch on the 
+`Path.State` enum and extract out a store for each case:
 
 ```swift
 NavigationStack(path: $store.scope(state: \.path, action: \.path)) {

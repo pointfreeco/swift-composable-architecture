@@ -90,7 +90,7 @@
       }
       
       @Step {
-        Next we need to implement the ``ComposableArchitecture/Reducer/body-8lumc`` of the reducer.
+        Next we need to implement the ``ComposableArchitecture/Reducer/body-20w8t`` of the reducer.
         Previously we did this by using the ``ComposableArchitecture/Reduce`` type to open a closure
         and perform any state mutations necessary based on the action passed in. 
         

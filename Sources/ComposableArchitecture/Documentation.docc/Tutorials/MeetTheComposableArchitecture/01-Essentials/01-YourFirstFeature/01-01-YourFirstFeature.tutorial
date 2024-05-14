@@ -67,7 +67,7 @@
       
       @Step {
         And finally, to finish conforming to ``ComposableArchitecture/Reducer``, you must implement
-        a ``ComposableArchitecture/Reducer/body-8lumc`` property with a
+        a ``ComposableArchitecture/Reducer/body-20w8t`` property with a
         ``ComposableArchitecture/Reduce`` reducer that evolves the state from its current value to
         the next value given a user action, and returns any effects that the feature wants to
         execute in the outside world. This almost always begins by switching on the incoming action
@@ -75,7 +75,7 @@
         can perform mutations on it directly.
         
         > Note: A reducer is implemented by providing a 
-        > ``ComposableArchitecture/Reducer/body-8lumc`` property, and then listing the 
+        > ``ComposableArchitecture/Reducer/body-20w8t`` property, and then listing the 
         > reducers inside that you want to compose. Right now we only have one reducer we want to
         > run, and so a simple ``ComposableArchitecture/Reduce`` is sufficient, but it is more
         > typical to compose many reducers together, and that will be shown later in the tutorial.
