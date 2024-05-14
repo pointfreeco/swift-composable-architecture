@@ -81,8 +81,9 @@
       
       That's all it takes. We can now navigate to any meeting that has been previously recorded.
       However, we haven't yet implemented the record meeting feature. That is by far the most 
-      complex feature of the app, and is covered in <doc:RecordMeeting>, but before getting to that
-      let's see what it takes to test features that are integrated together in a navigation stack.
+      complex feature of the app, and is covered in <doc:RecordMeetingFeature>, but before getting 
+      to that let's see what it takes to test features that are integrated together in a navigation 
+      stack.
     }
   }
 }

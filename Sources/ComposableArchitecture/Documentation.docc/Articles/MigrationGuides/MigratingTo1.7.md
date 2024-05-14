@@ -538,7 +538,7 @@ property wrapper:
 ```
 
 And the original code can now be updated to our custom initializer 
-``SwiftUI/NavigationStack/init(path:root:destination:)`` on `NavigationStack`:
+``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` on `NavigationStack`:
 
 ```swift
 NavigationStack(path: $store.scope(state: \.path, action: \.path)) {

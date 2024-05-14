@@ -161,7 +161,7 @@
       }
       
       @Step {
-        Implement the ``ComposableArchitecture/Reducer/body-8lumc`` of the reducer by using the 
+        Implement the ``ComposableArchitecture/Reducer/body-20w8t`` of the reducer by using the 
         ``ComposableArchitecture/Reduce`` type to implement each action. We will leave the 
         `addSyncUpButtonTapped` and `syncUpTapped` actions unimplemented for now since it requires
         more work to present a sheet and drill down to a sync-up.
