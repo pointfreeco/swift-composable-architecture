@@ -85,7 +85,7 @@
   /// ```swift
   /// @Reducer
   /// enum Destination {
-  ///   @ReducerEphemeralCase
+  ///   @ReducerCaseEphemeral
   ///   case alert(AlertState<Alert>)
   ///   // ...
   ///
