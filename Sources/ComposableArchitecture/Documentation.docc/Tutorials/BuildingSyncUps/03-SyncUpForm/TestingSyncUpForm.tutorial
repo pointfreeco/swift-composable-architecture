@@ -119,14 +119,14 @@
         feature has a dependency, and we will provide the key path `\.uuid` to denote the dependence
         on UUID generation.
         
-        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-02-code-0004.swift, previousFile: TestingSyncUpForm-02-code-0004-previous.swift)
+        @Code(name: "SyncUpForm.swift", file: TestingSyncUpForm-02-code-0004.swift, previousFile: TestingSyncUpForm-02-code-0004-previous.swift)
       }
       
       @Step {
         Then, in the reducer's logic, any place we reached out to the uncontrolled UUID generator,
         for example `Attendee.ID()`, we will instead use the `uuid` dependency.
         
-        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-02-code-0005.swift)
+        @Code(name: "SyncUpForm.swift", file: TestingSyncUpForm-02-code-0005.swift)
       }
       
       With that one change, if you were to run the test suite again you would get the same test
