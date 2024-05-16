@@ -193,7 +193,7 @@ public struct AppStorageKey<Value> {
 
   public init(_ key: String) where Value == URL {
     @Dependency(\.defaultAppStorage) var store
-    self.lookup = CastableLookup()
+    self.lookup = URLLookup()
     self.key = key
     self.store = store
   }
@@ -251,7 +251,7 @@ public struct AppStorageKey<Value> {
 
   public init(_ key: String) where Value == URL? {
     @Dependency(\.defaultAppStorage) var store
-    self.lookup = OptionalLookup(base: CastableLookup())
+    self.lookup = OptionalLookup(base: URLLookup())
     self.key = key
     self.store = store
   }
@@ -380,6 +380,30 @@ private struct CastableLookup<Value>: Lookup {
   func saveValue(_ newValue: Value, to store: UserDefaults, at key: String) {
     SharedAppStorageLocals.$isSetting.withValue(true) {
       store.setValue(newValue, forKey: key)
+    }
+  }
+}
+
+/// Lookup implementation tuned for URL values.
+/// For URLs, dedicated UserDefaults APIs for getting/setting need to be called that convert the URL from/to Data.
+/// Calling setValue with a URL causes a NSInvalidArgumentException exception.
+private struct URLLookup: Lookup {
+  typealias Value = URL
+
+  func loadValue(from store: UserDefaults, at key: String, default defaultValue: URL?) -> URL? {
+    guard let value = store.url(forKey: key)
+    else {
+      SharedAppStorageLocals.$isSetting.withValue(true) {
+        store.set(defaultValue, forKey: key)
+      }
+      return defaultValue
+    }
+    return value
+  }
+
+  func saveValue(_ newValue: URL, to store: UserDefaults, at key: String) {
+    SharedAppStorageLocals.$isSetting.withValue(true) {
+      store.set(newValue, forKey: key)
     }
   }
 }
