@@ -24,6 +24,33 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(defaults.integer(forKey: "count"), 43)
   }
 
+  func testDefaultsReadURL() {
+    @Dependency(\.defaultAppStorage) var defaults
+    defaults.set(URL(string: "https://pointfree.co"), forKey: "url")
+    @Shared(.appStorage("url")) var url: URL?
+    XCTAssertEqual(url, URL(string: "https://pointfree.co"))
+  }
+
+  func testDefaultsRegistered_URL() {
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("url")) var url: URL = URL(string: "https://pointfree.co")!
+    XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://pointfree.co")!)
+
+    url = URL(string: "https://example.com")!
+    XCTAssertEqual(url, URL(string: "https://example.com")!)
+    XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://example.com")!)
+  }
+
+  func testDefaultsRegistered_Optional_URL() {
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("url")) var url: URL? = URL(string: "https://pointfree.co")
+    XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://pointfree.co"))
+
+    url = URL(string: "https://example.com")
+    XCTAssertEqual(url, URL(string: "https://example.com"))
+    XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://example.com"))
+  }
+
   func testDefaultsRegistered_Optional() {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage("data")) var data: Data?
