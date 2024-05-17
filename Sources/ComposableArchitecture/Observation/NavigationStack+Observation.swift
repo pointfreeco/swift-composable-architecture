@@ -237,6 +237,14 @@ import SwiftUI
     let line: UInt
     @Environment(\.navigationDestinationType) var navigationDestinationType
 
+    @_spi(Internals)
+    public init(state: State?, @ViewBuilder label: () -> Label, fileID: StaticString, line: UInt) {
+      self.state = state
+      self.label = label()
+      self.fileID = fileID
+      self.line = line
+    }
+
     public var body: some View {
       #if DEBUG
         self.label.onAppear {
@@ -331,7 +339,8 @@ import SwiftUI
     }
   }
 
-  var _isInPerceptionTracking: Bool {
+  @_spi(Internals)
+  public var _isInPerceptionTracking: Bool {
     #if !os(visionOS)
       return _PerceptionLocals.isInPerceptionTracking
     #else
@@ -352,8 +361,16 @@ extension StackState {
   }
 
   public struct Component: Hashable {
-    let id: StackElementID
-    var element: Element
+    @_spi(Internals)
+    public let id: StackElementID
+    @_spi(Internals)
+    public var element: Element
+
+    @_spi(Internals)
+    public init(id: StackElementID, element: Element) {
+      self.id = id
+      self.element = element
+    }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
       lhs.id == rhs.id
@@ -416,7 +433,8 @@ private struct NavigationDestinationTypeKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
-  var navigationDestinationType: Any.Type? {
+  @_spi(Internals)
+  public var navigationDestinationType: Any.Type? {
     get { self[NavigationDestinationTypeKey.self] }
     set { self[NavigationDestinationTypeKey.self] = newValue }
   }
