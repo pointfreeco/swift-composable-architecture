@@ -12,7 +12,7 @@ final class RecordMeetingTests: XCTestCase {
         Attendee(id: Attendee.ID(), name: "Blob"),
         Attendee(id: Attendee.ID(), name: "Blob Jr"),
       ],
-      duration: .duration(4),
+      duration: .seconds(4),
       title: "Morning Sync"
     )
     let store = TestStore(

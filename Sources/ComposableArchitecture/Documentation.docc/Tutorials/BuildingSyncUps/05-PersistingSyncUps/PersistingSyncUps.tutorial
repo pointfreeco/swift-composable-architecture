@@ -90,7 +90,7 @@
       }
       
       @Step {
-        Go to SyncUpListsTests.swift and make a change to the `testAddSyncUp` test to make an
+        Go to SyncUpsListTests.swift and make a change to the `testAddSyncUp` test to make an
         incorrect assertion.
         
         @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0001.swift, previousFile: PersistingSyncUps-02-code-0001-previous.swift)
