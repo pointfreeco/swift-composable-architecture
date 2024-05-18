@@ -15,7 +15,7 @@ final class RecordMeetingTests: XCTestCase {
         Attendee(id: Attendee.ID(), name: "Blob"),
         Attendee(id: Attendee.ID(), name: "Blob Jr"),
       ],
-      duration: .duration(4),
+      duration: .seconds(4),
       title: "Morning Sync"
     )
     let store = TestStore(
@@ -26,9 +26,10 @@ final class RecordMeetingTests: XCTestCase {
       $0.continuousClock = clock
       $0.date.now = Date(timeIntervalSince1970: 1234567890)
       $0.uuid = .incrementing
+      $0.dismiss = DismissEffect { dismissed.fulfill() }
     }
 
-    await store.send(.onAppear)
+    let onAppearTask = await store.send(.onAppear)
     await clock.advance(by: .seconds(1))
     await store.receive(\.timerTick) {
       $0.secondsElapsed = 1

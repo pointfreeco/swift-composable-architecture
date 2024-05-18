@@ -63,7 +63,7 @@ struct RecordMeeting {
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.secondsElapsed == state.syncUp.duration.components.seconds {
             state.syncUp.meetings.insert(
-              Meeting(id: uuid(), date: now, transcript: transcript),
+              Meeting(id: uuid(), date: now, transcript: state.transcript),
               at: 0
             )
             return .run { _ in await dismiss() }
