@@ -238,7 +238,7 @@
         can be done with familiar dot syntax because the 
         ``ComposableArchitecture/Reducer()`` macro applies the `@CasePathable` macro to each enum.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012.swift, previousFile: 02-02-02-code-0011-previous.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012.swift, previousFile: 02-02-02-code-0012-previous.swift)
       }
 
       @Step {
