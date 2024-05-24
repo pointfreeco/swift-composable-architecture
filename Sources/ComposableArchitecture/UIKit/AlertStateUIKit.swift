@@ -53,6 +53,7 @@
       }
     }
 
+    // TODO: Deprecate for `$store.scope`
     /// Creates a `UIAlertController` from a ``Store`` focused on alert state.
     ///
     /// You can use this initializer in tandem with ``ObjectiveC/NSObject/observe(_:)`` and
@@ -102,6 +103,23 @@
             style: .cancel,
             handler: { _ in store.send(.dismiss) })
         )
+      }
+    }
+
+    public convenience init<Action>(
+      store: Store<AlertState<Action>, Action>
+    ) {
+      let state = store.currentState
+      self.init(
+        title: String(state: state.title),
+        message: state.message.map { String(state: $0) },
+        preferredStyle: .alert
+      )
+      for button in state.buttons {
+        addAction(UIAlertAction(button, action: { _ = $0.map(store.send) }))
+      }
+      if state.buttons.isEmpty {
+        addAction(UIAlertAction(title: "OK", style: .cancel))
       }
     }
 

@@ -300,6 +300,24 @@
     }
   }
 
+  extension UIBindable {
+    public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+      state: KeyPath<State, ChildState?>,
+      action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      fileID: StaticString = #fileID,
+      line: UInt = #line
+    ) -> UIBinding<Store<ChildState, ChildAction>?>
+    where Value == Store<State, Action> {
+      self[
+        state: state,
+        action: action,
+        isInViewBody: _isInPerceptionTracking,
+        fileID: "\(fileID)",
+        line: line
+      ]
+    }
+  }
+
   extension Store where State: ObservableState {
     @_spi(Internals)
     public subscript<ChildState, ChildAction>(
