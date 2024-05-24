@@ -16,7 +16,7 @@ App architecture is filled with tradeoffs, and it is important to think deeply a
 * [Do features built in TCA have a lot of boilerplate?](#TODO)
 * [Isn't maintaining a separate enum of “actions” unnecessary work?](#TODO)
 * [Are TCA features inefficient because all of an app’s state is held in one massive type?](#TODO)
-  * [Does that causes views to over-render?](#TODO)
+  * [Does that cause views to over-render?](#TODO)
   * [Are large value types expensive to mutate?](#TODO)
   * [Can large value types cause stack overflows?](#TODO)
 * [TCA features have excessive “ping-ponging.”](#TODO)
@@ -132,7 +132,7 @@ Modeling user actions with an enum rather than methods defined on some object is
 
 This comes up often, but this misunderstands how real world features are actually modeled in practice. An app built with TCA does not literally hold onto the state of every possible screen of the app all at once. In reality most features of an app are not presented at once, but rather incrementally. Features are presented in sheets, drill-downs and other forms of navigation, and those forms of navigation are gated by optional state. This means if a feature is not presented, then its state is `nil`, and hence not represented in the app state.
 
-#### Does that causes views to over-render?
+#### Does that cause views to over-render?
 
 In reality views re-compute the minimal number of times based off of what state is accessed in the view, just as it does in vanilla SwiftUI with the `@Observable` macro. But because we [back ported](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/observationbackport) the observation framework to iOS 13 you can make use of the tools today, and not wait until you can drop iOS 16 support.
 
