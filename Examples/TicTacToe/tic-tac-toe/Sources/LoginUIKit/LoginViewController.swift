@@ -81,7 +81,8 @@ public class LoginViewController: UIViewController {
       divider.heightAnchor.constraint(equalToConstant: 1),
     ])
 
-    observe { [store, weak emailTextField, weak passwordTextField] in
+    observe { [weak self, weak emailTextField, weak passwordTextField] in
+      guard let self else { return }
       emailTextField?.isEnabled = store.isEmailTextFieldEnabled
       passwordTextField?.isEnabled = store.isPasswordTextFieldEnabled
       loginButton.isEnabled = store.isLoginButtonEnabled

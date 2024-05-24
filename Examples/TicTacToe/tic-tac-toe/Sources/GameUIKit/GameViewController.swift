@@ -115,7 +115,8 @@ public final class GameViewController: UIViewController {
         ])
       }
 
-    observe { [store] in
+    observe { [weak self] in
+      guard let self else { return }
       titleLabel.text = store.title
       playAgainButton.isHidden = store.isPlayAgainButtonHidden
 

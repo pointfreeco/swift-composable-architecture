@@ -56,7 +56,8 @@ public final class TwoFactorViewController: UIViewController {
       rootStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
 
-    observe { [store] in
+    observe { [weak self] in
+      guard let self else { return }
       activityIndicator.isHidden = store.isActivityIndicatorHidden
       loginButton.isEnabled = store.isLoginButtonEnabled
     }

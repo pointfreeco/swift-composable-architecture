@@ -78,7 +78,8 @@ public class NewGameViewController: UIViewController {
       rootStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
 
-    observe { [store] in
+    observe { [weak self] in
+      guard let self else { return }
       letsPlayButton.isEnabled = store.isLetsPlayButtonEnabled
     }
 
