@@ -87,7 +87,8 @@ public class NewGameViewController: UIViewController {
     ) { store in
       GameViewController(store: store)
     }
-  }}
+  }
+}
 
 extension NewGame.State {
   fileprivate var isLetsPlayButtonEnabled: Bool {

@@ -66,11 +66,11 @@ public class LoginViewController: UIViewController {
       loginButton,
       activityIndicator,
     ])
-    rootStackView.isLayoutMarginsRelativeArrangement = true
-    rootStackView.layoutMargins = UIEdgeInsets(top: 0, left: 32, bottom: 0, right: 32)
-    rootStackView.translatesAutoresizingMaskIntoConstraints = false
     rootStackView.axis = .vertical
+    rootStackView.layoutMargins = UIEdgeInsets(top: 0, left: 32, bottom: 0, right: 32)
+    rootStackView.isLayoutMarginsRelativeArrangement = true
     rootStackView.spacing = 24
+    rootStackView.translatesAutoresizingMaskIntoConstraints = false
 
     view.addSubview(rootStackView)
 
@@ -81,10 +81,9 @@ public class LoginViewController: UIViewController {
       divider.heightAnchor.constraint(equalToConstant: 1),
     ])
 
-    observe { [weak self] in
-      guard let self else { return }
-      emailTextField.isEnabled = store.isEmailTextFieldEnabled
-      passwordTextField.isEnabled = store.isPasswordTextFieldEnabled
+    observe { [store, weak emailTextField, weak passwordTextField] in
+      emailTextField?.isEnabled = store.isEmailTextFieldEnabled
+      passwordTextField?.isEnabled = store.isPasswordTextFieldEnabled
       loginButton.isEnabled = store.isLoginButtonEnabled
       activityIndicator.isHidden = store.isActivityIndicatorHidden
     }
