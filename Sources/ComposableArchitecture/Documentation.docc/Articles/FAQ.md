@@ -10,23 +10,23 @@ However, focusing only on the “cons” is missing the forest from the trees. A
 
 App architecture is filled with tradeoffs, and it is important to think deeply about what one gains and loses with each choice made. We have collected some of the most common issues brought up here in order to dispel some myths:
 
-* [Should TCA be used for every kind of app?](#TCA-should-be-used-for-every-kind-of-app)
-* [Does TCA go against the grain of SwiftUI?](#TCA-goes-against-the-grain-of-SwiftUI)
-* [Isn't TCA just a port of Redux? Is there a need for a library?](#TCA-is-just-a-port-of-Redux-so-theres-no-need-for-a-library)
-* [Do features built in TCA have a lot of boilerplate?](#Features-built-in-TCA-have-a-lot-of-boilerplate)
-* [Isn't maintaining a separate enum of “actions” unnecessary work?](#Maintaining-a-separate-enum-of-actions-is-unnecessary-work)
-* [Are TCA features inefficient because all of an app’s state is held in one massive type?](#TCA-features-are-inefficient-because-all-of-an-apps-state-is-held-in-one-massive-type)
-  * [Does that causes views to over-render?](#and-that-causes-views-to-over-render)
-  * [Are large value types expensive to mutate?](#and-large-value-types-are-expensive-to-mutate)
-  * [Can large value types cause stack overflows?](#and-large-value-types-can-cause-stack-overflows)
-* [TCA features have excessive “ping-ponging.”](#TCA-features-have-excessive-ping-ponging)
-* [If features are built with value types, doesn't that mean they cannot share state since value types are copied?](#Features-cannot-share-state-because-everything-is-built-on-value-types-and-value-types-are-copied)
-* [Do I need a Point-Free subscription to learn or use TCA?](#You-need-a-Point-Free-subscription-to-learn-or-use-TCA)
-* [Should I adopt a 3rd party library for my app’s architecture?](#You-shouldnt-adopt-a-library-for-your-apps-architecture)
+* [Should TCA be used for every kind of app?](#TODO)
+* [Does TCA go against the grain of SwiftUI?](#TODO)
+* [Isn't TCA just a port of Redux? Is there a need for a library?](#TODO)
+* [Do features built in TCA have a lot of boilerplate?](#TODO)
+* [Isn't maintaining a separate enum of “actions” unnecessary work?](#TODO)
+* [Are TCA features inefficient because all of an app’s state is held in one massive type?](#TODO)
+  * [Does that causes views to over-render?](#TODO)
+  * [Are large value types expensive to mutate?](#TODO)
+  * [Can large value types cause stack overflows?](#TODO)
+* [TCA features have excessive “ping-ponging.”](#TODO)
+* [If features are built with value types, doesn't that mean they cannot share state since value types are copied?](#TODO)
+* [Do I need a Point-Free subscription to learn or use TCA?](#TODO)
+* [Should I adopt a 3rd party library for my app’s architecture?](#TODO)
 
 ### Should TCA be used for every kind of app?
 
-Definitely not! We do not recommend people use TCA when they are first learning Swift or SwiftUI, and we don’t think TCA really shines when building simple “reader” apps that simply load JSON from the network and display it. Such apps don’t tend to have any nuanced logic or complex side effects, and so the benefits of TCA aren’t as clear.
+We do not recommend people use TCA when they are first learning Swift or SwiftUI, and we don’t think TCA really shines when building simple “reader” apps that simply load JSON from the network and display it. Such apps don’t tend to have any nuanced logic or complex side effects, and so the benefits of TCA aren’t as clear.
 
 In general it can be fine to start a project with vanilla SwiftUI (with a concentration on concise domain modeling), and then transition to TCA later if there is a need for any of its powers.
 
