@@ -19,7 +19,7 @@ App architecture is filled with tradeoffs, and it is important to think deeply a
   * [Does that cause views to over-render?](#TODO)
   * [Are large value types expensive to mutate?](#TODO)
   * [Can large value types cause stack overflows?](#TODO)
-* [TCA features have excessive “ping-ponging.”](#TODO)
+* [Don't TCA features have excessive “ping-ponging”?](#TODO)
 * [If features are built with value types, doesn't that mean they cannot share state since value types are copied?](#TODO)
 * [Do I need a Point-Free subscription to learn or use TCA?](#TODO)
 * [Should I adopt a 3rd party library for my app’s architecture?](#TODO)
@@ -146,7 +146,7 @@ This doesn’t really seem to be the case with in place mutation in Swift. Mutat
 
 While it is true that large value types can overflow the stack, in practice this does not really happen if you are using the navigation tools of the library. The navigation tools insert a heap allocated, copy-on-write wrapper at each presentation node of your app’s state. So if feature A can present feature B, then feature A’s state does not literally contain feature B’s state.
 
-### TCA features have excessive “ping-ponging.”
+### Don't TCA features have excessive “ping-ponging"?
 
 There have been complaints of action “ping-ponging”, where one wants to perform multiple effects and so has to send multiple actions:
 
