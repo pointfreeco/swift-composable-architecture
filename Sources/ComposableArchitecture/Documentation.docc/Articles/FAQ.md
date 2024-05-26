@@ -50,7 +50,7 @@ And the more familiar you are with SwiftUI and its patterns, the better you will
 
 ### Isn't TCA just a port of Redux? Is there a need for a library?
 
-While TCA certainly shares some ideas and terminology with Redux, the two libraries are quite different. First, Redux is a Javascript library, not a Swift library, and it was never meant to be an opinionated and cohesive solution to many app architecture problems. It focused on a particular problem, and stuck with it.
+While TCA certainly shares some ideas and terminology with Redux, the two libraries are quite different. First, Redux is a JavaScript library, not a Swift library, and it was never meant to be an opinionated and cohesive solution to many app architecture problems. It focused on a particular problem, and stuck with it.
 
 TCA broadened the focus to include a lot of common problems one runs into with app architecture, such as:
 
