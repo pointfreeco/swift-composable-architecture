@@ -4,11 +4,11 @@ A collection of some of the most common questions and comments people have conce
 
 ## Overview
 
-We often see articles and discussions online concerning the Composable Architecture (TCA for short) that are outdated or slightly misinformed. Often these articles and discussions focus solely on the “cons” of using TCA without giving time to what “pros” are unlocked by embracing the “cons”. 
+We often see articles and discussions online concerning the Composable Architecture (TCA for short) that are outdated or slightly misinformed. Often these articles and discussions focus solely on “cons” of using TCA without giving time to what “pros” are unlocked by embracing any “cons” should they still exist in the latest version of TCA. 
 
-However, focusing only on the “cons” is missing the forest from the trees. As an analogy, one could write a scathing article about the “cons” of value types in Swift, including the fact that they lack a stable identity like classes do. But that would be missing one of their greatest strengths, which is their ability to be copied and compared in a lightweight way!
+However, focusing only on “cons” is missing the forest from the trees. As an analogy, one could write a scathing article about the “cons” of value types in Swift, including the fact that they lack a stable identity like classes do. But that would be missing one of their greatest strengths, which is their ability to be copied and compared in a lightweight way!
 
-App architecture is filled with tradeoffs, and it is important to think deeply about what one gains and loses with each choice made. We have collected some of the most common issues brought up here in order to dispel some myths:
+App architecture is filled with trade-offs, and it is important to think deeply about what one gains and loses with each choice they make. We have collected some of the most common issues brought up here in order to dispel some myths:
 
 * [Should TCA be used for every kind of app?](#Should-TCA-be-used-for-every-kind-of-app)
 * [Does TCA go against the grain of SwiftUI?](#Does-TCA-go-against-the-grain-of-SwiftUI)
@@ -27,7 +27,7 @@ App architecture is filled with tradeoffs, and it is important to think deeply a
 
 ### Should TCA be used for every kind of app?
 
-We do not recommend people use TCA when they are first learning Swift or SwiftUI, and we don’t think TCA really shines when building simple “reader” apps that simply load JSON from the network and display it. Such apps don’t tend to have any nuanced logic or complex side effects, and so the benefits of TCA aren’t as clear.
+We do not recommend people use TCA when they are first learning Swift or SwiftUI, and we don’t think TCA really shines when building simple “reader” apps that mostly load JSON from the network and display it. Such apps don’t tend to have much in the way of nuanced logic or complex side effects, and so the benefits of TCA aren’t as clear.
 
 In general it can be fine to start a project with vanilla SwiftUI (with a concentration on concise domain modeling), and then transition to TCA later if there is a need for any of its powers.
 
@@ -35,18 +35,18 @@ In general it can be fine to start a project with vanilla SwiftUI (with a concen
 
 We actually feel that TCA complements SwiftUI quite well! The design of TCA has been heavily inspired by SwiftUI, and so you will find a lot of similarities:
 
-* TCA features can minimally and implicitly observe minimal state changes just as in SwiftUI, but one uses the ``ObservableState()`` macro to do so, which is like Swift's `@Observable`. We even [back ported](<doc:ObservationBackport>) Swift's observation tools so that they could be used with iOS 16 and earlier.
+* TCA features can minimally and implicitly observe minimal state changes just as in SwiftUI, but one uses the ``ObservableState()`` macro to do so, which is like Swift's `@Observable`. We even [back-ported](<doc:ObservationBackport>) Swift's observation tools so that they could be used with iOS 16 and earlier.
 * One composes TCA features together much like one composes SwiftUI features, by implementing a ``Reducer/body-20w8t`` property and using result builder syntax.
 * Dependencies are declared using the [`@Dependency`](<doc:DependencyManagement>) property wrapper, which behaves much like SwiftUI's `@Environment` property wrapper, but it works outside of views.
 * The library's [state sharing](<doc:SharingState>) tools work a lot like SwiftUI's `@Binding` tool, but it works outside of views and it is 100% testable.
 
 We also feel that often TCA allows one to even more fully embrace some of the super powers of SwiftUI:
 
-- TCA apps are allowed to use Swift's observation tools with value types, whereas vanilla SwiftUI is limited to only reference types. The author of the observation proposal even intended for `@Observable` to work with value types but ultimately had to abandon it due to limitations of Swift. We are able to overcome those limitations thanks to the ``Store`` type.
-- Navigation in TCA uses all of the same tools from vanilla SwiftUI, such as `sheet(item:)`, `popover(item:)`, and even `NavigationStack`. But we also provide tools for [driving navigation](<doc:Navigation>) from more concise domains, such as enums and optionals.
-- TCA allows one to “hotswap” a feature’s logic and behavior for alternate versions, with essentially no extra work. For example when showing a “placeholder” version of a UI using SwiftUI’s `redacted` API, you can [swap the feature’s logic](https://www.pointfree.co/collections/swiftui/redactions) for an “inert” version that does nothing when interacted with.
-- TCA features tend to be easier to view in Xcode previews because [dependencies are controlled](<doc:DependencyManagement>) from the beginning. There are many dependencies that don't work in previews (e.g. location managers), and some that are dangerous to use in previews (e.g. analytics clients), but one does not need to worry about that when controlling dependencies properly.
-- TCA features can be fully tested, including how dependencies execute and feed data back into the system, all without needing to run a UI test.
+* TCA apps are allowed to use Swift's observation tools with value types, whereas vanilla SwiftUI is limited to only reference types. The author of the observation proposal even intended for `@Observable` to work with value types but ultimately had to abandon it due to limitations of Swift. But we are able to overcome those limitations thanks to the ``Store`` type.
+* Navigation in TCA uses all of the same tools from vanilla SwiftUI, such as `sheet(item:)`, `popover(item:)`, and even `NavigationStack`. But we also provide tools for [driving navigation](<doc:Navigation>) from more concise domains, such as enums and optionals.
+* TCA allows one to “hot swap” a feature’s logic and behavior for alternate versions, with essentially no extra work. For example when showing a “placeholder” version of a UI using SwiftUI’s `redacted` API, you can [swap the feature’s logic](https://www.pointfree.co/collections/swiftui/redactions) for an “inert” version that does nothing when interacted with.
+* TCA features tend to be easier to view in Xcode previews because [dependencies are controlled](<doc:DependencyManagement>) from the beginning. There are many dependencies that don't work in previews (_e.g._ location managers), and some that are dangerous to use in previews (_e.g._ analytics clients), but one does not need to worry about that when controlling dependencies properly.
+* TCA features can be fully tested, including how dependencies execute and feed data back into the system, all without needing to run a UI test.
 
 And the more familiar you are with SwiftUI and its patterns, the better you will be able to leverage the Composable Architecture. We’ve never said that you must abandon SwiftUI in order to use TCA, and in fact we think the opposite is true!
 
@@ -56,16 +56,16 @@ While TCA certainly shares some ideas and terminology with Redux, the two librar
 
 TCA broadened the focus to include tools for a lot of common problems one runs into with app architecture, such as:
 
-- …tools for concise domain modeling.
-- Allowing one to embrace value types fully instead of reference types.
-- A full suite of tools are provided for integrating with Apple’s platforms (SwiftUI, UIKit, AppKit, etc.), including [navigation](<doc:Navigation>).
-- A powerful [dependency management system](<doc:DependencyManagement>) for controlling and propagating dependencies throughout your app.
-- A [testing tool](<doc:Testing>) that makes it possible to exhaustively test how your feature behaves with user actions, including how side effects execute and feed data back into the system.
-- …and more!
+* …tools for concise domain modeling.
+* Allowing one to embrace value types fully instead of reference types.
+* A full suite of tools are provided for integrating with Apple’s platforms (SwiftUI, UIKit, AppKit, _etc._), including [navigation](<doc:Navigation>).
+* A powerful [dependency management system](<doc:DependencyManagement>) for controlling and propagating dependencies throughout your app.
+* A [testing tool](<doc:Testing>) that makes it possible to exhaustively test how your feature behaves with user actions, including how side effects execute and feed data back into the system.
+* …and more!
 
 Redux does not provide tools itself for any of the above problems.
 
-And you can certainly opt to build your own TCA-inspired library instead of depending directly on TCA, and in fact many large companies do just that. But it is also worth considering if it is worth losing out on the continual development and improvements TCA makes over the years. With each major release of iOS we have made sure to keep TCA up-to-date, including concurrency tools, `NavigationStack`, and [Swift 5.9’s observation tools](<doc:MigratingTo1.7>) (of which we even [back ported](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/observationbackport) so that they could be used all the way back to iOS 13), [state sharing](<doc:SharingState>) tools, and more. And further you will be missing out on the community of thousands of developers that use TCA and frequent our GitHub discussions and [Slack](http://pointfree.co/slack-invite).
+And you can certainly opt to build your own TCA-inspired library instead of depending directly on TCA, and in fact many large companies do just that. But it is also worth considering if it is worth losing out on the continual development and improvements TCA makes over the years. With each major release of iOS we have made sure to keep TCA up-to-date, including concurrency tools, `NavigationStack`, and [Swift 5.9’s observation tools](<doc:MigratingTo1.7>) (of which we even [back-ported](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/observationbackport) so that they could be used all the way back to iOS 13), [state sharing](<doc:SharingState>) tools, and more. And further you will be missing out on the community of thousands of developers that use TCA and frequent our GitHub discussions and [Slack](http://pointfree.co/slack-invite).
 
 ### Do features built in TCA have a lot of boilerplate?
 
@@ -76,7 +76,6 @@ In our experience, a standard TCA feature should not require very many more line
 ### Isn't maintaining a separate enum of “actions” unnecessary work?
 
 Modeling user actions with an enum rather than methods defined on some object is certainly a big decision to make, and some people find it off-putting, but it wasn’t made just for the fun of it. There are massive benefits one gains from having a data description of every action in your application:
-
 
 - It fully decouples the logic of your feature from the view of your feature, even more than a dedicated `@Observable` model class can. You can write a reducer that wraps an existing reducer and “tweaks” the underlying reducer’s logic in anyway it sees fit. 
 
@@ -131,19 +130,21 @@ Modeling user actions with an enum rather than methods defined on some object is
 
   Again this is only possible thanks to the data type of all actions in the feature. See <doc:Testing> for more information on testing in TCA.
 
+<!-- TODO: Navigation tools? -->
+
 ### Are TCA features inefficient because all of an app’s state is held in one massive type?
 
 This comes up often, but this misunderstands how real world features are actually modeled in practice. An app built with TCA does not literally hold onto the state of every possible screen of the app all at once. In reality most features of an app are not presented at once, but rather incrementally. Features are presented in sheets, drill-downs and other forms of navigation, and those forms of navigation are gated by optional state. This means if a feature is not presented, then its state is `nil`, and hence not represented in the app state.
 
 #### Does that cause views to over-render?
 
-In reality views re-compute the minimal number of times based off of what state is accessed in the view, just as it does in vanilla SwiftUI with the `@Observable` macro. But because we [back ported](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/observationbackport) the observation framework to iOS 13 you can make use of the tools today, and not wait until you can drop iOS 16 support.
+In reality views re-compute the minimal number of times based off of what state is accessed in the view, just as it does in vanilla SwiftUI with the `@Observable` macro. But because we [back-ported](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/observationbackport) the observation framework to iOS 13 you can make use of the tools today, and not wait until you can drop iOS 16 support.
 
-<!--- [ ]  Other redux libraries-->
+<!-- [ ] Other redux libraries-->
 
 #### Are large value types expensive to mutate?
 
-This doesn’t really seem to be the case with in place mutation in Swift. Mutation via `inout` has been quite efficient from our testing, and there’s a chance that Swift’s new borrowing and consuming tools will allow us to make it even more efficient.
+This doesn’t really seem to be the case with in-place mutation in Swift. Mutation _via_ `inout` has been quite efficient from our testing, and there’s a chance that Swift’s new borrowing and consuming tools will allow us to make it even more efficient.
 
 #### Can large value types cause stack overflows?
 
@@ -179,6 +180,8 @@ case .refreshButtonTapped:
 
 And if you really do need to perform state mutations between each of these asynchronous operations then you will incur a bit of ping-ponging. But, [as mentioned above](#Maintaining-a-separate-enum-of-actions-is-unnecessary-work), there are great benefits to having a data description of actions, such as an extreme decoupling of logic from the view, the ability to test every aspect of your feature, including how effects execute, and more.
 
+<!-- TODO: We should be able to completely eliminate ping-ponging in TCA 2.0 -->
+
 ### If features are built with value types, doesn't that mean they cannot share state since value types are copied?
 
 This *used* to be true, but in [version 1.10](https://www.pointfree.co/blog/posts/135-shared-state-in-the-composable-architecture) of the library we released all new [state sharing](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/sharingstate) tools that allow you to easily share state between multiple features, and even persist state to external systems, such as user defaults and the file system. 
@@ -196,7 +199,7 @@ While we do release a lot of material on our website that is subscriber-only, we
 
 Adopting a 3rd party library is a big decision that should be had by you and your team after thoughtful discussion and consideration. We cannot make that decision for you. 🙂
 
-But the "not invented here" mentality cannot be the _sole_ reason to not adopt a library. If a library's core tenets align with your priorities for your app, then adopting a library can be a sensible choice. It would be better to coalesce on a well-defined set of tools with a consistent history of maintenance and a strong community than to glue together many "tips and tricks" found in blog posts scattered around the internet. 
+But the "not invented here" mentality cannot be the _sole_ reason to not adopt a library. If a library's core tenets align with your priorities for building your app, then adopting a library can be a sensible choice. It would be better to coalesce on a well-defined set of tools with a consistent history of maintenance and a strong community than to glue together many "tips and tricks" found in blog posts scattered around the internet. 
 
 Blog posts tend to be written from the perspective of something that was interesting and helpful in a particular moment, but it doesn't necessarily stand the test of time. How many blog posts have been vetted for the many real world edge cases one actually encouters in app development? How many blog post techniques are still used by their authors 4 years later? How many blog posts have follow-up retrospectives describing how the technique worked in practice and evolved over time?
 
@@ -204,18 +207,9 @@ So, in comparison, we do not feel the adoption of a 3rd party library is signifi
 
 ### Do I need to be familiar with "functional programming" to use TCA?
 
-TCA does not describe itself as a "functional programming" library, and never has. At the end of the
-day Swift is not a functional language, and so there is no way to force functional patterns at 
-compile time, such as "pure" functions. And so familiarity of "functional programming" is not
-necessary.
+TCA does not describe itself as a "functional programming" library, and never has. At the end of the day Swift is not a functional language, and so there is no way to force functional patterns at  compile time, such as "pure" functions. And so familiarity of "functional programming" is not necessary.
 
-However, certain concepts of functional programming languages are quite important to us, and we have
-used those concepts to guide aspects of the library. For example, a core tenet of the library is
-to build as much of your domain using value types, which are easy to understand and behaviorless,
-as opposed to reference types, which allow for "action at a distance". The library also values 
-separating side effects from pure logic transformations. This allows for great testability, 
+However, certain concepts of functional programming languages are quite important to us, and we have used those concepts to guide aspects of the library. For example, a core tenet of the library is to build as much of your domain using value types, which are easy to understand and behaviorless, as opposed to reference types, which allow for "action at a distance". The library also values  separating side effects from pure logic transformations. This allows for great testability, 
 including how side effects execute and feed data back into the system.
 
-However, one does not need to have any prior experience with these concepts. The ideas are imbued
-into the library and documentation, and so you will gain experience by simply following our
-materials and demo apps.
+However, one does not need to have any prior experience with these concepts. The ideas are imbued into the library and documentation, and so you will gain experience by simply following our materials and demo apps.
