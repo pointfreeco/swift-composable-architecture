@@ -175,7 +175,7 @@
       rather than letting it control us.
       
       @Step {
-        Add the `\.clock` dependency to the feature.
+        Add the `\.continuousClock` dependency to the feature.
         
         > Note: This is a dependency that allows us to control how time flows in our tests and 
         previews. We can either use an `ImmediateClock` to squash all of time down to a single 
@@ -469,7 +469,7 @@
       
       And the second failure to fix is due to the `dismiss` dependency being used when the timer
       finishes, and we are not asserting on that behavior. This is a great failure to have because 
-      it forces us to consider how the child features dismisses itself, and if ever in the future
+      it forces us to consider how the child feature dismisses itself, and if ever in the future
       we mess up this logic we would have a test in place to keep us in check.
       
       To fix the test we need to override the ``Dependencies/DependencyValues/dismiss`` dependency.
@@ -483,7 +483,7 @@
       This technically gets the test passing, but we aren't actually asserting that the `dismiss`
       dependency was invoked. We are just overriding the dependency to quiet the test failure.
       
-      In order to _prove_ that the `dismiss` effect is invoked, we will create an test expectation,
+      In order to _prove_ that the `dismiss` effect is invoked, we will create a test expectation,
       fulfill it in the ``ComposableArchitecture/DismissEffect``, and then wait for its 
       fulfillment at the end of the test.
       
