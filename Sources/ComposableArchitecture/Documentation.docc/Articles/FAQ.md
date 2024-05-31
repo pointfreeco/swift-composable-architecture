@@ -27,7 +27,9 @@ App architecture is filled with trade-offs, and it is important to think deeply 
 
 ### Should TCA be used for every kind of app?
 
-We do not recommend people use TCA when they are first learning Swift or SwiftUI, and we don’t think TCA really shines when building simple “reader” apps that mostly load JSON from the network and display it. Such apps don’t tend to have much in the way of nuanced logic or complex side effects, and so the benefits of TCA aren’t as clear.
+We do not recommend people use TCA when they are first learning Swift or SwiftUI. TCA is not a substitute or replacement for SwiftUI, but rather is meant to be paired with SwiftUI. You will need to be familiar with all of SwiftUI's standard concepts to wield TCA correctly.
+
+We also don't think TCA really shines when building simple “reader” apps that mostly load JSON from the network and display it. Such apps don’t tend to have much in the way of nuanced logic or complex side effects, and so the benefits of TCA aren’t as clear.
 
 In general it can be fine to start a project with vanilla SwiftUI (with a concentration on concise domain modeling), and then transition to TCA later if there is a need for any of its powers.
 
@@ -128,7 +130,7 @@ Modeling user actions with an enum rather than methods defined on some object is
   }
   ```
 
-  Again this is only possible thanks to the data type of all actions in the feature. See <doc:Testing> for more information on testing in TCA.
+  Again this is only possible thanks to the data type of all actions in the feature. See  for more information on testing in TCA.
 
 <!-- TODO: Navigation tools? -->
 
@@ -178,7 +180,7 @@ case .refreshButtonTapped:
   }
 ```
 
-And if you really do need to perform state mutations between each of these asynchronous operations then you will incur a bit of ping-ponging. But, [as mentioned above](#Maintaining-a-separate-enum-of-actions-is-unnecessary-work), there are great benefits to having a data description of actions, such as an extreme decoupling of logic from the view, the ability to test every aspect of your feature, including how effects execute, and more.
+And if you really do need to perform state mutations between each of these asynchronous operations then you will incur a bit of ping-ponging. But, [as mentioned above](#Maintaining-a-separate-enum-of-actions-is-unnecessary-work), there are great benefits to having a data description of actions, such as an extreme decoupling of logic from the view, powerful debugging tools, the ability to test every aspect of your feature, and more. If you were to try to reproduce those abilities in a non-TCA app you would be inevitably led to the same ping-ponging.
 
 <!-- TODO: We should be able to completely eliminate ping-ponging in TCA 2.0 -->
 
