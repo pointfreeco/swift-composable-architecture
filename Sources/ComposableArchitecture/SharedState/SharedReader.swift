@@ -33,6 +33,25 @@ public struct SharedReader<Value> {
   public init(_ base: Shared<Value>) {
     self = base.reader
   }
+  
+  /// Constructs a read-only shared value that remains constant.
+  ///
+  /// This can be useful for providing ``SharedReader`` values to features in previews and tests:
+  ///
+  /// ```swift
+  /// #Preview {
+  ///   FeatureView(
+  ///     store: Store(
+  ///       initialState: Feature.State(count: .constant(42))
+  ///     ) {
+  ///       Feature()
+  ///     }
+  ///   )
+  /// )
+  /// ```
+  public static func constant(_ value: Value) -> Self {
+    Shared(value).reader
+  }
 
   public var wrappedValue: Value {
     func open<Root>(_ reference: some Reference<Root>) -> Value {
