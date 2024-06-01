@@ -284,6 +284,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     let navigationID = NavigationID(
       base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)
     return self.child
+      //.dependency(\.dismiss, DismissEffect())
       .dependency(\.navigationIDPath, self.navigationIDPath.appending(navigationID))
       .reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
       .map { self.toChildAction.embed($0) }
