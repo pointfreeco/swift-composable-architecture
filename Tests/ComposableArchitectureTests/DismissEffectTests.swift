@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import XCTest
 
-final class IsPresentedTests: XCTestCase {
+final class DismissTests: XCTestCase {
   @MainActor
   func testDismissWithoutPresentationTools() async {
     let store = TestStore(initialState: .init()) {
@@ -14,8 +14,22 @@ final class IsPresentedTests: XCTestCase {
     await store.send(.childFeature(.donePressed))
     await store.send(.childFeature(.donePressed))
   }
-}
 
+  @MainActor
+  func testIsPresented_TestStore() async {
+    let store = TestStore(initialState: Bool?.none) {
+      Reduce<Bool?, Void> { state, _ in
+        @Dependency(\.isPresented) var isPresented
+        state = isPresented
+        return .none
+      }
+    }
+
+    await store.send(()) {
+      $0 = false
+    }
+  }
+}
 
 @Reducer
 private struct ChildFeature: Reducer {
