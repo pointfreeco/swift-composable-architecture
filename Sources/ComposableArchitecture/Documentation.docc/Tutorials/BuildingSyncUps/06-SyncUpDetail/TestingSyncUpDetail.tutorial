@@ -46,9 +46,7 @@
       
       @Step {
         Assert how the state changes after sending the action. In particular, the `syncUp` data
-        inside the `edit` case of the destination should change. We can use the special 
-        ``ComposableArchitecture/PresentationState/subscript(case:)-7uqte`` defined on
-        `$destination` to modify the data in a particular case.
+        inside the `edit` case of the destination should change.
         
         Run the test suite again to confirm that everything still passes.
         
