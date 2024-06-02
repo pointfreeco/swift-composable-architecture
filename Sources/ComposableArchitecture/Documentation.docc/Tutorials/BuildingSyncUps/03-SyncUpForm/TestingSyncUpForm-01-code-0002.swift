@@ -5,15 +5,15 @@ import XCTest
 
 class SyncUpFormTests: XCTestCase {
   @MainActor
-  func testRemoveAttendee() async {
+  func testRemoveFocusedAttendee() async {
+    let attendee1 = Attendee(id: Attendee.ID())
+    let attendee2 = Attendee(id: Attendee.ID())
     let store = TestStore(
       initialState: SyncUpForm.State(
+        focus: .attendee(attendee1.id),
         syncUp: SyncUp(
           id: SyncUp.ID(),
-          attendees: [
-            Attendee(id: Attendee.ID()),
-            Attendee(id: Attendee.ID())
-          ]
+          attendees: [attendee1, attendee2]
         )
       )
     ) {
