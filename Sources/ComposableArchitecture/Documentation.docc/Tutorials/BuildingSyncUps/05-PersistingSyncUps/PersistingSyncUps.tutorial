@@ -51,7 +51,7 @@
       
       With that change the project should be compiling. It is worth noting that 
       ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` only works with `Codable` data
-      types, and earlier in the tutorial when add models to Models.swift we made them codable from
+      types, and earlier in the tutorial when we added models to Models.swift we made them codable from
       the beginning.
       
       To confirm that persistence works we need to run the app in the simulator, but we haven't done
