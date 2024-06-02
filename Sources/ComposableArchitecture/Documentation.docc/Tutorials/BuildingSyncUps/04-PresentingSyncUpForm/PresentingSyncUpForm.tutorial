@@ -82,7 +82,7 @@
       
       That is all it takes to integrate two features together using the tools from the 
       Composable Architecture. Notice that we have not yet mentioned _how_ we want the 
-      `SyncUpFormView` is presented, _e.g._ as a sheet, popover, full-screen cover, or something
+      `SyncUpFormView` to be presented, _e.g._ as a sheet, popover, full-screen cover, or something
       else? The reducer does not care about that detail. It only cares about the domain modeling of
       the optional feature. You do not need to decide the _type_ of navigation until you implement
       the view layer.
