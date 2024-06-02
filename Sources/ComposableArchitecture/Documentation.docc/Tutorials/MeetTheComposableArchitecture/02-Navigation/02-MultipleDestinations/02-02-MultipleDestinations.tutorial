@@ -144,7 +144,7 @@
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0002.swift)
       }
       
-      That is all it takes to define a single reducer that comes multiple mutually exclusive
+      That is all it takes to define a single reducer that combines multiple mutually exclusive
       reducers together. You can expand the macro code in Xcode to see all the code that is
       being written for you. And if in the future this feature can navigate to another feature,
       you will only have to add a single case to the `Destination` enum.
