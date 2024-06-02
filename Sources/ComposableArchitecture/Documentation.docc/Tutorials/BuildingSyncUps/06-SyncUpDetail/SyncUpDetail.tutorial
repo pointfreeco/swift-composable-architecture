@@ -37,7 +37,7 @@
       }
       
       Next we add a case to the `Action` enum for each action the user can perform in the view.
-      Currently there are 3 buttons, and so we will have an action for each.
+      Currently there are 2 buttons, and so we will have an action for each.
       
       @Step {
         Add an action for each of the buttons in the UI, including tapping the "Delete" button,
