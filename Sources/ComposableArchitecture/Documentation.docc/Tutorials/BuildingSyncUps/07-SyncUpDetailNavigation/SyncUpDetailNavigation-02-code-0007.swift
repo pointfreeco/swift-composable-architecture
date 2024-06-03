@@ -2,12 +2,12 @@ import ComposableArchitecture
 import SwiftUI
 
 @Reducer
-struct AppReducer {
+struct AppFeature {
   // ...
 }
 
 struct AppView: View {
-  @Bindable var store: StoreOf<AppReducer>
+  @Bindable var store: StoreOf<AppFeature>
 
   var body: some View {
     NavigationStack(
@@ -28,11 +28,11 @@ struct AppView: View {
 #Preview {
   AppView(
     store: Store(
-      initialState: AppReducer.State(
+      initialState: AppFeature.State(
         syncUpsList: SyncUpsList.State()
       )
     ) {
-      AppReducer()
+      AppFeature()
     }
   )
 }

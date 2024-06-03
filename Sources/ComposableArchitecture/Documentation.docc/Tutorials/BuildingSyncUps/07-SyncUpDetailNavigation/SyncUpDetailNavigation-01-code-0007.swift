@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 @Reducer
-struct AppReducer {
+struct AppFeature {
   @Reducer(state: .equatable)
   enum Path {
     case detail(SyncUpDetail)
