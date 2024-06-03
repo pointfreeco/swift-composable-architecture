@@ -38,7 +38,7 @@
       @Step {
         Integrate the `SyncUpsList` reducer into the `AppReducer` by holding onto its state and
         actions, and using the ``ComposableArchitecture/Scope`` reducer to compose the two
-        reducer together.
+        reducers together.
         
         @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0002.swift)
       }
