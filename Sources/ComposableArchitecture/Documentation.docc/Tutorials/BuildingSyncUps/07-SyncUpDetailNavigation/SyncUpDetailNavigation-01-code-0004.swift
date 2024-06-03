@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 @Reducer
-struct App {
+struct AppReducer {
   @Reducer
   enum Path {
   }

@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 @Reducer
-struct App {
+struct AppReducer {
   @ObservableState
   struct State: Equatable {
   }

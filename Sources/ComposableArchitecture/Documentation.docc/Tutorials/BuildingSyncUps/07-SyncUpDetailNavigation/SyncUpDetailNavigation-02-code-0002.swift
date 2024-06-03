@@ -2,10 +2,10 @@ import ComposableArchitecture
 import SwiftUI
 
 @Reducer
-struct App {
+struct AppReducer {
   // ...
 }
 
 struct AppView: View {
-  @Bindable var store: StoreOf<App>
+  @Bindable var store: StoreOf<AppReducer>
 }
