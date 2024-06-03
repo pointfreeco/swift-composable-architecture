@@ -12,7 +12,8 @@ final class DismissTests: XCTestCase {
       $0.childFeature = ChildFeature.State()
     }
     await store.send(.childFeature(.donePressed))
-    await store.send(.childFeature(.donePressed))
+    // TODO: expected failure
+    await store.send(.presentChild)
   }
 
   @MainActor
