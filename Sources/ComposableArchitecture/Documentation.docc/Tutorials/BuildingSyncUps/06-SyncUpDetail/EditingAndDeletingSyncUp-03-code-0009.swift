@@ -37,7 +37,7 @@ struct SyncUpDetail {
         @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
         syncUps.remove(id: state.syncUp.id)
         return .run { _ in await dismiss() }
-
+        
       case .destination:
         return .none
 
