@@ -24,6 +24,7 @@ final class RecordMeetingTests: XCTestCase {
       $0.continuousClock = clock
       $0.date.now = Date(timeIntervalSince1970: 1234567890)
       $0.uuid = .incrementing
+      $0.dismiss = DismissEffect {}
     }
 
     let onAppearTask = await store.send(.onAppear)
