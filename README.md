@@ -7,7 +7,7 @@
 
 The Composable Architecture (TCA, for short) is a library for building applications in a consistent 
 and understandable way, with composition, testing, and ergonomics in mind. It can be used in 
-SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).
+SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, visionOS, tvOS, and watchOS).
 
 * [What is the Composable Architecture?](#what-is-the-composable-architecture)
 * [Learn more](#learn-more)
@@ -419,7 +419,7 @@ func testFeature() async {
 ```
 
 With that little bit of upfront work we can finish the test by simulating the user tapping on the 
-fact button, and thenreceiving the response from the dependency to present the fact:
+fact button, and then receiving the response from the dependency to present the fact:
 
 ```swift
 await store.send(.numberFactButtonTapped)

@@ -360,7 +360,7 @@ func testFeature() async {
 ```
 
 With that little bit of upfront work we can finish the test by simulating the user tapping on the 
-fact button, and thenreceiving the response from the dependency to present the fact:
+fact button, and then receiving the response from the dependency to present the fact:
 
 ```swift
 await store.send(.numberFactButtonTapped)

@@ -139,7 +139,7 @@
       
       @Step {
         Add a `store` property to the view. We are going to be proactive and make the property
-        `@Bindable` because we will need to deriving a binding to it for the `NavigationStack`.
+        `@Bindable` because we will need to derive a binding to it for the `NavigationStack`.
         
         @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0002.swift)
       }
@@ -243,7 +243,7 @@
       }
       
       That is all it takes to perform a navigation from the list feature to the detail feature.
-      When the navigation link is tapped, SwiftUI will search up the view heirarch to find the
+      When the navigation link is tapped, SwiftUI will search up the view heirarchy to find the
       `NavigationStack` powering the view, find its `path` binding, and append the new `.detail`
       state to the path, thus triggering a drill-down animation.
       
