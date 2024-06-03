@@ -28,11 +28,11 @@ struct AppView: View {
 #Preview {
   AppView(
     store: Store(
-      initialState: App.State(
+      initialState: AppReducer.State(
         syncUpsList: SyncUpsList.State()
       )
     ) {
-      App()
+      AppReducer()
     }
   )
 }

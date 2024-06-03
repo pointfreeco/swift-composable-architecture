@@ -191,7 +191,7 @@
       @Step {
         Add a preview to the bottom of the file.
         
-        @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0006.swift)
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0007.swift)
       }
       
       That's all it takes to build the root `AppView` that holds onto a `NavigationStack`. But
