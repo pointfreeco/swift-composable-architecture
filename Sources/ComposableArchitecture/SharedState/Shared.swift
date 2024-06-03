@@ -40,6 +40,11 @@ public struct Shared<Value> {
     guard let shared = base[dynamicMember: \.self] else { return nil }
     self = shared
   }
+  
+  /// Perform an operation on shared state with isolated access to the underlying value.
+  public func withValue(_ transform: @Sendable (inout Value) -> Void) {
+    transform(&self.currentValue)
+  }
 
   public var wrappedValue: Value {
     get {
@@ -50,6 +55,7 @@ public struct Shared<Value> {
         return self.currentValue
       }
     }
+    @available(*, deprecated, message: "Use '$shared.withValue' instead of mutating directly.")
     nonmutating set {
       @Dependency(\.sharedChangeTracker) var changeTracker
       if changeTracker != nil {
