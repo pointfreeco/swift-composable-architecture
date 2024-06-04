@@ -36,8 +36,23 @@ public protocol Reducer<State, Action> {
 
   /// The content and behavior of a reducer that is composed from other reducers.
   ///
-  /// Implement this requirement when you want to incorporate the behavior of other reducers
-  /// together.
+  /// In the body of a reducer one can compose many reducers together, which will be run in order,
+  /// from top to bottom, and usually involves some reducer operations for integrating, such as
+  /// `ifLet`, `forEach`, `_printChanges`, etc.:
+  ///
+  /// ```swift
+  /// var body: some ReducerOf<Self> {
+  ///   Reduce { state, action in
+  ///     …
+  ///   }
+  ///   .ifLet(\.child, action: \.child) {
+  ///     ChildFeature()
+  ///   }
+  ///   ._printChanges()
+  ///
+  ///   Analytics()
+  /// }
+  /// ```
   ///
   /// Do not invoke this property directly.
   ///
