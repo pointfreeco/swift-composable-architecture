@@ -28,7 +28,7 @@ struct SyncUpForm {
     Reduce { state, action in
       switch action {
       case .addAttendeeButtonTapped:
-        let attendee = Attendee(id: uuid())
+        let attendee = Attendee(id: Attendee.ID())
         state.syncUp.attendees.append(attendee)
         state.focus = .attendee(attendee.id)
         return .none
@@ -43,7 +43,7 @@ struct SyncUpForm {
           let firstIndex = indices.first
         else {
           state.syncUp.attendees.append(
-            Attendee(id: uuid())
+            Attendee(id: Attendee.ID())
           )
           return .none
         }
