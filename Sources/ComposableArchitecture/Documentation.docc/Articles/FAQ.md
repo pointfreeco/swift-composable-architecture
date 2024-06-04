@@ -138,19 +138,19 @@ Modeling user actions with an enum rather than methods defined on some object is
 
 This comes up often, but this misunderstands how real world features are actually modeled in practice. An app built with TCA does not literally hold onto the state of every possible screen of the app all at once. In reality most features of an app are not presented at once, but rather incrementally. Features are presented in sheets, drill-downs and other forms of navigation, and those forms of navigation are gated by optional state. This means if a feature is not presented, then its state is `nil`, and hence not represented in the app state.
 
-#### Does that cause views to over-render?
+* ##### Does that cause views to over-render?
 
-In reality views re-compute the minimal number of times based off of what state is accessed in the view, just as it does in vanilla SwiftUI with the `@Observable` macro. But because we [back-ported](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/observationbackport) the observation framework to iOS 13 you can make use of the tools today, and not wait until you can drop iOS 16 support.
+  In reality views re-compute the minimal number of times based off of what state is accessed in the view, just as it does in vanilla SwiftUI with the `@Observable` macro. But because we [back-ported](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/observationbackport) the observation framework to iOS 13 you can make use of the tools today, and not wait until you can drop iOS 16 support.
 
 <!-- [ ] Other redux libraries-->
 
-#### Are large value types expensive to mutate?
+* ##### Are large value types expensive to mutate?
 
-This doesn’t really seem to be the case with in-place mutation in Swift. Mutation _via_ `inout` has been quite efficient from our testing, and there’s a chance that Swift’s new borrowing and consuming tools will allow us to make it even more efficient.
+  This doesn’t really seem to be the case with in-place mutation in Swift. Mutation _via_ `inout` has been quite efficient from our testing, and there’s a chance that Swift’s new borrowing and consuming tools will allow us to make it even more efficient.
 
-#### Can large value types cause stack overflows?
+* ##### Can large value types cause stack overflows?
 
-While it is true that large value types can overflow the stack, in practice this does not really happen if you are using the navigation tools of the library. The navigation tools insert a heap allocated, copy-on-write wrapper at each presentation node of your app’s state. So if feature A can present feature B, then feature A’s state does not literally contain feature B’s state.
+  While it is true that large value types can overflow the stack, in practice this does not really happen if you are using the navigation tools of the library. The navigation tools insert a heap allocated, copy-on-write wrapper at each presentation node of your app’s state. So if feature A can present feature B, then feature A’s state does not literally contain feature B’s state.
 
 ### Don't TCA features have excessive “ping-ponging"?
 
