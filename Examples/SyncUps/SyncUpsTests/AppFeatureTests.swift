@@ -12,7 +12,7 @@ final class AppFeatureTests: XCTestCase {
       AppFeature()
     }
 
-    let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
+    let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
 
     await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
@@ -31,7 +31,7 @@ final class AppFeatureTests: XCTestCase {
 
     await store.send(\.path[id:0].detail.doneEditingButtonTapped) {
       $0.path[id: 0]?.detail?.destination = nil
-      $0.path[id: 0]?.detail?.syncUp.title = "Blob"
+      $0.path[id: 0]?.detail?.$syncUp.withValue { $0.title = "Blob" }
     }
     .finish()
   }
@@ -44,7 +44,7 @@ final class AppFeatureTests: XCTestCase {
       AppFeature()
     }
 
-    let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
+    let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
 
     await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
@@ -56,7 +56,7 @@ final class AppFeatureTests: XCTestCase {
 
     await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
       $0.path[id: 0, case: \.detail]?.destination = nil
-      $0.syncUpsList.syncUps = []
+      $0.syncUpsList.$syncUps.withValue { $0 = [] }
     }
 
     await store.receive(\.path.popFrom) {
@@ -109,13 +109,15 @@ final class AppFeatureTests: XCTestCase {
       XCTAssertEqual($0.path.count, 1)
     }
     store.assert {
-      $0.path[id: 0]?.detail?.syncUp.meetings = [
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: "I completed the project"
-        )
-      ]
+      $0.path[id: 0]?.detail?.$syncUp.withValue {
+        $0.meetings = [
+          Meeting(
+            id: Meeting.ID(UUID(0)),
+            date: Date(timeIntervalSince1970: 1_234_567_890),
+            transcript: "I completed the project"
+          )
+        ]
+      }
     }
   }
 }

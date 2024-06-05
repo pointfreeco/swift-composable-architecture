@@ -57,14 +57,16 @@ struct SyncUpDetail {
         return .none
 
       case let .deleteMeetings(atOffsets: indices):
-        state.syncUp.meetings.remove(atOffsets: indices)
+        state.$syncUp.withValue { $0.meetings.remove(atOffsets: indices) }
         return .none
 
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
           @Shared(.syncUps) var syncUps
-          syncUps.remove(id: state.syncUp.id)
+          $syncUps.withValue { [id = state.syncUp.id] in
+            $0.remove(id: id)
+          }
           return .run { _ in await dismiss() }
 
         case .continueWithoutRecording:
@@ -80,7 +82,7 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
-        state.syncUp = editState.syncUp
+        state.$syncUp.withValue { $0 = editState.syncUp }
         state.destination = nil
         return .none
 

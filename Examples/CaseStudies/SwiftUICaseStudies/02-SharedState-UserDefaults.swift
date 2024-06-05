@@ -95,11 +95,11 @@ extension SharedStateUserDefaults {
           return .none
 
         case .decrementButtonTapped:
-          state.count -= 1
+          state.$count.withValue { $0 -= 1 }
           return .none
 
         case .incrementButtonTapped:
-          state.count += 1
+          state.$count.withValue { $0 += 1 }
           return .none
 
         case .isPrimeButtonTapped:
@@ -132,7 +132,7 @@ extension SharedStateUserDefaults {
       Reduce { state, action in
         switch action {
         case .resetStatsButtonTapped:
-          state.count = 0
+          state.$count.withValue { $0 = 0 }
           return .none
         }
       }

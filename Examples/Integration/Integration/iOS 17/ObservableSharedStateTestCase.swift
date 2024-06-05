@@ -12,12 +12,12 @@ struct ObservableSharedStateView: View {
       Form {
         Section {
           HStack {
-            Button("Toggle") { store.isAppStorageOn1.toggle() }
+            Button("Toggle") { store.$isAppStorageOn1.withValue { $0.toggle() } }
               .accessibilityIdentifier("isAppStorageOn1")
             Text("App Storage #1 " + (store.isAppStorageOn1 ? "✅" : "❌"))
           }
           HStack {
-            Button("Toggle") { store.isAppStorageOn2.toggle() }
+            Button("Toggle") { store.$isAppStorageOn2.withValue { $0.toggle() } }
               .accessibilityIdentifier("isAppStorageOn2")
             Text("App Storage #2 " + (store.isAppStorageOn2 ? "✅" : "❌"))
           }
@@ -33,12 +33,12 @@ struct ObservableSharedStateView: View {
 
         Section {
           HStack {
-            Button("Toggle") { store.fileStorage1.isOn.toggle() }
+            Button("Toggle") { store.$fileStorage1.withValue { $0.isOn.toggle() } }
               .accessibilityIdentifier("isFileStorageOn1")
             Text("File Storage #1 " + (store.fileStorage1.isOn ? "✅" : "❌"))
           }
           HStack {
-            Button("Toggle") { store.fileStorage2.isOn.toggle() }
+            Button("Toggle") { store.$fileStorage2.withValue { $0.isOn.toggle() } }
               .accessibilityIdentifier("isFileStorageOn2")
             Text("File Storage #2 " + (store.fileStorage2.isOn ? "✅" : "❌"))
           }
@@ -54,12 +54,12 @@ struct ObservableSharedStateView: View {
 
         Section {
           HStack {
-            Button("Toggle") { store.isInMemoryOn1.toggle() }
+            Button("Toggle") { store.$isInMemoryOn1.withValue { $0.toggle() } }
               .accessibilityIdentifier("isInMemoryOn1")
             Text("In-memory Storage #1 " + (store.isInMemoryOn1 ? "✅" : "❌"))
           }
           HStack {
-            Button("Toggle") { store.isInMemoryOn2.toggle() }
+            Button("Toggle") { store.$isInMemoryOn2.withValue { $0.toggle() } }
               .accessibilityIdentifier("isInMemoryOn2")
             Text("In-memory Storage #2 " + (store.isInMemoryOn2 ? "✅" : "❌"))
           }
@@ -112,12 +112,12 @@ private struct Feature {
           defaults.removeObject(forKey: "isOn")
         }
       case .resetButtonTapped:
-        state.isAppStorageOn1 = false
-        state.isAppStorageOn2 = false
-        state.fileStorage1.isOn = false
-        state.fileStorage2.isOn = false
-        state.isInMemoryOn1 = false
-        state.isInMemoryOn2 = false
+        state.$isAppStorageOn1.withValue { $0 = false }
+        state.$isAppStorageOn2.withValue { $0 = false }
+        state.$fileStorage1.withValue { $0.isOn = false }
+        state.$fileStorage2.withValue { $0.isOn = false }
+        state.$isInMemoryOn1.withValue { $0 = false }
+        state.$isInMemoryOn2.withValue { $0 = false }
         return .none
       case .writeToFileStorageButtonTapped:
         return .run { [isOn = state.fileStorage1.isOn] _ in

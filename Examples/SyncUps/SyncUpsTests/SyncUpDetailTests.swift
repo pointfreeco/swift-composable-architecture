@@ -107,7 +107,7 @@ final class SyncUpDetailTests: XCTestCase {
 
     await store.send(.doneEditingButtonTapped) {
       $0.destination = nil
-      $0.syncUp.title = "Blob's Meeting"
+      $0.$syncUp.withValue { $0.title = "Blob's Meeting" }
     }
   }
 
@@ -118,7 +118,7 @@ final class SyncUpDetailTests: XCTestCase {
     // TODO: Can this exhaustively be caught?
     defer { XCTAssertEqual([], syncUps) }
 
-    let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
+    let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: sharedSyncUp)) {
       SyncUpDetail()
     }

@@ -99,11 +99,11 @@ extension SharedStateFileStorage {
           return .none
 
         case .decrementButtonTapped:
-          state.stats.decrement()
+          state.$stats.withValue { $0.decrement() }
           return .none
 
         case .incrementButtonTapped:
-          state.stats.increment()
+          state.$stats.withValue { $0.increment() }
           return .none
 
         case .isPrimeButtonTapped:
@@ -136,7 +136,7 @@ extension SharedStateFileStorage {
       Reduce { state, action in
         switch action {
         case .resetStatsButtonTapped:
-          state.stats = Stats()
+          state.$stats.withValue { $0 = Stats() }
           return .none
         }
       }

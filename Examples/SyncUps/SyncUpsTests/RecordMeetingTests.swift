@@ -72,14 +72,16 @@ final class RecordMeetingTests: XCTestCase {
     await store.receive(\.timerTick) {
       $0.speakerIndex = 2
       $0.secondsElapsed = 6
-      $0.syncUp.meetings.insert(
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: ""
-        ),
-        at: 0
-      )
+      $0.$syncUp.withValue {
+        $0.meetings.insert(
+          Meeting(
+            id: Meeting.ID(UUID(0)),
+            date: Date(timeIntervalSince1970: 1_234_567_890),
+            transcript: ""
+          ),
+          at: 0
+        )
+      }
       XCTAssertEqual($0.durationRemaining, .seconds(0))
     }
   }
@@ -167,14 +169,16 @@ final class RecordMeetingTests: XCTestCase {
 
     await store.send(\.alert.confirmSave) {
       $0.alert = nil
-      $0.syncUp.meetings.insert(
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: ""
-        ),
-        at: 0
-      )
+      $0.$syncUp.withValue {
+        $0.meetings.insert(
+          Meeting(
+            id: Meeting.ID(UUID(0)),
+            date: Date(timeIntervalSince1970: 1_234_567_890),
+            transcript: ""
+          ),
+          at: 0
+        )
+      }
     }
   }
 
@@ -245,14 +249,16 @@ final class RecordMeetingTests: XCTestCase {
 
     await store.send(\.alert.confirmSave) {
       $0.alert = nil
-      $0.syncUp.meetings.insert(
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: ""
-        ),
-        at: 0
-      )
+      $0.$syncUp.withValue {
+        $0.meetings.insert(
+          Meeting(
+            id: Meeting.ID(UUID(0)),
+            date: Date(timeIntervalSince1970: 1_234_567_890),
+            transcript: ""
+          ),
+          at: 0
+        )
+      }
     }
   }
 

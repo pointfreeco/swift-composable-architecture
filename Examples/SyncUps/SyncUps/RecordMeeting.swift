@@ -44,7 +44,9 @@ struct RecordMeeting {
         return .run { _ in await dismiss() }
 
       case .alert(.presented(.confirmSave)):
-        state.syncUp.insert(transcript: state.transcript)
+        state.$syncUp.withValue { [transcript = state.transcript] in
+          $0.insert(transcript: transcript)
+        }
         return .run { _ in await dismiss() }
 
       case .alert:

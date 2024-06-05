@@ -27,9 +27,9 @@ final class SyncUpsListTests: XCTestCase {
       $0.destination?.add?.syncUp.title = "Engineering"
     }
 
-    await store.send(.confirmAddSyncUpButtonTapped) {
+    await store.send(.confirmAddSyncUpButtonTapped) { [syncUp] in 
       $0.destination = nil
-      $0.syncUps = [syncUp]
+      $0.$syncUps.withValue { $0 = [syncUp] }
     }
   }
 
@@ -60,15 +60,17 @@ final class SyncUpsListTests: XCTestCase {
 
     await store.send(.confirmAddSyncUpButtonTapped) {
       $0.destination = nil
-      $0.syncUps = [
-        SyncUp(
-          id: SyncUp.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
-          attendees: [
-            Attendee(id: Attendee.ID(UUID(0)))
-          ],
-          title: "Design"
-        )
-      ]
+      $0.$syncUps.withValue {
+        $0 = [
+          SyncUp(
+            id: SyncUp.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
+            attendees: [
+              Attendee(id: Attendee.ID(UUID(0)))
+            ],
+            title: "Design"
+          )
+        ]
+      }
     }
   }
 }

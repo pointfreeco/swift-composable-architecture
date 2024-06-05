@@ -9,7 +9,7 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(count, 0)
     XCTAssertEqual(defaults.integer(forKey: "count"), 0)
 
-    count += 1
+    $count.withValue { $0 += 1 }
     XCTAssertEqual(count, 1)
     XCTAssertEqual(defaults.integer(forKey: "count"), 1)
   }
@@ -19,7 +19,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("count")) var count = 42
     XCTAssertEqual(defaults.integer(forKey: "count"), 42)
 
-    count += 1
+    $count.withValue { $0 += 1 }
     XCTAssertEqual(count, 43)
     XCTAssertEqual(defaults.integer(forKey: "count"), 43)
   }
@@ -36,7 +36,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("url")) var url: URL = URL(string: "https://pointfree.co")!
     XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://pointfree.co")!)
 
-    url = URL(string: "https://example.com")!
+    $url.withValue { $0 = URL(string: "https://example.com")! }
     XCTAssertEqual(url, URL(string: "https://example.com")!)
     XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://example.com")!)
   }
@@ -46,7 +46,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("url")) var url: URL? = URL(string: "https://pointfree.co")
     XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://pointfree.co"))
 
-    url = URL(string: "https://example.com")
+    $url.withValue { $0 = URL(string: "https://example.com")! }
     XCTAssertEqual(url, URL(string: "https://example.com"))
     XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://example.com"))
   }
@@ -56,7 +56,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("data")) var data: Data?
     XCTAssertEqual(defaults.data(forKey: "data"), nil)
 
-    data = Data()
+    $data.withValue { $0 = Data() }
     XCTAssertEqual(data, Data())
     XCTAssertEqual(defaults.data(forKey: "data"), Data())
   }
@@ -69,7 +69,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("direction")) var direction: Direction = .north
     XCTAssertEqual(defaults.string(forKey: "direction"), "north")
 
-    direction = .south
+    $direction.withValue { $0 = .south }
     XCTAssertEqual(defaults.string(forKey: "direction"), "south")
   }
 
@@ -81,7 +81,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("direction")) var direction: Direction?
     XCTAssertEqual(defaults.string(forKey: "direction"), nil)
 
-    direction = .south
+    $direction.withValue { $0 = .south }
     XCTAssertEqual(defaults.string(forKey: "direction"), "south")
   }
 
@@ -93,7 +93,7 @@ final class AppStorageTests: XCTestCase {
       $0.defaultAppStorage = defaults
     } operation: {
       @Shared(.appStorage("count")) var count = 0
-      count += 1
+      $count.withValue { $0 += 1 }
       XCTAssertEqual(defaults.integer(forKey: "count"), 1)
     }
 
@@ -110,7 +110,7 @@ final class AppStorageTests: XCTestCase {
     } onChange: {
       countDidChange.fulfill()
     }
-    count += 1
+    $count.withValue { $0 += 1 }
     self.wait(for: [countDidChange], timeout: 0)
   }
 
@@ -158,7 +158,7 @@ final class AppStorageTests: XCTestCase {
   func testDeleteUserDefault() {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage("count")) var count = 0
-    count = 42
+    $count.withValue { $0 = 42 }
     defaults.removeObject(forKey: "count")
     XCTAssertEqual(count, 0)
   }

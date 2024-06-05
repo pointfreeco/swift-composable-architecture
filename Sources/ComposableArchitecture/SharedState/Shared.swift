@@ -47,10 +47,10 @@ public struct Shared<Value> {
   
   /// Perform an operation on shared state with isolated access to the underlying value.
   public func withValue(_ transform: @Sendable (inout Value) -> Void) {
-    transform(&self.currentValue)
+    transform(&self._wrappedValue)
   }
 
-  public var wrappedValue: Value {
+  fileprivate var _wrappedValue: Value {
     get {
       @Dependency(\.sharedChangeTracker) var changeTracker
       if changeTracker != nil {
@@ -59,7 +59,6 @@ public struct Shared<Value> {
         return self.currentValue
       }
     }
-    @available(*, deprecated, message: "Use '$shared.withValue' instead of mutating directly.")
     nonmutating set {
       @Dependency(\.sharedChangeTracker) var changeTracker
       if changeTracker != nil {
@@ -72,6 +71,12 @@ public struct Shared<Value> {
         self.currentValue = newValue
       }
     }
+  }
+
+  public var wrappedValue: Value {
+    get { _wrappedValue }
+    @available(*, deprecated, message: "Use '$shared.withValue' instead of mutating directly.")
+    nonmutating set { _wrappedValue = newValue }
   }
 
   /// A projection of the shared value that returns a shared reference.
@@ -321,7 +326,7 @@ where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
       return self[position, default: DefaultSubscript(self.wrappedValue[position])]
     }
     set {
-      self.wrappedValue[position] = newValue.wrappedValue
+      self._wrappedValue[position] = newValue.wrappedValue
     }
   }
 }

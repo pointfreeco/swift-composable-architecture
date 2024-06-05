@@ -11,7 +11,7 @@ final class FileStorageTests: XCTestCase {
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       XCTAssertNoDifference(fileSystem.value, [.fileURL: Data()])
-      users.append(.blob)
+      $users.withValue { $0.append(.blob) }
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
     }
   }
@@ -28,14 +28,14 @@ final class FileStorageTests: XCTestCase {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), nil)
 
-      users.append(.blob)
+      $users.withValue { $0.append(.blob) }
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
 
-      users.append(.blobJr)
+      $users.withValue { $0.append(.blobJr) }
       testScheduler.advance(by: .seconds(1) - .milliseconds(1))
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
 
-      users.append(.blobSr)
+      $users.withValue { $0.append(.blobSr) }
       testScheduler.advance(by: .milliseconds(1))
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob, .blobJr, .blobSr])
 
@@ -43,7 +43,7 @@ final class FileStorageTests: XCTestCase {
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob, .blobJr, .blobSr])
 
       testScheduler.advance(by: .seconds(0.5))
-      users.append(.blobEsq)
+      $users.withValue { $0.append(.blobEsq) }
       try XCTAssertNoDifference(
         fileSystem.value.users(for: .fileURL),
         [
@@ -68,11 +68,11 @@ final class FileStorageTests: XCTestCase {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), nil)
 
-      users.append(.blob)
+      $users.withValue { $0.append(.blob) }
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
 
       testScheduler.advance(by: .seconds(2))
-      users.append(.blobJr)
+      $users.withValue { $0.append(.blobJr) }
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob, .blobJr])
     }
   }
@@ -91,8 +91,8 @@ final class FileStorageTests: XCTestCase {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), nil)
 
-      users.append(.blob)
-      users.append(.blobJr)
+      $users.withValue { $0.append(.blob) }
+      $users.withValue { $0.append(.blobJr) }
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
 
       NotificationCenter.default.post(name: willResignNotificationName, object: nil)
@@ -115,8 +115,8 @@ final class FileStorageTests: XCTestCase {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), nil)
 
-      users.append(.blob)
-      users.append(.blobJr)
+      $users.withValue { $0.append(.blob) }
+      $users.withValue { $0.append(.blobJr) }
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
 
       NotificationCenter.default.post(name: willTerminateNotificationName, object: nil)
@@ -133,11 +133,11 @@ final class FileStorageTests: XCTestCase {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
       @Shared(.fileStorage(.anotherFileURL)) var otherUsers = [User]()
 
-      users.append(.blob)
+      $users.withValue { $0.append(.blob) }
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
       try XCTAssertNoDifference(fileSystem.value.users(for: .anotherFileURL), nil)
 
-      otherUsers.append(.blobJr)
+      $otherUsers.withValue { $0.append(.blobJr) }
       try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
       try XCTAssertNoDifference(fileSystem.value.users(for: .anotherFileURL), [.blobJr])
     }
@@ -153,7 +153,7 @@ final class FileStorageTests: XCTestCase {
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
 
-      users.append(.blob)
+      $users.withValue { $0.append(.blob) }
       NotificationCenter.default
         .post(name: willResignNotificationName, object: nil)
       await Task.yield()
@@ -234,7 +234,7 @@ final class FileStorageTests: XCTestCase {
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
 
-      users.append(.blob)
+      $users.withValue { $0.append(.blob) }
       try fileStorage.save(Data(), .fileURL)
       scheduler.run()
       XCTAssertNoDifference(users, [])
@@ -379,10 +379,10 @@ final class FileStorageTests: XCTestCase {
       return $user
     }
 
-    shared1.wrappedValue.name = "Blob Jr"
+    shared1.withValue { $0.name = "Blob Jr" }
     XCTAssertEqual(shared1.wrappedValue.name, "Blob Jr")
     XCTAssertEqual(shared2.wrappedValue.name, "Blob")
-    shared2.wrappedValue.name = "Blob Sr"
+    shared2.withValue { $0.name = "Blob Sr" }
     XCTAssertEqual(shared1.wrappedValue.name, "Blob Jr")
     XCTAssertEqual(shared2.wrappedValue.name, "Blob Sr")
   }
