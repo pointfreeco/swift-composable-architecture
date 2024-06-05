@@ -37,7 +37,7 @@ public struct SharedReader<Value> {
   public init(_ base: Shared<Value>) {
     self = base.reader
   }
-  
+
   /// Constructs a read-only shared value that remains constant.
   ///
   /// This can be useful for providing ``SharedReader`` values to features in previews and tests:
