@@ -184,8 +184,8 @@
       }
       
       @Step {
-        Add support for the `.alert` case, and 
-        use the ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator
+        Handle the `.alert` case in the reducer, and use the
+        ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator
         again to integrate the alert's logic into the `SyncUpDetail` reducer.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0004.swift)
