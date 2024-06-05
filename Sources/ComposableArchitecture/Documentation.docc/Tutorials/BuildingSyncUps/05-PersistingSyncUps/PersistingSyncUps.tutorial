@@ -16,7 +16,7 @@
         Go back to the SyncUpsList.swift file, and start by applying the [`@Shared`](<doc:Shared>)
         property wrapper to the `syncUps` field.
         
-        > Note: Our changes will not compile until step 3.
+        > Note: Our changes will not compile right now, but they will soon.
         
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0001.swift, previousFile: PersistingSyncUps-01-code-0001-previous.swift)
       }
