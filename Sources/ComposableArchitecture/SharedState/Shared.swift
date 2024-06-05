@@ -364,13 +364,6 @@ extension Shared {
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member?>
   ) -> SharedReader<Member>? {
-    guard let initialValue = self.wrappedValue[keyPath: keyPath]
-    else { return nil }
-    return SharedReader<Member>(
-      reference: self.reference,
-      keyPath: self.keyPath.appending(
-        path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
-      )!
-    )
+    SharedReader(self[dynamicMember: keyPath])
   }
 }
