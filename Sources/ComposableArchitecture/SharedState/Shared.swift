@@ -37,8 +37,12 @@ public struct Shared<Value> {
   }
 
   public init?(_ base: Shared<Value?>) {
-    guard let shared = base[dynamicMember: \.self] else { return nil }
-    self = shared
+    guard let initialValue = base.wrappedValue
+    else { return nil }
+    self.init(
+      reference: base.reference,
+      keyPath: base.keyPath.appending(path: \Value?.[default:DefaultSubscript(initialValue)])!
+    )
   }
 
   public var wrappedValue: Value {
@@ -117,17 +121,13 @@ public struct Shared<Value> {
     Shared<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
   }
 
+  @available(
+    *, deprecated, message: "Use 'Shared($value.optional)' to unwrap optional shared values"
+  )
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member?>
   ) -> Shared<Member>? {
-    guard let initialValue = self.wrappedValue[keyPath: keyPath]
-    else { return nil }
-    return Shared<Member>(
-      reference: self.reference,
-      keyPath: self.keyPath.appending(
-        path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
-      )!
-    )
+    Shared<Member>(self[dynamicMember: keyPath])
   }
 
   public func assert(
@@ -358,16 +358,12 @@ extension Shared {
     SharedReader(reference: self.reference, keyPath: self.keyPath)
   }
 
+  @available(
+    *, deprecated, message: "Use 'SharedReader($value.optional)' to unwrap optional shared values"
+  )
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member?>
   ) -> SharedReader<Member>? {
-    guard let initialValue = self.wrappedValue[keyPath: keyPath]
-    else { return nil }
-    return SharedReader<Member>(
-      reference: self.reference,
-      keyPath: self.keyPath.appending(
-        path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
-      )!
-    )
+    SharedReader(self[dynamicMember: keyPath])
   }
 }
