@@ -26,8 +26,12 @@ public struct SharedReader<Value> {
   }
 
   public init?(_ base: SharedReader<Value?>) {
-    guard let shared = base[dynamicMember: \.self] else { return nil }
-    self = shared
+    guard let initialValue = base.wrappedValue
+    else { return nil }
+    self.init(
+      reference: base.reference,
+      keyPath: base.keyPath.appending(path: \Value?.[default:DefaultSubscript(initialValue)])!
+    )
   }
 
   public init(_ base: Shared<Value>) {
@@ -61,17 +65,13 @@ public struct SharedReader<Value> {
     SharedReader<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
   }
 
+  @available(
+    *, deprecated, message: "Use 'SharedReader($optional)' to unwrap optional shared values"
+  )
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member?>
   ) -> SharedReader<Member>? {
-    guard let initialValue = self.wrappedValue[keyPath: keyPath]
-    else { return nil }
-    return SharedReader<Member>(
-      reference: self.reference,
-      keyPath: self.keyPath.appending(
-        path: keyPath.appending(path: \.[default:DefaultSubscript(initialValue)])
-      )!
-    )
+    SharedReader<Member>(self[dynamicMember: keyPath])
   }
 
   #if canImport(Combine)
