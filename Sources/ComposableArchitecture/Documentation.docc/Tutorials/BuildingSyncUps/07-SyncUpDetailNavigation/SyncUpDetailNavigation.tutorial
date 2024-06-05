@@ -36,7 +36,7 @@
       @Step {
         Integrate the `SyncUpsList` reducer into the `AppReducer` by holding onto its state and
         actions, and using the ``ComposableArchitecture/Scope`` reducer to compose the two
-        reducer together.
+        reducers together.
         
         @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0002.swift)
       }
@@ -243,7 +243,7 @@
       }
       
       That is all it takes to perform a navigation from the list feature to the detail feature.
-      When the navigation link is tapped, SwiftUI will search up the view heirarchy to find the
+      When the navigation link is tapped, SwiftUI will search up the view hierarchy to find the
       `NavigationStack` powering the view, find its `path` binding, and append the new `.detail`
       state to the path, thus triggering a drill-down animation.
       

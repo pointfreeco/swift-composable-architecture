@@ -155,7 +155,7 @@
         
         > Note: We are pre-emptively applying the `@CasePathable` macro to make it possible to write
         tests against these actions in a keypath-like syntax. The `@CasePathable` macro is 
-        automatically applied to `Action` enums inside reducers, but macros cannot recursive apply
+        automatically applied to `Action` enums inside reducers, but macros cannot recursively apply
         themselves and so we must do it manually sometimes.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0001.swift, previousFile: EditingAndDeletingSyncUp-02-code-0001-previous.swift)
@@ -184,7 +184,8 @@
       }
       
       @Step {
-        Use the ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator
+        Handle the `.alert` case in the reducer, and use the
+        ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator
         again to integrate the alert's logic into the `SyncUpDetail` reducer.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0004.swift)

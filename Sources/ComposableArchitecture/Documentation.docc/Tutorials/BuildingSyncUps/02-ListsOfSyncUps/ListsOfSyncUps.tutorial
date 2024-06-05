@@ -52,51 +52,7 @@
         [identified-array-gh]: http://github.com/pointfreeco/swift-identified-collections
         
         @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0003.swift)
-      }
-      
-      <!--
-      NB: Removing the Tagged discussion for now because it was too confusing for readers.
-      
-      There's another improvement that can be made to our domain models, but this one is completely
-      optional.
-      
-      Right now all of the IDs of our models are `UUID`. This means it is technically possible to
-      do something non-sensical like check if a `syncUp.id` is equal to an `attendee.id`. That is
-      never a valid thing to do, and so it would be ideal if we could detect that at _compile time_,
-      rather than runtime.
-      
-      We can do this by leveraging one of our other libraries, [Tagged][tagged-gh]. This library
-      does not automatically come with the Composable Architecture, and so you will need to add it,
-      and these next steps are completely optional for the purpose of this tutorial.
-      
-      [tagged-gh]: http://github.com/pointfreeco/swift-tagged
-      
-      @Step {
-        Add the `Tagged` library to your project by navigating to the build settings, and then to
-        the package dependencies tab, and input the GitHub URL:
-        [https://github.com/pointfreeco/swift-tagged](https://github.com/pointfreeco/swift-tagged).
-        
-        @Image(source: syncups-02-package-dependencies-tagged.png)
-      }
-      
-      @Step {
-        Go back to Models.swift, and import the `Tagged` library, and upgrade all usages of a plain
-        `UUID` to be a tagged `UUID`.
-        
-        > Note: The tag can even just be `Self`, but you can also have multiple tagged values in a
-        > model by created dedicated tagged types. See the [Tagged repo][tag-collisions-gh] for more
-        > information.
-        
-        [tag-collisions-gh]: https://github.com/pointfreeco/swift-tagged#handling-tag-collisions
-        
-        @Code(name: "Models.swift", file: ListsOfSyncUps-01-code-0004.swift)
-      }
-      > Important: To keep things simple for the rest of this tutorial we will _not_ assume that
-      you have implemented the `Tagged` type into your domain. If you choose to use `Tagged` then
-      you will need to do some extra work to construct tagged values that is not covered in
-      the tutorial. For example, once we get to using dependencies to control UUIDs, you will need
-      to write `Attendee.ID(uuid())` instead of just `uuid()`.
-      -->
+      }      
     }
   }
     

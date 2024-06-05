@@ -46,9 +46,7 @@
       
       @Step {
         Assert how the state changes after sending the action. In particular, the `syncUp` data
-        inside the `edit` case of the destination should change. We can use the special 
-        ``ComposableArchitecture/PresentationState/subscript(case:)-7uqte`` defined on
-        `$destination` to modify the data in a particular case.
+        inside the `edit` case of the destination should change.
         
         Run the test suite again to confirm that everything still passes.
         
@@ -71,79 +69,5 @@
       It is also possible to shorten this test quite a bit by using a non-exhaustive test store, as
       we did in <doc:PresentingSyncUpForm>, but we will leave that as an exercise for the reader.
     }
-  }
-  
-  <!--
-  This is all old now that we are using @Shared and deleting directly in the reducer. We can
-  either omit this or update it.
-  
-  @Section(title: "Testing the delete flow") {
-    @ContentAndMedia {
-      Next we will test the flow of the user deleting the sync-up. This involves asserting that the
-      confirmation alert shows, and emulating the user interacting with the alert.
-    }
-      
-    @Steps {
-      @Step {
-        Create a new test method for testing the delete user flow. Also create a 
-        ``ComposableArchitecture/TestStore`` for the `SyncUpDetail` feature.
-        
-        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0001.swift, previousFile: TestingSyncUpDetail-02-code-0001-previous.swift)
-      }
-      
-      @Step {
-        Emulate the user tapping the "Delete" button and assert that the alert state is populated.
-        
-        Run the test suite to confirm that it passes.
-        
-        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0002.swift)
-      }
-      
-      @Step {
-        Emulate the user confirming deletion of the sync-up by sending a deeply nested action to the
-        `.destination`, when it is `.presented`, in the `.alert` case, and then finally the
-        `.confirmButtonTapped` action. Also assert that the alert will be dismissed by setting the
-        `destination` state to `nil`.
-        
-        TODO: Make alert action case-pathable
-        
-        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0003.swift)
-      }
-      
-      @Step {
-        Run the test suite again to see that now it does _not_ pass. We have a test failure.
-        
-        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0004.swift)
-      }
-      
-      This failure is happening because we are now making use effects that emit actions, and by
-      default the ``ComposableArchitecture/TestStore`` forces us to assert on _everything_ happening
-      in the feature. This is really great because it helps us catch potential problems when new
-      logic and behavior is added to our features.
-      
-      The failure is letting us know that the system received an action that we did not
-      assert against. This is also a great failure to have because it forces us to prove that we
-      know how effects execute and feed their data back in the system.
-      
-      Let's fix this test failure by asserting on more of what is happening in the system. 
-      
-      @Step {
-        Use the ``ComposableArchitecture/TestStore/receive(_:_:timeout:assert:file:line:)-dkei``
-        method to assert that we expect to receive a delegate action to delete the sync-up.
-        
-        Run the test suite to see that one of the previous two test failures has now been fixed.
-        
-        > Note: We are using case key path composition in order to describe the deeply nested action
-        > that is being received.
-        
-        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0005.swift)
-      }
-      
-      Now that this test passes we have definitively proven that
-      the `.deleteSyncUp` delegate action is sent when the user confirms deletion of the sync-up.
-      That will communicate to the parent that it should finish deleting the sync-up _and_ it should
-      dismiss the presented sheet.
-    }
-  }
-  -->
+  }  
 }
