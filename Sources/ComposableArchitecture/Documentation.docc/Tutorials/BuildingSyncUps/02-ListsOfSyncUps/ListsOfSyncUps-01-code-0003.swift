@@ -60,3 +60,15 @@ enum Theme: String, CaseIterable, Equatable, Identifiable, Codable {
 
   var name: String { rawValue.capitalized }
 }
+
+extension SyncUp {
+  static let mock = SyncUp(
+    id: SyncUp.ID(),
+    attendees: [
+      Attendee(id: Attendee.ID(), name: "Blob"),
+      Attendee(id: Attendee.ID(), name: "Blob Jr."),
+      Attendee(id: Attendee.ID(), name: "Blob Sr."),
+    ],
+    title: "Point-Free Morning Sync"
+  )
+}
