@@ -353,7 +353,8 @@ extension Shared {
       keyPath: self.keyPath.appending(path: keyPath)!
     )
   }
-
+  
+  /// Constructs a read-only version of the shared value.
   public var reader: SharedReader<Value> {
     SharedReader(reference: self.reference, keyPath: self.keyPath)
   }
