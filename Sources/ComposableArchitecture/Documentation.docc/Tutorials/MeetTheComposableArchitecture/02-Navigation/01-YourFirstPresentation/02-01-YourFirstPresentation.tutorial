@@ -256,6 +256,15 @@
         @Code(name: "AddContactFeature.swift", file: 02-01-04-code-0000.swift, previousFile: 02-01-04-code-0000-previous.swift)
       }
       
+      > Important: Delegate actions are the most general way of communicating from the child domain
+      back to the parent, but there are other techniques. We could have also utilized the 
+      [`@Shared`](<doc:Shared>) property wrapper for the collection of sync ups, which would allow
+      the `AddContactFeature` to insert a new contact directly into the parent collection without
+      any further steps. This can be powerful, but we will use delegate actions for this tutorial.
+      To read more about `@Shared` see the <doc:SharingState> article, and see the
+      <doc:BuildingSyncUps> tutorial where we see this technique, in particular in
+      <doc:EditingAndDeletingSyncUp#Deleting-the-sync-up> section.
+      
       @Step {
         Handle the new case in the reducer, but we should never actually perform any logic in this
         case. Only the parent should listen for `delegate` actions and respond accordingly.

@@ -16,6 +16,8 @@
         Go back to the SyncUpsList.swift file, and start by applying the [`@Shared`](<doc:Shared>)
         property wrapper to the `syncUps` field.
         
+        > Note: Our changes will not compile right now, but they will soon.
+        
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0001.swift, previousFile: PersistingSyncUps-01-code-0001-previous.swift)
       }
       
@@ -51,7 +53,7 @@
       
       With that change the project should be compiling. It is worth noting that 
       ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` only works with `Codable` data
-      types, and earlier in the tutorial when add models to Models.swift we made them codable from
+      types, and earlier in the tutorial when we added models to Models.swift we made them codable from
       the beginning.
       
       To confirm that persistence works we need to run the app in the simulator, but we haven't done

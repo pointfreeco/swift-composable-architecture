@@ -53,6 +53,7 @@ day-to-day when building applications, such as:
 - <doc:Navigation>
 - <doc:SharingState>
 - <doc:Performance>
+- <doc:FAQ>
 
 ### Tutorials
 

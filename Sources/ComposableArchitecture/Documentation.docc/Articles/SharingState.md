@@ -680,7 +680,7 @@ func testFeature() {
 }
 ```
 
-However, if your test suite is apart of an app target, then the entry point of the app will execute
+However, if your test suite is a part of an app target, then the entry point of the app will execute
 and potentially cause an early access of `@Shared`, thus capturing a different default value than
 what is specified above. This quirk of tests in app targets is documented in
 <doc:Testing#Testing-gotchas> of the <doc:Testing> article, and a similar quirk exists for Xcode
