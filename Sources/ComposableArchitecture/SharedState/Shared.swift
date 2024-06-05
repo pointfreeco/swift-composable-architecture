@@ -359,7 +359,7 @@ extension Shared {
   }
 
   @available(
-    *, deprecated, message: "Use 'SharedReader($optional.value)' to unwrap optional shared values"
+    *, deprecated, message: "Use 'SharedReader($value.optional)' to unwrap optional shared values"
   )
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member?>
