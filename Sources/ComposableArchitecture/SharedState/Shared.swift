@@ -67,7 +67,7 @@ public struct Shared<Value> {
   }
 
   /// Perform an operation on shared state with isolated access to the underlying value.
-  public func withValue(_ transform: @Sendable (inout Value) -> Void) {
+  public func withLock(_ transform: @Sendable (inout Value) -> Void) {
     transform(&self._wrappedValue)
   }
 
@@ -89,7 +89,7 @@ public struct Shared<Value> {
   /// ```
   public var wrappedValue: Value {
     get { _wrappedValue }
-    @available(*, noasync, message: "Use '$shared.withValue' instead of mutating directly.")
+    @available(*, noasync, message: "Use '$shared.withLock' instead of mutating directly.")
     nonmutating set { _wrappedValue = newValue }
   }
 

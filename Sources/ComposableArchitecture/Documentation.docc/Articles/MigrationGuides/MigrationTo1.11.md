@@ -1,7 +1,7 @@
 # Migrating to 1.11
 
-Update your code to use the new ``Shared/withValue(_:)`` method for mutating shared state, rather
-than mutating the underlying wrapped value directly.
+Update your code to use the new ``Shared/withLock(_:)`` method for mutating shared state from
+asynchronous contexts, rather than mutating the underlying wrapped value directly.
 
 ## Overview
 
@@ -49,18 +49,18 @@ message of how to fix:
 case .delayedIncrementButtonTapped:
   return .run { _ in
     @Shared(.count) var count
-    count += 1  // ⚠️ Use '$shared.withValue' instead of mutating directly.
+    count += 1  // ⚠️ Use '$shared.withLock' instead of mutating directly.
   }
 ```
 
-To fix this deprecation you can use the new ``Shared/withValue(_:)`` method on the projected value
-of `@Shared`:
+To fix this deprecation you can use the new ``Shared/withLock(_:)`` method on the projected value of
+`@Shared`:
 
 ```swift
 case .delayedIncrementButtonTapped:
   return .run { _ in
     @Shared(.count) var count
-    $count.withValue { $0 += 1 }
+    $count.withLock { $0 += 1 }
   }
 ```
 
@@ -70,14 +70,14 @@ it back in the reference.
 Technically it is still possible to write code that has race conditions, such as this silly example:
 
 ```swift
-let currentCount = $count.withValue { $0 }
-$count.withValue { $0 = currentCount + 1 }
+let currentCount = $count.withLock { $0 }
+$count.withLock { $0 = currentCount + 1 }
 ```
 
 But there is no way to 100% prevent race conditions in code. Even actors are susceptible to problems
 due to re-entrancy. To avoid problems like the above we recommend wrapping as many mutations of the
-shared state as possible in a single ``Shared/withValue(_:)``. That will make sure that the full
-unit of work is guarded by a lock.
+shared state as possible in a single ``Shared/withLock(_:)``. That will make sure that the full unit
+of work is guarded by a lock.
 
 ## Supplying mock read-only state to previews
 

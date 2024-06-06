@@ -153,7 +153,7 @@ final class FileStorageTests: XCTestCase {
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
 
-      $users.withValue { $0.append(.blob) }
+      $users.withLock { $0.append(.blob) }
       NotificationCenter.default
         .post(name: willResignNotificationName, object: nil)
       await Task.yield()
@@ -379,10 +379,10 @@ final class FileStorageTests: XCTestCase {
       return $user
     }
 
-    shared1.withValue { $0.name = "Blob Jr" }
+    shared1.withLock { $0.name = "Blob Jr" }
     XCTAssertEqual(shared1.wrappedValue.name, "Blob Jr")
     XCTAssertEqual(shared2.wrappedValue.name, "Blob")
-    shared2.withValue { $0.name = "Blob Sr" }
+    shared2.withLock { $0.name = "Blob Sr" }
     XCTAssertEqual(shared1.wrappedValue.name, "Blob Jr")
     XCTAssertEqual(shared2.wrappedValue.name, "Blob Sr")
   }

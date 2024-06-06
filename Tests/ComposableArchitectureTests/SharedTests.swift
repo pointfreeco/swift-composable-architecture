@@ -365,7 +365,7 @@ final class SharedTests: XCTestCase {
           case .startTimer:
             return .run { [count = state.$count] send in
               for await _ in self.queue.timer(interval: .seconds(1)) {
-                count.withValue { $0 += 1 }
+                count.withLock { $0 += 1 }
                 await send(.timerTick)
               }
             }
@@ -376,7 +376,7 @@ final class SharedTests: XCTestCase {
               .run { [count = state.$count] _ in
                 Task {
                   try await self.queue.sleep(for: .seconds(1))
-                  count.withValue { $0 = 42 }
+                  count.withLock { $0 = 42 }
                 }
               }
             )
@@ -854,11 +854,11 @@ final class SharedTests: XCTestCase {
 
     await store.send(.toggleIsOn) {
       _ = $0
-      isOn.withValue { $0 = true }
+      isOn.wrappedValue = true
     }
     await store.send(.toggleIsOn) {
       _ = $0
-      isOn.withValue { $0 = false }
+      isOn.wrappedValue = false
     }
   }
 
@@ -907,7 +907,7 @@ final class SharedTests: XCTestCase {
   func testSelfEqualityInAnAssertion() {
     let count = Shared(0)
     withSharedChangeTracking { tracker in
-      count.withValue { $0 += 1 }
+      count.wrappedValue += 1
       tracker.assert {
         XCTAssertNotEqual(count, count)
         XCTAssertEqual(count.wrappedValue, count.wrappedValue)
@@ -922,9 +922,9 @@ final class SharedTests: XCTestCase {
   func testBasicAssertion() {
     let count = Shared(0)
     withSharedChangeTracking { tracker in
-      count.withValue { $0 += 1 }
+      count.wrappedValue += 1
       tracker.assert {
-        count.withValue { $0 += 1 }
+        count.wrappedValue += 1
         XCTAssertEqual(count, count)
         XCTAssertEqual(count.wrappedValue, count.wrappedValue)
       }
@@ -982,7 +982,7 @@ private struct SharedFeature {
       case .longLivingEffect:
         return .run { [sharedCount = state.$sharedCount] _ in
           try await self.mainQueue.sleep(for: .seconds(1))
-          sharedCount.withValue { $0 += 1 }
+          sharedCount.withLock { $0 += 1 }
         }
       case .noop:
         return .none
@@ -1021,7 +1021,7 @@ private struct SimpleFeature {
       switch action {
       case .incrementInEffect:
         return .run { [count = state.$count] _ in
-          count.withValue { $0 += 1 }
+          count.withLock { $0 += 1 }
         }
       case .incrementInReducer:
         state.count += 1

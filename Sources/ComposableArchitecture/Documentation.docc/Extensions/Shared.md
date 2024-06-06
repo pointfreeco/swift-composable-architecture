@@ -16,7 +16,7 @@
 - ``init(_:fileID:line:)-8jqg5``
 - ``init(_:fileID:line:)-gluj``
 
-### Getting the value
+### Accessing the value
 
 - ``wrappedValue``
 - ``projectedValue``
@@ -24,9 +24,9 @@
 - ``subscript(dynamicMember:)-6kmzm``
 - ``subscript(dynamicMember:)-22ga9``
 
-### Modifying the value
+### Isolating the value
 
-- ``withValue(_:)``
+- ``withLock(_:)``
 
 ### Unit testing the value
 

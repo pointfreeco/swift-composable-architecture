@@ -515,7 +515,7 @@ struct Feature {
 ```
 
 This feature can be tested in exactly the same way as when you are using non-shared state, 
-except you must make sure to use the ``Shared/withValue(_:)`` method (see 
+except you must make sure to use the ``Shared/withLock(_:)`` method (see
 <doc:SharingState#Making-mutations-to-shared-state> for more details):
 
 ```swift
@@ -571,8 +571,8 @@ shared state in an effect, and then increments from the effect:
 
 ```swift
 case .incrementButtonTapped:
-  return .run { [count = state.$count] _ in
-    count.withValue { $0 += 1 }
+  return .run { [sharedCount = state.$count] _ in
+    sharedCount.withLock { $0 += 1 }
   }
 ```
 
@@ -1000,11 +1000,11 @@ an asynchronous context. This is because shared state is technically a reference
 though we take extra steps to make it appear value-like. And this means it's possible to mutate the
 same piece of shared state from multiple threads, and hence race conditions are possible.
 
-To mutate a piece of shared state in an isolated fashion, use the ``Shared/withValue(_:)`` method
+To mutate a piece of shared state in an isolated fashion, use the ``Shared/withLock(_:)`` method
 defined on the `@Shared` projected value:
 
 ```swift
-state.$count.withValue { $0 += 1 }
+state.$count.withLock { $0 += 1 }
 ```
 
 That locks the entire unit of work of reading the current count, incrementing it, and storing it
@@ -1014,12 +1014,12 @@ Technically it is still possible to write code that has race conditions, such as
 
 ```swift
 let currentCount = state.$count.withValue { $0 }
-state.$count.withValue { $0 = currentCount + 1 }
+state.$count.withLock { $0 = currentCount + 1 }
 ```
 
 But there is no way to 100% prevent race conditions in code. Even actors are susceptible to 
 problems due to re-entrancy. To avoid problems like the above we recommend wrapping as many 
-mutations of the shared state as possible in a single ``Shared/withValue(_:)``. That will make
+mutations of the shared state as possible in a single ``Shared/withLock(_:)``. That will make
 sure that the full unit of work is guarded by a lock.
 
 ## Gotchas of @Shared
