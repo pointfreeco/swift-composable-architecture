@@ -33,6 +33,7 @@
 
 - ``EmptyReducer``
 - ``BindingReducer``
+- ``Swift/Optional``
 
 ### Reducer modifiers
 

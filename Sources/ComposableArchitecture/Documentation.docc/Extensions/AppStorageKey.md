@@ -28,3 +28,7 @@
 
 - ``PersistenceReaderKey/appStorage(_:)-5jsie``
 - ``AppStorageKeyPathKey``
+
+### Overriding app storage
+
+- ``Dependencies/DependencyValues/defaultAppStorage``
