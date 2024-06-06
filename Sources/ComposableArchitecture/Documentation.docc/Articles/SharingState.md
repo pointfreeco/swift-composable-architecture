@@ -514,9 +514,7 @@ struct Feature {
 }
 ```
 
-This feature can be tested in exactly the same way as when you are using non-shared state, 
-except you must make sure to use the ``Shared/withLock(_:)`` method (see
-<doc:SharingState#Making-mutations-to-shared-state> for more details):
+This feature can be tested in exactly the same way as when you are using non-shared state:
 
 ```swift
 func testIncrement() async {
