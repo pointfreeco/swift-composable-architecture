@@ -270,10 +270,6 @@
         Use the `id` of the sync-up held in the detail's state to remove it from the `syncUps`
         collection persisted to disk.
         
-        > Note: We are using the ``Shared/withValue(_:)`` method on `@Shared`'s projected value in
-        order to perform this mutation. See <doc:SharingState#Making-mutations-to-shared-state>
-        for more information.
-        
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0011.swift)
       }
       

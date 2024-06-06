@@ -54,9 +54,7 @@ struct SyncUpsList {
               ?? Attendee(id: Attendee.ID(uuid()))
           )
         }
-        state.$syncUps.withValue { [syncUp] in
-          $0.append(syncUp)
-        }
+        state.syncUps.append(syncUp)
         state.destination = nil
         return .none
 
@@ -68,9 +66,7 @@ struct SyncUpsList {
         return .none
 
       case let .onDelete(indexSet):
-        state.$syncUps.withValue {
-          $0.remove(atOffsets: indexSet)
-        }
+        state.syncUps.remove(atOffsets: indexSet)
         return .none
       }
     }

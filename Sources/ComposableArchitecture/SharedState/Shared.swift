@@ -89,7 +89,7 @@ public struct Shared<Value> {
   /// ```
   public var wrappedValue: Value {
     get { _wrappedValue }
-    @available(*, deprecated, message: "Use '$shared.withValue' instead of mutating directly.")
+    @available(*, noasync, message: "Use '$shared.withValue' instead of mutating directly.")
     nonmutating set { _wrappedValue = newValue }
   }
 

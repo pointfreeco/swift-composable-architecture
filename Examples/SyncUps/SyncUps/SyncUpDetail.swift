@@ -1,6 +1,33 @@
 import ComposableArchitecture
 import SwiftUI
 
+//@propertyWrapper struct Foo {
+//  var wrappedValue: Int {
+//    get { 1 }
+//    @available(*, noasync)
+//    nonmutating set {}
+//  }
+//
+//  var projectedValue: Self { self }
+//}
+//
+//var g: Int {
+//  get { 1 }
+//  @available(*, noasync)
+//  set {}
+//}
+//
+//@available(*, noasync)
+//func f() {
+//  @Foo var h
+//  g = 2
+//  h = 2
+//  Task {
+//    g = 3
+//    $h.wrappedValue = 3
+//  }
+//}
+
 @Reducer
 struct SyncUpDetail {
   @Reducer(state: .equatable)
@@ -57,16 +84,15 @@ struct SyncUpDetail {
         return .none
 
       case let .deleteMeetings(atOffsets: indices):
-        state.$syncUp.withValue { $0.meetings.remove(atOffsets: indices) }
+        state.syncUp = state.syncUp
+        state.syncUp.meetings.remove(atOffsets: indices)
         return .none
 
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
           @Shared(.syncUps) var syncUps
-          $syncUps.withValue { [id = state.syncUp.id] in
-            $0.remove(id: id)
-          }
+          syncUps.remove(id: state.syncUp.id)
           return .run { _ in await dismiss() }
 
         case .continueWithoutRecording:
@@ -82,7 +108,7 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
-        state.$syncUp.withValue { $0 = editState.syncUp }
+        state.syncUp = editState.syncUp
         state.destination = nil
         return .none
 

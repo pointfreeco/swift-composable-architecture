@@ -107,7 +107,7 @@ final class SyncUpDetailTests: XCTestCase {
 
     await store.send(.doneEditingButtonTapped) {
       $0.destination = nil
-      $0.$syncUp.withValue { $0.title = "Blob's Meeting" }
+      $0.syncUp.title = "Blob's Meeting"
     }
   }
 

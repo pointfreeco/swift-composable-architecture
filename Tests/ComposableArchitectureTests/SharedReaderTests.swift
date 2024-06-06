@@ -9,7 +9,7 @@ final class SharedReaderTests: XCTestCase {
     _count = Shared(0)
     let countReader = $count.reader
 
-    $count.withValue { $0 += 1 }
+    count += 1
     XCTAssertEqual(count, 1)
     XCTAssertEqual(countReader.wrappedValue, 1)
   }

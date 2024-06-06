@@ -44,9 +44,7 @@ struct RecordMeeting {
         return .run { _ in await dismiss() }
 
       case .alert(.presented(.confirmSave)):
-        state.$syncUp.withValue { [transcript = state.transcript] in
-          $0.insert(transcript: transcript)
-        }
+        state.syncUp.insert(transcript: state.transcript)
         return .run { _ in await dismiss() }
 
       case .alert:
@@ -95,9 +93,7 @@ struct RecordMeeting {
         let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.secondsElapsed == state.syncUp.duration.components.seconds {
-            state.$syncUp.withValue { [transcript = state.transcript] in
-              $0.insert(transcript: transcript)
-            }
+            state.syncUp.insert(transcript: state.transcript)
             return .run { _ in await dismiss() }
           }
           state.speakerIndex += 1

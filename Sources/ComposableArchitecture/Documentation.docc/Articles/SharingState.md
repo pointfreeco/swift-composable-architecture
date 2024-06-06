@@ -27,7 +27,6 @@ as SQLite.
   * [User defaults](#User-defaults)
   * [File storage](#File-storage)
   * [Custom persistence](#Custom-persistence)
-* [Making mutations to shared state](#Making-mutations-to-shared-state)
 * [Observing changes to shared state](#Observing-changes-to-shared-state)
 * [Initialization rules](#Initialization-rules)
 * [Deriving shared state](#Deriving-shared-state)
@@ -39,6 +38,7 @@ as SQLite.
   * [Testing tips](#Testing-tips)
 * [Read-only shared state](#Read-only-shared-state)
 * [Type-safe keys](#Type-safe-keys)
+* [Concurrent mutations to shared state](#Concurrent-mutations-to-shared-state)
 * [Shared state in pre-observation apps](#Shared-state-in-pre-observation-apps)
 * [Gotchas of @Shared](#Gotchas-of-Shared)
 
@@ -232,37 +232,6 @@ customize its appearance or behavior. In those situations you can conform to the
 ``PersistenceReaderKey`` protocol. See <doc:SharingState#Read-only-shared-state> for more 
 information.
 
-## Making mutations to shared state
-
-While the [`@Shared`](<doc:Shared>) property wrapper makes it possible to treat shared state
-_mostly_ like regular state, you do have to perform some extra steps to mutate shared state.
-This is because shared state is technically a reference deep down, even though we take extra steps
-to make it appear value-like. And this means it's possible to mutate the same piece of shared
-state from multiple threads, and hence race conditions are possible.
-
-To mutate a piece of shared state use the ``Shared/withValue(_:)`` method defined on the `@Shared` 
-projected value:
-
-```swift
-state.$count.withValue { $0 += 1 }
-```
-
-That locks the entire unit of work of reading the current count, incrementing it, and storing
-it back in the reference.
-
-Technically it is still possible to write code that has race conditions, such as this silly example:
-
-```swift
-let currentCount = state.$count.withValue { $0 }
-state.$count.withValue { $0 = currentCount + 1 }
-```
-
-But there is no way to 100% prevent race conditions in code. Even actors are susceptible to 
-problems due to re-entrancy. To avoid problems like the above we recommend wrapping as many 
-mutations of the shared state as possible in a single ``Shared/withValue(_:)``. That will make
-sure that the full unit of work is guarded by a lock.
-
-
 ## Observing changes to shared state
 
 The ``Shared`` property wrapper exposes a ``Shared/publisher`` property so that you can observe
@@ -294,7 +263,7 @@ case .onAppear:
   }
 
 case .countUpdated(let count):
-  state.$count.withValue { $0 = count + 1 }
+  state.count += 1
   return .none
 ```
 
@@ -556,7 +525,7 @@ func testIncrement() async {
   }
 
   await store.send(.incrementButtonTapped) {
-    $0.$count.withValue { $0 = 1 }
+    $0.count = 1
   }
 }
 ```
@@ -572,7 +541,7 @@ func testIncrement() async {
   }
 
   await store.send(.incrementButtonTapped) {
-    $0.$count.withValue { $0 = 2 }
+    $0.count = 2
   }
 }
 ```
@@ -728,7 +697,7 @@ it:
 ```swift
 func testFeature() {
   @Shared(.appStorage("count")) var count = 42
-  $count.withValue { $0 = 42 }  // NB: Set again to override any value set by the app target.
+  count = 42  // NB: Set again to override any value set by the app target.
 
   // Shared state will be 42 for all features using it.
   let store = TestStore(…)
@@ -789,7 +758,7 @@ And suppose you wrote a test that proves one of these counts is incremented when
 
 ```swift
 await store.send(.feature1(.buttonTapped)) {
-  $0.feature1.$count.withValue { $0 = 1 }
+  $0.feature1.count = 1
 }
 ```
 
@@ -817,8 +786,8 @@ though technically it's not necessary:
 
 ```swift
 await store.send(.feature1(.buttonTapped)) {
-  $0.feature1.$count.withValue { $0 = 1 }
-  $0.feature2.$count.withValue { $0 = 1 }
+  $0.feature1.count = 1
+  $0.feature2.count = 1
 }
 ```
 
@@ -835,14 +804,14 @@ func testIncrement() async {
     ParentFeature()
   }
 
-  await store.send(.feature1(.buttonTapped)) { [count = $count] in 
+  await store.send(.feature1(.buttonTapped)) { 
     // Mutate $0 to expected value.
-    $count.withValue { $0 = 1 }
+    count = 1
   }
 }
 ```
 
-This will fail if you accidetally remove a `@Shared` from one of your features.
+This will fail if you accidentally remove a `@Shared` from one of your features.
 
 Further, you can enforce this pattern in your codebase by making all `@Shared` properties 
 `fileprivate` so that they can never be mutated outside their file scope:
@@ -867,7 +836,7 @@ however if you try to mutate the state you will get a compiler error:
 
 ```swift
 @SharedReader(.appStorage("isOn")) var isOn = false
-$isOn.withValue { $0 = true }  // 🛑
+isOn = true  // 🛑
 ```
 
 It is also possible to make custom persistence strategies that only have the notion of loading and
@@ -1023,6 +992,36 @@ struct FeatureView: View {
 }
 ```
 
+## Concurrent mutations to shared state
+
+While the [`@Shared`](<doc:Shared>) property wrapper makes it possible to treat shared state
+_mostly_ like regular state, you do have to perform some extra steps to mutate shared state from
+an asynchronous context. This is because shared state is technically a reference deep down, even
+though we take extra steps to make it appear value-like. And this means it's possible to mutate the
+same piece of shared state from multiple threads, and hence race conditions are possible.
+
+To mutate a piece of shared state in an isolated fashion, use the ``Shared/withValue(_:)`` method
+defined on the `@Shared` projected value:
+
+```swift
+state.$count.withValue { $0 += 1 }
+```
+
+That locks the entire unit of work of reading the current count, incrementing it, and storing it
+back in the reference.
+
+Technically it is still possible to write code that has race conditions, such as this silly example:
+
+```swift
+let currentCount = state.$count.withValue { $0 }
+state.$count.withValue { $0 = currentCount + 1 }
+```
+
+But there is no way to 100% prevent race conditions in code. Even actors are susceptible to 
+problems due to re-entrancy. To avoid problems like the above we recommend wrapping as many 
+mutations of the shared state as possible in a single ``Shared/withValue(_:)``. That will make
+sure that the full unit of work is guarded by a lock.
+
 ## Gotchas of @Shared
 
 There are a few gotchas to be aware of when using shared state in the Composable Architecture.
@@ -1131,7 +1130,7 @@ Alternatively you can take an extra step to override shared state in your previe
 ```swift
 #Preview {
   @Shared(.appStorage("isOn")) var isOn = true
-  $isOn.withValue { $0 = true }
+  isOn = true
 }
 ```
 

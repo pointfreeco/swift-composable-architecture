@@ -188,7 +188,7 @@
 
       let store = Store<State, Bool>(initialState: State(count: Shared(0))) {
         Reduce<State, Bool>(internal: { state, action in
-          state.$count.withValue { $0 += action ? 1 : -1 }
+          state.count += action ? 1 : -1
           return .none
         })
         ._printChanges(printer)

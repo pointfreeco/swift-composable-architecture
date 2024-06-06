@@ -98,11 +98,11 @@ extension SharedStateInMemory {
           return .none
 
         case .decrementButtonTapped:
-          state.$stats.withValue { $0.decrement() }
+          state.stats.decrement()
           return .none
 
         case .incrementButtonTapped:
-          state.$stats.withValue { $0.increment() }
+          state.stats.increment()
           return .none
 
         case .isPrimeButtonTapped:
@@ -135,7 +135,7 @@ extension SharedStateInMemory {
       Reduce { state, action in
         switch action {
         case .resetStatsButtonTapped:
-          state.$stats.withValue { $0 = Stats() }
+          state.stats = Stats()
           return .none
         }
       }

@@ -15,11 +15,11 @@ final class SharedTests: XCTestCase {
       SharedFeature()
     }
     await store.send(.sharedIncrement) {
-      $0.$sharedCount.withValue { $0 = 1 }
+      $0.sharedCount = 1
     }
     await store.send(.incrementStats) {
-      $0.$profile.withValue { $0.$stats.withValue { $0.count = 1 } }
-      $0.$stats.withValue { $0.count = 1 }
+      $0.profile.stats.count = 1
+      $0.stats.count = 1
     }
     XCTAssertEqual(store.state.profile.stats.count, 1)
   }
@@ -52,7 +52,7 @@ final class SharedTests: XCTestCase {
         """
     }
     await store.send(.sharedIncrement) {
-      $0.$sharedCount.withValue { $0 = 2 }
+      $0.sharedCount = 2
     }
     XCTAssertEqual(store.state.sharedCount, 1)
   }
@@ -90,7 +90,7 @@ final class SharedTests: XCTestCase {
         """
     }
     await store.send(.sharedIncrement) {
-      $0.$sharedCount.withValue { $0 = 3 }
+      $0.sharedCount = 3
     }
     XCTAssertEqual(store.state.sharedCount, 2)
   }
@@ -109,8 +109,8 @@ final class SharedTests: XCTestCase {
       SharedFeature()
     }
     await store.send(.incrementStats) {
-      $0.$profile.withValue { $0.$stats.withValue { $0.count = 2 } }
-      $0.$stats.withValue { $0.count = 2 }
+      $0.profile.stats.count = 2
+      $0.stats.count = 2
     }
     XCTAssertEqual(stats.count, 2)
   }
@@ -127,7 +127,7 @@ final class SharedTests: XCTestCase {
       SharedFeature()
     }
     await store.send(.sharedIncrement) {
-      $0.$sharedCount.withValue { $0 += 1 }
+      $0.sharedCount += 1
     }
   }
 
@@ -159,7 +159,7 @@ final class SharedTests: XCTestCase {
         """
     }
     await store.send(.sharedIncrement) {
-      $0.$sharedCount.withValue { $0 += 2 }
+      $0.sharedCount += 2
     }
   }
 
@@ -176,7 +176,7 @@ final class SharedTests: XCTestCase {
     }
     await store.send(.request)
     await store.receive(\.sharedIncrement) {
-      $0.$sharedCount.withValue { $0 = 1 }
+      $0.sharedCount = 1
     }
   }
 
@@ -226,7 +226,7 @@ final class SharedTests: XCTestCase {
     }
     await store.send(.longLivingEffect).finish()
     store.assert {
-      $0.$sharedCount.withValue { $0 = 1 }
+      $0.sharedCount = 1
     }
   }
 
@@ -295,7 +295,7 @@ final class SharedTests: XCTestCase {
     }
     await store.send(.longLivingEffect)
     store.assert {
-      $0.$sharedCount.withValue { $0 = 2 }
+      $0.sharedCount = 2
     }
   }
 
@@ -325,7 +325,7 @@ final class SharedTests: XCTestCase {
           case .stopTimer:
             return .cancel(id: CancelID.timer)
           case .timerTick:
-            state.$count.withValue { $0 += 1 }
+            state.count += 1
             return .none
           }
         }
@@ -340,7 +340,7 @@ final class SharedTests: XCTestCase {
     await store.send(.startTimer)
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.timerTick) {
-      $0.$count.withValue { $0 = 1 }
+      $0.count = 1
     }
     await store.send(.stopTimer)
     await mainQueue.advance(by: .seconds(1))
@@ -395,12 +395,12 @@ final class SharedTests: XCTestCase {
     await store.send(.startTimer)
     await mainQueue.advance(by: .seconds(1))
     await store.receive(.timerTick) {
-      $0.$count.withValue { $0 = 1 }
+      $0.count = 1
     }
     await store.send(.stopTimer)
     await mainQueue.advance(by: .seconds(1))
     store.assert {
-      $0.$count.withValue { $0 = 42 }
+      $0.count = 42
     }
   }
 
@@ -456,7 +456,7 @@ final class SharedTests: XCTestCase {
     } onChange: {
       countDidChange.fulfill()
     }
-    $count.withValue { $0 += 1 }
+    count += 1
     self.wait(for: [countDidChange], timeout: 0)
   }
 
@@ -517,9 +517,9 @@ final class SharedTests: XCTestCase {
     }
     .store(in: &cancellables)
 
-    sharedCount.withValue { $0 += 1 }
+    sharedCount.wrappedValue += 1
     XCTAssertEqual(counts, [1])
-    sharedCount.withValue { $0 += 1 }
+    sharedCount.wrappedValue += 1
     XCTAssertEqual(counts, [1, 2])
   }
 
@@ -541,9 +541,9 @@ final class SharedTests: XCTestCase {
     }
     .store(in: &cancellables)
 
-    sharedCount.withValue { $0 += 1 }
+    sharedCount.wrappedValue += 1
     XCTAssertEqual(counts, [1, 1])
-    sharedCount.withValue { $0 += 1 }
+    sharedCount.wrappedValue += 1
     XCTAssertEqual(counts, [1, 1, 2, 2])
   }
 
@@ -558,12 +558,12 @@ final class SharedTests: XCTestCase {
     } receiveValue: { count in
       counts.append(count)
       if count == 1 {
-        sharedCount.withValue { $0 = 2 }
+        sharedCount.wrappedValue = 2
       }
     }
     .store(in: &cancellables)
 
-    sharedCount.withValue { $0 += 1 }
+    sharedCount.wrappedValue += 1
     XCTAssertEqual(counts, [1, 2])
   }
 
@@ -578,12 +578,12 @@ final class SharedTests: XCTestCase {
     } receiveValue: { newCount in
       counts.append(newCount)
       if newCount == 1 {
-        $count.withValue { $0 = 2 }
+        count = 2
       }
     }
     .store(in: &cancellables)
 
-    $count.withValue { $0 += 1 }
+    count += 1
     XCTAssertEqual(counts, [1, 2])
     @Dependency(\.defaultAppStorage) var userDefaults
     // TODO: Should we runtime warn on re-entrant mutations?
@@ -604,7 +604,7 @@ final class SharedTests: XCTestCase {
     $count.publisher.sink { _ in
     } receiveValue: { newCount in
       counts.append(newCount)
-      if newCount == 1 { $count.withValue { $0 = 2 } }
+      if newCount == 1 { count = 2 }
     }
     .store(in: &cancellables)
 
@@ -629,7 +629,7 @@ final class SharedTests: XCTestCase {
       await store.send(.children(.element(id: 2, action: .onAppear)))
       await store.send(.children(.element(id: 3, action: .onAppear)))
       await store.send(.incrementValue) {
-        $0.$value.withValue { $0 = 1 }
+        $0.value = 1
       }
       await store.receive(\.children[id:0].response) {
         $0.children[id: 0]?.text = "1"
@@ -665,7 +665,7 @@ final class SharedTests: XCTestCase {
     )
     await store.send(.action)
     await store.receive(.response) {
-      $0.$count.withValue { $0 = 42 }
+      $0.count = 42
     }
   }
 
@@ -682,8 +682,7 @@ final class SharedTests: XCTestCase {
 
     XCTAssertEqual(observations, [0])
     await store.send(.incrementInReducer) {
-      dump($0.$count)
-      $0.$count.withValue { $0 += 1 }
+      $0.count += 1
     }
     XCTAssertEqual(observations, [0, 1])
   }
@@ -698,7 +697,7 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(isOn, true)
   }
 
-  func testSharedDefaults_MultipleWithDifferentDefaults() async throws {
+  func testSharedDefaults_MultipleWithDifferentDefaults() {
     @Shared(.isOn) var isOn1
     @Shared(.isOn) var isOn2 = true
     @Shared(.appStorage("isOn")) var isOn3 = true
@@ -707,17 +706,17 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(isOn2, false)
     XCTAssertEqual(isOn3, false)
 
-    $isOn2.withValue { $0 = true }
+    isOn2 = true
     XCTAssertEqual(isOn1, true)
     XCTAssertEqual(isOn2, true)
     XCTAssertEqual(isOn3, true)
 
-    $isOn1.withValue { $0 = false }
+    isOn1 = false
     XCTAssertEqual(isOn1, false)
     XCTAssertEqual(isOn2, false)
     XCTAssertEqual(isOn3, false)
 
-    $isOn3.withValue { $0 = true }
+    isOn3 = true
     XCTAssertEqual(isOn1, true)
     XCTAssertEqual(isOn2, true)
     XCTAssertEqual(isOn3, true)
@@ -823,7 +822,7 @@ final class SharedTests: XCTestCase {
     try XCTAssertThrowsError(SharedReader(.noDefaultIsOn))
   }
 
-  func testSharedReaderDefaults_MultipleWithDifferentDefaults() async throws {
+  func testSharedReaderDefaults_MultipleWithDifferentDefaults() {
     @Shared(.appStorage("isOn")) var isOn = false
     @SharedReader(.isOn) var isOn1
     @SharedReader(.isOn) var isOn2 = true
@@ -833,7 +832,7 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(isOn2, false)
     XCTAssertEqual(isOn3, false)
 
-    $isOn.withValue { $0 = true }
+    isOn = true
     XCTAssertEqual(isOn1, true)
     XCTAssertEqual(isOn2, true)
     XCTAssertEqual(isOn3, true)
@@ -889,7 +888,7 @@ final class SharedTests: XCTestCase {
     @Shared(.inMemory("settings")) var settings = Settings()
     XCTAssertEqual($settings.isOn, $settings.hasSeen)
     withSharedChangeTracking { tracker in
-      $settings.withValue { $0.isOn.toggle() }
+      settings.isOn.toggle()
       XCTAssertNotEqual(settings.isOn, settings.hasSeen)
       XCTAssertNotEqual($settings.isOn, $settings.hasSeen)
       XCTAssertNotEqual($settings.hasSeen, $settings.isOn)
@@ -897,7 +896,7 @@ final class SharedTests: XCTestCase {
         XCTAssertEqual(settings.isOn, settings.hasSeen)
         XCTAssertEqual($settings.isOn, $settings.hasSeen)
         XCTAssertEqual($settings.hasSeen, $settings.isOn)
-        $settings.withValue { $0.hasSeen.toggle() }
+        settings.hasSeen.toggle()
         XCTAssertNotEqual(settings.isOn, settings.hasSeen)
         XCTAssertNotEqual($settings.isOn, $settings.hasSeen)
         XCTAssertNotEqual($settings.hasSeen, $settings.isOn)
@@ -977,8 +976,8 @@ private struct SharedFeature {
         state.count += 1
         return .none
       case .incrementStats:
-        state.$profile.withValue { $0.$stats.withValue { $0.count += 1 } }
-        state.$stats.withValue { $0.count += 1 }
+        state.profile.stats.count += 1
+        state.stats.count += 1
         return .none
       case .longLivingEffect:
         return .run { [sharedCount = state.$sharedCount] _ in
@@ -992,10 +991,10 @@ private struct SharedFeature {
           await send(.sharedIncrement)
         }
       case .sharedIncrement:
-        state.$sharedCount.withValue { $0 += 1 }
+        state.sharedCount += 1
         return .none
       case .toggleIsOn:
-        state.$isOn.withValue { $0.toggle() }
+        state.isOn.toggle()
         return .none
       }
     }
@@ -1025,7 +1024,7 @@ private struct SimpleFeature {
           count.withValue { $0 += 1 }
         }
       case .incrementInReducer:
-        state.$count.withValue { $0 += 1 }
+        state.count += 1
         return .none
       }
     }
@@ -1100,7 +1099,7 @@ private struct ListFeature {
         return .none
 
       case .incrementValue:
-        state.$value.withValue { $0 += 1 }
+        state.value += 1
         return .none
       }
     }
@@ -1124,7 +1123,7 @@ private struct EarlySharedStateMutation {
       case .action:
         return .send(.response)
       case .response:
-        state.$count.withValue { $0 = 42 }
+        state.count = 42
         return .none
       }
     }

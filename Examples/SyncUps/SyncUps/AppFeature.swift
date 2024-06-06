@@ -30,7 +30,7 @@ struct AppFeature {
     }
     Reduce { state, action in
       switch action {
-      case let .path(.element(id, .detail(.delegate(delegateAction)))):
+      case let .path(.element(_, .detail(.delegate(delegateAction)))):
         switch delegateAction {
         case let .startMeeting(sharedSyncUp):
           state.path.append(.record(RecordMeeting.State(syncUp: sharedSyncUp)))
