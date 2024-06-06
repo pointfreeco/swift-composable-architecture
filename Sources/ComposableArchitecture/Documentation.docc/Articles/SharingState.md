@@ -802,7 +802,7 @@ func testIncrement() async {
     ParentFeature()
   }
 
-  await store.send(.feature1(.buttonTapped)) { 
+  await store.send(.feature1(.buttonTapped)) {
     // Mutate $0 to expected value.
     count = 1
   }
