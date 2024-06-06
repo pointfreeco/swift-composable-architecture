@@ -379,10 +379,10 @@ final class FileStorageTests: XCTestCase {
       return $user
     }
 
-    shared1.withLock { $0.name = "Blob Jr" }
+    shared1.wrappedValue.name = "Blob Jr"
     XCTAssertEqual(shared1.wrappedValue.name, "Blob Jr")
     XCTAssertEqual(shared2.wrappedValue.name, "Blob")
-    shared2.withLock { $0.name = "Blob Sr" }
+    shared2.wrappedValue.name = "Blob Sr"
     XCTAssertEqual(shared1.wrappedValue.name, "Blob Jr")
     XCTAssertEqual(shared2.wrappedValue.name, "Blob Sr")
   }
