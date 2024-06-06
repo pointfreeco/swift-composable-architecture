@@ -38,6 +38,7 @@ as SQLite.
   * [Testing tips](#Testing-tips)
 * [Read-only shared state](#Read-only-shared-state)
 * [Type-safe keys](#Type-safe-keys)
+* [Concurrent mutations to shared state](#Concurrent-mutations-to-shared-state)
 * [Shared state in pre-observation apps](#Shared-state-in-pre-observation-apps)
 * [Gotchas of @Shared](#Gotchas-of-Shared)
 
@@ -268,8 +269,6 @@ case .countUpdated(let count):
 
 If `count` changes, then `$count.publisher` emits, causing the `countUpdated` action to be sent, 
 causing the shared `count` to be mutated, causing `$count.publisher` to emit, and so on.
-
-
 
 ## Initialization rules
 
@@ -570,8 +569,8 @@ shared state in an effect, and then increments from the effect:
 
 ```swift
 case .incrementButtonTapped:
-  return .run { [count = state.$count] _ in
-    count.wrappedValue += 1
+  return .run { [sharedCount = state.$count] _ in
+    sharedCount.withLock { $0 += 1 }
   }
 ```
 
@@ -810,7 +809,7 @@ func testIncrement() async {
 }
 ```
 
-This will fail if you accidetally remove a `@Shared` from one of your features.
+This will fail if you accidentally remove a `@Shared` from one of your features.
 
 Further, you can enforce this pattern in your codebase by making all `@Shared` properties 
 `fileprivate` so that they can never be mutated outside their file scope:
@@ -990,6 +989,36 @@ struct FeatureView: View {
   }
 }
 ```
+
+## Concurrent mutations to shared state
+
+While the [`@Shared`](<doc:Shared>) property wrapper makes it possible to treat shared state
+_mostly_ like regular state, you do have to perform some extra steps to mutate shared state from
+an asynchronous context. This is because shared state is technically a reference deep down, even
+though we take extra steps to make it appear value-like. And this means it's possible to mutate the
+same piece of shared state from multiple threads, and hence race conditions are possible.
+
+To mutate a piece of shared state in an isolated fashion, use the ``Shared/withLock(_:)`` method
+defined on the `@Shared` projected value:
+
+```swift
+state.$count.withLock { $0 += 1 }
+```
+
+That locks the entire unit of work of reading the current count, incrementing it, and storing it
+back in the reference.
+
+Technically it is still possible to write code that has race conditions, such as this silly example:
+
+```swift
+let currentCount = state.count
+state.$count.withLock { $0 = currentCount + 1 }
+```
+
+But there is no way to 100% prevent race conditions in code. Even actors are susceptible to 
+problems due to re-entrancy. To avoid problems like the above we recommend wrapping as many 
+mutations of the shared state as possible in a single ``Shared/withLock(_:)``. That will make
+sure that the full unit of work is guarded by a lock.
 
 ## Gotchas of @Shared
 

@@ -118,7 +118,7 @@ final class SyncUpDetailTests: XCTestCase {
     // TODO: Can this exhaustively be caught?
     defer { XCTAssertEqual([], syncUps) }
 
-    let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
+    let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: sharedSyncUp)) {
       SyncUpDetail()
     }

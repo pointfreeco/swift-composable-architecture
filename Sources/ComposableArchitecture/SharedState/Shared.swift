@@ -21,6 +21,10 @@ public struct Shared<Value> {
     self.keyPath = keyPath
   }
 
+  /// Wraps a value in a shared reference.
+  ///
+  /// - Parameters:
+  ///   - value: A value to wrap.
   public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
     self.init(
       reference: ValueReference<Value, InMemoryKey<Value>>(
@@ -32,10 +36,27 @@ public struct Shared<Value> {
     )
   }
 
+  /// Creates a shared reference from another shared reference.
+  ///
+  /// You don't call this initializer directly. Instead, Swift calls it for you when you use a
+  /// property-wrapper attribute on a binding closure parameter.
+  ///
+  /// - Parameter projectedValue: A shared reference.
   public init(projectedValue: Shared) {
     self = projectedValue
   }
 
+  /// Unwraps a shared reference to an optional value.
+  ///
+  /// ```swift
+  /// @Shared(.currentUser) var currentUser: User?
+  ///
+  /// if let sharedCurrentUser = Shared($currentUser) {
+  ///   sharedCurrentUser  // Shared<User>
+  /// }
+  /// ```
+  ///
+  /// - Parameter base: A shared reference to an optional value.
   public init?(_ base: Shared<Value?>) {
     guard let initialValue = base.wrappedValue
     else { return nil }
@@ -45,27 +66,31 @@ public struct Shared<Value> {
     )
   }
 
+  /// Perform an operation on shared state with isolated access to the underlying value.
+  public func withLock(_ transform: @Sendable (inout Value) -> Void) {
+    transform(&self._wrappedValue)
+  }
+
+  /// The underlying value referenced by the shared variable.
+  ///
+  /// This property provides primary access to the value's data. However, you don't access
+  /// `wrappedValue` directly. Instead, you use the property variable created with the ``Shared``
+  /// attribute. In the following example, the shared variable `topics` returns the value of
+  /// `wrappedValue`:
+  ///
+  /// ```swift
+  /// struct State {
+  ///   @Shared var subscriptions: [Subscription]
+  ///
+  ///   var isSubscribed: Bool {
+  ///     !subscriptions.isEmpty
+  ///   }
+  /// }
+  /// ```
   public var wrappedValue: Value {
-    get {
-      @Dependency(\.sharedChangeTracker) var changeTracker
-      if changeTracker != nil {
-        return self.snapshot ?? self.currentValue
-      } else {
-        return self.currentValue
-      }
-    }
-    nonmutating set {
-      @Dependency(\.sharedChangeTracker) var changeTracker
-      if changeTracker != nil {
-        self.snapshot = newValue
-      } else {
-        @Dependency(\.sharedChangeTrackers) var changeTrackers: Set<SharedChangeTracker>
-        for changeTracker in changeTrackers {
-          changeTracker.track(self.reference)
-        }
-        self.currentValue = newValue
-      }
-    }
+    get { _wrappedValue }
+    @available(*, noasync, message: "Use '$shared.withLock' instead of mutating directly.")
+    nonmutating set { _wrappedValue = newValue }
   }
 
   /// A projection of the shared value that returns a shared reference.
@@ -104,7 +129,19 @@ public struct Shared<Value> {
   }
 
   #if canImport(Combine)
-    // TODO: Should this be wrapped in a type we own instead of `AnyPublisher`?
+    /// Returns a publisher that emits events when the underlying value changes.
+    ///
+    /// Useful when a feature needs to execute logic when a shared reference is updated outside of
+    /// the feature itself.
+    ///
+    /// ```swift
+    /// case .onAppear:
+    ///   return .run { [currentUser = state.$currentUser] send in
+    ///     for await _ in currentUser {
+    ///       await send(.currentUserUpdated)
+    ///     }
+    ///   }
+    /// ```
     public var publisher: AnyPublisher<Value, Never> {
       func open<Root>(_ reference: some Reference<Root>) -> AnyPublisher<Value, Never> {
         reference.publisher
@@ -115,6 +152,20 @@ public struct Shared<Value> {
     }
   #endif
 
+  /// Returns a shared reference to the resulting value of a given key path.
+  ///
+  /// You don't call this subscript directly. Instead, Swift calls it for you when you access a
+  /// property of the underlying value. In the following example, the property access
+  /// `$signUpData.topics` returns the value of invoking this subscript with `\SignUpData.topics`:
+  ///
+  /// ```swift
+  /// @Shared var signUpData: SignUpData
+  ///
+  /// $signUpData.topics  // Shared<Set<Topic>>
+  /// ```
+  ///
+  /// - Parameter keyPath: A key path to a specific resulting value.
+  /// - Returns: A new binding.
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member>
   ) -> Shared<Member> {
@@ -154,6 +205,29 @@ public struct Shared<Value> {
       // TODO: Finesse error more than `XCTAssertNoDifference`
       XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
       self.snapshot = nil
+    }
+  }
+
+  fileprivate var _wrappedValue: Value {
+    get {
+      @Dependency(\.sharedChangeTracker) var changeTracker
+      if changeTracker != nil {
+        return self.snapshot ?? self.currentValue
+      } else {
+        return self.currentValue
+      }
+    }
+    nonmutating set {
+      @Dependency(\.sharedChangeTracker) var changeTracker
+      if changeTracker != nil {
+        self.snapshot = newValue
+      } else {
+        @Dependency(\.sharedChangeTrackers) var changeTrackers: Set<SharedChangeTracker>
+        for changeTracker in changeTrackers {
+          changeTracker.track(self.reference)
+        }
+        self.currentValue = newValue
+      }
     }
   }
 
@@ -315,7 +389,7 @@ where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
       return self[position, default: DefaultSubscript(self.wrappedValue[position])]
     }
     set {
-      self.wrappedValue[position] = newValue.wrappedValue
+      self._wrappedValue[position] = newValue.wrappedValue
     }
   }
 }

@@ -24,9 +24,9 @@ extension PersistenceReaderKey {
 ///
 /// See ``PersistenceReaderKey/inMemory(_:)`` to create values of this type.
 public struct InMemoryKey<Value>: PersistenceKey, Sendable {
-  let key: String
-  let store: InMemoryStorage
-  public init(_ key: String) {
+  private let key: String
+  private let store: InMemoryStorage
+  fileprivate init(_ key: String) {
     @Dependency(\.defaultInMemoryStorage) var defaultInMemoryStorage
     self.key = key
     self.store = defaultInMemoryStorage
