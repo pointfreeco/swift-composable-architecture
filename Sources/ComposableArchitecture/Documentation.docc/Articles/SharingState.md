@@ -1011,7 +1011,7 @@ back in the reference.
 Technically it is still possible to write code that has race conditions, such as this silly example:
 
 ```swift
-let currentCount = state.$count.withLock { $0 }
+let currentCount = state.count
 state.$count.withLock { $0 = currentCount + 1 }
 ```
 

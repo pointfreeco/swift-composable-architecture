@@ -71,7 +71,7 @@ back in the reference.
 Technically it is still possible to write code that has race conditions, such as this silly example:
 
 ```swift
-let currentCount = $count.withLock { $0 }
+let currentCount = count
 $count.withLock { $0 = currentCount + 1 }
 ```
 
