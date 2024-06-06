@@ -27,7 +27,7 @@ final class SyncUpsListTests: XCTestCase {
       $0.destination?.add?.syncUp.title = "Engineering"
     }
 
-    await store.send(.confirmAddSyncUpButtonTapped) {  
+    await store.send(.confirmAddSyncUpButtonTapped) {
       $0.destination = nil
       $0.syncUps = [syncUp]
     }
