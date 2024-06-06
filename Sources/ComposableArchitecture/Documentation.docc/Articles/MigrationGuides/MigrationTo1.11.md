@@ -6,8 +6,8 @@ than mutating the underlying wrapped value directly.
 ## Overview
 
 The Composable Architecture is under constant development, and we are always looking for ways to
-simplify the library, and make it more powerful. This version of the library introduced 1 new
-API and deprecated 1 API.
+simplify the library, and make it more powerful. This version of the library introduced 2 new
+APIs and deprecated 1 API.
 
 > Important: Before following this migration guide be sure you have fully migrated to the newest
 > tools of version 1.10. See <doc:MigrationGuides> for more information.
@@ -66,3 +66,21 @@ But there is no way to 100% prevent race conditions in code. Even actors are sus
 problems due to re-entrancy. To avoid problems like the above we recommend wrapping as many 
 mutations of the shared state as possible in a single ``Shared/withValue(_:)``. That will make
 sure that the full unit of work is guarded by a lock.
+
+## Supplying mock read-only state to previews
+
+A new ``SharedReader/constant(_:)`` helper on ``SharedReader`` has been introduced to simplify
+supplying mock data to Xcode previews. It works like SwiftUI's `Binding.constant`, but for shared
+references:
+
+```swift
+#Preview {
+  FeatureView(
+    store: Store(
+      initialState: Feature.State(count: .constant(42))
+    ) {
+      Feature()
+    }
+  )
+)
+```
