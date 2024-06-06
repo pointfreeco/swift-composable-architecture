@@ -15,8 +15,8 @@ APIs and deprecated 1 API.
 ## Mutating shared state concurrently
 
 Version 1.10 of the Composable Architecture introduced a powerful tool for 
-[sharing state](<doc:SharingState>) amongst your features. Prior to 1.11, it was possible to 
-mutate a piece of shared state directly, as if it was just a normal property on a value type:
+[sharing state](<doc:SharingState>) amongst your features. And you can mutate a piece of shared
+state directly, as if it were just a normal property on a value type:
 
 ```swift
 case .incrementButtonTapped:
@@ -24,9 +24,10 @@ case .incrementButtonTapped:
   return .none
 ```
 
-If you only ever mutate shared state from a reducer, then this is completely fine to do. However,
-because shared values are secretly references (that is how data is shared), it is possible to mutate
-shared values from effects, which means concurrently:
+And if you only ever mutate shared state from a reducer, then this is completely fine to do.
+However, because shared values are secretly references (that is how data is shared), it is possible
+to mutate shared values from effects, which means concurrently. And prior to 1.11, it was possible
+to do this directly:
 
 ```swift
 case .delayedIncrementButtonTapped:
@@ -41,9 +42,9 @@ to race conditions. If you were to perform `count += 1` from 1,000 threads, it i
 the final value to not be 1,000.
 
 We wanted the [`@Shared`](<doc:Shared>) type to be as ergonomic as possible, and that is why we make
-it directly mutable, but allowing these mutations to happen from asynchronous contexts was not the
-right decision. And so now direct mutation from asynchronous contexts is deprecated with a helpful
-message of how to fix:
+it directly mutable, but we should not be allowing these mutations to happen from asynchronous
+contexts. And so now the ``Shared/wrappedValue`` setter has been marked unavailable from
+asynchronous contexts, with a helpful message of how to fix:
 
 ```swift
 case .delayedIncrementButtonTapped:
@@ -64,8 +65,8 @@ case .delayedIncrementButtonTapped:
   }
 ```
 
-That locks the entire unit of work of reading the current count, incrementing it, and storing
-it back in the reference.
+This locks the entire unit of work of reading the current count, incrementing it, and storing it
+back in the reference.
 
 Technically it is still possible to write code that has race conditions, such as this silly example:
 
