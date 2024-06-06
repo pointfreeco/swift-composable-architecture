@@ -17,17 +17,17 @@ extension PersistenceReaderKey {
 ///
 /// Use ``PersistenceReaderKey/fileStorage(_:)`` to create values of this type.
 public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Sendable {
-  fileprivate let storage: FileStorage
-  let isSetting = LockIsolated(false)
-  let url: URL
-  let value = LockIsolated<Value?>(nil)
-  let workItem = LockIsolated<DispatchWorkItem?>(nil)
+  private let storage: FileStorage
+  private let isSetting = LockIsolated(false)
+  private let url: URL
+  private let value = LockIsolated<Value?>(nil)
+  private let workItem = LockIsolated<DispatchWorkItem?>(nil)
 
   public var id: AnyHashable {
     FileStorageKeyID(url: self.url, storage: self.storage)
   }
 
-  public init(url: URL) {
+  fileprivate init(url: URL) {
     @Dependency(\.defaultFileStorage) var storage
     self.storage = storage
     self.url = url

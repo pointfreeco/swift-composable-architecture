@@ -163,49 +163,49 @@ public struct AppStorageKey<Value> {
     AppStorageKeyID(key: self.key, store: self.store)
   }
 
-  public init(_ key: String) where Value == Bool {
+  fileprivate init(_ key: String) where Value == Bool {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
     self.key = key
     self.store = store
   }
 
-  public init(_ key: String) where Value == Int {
+  fileprivate init(_ key: String) where Value == Int {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
     self.key = key
     self.store = store
   }
 
-  public init(_ key: String) where Value == Double {
+  fileprivate init(_ key: String) where Value == Double {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
     self.key = key
     self.store = store
   }
 
-  public init(_ key: String) where Value == String {
+  fileprivate init(_ key: String) where Value == String {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
     self.key = key
     self.store = store
   }
 
-  public init(_ key: String) where Value == URL {
+  fileprivate init(_ key: String) where Value == URL {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = URLLookup()
     self.key = key
     self.store = store
   }
 
-  public init(_ key: String) where Value == Data {
+  fileprivate init(_ key: String) where Value == Data {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
     self.key = key
     self.store = store
   }
 
-  public init(_ key: String)
+  fileprivate init(_ key: String)
   where Value: RawRepresentable, Value.RawValue == Int {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = RawRepresentableLookup(base: CastableLookup())
@@ -213,7 +213,7 @@ public struct AppStorageKey<Value> {
     self.store = store
   }
 
-  public init(_ key: String)
+  fileprivate init(_ key: String)
   where Value: RawRepresentable, Value.RawValue == String {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = RawRepresentableLookup(base: CastableLookup())
@@ -221,49 +221,49 @@ public struct AppStorageKey<Value> {
     self.store = store
   }
 
-  public init(_ key: String) where Value == Bool? {
+  fileprivate init(_ key: String) where Value == Bool? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
     self.store = store
   }
 
-  public init(_ key: String) where Value == Int? {
+  fileprivate init(_ key: String) where Value == Int? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
     self.store = store
   }
 
-  public init(_ key: String) where Value == Double? {
+  fileprivate init(_ key: String) where Value == Double? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
     self.store = store
   }
 
-  public init(_ key: String) where Value == String? {
+  fileprivate init(_ key: String) where Value == String? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
     self.store = store
   }
 
-  public init(_ key: String) where Value == URL? {
+  fileprivate init(_ key: String) where Value == URL? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: URLLookup())
     self.key = key
     self.store = store
   }
 
-  public init(_ key: String) where Value == Data? {
+  fileprivate init(_ key: String) where Value == Data? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
     self.store = store
   }
 
-  public init<R: RawRepresentable>(_ key: String)
+  fileprivate init<R: RawRepresentable>(_ key: String)
   where R.RawValue == Int, Value == R? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: RawRepresentableLookup(base: CastableLookup()))
@@ -271,7 +271,7 @@ public struct AppStorageKey<Value> {
     self.store = store
   }
 
-  public init<R: RawRepresentable>(_ key: String)
+  fileprivate init<R: RawRepresentable>(_ key: String)
   where R.RawValue == String, Value == R? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: RawRepresentableLookup(base: CastableLookup()))

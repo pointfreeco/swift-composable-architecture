@@ -21,10 +21,27 @@ public struct SharedReader<Value> {
     self.init(reference: reference, keyPath: \Value.self)
   }
 
+  /// Creates a read-only shared reference from another read-only shared reference.
+  ///
+  /// You don't call this initializer directly. Instead, Swift calls it for you when you use a
+  /// property-wrapper attribute on a binding closure parameter.
+  ///
+  /// - Parameter projectedValue: A read-only shared reference.
   public init(projectedValue: SharedReader) {
     self = projectedValue
   }
 
+  /// Unwraps a read-only shared reference to an optional value.
+  ///
+  /// ```swift
+  /// @SharedReader(.currentUser) var currentUser: User?
+  ///
+  /// if let sharedCurrentUser = SharedReader($currentUser) {
+  ///   sharedCurrentUser  // SharedReader<User>
+  /// }
+  /// ```
+  ///
+  /// - Parameter base: A read-only shared reference to an optional value.
   public init?(_ base: SharedReader<Value?>) {
     guard let initialValue = base.wrappedValue
     else { return nil }
@@ -34,6 +51,9 @@ public struct SharedReader<Value> {
     )
   }
 
+  /// Creates a read-only shared reference from a shared reference.
+  ///
+  /// - Parameter base: A shared reference.
   public init(_ base: Shared<Value>) {
     self = base.reader
   }
@@ -57,6 +77,22 @@ public struct SharedReader<Value> {
     Shared(value).reader
   }
 
+  /// The underlying value referenced by the shared variable.
+  ///
+  /// This property provides primary access to the value's data. However, you don't access
+  /// `wrappedValue` directly. Instead, you use the property variable created with the
+  /// ``SharedReader`` attribute. In the following example, the shared variable `topics` returns the
+  /// value of `wrappedValue`:
+  ///
+  /// ```swift
+  /// struct State {
+  ///   @SharedReader var subscriptions: [Subscription]
+  ///
+  ///   var isSubscribed: Bool {
+  ///     !subscriptions.isEmpty
+  ///   }
+  /// }
+  /// ```
   public var wrappedValue: Value {
     func open<Root>(_ reference: some Reference<Root>) -> Value {
       reference.value[
@@ -66,6 +102,7 @@ public struct SharedReader<Value> {
     return open(self.reference)
   }
 
+  /// A projection of the read-only shared value that returns a shared reference.
   public var projectedValue: Self {
     get {
       reference.access()
@@ -78,6 +115,7 @@ public struct SharedReader<Value> {
     }
   }
 
+  /// Returns a shared reference to the resulting value of a given key path.
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member>
   ) -> SharedReader<Member> {
@@ -94,7 +132,7 @@ public struct SharedReader<Value> {
   }
 
   #if canImport(Combine)
-    // TODO: Should this be wrapped in a type we own instead of `AnyPublisher`?
+    /// Returns a publisher that emits events when the underlying value changes.
     public var publisher: AnyPublisher<Value, Never> {
       func open<R: Reference>(_ reference: R) -> AnyPublisher<Value, Never> {
         return reference.publisher
