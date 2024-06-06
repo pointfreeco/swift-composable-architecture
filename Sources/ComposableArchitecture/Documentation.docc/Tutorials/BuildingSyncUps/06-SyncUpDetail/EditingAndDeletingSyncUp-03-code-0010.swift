@@ -35,7 +35,9 @@ struct SyncUpDetail {
       // case .alert(.presented(.confirmButtonTapped)):
       case .destination(.presented(.alert(.confirmButtonTapped))):
         @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
-        syncUps.remove(id: state.syncUp.id)
+        $syncUps.withValue { [id = state.syncUp.id] in
+          $0.remove(id: id)
+        }
         return .run { _ in await dismiss() }
 
       case .destination:
