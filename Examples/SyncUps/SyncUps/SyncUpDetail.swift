@@ -1,33 +1,6 @@
 import ComposableArchitecture
 import SwiftUI
 
-//@propertyWrapper struct Foo {
-//  var wrappedValue: Int {
-//    get { 1 }
-//    @available(*, noasync)
-//    nonmutating set {}
-//  }
-//
-//  var projectedValue: Self { self }
-//}
-//
-//var g: Int {
-//  get { 1 }
-//  @available(*, noasync)
-//  set {}
-//}
-//
-//@available(*, noasync)
-//func f() {
-//  @Foo var h
-//  g = 2
-//  h = 2
-//  Task {
-//    g = 3
-//    $h.wrappedValue = 3
-//  }
-//}
-
 @Reducer
 struct SyncUpDetail {
   @Reducer(state: .equatable)
@@ -84,7 +57,6 @@ struct SyncUpDetail {
         return .none
 
       case let .deleteMeetings(atOffsets: indices):
-        state.syncUp = state.syncUp
         state.syncUp.meetings.remove(atOffsets: indices)
         return .none
 

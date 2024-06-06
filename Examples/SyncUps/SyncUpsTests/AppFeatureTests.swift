@@ -109,7 +109,7 @@ final class AppFeatureTests: XCTestCase {
       XCTAssertEqual($0.path.count, 1)
     }
     store.assert {
-      $0.path[id: 0]?.detail?.$syncUp.meetings = [
+      $0.path[id: 0]?.detail?.syncUp.meetings = [
         Meeting(
           id: Meeting.ID(UUID(0)),
           date: Date(timeIntervalSince1970: 1_234_567_890),
