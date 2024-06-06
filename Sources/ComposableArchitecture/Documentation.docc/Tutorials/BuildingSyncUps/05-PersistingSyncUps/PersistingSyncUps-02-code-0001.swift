@@ -32,7 +32,7 @@ class SyncUpsListTests: XCTestCase {
 
     await store.send(.confirmAddButtonTapped) {
       $0.addSyncUp = nil
-      $0.$syncUps.withValue { $0 = [editedSyncUp] }
+      // $0.$syncUps.withValue { $0 = [editedSyncUp] }
     }
   }
 
