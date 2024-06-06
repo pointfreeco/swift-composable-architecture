@@ -8,4 +8,5 @@
 
 ### Overriding storage
 
+- ``Dependencies/DependencyValues/defaultInMemoryStorage``
 - ``InMemoryStorage``
