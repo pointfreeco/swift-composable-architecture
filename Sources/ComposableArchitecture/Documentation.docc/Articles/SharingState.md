@@ -263,7 +263,7 @@ case .onAppear:
   }
 
 case .countUpdated(let count):
-  state.count += 1
+  state.count = count + 1
   return .none
 ```
 
