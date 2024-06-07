@@ -67,8 +67,8 @@ public struct Shared<Value> {
   }
 
   /// Perform an operation on shared state with isolated access to the underlying value.
-  public func withLock(_ transform: @Sendable (inout Value) -> Void) {
-    transform(&self._wrappedValue)
+  public func withLock<R>(_ transform: @Sendable (inout Value) throws -> R) rethrows -> R {
+    try transform(&self._wrappedValue)
   }
 
   /// The underlying value referenced by the shared variable.
