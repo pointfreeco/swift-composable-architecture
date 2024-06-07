@@ -934,6 +934,13 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(count, count)
     XCTAssertEqual(count.wrappedValue, count.wrappedValue)
   }
+
+  func testHashableConformance() {
+    struct HashableState: Hashable {
+      @Shared var count: Int
+    }
+    XCTAssertTrue((HashableState(count: Shared(0)) as Any) is any Hashable)
+  }
 }
 
 @Reducer
