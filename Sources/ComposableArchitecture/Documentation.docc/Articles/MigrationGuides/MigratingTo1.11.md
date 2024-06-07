@@ -35,6 +35,7 @@ case .delayedIncrementButtonTapped:
     @Shared(.count) var count
     count += 1
   }
+```
 
 Now, `Shared` is `Sendable`, and is technically thread-safe in that it will not crash when writing
 to it from two different threads. However, allowing direct mutation does make the value susceptible
