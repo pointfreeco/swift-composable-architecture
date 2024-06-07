@@ -12,7 +12,7 @@ final class AppFeatureTests: XCTestCase {
       AppFeature()
     }
 
-    let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
+    let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
 
     await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
@@ -44,7 +44,7 @@ final class AppFeatureTests: XCTestCase {
       AppFeature()
     }
 
-    let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
+    let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
 
     await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))

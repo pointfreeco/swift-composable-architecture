@@ -29,8 +29,7 @@
 
 ### Scoping store bindings
 
-- ``SwiftUI/Binding/scope(state:action:fileID:line:)``
-- ``SwiftUI/Binding/scope(state:action:)-35r82``
+- ``SwiftUI/Binding``
 
 ### Combine integration
 

@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "args": [],
+            "cwd": "${workspaceFolder:swift-composable-architecture}",
+            "name": "Debug swift-composable-architecture-benchmark",
+            "program": "${workspaceFolder:swift-composable-architecture}/.build/debug/swift-composable-architecture-benchmark",
+            "preLaunchTask": "swift: Build Debug swift-composable-architecture-benchmark"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "args": [],
+            "cwd": "${workspaceFolder:swift-composable-architecture}",
+            "name": "Release swift-composable-architecture-benchmark",
+            "program": "${workspaceFolder:swift-composable-architecture}/.build/release/swift-composable-architecture-benchmark",
+            "preLaunchTask": "swift: Build Release swift-composable-architecture-benchmark"
+        }
+    ]
+}

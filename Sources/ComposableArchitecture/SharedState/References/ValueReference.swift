@@ -9,6 +9,13 @@ import Foundation
 #endif
 
 extension Shared {
+  /// Creates a shared reference to a value using a persistence key.
+  ///
+  /// - Parameters:
+  ///   - value: A default value that is used when no value can be returned from the persistence
+  ///     key.
+  ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
+  ///     for loading and saving the shared reference's value from some external source.
   public init(
     wrappedValue value: @autoclosure @escaping () -> Value,
     _ persistenceKey: some PersistenceKey<Value>,
@@ -45,6 +52,11 @@ extension Shared {
     )
   }
 
+  /// Creates a shared reference to an optional value using a persistence key.
+  ///
+  /// - Parameters:
+  ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
+  ///     for loading and saving the shared reference's value from some external source.
   @_disfavoredOverload
   public init<Wrapped>(
     _ persistenceKey: some PersistenceKey<Value>,
@@ -54,6 +66,14 @@ extension Shared {
     self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
   }
 
+  /// Creates a shared reference to a value using a persistence key.
+  ///
+  /// If the given persistence key cannot load a value, an error is thrown. For a non-throwing
+  /// version of this initializer, see ``init(wrappedValue:_:fileID:line:)-512rh``.
+  ///
+  /// - Parameters:
+  ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
+  ///     for loading and saving the shared reference's value from some external source.
   @_disfavoredOverload
   public init(
     _ persistenceKey: some PersistenceKey<Value>,
@@ -108,6 +128,11 @@ extension Shared {
     )
   }
 
+  /// Creates a shared reference to a value using a persistence key with a default value.
+  ///
+  /// - Parameters:
+  ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
+  ///     for loading and saving the shared reference's value from some external source.
   public init<Key: PersistenceKey>(
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
@@ -121,14 +146,21 @@ extension Shared {
     )
   }
 
+  /// Creates a shared reference to a value using a persistence key by overriding its default value.
+  ///
+  /// - Parameters:
+  ///   - value: A default value that is used when no value can be returned from the persistence
+  ///     key.
+  ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
+  ///     for loading and saving the shared reference's value from some external source.
   public init<Key: PersistenceKey>(
-    wrappedValue: @autoclosure @escaping () -> Value,
+    wrappedValue value: @autoclosure @escaping () -> Value,
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Key.Value == Value {
     self.init(
-      wrappedValue: wrappedValue(),
+      wrappedValue: value(),
       persistenceKey.base,
       fileID: fileID,
       line: line
@@ -137,6 +169,13 @@ extension Shared {
 }
 
 extension SharedReader {
+  /// Creates a shared reference to a read-only value using a persistence key.
+  ///
+  /// - Parameters:
+  ///   - value: A default value that is used when no value can be returned from the persistence
+  ///     key.
+  ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
+  ///     for loading the shared reference's value from some external source.
   public init(
     wrappedValue value: @autoclosure @escaping () -> Value,
     _ persistenceKey: some PersistenceReaderKey<Value>,
@@ -172,6 +211,11 @@ extension SharedReader {
     )
   }
 
+  /// Creates a shared reference to an optional, read-only value using a persistence key.
+  ///
+  /// - Parameters:
+  ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
+  ///     for loading the shared reference's value from some external source.
   @_disfavoredOverload
   public init<Wrapped>(
     _ persistenceKey: some PersistenceReaderKey<Value>,
@@ -181,6 +225,14 @@ extension SharedReader {
     self.init(wrappedValue: nil, persistenceKey, fileID: fileID, line: line)
   }
 
+  /// Creates a shared reference to a read-only value using a persistence key.
+  ///
+  /// If the given persistence key cannot load a value, an error is thrown. For a non-throwing
+  /// version of this initializer, see ``init(wrappedValue:_:fileID:line:)-7q52``.
+  ///
+  /// - Parameters:
+  ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
+  ///     for loading the shared reference's value from some external source.
   @_disfavoredOverload
   public init(
     _ persistenceKey: some PersistenceReaderKey<Value>,
@@ -234,6 +286,11 @@ extension SharedReader {
     )
   }
 
+  /// Creates a shared reference to a read-only value using a persistence key with a default value.
+  ///
+  /// - Parameters:
+  ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
+  ///     for loading the shared reference's value from some external source.
   public init<Key: PersistenceReaderKey>(
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
@@ -247,14 +304,21 @@ extension SharedReader {
     )
   }
 
+  /// Creates a shared reference to a value using a persistence key by overriding its default value.
+  ///
+  /// - Parameters:
+  ///   - value: A default value that is used when no value can be returned from the persistence
+  ///     key.
+  ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
+  ///     for loading the shared reference's value from some external source.
   public init<Key: PersistenceReaderKey>(
-    wrappedValue: @autoclosure @escaping () -> Value,
+    wrappedValue value: @autoclosure @escaping () -> Value,
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) where Key.Value == Value {
     self.init(
-      wrappedValue: wrappedValue(),
+      wrappedValue: value(),
       persistenceKey.base,
       fileID: fileID,
       line: line
