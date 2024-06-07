@@ -1020,6 +1020,28 @@ problems due to re-entrancy. To avoid problems like the above we recommend wrapp
 mutations of the shared state as possible in a single ``Shared/withLock(_:)``. That will make
 sure that the full unit of work is guarded by a lock.
 
+> Note: You may encounter a deprecation warning when simply _accessing_ shared state from an
+> asynchronous context when you chain into a subscript:
+>
+> ```swift
+> return .run { _ in
+>   @Shared(.posts) var posts
+>   let post = posts[id: id]  // ⚠️ Setter is unavailable from asynchronous contexts
+>   // ...
+> }
+> ```
+>
+> This is a [known issue](https://github.com/apple/swift/issues/74203) in the Swift compiler, but
+> can be worked around using ``Shared/withLock(_:)`` to access the underlying value instead:
+>
+> ```swift
+> return .run { _ in
+>   @Shared(.posts) var posts
+>   let post = $posts.withLock { $0[id: id] }
+>   // ...
+> }
+> ```
+
 ## Gotchas of @Shared
 
 There are a few gotchas to be aware of when using shared state in the Composable Architecture.
