@@ -18,9 +18,8 @@ class SyncUpFormTests: XCTestCase {
     }
 
     await store.send(.addAttendeeButtonTapped) {
-      let attendee = Attendee(id: Attendee.ID(0))
-      $0.focus = .attendee(attendee.id)
-      $0.syncUp.attendees.append(attendee)
+      state.focus = .attendee(Attendee.ID(0))
+      state.syncUp.attendees.append(Attendee(id: Attendee.ID(0)))
     }
   }
 

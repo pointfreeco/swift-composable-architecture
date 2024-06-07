@@ -21,8 +21,8 @@
       }
       
       @Step {
-        Construct a ``ComposableArchitecture/TestStore`` with the initial state with start with two attendees, which have been pulled out into variables
-        so that we can reference them later. The first attendee will also be focused.
+        Construct a ``ComposableArchitecture/TestStore`` with the initial state that has two 
+        attendees so that we can delete one of them.
         
         @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0002.swift)
       }
@@ -31,7 +31,29 @@
         Emulate the user deleting the attendee by sending the `onDeleteAttendees` action and assert
         that the attendee is indeed removed from the array, leaving only the other attendee in the
         array.
-        The `attendees` array will hold a 
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0003.swift)
+      }
+      
+      Run the test suite to make sure everything passes.
+      
+      That's all it takes to test the very basic functionality of removing an attendee. But there's
+      additional logic that we haven't yet covered in the test, which is how the focus changes.
+      Let's also test that logic.
+      
+      @Step {
+        Add a new test method for testing what happens when we delete a focused attendee. This time
+        the initial state with start with two attendees, which have been pulled out into variables
+        so that we can reference them. The first attendee will also be focused.
+        
+        > Note: We have collapsed the `testRemoveAttendee` method in the code snippet.
+        
+        @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0004.swift, previousFile: TestingSyncUpForm-01-code-0004-previous.swift)
+      }
+      
+      @Step {
+        Emulate the user deleting the first attendee by sending the `onDeleteAttendees` action.
+        This time the state will change a little differently. The `attendees` array will hold a 
         single element, the 2nd attendee, and further the focus will change to the 2nd attendee.
         
         @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0005.swift)
