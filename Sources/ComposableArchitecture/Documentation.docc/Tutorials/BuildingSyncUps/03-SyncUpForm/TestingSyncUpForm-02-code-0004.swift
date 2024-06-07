@@ -41,7 +41,12 @@ struct SyncUpForm {
         guard
           !state.syncUp.attendees.isEmpty,
           let firstIndex = indices.first
-        else { return .none }
+        else {
+          state.syncUp.attendees.append(
+            Attendee(id: Attendee.ID())
+          )
+          return .none
+        }
         let index = min(firstIndex, state.syncUp.attendees.count - 1)
         state.focus = .attendee(state.syncUp.attendees[index].id)
         return .none

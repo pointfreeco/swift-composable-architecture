@@ -475,7 +475,7 @@
       To fix the test we need to override the ``Dependencies/DependencyValues/dismiss`` dependency.
       
       @Step {
-        Override the `dismiss` dependency in the `withDependencies` trailer closure.
+        Override the `dismiss` dependency in the `withDependencies` trailing closure.
         
         @Code(name: "RecordMeetingTests.swift", file: ImplementingTimer-04-code-0016.swift)
       }

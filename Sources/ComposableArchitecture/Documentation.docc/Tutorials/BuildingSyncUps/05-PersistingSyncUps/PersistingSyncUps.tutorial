@@ -45,17 +45,22 @@
         bottom of the file to define such a URL, and then provide it to the `.fileStorage` value.
         
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0003.swift)
-        
-        > Note: It is possible to provide some type safety between the URL provided and the expected
-        > type of data to be stored on disk. See 
-        > [type-safe keys](<doc:SharingState#Type-safe-keys>) for more information. 
       }
-      
+
       With that change the project should be compiling. It is worth noting that 
       ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` only works with `Codable` data
       types, and earlier in the tutorial when we added models to Models.swift we made them codable from
       the beginning.
-      
+            
+      @Step {
+        Before moving on, we can still make this better.
+        It is possible to provide some type safety between the URL provided and the expected
+        type of data to be stored on disk, and make usage more concise. See 
+        [type-safe keys](<doc:SharingState#Type-safe-keys>) for more information.
+  
+        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0004.swift)
+      }
+            
       To confirm that persistence works we need to run the app in the simulator, but we haven't done
       that yet in this tutorial. To do that we need to update the entry point of the app to use the
       `SyncUpsListView`.
@@ -67,14 +72,14 @@
         > Note: We construct the ``ComposableArchitecture/Store`` as a static so that it is 
         initialized only one time, and so that it is not created while running Xcode previews.
         
-        @Code(name: "SyncUpsApp.swift", file: PersistingSyncUps-01-code-0004.swift)
+        @Code(name: "SyncUpsApp.swift", file: PersistingSyncUps-01-code-0005.swift)
       }
       
       @Step {
         Run the app in the simulator, add a sync-up, and then relaunch the application to see that
         it restores the previously created sync-up. This shows that data is persisting.
         
-        @Video(source: PersistingSyncUps-01-video-0005.mov)
+        @Video(source: PersistingSyncUps-01-video-0006.mov)
       }
     }
   }

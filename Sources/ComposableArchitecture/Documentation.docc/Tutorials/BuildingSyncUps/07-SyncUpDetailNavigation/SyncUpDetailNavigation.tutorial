@@ -18,7 +18,12 @@
         > Note: You may already have an App.swift in your project that holds the entry point of
         the application (i.e. `@main`). If so, you can name this file AppFeature.swift, or you can
         rename the entry point to Main.swift.
-        
+        >
+        > We often leave out suffixing reducers with names like "feature" or "reducer", but in this
+        > case we must avoid conflicting with SwiftUI's
+        > [App](https://developer.apple.com/documentation/swiftui/app) protocol, so we'll use
+        > `AppFeature`, instead.
+
         @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0001.swift)
       }
       
@@ -31,23 +36,23 @@
       The sync-ups list feature is a little different from all of those other features, though.
       It is at the root of the stack, and it can not be dismissed. For that reason it is composed
       into the `AppFeature` by simply holding onto its state and actions, and using the 
-      ``ComposableArchitecture/Scope`` reducer to compose it into `App`'s `body`.
+      ``ComposableArchitecture/Scope`` reducer to compose it into `AppFeature`'s `body`.
       
       @Step {
-        Integrate the `SyncUpsList` reducer into the `AppReducer` by holding onto its state and
+        Integrate the `SyncUpsList` reducer into the `AppFeature` by holding onto its state and
         actions, and using the ``ComposableArchitecture/Scope`` reducer to compose the two
         reducers together.
         
         @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0002.swift)
       }
       
-      Next we want to integrate the `SyncUpDetail` reducer into the `AppReducer`. The library comes
+      Next we want to integrate the `SyncUpDetail` reducer into the `AppFeature`. The library comes
       with specific tools to do this for navigation stacks. It starts by using 
       ``ComposableArchitecture/StackState``, which is a collection type provided by the library
       specifically tuned for dealing with navigation stacks.
       
       @Step {
-        Integrate the state of `SyncUpDetail` in `App` by holding onto 
+        Integrate the state of `SyncUpDetail` in `AppFeature` by holding onto 
         ``ComposableArchitecture/StackState``. We like to call this variable `path` since it mimics
         the `NavigationStack(path:)` API in SwiftUI.
         
@@ -63,7 +68,7 @@
       in <doc:EditingAndDeletingSyncUp>.
       
       @Step {
-        Create a new `Path` reducer inside `App`. Like the `Destination` reducer we defined for the
+        Create a new `Path` reducer inside `AppFeature`. Like the `Destination` reducer we defined for the
         sync-up detail screen, `Path` type will be an _enum_ so that it can compose all of the
         screens you can navigate to into a single reducer.
 
@@ -81,17 +86,23 @@
       of each screen in the navigation stack. In the future as we add more screens to the stack
       we will just add more cases to this reducer.
       
-      Next we will integrate the `Path` reducer into the `App` reducer.
+      Next we will integrate the `Path` reducer into the `AppFeature` reducer.
       
       @Step {
         Update the `path` variable to hold onto ``ComposableArchitecture/StackState`` of 
         `Path.State`.
+        
+        > Important: In order to maintain `State`'s `Equatable`, we must conform `Path` to be
+        > `Equatable` as well. While this would typically be done with an extension, a Swift
+        > compiler bug prevents this, so the ``ComposableArchitecture/Reducer(state:action:)`` macro
+        > can generate this conformance for you by specifying the `state` parameter. See the article 
+        > <doc:Reducers#Circular-reference-errors> for more.
 
-        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0006.swift, previousFile: SyncUpDetailNavigation-01-code-0006-previous.swift)        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0006.swift)        
       }
       
       @Step {
-        Integrate the `Path`'s actions into `App` by adding a case to its `Action` enum, and using
+        Integrate the `Path`'s actions into `AppFeature` by adding a case to its `Action` enum, and using
         the ``ComposableArchitecture/StackAction``. We can use the
         ``ComposableArchitecture/StackActionOf`` type alias to specify a single generic of the path
         reducer.
@@ -109,7 +120,7 @@
       pop an element from the stack (``ComposableArchitecture/StackAction/popFrom(id:)``).
       
       @Step {
-        Integrate the `Path` reducer into the `body` of the `App` reducer by using the 
+        Integrate the `Path` reducer into the `body` of the `AppFeature` reducer by using the 
         ``ComposableArchitecture/Reducer/forEach(_:action:)`` operator.
         
         @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0008.swift)
@@ -120,7 +131,7 @@
       it to the current reducer in the stack, and automatically cancelling effects when a feature
       is popped from the stack.
       
-      That is all it takes to create the `App` reducer and integrate the `SyncUpDetail` into the
+      That is all it takes to create the `AppFeature` reducer and integrate the `SyncUpDetail` into the
       stack. Next We will create the view layer.
     }
   }
@@ -184,7 +195,7 @@
       @Step {
         Add a preview to the bottom of the file.
         
-        @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0006.swift)
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0007.swift)
       }
       
       That's all it takes to build the root `AppView` that holds onto a `NavigationStack`. But
@@ -211,7 +222,7 @@
       }
       
       This special initializer takes a piece of state that matches the type that is held in the 
-      root feature's ``ComposableArchitecture/StackState``. In our case, that is `App.Path.State`,
+      root feature's ``ComposableArchitecture/StackState``. In our case, that is `AppFeature.Path.State`,
       which is an enum of all the possible destinations that can be navigated to.
       
       @Step {
@@ -248,7 +259,7 @@
       state to the path, thus triggering a drill-down animation.
       
       This is the easiest way to navigate to one screen to another, but it does have some drawbacks.
-      Because we need to reference all of `App.State.Path` to construct a navigation link, it can
+      Because we need to reference all of `AppFeature.State.Path` to construct a navigation link, it can
       make modularization difficult. Every navigation link will need access to every feature's 
       state.
       

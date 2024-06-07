@@ -13,7 +13,7 @@ struct SyncUpsListView: View {
     List {
       ForEach(store.$syncUps.elements) { $syncUp in
         NavigationLink(
-          state: App.Path.State.detail(SyncUpDetail.State(syncUp: <#Shared<SyncUp>#>))
+          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: <#Shared<SyncUp>#>))
         ) {
           CardView(syncUp: syncUp)
         }
