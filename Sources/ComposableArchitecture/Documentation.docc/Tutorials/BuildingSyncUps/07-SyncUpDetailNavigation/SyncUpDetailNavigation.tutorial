@@ -19,7 +19,10 @@
         the application (i.e. `@main`). If so, you can name this file AppFeature.swift, or you can
         rename the entry point to Main.swift.
         >
-        > We often leave out suffixing reducers with names like "feature" or "reducer", but in this case we must avoid conflicting with SwiftUI's [App](https://developer.apple.com/documentation/swiftui/app) protocol, so `AppFeature` is used as the type name.
+        > We often leave out suffixing reducers with names like "feature" or "reducer", but in this
+        > case we must avoid conflicting with SwiftUI's
+        > [App](https://developer.apple.com/documentation/swiftui/app) protocol, so we'll use
+        > `AppFeature`, instead.
 
         @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0001.swift)
       }
@@ -89,12 +92,13 @@
         Update the `path` variable to hold onto ``ComposableArchitecture/StackState`` of 
         `Path.State`.
         
-        > Important: In order to keep `State` `Equatable`, we must generate `Path`'s `Equatable` conformance via the `state` argument of 
-        ``ComposableArchitecture/Reducer(state:action:)``. See the article 
-        <doc:Reducers#Circular-reference-errors> for more information of why this is the necessary 
-        way to make `Path` equatable, due to a bug in the Swift compiler.
+        > Important: In order to maintain `State`'s `Equatable`, we must conform `Path` to be
+        > `Equatable` as well. While this would typically be done with an extension, a Swift
+        > compiler bug prevents this, so the ``ComposableArchitecture/Reducer(state:action:)`` macro
+        > can generate this conformance for you by specifying the `state` parameter. See the article 
+        > <doc:Reducers#Circular-reference-errors> for more.
 
-        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0006.swift, previousFile: SyncUpDetailNavigation-01-code-0006-previous.swift)        
+        @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0006.swift)        
       }
       
       @Step {

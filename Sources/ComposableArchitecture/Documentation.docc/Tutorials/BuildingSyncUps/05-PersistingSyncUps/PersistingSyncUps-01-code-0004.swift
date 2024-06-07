@@ -6,7 +6,7 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var addSyncUp: SyncUpForm.State?
-    @Shared(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = []
+    @Shared(.syncUps) var syncUps
   }
   enum Action {
     case addSyncUpButtonTapped

@@ -46,14 +46,14 @@
         
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0003.swift)
       }
+
+      With that change the project should be compiling. It is worth noting that 
+      ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` only works with `Codable` data
+      types, and earlier in the tutorial when we added models to Models.swift we made them codable from
+      the beginning.
             
       @Step {
-        With that change the project should be compiling. It is worth noting that 
-        ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` only works with `Codable` data
-        types, and earlier in the tutorial when we added models to Models.swift we made them codable from
-        the beginning.
-
-        While this change gets the project compiling, we can still make this better.
+        Before moving on, we can still make this better.
         It is possible to provide some type safety between the URL provided and the expected
         type of data to be stored on disk, and make usage more concise. See 
         [type-safe keys](<doc:SharingState#Type-safe-keys>) for more information.

@@ -12,7 +12,7 @@ received action:
     _path: [:],
     _syncUpsList: SyncUpsList.State(
       _destination: nil,
-      _syncUps: #1 IdentifiedArray(
+      _syncUps: [
 -       SyncUp(
 -         id: Tagged(rawValue: UUID(BCD45D06-2291-4A22-906A-C1EF07500AB7)),
 -         attendees: [
@@ -34,6 +34,6 @@ received action:
 -         theme: .bubblegum,
 -         title: "Point-Free Morning Sync"
 -       )
-      )
+      ]
     )
   )
