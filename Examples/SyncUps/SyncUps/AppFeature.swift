@@ -18,7 +18,6 @@ struct AppFeature {
   }
 
   enum Action {
-    case `init`
     case path(StackActionOf<Path>)
     case syncUpsList(SyncUpsList.Action)
   }
@@ -33,31 +32,6 @@ struct AppFeature {
     }
     Reduce { state, action in
       switch action {
-      case .`init`:
-        return .run { _ in
-          var migrator = DatabaseMigrator()
-          migrator.registerMigration("Create sync-ups") { db in
-            try db.create(table: SyncUp.databaseTableName) { t in
-              t.autoIncrementedPrimaryKey("id")
-              t.column("attendees", .jsonText)
-              t.column("meetings", .jsonText)
-              t.column("minutes", .integer)
-              t.column("theme", .text)
-              t.column("title", .text)
-            }
-          }
-          migrator.registerMigration("Create meetings") { db in
-            try db.create(table: Meeting.databaseTableName) { t in
-              t.autoIncrementedPrimaryKey("id")
-              t.column("date", .datetime)
-              t.column("isArchived", .boolean)
-              t.column("syncUpID", .integer)
-              t.column("transcript", .text)
-            }
-          }
-          try migrator.migrate(databaseQueue)
-        }
-
       case let .path(.element(id, .detail(.delegate(delegateAction)))):
         switch delegateAction {
         case .startMeeting:

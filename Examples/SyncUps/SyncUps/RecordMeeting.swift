@@ -382,7 +382,7 @@ struct MeetingFooterView: View {
 #Preview {
   NavigationStack {
     RecordMeetingView(
-      store: Store(initialState: RecordMeeting.State(syncUp: SharedReader(.mock))) {
+      store: Store(initialState: RecordMeeting.State(syncUp: Shared(.mock).reader)) {
         RecordMeeting()
       }
     )
