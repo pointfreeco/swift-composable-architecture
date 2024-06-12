@@ -1,7 +1,10 @@
 import SwiftDiagnostics
 import SwiftSyntax
-import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
+
+#if !canImport(SwiftSyntax600)
+  import SwiftSyntaxMacroExpansion
+#endif
 
 public struct ViewActionMacro: ExtensionMacro {
   public static func expansion<D: DeclGroupSyntax, T: TypeSyntaxProtocol, C: MacroExpansionContext>(

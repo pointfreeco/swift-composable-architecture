@@ -6,15 +6,15 @@ extension PresentationState {
   }
 }
 
-struct PresentationID: Hashable, Identifiable, Sendable {
-  private let identifier: AnyHashableSendable?
+struct PresentationID: Hashable, Identifiable {
+  private let identifier: AnyHashable?
   private let tag: UInt32?
   private let type: Any.Type
 
   init<Base>(base: Base) {
     self.tag = EnumMetadata(Base.self)?.tag(of: base)
     if let id = _identifiableID(base) ?? EnumMetadata.project(base).flatMap(_identifiableID) {
-      self.identifier = AnyHashableSendable(id)
+      self.identifier = id
     } else {
       self.identifier = nil
     }

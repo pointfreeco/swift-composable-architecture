@@ -284,3 +284,15 @@ extension DeclGroupSyntax {
     return self.is(StructDeclSyntax.self)
   }
 }
+
+extension AttributedTypeSyntax {
+  var isInout: Bool {
+    #if canImport(SwiftSyntax600)
+      self.specifiers.contains(
+        where: { $0.as(SimpleTypeSpecifierSyntax.self)?.specifier.tokenKind == .keyword(.inout) }
+      ) == true
+    #else
+      self.specifier?.tokenKind == .keyword(.inout)
+    #endif
+  }
+}

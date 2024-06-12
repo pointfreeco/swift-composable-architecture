@@ -19,19 +19,21 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(\.path[id:0].detail.editButtonTapped) {
-      $0.path[id: 0]?.detail?.destination = .edit(
-        SyncUpForm.State(syncUp: syncUp)
-      )
+      $0.path[id: 0]?.modify(\.detail) { $0.destination = .edit(SyncUpForm.State(syncUp: syncUp)) }
     }
 
     syncUp.title = "Blob"
     await store.send(\.path[id:0].detail.destination.edit.binding.syncUp, syncUp) {
-      $0.path[id: 0]?.detail?.destination?.edit?.syncUp.title = "Blob"
+      $0.path[id: 0]?.modify(\.detail) {
+        $0.destination?.modify(\.edit) { $0.syncUp.title = "Blob" }
+      }
     }
 
     await store.send(\.path[id:0].detail.doneEditingButtonTapped) {
-      $0.path[id: 0]?.detail?.destination = nil
-      $0.path[id: 0]?.detail?.syncUp.title = "Blob"
+      $0.path[id: 0]?.modify(\.detail) {
+        $0.destination = nil
+        $0.syncUp.title = "Blob"
+      }
     }
     .finish()
   }
@@ -51,11 +53,11 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.send(\.path[id:0].detail.deleteButtonTapped) {
-      $0.path[id: 0]?.detail?.destination = .alert(.deleteSyncUp)
+      $0.path[id: 0]?.modify(\.detail) { $0.destination = .alert(.deleteSyncUp) }
     }
 
     await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
-      $0.path[id: 0, case: \.detail]?.destination = nil
+      $0.path[id: 0]?.modify(\.detail) { $0.destination = nil }
       $0.syncUpsList.syncUps = []
     }
 
@@ -109,13 +111,15 @@ final class AppFeatureTests: XCTestCase {
       XCTAssertEqual($0.path.count, 1)
     }
     store.assert {
-      $0.path[id: 0]?.detail?.syncUp.meetings = [
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: "I completed the project"
-        )
-      ]
+      $0.path[id: 0]?.modify(\.detail) {
+        $0.syncUp.meetings = [
+          Meeting(
+            id: Meeting.ID(UUID(0)),
+            date: Date(timeIntervalSince1970: 1_234_567_890),
+            transcript: "I completed the project"
+          )
+        ]
+      }
     }
   }
 }

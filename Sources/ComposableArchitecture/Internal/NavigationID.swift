@@ -35,10 +35,10 @@ struct NavigationIDPath: Hashable, Sendable {
 
 struct NavigationID: Hashable, @unchecked Sendable {
   private let kind: Kind
-  private let identifier: AnyHashableSendable?
+  private let identifier: AnyHashable?
   private let tag: UInt32?
 
-  enum Kind: Hashable, @unchecked Sendable {
+  enum Kind: Hashable {
     case casePath(root: Any.Type, value: Any.Type)
     case keyPath(AnyKeyPath)
 
@@ -73,7 +73,7 @@ struct NavigationID: Hashable, @unchecked Sendable {
     self.kind = .keyPath(keyPath)
     self.tag = EnumMetadata(Value.self)?.tag(of: base)
     if let id = _identifiableID(base) ?? EnumMetadata.project(base).flatMap(_identifiableID) {
-      self.identifier = AnyHashableSendable(id)
+      self.identifier = id
     } else {
       self.identifier = nil
     }
@@ -105,7 +105,7 @@ struct NavigationID: Hashable, @unchecked Sendable {
     self.kind = .casePath(root: Root.self, value: Value.self)
     self.tag = EnumMetadata(Root.self)?.tag(of: root)
     if let id = _identifiableID(root) ?? _identifiableID(value) {
-      self.identifier = AnyHashableSendable(id)
+      self.identifier = id
     } else {
       self.identifier = nil
     }
