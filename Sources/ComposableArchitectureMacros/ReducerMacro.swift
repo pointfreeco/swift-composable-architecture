@@ -2,8 +2,11 @@ import SwiftDiagnostics
 import SwiftOperators
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
+
+#if !canImport(SwiftSyntax600)
+  import SwiftSyntaxMacroExpansion
+#endif
 
 public enum ReducerMacro {
 }
@@ -93,7 +96,7 @@ extension ReducerMacro: MemberAttributeMacro {
           method.signature.parameterClause.parameters.count == 2,
           let state = method.signature.parameterClause.parameters.first,
           state.firstName.text == "into",
-          state.type.as(AttributedTypeSyntax.self)?.specifier?.text == "inout",
+          state.type.as(AttributedTypeSyntax.self)?.isInout == true,
           method.signature.parameterClause.parameters.last?.firstName.text == "action",
           method.signature.effectSpecifiers == nil,
           method.signature.returnClause?.type.as(IdentifierTypeSyntax.self) != nil
@@ -210,7 +213,7 @@ extension ReducerMacro: MemberMacro {
         method.signature.parameterClause.parameters.count == 2,
         let state = method.signature.parameterClause.parameters.first,
         state.firstName.text == "into",
-        state.type.as(AttributedTypeSyntax.self)?.specifier?.text == "inout",
+        state.type.as(AttributedTypeSyntax.self)?.isInout == true,
         method.signature.parameterClause.parameters.last?.firstName.text == "action",
         method.signature.effectSpecifiers == nil,
         method.signature.returnClause?.type.as(IdentifierTypeSyntax.self) != nil
