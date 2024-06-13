@@ -173,7 +173,7 @@
         will force us to handle any potentially problematic concurrency code as we progress through
         the tutorial.
         
-        @Image(source: CreateProject-0004-image)
+        @Image(source: CreateProject-0004-image.png)
       }
       
       That is all it takes to set up the project for our SyncUps recreation. We can now start
