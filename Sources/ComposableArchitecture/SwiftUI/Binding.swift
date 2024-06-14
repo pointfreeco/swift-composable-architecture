@@ -294,7 +294,7 @@ public protocol BindableAction {
 
 extension BindableAction {
   public var binding: BindingAction<State>? {
-    AnyCasePath(unsafe: Self.binding).extract(from: self)
+    AnyCasePath(unsafe: { .binding($0) }).extract(from: self)
   }
 }
 
