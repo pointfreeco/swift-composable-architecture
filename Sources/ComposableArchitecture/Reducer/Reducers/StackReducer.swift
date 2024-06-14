@@ -242,7 +242,7 @@ public enum StackAction<State, Action>: CasePathable {
   public struct AllCasePaths {
     public var element: AnyCasePath<StackAction, (id: StackElementID, action: Action)> {
       AnyCasePath(
-        embed: StackAction.element,
+        embed: { .element(id: $0, action: $1) },
         extract: {
           guard case let .element(id, action) = $0 else { return nil }
           return (id: id, action: action)
@@ -252,7 +252,7 @@ public enum StackAction<State, Action>: CasePathable {
 
     public var popFrom: AnyCasePath<StackAction, StackElementID> {
       AnyCasePath(
-        embed: StackAction.popFrom,
+        embed: { .popFrom(id: $0) },
         extract: {
           guard case let .popFrom(id) = $0 else { return nil }
           return id
@@ -262,7 +262,7 @@ public enum StackAction<State, Action>: CasePathable {
 
     public var push: AnyCasePath<StackAction, (id: StackElementID, state: State)> {
       AnyCasePath(
-        embed: StackAction.push,
+        embed: { .push(id: $0, state: $1) },
         extract: {
           guard case let .push(id, state) = $0 else { return nil }
           return (id: id, state: state)
