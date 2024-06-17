@@ -434,7 +434,9 @@ private struct OptionalLookup<Base: Lookup>: Lookup {
     if let newValue {
       base.saveValue(newValue, to: store, at: key)
     } else {
-      store.removeObject(forKey: key)
+      SharedAppStorageLocals.$isSetting.withValue(true) {
+        store.removeObject(forKey: key)
+      }
     }
   }
 }
