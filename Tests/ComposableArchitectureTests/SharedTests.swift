@@ -934,6 +934,19 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(count, count)
     XCTAssertEqual(count.wrappedValue, count.wrappedValue)
   }
+
+  func testNotNilInitialValueAndSetToNil() {
+    @Dependency(\.defaultAppStorage) var userDefaults
+    userDefaults.set(true, forKey: "optionalValueWithDefault")
+
+    @Shared(.optionalValueWithDefault) var optionalValueWithDefault
+
+    XCTAssertNotNil(optionalValueWithDefault)
+
+    $optionalValueWithDefault.withLock { $0 = nil }
+
+    XCTAssertNil(optionalValueWithDefault)
+  }
 }
 
 @Reducer
