@@ -935,7 +935,7 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(count.wrappedValue, count.wrappedValue)
   }
 
-  func testNotNilInitialValueAndSetToNil() {
+  func testDefaultVersusValueInExternalStorage() {
     @Dependency(\.defaultAppStorage) var userDefaults
     userDefaults.set(true, forKey: "optionalValueWithDefault")
 
