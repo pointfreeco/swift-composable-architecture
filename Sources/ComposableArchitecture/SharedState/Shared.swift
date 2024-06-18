@@ -322,7 +322,7 @@ extension Shared: _CustomDiffObject {
 }
 
 extension Shared
-where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable & Sendable {
+where Value: _IdentifiedCollectionProtocol {
   /// Allows a `ForEach` view to transform a shared collection into shared elements.
   ///
   /// ```swift
@@ -348,8 +348,8 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
   /// > you need to derive a shared element from a shared collection, use a stable lookup, instead,
   /// > like the `$array[id:]` subscript on `IdentifiedArray`.
   public var elements: some RandomAccessCollection<Shared<Value.Element>> {
-    zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
-      self[index, default: DefaultSubscript(element)]
+    zip(self.wrappedValue.ids, self.wrappedValue).lazy.map { id, element in
+      self[id: id, default: DefaultSubscript(element)]
     }
   }
 }

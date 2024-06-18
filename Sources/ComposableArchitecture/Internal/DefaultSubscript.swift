@@ -23,7 +23,8 @@ extension Optional {
 
 extension RandomAccessCollection where Self: MutableCollection {
   subscript(
-    position: Index, default defaultSubscript: DefaultSubscript<Element>
+    position: Index,
+    default defaultSubscript: DefaultSubscript<Element>
   ) -> Element {
     get { self.indices.contains(position) ? self[position] : defaultSubscript.value }
     set {
@@ -32,3 +33,26 @@ extension RandomAccessCollection where Self: MutableCollection {
     }
   }
 }
+
+extension _IdentifiedCollectionProtocol {
+  subscript(
+    id id: ID,
+    default defaultSubscript: DefaultSubscript<Element>
+  ) -> Element {
+    get { self[id: id] ?? defaultSubscript.value }
+    set {
+      defaultSubscript.value = newValue
+      self[id: id] = newValue
+    }
+  }
+}
+
+// TODO: Move this to swift-identified-collections
+import OrderedCollections
+public protocol _IdentifiedCollectionProtocol: Sequence {
+  associatedtype ID where ID: Hashable
+  associatedtype Element
+  var ids: OrderedSet<ID> { get }
+  subscript(id id: ID) -> Element? { get set }
+}
+extension IdentifiedArray: _IdentifiedCollectionProtocol {}
