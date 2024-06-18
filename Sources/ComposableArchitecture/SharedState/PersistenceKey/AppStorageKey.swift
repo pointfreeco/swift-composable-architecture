@@ -293,14 +293,23 @@ extension AppStorageKey: PersistenceKey {
     initialValue: Value?,
     didSet: @Sendable @escaping (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
+    let previousValue = LockIsolated(initialValue)
     let userDefaultsDidChange = NotificationCenter.default.addObserver(
       forName: UserDefaults.didChangeNotification,
       object: self.store,
       queue: nil
     ) { _ in
+      let newValue = load(initialValue: initialValue)
+      defer { previousValue.withValue { $0 = newValue } }
+      guard
+        !(_isEqual(newValue as Any, previousValue.value as Any) ?? false)
+          || (_isEqual(newValue as Any, initialValue as Any) ?? true)
+      else {
+        return
+      }
       guard !SharedAppStorageLocals.isSetting
       else { return }
-      didSet(load(initialValue: initialValue))
+      didSet(newValue)
     }
     let willEnterForeground: (any NSObjectProtocol)?
     if let willEnterForegroundNotificationName {
@@ -365,10 +374,15 @@ private protocol Lookup<Value> {
 
 private struct CastableLookup<Value>: Lookup {
   func loadValue(
-    from store: UserDefaults, at key: String, default defaultValue: Value?
+    from store: UserDefaults,
+    at key: String,
+    default defaultValue: Value?
   ) -> Value? {
     guard let value = store.object(forKey: key) as? Value
     else {
+      guard !SharedAppStorageLocals.isSetting
+      else { return defaultValue }
+
       SharedAppStorageLocals.$isSetting.withValue(true) {
         store.setValue(defaultValue, forKey: key)
       }
@@ -393,6 +407,9 @@ private struct URLLookup: Lookup {
   func loadValue(from store: UserDefaults, at key: String, default defaultValue: URL?) -> URL? {
     guard let value = store.url(forKey: key)
     else {
+      guard !SharedAppStorageLocals.isSetting
+      else { return defaultValue }
+      
       SharedAppStorageLocals.$isSetting.withValue(true) {
         store.set(defaultValue, forKey: key)
       }
