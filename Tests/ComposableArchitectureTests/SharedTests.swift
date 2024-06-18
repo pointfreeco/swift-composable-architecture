@@ -365,7 +365,7 @@ final class SharedTests: XCTestCase {
           case .startTimer:
             return .run { [count = state.$count] send in
               for await _ in self.queue.timer(interval: .seconds(1)) {
-                count.withLock { $0 += 1 }
+                await count.withLock { $0 += 1 }
                 await send(.timerTick)
               }
             }
@@ -376,7 +376,7 @@ final class SharedTests: XCTestCase {
               .run { [count = state.$count] _ in
                 Task {
                   try await self.queue.sleep(for: .seconds(1))
-                  count.withLock { $0 = 42 }
+                  await count.withLock { $0 = 42 }
                 }
               }
             )
@@ -935,7 +935,7 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(count.wrappedValue, count.wrappedValue)
   }
 
-  func testDefaultVersusValueInExternalStorage() {
+  func testDefaultVersusValueInExternalStorage() async {
     @Dependency(\.defaultAppStorage) var userDefaults
     userDefaults.set(true, forKey: "optionalValueWithDefault")
 
@@ -943,7 +943,7 @@ final class SharedTests: XCTestCase {
 
     XCTAssertNotNil(optionalValueWithDefault)
 
-    $optionalValueWithDefault.withLock { $0 = nil }
+    await $optionalValueWithDefault.withLock { $0 = nil }
 
     XCTAssertNil(optionalValueWithDefault)
   }
@@ -995,7 +995,7 @@ private struct SharedFeature {
       case .longLivingEffect:
         return .run { [sharedCount = state.$sharedCount] _ in
           try await self.mainQueue.sleep(for: .seconds(1))
-          sharedCount.withLock { $0 += 1 }
+          await sharedCount.withLock { $0 += 1 }
         }
       case .noop:
         return .none
@@ -1034,7 +1034,7 @@ private struct SimpleFeature {
       switch action {
       case .incrementInEffect:
         return .run { [count = state.$count] _ in
-          count.withLock { $0 += 1 }
+          await count.withLock { $0 += 1 }
         }
       case .incrementInReducer:
         state.count += 1

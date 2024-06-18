@@ -570,7 +570,7 @@ shared state in an effect, and then increments from the effect:
 ```swift
 case .incrementButtonTapped:
   return .run { [sharedCount = state.$count] _ in
-    sharedCount.withLock { $0 += 1 }
+    await sharedCount.withLock { $0 += 1 }
   }
 ```
 
@@ -1002,7 +1002,7 @@ To mutate a piece of shared state in an isolated fashion, use the ``Shared/withL
 defined on the `@Shared` projected value:
 
 ```swift
-state.$count.withLock { $0 += 1 }
+await state.$count.withLock { $0 += 1 }
 ```
 
 That locks the entire unit of work of reading the current count, incrementing it, and storing it
@@ -1012,7 +1012,7 @@ Technically it is still possible to write code that has race conditions, such as
 
 ```swift
 let currentCount = state.count
-state.$count.withLock { $0 = currentCount + 1 }
+await state.$count.withLock { $0 = currentCount + 1 }
 ```
 
 But there is no way to 100% prevent race conditions in code. Even actors are susceptible to 
@@ -1037,7 +1037,7 @@ sure that the full unit of work is guarded by a lock.
 > ```swift
 > return .run { _ in
 >   @Shared(.posts) var posts
->   let post = $posts.withLock { $0[id: id] }
+>   let post = await $posts.withLock { $0[id: id] }
 >   // ...
 > }
 > ```
