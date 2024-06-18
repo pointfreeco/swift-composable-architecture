@@ -322,7 +322,7 @@ extension Shared: _CustomDiffObject {
 }
 
 extension Shared
-where Value: MutableIdentifiedCollection {
+where Value: _MutableIdentifiedCollection {
   /// Allows a `ForEach` view to transform a shared collection into shared elements.
   ///
   /// ```swift

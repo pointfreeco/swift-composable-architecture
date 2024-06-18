@@ -34,7 +34,7 @@ extension RandomAccessCollection where Self: MutableCollection {
   }
 }
 
-extension MutableIdentifiedCollection {
+extension _MutableIdentifiedCollection {
   subscript(
     id id: ID,
     default defaultSubscript: DefaultSubscript<Element>
