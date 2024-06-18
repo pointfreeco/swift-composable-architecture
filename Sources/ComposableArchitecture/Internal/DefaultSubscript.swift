@@ -34,7 +34,7 @@ extension RandomAccessCollection where Self: MutableCollection {
   }
 }
 
-extension _IdentifiedCollectionProtocol {
+extension MutableIdentifiedCollection {
   subscript(
     id id: ID,
     default defaultSubscript: DefaultSubscript<Element>
@@ -46,13 +46,3 @@ extension _IdentifiedCollectionProtocol {
     }
   }
 }
-
-// TODO: Move this to swift-identified-collections
-import OrderedCollections
-public protocol _IdentifiedCollectionProtocol: Sequence {
-  associatedtype ID where ID: Hashable
-  associatedtype Element
-  var ids: OrderedSet<ID> { get }
-  subscript(id id: ID) -> Element? { get set }
-}
-extension IdentifiedArray: _IdentifiedCollectionProtocol {}

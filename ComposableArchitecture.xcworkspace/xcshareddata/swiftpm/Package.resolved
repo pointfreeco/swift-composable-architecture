@@ -104,8 +104,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-identified-collections",
       "state" : {
-        "revision" : "d533cd18b0b456b106694a9899f917ee595f2666",
-        "version" : "1.0.2"
+        "branch" : "protocols",
+        "revision" : "9933d28b3f5e3101c023067d6fcff876cd8cadac"
       }
     },
     {
