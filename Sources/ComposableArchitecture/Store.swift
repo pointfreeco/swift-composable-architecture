@@ -165,11 +165,11 @@ public final class Store<State, Action> {
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
   ///     by the reducer.
-  public convenience init<R: Reducer>(
+  public convenience init<R: Reducer<State, Action>>(
     initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
-  ) where R.State == State, R.Action == Action {
+  ) {
     let (initialState, reducer, dependencies) = withDependencies(prepareDependencies ?? { _ in }) {
       @Dependency(\.self) var dependencies
       return (initialState(), reducer(), dependencies)
@@ -491,15 +491,12 @@ public struct StorePublisher<State>: Publisher {
   let store: Any
   let upstream: AnyPublisher<State, Never>
 
-  init<P: Publisher>(
-    store: Any,
-    upstream: P
-  ) where P.Output == Output, P.Failure == Failure {
+  init(store: Any, upstream: some Publisher<Output, Failure>) {
     self.store = store
     self.upstream = upstream.eraseToAnyPublisher()
   }
 
-  public func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
+  public func receive(subscriber: some Subscriber<Output, Failure>) {
     self.upstream.subscribe(
       AnySubscriber(
         receiveSubscription: subscriber.receive(subscription:),

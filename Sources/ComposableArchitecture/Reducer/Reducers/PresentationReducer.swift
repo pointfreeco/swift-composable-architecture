@@ -391,14 +391,15 @@ extension Reducer {
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @warn_unqualified_access
   @inlinable
-  public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
+  public func ifLet<
+    DestinationState, DestinationAction, Destination: Reducer<DestinationState, DestinationAction>
+  >(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CaseKeyPath<Action, PresentationAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _PresentationReducer<Self, Destination>
-  where Destination.State == DestinationState, Destination.Action == DestinationAction {
+  ) -> some Reducer<State, Action> {
     _PresentationReducer(
       base: self,
       toPresentationState: toPresentationState,
@@ -418,7 +419,7 @@ extension Reducer {
     action toPresentationAction: CaseKeyPath<Action, PresentationAction<DestinationAction>>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
+  ) -> some Reducer<State, Action> {
     self.ifLet(
       toPresentationState,
       action: toPresentationAction,
@@ -454,14 +455,15 @@ extension Reducer {
   )
   @warn_unqualified_access
   @inlinable
-  public func ifLet<DestinationState, DestinationAction, Destination: Reducer>(
+  public func ifLet<
+    DestinationState, DestinationAction, Destination: Reducer<DestinationState, DestinationAction>
+  >(
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: AnyCasePath<Action, PresentationAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _PresentationReducer<Self, Destination>
-  where Destination.State == DestinationState, Destination.Action == DestinationAction {
+  ) -> some Reducer<State, Action> {
     _PresentationReducer(
       base: self,
       toPresentationState: toPresentationState,
@@ -503,7 +505,7 @@ extension Reducer {
     action toPresentationAction: AnyCasePath<Action, PresentationAction<DestinationAction>>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _PresentationReducer<Self, EmptyReducer<DestinationState, DestinationAction>> {
+  ) -> some Reducer<State, Action> {
     self.ifLet(
       toPresentationState,
       action: toPresentationAction,
@@ -690,7 +692,7 @@ public struct _PresentedID: Hashable {
   init(internal: Void) {}
 }
 
-extension Task where Success == Never, Failure == Never {
+extension Task<Never, Never> {
   internal static func _cancel<ID: Hashable>(
     id: ID,
     navigationID: NavigationIDPath

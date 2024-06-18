@@ -162,8 +162,9 @@ extension StackState: RandomAccessCollection, RangeReplaceableCollection {
   public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
     self._dictionary.removeAll(keepingCapacity: keepCapacity)
   }
-  public mutating func replaceSubrange<C: Collection>(_ subrange: Range<Int>, with newElements: C)
-  where C.Element == Element {
+  public mutating func replaceSubrange(
+    _ subrange: Range<Int>, with newElements: some Collection<Element>
+  ) {
     self._dictionary.removeSubrange(subrange)
     for (offset, element) in zip(subrange.lowerBound..., newElements) {
       self._dictionary.updateValue(element, forKey: self.stackElementID.next(), insertingAt: offset)
@@ -348,14 +349,15 @@ extension Reducer {
   /// - Returns: A reducer that combines the destination reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
-  public func forEach<DestinationState, DestinationAction, Destination: Reducer>(
+  public func forEach<
+    DestinationState, DestinationAction, Destination: Reducer<DestinationState, DestinationAction>
+  >(
     _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
     action toStackAction: CaseKeyPath<Action, StackAction<DestinationState, DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _StackReducer<Self, Destination>
-  where Destination.State == DestinationState, Destination.Action == DestinationAction {
+  ) -> some Reducer<State, Action> {
     _StackReducer(
       base: self,
       toStackState: toStackState,
@@ -392,14 +394,15 @@ extension Reducer {
   )
   @inlinable
   @warn_unqualified_access
-  public func forEach<DestinationState, DestinationAction, Destination: Reducer>(
+  public func forEach<
+    DestinationState, DestinationAction, Destination: Reducer<DestinationState, DestinationAction>
+  >(
     _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
     action toStackAction: AnyCasePath<Action, StackAction<DestinationState, DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _StackReducer<Self, Destination>
-  where Destination.State == DestinationState, Destination.Action == DestinationAction {
+  ) -> some Reducer<State, Action> {
     _StackReducer(
       base: self,
       toStackState: toStackState,

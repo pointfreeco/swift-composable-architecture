@@ -192,7 +192,7 @@ struct RecordMeetingView: View {
   }
 }
 
-extension AlertState where Action == RecordMeeting.Action.Alert {
+extension AlertState<RecordMeeting.Action.Alert> {
   static func endMeeting(isDiscardable: Bool) -> Self {
     Self {
       TextState("End meeting?")

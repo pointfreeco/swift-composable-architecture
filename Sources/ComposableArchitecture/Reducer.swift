@@ -82,7 +82,7 @@ extension Reducer where Body == Never {
   }
 }
 
-extension Reducer where Body: Reducer, Body.State == State, Body.Action == Action {
+extension Reducer where Body: Reducer<State, Action> {
   /// Invokes the ``Body-40qdd``'s implementation of ``reduce(into:action:)-1t2ri``.
   @inlinable
   public func reduce(

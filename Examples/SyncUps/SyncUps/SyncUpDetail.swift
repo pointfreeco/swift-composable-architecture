@@ -209,7 +209,7 @@ struct SyncUpDetailView: View {
   }
 }
 
-extension AlertState where Action == SyncUpDetail.Destination.Alert {
+extension AlertState<SyncUpDetail.Destination.Alert> {
   static let deleteSyncUp = Self {
     TextState("Delete?")
   } actions: {

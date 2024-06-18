@@ -16,7 +16,7 @@ final class CurrentValueRelay<Output>: Publisher {
     self.currentValue = value
   }
 
-  func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Never {
+  func receive(subscriber: some Subscriber<Output, Never>) {
     let subscription = Subscription(downstream: AnySubscriber(subscriber))
     self.subscriptions.append(subscription)
     subscriber.receive(subscription: subscription)
@@ -32,8 +32,7 @@ final class CurrentValueRelay<Output>: Publisher {
 }
 
 extension CurrentValueRelay {
-  final class Subscription<Downstream: Subscriber>: Combine.Subscription
-  where Downstream.Input == Output, Downstream.Failure == Failure {
+  final class Subscription<Downstream: Subscriber<Output, Failure>>: Combine.Subscription {
     private var demandBuffer: DemandBuffer<Downstream>?
 
     init(downstream: Downstream) {

@@ -113,14 +113,15 @@ extension Reducer {
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
-  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
+  public func forEach<
+    ElementState, ElementAction, ID: Hashable, Element: Reducer<ElementState, ElementAction>
+  >(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: CaseKeyPath<Action, IdentifiedAction<ID, ElementAction>>,
     @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _ForEachReducer<Self, ID, Element>
-  where ElementState == Element.State, ElementAction == Element.Action {
+  ) -> some Reducer<State, Action> {
     _ForEachReducer(
       parent: self,
       toElementsState: toElementsState,
@@ -157,14 +158,15 @@ extension Reducer {
   )
   @inlinable
   @warn_unqualified_access
-  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
+  public func forEach<
+    ElementState, ElementAction, ID: Hashable, Element: Reducer<ElementState, ElementAction>
+  >(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: AnyCasePath<Action, (ID, ElementAction)>,
     @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _ForEachReducer<Self, ID, Element>
-  where ElementState == Element.State, ElementAction == Element.Action {
+  ) -> some Reducer<State, Action> {
     _ForEachReducer(
       parent: self,
       toElementsState: toElementsState,

@@ -644,7 +644,7 @@ private enum ReducerCase {
   }
 }
 
-extension Array where Element == ReducerCase {
+extension [ReducerCase] {
   init(members: MemberBlockItemListSyntax) {
     self = members.flatMap {
       if let enumCaseDecl = $0.decl.as(EnumCaseDeclSyntax.self) {
@@ -671,7 +671,7 @@ extension Array where Element == ReducerCase {
   }
 }
 
-extension Array where Element == String {
+extension [String] {
   var withCasePathsQualified: Self {
     self.flatMap { [$0, "CasePaths.\($0)"] }
   }
