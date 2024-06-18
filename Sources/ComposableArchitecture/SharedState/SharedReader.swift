@@ -122,6 +122,7 @@ public struct SharedReader<Value> {
     SharedReader<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
   }
 
+  @_disfavoredOverload
   @available(
     *, deprecated, message: "Use 'SharedReader($value.optional)' to unwrap optional shared values"
   )
