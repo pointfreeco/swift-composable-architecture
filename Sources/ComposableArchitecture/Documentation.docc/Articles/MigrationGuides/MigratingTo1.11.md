@@ -62,7 +62,7 @@ To fix this deprecation you can use the new ``Shared/withLock(_:)`` method on th
 case .delayedIncrementButtonTapped:
   return .run { _ in
     @Shared(.count) var count
-    await $count.withLock { $0 += 1 }
+    $count.withLock { $0 += 1 }
   }
 ```
 
@@ -73,7 +73,7 @@ Technically it is still possible to write code that has race conditions, such as
 
 ```swift
 let currentCount = count
-await $count.withLock { $0 = currentCount + 1 }
+$count.withLock { $0 = currentCount + 1 }
 ```
 
 But there is no way to 100% prevent race conditions in code. Even actors are susceptible to problems
