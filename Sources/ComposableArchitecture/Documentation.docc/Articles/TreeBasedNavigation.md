@@ -357,42 +357,10 @@ seemingly disparate forms of navigation can be unified under a single style of A
 
 #### Backwards compatible availability
 
-Depending on your deployment target, certain APIs may be unavailable. For example, if you target
-iOS 16, you will not have access to iOS 17's `navigationDestination(item:)` view modifier. You can
-easily backport the tool to work on older platforms by defining a wrapper for the API that calls
-down to the available `navigationDestination(isPresented:)` API. Just paste the following into your
-project:
-
-```swift
-extension View {
-  @available(iOS, introduced: 16, deprecated: 17)
-  @available(macOS, introduced: 13, deprecated: 14)
-  @available(tvOS, introduced: 16, deprecated: 17)
-  @available(watchOS, introduced: 9, deprecated: 10)
-  @ViewBuilder
-  func navigationDestinationWrapper<D: Hashable, C: View>(
-    item: Binding<D?>,
-    @ViewBuilder destination: @escaping (D) -> C
-  ) -> some View {
-    navigationDestination(isPresented: item.isPresented) {
-      if let item = item.wrappedValue {
-        destination(item)
-      }
-    }
-  }
-}
-
-fileprivate extension Optional where Wrapped: Hashable {
-  var isPresented: Bool {
-    get { self != nil }
-    set { if !newValue { self = nil } }
-  }
-}
-```
-
-If you target platforms earlier than iOS 16, macOS 13, tvOS 16 and watchOS 9, then you cannot use
-`navigationDestination` at all. Instead you can use `NavigationLink`, but you must define another
-helper for driving navigation off of a binding of data rather than just a simple boolean. Just paste
+Depending on your deployment target, certain APIs may be unavailable. For example, if you target \
+platforms earlier than iOS 16, macOS 13, tvOS 16 and watchOS 9, then you cannot use 
+`navigationDestination`. Instead you can use `NavigationLink`, but you must define helper for 
+driving navigation off of a binding of data rather than just a simple boolean. Just paste
 the following into your project:
 
 ```swift
@@ -403,6 +371,7 @@ the following into your project:
 extension NavigationLink {
   public init<D, C: View>(
     item: Binding<D?>,
+    onNavigate: @escaping (_ isActive: Bool) -> Void,
     @ViewBuilder destination: (D) -> C,
     @ViewBuilder label: () -> Label
   ) where Destination == C? {
@@ -411,7 +380,9 @@ extension NavigationLink {
       isActive: Binding(
         get: { item.wrappedValue != nil },
         set: { isActive, transaction in
-          if !isActive {
+          if isActive {
+            onNavigate()  
+          } else {
             item.transaction(transaction).wrappedValue = nil
           }
         }
@@ -421,6 +392,10 @@ extension NavigationLink {
   }
 }
 ```
+
+That gives you the ability to drive a `NavigationLink` from state. When the link is tapped the
+`onNavigate` closure will be invoked, giving you the ability to populate state. And when the 
+feature is dismissed, the state will be `nil`'d out.
 
 ## Integration
 

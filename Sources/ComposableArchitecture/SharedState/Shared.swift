@@ -67,6 +67,7 @@ public struct Shared<Value> {
   }
 
   /// Perform an operation on shared state with isolated access to the underlying value.
+  @MainActor
   public func withLock<R>(_ transform: @Sendable (inout Value) throws -> R) rethrows -> R {
     try transform(&self._wrappedValue)
   }
