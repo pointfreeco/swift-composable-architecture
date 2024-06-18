@@ -140,7 +140,7 @@ struct AppView: View {
   }
 }
 
-extension IdentifiedArray<Todo.State.ID, Todo.State> {
+extension IdentifiedArrayOf<Todo.State> {
   static let mock: Self = [
     Todo.State(
       description: "Check Mail",

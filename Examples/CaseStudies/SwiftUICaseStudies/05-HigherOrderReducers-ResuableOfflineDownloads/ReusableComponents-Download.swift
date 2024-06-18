@@ -169,7 +169,7 @@ struct CitiesView: View {
   }
 }
 
-extension IdentifiedArray<CityMap.State.ID, CityMap.State> {
+extension IdentifiedArrayOf<CityMap.State> {
   static let mocks: Self = [
     CityMap.State(
       download: CityMap.State.Download(
