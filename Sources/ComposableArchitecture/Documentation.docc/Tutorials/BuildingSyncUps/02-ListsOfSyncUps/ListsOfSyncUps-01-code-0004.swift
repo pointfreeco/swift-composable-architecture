@@ -10,6 +10,10 @@ struct SyncUp: Equatable, Identifiable, Codable {
   var meetings: IdentifiedArrayOf<Meeting> = []
   var theme: Theme = .bubblegum
   var title = ""
+
+  var durationPerAttendee: Duration {
+    duration / attendees.count
+  }
 }
 
 struct Attendee: Equatable, Identifiable, Codable {
@@ -56,4 +60,16 @@ enum Theme: String, CaseIterable, Equatable, Identifiable, Codable {
   var mainColor: Color { Color(rawValue) }
 
   var name: String { rawValue.capitalized }
+}
+
+extension SyncUp {
+  static let mock = SyncUp(
+    id: SyncUp.ID(),
+    attendees: [
+      Attendee(id: Attendee.ID(), name: "Blob"),
+      Attendee(id: Attendee.ID(), name: "Blob Jr."),
+      Attendee(id: Attendee.ID(), name: "Blob Sr."),
+    ],
+    title: "Point-Free Morning Sync"
+  )
 }

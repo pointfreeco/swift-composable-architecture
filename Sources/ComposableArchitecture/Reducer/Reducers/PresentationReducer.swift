@@ -274,7 +274,7 @@ extension PresentationAction: CasePathable {
 
     public var presented: AnyCasePath<PresentationAction, Action> {
       AnyCasePath(
-        embed: PresentationAction.presented,
+        embed: { .presented($0) },
         extract: {
           guard case let .presented(value) = $0 else { return nil }
           return value

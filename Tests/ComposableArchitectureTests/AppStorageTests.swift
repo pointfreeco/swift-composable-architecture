@@ -46,7 +46,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("url")) var url: URL? = URL(string: "https://pointfree.co")
     XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://pointfree.co"))
 
-    url = URL(string: "https://example.com")
+    url = URL(string: "https://example.com")!
     XCTAssertEqual(url, URL(string: "https://example.com"))
     XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://example.com"))
   }

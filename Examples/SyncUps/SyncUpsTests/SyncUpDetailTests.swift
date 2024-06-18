@@ -102,7 +102,7 @@ final class SyncUpDetailTests: XCTestCase {
 
     syncUp.title = "Blob's Meeting"
     await store.send(\.destination.edit.binding.syncUp, syncUp) {
-      $0.destination?.edit?.syncUp.title = "Blob's Meeting"
+      $0.destination?.modify(\.edit) { $0.syncUp.title = "Blob's Meeting" }
     }
 
     await store.send(.doneEditingButtonTapped) {
@@ -118,7 +118,7 @@ final class SyncUpDetailTests: XCTestCase {
     // TODO: Can this exhaustively be caught?
     defer { XCTAssertEqual([], syncUps) }
 
-    let sharedSyncUp = try XCTUnwrap($syncUps[id: syncUp.id])
+    let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: sharedSyncUp)) {
       SyncUpDetail()
     }

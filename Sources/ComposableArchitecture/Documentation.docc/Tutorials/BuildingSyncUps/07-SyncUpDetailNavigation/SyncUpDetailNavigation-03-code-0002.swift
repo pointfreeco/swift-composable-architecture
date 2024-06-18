@@ -13,7 +13,7 @@ struct SyncUpsListView: View {
     List {
       ForEach(store.syncUps) { syncUp in
         NavigationLink(
-          state: App.Path.State.detail(SyncUpDetail.State(syncUp: <#Shared<SyncUp>#>))
+          state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: <#Shared<SyncUp>#>))
         ) {
           CardView(syncUp: syncUp)
         }
@@ -88,17 +88,7 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
     SyncUpsListView(
       store: Store(
         initialState: SyncUpsList.State(
-          syncUps: [
-            SyncUp(
-              id: SyncUp.ID(),
-              attendees: [
-                Attendee(id: Attendee.ID(), name: "Blob"),
-                Attendee(id: Attendee.ID(), name: "Blob Jr."),
-                Attendee(id: Attendee.ID(), name: "Blob Sr."),
-              ],
-              title: "Point-Free Morning Sync"
-            )
-          ]
+          syncUps: [.mock]
         )
       ) {
         SyncUpsList()

@@ -153,7 +153,7 @@ final class FileStorageTests: XCTestCase {
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
 
-      users.append(.blob)
+      await $users.withLock { $0.append(.blob) }
       NotificationCenter.default
         .post(name: willResignNotificationName, object: nil)
       await Task.yield()

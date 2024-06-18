@@ -246,7 +246,7 @@ class TimerTests: XCTestCase {
 With the basics set up, we can send an action into the system to assert on what happens, such as the
 `.startTimerButtonTapped` action. This time we don't actually expect state to change at first
 because when starting the timer we don't change state, and so in this case we can leave off the
-trailer closure:
+trailing closure:
 
 ```swift
 await store.send(.startTimerButtonTapped)

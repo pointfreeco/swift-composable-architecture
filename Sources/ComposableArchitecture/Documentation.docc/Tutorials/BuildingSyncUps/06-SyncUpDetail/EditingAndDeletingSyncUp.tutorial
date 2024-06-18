@@ -21,7 +21,7 @@
       
       @Step {
         Go to the SyncUpDetail.swift file and update the `State` of the feature so that it holds on
-        to an optional piece of `SyncUpDetail.State` using the ``ComposableArchitecture/Presents()``
+        to an optional piece of `SyncUpForm.State` using the ``ComposableArchitecture/Presents()``
         macro. When the state is non-`nil` the sheet will be presented, and when it is `nil` it will
         be dismissed.
         
@@ -49,7 +49,7 @@
       
       @Step {
         When the "Edit" button is tapped we can populate the `editSyncUp` state to represent the
-        sheet should be presented. We can pass long the local `syncUp` value to the `SyncUpForm` so
+        sheet should be presented. We can pass along the local `syncUp` value to the `SyncUpForm` so
         that it has the freshest data to edit.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0004.swift)
@@ -63,7 +63,7 @@
         Update the `store` property in the view to be `@Bindable` since we will need to derive
         bindings from the store for driving navigation from state.
         
-        > Note: We have collapsed the implementation of the `SyncUpForm` view in this snippet.
+        > Note: We have collapsed the implementation of the `SyncUpDetail` reducer in this snippet.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0005.swift, previousFile: EditingAndDeletingSyncUp-01-code-0005-previous.swift)
       }
@@ -155,7 +155,7 @@
         
         > Note: We are pre-emptively applying the `@CasePathable` macro to make it possible to write
         tests against these actions in a keypath-like syntax. The `@CasePathable` macro is 
-        automatically applied to `Action` enums inside reducers, but macros cannot recursive apply
+        automatically applied to `Action` enums inside reducers, but macros cannot recursively apply
         themselves and so we must do it manually sometimes.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0001.swift, previousFile: EditingAndDeletingSyncUp-02-code-0001-previous.swift)
@@ -184,7 +184,8 @@
       }
       
       @Step {
-        Use the ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator
+        Handle the `.alert` case in the reducer, and use the
+        ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator
         again to integrate the alert's logic into the `SyncUpDetail` reducer.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0004.swift)
@@ -244,10 +245,10 @@
       }
       
       The `.alert(.presented)` case is more subtle, though. This action is sent when the user 
-      confirms that they want to delete the sync-up, and so somehow we to remove the `syncUp` we
-      have in state from the collection of sync-ups that in the `SyncUpsList` feature.
+      confirms that they want to delete the sync-up, and so somehow we have to remove the `syncUp` we
+      have in state from the collection of sync-ups that is in the `SyncUpsList` feature.
       
-      However, remember that in <doc:PersistingSyncUps> we showed to how to persist the collection
+      However, remember that in <doc:PersistingSyncUps> we showed how to persist the collection
       of sync-ups using the [`@Shared`](<doc:Shared>) property wrapper with the
       ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` persistence strategy. This
       gives the app _global_ access to that state, and we can make edits to it from anywhere. We can
@@ -307,7 +308,7 @@
       asynchronous function, and therefore it cannot be invoked directly in the reducer. It can
       only be invoked inside an effect, and so we must use the
       ``ComposableArchitecture/Effect/run(priority:operation:catch:fileID:line:)`` effect, which
-      gives us an asynchronous context to execute in work in, as well as a handle on 
+      gives us an asynchronous context to execute the work in, as well as a handle on 
       ``ComposableArchitecture/Send`` for sending actions back into the system.
       
       @Step {

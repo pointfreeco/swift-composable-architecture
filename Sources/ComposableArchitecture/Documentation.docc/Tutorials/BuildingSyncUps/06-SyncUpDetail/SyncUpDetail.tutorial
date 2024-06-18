@@ -2,7 +2,7 @@
   @Intro(title: "Sync-up detail") {
     The "sync-up detail" screen shows all the information of a sync-up, and has many actions that
     can take place in the screen. The user can edit the sync-up, or start a new meeting in the sync
-    up, or drill-down to a pass meeting, or even delete the meeting.
+    up, or drill-down to a past meeting, or even delete the meeting.
   }
   
   @Section(title: "Create the sync-up detail") {
@@ -37,7 +37,7 @@
       }
       
       Next we add a case to the `Action` enum for each action the user can perform in the view.
-      Currently there are 3 buttons, and so we will have an action for each.
+      Currently there are 2 buttons, and so we will have an action for each.
       
       @Step {
         Add an action for each of the buttons in the UI, including tapping the "Delete" button,

@@ -697,3 +697,11 @@ private enum PartialToState<State> {
     }
   }()
 #endif
+
+#if canImport(Observation)
+  // NB: This extension must be placed in the same file as 'class Store' due to either a bug
+  //     in Swift, or very opaque and undocumented behavior of Swift.
+  //     See https://github.com/tuist/tuist/issues/6320#issuecomment-2148554117
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+  extension Store: Observable {}
+#endif

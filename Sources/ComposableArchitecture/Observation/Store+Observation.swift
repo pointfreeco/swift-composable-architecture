@@ -9,11 +9,6 @@
     extension Store: Perceptible {}
   #endif
 
-  #if canImport(Observation)
-    @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-    extension Store: Observable {}
-  #endif
-
   extension Store where State: ObservableState {
     var observableState: State {
       self._$observationRegistrar.access(self, keyPath: \.currentState)

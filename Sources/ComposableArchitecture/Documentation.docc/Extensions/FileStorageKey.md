@@ -8,6 +8,7 @@
 
 ### Overriding storage
 
+- ``Dependencies/DependencyValues/defaultFileStorage``
 - ``FileStorage``
 
 ### Deprecations

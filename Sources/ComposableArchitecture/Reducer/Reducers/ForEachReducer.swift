@@ -15,7 +15,7 @@ public enum IdentifiedAction<ID: Hashable, Action>: CasePathable {
   public struct AllCasePaths {
     public var element: AnyCasePath<IdentifiedAction, (id: ID, action: Action)> {
       AnyCasePath(
-        embed: IdentifiedAction.element,
+        embed: { .element(id: $0, action: $1) },
         extract: {
           guard case let .element(id, action) = $0 else { return nil }
           return (id, action)
@@ -169,8 +169,8 @@ extension Reducer {
       parent: self,
       toElementsState: toElementsState,
       toElementAction: .init(
-        embed: toElementAction.embed,
-        extract: toElementAction.extract
+        embed: { toElementAction.embed($0) },
+        extract: { toElementAction.extract(from: $0) }
       ),
       element: element(),
       fileID: fileID,

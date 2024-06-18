@@ -13,8 +13,11 @@ import SwiftDiagnostics
 import SwiftOperators
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
+
+#if !canImport(SwiftSyntax600)
+  import SwiftSyntaxMacroExpansion
+#endif
 
 public struct ObservableStateMacro {
   static let moduleName = "ComposableArchitecture"

@@ -2,7 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 @Reducer
-struct App {
+struct AppFeature {
   @ObservableState
   struct State: Equatable {
     var path = StackState<SyncUpDetail.State>()

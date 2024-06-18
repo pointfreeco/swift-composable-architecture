@@ -20,7 +20,7 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
     .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
-    .package(url: "https://github.com/apple/swift-syntax", "509.0.0"..<"511.0.0"),
+    .package(url: "https://github.com/apple/swift-syntax", "509.0.0"..<"601.0.0"),
     .package(url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "1.3.0"),
@@ -30,8 +30,9 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-perception", from: "1.1.7"),
-    .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "1.1.0"),
-    .package(path: "../uikit-navigation"),
+    .package(
+      url: "https://github.com/pointfreeco/swiftui-navigation", branch: "uikit-navigation-beta"
+    ),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.1.0"),
   ],
   targets: [
@@ -49,7 +50,7 @@ let package = Package(
         .product(name: "OrderedCollections", package: "swift-collections"),
         .product(name: "Perception", package: "swift-perception"),
         .product(name: "SwiftUINavigationCore", package: "swiftui-navigation"),
-        .product(name: "UIKitNavigation", package: "uikit-navigation"),
+        .product(name: "UIKitNavigation", package: "swiftui-navigation"),
         .product(name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"),
       ],
       resources: [
