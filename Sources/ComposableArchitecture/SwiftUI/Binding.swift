@@ -142,14 +142,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
 
   @usableFromInline
   let set: @Sendable (inout Root) -> Void
-  // NB: swift(<5.8) has an enum existential layout bug that can cause crashes when extracting
-  //     payloads. We can box the existential to work around the bug.
-  #if swift(<5.8)
-    private let _value: [AnySendable]
-    var value: AnySendable { self._value[0] }
-  #else
-    let value: AnySendable
-  #endif
+  let value: AnySendable
   let valueIsEqualTo: @Sendable (Any) -> Bool
 
   init(
@@ -160,11 +153,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
   ) {
     self.keyPath = keyPath
     self.set = set
-    #if swift(<5.8)
-      self._value = [value]
-    #else
-      self.value = value
-    #endif
+    self.value = value
     self.valueIsEqualTo = valueIsEqualTo
   }
 
