@@ -93,9 +93,7 @@ public class LoginViewController: UIViewController {
       UIAlertController(store: store)
     }
 
-    navigationController?.pushViewController(
-      item: $store.scope(state: \.twoFactor, action: \.twoFactor)
-    ) { store in
+    navigationDestination(item: $store.scope(state: \.twoFactor, action: \.twoFactor)) { store in
       TwoFactorViewController(store: store)
     }
   }

@@ -83,9 +83,7 @@ public class NewGameViewController: UIViewController {
       letsPlayButton.isEnabled = store.isLetsPlayButtonEnabled
     }
 
-    navigationController?.pushViewController(
-      item: $store.scope(state: \.game, action: \.game)
-    ) { store in
+    navigationDestination(item: $store.scope(state: \.game, action: \.game)) { store in
       GameViewController(store: store)
     }
   }
