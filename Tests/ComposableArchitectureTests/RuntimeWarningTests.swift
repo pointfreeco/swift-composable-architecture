@@ -104,79 +104,76 @@
       .value
     }
 
-    #if os(macOS)
-      @MainActor
-      func testEffectEmitMainThread() async throws {
-        try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] != nil)
-        XCTExpectFailure {
-          [
-            """
-            An effect completed on a non-main thread. …
+    @MainActor
+    func testEffectEmitMainThread() async throws {
+      XCTExpectFailure {
+        [
+          """
+          An effect completed on a non-main thread. …
 
-              Effect returned from:
-                RuntimeWarningTests.Action.response
+            Effect returned from:
+              RuntimeWarningTests.Action.response
 
-            Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-            receive their output on the main thread.
+          Make sure to use ".receive(on:)" on any effects that execute on background threads to \
+          receive their output on the main thread.
 
-            The "Store" class is not thread-safe, and so all interactions with an instance of \
-            "Store" (including all of its scopes and derived view stores) must be done on the main \
-            thread.
-            """,
-            """
-            An effect completed on a non-main thread. …
+          The "Store" class is not thread-safe, and so all interactions with an instance of \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
+          thread.
+          """,
+          """
+          An effect completed on a non-main thread. …
 
-              Effect returned from:
-                RuntimeWarningTests.Action.tap
+            Effect returned from:
+              RuntimeWarningTests.Action.tap
 
-            Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-            receive their output on the main thread.
+          Make sure to use ".receive(on:)" on any effects that execute on background threads to \
+          receive their output on the main thread.
 
-            The "Store" class is not thread-safe, and so all interactions with an instance of \
-            "Store" (including all of its scopes and derived view stores) must be done on the main \
-            thread.
-            """,
-            """
-            An effect published an action on a non-main thread. …
+          The "Store" class is not thread-safe, and so all interactions with an instance of \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
+          thread.
+          """,
+          """
+          An effect published an action on a non-main thread. …
 
-              Effect published:
-                RuntimeWarningTests.Action.response
+            Effect published:
+              RuntimeWarningTests.Action.response
 
-              Effect returned from:
-                RuntimeWarningTests.Action.tap
+            Effect returned from:
+              RuntimeWarningTests.Action.tap
 
-            Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-            receive their output on the main thread.
+          Make sure to use ".receive(on:)" on any effects that execute on background threads to \
+          receive their output on the main thread.
 
-            The "Store" class is not thread-safe, and so all interactions with an instance of \
-            "Store" (including all of its scopes and derived view stores) must be done on the main \
-            thread.
-            """,
-          ]
+          The "Store" class is not thread-safe, and so all interactions with an instance of \
+          "Store" (including all of its scopes and derived view stores) must be done on the main \
+          thread.
+          """,
+        ]
           .contains($0.compactDescription)
-        }
+      }
 
-        enum Action { case tap, response }
-        let store = Store(initialState: 0) {
-          Reduce<Int, Action> { state, action in
-            switch action {
-            case .tap:
-              return .publisher {
+      enum Action { case tap, response }
+      let store = Store(initialState: 0) {
+        Reduce<Int, Action> { state, action in
+          switch action {
+          case .tap:
+            return .publisher {
+              Deferred {
                 Future { callback in
-                  Thread.detachNewThread {
-                    XCTAssertFalse(Thread.isMainThread, "Effect should send on non-main thread.")
-                    callback(.success(.response))
-                  }
+                  callback(.success(.response))
                 }
               }
-            case .response:
-              return .none
+              .receive(on: DispatchQueue(label: "background"))
             }
+          case .response:
+            return .none
           }
         }
-        await ViewStore(store, observe: { $0 }).send(.tap).finish()
       }
-    #endif
+      await ViewStore(store, observe: { $0 }).send(.tap).finish()
+    }
 
     @MainActor
     func testBindingUnhandledAction() {

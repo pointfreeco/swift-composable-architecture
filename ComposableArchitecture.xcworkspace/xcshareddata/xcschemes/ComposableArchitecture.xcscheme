@@ -65,7 +65,7 @@
          <EnvironmentVariable
             key = "CI"
             value = "$(CI)"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
