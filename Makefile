@@ -6,6 +6,8 @@ PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS 17.5,TV)
 PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS 1.2,Vision)
 PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS 10.5,Watch)
 
+TEST_RUNNER_CI = $(CI)
+
 default: test-all
 
 test-all: test-examples
