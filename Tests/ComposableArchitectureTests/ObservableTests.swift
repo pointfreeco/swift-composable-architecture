@@ -325,8 +325,7 @@ final class ObservableTests: BaseTCATestCase {
 
   @MainActor
   func testStore_ResetChild() async {
-    let store = Store<ParentState, Void>(initialState: ParentState(child: ChildState(count: 42)))
-    {
+    let store = Store<ParentState, Void>(initialState: ParentState(child: ChildState(count: 42))) {
       Reduce { state, _ in
         state.child.reset()
         return .none
