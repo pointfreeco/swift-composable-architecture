@@ -141,6 +141,7 @@
       }
     }
 
+    // TODO: Deprecate for `$store.scope`
     /// Creates a `UIAlertController` from a ``Store`` focused on confirmation dialog state.
     ///
     /// You can use this initializer in tandem with ``ObjectiveC/NSObject/observe(_:)`` and
@@ -193,5 +194,21 @@
       }
     }
 
+    public convenience init<Action>(
+      store: Store<ConfirmationDialogState<Action>, Action>
+    ) {
+      let state = store.currentState
+      self.init(
+        title: String(state: state.title),
+        message: state.message.map { String(state: $0) },
+        preferredStyle: .actionSheet
+      )
+      for button in state.buttons {
+        addAction(UIAlertAction(button, action: { _ = $0.map(store.send) }))
+      }
+      if state.buttons.isEmpty {
+        addAction(UIAlertAction(title: "OK", style: .cancel))
+      }
+    }
   }
 #endif
