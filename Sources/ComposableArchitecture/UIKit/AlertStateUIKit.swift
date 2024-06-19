@@ -194,39 +194,4 @@
     }
 
   }
-
-  @available(iOS 13, *)
-  @available(macCatalyst 13, *)
-  @available(macOS, unavailable)
-  @available(tvOS 13, *)
-  @available(watchOS, unavailable)
-  extension UIAlertAction.Style {
-    init(_ role: ButtonStateRole) {
-      switch role {
-      case .cancel:
-        self = .cancel
-      case .destructive:
-        self = .destructive
-      }
-    }
-  }
-
-  @available(iOS 13, *)
-  @available(macCatalyst 13, *)
-  @available(macOS, unavailable)
-  @available(tvOS 13, *)
-  @available(watchOS, unavailable)
-  extension UIAlertAction {
-    convenience init<Action>(
-      _ button: ButtonState<Action>,
-      action handler: @escaping (_ action: Action?) -> Void
-    ) {
-      self.init(
-        title: String(state: button.label),
-        style: button.role.map(UIAlertAction.Style.init) ?? .default
-      ) { _ in
-        button.withAction(handler)
-      }
-    }
-  }
 #endif
