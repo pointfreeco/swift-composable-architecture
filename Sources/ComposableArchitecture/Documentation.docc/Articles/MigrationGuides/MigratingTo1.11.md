@@ -62,7 +62,7 @@ To fix this deprecation you can use the new ``Shared/withLock(_:)`` method on th
 case .delayedIncrementButtonTapped:
   return .run { _ in
     @Shared(.count) var count
-    await $count.withLock { $0 += 1 }
+    $count.withLock { $0 += 1 }
   }
 ```
 
@@ -73,7 +73,7 @@ Technically it is still possible to write code that has race conditions, such as
 
 ```swift
 let currentCount = count
-await $count.withLock { $0 = currentCount + 1 }
+$count.withLock { $0 = currentCount + 1 }
 ```
 
 But there is no way to 100% prevent race conditions in code. Even actors are susceptible to problems
@@ -97,4 +97,60 @@ references:
     }
   )
 )
+```
+
+## Migrating to 1.11.2
+
+A few bug fixes landed in 1.11.2 that may be source breaking. They are described below:
+
+### `withLock` is now `@MainActor`
+
+In [version 1.11](<doc:MigratingTo1.11>) of the library we deprecated mutating shared state from
+asynchronous contexts, such as effects, and instead recommended using the new 
+``Shared/withLock(_:)`` method. Doing so made it possible to lock all mutations to the shared state
+and prevent race conditions (see the [migration guide](<doc:MigratingTo1.11>) for more info).
+
+However, this did leave open the possibility for deadlocks if shared state was read from and written
+to on different threads. To fix this we have now restricted ``Shared/withLock(_:)`` to the
+`@MainActor`, and so you will now need to `await` its usage:
+
+```diff
+-sharedCount.withLock { $0 += 1 }
++await sharedCount.withLock { $0 += 1 }
+```
+
+The compiler should suggest this fix-it for you.
+
+### Optional dynamic member lookup on `Shared` is deprecated/disfavored
+
+When the ``Shared`` property wrapper was first introduced, its dynamic member lookup was overloaded
+to automatically unwrap optionals for ergonomic purposes:
+
+```swift
+if let sharedUnwrappedProperty = $shared.optionalProperty {
+  // ...
+}
+```
+
+This unfortunately made dynamic member lookup a little more difficult to understand:
+
+```swift
+$shared.optionalProperty  // Shared<Value>?, *not* Shared<Value?>
+```
+
+…and required casting and other tricks to transform shared values into what one might expect.
+
+And so this dynamic member lookup is deprecated and has been disfavored, and will eventually be
+removed entirely. Instead, you can use ``Shared/init(_:)`` to explicitly unwrap a shared optional
+value.
+
+Disfavoring it does have the consequence of being source breaking in the case of `if let` and
+`guard let` expressions, where Swift does not select the optional overload automatically. To
+migrate, use ``Shared/init(_:)``:
+
+```diff
+-if let sharedUnwrappedProperty = $shared.optionalProperty {
++if let sharedUnwrappedProperty = Shared($shared.optionalProperty) {
+   // ...
+ }
 ```

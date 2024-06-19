@@ -91,7 +91,7 @@ enum LogConfiguration {
   case unordered
 }
 
-extension Snapshotting where Value == String, Format == String {
+extension Snapshotting<String, String> {
   fileprivate static nonisolated(unsafe) let _lines = Snapshotting(
     pathExtension: "txt",
     diffing: Diffing(

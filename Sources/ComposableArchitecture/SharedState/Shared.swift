@@ -173,6 +173,7 @@ public struct Shared<Value> {
     Shared<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
   }
 
+  @_disfavoredOverload
   @available(
     *, deprecated, message: "Use 'Shared($value.optional)' to unwrap optional shared values"
   )
@@ -322,7 +323,7 @@ extension Shared: _CustomDiffObject {
 }
 
 extension Shared
-where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable & Sendable {
+where Value: _MutableIdentifiedCollection {
   /// Allows a `ForEach` view to transform a shared collection into shared elements.
   ///
   /// ```swift
@@ -348,8 +349,8 @@ where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable &
   /// > you need to derive a shared element from a shared collection, use a stable lookup, instead,
   /// > like the `$array[id:]` subscript on `IdentifiedArray`.
   public var elements: some RandomAccessCollection<Shared<Value.Element>> {
-    zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
-      self[index, default: DefaultSubscript(element)]
+    zip(self.wrappedValue.ids, self.wrappedValue).lazy.map { id, element in
+      self[id: id, default: DefaultSubscript(element)]
     }
   }
 }
@@ -434,6 +435,7 @@ extension Shared {
     SharedReader(reference: self.reference, keyPath: self.keyPath)
   }
 
+  @_disfavoredOverload
   @available(
     *, deprecated, message: "Use 'SharedReader($value.optional)' to unwrap optional shared values"
   )

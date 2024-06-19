@@ -176,6 +176,30 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("count")) var count2: Int? = nil
     XCTAssertEqual(count2, nil)
   }
+
+  func testOptionalInitializers_URL() {
+    @Shared(.appStorage("url1")) var url1: URL?
+    XCTAssertEqual(url1, nil)
+    @Shared(.appStorage("url2")) var url2: URL? = nil
+    XCTAssertEqual(url2, nil)
+  }
+
+  func testRemoveDuplicates() {
+    @Dependency(\.defaultAppStorage) var store
+    @Shared(.appStorage("count")) var count = 0
+
+    let values = LockIsolated([Int]())
+    let cancellable = $count
+      .publisher
+      .sink { count in values.withValue { $0.append(count) } }
+    defer { _ = cancellable }
+
+    count += 1
+    XCTAssertEqual(values.value, [1])
+
+    store.setValue(2, forKey: "other-count")
+    XCTAssertEqual(values.value, [1])
+  }
 }
 
 extension UserDefaults {
