@@ -6,6 +6,7 @@
 @_exported import Dependencies
 @_exported import IdentifiedCollections
 @_exported import SwiftUINavigationCore
+@_exported import UIKitNavigation
 
 #if canImport(DependenciesMacros)
   @_exported import DependenciesMacros
