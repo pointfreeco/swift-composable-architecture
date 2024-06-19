@@ -151,7 +151,7 @@
           thread.
           """,
         ]
-          .contains($0.compactDescription)
+        .contains($0.compactDescription)
       }
 
       enum Action { case tap, response }
