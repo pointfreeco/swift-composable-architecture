@@ -23,12 +23,26 @@ extension Optional {
 
 extension RandomAccessCollection where Self: MutableCollection {
   subscript(
-    position: Index, default defaultSubscript: DefaultSubscript<Element>
+    position: Index,
+    default defaultSubscript: DefaultSubscript<Element>
   ) -> Element {
     get { self.indices.contains(position) ? self[position] : defaultSubscript.value }
     set {
       defaultSubscript.value = newValue
       if self.indices.contains(position) { self[position] = newValue }
+    }
+  }
+}
+
+extension _MutableIdentifiedCollection {
+  subscript(
+    id id: ID,
+    default defaultSubscript: DefaultSubscript<Element>
+  ) -> Element {
+    get { self[id: id] ?? defaultSubscript.value }
+    set {
+      defaultSubscript.value = newValue
+      self[id: id] = newValue
     }
   }
 }

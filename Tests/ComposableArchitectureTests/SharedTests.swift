@@ -1,5 +1,6 @@
 import Combine
 @_spi(Internals) import ComposableArchitecture
+import CustomDump
 import XCTest
 
 final class SharedTests: XCTestCase {
@@ -946,6 +947,52 @@ final class SharedTests: XCTestCase {
     await $optionalValueWithDefault.withLock { $0 = nil }
 
     XCTAssertNil(optionalValueWithDefault)
+  }
+
+  func testElements() {
+    struct User: Equatable, Identifiable {
+      let id: Int
+      var name = ""
+    }
+    let sharedCollection = Shared([User(id: 1), User(id: 2)] as IdentifiedArrayOf<User>)
+    let elements = sharedCollection.elements
+    let first = elements.first!
+    let second = elements.last!
+
+    first.wrappedValue.name = "Blob"
+    second.wrappedValue.name = "Blob Jr"
+    XCTAssertNoDifference(first.wrappedValue, User(id: 1, name: "Blob"))
+    XCTAssertNoDifference(second.wrappedValue, User(id: 2, name: "Blob Jr"))
+    XCTAssertNoDifference(
+      sharedCollection.wrappedValue,
+      [
+        User(id: 1, name: "Blob"),
+        User(id: 2, name: "Blob Jr"),
+      ]
+    )
+
+    sharedCollection.wrappedValue.swapAt(0, 1)
+    XCTAssertNoDifference(first.wrappedValue, User(id: 1, name: "Blob"))
+    XCTAssertNoDifference(second.wrappedValue, User(id: 2, name: "Blob Jr"))
+    XCTAssertNoDifference(
+      sharedCollection.wrappedValue,
+      [
+        User(id: 2, name: "Blob Jr"),
+        User(id: 1, name: "Blob"),
+      ]
+    )
+
+    first.wrappedValue.name += ", M.D."
+    second.wrappedValue.name += ", Esq."
+    XCTAssertNoDifference(first.wrappedValue, User(id: 1, name: "Blob, M.D."))
+    XCTAssertNoDifference(second.wrappedValue, User(id: 2, name: "Blob Jr, Esq."))
+    XCTAssertNoDifference(
+      sharedCollection.wrappedValue,
+      [
+        User(id: 2, name: "Blob Jr, Esq."),
+        User(id: 1, name: "Blob, M.D."),
+      ]
+    )
   }
 }
 
