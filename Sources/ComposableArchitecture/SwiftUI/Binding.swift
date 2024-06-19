@@ -142,29 +142,18 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
 
   @usableFromInline
   let set: @Sendable (inout Root) -> Void
-  // NB: swift(<5.8) has an enum existential layout bug that can cause crashes when extracting
-  //     payloads. We can box the existential to work around the bug.
-  #if swift(<5.8)
-    private let _value: [AnySendable]
-    var value: AnySendable { self._value[0] }
-  #else
-    let value: AnySendable
-  #endif
+  let value: any Sendable
   let valueIsEqualTo: @Sendable (Any) -> Bool
 
   init(
     keyPath: PartialKeyPath<Root>,
     set: @escaping @Sendable (inout Root) -> Void,
-    value: AnySendable,
+    value: any Sendable,
     valueIsEqualTo: @escaping @Sendable (Any) -> Bool
   ) {
     self.keyPath = keyPath
     self.set = set
-    #if swift(<5.8)
-      self._value = [value]
-    #else
-      self.value = value
-    #endif
+    self.value = value
     self.valueIsEqualTo = valueIsEqualTo
   }
 
@@ -184,7 +173,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
       ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
         AnyCasePath(
           embed: { .set(keyPath, $0) },
-          extract: { $0.keyPath == keyPath ? $0.value.base as? Value : nil }
+          extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
         )
       }
     #endif
@@ -194,17 +183,9 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
     ) -> AnyCasePath<BindingAction, Value> {
       AnyCasePath(
         embed: { .set(keyPath, $0) },
-        extract: { $0.keyPath == keyPath ? $0.value.base as? Value : nil }
+        extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
       )
     }
-  }
-}
-
-struct AnySendable: @unchecked Sendable {
-  let base: Any
-  @inlinable
-  init<Base: Sendable>(_ base: Base) {
-    self.base = base
   }
 }
 
@@ -256,8 +237,8 @@ extension BindingAction {
     self.init(
       keyPath: keyPath,
       set: set,
-      value: AnySendable(value),
-      valueIsEqualTo: { ($0 as? AnySendable)?.base as? Value == value }
+      value: value,
+      valueIsEqualTo: { $0 as? Value == value }
     )
   }
 }
@@ -267,7 +248,7 @@ extension BindingAction: CustomDumpStringConvertible {
     var description = ".set("
     customDump(self.keyPath, to: &description, maxDepth: 0)
     description.append(", ")
-    customDump(self.value.base, to: &description, maxDepth: 0)
+    customDump(self.value, to: &description, maxDepth: 0)
     description.append(")")
     return description
   }
@@ -279,7 +260,7 @@ extension BindingAction: CustomDumpStringConvertible {
 /// associated with mutating multiple fields in state.
 ///
 /// Read <doc:Bindings> for more information.
-public protocol BindableAction {
+public protocol BindableAction<State> {
   /// The root state type that contains bindable fields.
   associatedtype State
 
@@ -421,11 +402,11 @@ public struct BindingViewStore<State> {
     let line: UInt
   #endif
 
-  init<Action: BindableAction>(
+  init<Action: BindableAction<State>>(
     store: Store<State, Action>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) where Action.State == State {
+  ) {
     self.store = store.scope(
       id: nil,
       state: ToState(\.self),
@@ -506,7 +487,7 @@ extension ViewStore {
     observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
     send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
-  ) where ViewAction: BindableAction, ViewAction.State == State {
+  ) where ViewAction: BindableAction<State> {
     self.init(
       store,
       observe: { (_: State) in
@@ -542,7 +523,7 @@ extension ViewStore {
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
-  ) where ViewAction: BindableAction, ViewAction.State == State {
+  ) where ViewAction: BindableAction<State> {
     self.init(
       store,
       observe: toViewState,
@@ -568,7 +549,7 @@ extension ViewStore where ViewState: Equatable {
     _ store: Store<State, Action>,
     observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
     send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action
-  ) where ViewAction: BindableAction, ViewAction.State == State {
+  ) where ViewAction: BindableAction<State> {
     self.init(
       store,
       observe: toViewState,
@@ -591,7 +572,7 @@ extension ViewStore where ViewState: Equatable {
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState
-  ) where ViewAction: BindableAction, ViewAction.State == State {
+  ) where ViewAction: BindableAction<State> {
     self.init(
       store,
       observe: toViewState,
@@ -623,7 +604,7 @@ extension WithViewStore where Content: View {
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) where ViewAction: BindableAction, ViewAction.State == State {
+  ) where ViewAction: BindableAction<State> {
     self.init(
       store,
       observe: { (_: State) in
@@ -666,7 +647,7 @@ extension WithViewStore where Content: View {
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) where ViewAction: BindableAction, ViewAction.State == State {
+  ) where ViewAction: BindableAction<State> {
     self.init(
       store,
       observe: toViewState,
@@ -699,7 +680,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) where ViewAction: BindableAction, ViewAction.State == State {
+  ) where ViewAction: BindableAction<State> {
     self.init(
       store,
       observe: toViewState,
@@ -728,7 +709,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
-  ) where ViewAction: BindableAction, ViewAction.State == State {
+  ) where ViewAction: BindableAction<State> {
     self.init(
       store,
       observe: toViewState,

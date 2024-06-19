@@ -133,11 +133,11 @@ extension Shared {
   /// - Parameters:
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading and saving the shared reference's value from some external source.
-  public init<Key: PersistenceKey>(
+  public init<Key: PersistenceKey<Value>>(
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) where Key.Value == Value {
+  ) {
     self.init(
       wrappedValue: persistenceKey.defaultValue(),
       persistenceKey.base,
@@ -153,12 +153,12 @@ extension Shared {
   ///     key.
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading and saving the shared reference's value from some external source.
-  public init<Key: PersistenceKey>(
+  public init<Key: PersistenceKey<Value>>(
     wrappedValue value: @autoclosure @escaping () -> Value,
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) where Key.Value == Value {
+  ) {
     self.init(
       wrappedValue: value(),
       persistenceKey.base,
@@ -291,11 +291,11 @@ extension SharedReader {
   /// - Parameters:
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading the shared reference's value from some external source.
-  public init<Key: PersistenceReaderKey>(
+  public init<Key: PersistenceReaderKey<Value>>(
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) where Key.Value == Value {
+  ) {
     self.init(
       wrappedValue: persistenceKey.defaultValue(),
       persistenceKey.base,
@@ -311,12 +311,12 @@ extension SharedReader {
   ///     key.
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading the shared reference's value from some external source.
-  public init<Key: PersistenceReaderKey>(
+  public init<Key: PersistenceReaderKey<Value>>(
     wrappedValue value: @autoclosure @escaping () -> Value,
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) where Key.Value == Value {
+  ) {
     self.init(
       wrappedValue: value(),
       persistenceKey.base,
