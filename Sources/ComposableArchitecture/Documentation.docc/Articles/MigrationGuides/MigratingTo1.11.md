@@ -99,9 +99,9 @@ references:
 )
 ```
 
-## Migrating to 1.11.1
+## Migrating to 1.11.2
 
-A few bug fixes landed in 1.11.1 that may be source breaking. They are described below:
+A few bug fixes landed in 1.11.2 that may be source breaking. They are described below:
 
 ### `withLock` is now `@MainActor`
 
