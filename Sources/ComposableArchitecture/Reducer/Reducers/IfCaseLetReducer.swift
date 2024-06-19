@@ -101,15 +101,14 @@ extension Reducer {
   )
   @inlinable
   @warn_unqualified_access
-  public func ifCaseLet<CaseState, CaseAction, Case: Reducer>(
+  public func ifCaseLet<CaseState, CaseAction, Case: Reducer<CaseState, CaseAction>>(
     _ toCaseState: AnyCasePath<State, CaseState>,
     action toCaseAction: AnyCasePath<Action, CaseAction>,
     @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _IfCaseLetReducer<Self, Case>
-  where CaseState == Case.State, CaseAction == Case.Action {
-    .init(
+  ) -> some Reducer<State, Action> {
+    _IfCaseLetReducer(
       parent: self,
       child: `case`(),
       toChildState: toCaseState,

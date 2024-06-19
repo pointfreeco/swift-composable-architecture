@@ -52,15 +52,14 @@ extension Reducer {
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
-  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
+  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer<WrappedState, WrappedAction>>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
     action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _IfLetReducer<Self, Wrapped>
-  where WrappedState == Wrapped.State, WrappedAction == Wrapped.Action {
-    .init(
+  ) -> some Reducer<State, Action> {
+    _IfLetReducer(
       parent: self,
       child: wrapped(),
       toChildState: toWrappedState,
@@ -79,8 +78,8 @@ extension Reducer {
     action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _IfLetReducer<Self, EmptyReducer<WrappedState, WrappedAction>> {
-    .init(
+  ) -> some Reducer<State, Action> {
+    _IfLetReducer(
       parent: self,
       child: EmptyReducer(),
       toChildState: toWrappedState,
@@ -116,15 +115,14 @@ extension Reducer {
   )
   @inlinable
   @warn_unqualified_access
-  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
+  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer<WrappedState, WrappedAction>>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
     action toWrappedAction: AnyCasePath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _IfLetReducer<Self, Wrapped>
-  where WrappedState == Wrapped.State, WrappedAction == Wrapped.Action {
-    .init(
+  ) -> some Reducer<State, Action> {
+    _IfLetReducer(
       parent: self,
       child: wrapped(),
       toChildState: toWrappedState,

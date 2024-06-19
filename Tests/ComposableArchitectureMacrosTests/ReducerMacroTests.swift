@@ -372,7 +372,7 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>, ComposableArchitecture.Scope<Self.State, Self.Action, Meeting>> {
+          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action> ._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>, ComposableArchitecture.Scope<Self.State, Self.Action, Meeting>> {
             ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
               Timeline()
             }

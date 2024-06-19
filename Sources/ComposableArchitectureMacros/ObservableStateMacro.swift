@@ -262,7 +262,7 @@ extension ObservableStateMacro: MemberMacro {
   }
 }
 
-extension Array where Element == ObservableStateCase {
+extension [ObservableStateCase] {
   init(members: MemberBlockItemListSyntax) {
     var tag = 0
     self.init(members: members, tag: &tag)

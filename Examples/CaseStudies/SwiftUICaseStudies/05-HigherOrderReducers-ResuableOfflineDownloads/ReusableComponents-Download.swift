@@ -21,20 +21,20 @@ struct CityMap {
     var downloadAlert: AlertState<DownloadComponent.Action.Alert>?
     var downloadMode: Mode
 
-    var id: UUID { self.download.id }
+    var id: UUID { download.id }
 
     var downloadComponent: DownloadComponent.State {
       get {
         DownloadComponent.State(
-          alert: self.downloadAlert,
-          id: self.download.id,
-          mode: self.downloadMode,
-          url: self.download.downloadVideoUrl
+          alert: downloadAlert,
+          id: download.id,
+          mode: downloadMode,
+          url: download.downloadVideoUrl
         )
       }
       set {
-        self.downloadAlert = newValue.alert
-        self.downloadMode = newValue.mode
+        downloadAlert = newValue.alert
+        downloadMode = newValue.mode
       }
     }
 
@@ -80,10 +80,10 @@ struct CityMapRowView: View {
   let store: StoreOf<CityMap>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    WithViewStore(store, observe: { $0 }) { viewStore in
       HStack {
         NavigationLink(
-          destination: CityMapDetailView(store: self.store)
+          destination: CityMapDetailView(store: store)
         ) {
           HStack {
             Image(systemName: "map")
@@ -94,7 +94,7 @@ struct CityMapRowView: View {
           Spacer()
 
           DownloadComponentView(
-            store: self.store.scope(state: \.downloadComponent, action: \.downloadComponent)
+            store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
           )
           .padding(.trailing, 8)
         }
@@ -107,7 +107,7 @@ struct CityMapDetailView: View {
   let store: StoreOf<CityMap>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
+    WithViewStore(store, observe: { $0 }) { viewStore in
       VStack(spacing: 32) {
         Text(viewStore.download.blurb)
 
@@ -123,7 +123,7 @@ struct CityMapDetailView: View {
           Spacer()
 
           DownloadComponentView(
-            store: self.store.scope(state: \.downloadComponent, action: \.downloadComponent)
+            store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
           )
         }
 
@@ -160,7 +160,7 @@ struct CitiesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEachStore(self.store.scope(state: \.cityMaps, action: \.cityMaps)) { cityMapStore in
+      ForEachStore(store.scope(state: \.cityMaps, action: \.cityMaps)) { cityMapStore in
         CityMapRowView(store: cityMapStore)
           .buttonStyle(.borderless)
       }

@@ -414,9 +414,9 @@ extension StackState {
       self.init(base: StackState())
     }
 
-    public mutating func replaceSubrange<C: Collection>(
-      _ subrange: Range<Int>, with newElements: C
-    ) where C.Element == Component {
+    public mutating func replaceSubrange(
+      _ subrange: Range<Int>, with newElements: some Collection<Component>
+    ) {
       for id in self.base.ids[subrange] {
         self.base[id: id] = nil
       }
