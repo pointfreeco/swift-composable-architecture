@@ -409,7 +409,7 @@ private struct URLLookup: Lookup {
     else {
       guard !SharedAppStorageLocals.isSetting
       else { return defaultValue }
-      
+
       SharedAppStorageLocals.$isSetting.withValue(true) {
         store.set(defaultValue, forKey: key)
       }
