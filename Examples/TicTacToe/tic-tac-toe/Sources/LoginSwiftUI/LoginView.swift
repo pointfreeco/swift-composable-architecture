@@ -54,6 +54,7 @@ public struct LoginView: View {
     }
     .disabled(store.isFormDisabled)
     .alert($store.scope(state: \.alert, action: \.alert))
+//    .confirmationDialog($store.scope(state: \.confirmationDialog, action: \.confirmationDialog))
     .navigationDestination(item: $store.scope(state: \.twoFactor, action: \.twoFactor)) { store in
       TwoFactorView(store: store)
     }
