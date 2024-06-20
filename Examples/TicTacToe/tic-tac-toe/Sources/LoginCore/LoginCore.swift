@@ -8,10 +8,12 @@ public struct Login: Sendable {
   @ObservableState
   public struct State: Equatable {
     @Presents public var alert: AlertState<Action.Alert>?
+    @Presents public var confirmationDialog: ConfirmationDialogState<Action.Alert>?
     public var email = ""
     public var isFormValid = false
     public var isLoginRequestInFlight = false
     public var password = ""
+    public var dummyToggle = false
     @Presents public var twoFactor: TwoFactor.State?
 
     public init() {}
@@ -19,11 +21,18 @@ public struct Login: Sendable {
 
   public enum Action: Sendable, ViewAction {
     case alert(PresentationAction<Alert>)
+    case confirmationDialog(PresentationAction<ConfirmationDialog>)
     case loginResponse(Result<AuthenticationResponse, Error>)
     case twoFactor(PresentationAction<TwoFactor.Action>)
     case view(View)
 
-    public enum Alert: Equatable, Sendable {}
+    public enum Alert: Equatable, Sendable {
+      case doSomething
+    }
+
+    public enum ConfirmationDialog: Equatable, Sendable {
+      case doSomething
+    }
 
     @CasePathable
     public enum View: BindableAction, Sendable {
@@ -40,7 +49,18 @@ public struct Login: Sendable {
     BindingReducer(action: \.view)
     Reduce { state, action in
       switch action {
+      case .alert(.presented(.doSomething)):
+        state.dummyToggle = true
+        return .none
+
+      case .confirmationDialog(.presented(.doSomething)):
+        state.dummyToggle = true
+        return .none
+
       case .alert:
+        return .none
+
+      case .confirmationDialog:
         return .none
 
       case let .loginResponse(.success(response)):
@@ -51,7 +71,23 @@ public struct Login: Sendable {
         return .none
 
       case let .loginResponse(.failure(error)):
-        state.alert = AlertState { TextState(error.localizedDescription) }
+        state.alert = AlertState {
+          TextState(error.localizedDescription)
+        } actions: {
+          ButtonState(role: .destructive, action: .doSomething) {
+            TextState("LOL")
+          }
+          ButtonState(role: .cancel) {
+            TextState("Cancel")
+          }
+        }
+//        state.confirmationDialog = ConfirmationDialogState {
+//          TextState(error.localizedDescription)
+//        } actions: {
+//          ButtonState(role: .destructive, action: .doSomething) {
+//            TextState("LOL")
+//          }
+//        }
         state.isLoginRequestInFlight = false
         return .none
 
@@ -76,6 +112,7 @@ public struct Login: Sendable {
       }
     }
     .ifLet(\.$alert, action: \.alert)
+    .ifLet(\.$confirmationDialog, action: \.confirmationDialog)
     .ifLet(\.$twoFactor, action: \.twoFactor) {
       TwoFactor()
     }
