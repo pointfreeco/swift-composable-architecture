@@ -85,6 +85,40 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(defaults.string(forKey: "direction"), "south")
   }
 
+  func testDefaultsRead_StringArray() {
+    @Dependency(\.defaultAppStorage) var defaults
+    defaults.set(["Blob, Jr.", "Blob, Sr"], forKey: "stringArray")
+    @Shared(.appStorage("stringArray")) var array: [String]?
+    XCTAssertEqual(array, ["Blob, Jr.", "Blob, Sr"])
+  }
+
+  func testDefaultsRegistered_StringArray() {
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("stringArray")) var array: [String] = ["Blob, Jr.", "Blob, Sr"]
+    XCTAssertEqual(defaults.stringArray(forKey: "stringArray"), ["Blob, Jr.", "Blob, Sr"])
+
+    array = ["Hello", "World"]
+    XCTAssertEqual(array, ["Hello", "World"])
+    XCTAssertEqual(defaults.stringArray(forKey: "stringArray"), ["Hello", "World"])
+  }
+  
+  func testDefaultsRead_IntArray() {
+    @Dependency(\.defaultAppStorage) var defaults
+    defaults.set([42, 43, 44], forKey: "intArray")
+    @Shared(.appStorage("intArray")) var array: [Int]?
+    XCTAssertEqual(array, [42, 43, 44])
+  }
+
+  func testDefaultsRegistered_IntArray() {
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("intArray")) var array: [Int] = [42, 43, 44]
+    XCTAssertEqual(defaults.array(forKey: "intArray") as! [Int], [42, 43, 44])
+
+    array = [1, 2, 3]
+    XCTAssertEqual(array, [1, 2, 3])
+    XCTAssertEqual(defaults.array(forKey: "intArray") as! [Int], [1, 2, 3])
+  }
+  
   func testDefaultAppStorageOverride() {
     let defaults = UserDefaults(suiteName: "tests")!
     defaults.removePersistentDomain(forName: "tests")

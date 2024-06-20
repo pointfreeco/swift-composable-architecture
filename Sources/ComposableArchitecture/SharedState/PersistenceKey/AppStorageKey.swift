@@ -76,6 +76,42 @@ extension PersistenceReaderKey {
     AppStorageKey(key)
   }
 
+  /// Creates a persistence key that can read and write to a string array user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<[Bool]> {
+    AppStorageKey(key)
+  }
+  
+  /// Creates a persistence key that can read and write to a string array user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<[Int]> {
+    AppStorageKey(key)
+  }
+  
+  /// Creates a persistence key that can read and write to a string array user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<[Double]> {
+    AppStorageKey(key)
+  }
+  
+  /// Creates a persistence key that can read and write to a string array user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<[String]> {
+    AppStorageKey(key)
+  }
+  
   /// Creates a persistence key that can read and write to an optional boolean user default.
   ///
   /// - Parameter key: The key to read and write the value to in the user defaults store.
@@ -149,6 +185,42 @@ extension PersistenceReaderKey {
   where Value.RawValue == String, Self == AppStorageKey<Value?> {
     AppStorageKey(key)
   }
+  
+  /// Creates a persistence key that can read and write to an optional string array user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<[Bool]?> {
+    AppStorageKey(key)
+  }
+  
+  /// Creates a persistence key that can read and write to an optional string array user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<[Int]?> {
+    AppStorageKey(key)
+  }
+  
+  /// Creates a persistence key that can read and write to an optional string array user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<[Double]?> {
+    AppStorageKey(key)
+  }
+  
+  /// Creates a persistence key that can read and write to an optional string array user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<[String]?> {
+    AppStorageKey(key)
+  }
 }
 
 /// A type defining a user defaults persistence strategy.
@@ -219,6 +291,34 @@ public struct AppStorageKey<Value> {
     self.store = store
   }
 
+  fileprivate init(_ key: String) where Value == [Bool] {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = CastableLookup()
+    self.key = key
+    self.store = store
+  }
+  
+  fileprivate init(_ key: String) where Value == [Int] {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = CastableLookup()
+    self.key = key
+    self.store = store
+  }
+  
+  fileprivate init(_ key: String) where Value == [Double] {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = CastableLookup()
+    self.key = key
+    self.store = store
+  }
+  
+  fileprivate init(_ key: String) where Value == [String] {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = CastableLookup()
+    self.key = key
+    self.store = store
+  }
+  
   fileprivate init(_ key: String) where Value == Bool? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
@@ -271,6 +371,34 @@ public struct AppStorageKey<Value> {
   fileprivate init<R: RawRepresentable<String>>(_ key: String) where Value == R? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: RawRepresentableLookup(base: CastableLookup()))
+    self.key = key
+    self.store = store
+  }
+
+  fileprivate init(_ key: String) where Value == [Bool]? {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = OptionalLookup(base: CastableLookup())
+    self.key = key
+    self.store = store
+  }
+  
+  fileprivate init(_ key: String) where Value == [Int]? {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = OptionalLookup(base: CastableLookup())
+    self.key = key
+    self.store = store
+  }
+  
+  fileprivate init(_ key: String) where Value == [Double]? {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = OptionalLookup(base: CastableLookup())
+    self.key = key
+    self.store = store
+  }
+  
+  fileprivate init(_ key: String) where Value == [String]? {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
     self.store = store
   }
