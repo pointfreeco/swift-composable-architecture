@@ -674,15 +674,15 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
 }
 
 @usableFromInline
-struct PresentationDismissID: Hashable {
+struct PresentationDismissID: Hashable, Sendable {
   @usableFromInline init() {}
 }
 @usableFromInline
-struct OnFirstAppearID: Hashable {
+struct OnFirstAppearID: Hashable, Sendable {
   @usableFromInline init() {}
 }
 
-public struct _PresentedID: Hashable {
+public struct _PresentedID: Hashable, Sendable {
   @inlinable
   public init() {
     self.init(internal: ())
