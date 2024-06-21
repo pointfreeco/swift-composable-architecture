@@ -24,9 +24,17 @@ extension PersistenceReaderKey {
 /// A type defining a user defaults persistence strategy via key path.
 ///
 /// See ``PersistenceReaderKey/appStorage(_:)-5jsie`` to create values of this type.
-public struct AppStorageKeyPathKey<Value> {
-  private let keyPath: ReferenceWritableKeyPath<UserDefaults, Value>
-  private let store: UserDefaults
+public struct AppStorageKeyPathKey<Value: Sendable>: Sendable {
+  #if swift(>=6)
+    private let keyPath: ReferenceWritableKeyPath<UserDefaults, Value> & Sendable
+    nonisolated(unsafe) private let store: UserDefaults
+  #elseif swift(>=5.10)
+    nonisolated(unsafe) private let keyPath: ReferenceWritableKeyPath<UserDefaults, Value>
+    nonisolated(unsafe) private let store: UserDefaults
+  #else
+    private let keyPath: ReferenceWritableKeyPath<UserDefaults, Value>
+    private let store: UserDefaults
+  #endif
 
   public init(_ keyPath: ReferenceWritableKeyPath<UserDefaults, Value>) {
     @Dependency(\.defaultAppStorage) var store
