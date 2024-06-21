@@ -354,7 +354,7 @@
         and it's the place where it is appropriate to make live network requests.
         
         > Note: Technically the dependency management system in the Composable Architecture is 
-        > provided by another library of our, [swift-dependencies][swift-dependencies]. We split
+        > provided by another library of ours, [swift-dependencies][swift-dependencies]. We split
         > that library out of the Composable Architecture once it became clear that it could be
         > useful even in vanilla SwiftUI and UIKit applications.
         

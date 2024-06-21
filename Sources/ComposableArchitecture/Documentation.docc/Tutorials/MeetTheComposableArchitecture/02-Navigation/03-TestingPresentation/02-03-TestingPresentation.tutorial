@@ -7,7 +7,7 @@
   @Section(title: "Testing the add contact flow") {
     @ContentAndMedia {
       The first functionality we will test is adding a new contact. This entails emulating the 
-      entire use flow of the user tapping the "+" button, typing into the name text field, 
+      entire user flow of the user tapping the "+" button, typing into the name text field, 
       tapping the "Save" button, and confirming that the sheet is dismissed and the new contact
       is added to the list.
     }
