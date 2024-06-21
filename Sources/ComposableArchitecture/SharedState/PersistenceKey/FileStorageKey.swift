@@ -21,8 +21,8 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
   private let isSetting = LockIsolated(false)
   private let url: URL
   fileprivate let state = LockIsolated(State())
-//  private let value = LockIsolated<Value?>(nil)
-//  private let workItem = LockIsolated<DispatchWorkItem?>(nil)
+  //  private let value = LockIsolated<Value?>(nil)
+  //  private let workItem = LockIsolated<DispatchWorkItem?>(nil)
 
   fileprivate struct State {
     var value: Value?
