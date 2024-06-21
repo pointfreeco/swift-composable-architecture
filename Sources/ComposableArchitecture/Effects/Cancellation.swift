@@ -33,7 +33,7 @@ extension Effect {
   ///   - cancelInFlight: Determines if any in-flight effect with the same identifier should be
   ///     canceled before starting this new one.
   /// - Returns: A new effect that is capable of being canceled by an identifier.
-  public func cancellable<ID: Hashable>(id: ID, cancelInFlight: Bool = false) -> Self {
+  public func cancellable<ID: Hashable & Sendable>(id: ID, cancelInFlight: Bool = false) -> Self {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
     switch self.operation {

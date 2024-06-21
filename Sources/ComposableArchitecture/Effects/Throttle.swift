@@ -23,7 +23,7 @@ extension Effect {
   ///     `false`, the publisher emits the first element received during the interval.
   /// - Returns: An effect that emits either the most-recent or first element received during the
   ///   specified interval.
-  public func throttle<ID: Hashable, S: Scheduler>(
+  public func throttle<ID: Hashable & Sendable, S: Scheduler>(
     id: ID,
     for interval: S.SchedulerTimeType.Stride,
     scheduler: S,

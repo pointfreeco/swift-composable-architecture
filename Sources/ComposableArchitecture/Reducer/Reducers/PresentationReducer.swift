@@ -706,7 +706,7 @@ extension Task<Never, Never> {
 }
 
 extension Effect {
-  internal func _cancellable<ID: Hashable>(
+  internal func _cancellable<ID: Hashable & Sendable>(
     id: ID = _PresentedID(),
     navigationIDPath: NavigationIDPath,
     cancelInFlight: Bool = false

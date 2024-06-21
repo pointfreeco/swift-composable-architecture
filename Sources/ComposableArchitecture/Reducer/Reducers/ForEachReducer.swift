@@ -114,7 +114,7 @@ extension Reducer {
   @inlinable
   @warn_unqualified_access
   public func forEach<
-    ElementState, ElementAction, ID: Hashable, Element: Reducer<ElementState, ElementAction>
+    ElementState, ElementAction, ID: Hashable & Sendable, Element: Reducer<ElementState, ElementAction>
   >(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: CaseKeyPath<Action, IdentifiedAction<ID, ElementAction>>,
@@ -159,7 +159,7 @@ extension Reducer {
   @inlinable
   @warn_unqualified_access
   public func forEach<
-    ElementState, ElementAction, ID: Hashable, Element: Reducer<ElementState, ElementAction>
+    ElementState, ElementAction, ID: Hashable & Sendable, Element: Reducer<ElementState, ElementAction>
   >(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: AnyCasePath<Action, (ID, ElementAction)>,
@@ -182,7 +182,7 @@ extension Reducer {
 }
 
 public struct _ForEachReducer<
-  Parent: Reducer, ID: Hashable, Element: Reducer
+  Parent: Reducer, ID: Hashable & Sendable, Element: Reducer
 >: Reducer {
   @usableFromInline
   let parent: Parent

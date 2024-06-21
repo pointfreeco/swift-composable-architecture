@@ -88,7 +88,7 @@ struct NavigationID: Hashable, @unchecked Sendable {
     self.identifier = AnyHashableSendable(id)
   }
 
-  init<Value, Root, ID: Hashable>(
+  init<Value, Root, ID: Hashable & Sendable>(
     id: ID,
     keyPath: KeyPath<Root, IdentifiedArray<ID, Value>>
   ) {
