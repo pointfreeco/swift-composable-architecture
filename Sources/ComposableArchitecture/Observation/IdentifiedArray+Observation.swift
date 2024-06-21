@@ -65,7 +65,7 @@
     ///   - action: A case key path to an identified child action.
     /// - Returns: An collection of stores of child state.
     @_disfavoredOverload
-    public func scope<ElementID, ElementState, ElementAction>(
+    public func scope<ElementID: Sendable, ElementState, ElementAction>(
       state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
       action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>
     ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
