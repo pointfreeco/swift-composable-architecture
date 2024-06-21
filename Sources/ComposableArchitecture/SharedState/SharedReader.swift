@@ -8,9 +8,15 @@
 /// wrapper, in particular <doc:SharingState#Read-only-shared-state>.
 @dynamicMemberLookup
 @propertyWrapper
-public struct SharedReader<Value> {
+public struct SharedReader<Value: Sendable>: Sendable {
   fileprivate let reference: any Reference
-  fileprivate let keyPath: AnyKeyPath
+  #if swift(>=6)
+    fileprivate let keyPath: AnyKeyPath & Sendable
+  #elseif swift(>=5.10)
+    nonisolated(unsafe) fileprivate let keyPath: AnyKeyPath
+  #else
+    fileprivate let keyPath: AnyKeyPath
+  #endif
 
   init(reference: any Reference, keyPath: AnyKeyPath) {
     self.reference = reference
@@ -144,8 +150,6 @@ public struct SharedReader<Value> {
     }
   #endif
 }
-
-extension SharedReader: @unchecked Sendable where Value: Sendable {}
 
 extension SharedReader: Equatable where Value: Equatable {
   public static func == (lhs: SharedReader, rhs: SharedReader) -> Bool {
