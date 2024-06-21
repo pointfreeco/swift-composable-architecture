@@ -1,4 +1,4 @@
-import Combine
+@preconcurrency import Combine
 import SwiftUI
 
 /// A `ViewStore` is an object that can observe state changes and send actions. They are most
@@ -394,31 +394,26 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   should suspend.
   @MainActor
   public func yield(while predicate: @escaping (_ state: ViewState) -> Bool) async {
-    if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-      _ = await self.publisher
-        .values
-        .first(where: { !predicate($0) })
-    } else {
-      let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
-      try? await withTaskCancellationHandler {
-        try Task.checkCancellation()
-        try await withUnsafeThrowingContinuation {
-          (continuation: UnsafeContinuation<Void, Error>) in
-          guard !Task.isCancelled else {
-            continuation.resume(throwing: CancellationError())
-            return
-          }
-          cancellable.wrappedValue = self.publisher
-            .filter { !predicate($0) }
-            .prefix(1)
-            .sink { _ in
-              continuation.resume()
-              _ = cancellable
-            }
+    let boxedCancellable = LockIsolated<AnyCancellable?>(nil)
+    try? await withTaskCancellationHandler {
+      try Task.checkCancellation()
+      try await withUnsafeThrowingContinuation {
+        (continuation: UnsafeContinuation<Void, Error>) in
+        guard !Task.isCancelled else {
+          continuation.resume(throwing: CancellationError())
+          return
         }
-      } onCancel: {
-        cancellable.wrappedValue?.cancel()
+        let cancellable = self.publisher
+          .filter { !predicate($0) }
+          .prefix(1)
+          .sink { _ in
+            continuation.resume()
+            _ = boxedCancellable
+          }
+        boxedCancellable.withValue { $0 = cancellable }
       }
+    } onCancel: {
+      boxedCancellable.value?.cancel()
     }
   }
 
@@ -449,6 +444,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - valueToAction: A function that transforms the binding's value into an action that can be
   ///     sent to the store.
   /// - Returns: A binding.
+  @MainActor
   public func binding<Value>(
     get: @escaping (_ state: ViewState) -> Value,
     send valueToAction: @escaping (_ value: Value) -> ViewAction
@@ -458,6 +454,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   }
 
   @_disfavoredOverload
+  @MainActor
   func binding<Value>(
     get: @escaping (_ state: ViewState) -> Value,
     compactSend valueToAction: @escaping (_ value: Value) -> ViewAction?
@@ -491,6 +488,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - get: A function to get the state for the binding from the view store's full state.
   ///   - action: The action to send when the binding is written to.
   /// - Returns: A binding.
+  @MainActor
   public func binding<Value>(
     get: @escaping (_ state: ViewState) -> Value,
     send action: ViewAction
@@ -523,6 +521,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - valueToAction: A function that transforms the binding's value into an action that can be
   ///     sent to the store.
   /// - Returns: A binding.
+  @MainActor
   public func binding(
     send valueToAction: @escaping (_ state: ViewState) -> ViewAction
   ) -> Binding<ViewState> {
@@ -552,10 +551,12 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   /// - Parameters:
   ///   - action: The action to send when the binding is written to.
   /// - Returns: A binding.
+  @MainActor
   public func binding(send action: ViewAction) -> Binding<ViewState> {
     self.binding(send: { _ in action })
   }
 
+  @MainActor
   private subscript<Value>(
     get fromState: HashableWrapper<(ViewState) -> Value>,
     send toAction: HashableWrapper<(Value) -> ViewAction?>
@@ -628,10 +629,11 @@ extension ViewStore where ViewState: Equatable {
   }
 }
 
+@MainActor
 private struct HashableWrapper<Value>: Hashable {
   let rawValue: Value
-  static func == (lhs: Self, rhs: Self) -> Bool { false }
-  func hash(into hasher: inout Hasher) {}
+  nonisolated static func == (lhs: Self, rhs: Self) -> Bool { false }
+  nonisolated func hash(into hasher: inout Hasher) {}
 }
 
 enum BindingLocal {
