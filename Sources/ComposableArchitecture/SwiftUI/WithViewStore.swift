@@ -792,7 +792,7 @@ where
 {
   public typealias Data = ViewState
 
-  nonisolated public var data: ViewState {
+  public var data: ViewState {
     self.viewStore.state
   }
 }
