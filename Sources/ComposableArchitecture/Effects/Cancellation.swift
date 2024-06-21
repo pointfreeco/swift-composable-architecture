@@ -215,7 +215,13 @@ extension Task<Never, Never> {
   }
 }
 
-@_spi(Internals) public var _cancellationCancellables = CancellablesCollection()
+#if swift(>=5.10)
+  @_spi(Internals)
+  nonisolated(unsafe)
+  public var _cancellationCancellables = CancellablesCollection()
+#else
+  @_spi(Internals) public var _cancellationCancellables = CancellablesCollection()
+#endif
 private let _cancellablesLock = NSRecursiveLock()
 
 @rethrows

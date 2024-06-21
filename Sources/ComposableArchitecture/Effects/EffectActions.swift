@@ -1,3 +1,5 @@
+@preconcurrency import Combine
+
 extension Effect {
   @_spi(Internals)
   public var actions: AsyncStream<Action> {

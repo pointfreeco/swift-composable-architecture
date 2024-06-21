@@ -81,6 +81,12 @@ extension Effect {
   }
 }
 
-var throttleTimes: [AnyHashable: Any] = [:]
-var throttleValues: [AnyHashable: Any] = [:]
+// TODO: Move this to lock isolated
+#if swift(>=5.10)
+  nonisolated(unsafe) var throttleTimes: [AnyHashable: Any] = [:]
+  nonisolated(unsafe) var throttleValues: [AnyHashable: Any] = [:]
+#else
+  var throttleTimes: [AnyHashable: Any] = [:]
+  var throttleValues: [AnyHashable: Any] = [:]
+#endif
 let throttleLock = NSRecursiveLock()
