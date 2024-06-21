@@ -1,6 +1,6 @@
 import Combine
 import Dependencies
-import Foundation
+@preconcurrency import Foundation
 
 extension PersistenceReaderKey {
   /// Creates a persistence key that can read and write to a `Codable` value to the file system.
@@ -211,7 +211,11 @@ public struct FileStorage: Hashable, Sendable {
   let createDirectory: @Sendable (URL, Bool) throws -> Void
   let fileExists: @Sendable (URL) -> Bool
   let fileSystemSource:
-    @Sendable (URL, DispatchSource.FileSystemEvent, @escaping () -> Void) -> AnyCancellable
+    @Sendable (
+      URL,
+      DispatchSource.FileSystemEvent,
+      @escaping @Sendable () -> Void
+    ) -> AnyCancellable
   let load: @Sendable (URL) throws -> Data
   @_spi(Internals) public let save: @Sendable (Data, URL) throws -> Void
 
@@ -220,7 +224,7 @@ public struct FileStorage: Hashable, Sendable {
   ///
   /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency
   /// that is used by default when running your app in the simulator or on device.
-  public static var fileSystem = fileSystem(
+  public static let fileSystem = fileSystem(
     queue: DispatchQueue(label: "co.pointfree.ComposableArchitecture.FileStorage")
   )
 
@@ -292,9 +296,9 @@ public struct FileStorage: Hashable, Sendable {
     )
   }
 
-  fileprivate struct Handler: Hashable {
+  fileprivate struct Handler: Hashable, Sendable {
     let id = UUID()
-    let operation: () -> Void
+    let operation: @Sendable () -> Void
     static func == (lhs: Self, rhs: Self) -> Bool {
       lhs.id == rhs.id
     }
