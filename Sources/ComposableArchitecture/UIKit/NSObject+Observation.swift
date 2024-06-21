@@ -138,7 +138,8 @@
     /// }
     /// ```
     @discardableResult
-    public func observe(_ apply: @escaping () -> Void) -> ObservationToken {
+    @MainActor
+    public func observe(_ apply: @escaping @MainActor @Sendable () -> Void) -> ObservationToken {
       if ObserveLocals.isApplying {
         runtimeWarn(
           """
@@ -151,39 +152,26 @@
       }
       let token = ObservationToken()
       self.tokens.insert(token)
-      @Sendable func onChange() {
-        guard !token.isCancelled
-        else { return }
-
-        withPerceptionTracking(apply) {
-          Task { @MainActor in
-            guard !token.isCancelled
-            else { return }
-            ObserveLocals.$isApplying.withValue(true) {
-              onChange()
-            }
-          }
-        }
-      }
-      onChange()
+      onChange(apply, token: token)
       return token
     }
-
+    @MainActor
     fileprivate var tokens: Set<ObservationToken> {
       get {
-        (objc_getAssociatedObject(self, &NSObject.tokensHandle) as? Set<ObservationToken>) ?? []
+        (objc_getAssociatedObject(self, NSObject.tokensHandle) as? Set<ObservationToken>) ?? []
       }
       set {
         objc_setAssociatedObject(
           self,
-          &NSObject.tokensHandle,
+          NSObject.tokensHandle,
           newValue,
           .OBJC_ASSOCIATION_RETAIN_NONATOMIC
         )
       }
     }
 
-    private static var tokensHandle: UInt8 = 0
+    @MainActor
+    private static let tokensHandle = malloc(1)!
   }
 
   /// A token for cancelling observation created with ``ObjectiveC/NSObject/observe(_:)``.
@@ -202,8 +190,29 @@
       self.cancel()
     }
   }
-#endif
 
-private enum ObserveLocals {
-  @TaskLocal static var isApplying = false
-}
+  @MainActor
+  func onChange(
+    _ apply: @escaping @MainActor @Sendable () -> Void,
+    token: ObservationToken
+  ) {
+    guard !token.isCancelled
+    else { return }
+
+    withPerceptionTracking {
+      apply()
+    } onChange: {
+      Task { @MainActor in
+        guard !token.isCancelled
+        else { return }
+        ObserveLocals.$isApplying.withValue(true) {
+          onChange(apply, token: token)
+        }
+      }
+    }
+  }
+
+  private enum ObserveLocals {
+    @TaskLocal static var isApplying = false
+  }
+#endif
