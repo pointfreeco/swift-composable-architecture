@@ -437,6 +437,7 @@ public struct BindingViewStore<State> {
     self.wrappedValue[keyPath: keyPath]
   }
 
+  @MainActor
   public subscript<Value: Equatable & Sendable>(
     dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
   ) -> BindingViewState<Value> {
