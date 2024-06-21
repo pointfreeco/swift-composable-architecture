@@ -145,7 +145,7 @@
       sending actions to, the `store`.
       
       @Step {  
-        We can read read a property of state directly from the `store` via dynamic member lookup,
+        We can read a property of state directly from the `store` via dynamic member lookup,
         and we can send actions to the `store` via ``ComposableArchitecture/Store/send(_:)``.
 
         @Code(name: "CounterFeature.swift", file: 01-01-02-code-0004.swift)
