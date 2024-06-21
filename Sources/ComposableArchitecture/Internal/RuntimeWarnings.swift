@@ -30,7 +30,7 @@ func runtimeWarn(
       #if canImport(os)
         os_log(
           .fault,
-          dso: dso,
+          dso: dso.wrappedValue,
           log: OSLog(subsystem: "com.apple.runtime-issues", category: category),
           "%@",
           message
@@ -58,19 +58,19 @@ func runtimeWarn(
     //
     // Feedback filed: https://gist.github.com/stephencelis/a8d06383ed6ccde3e5ef5d1b3ad52bbc
     @usableFromInline
-    let dso = { () -> UnsafeMutableRawPointer in
+    let dso = { () -> UncheckedSendable<UnsafeMutableRawPointer> in
       let count = _dyld_image_count()
       for i in 0..<count {
         if let name = _dyld_get_image_name(i) {
           let swiftString = String(cString: name)
           if swiftString.hasSuffix("/SwiftUI") {
             if let header = _dyld_get_image_header(i) {
-              return UnsafeMutableRawPointer(mutating: UnsafeRawPointer(header))
+              return UncheckedSendable(UnsafeMutableRawPointer(mutating: UnsafeRawPointer(header)))
             }
           }
         }
       }
-      return UnsafeMutableRawPointer(mutating: #dsohandle)
+      return UncheckedSendable(UnsafeMutableRawPointer(mutating: #dsohandle))
     }()
   #else
     import Foundation
