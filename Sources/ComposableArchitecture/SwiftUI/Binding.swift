@@ -437,35 +437,36 @@ public struct BindingViewStore<State> {
     self.wrappedValue[keyPath: keyPath]
   }
 
-  @MainActor
   public subscript<Value: Equatable & Sendable>(
     dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
   ) -> BindingViewState<Value> {
     BindingViewState(
-      binding: ViewStore(self.store, observe: { $0[keyPath: keyPath].wrappedValue })
-        .binding(
-          send: { value in
-            #if DEBUG
-              let debugger = BindableActionViewStoreDebugger(
-                value: value,
-                bindableActionType: self.bindableActionType,
-                context: .bindingStore,
-                isInvalidated: self.store._isInvalidated,
-                fileID: self.fileID,
-                line: self.line
-              )
-              let set: @Sendable (inout State) -> Void = {
-                $0[keyPath: keyPath].wrappedValue = value
-                debugger.wasCalled.withValue { $0 = true }
-              }
-            #else
-              let set: @Sendable (inout State) -> Void = {
-                $0[keyPath: keyPath].wrappedValue = value
-              }
-            #endif
-            return .init(keyPath: keyPath, set: set, value: value)
-          }
-        )
+      binding: MainActor.assumeIsolated {
+        ViewStore(self.store, observe: { $0[keyPath: keyPath].wrappedValue })
+          .binding(
+            send: { value in
+              #if DEBUG
+                let debugger = BindableActionViewStoreDebugger(
+                  value: value,
+                  bindableActionType: self.bindableActionType,
+                  context: .bindingStore,
+                  isInvalidated: self.store._isInvalidated,
+                  fileID: self.fileID,
+                  line: self.line
+                )
+                let set: @Sendable (inout State) -> Void = {
+                  $0[keyPath: keyPath].wrappedValue = value
+                  debugger.wasCalled.withValue { $0 = true }
+                }
+              #else
+                let set: @Sendable (inout State) -> Void = {
+                  $0[keyPath: keyPath].wrappedValue = value
+                }
+              #endif
+              return .init(keyPath: keyPath, set: set, value: value)
+            }
+          )
+      }
     )
   }
 }
