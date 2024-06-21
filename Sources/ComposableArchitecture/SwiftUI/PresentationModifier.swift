@@ -309,7 +309,7 @@ public struct AnyIdentifiable: Identifiable {
 public struct DestinationContent<State, Action> {
   let store: Store<State?, Action>
 
-  public func callAsFunction<Content: View>(
+  @MainActor public func callAsFunction<Content: View>(
     @ViewBuilder _ body: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
     IfLetStore(
