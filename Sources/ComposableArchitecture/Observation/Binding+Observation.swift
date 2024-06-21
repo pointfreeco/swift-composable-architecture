@@ -68,7 +68,7 @@
   }
 
   extension Store where State: ObservableState, Action: BindableAction, Action.State == State {
-    public subscript<Value: Equatable>(
+    public subscript<Value: Equatable & Sendable>(
       dynamicMember keyPath: WritableKeyPath<State, Value>
     ) -> Value {
       get { self.state[keyPath: keyPath] }
@@ -84,6 +84,7 @@
   where
     State: Equatable,
     State: ObservableState,
+    State: Sendable,
     Action: BindableAction,
     Action.State == State
   {
@@ -104,7 +105,7 @@
     Action.ViewAction: BindableAction,
     Action.ViewAction.State == State
   {
-    public subscript<Value: Equatable>(
+    public subscript<Value: Equatable & Sendable>(
       dynamicMember keyPath: WritableKeyPath<State, Value>
     ) -> Value {
       get { self.state[keyPath: keyPath] }
@@ -120,6 +121,7 @@
   where
     State: Equatable,
     State: ObservableState,
+    State: Sendable,
     Action: ViewAction,
     Action.ViewAction: BindableAction,
     Action.ViewAction.State == State
@@ -152,6 +154,7 @@
     ///
     /// - Parameter action: An action for the binding to send values through.
     /// - Returns: A binding.
+    @MainActor
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
       self.binding[state: self.keyPath, action: action]
     }
@@ -176,6 +179,7 @@
     ///
     /// - Parameter action: An action for the binding to send values through.
     /// - Returns: A binding.
+    @MainActor
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
       self.bindable[state: self.keyPath, action: action]
     }
@@ -204,6 +208,7 @@
     ///
     /// - Parameter action: An action for the binding to send values through.
     /// - Returns: A binding.
+    @MainActor
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
       self.bindable[state: self.keyPath, action: action]
     }
