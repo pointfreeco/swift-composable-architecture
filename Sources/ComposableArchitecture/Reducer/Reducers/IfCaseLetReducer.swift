@@ -224,7 +224,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     return self.child
       .dependency(\.navigationIDPath, newNavigationID)
       .reduce(into: &childState, action: childAction)
-      .map { self.toChildAction.embed($0) }
+      .map { [toChildAction] in toChildAction.embed($0) }
       .cancellable(id: childID)
   }
 }

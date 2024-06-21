@@ -4,7 +4,7 @@ import OrderedCollections
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
 /// ``Reducer/forEach(_:action:element:fileID:line:)-247po``.
-public enum IdentifiedAction<ID: Hashable, Action>: CasePathable {
+public enum IdentifiedAction<ID: Hashable & Sendable, Action>: CasePathable {
   /// An action sent to the element at a given identifier.
   case element(id: ID, action: Action)
 
@@ -283,7 +283,7 @@ public struct _ForEachReducer<
     return self.element
       .dependency(\.navigationIDPath, elementNavigationID)
       .reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
-      .map { self.toElementAction.embed((id, $0)) }
+      .map { [toElementAction] in toElementAction.embed((id, $0)) }
       ._cancellable(id: navigationID, navigationIDPath: self.navigationIDPath)
   }
 }
