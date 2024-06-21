@@ -122,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-perception",
       "state" : {
-        "revision" : "d8340521e532cffdf75a64468ff9362de8bd2bb9",
-        "version" : "1.2.3"
+        "revision" : "d3ab98dc2887d1cc3bed676f6fa354da4cb22b3c",
+        "version" : "1.2.4"
       }
     },
     {
@@ -158,8 +158,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swiftui-navigation.git",
       "state" : {
-        "revision" : "7ab04c6e2e6a73d34d5a762970ef88bf0aedb084",
-        "version" : "1.4.0"
+        "revision" : "b7c9a79f6f6b1fefb87d3e5a83a9c2fe7cdc9720",
+        "version" : "1.5.0"
       }
     },
     {
