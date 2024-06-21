@@ -14,20 +14,24 @@ extension Reducer {
   @_documentation(visibility:public)
   public func _printChanges(
     _ printer: _ReducerPrinter<State, Action>? = .customDump
-  ) -> _PrintChangesReducer<Self> {
+  ) -> _PrintChangesReducer<Self>
+  where
+    State: Sendable,
+    Action: Sendable
+  {
     _PrintChangesReducer<Self>(base: self, printer: printer)
   }
 }
 
 private let printQueue = DispatchQueue(label: "co.pointfree.swift-composable-architecture.printer")
 
-public struct _ReducerPrinter<State, Action> {
-  private let _printChange: (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void
+public struct _ReducerPrinter<State, Action>: Sendable {
+  private let _printChange: @Sendable (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void
   @usableFromInline
   let queue: DispatchQueue
 
   public init(
-    printChange: @escaping (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void,
+    printChange: @escaping @Sendable (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void,
     queue: DispatchQueue? = nil
   ) {
     self._printChange = printChange
@@ -58,7 +62,11 @@ extension _ReducerPrinter {
   }
 }
 
-public struct _PrintChangesReducer<Base: Reducer>: Reducer {
+public struct _PrintChangesReducer<Base: Reducer>: Reducer
+where
+  Base.State: Sendable,
+  Base.Action: Sendable
+{
   @usableFromInline
   let base: Base
 
