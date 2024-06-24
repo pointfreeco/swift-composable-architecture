@@ -48,7 +48,7 @@ public macro Reducer(state: _SynthesizedConformance..., action: _SynthesizedConf
 ///
 /// See <doc:Reducers#Synthesizing-protocol-conformances-on-State-and-Action> for more information.
 @_documentation(visibility:public)
-public struct _SynthesizedConformance {}
+public struct _SynthesizedConformance: Sendable {}
 
 extension _SynthesizedConformance {
   /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Codable`

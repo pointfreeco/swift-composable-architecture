@@ -22,18 +22,21 @@ public protocol ViewActionSending<StoreState, StoreAction> {
 extension ViewActionSending {
   /// Send a view action to the store.
   @discardableResult
+  @MainActor
   public func send(_ action: StoreAction.ViewAction) -> StoreTask {
     self.store.send(.view(action))
   }
 
   /// Send a view action to the store with animation.
   @discardableResult
+  @MainActor
   public func send(_ action: StoreAction.ViewAction, animation: Animation?) -> StoreTask {
     self.store.send(.view(action), animation: animation)
   }
 
   /// Send a view action to the store with a transaction.
   @discardableResult
+  @MainActor
   public func send(_ action: StoreAction.ViewAction, transaction: Transaction) -> StoreTask {
     self.store.send(.view(action), transaction: transaction)
   }

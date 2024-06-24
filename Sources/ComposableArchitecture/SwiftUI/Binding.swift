@@ -168,7 +168,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
   @dynamicMemberLookup
   public struct AllCasePaths {
     #if canImport(Perception)
-      public subscript<Value: Equatable>(
+      public subscript<Value: Equatable & Sendable>(
         dynamicMember keyPath: WritableKeyPath<Root, Value>
       ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
         AnyCasePath(
@@ -178,7 +178,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
       }
     #endif
 
-    public subscript<Value: Equatable>(
+    public subscript<Value: Equatable & Sendable>(
       dynamicMember keyPath: WritableKeyPath<Root, BindingState<Value>>
     ) -> AnyCasePath<BindingAction, Value> {
       AnyCasePath(
@@ -285,7 +285,7 @@ extension BindableAction {
   /// Shorthand for `.binding(.set(\.$keyPath, value))`.
   ///
   /// - Returns: A binding action.
-  public static func set<Value: Equatable>(
+  public static func set<Value: Equatable & Sendable>(
     _ keyPath: WritableKeyPath<State, BindingState<Value>>,
     _ value: Value
   ) -> Self {
@@ -295,7 +295,7 @@ extension BindableAction {
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   @MainActor
-  public subscript<Value: Equatable>(
+  public subscript<Value: Equatable & Sendable>(
     dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
   ) -> Binding<Value> {
     self.binding(
@@ -313,7 +313,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
           )
           let set: @Sendable (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
-            debugger.wasCalled = true
+            debugger.wasCalled.withValue { $0 = true }
           }
         #else
           let set: @Sendable (inout ViewState) -> Void = {
@@ -437,34 +437,36 @@ public struct BindingViewStore<State> {
     self.wrappedValue[keyPath: keyPath]
   }
 
-  public subscript<Value: Equatable>(
+  public subscript<Value: Equatable & Sendable>(
     dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
   ) -> BindingViewState<Value> {
     BindingViewState(
-      binding: ViewStore(self.store, observe: { $0[keyPath: keyPath].wrappedValue })
-        .binding(
-          send: { value in
-            #if DEBUG
-              let debugger = BindableActionViewStoreDebugger(
-                value: value,
-                bindableActionType: self.bindableActionType,
-                context: .bindingStore,
-                isInvalidated: self.store._isInvalidated,
-                fileID: self.fileID,
-                line: self.line
-              )
-              let set: @Sendable (inout State) -> Void = {
-                $0[keyPath: keyPath].wrappedValue = value
-                debugger.wasCalled = true
-              }
-            #else
-              let set: @Sendable (inout State) -> Void = {
-                $0[keyPath: keyPath].wrappedValue = value
-              }
-            #endif
-            return .init(keyPath: keyPath, set: set, value: value)
-          }
-        )
+      binding: MainActor.assumeIsolated {
+        ViewStore(self.store, observe: { $0[keyPath: keyPath].wrappedValue })
+          .binding(
+            send: { value in
+              #if DEBUG
+                let debugger = BindableActionViewStoreDebugger(
+                  value: value,
+                  bindableActionType: self.bindableActionType,
+                  context: .bindingStore,
+                  isInvalidated: self.store._isInvalidated,
+                  fileID: self.fileID,
+                  line: self.line
+                )
+                let set: @Sendable (inout State) -> Void = {
+                  $0[keyPath: keyPath].wrappedValue = value
+                  debugger.wasCalled.withValue { $0 = true }
+                }
+              #else
+                let set: @Sendable (inout State) -> Void = {
+                  $0[keyPath: keyPath].wrappedValue = value
+                }
+              #endif
+              return .init(keyPath: keyPath, set: set, value: value)
+            }
+          )
+      }
     )
   }
 }
@@ -722,7 +724,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
 }
 
 #if DEBUG
-  private final class BindableActionViewStoreDebugger<Value> {
+  private final class BindableActionViewStoreDebugger<Value: Sendable>: Sendable {
     enum Context {
       case bindingState
       case bindingStore
@@ -732,16 +734,16 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     let value: Value
     let bindableActionType: Any.Type
     let context: Context
-    let isInvalidated: () -> Bool
+    let isInvalidated: @Sendable () -> Bool
     let fileID: StaticString
     let line: UInt
-    var wasCalled = false
+    let wasCalled = LockIsolated(false)
 
     init(
       value: Value,
       bindableActionType: Any.Type,
       context: Context,
-      isInvalidated: @escaping () -> Bool,
+      isInvalidated: @escaping @Sendable () -> Bool,
       fileID: StaticString,
       line: UInt
     ) {
@@ -761,7 +763,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
         : DispatchQueue.main.sync(execute: self.isInvalidated)
 
       guard !isInvalidated else { return }
-      guard self.wasCalled else {
+      guard self.wasCalled.value else {
         var value = ""
         customDump(self.value, to: &value, maxDepth: 0)
         runtimeWarn(

@@ -104,7 +104,7 @@ import SwiftUI
     "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
 )
 public struct ForEachStore<
-  EachState, EachAction, Data: Collection, ID: Hashable, Content: View
+  EachState, EachAction, Data: Collection & Sendable, ID: Hashable & Sendable, Content: View
 >: DynamicViewContent {
   public let data: Data
   let content: Content
@@ -215,7 +215,7 @@ public struct ForEachStore<
 }
 
 extension Case {
-  fileprivate subscript<ID: Hashable, Action>(id id: ID) -> Case<Action>
+  fileprivate subscript<ID: Hashable & Sendable, Action>(id id: ID) -> Case<Action>
   where Value == (id: ID, action: Action) {
     Case<Action>(
       embed: { (id: id, action: $0) },

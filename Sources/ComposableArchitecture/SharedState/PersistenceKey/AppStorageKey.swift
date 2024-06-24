@@ -154,10 +154,14 @@ extension PersistenceReaderKey {
 /// A type defining a user defaults persistence strategy.
 ///
 /// See ``PersistenceReaderKey/appStorage(_:)-4l5b`` to create values of this type.
-public struct AppStorageKey<Value> {
+public struct AppStorageKey<Value: Sendable>: Sendable {
   private let lookup: any Lookup<Value>
   private let key: String
-  private let store: UserDefaults
+  #if swift(>=5.10)
+    nonisolated(unsafe) private let store: UserDefaults
+  #else
+    private let store: UserDefaults
+  #endif
 
   public var id: AnyHashable {
     AppStorageKeyID(key: self.key, store: self.store)
@@ -362,7 +366,7 @@ private enum SharedAppStorageLocals {
   @TaskLocal static var isSetting = false
 }
 
-private protocol Lookup<Value> {
+private protocol Lookup<Value>: Sendable {
   associatedtype Value
   func loadValue(from store: UserDefaults, at key: String, default defaultValue: Value?) -> Value?
   func saveValue(_ newValue: Value, to store: UserDefaults, at key: String)

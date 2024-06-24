@@ -46,7 +46,7 @@ extension Change {
   }
 }
 
-struct AnyChange<Value>: Change {
+struct AnyChange<Value: Sendable>: Change, Sendable {
   let reference: any Reference<Value>
   var snapshot: Value
 
@@ -58,7 +58,7 @@ struct AnyChange<Value>: Change {
 
 @_spi(Internals)
 public final class SharedChangeTracker: Sendable {
-  let changes: LockIsolated<[ObjectIdentifier: Any]> = LockIsolated([:])
+  let changes: LockIsolated<[ObjectIdentifier: any Sendable]> = LockIsolated([:])
   var hasChanges: Bool { !self.changes.isEmpty }
   @_spi(Internals) public init() {}
   func resetChanges() { self.changes.withValue { $0.removeAll() } }
@@ -70,7 +70,7 @@ public final class SharedChangeTracker: Sendable {
     }
     self.resetChanges()
   }
-  func track<Value>(_ reference: some Reference<Value>) {
+  func track<Value: Sendable>(_ reference: some Reference<Value>) {
     if !self.changes.keys.contains(ObjectIdentifier(reference)) {
       self.changes.withValue { $0[ObjectIdentifier(reference)] = AnyChange(reference) }
     }

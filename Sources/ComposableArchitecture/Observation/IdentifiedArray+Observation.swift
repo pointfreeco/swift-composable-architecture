@@ -65,7 +65,7 @@
     ///   - action: A case key path to an identified child action.
     /// - Returns: An collection of stores of child state.
     @_disfavoredOverload
-    public func scope<ElementID, ElementState, ElementAction>(
+    public func scope<ElementID: Sendable, ElementState, ElementAction>(
       state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
       action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>
     ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
@@ -76,7 +76,7 @@
     }
   }
 
-  public struct _StoreCollection<ID: Hashable, State, Action>: RandomAccessCollection {
+  public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAccessCollection {
     private let store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
     private let data: IdentifiedArray<ID, State>
 

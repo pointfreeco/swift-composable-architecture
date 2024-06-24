@@ -2,8 +2,8 @@
   import Combine
 #endif
 
-protocol Reference<Value>: AnyObject, CustomStringConvertible {
-  associatedtype Value
+protocol Reference<Value>: AnyObject, CustomStringConvertible, Sendable {
+  associatedtype Value: Sendable
   var value: Value { get set }
 
   func access()

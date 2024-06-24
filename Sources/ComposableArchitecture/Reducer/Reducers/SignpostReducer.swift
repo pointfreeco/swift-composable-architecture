@@ -1,4 +1,4 @@
-import OSLog
+@preconcurrency import OSLog
 
 extension Reducer {
   /// Instruments a reducer with

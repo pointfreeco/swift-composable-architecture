@@ -147,8 +147,8 @@ extension Publishers.Create {
 
       let cancellable = callback(
         .init(
-          send: { [weak self] in _ = self?.buffer.buffer(value: $0) },
-          complete: { [weak self] in self?.buffer.complete(completion: $0) }
+          send: { [buffer] in _ = buffer.buffer(value: $0) },
+          complete: { [buffer] in buffer.complete(completion: $0) }
         )
       )
 
@@ -172,13 +172,13 @@ extension Publishers.Create.Subscription: CustomStringConvertible {
 }
 
 extension Effect {
-  struct Subscriber {
-    private let _send: (Action) -> Void
-    private let _complete: (Subscribers.Completion<Never>) -> Void
+  struct Subscriber: Sendable {
+    private let _send: @Sendable (Action) -> Void
+    private let _complete: @Sendable (Subscribers.Completion<Never>) -> Void
 
     init(
-      send: @escaping (Action) -> Void,
-      complete: @escaping (Subscribers.Completion<Never>) -> Void
+      send: @escaping @Sendable (Action) -> Void,
+      complete: @escaping @Sendable (Subscribers.Completion<Never>) -> Void
     ) {
       self._send = send
       self._complete = complete

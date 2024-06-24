@@ -12,9 +12,15 @@ import XCTestDynamicOverlay
 /// wrapper.
 @dynamicMemberLookup
 @propertyWrapper
-public struct Shared<Value> {
+public struct Shared<Value: Sendable>: Sendable {
   private let reference: any Reference
-  private let keyPath: AnyKeyPath
+  #if swift(>=6)
+    private let keyPath: AnyKeyPath & Sendable
+  #elseif swift(>=5.10)
+    nonisolated(unsafe) private let keyPath: AnyKeyPath
+  #else
+    private let keyPath: AnyKeyPath
+  #endif
 
   init(reference: any Reference, keyPath: AnyKeyPath) {
     self.reference = reference
@@ -281,8 +287,6 @@ public struct Shared<Value> {
   }
 }
 
-extension Shared: @unchecked Sendable where Value: Sendable {}
-
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
     @Dependency(\.sharedChangeTracker) var changeTracker
@@ -323,7 +327,11 @@ extension Shared: _CustomDiffObject {
 }
 
 extension Shared
-where Value: _MutableIdentifiedCollection {
+where
+  Value: _MutableIdentifiedCollection,
+  Value.ID: Sendable,
+  Value.Element: Sendable
+{
   /// Allows a `ForEach` view to transform a shared collection into shared elements.
   ///
   /// ```swift
@@ -387,11 +395,19 @@ extension Shared: MutableCollection
 where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
   public subscript(position: Value.Index) -> Shared<Value.Element> {
     get {
-      assertionFailure("Conformance of 'Shared<Value>' to 'MutableCollection' is unavailable.")
-      return self[position, default: DefaultSubscript(self.wrappedValue[position])]
+      #if compiler(>=6)
+        fatalError()
+      #else
+        assertionFailure("Conformance of 'Shared<Value>' to 'MutableCollection' is unavailable.")
+        return self[position, default: DefaultSubscript(self.wrappedValue[position])]
+      #endif
     }
     set {
-      self._wrappedValue[position] = newValue.wrappedValue
+      #if compiler(>=6)
+        fatalError()
+      #else
+        self._wrappedValue[position] = newValue.wrappedValue
+      #endif
     }
   }
 }
