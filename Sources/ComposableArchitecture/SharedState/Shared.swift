@@ -138,7 +138,7 @@ public struct Shared<Value> {
     /// ```swift
     /// case .onAppear:
     ///   return .run { [currentUser = state.$currentUser] send in
-    ///     for await _ in currentUser {
+    ///     for await _ in currentUser.publisher.values {
     ///       await send(.currentUserUpdated)
     ///     }
     ///   }
