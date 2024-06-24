@@ -11,7 +11,7 @@
       you must confirm deletion. We will implement the confirmation step using an alert. The tools
       that we used last section, such as ``ComposableArchitecture/Presents()``,
       ``ComposableArchitecture/PresentationAction`` and
-      ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``, all work
+      ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4k9by``, all work
       for presenting alerts from optional state too.
     }
     
@@ -56,7 +56,7 @@
       
       @Step {
         Integrate the alert's logic into the `ContactsFeature` by making another use of the 
-        ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator.
+        ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` operator.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0004.swift)
       }
