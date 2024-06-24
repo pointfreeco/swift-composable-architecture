@@ -11,11 +11,11 @@ instead.
 
 ### Deprecated methods
 
-- ``Reducer/ifLet(_:action:then:fileID:line:)-18m5o``
+- ``Reducer/ifLet(_:action:then:fileID:line:)-5clke``
 - ``Reducer/ifLet(_:action:fileID:line:)-6yl2k``
-- ``Reducer/ifLet(_:action:destination:fileID:line:)-8qzye``
-- ``Reducer/ifLet(_:action:fileID:line:)-3cdm4``
-- ``Reducer/ifCaseLet(_:action:then:fileID:line:)-36dz4``
-- ``Reducer/forEach(_:action:element:fileID:line:)-65nr1``
-- ``Reducer/forEach(_:action:destination:fileID:line:)-51zt9``
+- ``Reducer/ifLet(_:action:destination:fileID:line:)-5i33o``
+- ``Reducer/ifLet(_:action:fileID:line:)-98ryp``
+- ``Reducer/ifCaseLet(_:action:then:fileID:line:)-4fzqq``
+- ``Reducer/forEach(_:action:element:fileID:line:)-92aox``
+- ``Reducer/forEach(_:action:destination:fileID:line:)-7k445``
 - ``Reducer/onChange(of:removeDuplicates:_:)``

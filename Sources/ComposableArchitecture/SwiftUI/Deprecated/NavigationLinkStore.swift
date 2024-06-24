@@ -7,7 +7,7 @@ import SwiftUI
 ///
 /// Typically you use this view by first modeling your features as having a parent feature that
 /// holds onto an optional piece of child state using the ``PresentationState``,
-/// ``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` tools (see
+/// ``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` tools (see
 /// <doc:TreeBasedNavigation> for more information). Then in the view you can construct a
 /// `NavigationLinkStore` by passing a ``Store`` that is focused on the presentation domain:
 ///

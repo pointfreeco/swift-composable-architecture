@@ -19,7 +19,7 @@ the rest.
 ## Basics
 
 The tools for this style of navigation include the ``Presents()`` macro,
-``PresentationAction``, the ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator, 
+``PresentationAction``, the ``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` operator, 
 and that is all. Once your feature is properly integrated with those tools you can use all of 
 SwiftUI's normal navigation view modifiers, such as `sheet(item:)`, `popover(item:)`, etc.
 
@@ -56,7 +56,7 @@ struct InventoryFeature {
 > being presented, and `nil` presents the feature is dismissed.
 
 Next you can integrate the reducers of the parent and child features by using the 
-``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` reducer operator, as well as having an 
+``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` reducer operator, as well as having an 
 action in the parent domain for populating the child's state to drive navigation:
 
 ```swift
@@ -215,7 +215,7 @@ struct InventoryFeature {
 }
 ```
 
-And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)-8qzye`` operator
+And then we must make use of the ``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` operator
 to integrate the domain of the destination with the domain of the parent feature:
 
 ```swift
@@ -314,7 +314,7 @@ drill-down will occur immediately.
 One of the best features of tree-based navigation is that it unifies all forms of navigation with a
 single style of API. First of all, regardless of the type of navigation you plan on performing,
 integrating the parent and child features together can be done with the single
-``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator. This one single API services
+``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` operator. This one single API services
 all forms of optional-driven navigation.
 
 And then in the view, whether you are wanting to perform a drill-down, show a sheet, display
@@ -553,7 +553,7 @@ struct CounterFeature {
 ```
 
 And then let's embed that feature into a parent feature using the ``Presents()`` macro, 
-``PresentationAction`` type and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``
+``PresentationAction`` type and ``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by``
 operator:
 
 ```swift

@@ -39,7 +39,7 @@
       
       @Step {
         Integrate the `SyncUpForm` reducer into the `SyncUpDetail` reducer by using the 
-        ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator.
+        ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-7s8h2`` operator.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0003.swift)
       }
@@ -185,7 +185,7 @@
       
       @Step {
         Handle the `.alert` case in the reducer, and use the
-        ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-42kki`` operator
+        ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-7s8h2`` operator
         again to integrate the alert's logic into the `SyncUpDetail` reducer.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0004.swift)
