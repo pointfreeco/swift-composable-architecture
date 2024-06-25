@@ -208,17 +208,10 @@ final class AppStorageTests: XCTestCase {
 
     let publisherExpectation = expectation(description: "publisher")
     let cancellable = $count.publisher.sink { _ in
-      MainActor.shared.assertIsolated()
+      XCTAssertTrue(Thread.isMainThread)
       publisherExpectation.fulfill()
     }
     defer { _ = cancellable }
-
-    let observeExpectation = expectation(description: "observe")
-    observe { [count = $count] in
-      _ = count
-      MainActor.shared.assertIsolated()
-      observeExpectation.fulfill()
-    }
 
     await withUnsafeContinuation { continuation in
       DispatchQueue.global().async { [store = UncheckedSendable(store)] in
@@ -228,7 +221,32 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [publisherExpectation, observeExpectation], timeout: 0)
+    await fulfillment(of: [publisherExpectation], timeout: 0)
+  }
+
+  @MainActor
+  func testUpdateStoreFromMainThread() async throws {
+    @Dependency(\.defaultAppStorage) var store
+    @Shared(.appStorage("count")) var count = 0
+    let isInStackFrame = LockIsolated(false)
+
+    let publisherExpectation = expectation(description: "publisher")
+    let cancellable = $count.publisher.sink { _ in
+      XCTAssertTrue(Thread.isMainThread)
+      XCTAssertTrue(isInStackFrame.value)
+      publisherExpectation.fulfill()
+    }
+    defer { _ = cancellable }
+
+    await withUnsafeContinuation { continuation in
+      XCTAssertTrue(Thread.isMainThread)
+      isInStackFrame.withValue { $0 = true }
+      store.setValue(1, forKey: "count")
+      isInStackFrame.withValue { $0 = false }
+      continuation.resume()
+    }
+
+    await fulfillment(of: [publisherExpectation], timeout: 0)
   }
 
   @MainActor
@@ -237,17 +255,10 @@ final class AppStorageTests: XCTestCase {
 
     let publisherExpectation = expectation(description: "publisher")
     let cancellable = $count.publisher.sink { _ in
-      MainActor.shared.assertIsolated()
+      XCTAssertTrue(Thread.isMainThread)
       publisherExpectation.fulfill()
     }
     defer { _ = cancellable }
-
-    let observeExpectation = expectation(description: "observe")
-    observe { [count = $count] in
-      _ = count
-      MainActor.shared.assertIsolated()
-      observeExpectation.fulfill()
-    }
 
     await withUnsafeContinuation { continuation in
       DispatchQueue.global().async {
@@ -257,8 +268,34 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [publisherExpectation, observeExpectation], timeout: 0)
+    await fulfillment(of: [publisherExpectation], timeout: 0)
   }
+
+  @MainActor
+  func testUpdateStoreFromBackgroundThread_KeyPath() async throws {
+    @Dependency(\.defaultAppStorage) var store
+    @Shared(.appStorage(\.count)) var count = 0
+
+    let publisherExpectation = expectation(description: "publisher")
+    publisherExpectation.expectedFulfillmentCount = 2
+    let cancellable = $count.publisher.sink { _ in
+      XCTAssertTrue(Thread.isMainThread)
+      publisherExpectation.fulfill()
+    }
+    defer { _ = cancellable }
+
+    await withUnsafeContinuation { continuation in
+      DispatchQueue.global().async { [store = UncheckedSendable(store)] in
+        XCTAssertFalse(Thread.isMainThread)
+        store.wrappedValue.count = 1
+        continuation.resume()
+      }
+    }
+
+    await fulfillment(of: [publisherExpectation], timeout: 0)
+  }
+
+  // TODO: confirm this is called sync when on main actor
 }
 
 extension UserDefaults {
