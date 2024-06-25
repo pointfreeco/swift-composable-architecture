@@ -48,13 +48,15 @@ extension AppStorageKeyPathKey: PersistenceKey, Hashable {
 
   public func subscribe(
     initialValue: Value?,
-    didSet: @Sendable @escaping (_ newValue: Value?) -> Void
+    didSet: @escaping @Sendable @MainActor (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     let observer = self.store.observe(self.keyPath, options: .new) { _, change in
       guard
         !SharedAppStorageLocals.isSetting
       else { return }
-      didSet(change.newValue ?? initialValue)
+      mainActorASAP {
+        _ = didSet(change.newValue ?? initialValue)
+      }
     }
     return Shared.Subscription {
       observer.invalidate()

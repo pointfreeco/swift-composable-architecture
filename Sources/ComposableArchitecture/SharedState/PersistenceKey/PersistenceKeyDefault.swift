@@ -41,7 +41,7 @@ public struct PersistenceKeyDefault<Base: PersistenceReaderKey>: PersistenceRead
 
   public func subscribe(
     initialValue: Base.Value?,
-    didSet: @Sendable @escaping (Base.Value?) -> Void
+    didSet: @escaping @MainActor @Sendable (Base.Value?) -> Void
   ) -> Shared<Base.Value>.Subscription {
     self.base.subscribe(initialValue: initialValue, didSet: didSet)
   }

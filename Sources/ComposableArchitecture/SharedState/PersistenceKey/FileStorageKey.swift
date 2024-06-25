@@ -79,7 +79,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
 
   public func subscribe(
     initialValue: Value?,
-    didSet: @Sendable @escaping (_ newValue: Value?) -> Void
+    didSet: @escaping @MainActor @Sendable (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     let cancellable = LockIsolated<AnyCancellable?>(nil)
     @Sendable func setUpSources() {
@@ -98,7 +98,9 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
             } else {
               state.workItem?.cancel()
               state.workItem = nil
-              didSet(self.load(initialValue: initialValue))
+              MainActor.assumeIsolated {
+                _ = didSet(self.load(initialValue: initialValue))
+              }
             }
           }
         }
@@ -107,7 +109,9 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
             state.workItem?.cancel()
             state.workItem = nil
           }
-          `didSet`(self.load(initialValue: initialValue))
+          MainActor.assumeIsolated {
+            `didSet`(self.load(initialValue: initialValue))
+          }
           setUpSources()
         }
         $0 = AnyCancellable {
@@ -261,7 +265,7 @@ public struct FileStorage: Hashable, Sendable {
         let source = DispatchSource.makeFileSystemObjectSource(
           fileDescriptor: open($0.path, O_EVTONLY),
           eventMask: $1,
-          queue: queue
+          queue: DispatchQueue.main
         )
         source.setEventHandler(handler: $2)
         source.resume()

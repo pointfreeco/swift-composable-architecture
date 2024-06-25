@@ -287,13 +287,13 @@ extension AppStorageKey: PersistenceKey {
 
   public func subscribe(
     initialValue: Value?,
-    didSet: @Sendable @escaping (_ newValue: Value?) -> Void
+    didSet: @escaping @Sendable @MainActor (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     let previousValue = LockIsolated(initialValue)
     let userDefaultsDidChange = NotificationCenter.default.addObserver(
       forName: UserDefaults.didChangeNotification,
       object: self.store,
-      queue: nil
+      queue: OperationQueue.main
     ) { _ in
       let newValue = load(initialValue: initialValue)
       defer { previousValue.withValue { $0 = newValue } }
@@ -305,16 +305,20 @@ extension AppStorageKey: PersistenceKey {
       }
       guard !SharedAppStorageLocals.isSetting
       else { return }
-      didSet(newValue)
+      MainActor.assumeIsolated {
+        _ = didSet(newValue)
+      }
     }
     let willEnterForeground: (any NSObjectProtocol)?
     if let willEnterForegroundNotificationName {
       willEnterForeground = NotificationCenter.default.addObserver(
         forName: willEnterForegroundNotificationName,
         object: nil,
-        queue: nil
+        queue: OperationQueue.main
       ) { _ in
-        didSet(load(initialValue: initialValue))
+        MainActor.assumeIsolated {
+          _ = didSet(load(initialValue: initialValue))
+        }
       }
     } else {
       willEnterForeground = nil
