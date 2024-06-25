@@ -57,7 +57,9 @@ extension Reducer {
     action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> some Reducer<State, Action> {
     _IfLetReducer(
       parent: self,
@@ -65,7 +67,9 @@ extension Reducer {
       toChildState: toWrappedState,
       toChildAction: AnyCasePath(toWrappedAction),
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -77,7 +81,9 @@ extension Reducer {
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
     action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> some Reducer<State, Action> {
     _IfLetReducer(
       parent: self,
@@ -85,7 +91,9 @@ extension Reducer {
       toChildState: toWrappedState,
       toChildAction: AnyCasePath(toWrappedAction),
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -120,7 +128,9 @@ extension Reducer {
     action toWrappedAction: AnyCasePath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> some Reducer<State, Action> {
     _IfLetReducer(
       parent: self,
@@ -128,7 +138,9 @@ extension Reducer {
       toChildState: toWrappedState,
       toChildAction: toWrappedAction,
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -162,7 +174,9 @@ extension Reducer {
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
     action toWrappedAction: AnyCasePath<Action, WrappedAction>,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> _IfLetReducer<Self, EmptyReducer<WrappedState, WrappedAction>> {
     .init(
       parent: self,
@@ -170,7 +184,9 @@ extension Reducer {
       toChildState: toWrappedState,
       toChildAction: toWrappedAction,
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 }
@@ -192,7 +208,13 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let fileID: StaticString
 
   @usableFromInline
+  let filePath: StaticString
+
+  @usableFromInline
   let line: UInt
+
+  @usableFromInline
+  let column: UInt
 
   @Dependency(\.navigationIDPath) var navigationIDPath
 
@@ -203,14 +225,18 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     toChildState: WritableKeyPath<Parent.State, Child.State?>,
     toChildAction: AnyCasePath<Parent.Action, Child.Action>,
     fileID: StaticString,
-    line: UInt
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
   ) {
     self.parent = parent
     self.child = child
     self.toChildState = toChildState
     self.toChildAction = toChildAction
     self.fileID = fileID
+    self.filePath = filePath
     self.line = line
+    self.column = column
   }
 
   public func reduce(
@@ -254,7 +280,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard state[keyPath: self.toChildState] != nil else {
-      runtimeWarn(
+      reportIssue(
         """
         An "ifLet" at "\(self.fileID):\(self.line)" received a child action when child state was \
         "nil". …
@@ -275,7 +301,11 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
         • This action was sent to the store while state was "nil". Make sure that actions for this \
         reducer can only be sent from a view store when state is non-"nil". In SwiftUI \
         applications, use "IfLetStore".
-        """
+        """,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       return .none
     }

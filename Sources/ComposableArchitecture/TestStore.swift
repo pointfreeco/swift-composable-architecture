@@ -2,8 +2,8 @@
 import Combine
 import ConcurrencyExtras
 import CustomDump
+import TestingDynamicOverlay
 import Foundation
-import XCTestDynamicOverlay
 
 /// A testable runtime for a reducer.
 ///
@@ -487,8 +487,10 @@ public final class TestStore<State, Action> {
   /// ``receive(_:timeout:assert:file:line:)-6325h`` and ``finish(timeout:file:line:)-53gi5``.
   public var timeout: UInt64
 
+  private let fileID: StaticString
   private let file: StaticString
   private let line: UInt
+  private let column: UInt
   let reducer: TestReducer<State, Action>
   private let sharedChangeTracker: SharedChangeTracker
   private let store: Store<State, TestReducer<State, Action>.TestAction>
@@ -516,21 +518,23 @@ public final class TestStore<State, Action> {
     reducer: () -> R,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
     },
+    fileID: StaticString = #fileID,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   )
   where State: Equatable, R.State == State, R.Action == Action {
     let sharedChangeTracker = SharedChangeTracker()
-    let reducer = XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      Dependencies.withDependencies {
-        prepareDependencies(&$0)
-        $0.sharedChangeTrackers.insert(sharedChangeTracker)
-      } operation: {
-        TestReducer(Reduce(reducer()), initialState: initialState())
-      }
+    let reducer = Dependencies.withDependencies {
+      prepareDependencies(&$0)
+      $0.sharedChangeTrackers.insert(sharedChangeTracker)
+    } operation: {
+      TestReducer(Reduce(reducer()), initialState: initialState())
     }
+    self.fileID = fileID
     self.file = file
     self.line = line
+    self.column = column
     self.reducer = reducer
     self.store = Store(initialState: reducer.state) { reducer }
     self.timeout = 1 * NSEC_PER_SEC
@@ -566,10 +570,12 @@ public final class TestStore<State, Action> {
   @MainActor
   public func finish(
     timeout nanoseconds: UInt64? = nil,
+    fileID: StaticString = #fileID,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
-    self.assertNoReceivedActions(file: file, line: line)
+    self.assertNoReceivedActions(fileID: fileID, file: file, line: line, column: column)
     Task.cancel(id: OnFirstAppearID())
     let nanoseconds = nanoseconds ?? self.timeout
     let start = DispatchTime.now().uptimeNanoseconds
@@ -598,14 +604,16 @@ public final class TestStore<State, Action> {
 
           \(suggestion)
           """,
+          fileID: fileID,
           file: file,
-          line: line
+          line: line,
+          column: column
         )
         return
       }
       await Task.yield()
     }
-    self.assertNoSharedChanges(file: file, line: line)
+    self.assertNoSharedChanges(fileID: fileID, file: file, line: line, column: column)
   }
 
   deinit {
@@ -614,7 +622,9 @@ public final class TestStore<State, Action> {
   }
 
   func completed() {
-    self.assertNoReceivedActions(file: self.file, line: self.line)
+    self.assertNoReceivedActions(
+      fileID: self.fileID, file: self.file, line: self.line, column: self.column
+    )
     Task.cancel(id: OnFirstAppearID())
     for effect in self.reducer.inFlightEffects {
       XCTFailHelper(
@@ -643,14 +653,26 @@ public final class TestStore<State, Action> {
         store.skipInFlightEffects()", or consider using a non-exhaustive test store: \
         "store.exhaustivity = .off".
         """,
+        fileID: effect.action.fileID,
         file: effect.action.file,
-        line: effect.action.line
+        line: effect.action.line,
+        column: effect.action.column
       )
     }
-    self.assertNoSharedChanges(file: self.file, line: self.line)
+    self.assertNoSharedChanges(
+      fileID: self.fileID,
+      file: self.file,
+      line: self.line,
+      column: self.column
+    )
   }
 
-  private func assertNoReceivedActions(file: StaticString, line: UInt) {
+  private func assertNoReceivedActions(
+    fileID: StaticString,
+    file: StaticString,
+    line: UInt,
+    column: UInt
+  ) {
     if !self.reducer.receivedActions.isEmpty {
       let actions = self.reducer.receivedActions
         .map(\.action)
@@ -668,13 +690,20 @@ public final class TestStore<State, Action> {
         by performing "await store.skipReceivedActions()", or consider using a non-exhaustive test \
         store: "store.exhaustivity = .off".
         """,
+        fileID: fileID,
         file: file,
-        line: line
+        line: line,
+        column: column
       )
     }
   }
 
-  private func assertNoSharedChanges(file: StaticString, line: UInt) {
+  private func assertNoSharedChanges(
+    fileID: StaticString,
+    file: StaticString,
+    line: UInt,
+    column: UInt
+  ) {
     // NB: This existential opening can go away if we can constrain 'State: Equatable' at the
     //     'TestStore' level, but for some reason this breaks DocC.
     if self.sharedChangeTracker.hasChanges, let stateType = State.self as? any Equatable.Type {
@@ -690,8 +719,10 @@ public final class TestStore<State, Action> {
           actual: store.state,
           updateStateToExpectedResult: nil,
           skipUnnecessaryModifyFailure: true,
+          fileID: fileID,
           file: file,
-          line: line
+          line: line,
+          column: column
         )
       }
       open(stateType)
@@ -860,79 +891,95 @@ extension TestStore where State: Equatable {
   public func send(
     _ action: Action,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    fileID: StaticString = #fileID,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) async -> TestStoreTask {
-    await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      guard !self.isDismissed else {
-        XCTFail("Can't send action to dismissed test store.", file: file, line: line)
-        return TestStoreTask(rawValue: nil, timeout: self.timeout)
-      }
-      if !self.reducer.receivedActions.isEmpty {
-        var actions = ""
-        customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-        XCTFailHelper(
-          """
-          Must handle \(self.reducer.receivedActions.count) received \
-          action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
-
-          Unhandled actions: \(actions)
-          """,
-          file: file,
-          line: line
-        )
-      }
-
-      switch self.exhaustivity {
-      case .on:
-        break
-      case .off(showSkippedAssertions: true):
-        await self.skipReceivedActions(strict: false)
-      case .off(showSkippedAssertions: false):
-        self.reducer.receivedActions = []
-      }
-
-      let expectedState = self.state
-      let previousState = self.reducer.state
-      let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
-      let task = self.sharedChangeTracker.track {
-        self.store.send(
-          .init(origin: .send(action), file: file, line: line),
-          originatingFrom: nil
-        )
-      }
-      if uncheckedUseMainSerialExecutor {
-        await Task.yield()
-      } else {
-        for await _ in self.reducer.effectDidSubscribe.stream {
-          break
-        }
-      }
-      do {
-        let currentState = self.state
-        let currentStackElementID = self.reducer.dependencies.stackElementID
-        self.reducer.state = previousState
-        self.reducer.dependencies.stackElementID = previousStackElementID
-        defer {
-          self.reducer.state = currentState
-          self.reducer.dependencies.stackElementID = currentStackElementID
-        }
-
-        try self.expectedStateShouldMatch(
-          expected: expectedState,
-          actual: currentState,
-          updateStateToExpectedResult: updateStateToExpectedResult,
-          file: file,
-          line: line
-        )
-      } catch {
-        XCTFail("Threw error: \(error)", file: file, line: line)
-      }
-      // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
-      //     instrument their effects.
-      await Task.megaYield(count: 20)
-      return .init(rawValue: task, timeout: self.timeout)
+    guard !self.isDismissed else {
+      reportIssue(
+        "Can't send action to dismissed test store.",
+        fileID: fileID,
+        filePath: file,
+        line: line,
+        column: column
+      )
+      return TestStoreTask(rawValue: nil, timeout: self.timeout)
     }
+    if !self.reducer.receivedActions.isEmpty {
+      var actions = ""
+      customDump(self.reducer.receivedActions.map(\.action), to: &actions)
+      XCTFailHelper(
+        """
+        Must handle \(self.reducer.receivedActions.count) received \
+        action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
+
+        Unhandled actions: \(actions)
+        """,
+        fileID: fileID,
+        file: file,
+        line: line,
+        column: column
+      )
+    }
+
+    switch self.exhaustivity {
+    case .on:
+      break
+    case .off(showSkippedAssertions: true):
+      await self.skipReceivedActions(strict: false)
+    case .off(showSkippedAssertions: false):
+      self.reducer.receivedActions = []
+    }
+
+    let expectedState = self.state
+    let previousState = self.reducer.state
+    let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
+    let task = self.sharedChangeTracker.track {
+      self.store.send(
+        .init(origin: .send(action), fileID: fileID, file: file, line: line, column: column),
+        originatingFrom: nil
+      )
+    }
+    if uncheckedUseMainSerialExecutor {
+      await Task.yield()
+    } else {
+      for await _ in self.reducer.effectDidSubscribe.stream {
+        break
+      }
+    }
+    do {
+      let currentState = self.state
+      let currentStackElementID = self.reducer.dependencies.stackElementID
+      self.reducer.state = previousState
+      self.reducer.dependencies.stackElementID = previousStackElementID
+      defer {
+        self.reducer.state = currentState
+        self.reducer.dependencies.stackElementID = currentStackElementID
+      }
+
+      try self.expectedStateShouldMatch(
+        expected: expectedState,
+        actual: currentState,
+        updateStateToExpectedResult: updateStateToExpectedResult,
+        fileID: fileID,
+        file: file,
+        line: line,
+        column: column
+      )
+    } catch {
+      reportIssue(
+        "Threw error: \(error)",
+        fileID: fileID,
+        filePath: file,
+        line: line,
+        column: column
+      )
+    }
+    // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
+    //     instrument their effects.
+    await Task.megaYield(count: 20)
+    return .init(rawValue: task, timeout: self.timeout)
   }
 
   /// Assert against the current state of the store.
@@ -969,24 +1016,32 @@ extension TestStore where State: Equatable {
   @MainActor
   public func assert(
     _ updateStateToExpectedResult: @escaping (_ state: inout State) throws -> Void,
+    fileID: StaticString = #fileID,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) {
-    XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
-      let expectedState = self.state
-      let currentState = self.reducer.state
-      do {
-        try self.expectedStateShouldMatch(
-          expected: expectedState,
-          actual: currentState,
-          updateStateToExpectedResult: updateStateToExpectedResult,
-          skipUnnecessaryModifyFailure: true,
-          file: file,
-          line: line
-        )
-      } catch {
-        XCTFail("Threw error: \(error)", file: file, line: line)
-      }
+    let expectedState = self.state
+    let currentState = self.reducer.state
+    do {
+      try self.expectedStateShouldMatch(
+        expected: expectedState,
+        actual: currentState,
+        updateStateToExpectedResult: updateStateToExpectedResult,
+        skipUnnecessaryModifyFailure: true,
+        fileID: fileID,
+        file: file,
+        line: line,
+        column: column
+      )
+    } catch {
+      reportIssue(
+        "Threw error: \(error)",
+        fileID: fileID,
+        filePath: file,
+        line: line,
+        column: column
+      )
     }
   }
 
@@ -997,8 +1052,10 @@ extension TestStore where State: Equatable {
     actual: State,
     updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     skipUnnecessaryModifyFailure: Bool = false,
+    fileID: StaticString,
     file: StaticString,
-    line: UInt
+    line: UInt,
+    column: UInt
   ) throws {
     try self.sharedChangeTracker.assert {
       let skipUnnecessaryModifyFailure =
@@ -1066,7 +1123,13 @@ extension TestStore where State: Equatable {
         {
           var expectedWhenGivenPreviousState = current
           if let updateStateToExpectedResult {
-            XCTExpectFailure(strict: false) {
+            // withIssueReporting(/*.default*/, isIntermittent: true) {
+            //
+            // } when: {
+            //
+            // }
+
+            withExpectedIssue(isIntermittent: true) {
               do {
                 try Dependencies.withDependencies {
                   $0 = self.reducer.dependencies
@@ -1075,14 +1138,16 @@ extension TestStore where State: Equatable {
                   try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
                 }
               } catch {
-                XCTFail(
+                reportIssue(
                   """
                   Skipped assertions: …
 
                   Threw error: \(error)
                   """,
-                  file: file,
-                  line: line
+                  fileID: fileID,
+                  filePath: file,
+                  line: line,
+                  column: column
                 )
               }
             }
@@ -1122,8 +1187,10 @@ extension TestStore where State: Equatable {
 
           \(difference)\(postamble.isEmpty ? "" : "\n\n\(postamble)")
           """,
+          fileID: fileID,
           file: file,
-          line: line
+          line: line,
+          column: column
         )
       }
 
@@ -1141,8 +1208,10 @@ extension TestStore where State: Equatable {
           The trailing closure made no observable modifications to state. If no change to state is \
           expected, omit the trailing closure.
           """,
+          fileID: fileID,
           file: file,
-          line: line
+          line: line,
+          column: column
         )
       }
       self.sharedChangeTracker.resetChanges()
@@ -1154,8 +1223,10 @@ extension TestStore where State: Equatable, Action: Equatable {
   private func _receive(
     _ expectedAction: Action,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
+    fileID: StaticString = #fileID,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) {
     var expectedActionDump = ""
     customDump(expectedAction, to: &expectedActionDump, indent: 2)
@@ -1180,8 +1251,10 @@ extension TestStore where State: Equatable, Action: Equatable {
         }
       },
       updateStateToExpectedResult,
+      fileID: fileID,
       file: file,
-      line: line
+      line: line,
+      column: column
     )
   }
 
@@ -1297,8 +1370,10 @@ extension TestStore where State: Equatable {
   private func _receive(
     _ isMatching: (Action) -> Bool,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
+    fileID: StaticString = #fileID,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) {
     self.receiveAction(
       matching: isMatching,
@@ -1309,16 +1384,20 @@ extension TestStore where State: Equatable {
         return action
       },
       updateStateToExpectedResult,
+      fileID: fileID,
       file: file,
-      line: line
+      line: line,
+      column: column
     )
   }
 
   private func _receive<Value>(
     _ actionCase: AnyCasePath<Action, Value>,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
+    fileID: StaticString = #fileID,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) {
     self.receiveAction(
       matching: { actionCase.extract(from: $0) != nil },
@@ -1329,8 +1408,10 @@ extension TestStore where State: Equatable {
         return action
       },
       updateStateToExpectedResult,
+      fileID: fileID,
       file: file,
-      line: line
+      line: line,
+      column: column
     )
   }
 
@@ -1338,8 +1419,10 @@ extension TestStore where State: Equatable {
     _ actionCase: AnyCasePath<Action, Value>,
     _ value: Value,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
+    fileID: StaticString = #fileID,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) {
     self.receiveAction(
       matching: { actionCase.extract(from: $0) == value },
@@ -1362,8 +1445,10 @@ extension TestStore where State: Equatable {
         return action
       },
       updateStateToExpectedResult,
+      fileID: fileID,
       file: file,
-      line: line
+      line: line,
+      column: column
     )
   }
 
@@ -1801,8 +1886,10 @@ extension TestStore where State: Equatable {
     failureMessage: @autoclosure () -> String,
     unexpectedActionDescription: (Action) -> String,
     _ updateStateToExpectedResult: ((inout State) throws -> Void)?,
+    fileID: StaticString,
     file: StaticString,
-    line: UInt
+    line: UInt,
+    column: UInt
   ) {
     let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
       { (state: inout State) in
@@ -1850,8 +1937,10 @@ extension TestStore where State: Equatable {
 
           \(actionsDump)
           """,
+          fileID: fileID,
           file: file,
-          line: line
+          line: line,
+          column: column
         )
       }
     }
@@ -1866,8 +1955,10 @@ extension TestStore where State: Equatable {
 
         \(unexpectedActionDescription(receivedAction))
         """,
+        fileID: fileID,
         file: file,
-        line: line
+        line: line,
+        column: column
       )
     } else {
       let expectedState = self.state
@@ -1876,11 +1967,19 @@ extension TestStore where State: Equatable {
           expected: expectedState,
           actual: state,
           updateStateToExpectedResult: updateStateToExpectedResult,
+          fileID: fileID,
           file: file,
-          line: line
+          line: line,
+          column: column
         )
       } catch {
-        XCTFail("Threw error: \(error)", file: file, line: line)
+        reportIssue(
+          "Threw error: \(error)",
+          fileID: fileID,
+          filePath: file,
+          line: line,
+          column: column
+        )
       }
     }
     self.reducer.state = state
@@ -2061,8 +2160,10 @@ extension TestStore {
 
   private func _skipReceivedActions(
     strict: Bool = true,
+    fileID: StaticString = #fileID,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) {
     if strict && self.reducer.receivedActions.isEmpty {
       XCTFail("There were no received actions to skip.")
@@ -2086,8 +2187,10 @@ extension TestStore {
       overrideExhaustivity: self.exhaustivity == .on
         ? .off(showSkippedAssertions: true)
         : self.exhaustivity,
+      fileID: fileID,
       file: file,
-      line: line
+      line: line,
+      column: column
     )
     self.reducer.state = self.reducer.receivedActions.last!.state
     self.reducer.receivedActions = []
@@ -2126,8 +2229,10 @@ extension TestStore {
 
   fileprivate func _skipInFlightEffects(
     strict: Bool = true,
+    fileID: StaticString = #fileID,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) {
     if strict && self.reducer.inFlightEffects.isEmpty {
       XCTFail("There were no in-flight effects to skip.")
@@ -2153,8 +2258,10 @@ extension TestStore {
       overrideExhaustivity: self.exhaustivity == .on
         ? .off(showSkippedAssertions: true)
         : self.exhaustivity,
+      fileID: fileID,
       file: file,
-      line: line
+      line: line,
+      column: column
     )
     self.reducer.inFlightEffects = []
   }
@@ -2162,27 +2269,31 @@ extension TestStore {
   private func XCTFailHelper(
     _ message: String = "",
     overrideExhaustivity exhaustivity: Exhaustivity? = nil,
+    fileID: StaticString,
     file: StaticString,
-    line: UInt
+    line: UInt,
+    column: UInt
   ) {
     let exhaustivity = exhaustivity ?? self.exhaustivity
     switch exhaustivity {
     case .on:
-      XCTFail(message, file: file, line: line)
-    case .off(showSkippedAssertions: true):
-      XCTExpectFailure {
-        XCTFail(
+      reportIssue(message, fileID: fileID, filePath: file, line: line, column: column)
+    case let .off(showSkippedAssertions):
+      withExpectedIssue {
+        reportIssue(
           """
           Skipped assertions: …
 
           \(message)
           """,
-          file: file,
-          line: line
+          fileID: fileID,
+          filePath: file,
+          line: line,
+          column: column
         )
+      } when: {
+        showSkippedAssertions
       }
-    case .off(showSkippedAssertions: false):
-      break
     }
   }
 }
@@ -2490,7 +2601,15 @@ class TestReducer<State, Action>: Reducer {
               self?.inFlightEffects.remove(effect)
             }
           )
-          .map { .init(origin: .receive($0), file: action.file, line: action.line) }
+          .map {
+            .init(
+              origin: .receive($0),
+              fileID: action.fileID,
+              file: action.file,
+              line: action.line,
+              column: action.column
+            )
+          }
       }
     }
   }
@@ -2510,8 +2629,10 @@ class TestReducer<State, Action>: Reducer {
 
   struct TestAction {
     let origin: Origin
+    let fileID: StaticString
     let file: StaticString
     let line: UInt
+    let column: UInt
 
     fileprivate var action: Action {
       self.origin.action

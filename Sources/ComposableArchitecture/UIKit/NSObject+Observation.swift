@@ -140,7 +140,7 @@
     @discardableResult
     public func observe(_ apply: @escaping () -> Void) -> ObservationToken {
       if ObserveLocals.isApplying {
-        runtimeWarn(
+        reportIssue(
           """
           An "observe" was called from another "observe" closure, which can lead to \
           over-observation and unintended side effects.

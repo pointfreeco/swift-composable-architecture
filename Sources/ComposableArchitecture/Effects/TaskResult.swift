@@ -1,5 +1,3 @@
-import XCTestDynamicOverlay
-
 /// A value that represents either a success or a failure. This type differs from Swift's `Result`
 /// type in that it uses only one generic for the success case, leaving the failure case as an
 /// untyped `Error`.
@@ -271,7 +269,7 @@ extension TaskResult: Equatable where Success: Equatable {
             let lhsType = type(of: lhs)
             if TaskResultDebugging.emitRuntimeWarnings, lhsType == type(of: rhs) {
               let lhsTypeName = typeName(lhsType)
-              runtimeWarn(
+              reportIssue(
                 """
                 "\(lhsTypeName)" is not equatable. …
 
@@ -307,7 +305,7 @@ extension TaskResult: Hashable where Success: Hashable {
         #if DEBUG
           if TaskResultDebugging.emitRuntimeWarnings {
             let errorType = typeName(type(of: error))
-            runtimeWarn(
+            reportIssue(
               """
               "\(errorType)" is not hashable. …
 

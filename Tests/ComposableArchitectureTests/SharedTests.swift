@@ -496,7 +496,7 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        Expected changes, but none occurred.
+        failed - Expected changes, but none occurred.
         """
     }
     store.state.$count.assert {

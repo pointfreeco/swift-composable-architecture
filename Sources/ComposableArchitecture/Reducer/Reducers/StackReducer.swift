@@ -36,7 +36,13 @@ public struct StackState<Element> {
   }
 
   /// Accesses the value associated with the given id for reading and writing.
-  public subscript(id id: StackElementID) -> Element? {
+  public subscript(
+    id id: StackElementID,
+    fileID fileID: StaticString = #fileID,
+    filePath filePath: StaticString = #filePath,
+    line line: UInt = #line,
+    column column: UInt = #column
+  ) -> Element? {
     _read { yield self._dictionary[id] }
     _modify { yield &self._dictionary[id] }
     set {
@@ -45,7 +51,42 @@ public struct StackState<Element> {
         self._dictionary[id] = newValue
       case (false, .some, false):
         if !_XCTIsTesting {
-          runtimeWarn("Can't assign element at missing ID.")
+          reportIssue(
+            "Can't assign element at missing ID.",
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+          )
+        }
+      case (false, .none, _):
+        break
+      }
+    }
+  }
+
+  subscript(
+    id id: StackElementID,
+    fileID fileID: HashableStaticString,
+    filePath filePath: HashableStaticString,
+    line line: UInt = #line,
+    column column: UInt = #column
+  ) -> Element? {
+    _read { yield self._dictionary[id] }
+    _modify { yield &self._dictionary[id] }
+    set {
+      switch (self.ids.contains(id), newValue, _XCTIsTesting) {
+      case (true, _, _), (false, .some, true):
+        self._dictionary[id] = newValue
+      case (false, .some, false):
+        if !_XCTIsTesting {
+          reportIssue(
+            "Can't assign element at missing ID.",
+            fileID: fileID.rawValue,
+            filePath: filePath.rawValue,
+            line: line,
+            column: column
+          )
         }
       case (false, .none, _):
         break
@@ -120,7 +161,7 @@ public struct StackState<Element> {
         {
           description = caseName
         }
-        runtimeWarn(
+        reportIssue(
           """
           Can't modify unrelated case\(description.map { " \($0.debugDescription)" } ?? "")
           """
@@ -483,7 +524,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           .map { toStackAction.embed(.element(id: elementID, action: $0)) }
           ._cancellable(navigationIDPath: elementNavigationIDPath)
       } else {
-        runtimeWarn(
+        reportIssue(
           """
           A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element. …
 
@@ -518,7 +559,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
       if canPop {
         state[keyPath: self.toStackState].pop(from: id)
       } else {
-        runtimeWarn(
+        reportIssue(
           """
           A "forEach" at "\(self.fileID):\(self.line)" received a "popFrom" action for a missing \
           element. …
@@ -534,7 +575,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
     case let .push(id, element):
       destinationEffects = .none
       if state[keyPath: self.toStackState].ids.contains(id) {
-        runtimeWarn(
+        reportIssue(
           """
           A "forEach" at "\(self.fileID):\(self.line)" received a "push" action for an element it \
           already contains. …
@@ -550,7 +591,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
       } else if DependencyValues._current.context == .test {
         let nextID = DependencyValues._current.stackElementID.peek()
         if id.generation > nextID.generation {
-          runtimeWarn(
+          reportIssue(
             """
             A "forEach" at "\(self.fileID):\(self.line)" received a "push" action with an \
             unexpected generational ID. …

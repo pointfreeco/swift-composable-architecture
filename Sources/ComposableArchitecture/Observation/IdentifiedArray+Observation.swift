@@ -67,10 +67,20 @@
     @_disfavoredOverload
     public func scope<ElementID, ElementState, ElementAction>(
       state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
-      action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>
+      action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
     ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
       if !self.canCacheChildren {
-        runtimeWarn(uncachedStoreWarning(self))
+        reportIssue(
+          uncachedStoreWarning(self),
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
       }
       return _StoreCollection(self.scope(state: state, action: action))
     }

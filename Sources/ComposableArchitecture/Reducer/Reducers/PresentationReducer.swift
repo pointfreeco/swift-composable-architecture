@@ -145,7 +145,13 @@ public struct PresentationState<State> {
     message:
       "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
-  public subscript<Case>(case path: AnyCasePath<State, Case>) -> Case? {
+  public subscript<Case>(
+    case path: AnyCasePath<State, Case>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Case? {
     _read { yield self.wrappedValue.flatMap(path.extract) }
     _modify {
       let root = self.wrappedValue
@@ -160,10 +166,14 @@ public struct PresentationState<State> {
         {
           description = caseName
         }
-        runtimeWarn(
+        reportIssue(
           """
           Can't modify unrelated case\(description.map { " \($0.debugDescription)" } ?? "")
-          """
+          """,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
         return
       }
@@ -398,7 +408,9 @@ extension Reducer {
     action toPresentationAction: CaseKeyPath<Action, PresentationAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> some Reducer<State, Action> {
     _PresentationReducer(
       base: self,
@@ -406,7 +418,9 @@ extension Reducer {
       toPresentationAction: AnyCasePath(toPresentationAction),
       destination: destination(),
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -418,14 +432,18 @@ extension Reducer {
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: CaseKeyPath<Action, PresentationAction<DestinationAction>>,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> some Reducer<State, Action> {
     self.ifLet(
       toPresentationState,
       action: toPresentationAction,
       destination: {},
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -462,7 +480,9 @@ extension Reducer {
     action toPresentationAction: AnyCasePath<Action, PresentationAction<DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> some Reducer<State, Action> {
     _PresentationReducer(
       base: self,
@@ -470,7 +490,9 @@ extension Reducer {
       toPresentationAction: toPresentationAction,
       destination: destination(),
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -504,14 +526,18 @@ extension Reducer {
     _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
     action toPresentationAction: AnyCasePath<Action, PresentationAction<DestinationAction>>,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> some Reducer<State, Action> {
     self.ifLet(
       toPresentationState,
       action: toPresentationAction,
       destination: {},
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 }
@@ -524,7 +550,9 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     AnyCasePath<Base.Action, PresentationAction<Destination.Action>>
   @usableFromInline let destination: Destination
   @usableFromInline let fileID: StaticString
+  @usableFromInline let filePath: StaticString
   @usableFromInline let line: UInt
+  @usableFromInline let column: UInt
 
   @Dependency(\.navigationIDPath) var navigationIDPath
 
@@ -535,14 +563,18 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     toPresentationAction: AnyCasePath<Base.Action, PresentationAction<Destination.Action>>,
     destination: Destination,
     fileID: StaticString,
-    line: UInt
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
   ) {
     self.base = base
     self.toPresentationState = toPresentationState
     self.toPresentationAction = toPresentationAction
     self.destination = destination
     self.fileID = fileID
+    self.filePath = filePath
     self.line = line
+    self.column = column
   }
 
   public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
@@ -591,7 +623,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       baseEffects = self.base.reduce(into: &state, action: action)
 
     case (.none, .some):
-      runtimeWarn(
+      reportIssue(
         """
         An "ifLet" at "\(self.fileID):\(self.line)" received a presentation action when \
         destination state was absent. …
@@ -610,7 +642,11 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
         actions for this reducer can only be sent from a view store when state is present, or \
         from effects that start from this reducer. In SwiftUI applications, use a Composable \
         Architecture view modifier like "sheet(store:…)".
-        """
+        """,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)

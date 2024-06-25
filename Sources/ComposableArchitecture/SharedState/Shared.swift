@@ -1,6 +1,6 @@
 import CustomDump
 import Dependencies
-import XCTestDynamicOverlay
+import TestingDynamicOverlay
 
 #if canImport(Combine)
   import Combine
@@ -185,8 +185,10 @@ public struct Shared<Value> {
 
   public func assert(
     _ updateValueToExpectedResult: (inout Value) throws -> Void,
+    fileID: StaticString = #fileID,
     file: StaticString = #file,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) rethrows where Value: Equatable {
     @Dependency(\.sharedChangeTrackers) var changeTrackers
     guard
@@ -194,12 +196,24 @@ public struct Shared<Value> {
         changeTrackers
         .first(where: { $0.changes[ObjectIdentifier(self.reference)] != nil })
     else {
-      XCTFail("Expected changes, but none occurred.", file: file, line: line)
+      reportIssue(
+        "Expected changes, but none occurred.",
+        fileID: fileID,
+        filePath: file,
+        line: line,
+        column: column
+      )
       return
     }
     try changeTracker.assert {
       guard var snapshot = self.snapshot, snapshot != self.currentValue else {
-        XCTFail("Expected changes, but none occurred.", file: file, line: line)
+        reportIssue(
+          "Expected changes, but none occurred.",
+          fileID: fileID,
+          filePath: file,
+          line: line,
+          column: column
+        )
         return
       }
       try updateValueToExpectedResult(&snapshot)

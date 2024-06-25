@@ -1,7 +1,43 @@
 import ComposableArchitecture
 import XCTest
+import Testing
 
 @testable import Todos
+
+@MainActor @Test func addTodo() async {
+  let store = TestStore(initialState: Todos.State()) {
+    Todos()
+  } withDependencies: {
+    $0.uuid = .incrementing
+  }
+
+  await store.send(.addTodoButtonTapped) {
+    _ in
+//    $0.todos.insert(
+//      Todo.State(
+//        description: "",
+//        id: UUID(0),
+//        isComplete: false
+//      ),
+//      at: 0
+//    )
+  }
+
+  await store.send(.addTodoButtonTapped) {
+    $0.todos = [
+      Todo.State(
+        description: "",
+        id: UUID(1),
+        isComplete: false
+      ),
+      Todo.State(
+        description: "",
+        id: UUID(0),
+        isComplete: false
+      ),
+    ]
+  }
+}
 
 final class TodosTests: XCTestCase {
   let clock = TestClock()

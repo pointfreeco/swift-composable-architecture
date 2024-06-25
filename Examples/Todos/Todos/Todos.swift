@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import TestingDynamicOverlay
 import SwiftUI
 
 enum Filter: LocalizedStringKey, CaseIterable, Hashable {
@@ -43,6 +44,25 @@ struct Todos {
     Reduce { state, action in
       switch action {
       case .addTodoButtonTapped:
+//        expectNoDifference(1, 2)
+        // .default
+        // .fatalError
+        // .breakpoint
+        // .log(OSLog)
+        // ([.log(OSLog), .breakpoint])
+//        withIssueReporting(to: .default) {
+//          reportIssue("...")
+//        } when: { issue in
+//          true
+//          false
+//        }
+
+
+        withExpectedIssue {
+          reportIssue("Add button unexpectedly tapped")
+        } when: {
+          false
+        }
         state.todos.insert(Todo.State(id: self.uuid()), at: 0)
         return .none
 

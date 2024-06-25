@@ -81,29 +81,47 @@ public struct DismissEffect: Sendable {
   @MainActor
   public func callAsFunction(
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
-    await self.callAsFunction(animation: nil, fileID: fileID, line: line)
+    await self.callAsFunction(
+      animation: nil,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
   }
 
   @MainActor
   public func callAsFunction(
     animation: Animation?,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
-    await callAsFunction(transaction: Transaction(animation: animation), fileID: fileID, line: line)
+    await callAsFunction(
+      transaction: Transaction(animation: animation),
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
   }
 
   @MainActor
   public func callAsFunction(
     transaction: Transaction,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
     guard let dismiss = self.dismiss
     else {
-      runtimeWarn(
+      reportIssue(
         """
         A reducer requested dismissal at "\(fileID):\(line)", but couldn't be dismissed. …
 
@@ -112,7 +130,11 @@ public struct DismissEffect: Sendable {
         of an application, as well as in a presentation destination, use \
         @Dependency(\\.isPresented) to determine if the reducer is being presented before calling \
         @Dependency(\\.dismiss).
-        """
+        """,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       return
     }

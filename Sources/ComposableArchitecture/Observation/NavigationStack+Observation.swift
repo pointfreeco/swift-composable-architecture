@@ -111,16 +111,32 @@ import SwiftUI
       root: () -> R,
       @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
       fileID: StaticString = #fileID,
-      line: UInt = #line
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
     )
     where
       Data == StackState<State>.PathView,
       Root == ModifiedContent<R, _NavigationDestinationViewModifier<State, Action, Destination>>
     {
-      self.init(path: path[fileID: "\(fileID)", line: line]) {
+      self.init(
+        path: path[
+          fileID: HashableStaticString(rawValue: fileID),
+          filePath: HashableStaticString(rawValue: filePath),
+          line: line,
+          column: column
+        ]
+      ) {
         root()
           .modifier(
-            _NavigationDestinationViewModifier(store: path.wrappedValue, destination: destination)
+            _NavigationDestinationViewModifier(
+              store: path.wrappedValue,
+              destination: destination,
+              fileID: fileID,
+              filePath: filePath,
+              line: line,
+              column: column
+            )
           )
       }
     }
@@ -134,6 +150,10 @@ import SwiftUI
   {
     @SwiftUI.State var store: Store<StackState<State>, StackAction<State, Action>>
     fileprivate let destination: (Store<State, Action>) -> Destination
+    fileprivate let fileID: StaticString
+    fileprivate let filePath: StaticString
+    fileprivate let line: UInt
+    fileprivate let column: UInt
 
     public func body(content: Content) -> some View {
       content
@@ -143,7 +163,16 @@ import SwiftUI
           self
             .destination(
               self.store.scope(
-                id: self.store.id(state: \.[id:component.id], action: \.[id:component.id]),
+                id: self.store.id(
+                  state: \.[
+                    id:component.id,
+                    fileID:HashableStaticString(rawValue: fileID),
+                    filePath:HashableStaticString(rawValue: filePath),
+                    line:line,
+                    column:column
+                  ],
+                  action: \.[id:component.id]
+                ),
                 state: ToState {
                   element = $0[id: component.id] ?? element
                   return element
@@ -176,13 +205,20 @@ import SwiftUI
       state: P?,
       @ViewBuilder label: () -> L,
       fileID: StaticString = #fileID,
-      line: UInt = #line
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
     )
     where Label == _NavigationLinkStoreContent<P, L> {
       @Dependency(\.stackElementID) var stackElementID
       self.init(value: state.map { StackState.Component(id: stackElementID(), element: $0) }) {
         _NavigationLinkStoreContent<P, L>(
-          state: state, label: { label() }, fileID: fileID, line: line
+          state: state,
+          label: label,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
       }
     }
@@ -234,43 +270,58 @@ import SwiftUI
     let state: State?
     @ViewBuilder let label: Label
     let fileID: StaticString
+    let filePath: StaticString
     let line: UInt
+    let column: UInt
     @Environment(\.navigationDestinationType) var navigationDestinationType
 
     @_spi(Internals)
-    public init(state: State?, @ViewBuilder label: () -> Label, fileID: StaticString, line: UInt) {
+    public init(
+      state: State?,
+      @ViewBuilder label: () -> Label,
+      fileID: StaticString,
+      filePath: StaticString,
+      line: UInt,
+      column: UInt
+    ) {
       self.state = state
       self.label = label()
       self.fileID = fileID
+      self.filePath = filePath
       self.line = line
+      self.column = column
     }
 
     public var body: some View {
       #if DEBUG
-        self.label.onAppear {
-          if self.navigationDestinationType != State.self {
+        label.onAppear {
+          if navigationDestinationType != State.self {
             let elementType =
-              self.navigationDestinationType.map { typeName($0) }
+              navigationDestinationType.map { typeName($0) }
                 ?? """
                 (None found in view hierarchy. Is this link inside a store-powered \
                 'NavigationStack'?)
                 """
-            runtimeWarn(
+            reportIssue(
               """
-              A navigation link at "\(self.fileID):\(self.line)" is unpresentable. …
+              A navigation link at "\(fileID):\(line)" is unpresentable. …
 
                 NavigationStack state element type:
                   \(elementType)
                 NavigationLink state type:
                   \(typeName(State.self))
                 NavigationLink state value:
-                \(String(customDumping: self.state).indent(by: 2))
-              """
+                \(String(customDumping: state).indent(by: 2))
+              """,
+              fileID: fileID,
+              filePath: filePath,
+              line: line,
+              column: column
             )
           }
         }
       #else
-        self.label
+        label
       #endif
     }
   }
@@ -297,20 +348,22 @@ import SwiftUI
   extension Store {
     @_spi(Internals)
     public subscript<ElementState, ElementAction>(
-      fileID fileID: String,
-      line line: UInt
+      fileID fileID: HashableStaticString,
+      filePath filePath: HashableStaticString,
+      line line: UInt,
+      column column: UInt
     ) -> StackState<ElementState>.PathView
     where State == StackState<ElementState>, Action == StackAction<ElementState, ElementAction> {
       get { self.currentState.path }
       set {
         let newCount = newValue.count
         guard newCount != self.currentState.count else {
-          runtimeWarn(
+          reportIssue(
             """
-            SwiftUI wrote to a "NavigationStack" binding at "\(fileID):\(line)" with a path that \
-            has the same number of elements that already exist in the store. SwiftUI should only \
-            write to this binding with a path that has pushed a new element onto the stack, or \
-            popped one or more elements from the stack.
+            SwiftUI wrote to a "NavigationStack" binding at "\(fileID.rawValue):\(line)" with a \
+            path that has the same number of elements that already exist in the store. SwiftUI \
+            should only write to this binding with a path that has pushed a new element onto the \
+            stack, or popped one or more elements from the stack.
 
             This usually means the "forEach" has not been integrated with the reducer powering the \
             store, and this reducer is responsible for handling stack actions.
@@ -326,7 +379,11 @@ import SwiftUI
 
             And ensure that every parent reducer is integrated into the root reducer that powers \
             the store.
-            """
+            """,
+            fileID: fileID.rawValue,
+            filePath: filePath.rawValue,
+            line: line,
+            column: column
           )
           return
         }
