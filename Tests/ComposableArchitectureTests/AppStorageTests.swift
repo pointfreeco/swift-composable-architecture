@@ -294,8 +294,6 @@ final class AppStorageTests: XCTestCase {
 
     await fulfillment(of: [publisherExpectation], timeout: 0)
   }
-
-  // TODO: confirm this is called sync when on main actor
 }
 
 extension UserDefaults {

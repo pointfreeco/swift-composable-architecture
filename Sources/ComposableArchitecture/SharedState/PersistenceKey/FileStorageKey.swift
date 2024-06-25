@@ -98,7 +98,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
             } else {
               state.workItem?.cancel()
               state.workItem = nil
-              MainActor.assumeIsolated {
+              mainActorASAP {
                 _ = didSet(self.load(initialValue: initialValue))
               }
             }
@@ -109,7 +109,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
             state.workItem?.cancel()
             state.workItem = nil
           }
-          MainActor.assumeIsolated {
+          mainActorASAP {
             `didSet`(self.load(initialValue: initialValue))
           }
           setUpSources()
@@ -265,7 +265,7 @@ public struct FileStorage: Hashable, Sendable {
         let source = DispatchSource.makeFileSystemObjectSource(
           fileDescriptor: open($0.path, O_EVTONLY),
           eventMask: $1,
-          queue: DispatchQueue.main
+          queue: queue
         )
         source.setEventHandler(handler: $2)
         source.resume()
