@@ -200,6 +200,65 @@ final class AppStorageTests: XCTestCase {
     store.setValue(2, forKey: "other-count")
     XCTAssertEqual(values.value, [1])
   }
+
+  @MainActor
+  func testUpdateStoreFromBackgroundThread() async throws {
+    @Dependency(\.defaultAppStorage) var store
+    @Shared(.appStorage("count")) var count = 0
+
+    let publisherExpectation = expectation(description: "publisher")
+    let cancellable = $count.publisher.sink { _ in
+      MainActor.shared.assertIsolated()
+      publisherExpectation.fulfill()
+    }
+    defer { _ = cancellable }
+
+    let observeExpectation = expectation(description: "observe")
+    observe { [count = $count] in
+      _ = count
+      MainActor.shared.assertIsolated()
+      observeExpectation.fulfill()
+    }
+
+    await withUnsafeContinuation { continuation in
+      DispatchQueue.global().async { [store = UncheckedSendable(store)] in
+        XCTAssertFalse(Thread.isMainThread)
+        store.wrappedValue.setValue(1, forKey: "count")
+        continuation.resume()
+      }
+    }
+
+    await fulfillment(of: [publisherExpectation, observeExpectation], timeout: 0)
+  }
+
+  @MainActor
+  func testWillEnterForegroundFromBackgroundThread() async throws {
+    @Shared(.appStorage("count")) var count = 0
+
+    let publisherExpectation = expectation(description: "publisher")
+    let cancellable = $count.publisher.sink { _ in
+      MainActor.shared.assertIsolated()
+      publisherExpectation.fulfill()
+    }
+    defer { _ = cancellable }
+
+    let observeExpectation = expectation(description: "observe")
+    observe { [count = $count] in
+      _ = count
+      MainActor.shared.assertIsolated()
+      observeExpectation.fulfill()
+    }
+
+    await withUnsafeContinuation { continuation in
+      DispatchQueue.global().async {
+        XCTAssertFalse(Thread.isMainThread)
+        NotificationCenter.default.post(name: willEnterForegroundNotificationName!, object: nil)
+        continuation.resume()
+      }
+    }
+
+    await fulfillment(of: [publisherExpectation, observeExpectation], timeout: 0)
+  }
 }
 
 extension UserDefaults {
