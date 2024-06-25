@@ -2,7 +2,7 @@ import Dispatch
 
 func mainActorASAP(execute block: @escaping @MainActor @Sendable () -> Void) {
   if DispatchQueue.getSpecific(key: key) == value {
-    MainActor.assumeIsolated {
+    assumeMainActorIsolated {
       block()
     }
   } else {
@@ -18,3 +18,8 @@ private let key: DispatchSpecificKey<UInt8> = {
   return key
 }()
 private let value: UInt8 = 0
+
+@MainActor(unsafe)
+private func assumeMainActorIsolated(_ block: @escaping @MainActor @Sendable () -> Void) {
+  block()
+}
