@@ -597,6 +597,32 @@ final class ObservableTests: BaseTCATestCase {
 
     self.wait(for: [onChangeExpectation], timeout: 0)
   }
+
+  func testModify() {
+    let store = Store<ChildState, Void>(initialState: ChildState()) {
+      Reduce { state, _ in
+        state.count += 1
+        return .none
+      }
+    }
+
+    let expectation = expectation(description: "onChange")
+    withPerceptionTracking {
+      _ = store.send(())
+    } onChange: {
+      expectation.fulfill()
+    }
+    store.send(())
+    wait(for: [expectation], timeout: 1)
+  }
+
+  func testCOW() {
+    var state = StateWithCOW()
+    let startID = state.container.id
+    XCTAssertEqual(state.container.id, startID)
+    state.container.mutate()
+    XCTAssertEqual(state.container.id, startID)
+  }
 }
 
 @ObservableState
@@ -645,5 +671,23 @@ private enum EnumState: Equatable {
   @ObservableState
   enum Count: String {
     case one, two
+  }
+}
+
+@ObservableState
+struct StateWithCOW {
+  var container = Container()
+  @ObservableState
+  struct Container {
+    final class Contents { }
+    var contents = Contents()
+    mutating func mutate() {
+      if !isKnownUniquelyReferenced(&contents) {
+        contents = Contents()
+      }
+    }
+    var id: ObjectIdentifier {
+      ObjectIdentifier(contents)
+    }
   }
 }
