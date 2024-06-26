@@ -459,7 +459,7 @@ final class FileStorageTests: XCTestCase {
         }
       }
 
-      await fulfillment(of: [publisherExpectation], timeout: 0)
+      await fulfillment(of: [publisherExpectation], timeout: 0.1)
     }
   }
 }

@@ -79,7 +79,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
 
   public func subscribe(
     initialValue: Value?,
-    didSet: @escaping @MainActor @Sendable (_ newValue: Value?) -> Void
+    didSet: @escaping @Sendable (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     let cancellable = LockIsolated<AnyCancellable?>(nil)
     @Sendable func setUpSources() {
@@ -98,9 +98,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
             } else {
               state.workItem?.cancel()
               state.workItem = nil
-              mainActorASAP {
-                _ = didSet(self.load(initialValue: initialValue))
-              }
+              didSet(self.load(initialValue: initialValue))
             }
           }
         }
@@ -109,9 +107,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
             state.workItem?.cancel()
             state.workItem = nil
           }
-          mainActorASAP {
-            `didSet`(self.load(initialValue: initialValue))
-          }
+          `didSet`(self.load(initialValue: initialValue))
           setUpSources()
         }
         $0 = AnyCancellable {
