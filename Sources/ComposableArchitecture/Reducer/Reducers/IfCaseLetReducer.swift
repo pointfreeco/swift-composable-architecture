@@ -35,7 +35,7 @@ extension Reducer {
   ///
   ///   * It forces a specific order of operations for the child and parent features. It runs the
   ///     child first, and then the parent. If the order was reversed, then it would be possible for
-  ///     for the parent feature to change the case of the child enum, in which case the child
+  ///     the parent feature to change the case of the child enum, in which case the child
   ///     feature would not be able to react to that action. That can cause subtle bugs.
   ///
   ///   * It automatically cancels all child effects when it detects the child enum case changes.
