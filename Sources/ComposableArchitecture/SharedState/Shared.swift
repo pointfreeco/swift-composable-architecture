@@ -72,6 +72,11 @@ public struct Shared<Value> {
     try transform(&self._wrappedValue)
   }
 
+  /// Perform a non-mutating operation on shared state with nonisolated access to the underlying value.
+  public func withLock<R>(_ transform: @Sendable (Value) throws -> R) rethrows -> R {
+    try transform(self._wrappedValue)
+  }
+
   /// The underlying value referenced by the shared variable.
   ///
   /// This property provides primary access to the value's data. However, you don't access
