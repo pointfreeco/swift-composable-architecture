@@ -35,7 +35,7 @@ public protocol PersistenceReaderKey<Value> {
   ///   deinitialized, the `didSet` closure will no longer be invoked.
   func subscribe(
     initialValue: Value?,
-    didSet: @Sendable @escaping (_ newValue: Value?) -> Void
+    didSet: @escaping @Sendable (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription
 }
 
@@ -46,7 +46,7 @@ extension PersistenceReaderKey where ID == Self {
 extension PersistenceReaderKey {
   public func subscribe(
     initialValue: Value?,
-    didSet: @Sendable @escaping (_ newValue: Value?) -> Void
+    didSet: @escaping @Sendable (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     Shared.Subscription {}
   }

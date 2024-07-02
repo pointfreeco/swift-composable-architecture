@@ -79,7 +79,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
 
   public func subscribe(
     initialValue: Value?,
-    didSet: @Sendable @escaping (_ newValue: Value?) -> Void
+    didSet: @escaping @Sendable (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     let cancellable = LockIsolated<AnyCancellable?>(nil)
     @Sendable func setUpSources() {
