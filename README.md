@@ -692,7 +692,7 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [gh-discussions]: https://github.com/pointfreeco/swift-composable-architecture/discussions
 [swift-forum]: https://forums.swift.org/c/related-projects/swift-composable-architecture
 [testing-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/testing
-[faq-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/frequentlyaskedquestions
+[faq-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/faq
 [dependencies-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/dependencymanagement
 [getting-started-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/gettingstarted
 [navigation-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/navigation
