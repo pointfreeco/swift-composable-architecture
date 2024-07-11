@@ -839,7 +839,7 @@ they are, you can omit the entire entry point of your application:
 
 ```swift
 import SwiftUI
-import DynamicTesting
+import ComposableArchitecture
 
 @main
 struct MyApp: App {
