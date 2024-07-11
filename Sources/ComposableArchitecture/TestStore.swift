@@ -2,7 +2,7 @@
 import Combine
 import ConcurrencyExtras
 import CustomDump
-import TestingDynamicOverlay
+import IssueReporting
 import Foundation
 
 /// A testable runtime for a reducer.
@@ -2279,20 +2279,20 @@ extension TestStore {
     case .on:
       reportIssue(message, fileID: fileID, filePath: file, line: line, column: column)
     case let .off(showSkippedAssertions):
-      withExpectedIssue {
-        reportIssue(
-          """
-          Skipped assertions: …
+      if showSkippedAssertions {
+        withExpectedIssue {
+          reportIssue(
+            """
+            Skipped assertions: …
 
-          \(message)
-          """,
+            \(message)
+            """,
           fileID: fileID,
           filePath: file,
           line: line,
           column: column
-        )
-      } when: {
-        showSkippedAssertions
+          )
+        }
       }
     }
   }

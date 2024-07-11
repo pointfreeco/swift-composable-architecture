@@ -1,5 +1,5 @@
 import Foundation
-import TestingDynamicOverlay
+import IssueReporting
 
 extension Notification.Name {
   @_documentation(visibility:private)

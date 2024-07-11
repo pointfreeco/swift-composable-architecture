@@ -1,6 +1,6 @@
 import CustomDump
 import Dependencies
-import TestingDynamicOverlay
+import IssueReporting
 
 #if canImport(Combine)
   import Combine
