@@ -20,8 +20,14 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
   private let storage: FileStorage
   private let isSetting = LockIsolated(false)
   private let url: URL
-  private let value = LockIsolated<Value?>(nil)
-  private let workItem = LockIsolated<DispatchWorkItem?>(nil)
+  fileprivate let state = LockIsolated(State())
+  //  private let value = LockIsolated<Value?>(nil)
+  //  private let workItem = LockIsolated<DispatchWorkItem?>(nil)
+
+  fileprivate struct State {
+    var value: Value?
+    var workItem: DispatchWorkItem?
+  }
 
   public var id: AnyHashable {
     FileStorageKeyID(url: self.url, storage: self.storage)
@@ -42,28 +48,32 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
   }
 
   public func save(_ value: Value) {
-    if self.workItem.value == nil {
-      self.isSetting.setValue(true)
-      try? self.storage.save(JSONEncoder().encode(value), self.url)
-      let workItem = DispatchWorkItem { [weak self] in
-        guard let self else { return }
-        defer {
-          self.value.setValue(nil)
-          self.workItem.setValue(nil)
-        }
-        guard let value = self.value.value
-        else { return }
+    self.state.withValue { state in
+      if state.workItem == nil {
         self.isSetting.setValue(true)
         try? self.storage.save(JSONEncoder().encode(value), self.url)
-      }
-      self.workItem.setValue(workItem)
-      if canListenForResignActive {
-        self.storage.asyncAfter(.seconds(1), workItem)
+        let workItem = DispatchWorkItem { [weak self] in
+          guard let self else { return }
+          self.state.withValue { state in
+            defer {
+              state.value = nil
+              state.workItem = nil
+            }
+            guard let value = state.value
+            else { return }
+            self.isSetting.setValue(true)
+            try? self.storage.save(JSONEncoder().encode(value), self.url)
+          }
+        }
+        state.workItem = workItem
+        if canListenForResignActive {
+          self.storage.asyncAfter(.seconds(1), workItem)
+        } else {
+          self.storage.async(workItem)
+        }
       } else {
-        self.storage.async(workItem)
+        state.value = value
       }
-    } else {
-      self.value.setValue(value)
     }
   }
 
@@ -82,17 +92,21 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
           try? self.storage.save(Data(), self.url)
         }
         let writeCancellable = self.storage.fileSystemSource(self.url, [.write]) {
-          if self.isSetting.value == true {
-            self.isSetting.setValue(false)
-          } else {
-            self.workItem.withValue {
-              $0?.cancel()
-              $0 = nil
+          self.state.withValue { state in
+            if self.isSetting.value == true {
+              self.isSetting.setValue(false)
+            } else {
+              state.workItem?.cancel()
+              state.workItem = nil
+              didSet(self.load(initialValue: initialValue))
             }
-            didSet(self.load(initialValue: initialValue))
           }
         }
         let deleteCancellable = self.storage.fileSystemSource(self.url, [.delete, .rename]) {
+          self.state.withValue { state in
+            state.workItem?.cancel()
+            state.workItem = nil
+          }
           `didSet`(self.load(initialValue: initialValue))
           setUpSources()
         }
@@ -143,17 +157,19 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
   }
 
   private func performImmediately() {
-    guard let workItem = self.workItem.value
-    else { return }
-    self.storage.async(workItem)
-    self.storage.async(
-      DispatchWorkItem {
-        self.workItem.withValue {
-          $0?.cancel()
-          $0 = nil
+    self.state.withValue { state in
+      guard let workItem = state.workItem
+      else { return }
+      self.storage.async(workItem)
+      self.storage.async(
+        DispatchWorkItem {
+          self.state.withValue { state in
+            state.workItem?.cancel()
+            state.workItem = nil
+          }
         }
-      }
-    )
+      )
+    }
   }
 }
 
@@ -270,7 +286,9 @@ public struct FileStorage: Hashable, Sendable {
       asyncAfter: { scheduler.schedule(after: scheduler.now.advanced(by: .init($0)), $1.perform) },
       createDirectory: { _, _ in },
       fileExists: { fileSystem.keys.contains($0) },
-      fileSystemSource: { url, _, handler in
+      fileSystemSource: { url, event, handler in
+        guard event.contains(.write)
+        else { return AnyCancellable {} }
         let handler = Handler(operation: handler)
         sourceHandlers.withValue { _ = $0[url, default: []].insert(handler) }
         return AnyCancellable {

@@ -833,10 +833,10 @@ extension TestStore where State: Equatable {
   /// ```swift
   /// @MainActor
   /// func testAnalytics() async {
-  ///   let events = ActorIsolated<[String]>([])
+  ///   let events = LockIsolated<[String]>([])
   ///   let analytics = AnalyticsClient(
   ///     track: { event in
-  ///       await events.withValue { $0.append(event) }
+  ///       events.withValue { $0.append(event) }
   ///     }
   ///   )
   ///
@@ -848,7 +848,7 @@ extension TestStore where State: Equatable {
   ///
   ///   await store.send(.buttonTapped)
   ///
-  ///   await events.withValue { XCTAssertEqual($0, ["Button Tapped"]) }
+  ///   events.withValue { XCTAssertEqual($0, ["Button Tapped"]) }
   /// }
   /// ```
   ///

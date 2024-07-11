@@ -36,8 +36,8 @@ extension DependencyValues {
 /// ```
 ///
 /// This operation works by finding the nearest parent feature that was presented using either the
-/// ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` or the
-/// ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` operator, and then dismisses _that_
+/// ``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` or the
+/// ``Reducer/forEach(_:action:destination:fileID:line:)-582rd`` operator, and then dismisses _that_
 /// feature. It performs the dismissal by either sending the ``PresentationAction/dismiss`` in the
 /// case of `ifLet` or sending ``StackAction/popFrom(id:)`` in the case of `forEach`.
 ///

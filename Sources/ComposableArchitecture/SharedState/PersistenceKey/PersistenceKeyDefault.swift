@@ -1,7 +1,7 @@
 /// A persistence key that provides a default value to an existing persistence key.
 ///
 /// Use this persistence key when constructing type-safe keys (see
-/// <doc:SharingState#Type-safe-keys> for more info) to provide a deafult that is used instead of
+/// <doc:SharingState#Type-safe-keys> for more info) to provide a default that is used instead of
 /// providing one at the call site of using [`@Shared`](<doc:Shared>).
 ///
 /// For example, if an `isOn` value is backed by user defaults and it should default to `false` when

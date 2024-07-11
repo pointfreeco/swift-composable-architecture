@@ -278,7 +278,7 @@ enum Action {
 }
 ```
 
-And in the reducer, instead of invoking ``Reducer/forEach(_:action:element:fileID:line:)-65nr1``
+And in the reducer, instead of invoking ``Reducer/forEach(_:action:element:fileID:line:)-92aox``
 with a case path using the `/` prefix operator:
 
 ```swift

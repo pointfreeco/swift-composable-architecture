@@ -20,7 +20,7 @@ It also allows for complex and recursive navigation paths in your application.
 ## Basics
 
 The tools for this style of navigation include ``StackState``, ``StackAction`` and the
-``Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` operator, as well as a new 
+``Reducer/forEach(_:action:destination:fileID:line:)-582rd`` operator, as well as a new 
 initializer ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` on 
 `NavigationStack` that behaves like the normal initializer, but is tuned specifically for 
 the Composable Architecture.

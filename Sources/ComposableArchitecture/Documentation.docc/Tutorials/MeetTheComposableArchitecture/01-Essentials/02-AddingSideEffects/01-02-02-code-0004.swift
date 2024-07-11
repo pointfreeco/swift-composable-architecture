@@ -30,7 +30,7 @@ struct CounterFeature {
         return .run { [count = state.count] send in
           let (data, _) = try await URLSession.shared
             .data(from: URL(string: "http://numbersapi.com/\(count)")!)
-          let fact = String(decoding: data, as: UTF8.self)
+          let fact = String(decoding: data, as: UTF8.self)!
           await send(.factResponse(fact))
         }
         

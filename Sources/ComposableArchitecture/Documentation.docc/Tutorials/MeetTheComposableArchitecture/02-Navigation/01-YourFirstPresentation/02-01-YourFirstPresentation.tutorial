@@ -67,7 +67,7 @@
       }
       
       @Step {
-        Add a form to the view with a text fielid for editing the name of the contact. We can
+        Add a form to the view with a text field for editing the name of the contact. We can
         use the dynamic member lookup on `$store` to describe what piece of state you want to
         drive the binding, and then you can use the `sending` method to describe which action 
         you want to send when the binding is written to.
@@ -102,7 +102,7 @@
       will first integrate the features' reducers, which consists of utilizing
       ``ComposableArchitecture/Presents()`` and ``ComposableArchitecture/PresentationAction``
       to integrate the domains, and the reducer operator
-      ``ComposableArchitecture/Reducer/ifLet(_:action:fileID:line:)-2eczg`` to
+      ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` to
       integrate the reducers.
     }
     
@@ -119,7 +119,7 @@
         Integrate the features' states together by using the ``ComposableArchitecture/Presents()``
         macro to hold onto an optional value.
         
-        A `nil` value represents that the "Add Contacts" feature is not presented, and a non-`nil`
+        A `nil` value represents that the "Add Contact" feature is not presented, and a non-`nil`
         value represents that it is presented.
         
         @Code(name: "ContactsFeature.swift", file: 02-01-02-code-0001.swift)
@@ -144,7 +144,7 @@
        
       @Step {
         Integrate the reducers together by making use of the
-        ``ComposableArchitecture/Reducer/ifLet(_:action:fileID:line:)-2eczg``
+        ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4k9by``
         reducer operator.
         
         This creates a new reducer that runs the child reducer when a child 
@@ -221,7 +221,7 @@
         to the `AddContactView`.
         
         > Note: If you are targeting older platforms and do not have access to `@Bindable`, you can
-        > instead use `@Perception.Bindable``, which comes with the library.
+        > instead use `@Perception.Bindable`, which comes with the library.
         
         @Code(name: "ContactsFeature.swift", file: 02-01-02-code-0009.swift)
       }
@@ -262,7 +262,7 @@
       the `AddContactFeature` to insert a new contact directly into the parent collection without
       any further steps. This can be powerful, but we will use delegate actions for this tutorial.
       To read more about `@Shared` see the <doc:SharingState> article, and see the
-      <doc:BuildingSyncUps> tutorial where we see this technique, in particular in
+      <doc:BuildingSyncUps> tutorial where we use this technique, in particular in
       <doc:EditingAndDeletingSyncUp#Deleting-the-sync-up> section.
       
       @Step {

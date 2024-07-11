@@ -199,8 +199,8 @@ cases, and they are a vital tool for composing reducers together.
 
 In particular, having this macro applied to your `Action` enum will allow you to use key path
 syntax for specifying enum cases in various APIs in the library, such as
-``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``,
-``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``, ``Scope``, and more.
+``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by``,
+``Reducer/forEach(_:action:destination:fileID:line:)-582rd``, ``Scope``, and more.
 
 Further, if the ``Reducer/State`` of your feature is an enum, which is useful for modeling a feature
 that can be one of multiple mutually exclusive values, the ``Reducer()`` will apply the
