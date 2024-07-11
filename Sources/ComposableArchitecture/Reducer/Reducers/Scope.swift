@@ -2,7 +2,7 @@
 ///
 /// ``Scope`` allows you to transform a parent domain into a child domain, and then run a child
 /// reduce on that subset domain. This is an important tool for breaking down large features into
-/// smaller units and then piecing them together. The smaller units can easier to understand and
+/// smaller units and then piecing them together. The smaller units can be easier to understand and
 /// test, and can even be packaged into their own isolated modules.
 ///
 /// You hand ``Scope`` 3 pieces of data for it to do its job:
