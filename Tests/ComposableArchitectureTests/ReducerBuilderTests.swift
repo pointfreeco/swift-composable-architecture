@@ -196,7 +196,7 @@ private struct ForEachExample {
   }
 
   enum Action {
-    case value(IdentifiedAction<Element.ID, Never>)
+    case value(IdentifiedAction<Int, Never>)
   }
 
   var body: some ReducerOf<Self> {
