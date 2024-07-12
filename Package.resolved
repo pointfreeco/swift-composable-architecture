@@ -78,7 +78,7 @@
       "location" : "https://github.com/pointfreeco/swift-dependencies",
       "state" : {
         "branch" : "swift-testing",
-        "revision" : "55aa2ff8bdb79ba98bbb184c09750ac398a4c990"
+        "revision" : "1990ff0599f9f091356a77f1b602f63bffde0353"
       }
     },
     {
@@ -159,7 +159,7 @@
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
         "branch" : "swift-testing",
-        "revision" : "791664ad5335f1c446c44ab4f80186063a3725b0"
+        "revision" : "0bf5ef4746bb193865b946ced53b61aec223af42"
       }
     }
   ],
