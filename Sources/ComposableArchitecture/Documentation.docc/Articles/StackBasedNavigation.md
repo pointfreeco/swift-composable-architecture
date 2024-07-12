@@ -122,7 +122,7 @@ struct RootView: View {
       path: $store.scope(state: \.path, action: \.path)
     ) {
       // Root view of the navigation stack
-    } destination: { state in
+    } destination: { store in
       // A view for each case of the Path.State enum
     }
   }

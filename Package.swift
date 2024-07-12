@@ -20,7 +20,6 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
     .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
-    .package(url: "https://github.com/SwiftLang/swift-syntax", "509.0.0"..<"601.0.0-prerelease"),
     .package(url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "1.3.0"),
@@ -32,6 +31,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-perception", from: "1.3.0"),
     .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", branch: "swift-testing"),
+    .package(url: "https://github.com/swiftlang/swift-syntax", "509.0.0"..<"601.0.0-prerelease"),
   ],
   targets: [
     .target(
