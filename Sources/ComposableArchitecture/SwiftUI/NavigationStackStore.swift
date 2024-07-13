@@ -60,8 +60,8 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
             id: store.id(
               state: \.[
                 id:component.id,
-                fileID:HashableStaticString(rawValue: fileID),
-                filePath:HashableStaticString(rawValue: filePath),
+                fileID:_HashableStaticString(rawValue: fileID),
+                filePath:_HashableStaticString(rawValue: filePath),
                 line:line,
                 column:column
               ]!,
@@ -112,8 +112,8 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
             id: store.id(
               state: \.[
                 id:component.id,
-                fileID:HashableStaticString(rawValue: fileID),
-                filePath:HashableStaticString(rawValue: filePath),
+                fileID:_HashableStaticString(rawValue: fileID),
+                filePath:_HashableStaticString(rawValue: filePath),
                 line:line,
                 column:column
               ]!,

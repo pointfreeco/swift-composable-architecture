@@ -16,7 +16,7 @@ final class ScopeCacheTests: BaseTCATestCase {
         .send(.show)
     } issueMatcher: {
       $0.compactDescription == """
-        Scoping from uncached StoreOf<Feature> is not compatible with observation.
+        failed - Scoping from uncached StoreOf<Feature> is not compatible with observation.
 
         This can happen for one of two reasons:
 
@@ -78,7 +78,7 @@ final class ScopeCacheTests: BaseTCATestCase {
       _ = cancellable
     } issueMatcher: {
       $0.compactDescription == """
-        Scoping from uncached StoreOf<Feature> is not compatible with observation.
+        failed - Scoping from uncached StoreOf<Feature> is not compatible with observation.
 
         This can happen for one of two reasons:
 
@@ -125,7 +125,7 @@ final class ScopeCacheTests: BaseTCATestCase {
       )
     } issueMatcher: {
       $0.compactDescription == """
-        Scoping from uncached StoreOf<Feature> is not compatible with observation.
+        failed - Scoping from uncached StoreOf<Feature> is not compatible with observation.
 
         This can happen for one of two reasons:
 

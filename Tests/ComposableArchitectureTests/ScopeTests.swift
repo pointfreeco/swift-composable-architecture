@@ -48,8 +48,8 @@ final class ScopeTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A "Scope" at "\(#fileID):\(#line - 5)" received a child action when child state was set to \
-        a different case. …
+        failed - A "Scope" at "\(#fileID):\(#line - 5)" received a child action when child state \
+        was set to a different case. …
 
           Action:
             Child2.Action.name

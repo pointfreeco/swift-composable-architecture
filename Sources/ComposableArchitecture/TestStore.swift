@@ -488,7 +488,7 @@ public final class TestStore<State, Action> {
   public var timeout: UInt64
 
   private let fileID: StaticString
-  private let file: StaticString
+  private let filePath: StaticString
   private let line: UInt
   private let column: UInt
   let reducer: TestReducer<State, Action>
@@ -519,7 +519,7 @@ public final class TestStore<State, Action> {
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
     },
     fileID: StaticString = #fileID,
-    file: StaticString = #file,
+    file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   )
@@ -532,7 +532,7 @@ public final class TestStore<State, Action> {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }
     self.fileID = fileID
-    self.file = file
+    self.filePath = filePath
     self.line = line
     self.column = column
     self.reducer = reducer
@@ -552,10 +552,13 @@ public final class TestStore<State, Action> {
   @MainActor
   public func finish(
     timeout duration: Duration,
-    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
     line: UInt = #line
   ) async {
-    await self.finish(timeout: duration.nanoseconds, file: file, line: line)
+    await self.finish(
+      timeout: duration.nanoseconds, fileID: fileID, file: filePath, line: line, column: column
+    )
   }
 
   /// Suspends until all in-flight effects have finished, or until it times out.
@@ -571,11 +574,11 @@ public final class TestStore<State, Action> {
   public func finish(
     timeout nanoseconds: UInt64? = nil,
     fileID: StaticString = #fileID,
-    file: StaticString = #file,
+    file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    self.assertNoReceivedActions(fileID: fileID, file: file, line: line, column: column)
+    self.assertNoReceivedActions(fileID: fileID, filePath: filePath, line: line, column: column)
     Task.cancel(id: OnFirstAppearID())
     let nanoseconds = nanoseconds ?? self.timeout
     let start = DispatchTime.now().uptimeNanoseconds
@@ -597,7 +600,7 @@ public final class TestStore<State, Action> {
           If you are not yet using a clock/scheduler, or can not use a clock/scheduler, \
           \(timeoutMessage).
           """
-        XCTFailHelper(
+        reportIssueHelper(
           """
           Expected effects to finish, but there are still effects in-flight\
           \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
@@ -605,7 +608,7 @@ public final class TestStore<State, Action> {
           \(suggestion)
           """,
           fileID: fileID,
-          file: file,
+          filePath: filePath,
           line: line,
           column: column
         )
@@ -613,7 +616,7 @@ public final class TestStore<State, Action> {
       }
       await Task.yield()
     }
-    self.assertNoSharedChanges(fileID: fileID, file: file, line: line, column: column)
+    self.assertNoSharedChanges(fileID: fileID, filePath: filePath, line: line, column: column)
   }
 
   deinit {
@@ -623,11 +626,11 @@ public final class TestStore<State, Action> {
 
   func completed() {
     self.assertNoReceivedActions(
-      fileID: self.fileID, file: self.file, line: self.line, column: self.column
+      fileID: self.fileID, filePath: self.filePath, line: self.line, column: self.column
     )
     Task.cancel(id: OnFirstAppearID())
     for effect in self.reducer.inFlightEffects {
-      XCTFailHelper(
+      reportIssueHelper(
         """
         An effect returned for this action is still running. It must complete before the end of \
         the test. …
@@ -654,14 +657,14 @@ public final class TestStore<State, Action> {
         "store.exhaustivity = .off".
         """,
         fileID: effect.action.fileID,
-        file: effect.action.file,
+        filePath: effect.action.filePath,
         line: effect.action.line,
         column: effect.action.column
       )
     }
     self.assertNoSharedChanges(
       fileID: self.fileID,
-      file: self.file,
+      filePath: self.filePath,
       line: self.line,
       column: self.column
     )
@@ -669,7 +672,7 @@ public final class TestStore<State, Action> {
 
   private func assertNoReceivedActions(
     fileID: StaticString,
-    file: StaticString,
+    filePath: StaticString,
     line: UInt,
     column: UInt
   ) {
@@ -678,7 +681,7 @@ public final class TestStore<State, Action> {
         .map(\.action)
         .map { "    • " + debugCaseOutput($0, abbreviated: true) }
         .joined(separator: "\n")
-      XCTFailHelper(
+      reportIssueHelper(
         """
         The store received \(self.reducer.receivedActions.count) unexpected \
         action\(self.reducer.receivedActions.count == 1 ? "" : "s"): …
@@ -691,7 +694,7 @@ public final class TestStore<State, Action> {
         store: "store.exhaustivity = .off".
         """,
         fileID: fileID,
-        file: file,
+        filePath: filePath,
         line: line,
         column: column
       )
@@ -700,7 +703,7 @@ public final class TestStore<State, Action> {
 
   private func assertNoSharedChanges(
     fileID: StaticString,
-    file: StaticString,
+    filePath: StaticString,
     line: UInt,
     column: UInt
   ) {
@@ -720,7 +723,7 @@ public final class TestStore<State, Action> {
           updateStateToExpectedResult: nil,
           skipUnnecessaryModifyFailure: true,
           fileID: fileID,
-          file: file,
+          filePath: filePath,
           line: line,
           column: column
         )
@@ -892,7 +895,7 @@ extension TestStore where State: Equatable {
     _ action: Action,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
-    file: StaticString = #file,
+    file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) async -> TestStoreTask {
@@ -900,7 +903,7 @@ extension TestStore where State: Equatable {
       reportIssue(
         "Can't send action to dismissed test store.",
         fileID: fileID,
-        filePath: file,
+        filePath: filePath,
         line: line,
         column: column
       )
@@ -909,7 +912,7 @@ extension TestStore where State: Equatable {
     if !self.reducer.receivedActions.isEmpty {
       var actions = ""
       customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-      XCTFailHelper(
+      reportIssueHelper(
         """
         Must handle \(self.reducer.receivedActions.count) received \
         action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
@@ -917,7 +920,7 @@ extension TestStore where State: Equatable {
         Unhandled actions: \(actions)
         """,
         fileID: fileID,
-        file: file,
+        filePath: filePath,
         line: line,
         column: column
       )
@@ -937,7 +940,9 @@ extension TestStore where State: Equatable {
     let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
     let task = self.sharedChangeTracker.track {
       self.store.send(
-        .init(origin: .send(action), fileID: fileID, file: file, line: line, column: column),
+        .init(
+          origin: .send(action), fileID: fileID, filePath: filePath, line: line, column: column
+        ),
         originatingFrom: nil
       )
     }
@@ -963,7 +968,7 @@ extension TestStore where State: Equatable {
         actual: currentState,
         updateStateToExpectedResult: updateStateToExpectedResult,
         fileID: fileID,
-        file: file,
+        filePath: filePath,
         line: line,
         column: column
       )
@@ -971,7 +976,7 @@ extension TestStore where State: Equatable {
       reportIssue(
         "Threw error: \(error)",
         fileID: fileID,
-        filePath: file,
+        filePath: filePath,
         line: line,
         column: column
       )
@@ -1017,7 +1022,7 @@ extension TestStore where State: Equatable {
   public func assert(
     _ updateStateToExpectedResult: @escaping (_ state: inout State) throws -> Void,
     fileID: StaticString = #fileID,
-    file: StaticString = #file,
+    file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) {
@@ -1030,7 +1035,7 @@ extension TestStore where State: Equatable {
         updateStateToExpectedResult: updateStateToExpectedResult,
         skipUnnecessaryModifyFailure: true,
         fileID: fileID,
-        file: file,
+        filePath: filePath,
         line: line,
         column: column
       )
@@ -1038,7 +1043,7 @@ extension TestStore where State: Equatable {
       reportIssue(
         "Threw error: \(error)",
         fileID: fileID,
-        filePath: file,
+        filePath: filePath,
         line: line,
         column: column
       )
@@ -1053,7 +1058,7 @@ extension TestStore where State: Equatable {
     updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     skipUnnecessaryModifyFailure: Bool = false,
     fileID: StaticString,
-    file: StaticString,
+    filePath: StaticString,
     line: UInt,
     column: UInt
   ) throws {
@@ -1123,12 +1128,6 @@ extension TestStore where State: Equatable {
         {
           var expectedWhenGivenPreviousState = current
           if let updateStateToExpectedResult {
-            // withIssueReporting(/*.default*/, isIntermittent: true) {
-            //
-            // } when: {
-            //
-            // }
-
             withExpectedIssue(isIntermittent: true) {
               do {
                 try Dependencies.withDependencies {
@@ -1145,7 +1144,7 @@ extension TestStore where State: Equatable {
                   Threw error: \(error)
                   """,
                   fileID: fileID,
-                  filePath: file,
+                  filePath: filePath,
                   line: line,
                   column: column
                 )
@@ -1181,14 +1180,14 @@ extension TestStore where State: Equatable {
           : updateStateToExpectedResult != nil
             ? "A state change does not match expectation"
             : "State was not expected to change, but a change occurred"
-        XCTFailHelper(
+        reportIssueHelper(
           """
           \(messageHeading): …
 
           \(difference)\(postamble.isEmpty ? "" : "\n\n\(postamble)")
           """,
           fileID: fileID,
-          file: file,
+          filePath: filePath,
           line: line,
           column: column
         )
@@ -1201,7 +1200,7 @@ extension TestStore where State: Equatable {
           updateStateToExpectedResult != nil
         else { return }
 
-        XCTFailHelper(
+        reportIssueHelper(
           """
           Expected state to change, but no change occurred.
 
@@ -1209,7 +1208,7 @@ extension TestStore where State: Equatable {
           expected, omit the trailing closure.
           """,
           fileID: fileID,
-          file: file,
+          filePath: filePath,
           line: line,
           column: column
         )
@@ -1224,7 +1223,7 @@ extension TestStore where State: Equatable, Action: Equatable {
     _ expectedAction: Action,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
-    file: StaticString = #file,
+    filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) {
@@ -1252,7 +1251,7 @@ extension TestStore where State: Equatable, Action: Equatable {
       },
       updateStateToExpectedResult,
       fileID: fileID,
-      file: file,
+      filePath: filePath,
       line: line,
       column: column
     )
@@ -1293,15 +1292,18 @@ extension TestStore where State: Equatable, Action: Equatable {
     _ expectedAction: Action,
     timeout duration: Duration,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
     line: UInt = #line
   ) async {
     await self.receive(
       expectedAction,
       timeout: duration.nanoseconds,
       assert: updateStateToExpectedResult,
-      file: file,
-      line: line
+      fileID: fileID,
+      file: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -1340,26 +1342,43 @@ extension TestStore where State: Equatable, Action: Equatable {
     _ expectedAction: Action,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
-    await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
           self._receive(
-            expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+            expectedAction,
+            assert: updateStateToExpectedResult,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+          )
         }()
         return
       }
       await self.receiveAction(
         matching: { expectedAction == $0 },
         timeout: nanoseconds,
-        file: file,
-        line: line
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       _ = {
-        self._receive(expectedAction, assert: updateStateToExpectedResult, file: file, line: line)
+        self._receive(
+          expectedAction,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
       }()
       await Task.megaYield()
     }
@@ -1371,7 +1390,7 @@ extension TestStore where State: Equatable {
     _ isMatching: (Action) -> Bool,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
-    file: StaticString = #file,
+    filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) {
@@ -1385,7 +1404,7 @@ extension TestStore where State: Equatable {
       },
       updateStateToExpectedResult,
       fileID: fileID,
-      file: file,
+      filePath: filePath,
       line: line,
       column: column
     )
@@ -1395,7 +1414,7 @@ extension TestStore where State: Equatable {
     _ actionCase: AnyCasePath<Action, Value>,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
-    file: StaticString = #file,
+    filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) {
@@ -1409,7 +1428,7 @@ extension TestStore where State: Equatable {
       },
       updateStateToExpectedResult,
       fileID: fileID,
-      file: file,
+      filePath: filePath,
       line: line,
       column: column
     )
@@ -1420,7 +1439,7 @@ extension TestStore where State: Equatable {
     _ value: Value,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
-    file: StaticString = #file,
+    filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) {
@@ -1446,7 +1465,7 @@ extension TestStore where State: Equatable {
       },
       updateStateToExpectedResult,
       fileID: fileID,
-      file: file,
+      filePath: filePath,
       line: line,
       column: column
     )
@@ -1490,15 +1509,19 @@ extension TestStore where State: Equatable {
     _ isMatching: (_ action: Action) -> Bool,
     timeout duration: Duration,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
     await self.receive(
       isMatching,
       timeout: duration.nanoseconds,
       assert: updateStateToExpectedResult,
-      file: file,
-      line: line
+      fileID: fileID,
+      file: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -1540,20 +1563,43 @@ extension TestStore where State: Equatable {
     _ isMatching: (_ action: Action) -> Bool,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
-    await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
-          self._receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
+          self._receive(
+            isMatching,
+            assert: updateStateToExpectedResult,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+          )
         }()
         return
       }
-      await self.receiveAction(matching: isMatching, timeout: nanoseconds, file: file, line: line)
+      await self.receiveAction(
+        matching: isMatching,
+        timeout: nanoseconds,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
       _ = {
-        self._receive(isMatching, assert: updateStateToExpectedResult, file: file, line: line)
+        self._receive(
+          isMatching,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
       }()
       await Task.megaYield()
     }
@@ -1595,15 +1641,19 @@ extension TestStore where State: Equatable {
     _ actionCase: CaseKeyPath<Action, Value>,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
     await self.receive(
       AnyCasePath(actionCase),
       timeout: nanoseconds,
       assert: updateStateToExpectedResult,
-      file: file,
-      line: line
+      fileID: fileID,
+      file: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -1638,17 +1688,25 @@ extension TestStore where State: Equatable {
     _ value: Value,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async
   where Action: CasePathable {
     let actionCase = AnyCasePath(actionCase)
-    await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
           self._receive(
-            actionCase, value, assert: updateStateToExpectedResult, file: file, line: line
+            actionCase,
+            value,
+            assert: updateStateToExpectedResult,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
           )
         }()
         return
@@ -1656,12 +1714,20 @@ extension TestStore where State: Equatable {
       await self.receiveAction(
         matching: { actionCase.extract(from: $0) != nil },
         timeout: nanoseconds,
-        file: file,
-        line: line
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       _ = {
         self._receive(
-          actionCase, value, assert: updateStateToExpectedResult, file: file, line: line
+          actionCase,
+          value,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
       }()
       await Task.megaYield()
@@ -1698,25 +1764,43 @@ extension TestStore where State: Equatable {
     _ actionCase: AnyCasePath<Action, Value>,
     timeout nanoseconds: UInt64? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
-    await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
-          self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
+          self._receive(
+            actionCase,
+            assert: updateStateToExpectedResult,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+          )
         }()
         return
       }
       await self.receiveAction(
         matching: { actionCase.extract(from: $0) != nil },
         timeout: nanoseconds,
-        file: file,
-        line: line
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       _ = {
-        self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
+        self._receive(
+          actionCase,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
       }()
       await Task.megaYield()
     }
@@ -1759,15 +1843,19 @@ extension TestStore where State: Equatable {
     _ actionCase: CaseKeyPath<Action, Value>,
     timeout duration: Duration,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
     await self.receive(
       AnyCasePath(actionCase),
       timeout: duration,
       assert: updateStateToExpectedResult,
-      file: file,
-      line: line
+      fileID: fileID,
+      file: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -1803,8 +1891,10 @@ extension TestStore where State: Equatable {
     _ value: Value,
     timeout duration: Duration,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async
   where Action: CasePathable {
     await self.receive(
@@ -1816,8 +1906,10 @@ extension TestStore where State: Equatable {
       ),
       timeout: duration,
       assert: updateStateToExpectedResult,
-      file: file,
-      line: line
+      fileID: fileID,
+      file: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -1855,15 +1947,22 @@ extension TestStore where State: Equatable {
     _ actionCase: AnyCasePath<Action, Value>,
     timeout duration: Duration,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
-    await XCTFailContext.$current.withValue(XCTFailContext(file: file, line: line)) {
+    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
           self._receive(
-            actionCase, assert: updateStateToExpectedResult, file: file, line: line
+            actionCase,
+            assert: updateStateToExpectedResult,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
           )
         }()
         return
@@ -1871,11 +1970,20 @@ extension TestStore where State: Equatable {
       await self.receiveAction(
         matching: { actionCase.extract(from: $0) != nil },
         timeout: duration.nanoseconds,
-        file: file,
-        line: line
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       _ = {
-        self._receive(actionCase, assert: updateStateToExpectedResult, file: file, line: line)
+        self._receive(
+          actionCase,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
       }()
       await Task.megaYield()
     }
@@ -1887,7 +1995,7 @@ extension TestStore where State: Equatable {
     unexpectedActionDescription: (Action) -> String,
     _ updateStateToExpectedResult: ((inout State) throws -> Void)?,
     fileID: StaticString,
-    file: StaticString,
+    filePath: StaticString,
     line: UInt,
     column: UInt
   ) {
@@ -1900,20 +2008,24 @@ extension TestStore where State: Equatable {
     }
 
     guard !self.reducer.receivedActions.isEmpty else {
-      XCTFail(
+      reportIssue(
         failureMessage(),
-        file: file,
-        line: line
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       return
     }
 
     if self.exhaustivity != .on {
       guard self.reducer.receivedActions.contains(where: { predicate($0.action) }) else {
-        XCTFail(
+        reportIssue(
           failureMessage(),
-          file: file,
-          line: line
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
         return
       }
@@ -1930,7 +2042,7 @@ extension TestStore where State: Equatable {
       if !actions.isEmpty {
         var actionsDump = ""
         customDump(actions, to: &actionsDump)
-        XCTFailHelper(
+        reportIssueHelper(
           """
           \(actions.count) received action\
           \(actions.count == 1 ? " was" : "s were") skipped:
@@ -1938,7 +2050,7 @@ extension TestStore where State: Equatable {
           \(actionsDump)
           """,
           fileID: fileID,
-          file: file,
+          filePath: filePath,
           line: line,
           column: column
         )
@@ -1949,14 +2061,14 @@ extension TestStore where State: Equatable {
     if !predicate(receivedAction) {
       let receivedActionLater = self.reducer.receivedActions
         .contains(where: { action, _ in predicate(receivedAction) })
-      XCTFailHelper(
+      reportIssueHelper(
         """
         Received unexpected action\(receivedActionLater ? " before this one" : ""): …
 
         \(unexpectedActionDescription(receivedAction))
         """,
         fileID: fileID,
-        file: file,
+        filePath: filePath,
         line: line,
         column: column
       )
@@ -1968,7 +2080,7 @@ extension TestStore where State: Equatable {
           actual: state,
           updateStateToExpectedResult: updateStateToExpectedResult,
           fileID: fileID,
-          file: file,
+          filePath: filePath,
           line: line,
           column: column
         )
@@ -1976,7 +2088,7 @@ extension TestStore where State: Equatable {
         reportIssue(
           "Threw error: \(error)",
           fileID: fileID,
-          filePath: file,
+          filePath: filePath,
           line: line,
           column: column
         )
@@ -1989,8 +2101,10 @@ extension TestStore where State: Equatable {
   private func receiveAction(
     matching predicate: (Action) -> Bool,
     timeout nanoseconds: UInt64?,
-    file: StaticString,
-    line: UInt
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
   ) async {
     let nanoseconds = nanoseconds ?? self.timeout
 
@@ -2032,7 +2146,7 @@ extension TestStore where State: Equatable {
             \(timeoutMessage).
             """
         }
-        XCTFail(
+        reportIssue(
           """
           Expected to receive \(self.exhaustivity == .on ? "an action" : "a matching action"), but \
           received none\
@@ -2040,8 +2154,10 @@ extension TestStore where State: Equatable {
 
           \(suggestion)
           """,
-          file: file,
-          line: line
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
         return
       }
@@ -2080,10 +2196,19 @@ extension TestStore where State: Equatable {
   public func send(
     _ action: CaseKeyPath<Action, Void>,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async -> TestStoreTask {
-    await self.send(action(), assert: updateStateToExpectedResult, file: file, line: line)
+    await self.send(
+      action(),
+      assert: updateStateToExpectedResult,
+      fileID: fileID,
+      file: filePath,
+      line: line,
+      column: column
+    )
   }
 
   /// Sends an action to the store and asserts when state changes.
@@ -2119,10 +2244,19 @@ extension TestStore where State: Equatable {
     _ action: CaseKeyPath<Action, Value>,
     _ value: Value,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async -> TestStoreTask {
-    await self.send(action(value), assert: updateStateToExpectedResult, file: file, line: line)
+    await self.send(
+      action(value),
+      assert: updateStateToExpectedResult,
+      fileID: fileID,
+      file: filePath,
+      line: line,
+      column: column
+    )
   }
 }
 
@@ -2151,22 +2285,34 @@ extension TestStore {
   @MainActor
   public func skipReceivedActions(
     strict: Bool = true,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
     await Task.megaYield()
-    _ = { self._skipReceivedActions(strict: strict, file: file, line: line) }()
+    _ = {
+      self._skipReceivedActions(
+        strict: strict, fileID: fileID, file: filePath, line: line, column: column
+      )
+    }()
   }
 
   private func _skipReceivedActions(
     strict: Bool = true,
     fileID: StaticString = #fileID,
-    file: StaticString = #file,
+    file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) {
     if strict && self.reducer.receivedActions.isEmpty {
-      XCTFail("There were no received actions to skip.")
+      reportIssue(
+        "There were no received actions to skip.",
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
       return
     }
     guard !self.reducer.receivedActions.isEmpty
@@ -2177,7 +2323,7 @@ extension TestStore {
     } else {
       customDump(self.reducer.receivedActions.map { $0.action }, to: &actions)
     }
-    XCTFailHelper(
+    reportIssueHelper(
       """
       \(self.reducer.receivedActions.count) received action\
       \(self.reducer.receivedActions.count == 1 ? " was" : "s were") skipped:
@@ -2188,7 +2334,7 @@ extension TestStore {
         ? .off(showSkippedAssertions: true)
         : self.exhaustivity,
       fileID: fileID,
-      file: file,
+      filePath: filePath,
       line: line,
       column: column
     )
@@ -2220,22 +2366,34 @@ extension TestStore {
   @MainActor
   public func skipInFlightEffects(
     strict: Bool = true,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
     await Task.megaYield()
-    _ = { self._skipInFlightEffects(strict: strict, file: file, line: line) }()
+    _ = {
+      self._skipInFlightEffects(
+        strict: strict, fileID: fileID, filePath: filePath, line: line, column: column
+      )
+    }()
   }
 
   fileprivate func _skipInFlightEffects(
     strict: Bool = true,
     fileID: StaticString = #fileID,
-    file: StaticString = #file,
+    filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) {
     if strict && self.reducer.inFlightEffects.isEmpty {
-      XCTFail("There were no in-flight effects to skip.")
+      reportIssue(
+        "There were no in-flight effects to skip.",
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
       return
     }
     guard !self.reducer.inFlightEffects.isEmpty
@@ -2248,7 +2406,7 @@ extension TestStore {
       customDump(self.reducer.inFlightEffects.map { $0.action.origin.action }, to: &actions)
     }
 
-    XCTFailHelper(
+    reportIssueHelper(
       """
       \(self.reducer.inFlightEffects.count) in-flight effect\
       \(self.reducer.inFlightEffects.count == 1 ? " was" : "s were") cancelled, originating from:
@@ -2259,25 +2417,25 @@ extension TestStore {
         ? .off(showSkippedAssertions: true)
         : self.exhaustivity,
       fileID: fileID,
-      file: file,
+      filePath: filePath,
       line: line,
       column: column
     )
     self.reducer.inFlightEffects = []
   }
 
-  private func XCTFailHelper(
+  private func reportIssueHelper(
     _ message: String = "",
     overrideExhaustivity exhaustivity: Exhaustivity? = nil,
     fileID: StaticString,
-    file: StaticString,
+    filePath: StaticString,
     line: UInt,
     column: UInt
   ) {
     let exhaustivity = exhaustivity ?? self.exhaustivity
     switch exhaustivity {
     case .on:
-      reportIssue(message, fileID: fileID, filePath: file, line: line, column: column)
+      reportIssue(message, fileID: fileID, filePath: filePath, line: line, column: column)
     case let .off(showSkippedAssertions):
       if showSkippedAssertions {
         withExpectedIssue {
@@ -2288,7 +2446,7 @@ extension TestStore {
             \(message)
             """,
           fileID: fileID,
-          filePath: file,
+          filePath: filePath,
           line: line,
           column: column
           )
@@ -2470,10 +2628,18 @@ public struct TestStoreTask: Hashable, Sendable {
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func finish(
     timeout duration: Duration,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
-    await self.finish(timeout: duration.nanoseconds, file: file, line: line)
+    await self.finish(
+      timeout: duration.nanoseconds,
+      fileID: fileID,
+      file: filePath,
+      line: line,
+      column: column
+    )
   }
 
   /// Asserts the underlying task finished.
@@ -2482,8 +2648,10 @@ public struct TestStoreTask: Hashable, Sendable {
   @_disfavoredOverload
   public func finish(
     timeout nanoseconds: UInt64? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
     let nanoseconds = nanoseconds ?? self.timeout
     await Task.megaYield()
@@ -2513,15 +2681,17 @@ public struct TestStoreTask: Hashable, Sendable {
         \(timeoutMessage).
         """
 
-      XCTFail(
+      reportIssue(
         """
         Expected task to finish, but it is still in-flight\
         \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
 
         \(suggestion)
         """,
-        file: file,
-        line: line
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
     }
   }
@@ -2605,7 +2775,7 @@ class TestReducer<State, Action>: Reducer {
             .init(
               origin: .receive($0),
               fileID: action.fileID,
-              file: action.file,
+              filePath: action.filePath,
               line: action.line,
               column: action.column
             )
@@ -2630,7 +2800,7 @@ class TestReducer<State, Action>: Reducer {
   struct TestAction {
     let origin: Origin
     let fileID: StaticString
-    let file: StaticString
+    let filePath: StaticString
     let line: UInt
     let column: UInt
 
@@ -2706,8 +2876,10 @@ extension TestStore {
   public func receive(
     _ expectedAction: Action,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
     fatalError()
   }

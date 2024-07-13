@@ -260,6 +260,7 @@ public final class RootStore {
   }
 #endif
 
+// TODO: Should this traffic file/line through to `reportIssue`?
 enum ThreadCheckStatus {
   case effectCompletion(Any)
   case `init`

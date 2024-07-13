@@ -1,6 +1,7 @@
 #if canImport(Perception) && canImport(ObjectiveC)
   import Foundation
   import ObjectiveC
+import XCTest
 
   extension NSObject {
     /// Observe access to properties of a `@Perceptible` or `@Observable` object.
@@ -138,7 +139,13 @@
     /// }
     /// ```
     @discardableResult
-    public func observe(_ apply: @escaping () -> Void) -> ObservationToken {
+    public func observe(
+      _ apply: @escaping () -> Void,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> ObservationToken {
       if ObserveLocals.isApplying {
         reportIssue(
           """
@@ -146,7 +153,11 @@
           over-observation and unintended side effects.
 
           Avoid nested closures by moving child observation into their own lifecycle methods.
-          """
+          """,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
       }
       let token = ObservationToken()

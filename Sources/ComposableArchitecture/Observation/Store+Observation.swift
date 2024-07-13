@@ -168,8 +168,8 @@
         state: state,
         action: action,
         isInViewBody: _isInPerceptionTracking,
-        fileID: HashableStaticString(rawValue: fileID),
-        filePath: HashableStaticString(rawValue: filePath),
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
         line: line,
         column: column
       ]
@@ -237,8 +237,8 @@
         state: state,
         action: action,
         isInViewBody: _isInPerceptionTracking,
-        fileID: HashableStaticString(rawValue: fileID),
-        filePath: HashableStaticString(rawValue: filePath),
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
         line: line,
         column: column
       ]
@@ -309,8 +309,8 @@
         state: state,
         action: action,
         isInViewBody: _isInPerceptionTracking,
-        fileID: HashableStaticString(rawValue: fileID),
-        filePath: HashableStaticString(rawValue: filePath),
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
         line: line,
         column: column
       ]
@@ -323,8 +323,8 @@
       state state: KeyPath<State, ChildState?>,
       action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
       isInViewBody isInViewBody: Bool,
-      fileID fileID: HashableStaticString,
-      filePath filePath: HashableStaticString,
+      fileID fileID: _HashableStaticString,
+      filePath filePath: _HashableStaticString,
       line line: UInt,
       column column: UInt
     ) -> Store<ChildState, ChildAction>? {

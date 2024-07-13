@@ -165,7 +165,6 @@
       } expansion: {
         #"""
         struct State: Equatable {
-          
           var destination: Destination.State? {
             @storageRestrictions(initializes: _destination)
             init(initialValue) {
@@ -189,8 +188,6 @@
               _$observationRegistrar.mutate(self, keyPath: \.destination, &_destination.projectedValue, newValue, _$isIdentityEqual)
             }
           }
-
-          
 
           private var _destination = ComposableArchitecture.PresentationState<Destination.State>(wrappedValue: nil)
 

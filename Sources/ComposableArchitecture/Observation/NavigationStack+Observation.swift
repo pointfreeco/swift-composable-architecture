@@ -121,8 +121,8 @@ import SwiftUI
     {
       self.init(
         path: path[
-          fileID: HashableStaticString(rawValue: fileID),
-          filePath: HashableStaticString(rawValue: filePath),
+          fileID: _HashableStaticString(rawValue: fileID),
+          filePath: _HashableStaticString(rawValue: filePath),
           line: line,
           column: column
         ]
@@ -166,8 +166,8 @@ import SwiftUI
                 id: self.store.id(
                   state: \.[
                     id:component.id,
-                    fileID:HashableStaticString(rawValue: fileID),
-                    filePath:HashableStaticString(rawValue: filePath),
+                    fileID:_HashableStaticString(rawValue: fileID),
+                    filePath:_HashableStaticString(rawValue: filePath),
                     line:line,
                     column:column
                   ],
@@ -348,8 +348,8 @@ import SwiftUI
   extension Store {
     @_spi(Internals)
     public subscript<ElementState, ElementAction>(
-      fileID fileID: HashableStaticString,
-      filePath filePath: HashableStaticString,
+      fileID fileID: _HashableStaticString,
+      filePath filePath: _HashableStaticString,
       line line: UInt,
       column column: UInt
     ) -> StackState<ElementState>.PathView

@@ -186,7 +186,7 @@ public struct Shared<Value> {
   public func assert(
     _ updateValueToExpectedResult: (inout Value) throws -> Void,
     fileID: StaticString = #fileID,
-    file: StaticString = #file,
+    file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) rethrows where Value: Equatable {
@@ -199,7 +199,7 @@ public struct Shared<Value> {
       reportIssue(
         "Expected changes, but none occurred.",
         fileID: fileID,
-        filePath: file,
+        filePath: filePath,
         line: line,
         column: column
       )
@@ -210,7 +210,7 @@ public struct Shared<Value> {
         reportIssue(
           "Expected changes, but none occurred.",
           fileID: fileID,
-          filePath: file,
+          filePath: filePath,
           line: line,
           column: column
         )
@@ -219,7 +219,12 @@ public struct Shared<Value> {
       try updateValueToExpectedResult(&snapshot)
       self.snapshot = snapshot
       // TODO: Finesse error more than `XCTAssertNoDifference`
-      XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
+      XCTAssertNoDifference(
+        self.currentValue,
+        self.snapshot,
+        file: filePath,
+        line: line
+      )
       self.snapshot = nil
     }
   }
