@@ -168,7 +168,7 @@
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
         "branch" : "swift-testing",
-        "revision" : "0bf5ef4746bb193865b946ced53b61aec223af42"
+        "revision" : "5b99f3ba6c7a0ba2aa07d240c38093c49b21d0ef"
       }
     }
   ],
