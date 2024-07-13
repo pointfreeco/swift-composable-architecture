@@ -30,8 +30,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-perception", from: "1.3.0"),
     .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "1.1.0"),
-//    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", branch: "swift-testing"),
-    .package(path: "../xctest-dynamic-overlay"),
+    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", branch: "swift-testing"),
     .package(url: "https://github.com/swiftlang/swift-syntax", "509.0.0"..<"601.0.0-prerelease"),
   ],
   targets: [
