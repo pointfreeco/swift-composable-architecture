@@ -29,7 +29,7 @@ struct Counter {
 }
 
 final class CounterViewController: UIViewController {
-  let store: StoreOf<Counter>
+  private let store: StoreOf<Counter>
 
   init(store: StoreOf<Counter>) {
     self.store = store
