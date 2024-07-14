@@ -79,7 +79,7 @@ final class CounterViewController: UIViewController {
     store.send(.decrementButtonTapped)
   }
 
-  @objc func incrementButtonTapped() {
+  @objc private func incrementButtonTapped() {
     store.send(.incrementButtonTapped)
   }
 }
