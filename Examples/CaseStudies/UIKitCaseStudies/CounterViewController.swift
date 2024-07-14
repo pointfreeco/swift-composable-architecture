@@ -75,7 +75,7 @@ final class CounterViewController: UIViewController {
     }
   }
 
-  @objc func decrementButtonTapped() {
+  @objc private func decrementButtonTapped() {
     store.send(.decrementButtonTapped)
   }
 
