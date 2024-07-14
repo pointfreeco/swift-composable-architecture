@@ -95,7 +95,7 @@ struct ParentFeature {
 > information about how to initialize types that use `@Shared`.
 
 Then suppose that this feature can present a child feature that wants access to this shared `count`
-value. It too would hold onto an `@Shared` property to a count:
+value. It too would hold onto a `@Shared` property to a count:
 
 ```swift
 @Reducer
