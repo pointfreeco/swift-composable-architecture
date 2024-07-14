@@ -69,7 +69,7 @@ dependency or using the shared state tools discussed in this article.
 
 ## Explicit shared state
 
-This is the simplest kind of shared state to get start with. It allows you to share state amongst
+This is the simplest kind of shared state to get started with. It allows you to share state amongst
 many features without any persistence. The data is only held in memory, and will be cleared out the
 next time the application is run.
 
