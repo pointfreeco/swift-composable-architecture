@@ -49,7 +49,7 @@ struct EagerNavigation {
 }
 
 final class EagerNavigationViewController: UIViewController {
-  let store: StoreOf<EagerNavigation>
+  private let store: StoreOf<EagerNavigation>
 
   init(store: StoreOf<EagerNavigation>) {
     self.store = store
