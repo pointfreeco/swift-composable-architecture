@@ -23,7 +23,7 @@ struct CounterList {
 let cellIdentifier = "Cell"
 
 final class CountersTableViewController: UITableViewController {
-  let store: StoreOf<CounterList>
+  private let store: StoreOf<CounterList>
 
   var observations: [IndexPath: ObservationToken] = [:]
 
