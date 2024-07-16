@@ -1,7 +1,6 @@
 #if canImport(Perception) && canImport(ObjectiveC)
   import Foundation
   import ObjectiveC
-import XCTest
 
   extension NSObject {
     /// Observe access to properties of a `@Perceptible` or `@Observable` object.

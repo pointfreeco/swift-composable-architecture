@@ -899,92 +899,94 @@ extension TestStore where State: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) async -> TestStoreTask {
-    guard !self.isDismissed else {
-      reportIssue(
-        "Can't send action to dismissed test store.",
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
-      return TestStoreTask(rawValue: nil, timeout: self.timeout)
-    }
-    if !self.reducer.receivedActions.isEmpty {
-      var actions = ""
-      customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-      reportIssueHelper(
-        """
-        Must handle \(self.reducer.receivedActions.count) received \
-        action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
+    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+      guard !self.isDismissed else {
+        reportIssue(
+          "Can't send action to dismissed test store.",
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+        return TestStoreTask(rawValue: nil, timeout: self.timeout)
+      }
+      if !self.reducer.receivedActions.isEmpty {
+        var actions = ""
+        customDump(self.reducer.receivedActions.map(\.action), to: &actions)
+        reportIssueHelper(
+          """
+          Must handle \(self.reducer.receivedActions.count) received \
+          action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
 
-        Unhandled actions: \(actions)
-        """,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
-    }
+          Unhandled actions: \(actions)
+          """,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      }
 
-    switch self.exhaustivity {
-    case .on:
-      break
-    case .off(showSkippedAssertions: true):
-      await self.skipReceivedActions(strict: false)
-    case .off(showSkippedAssertions: false):
-      self.reducer.receivedActions = []
-    }
-
-    let expectedState = self.state
-    let previousState = self.reducer.state
-    let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
-    let task = self.sharedChangeTracker.track {
-      self.store.send(
-        .init(
-          origin: .send(action), fileID: fileID, filePath: filePath, line: line, column: column
-        ),
-        originatingFrom: nil
-      )
-    }
-    if uncheckedUseMainSerialExecutor {
-      await Task.yield()
-    } else {
-      for await _ in self.reducer.effectDidSubscribe.stream {
+      switch self.exhaustivity {
+      case .on:
         break
-      }
-    }
-    do {
-      let currentState = self.state
-      let currentStackElementID = self.reducer.dependencies.stackElementID
-      self.reducer.state = previousState
-      self.reducer.dependencies.stackElementID = previousStackElementID
-      defer {
-        self.reducer.state = currentState
-        self.reducer.dependencies.stackElementID = currentStackElementID
+      case .off(showSkippedAssertions: true):
+        await self.skipReceivedActions(strict: false)
+      case .off(showSkippedAssertions: false):
+        self.reducer.receivedActions = []
       }
 
-      try self.expectedStateShouldMatch(
-        expected: expectedState,
-        actual: currentState,
-        updateStateToExpectedResult: updateStateToExpectedResult,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
-    } catch {
-      reportIssue(
-        "Threw error: \(error)",
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
+      let expectedState = self.state
+      let previousState = self.reducer.state
+      let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
+      let task = self.sharedChangeTracker.track {
+        self.store.send(
+          .init(
+            origin: .send(action), fileID: fileID, filePath: filePath, line: line, column: column
+          ),
+          originatingFrom: nil
+        )
+      }
+      if uncheckedUseMainSerialExecutor {
+        await Task.yield()
+      } else {
+        for await _ in self.reducer.effectDidSubscribe.stream {
+          break
+        }
+      }
+      do {
+        let currentState = self.state
+        let currentStackElementID = self.reducer.dependencies.stackElementID
+        self.reducer.state = previousState
+        self.reducer.dependencies.stackElementID = previousStackElementID
+        defer {
+          self.reducer.state = currentState
+          self.reducer.dependencies.stackElementID = currentStackElementID
+        }
+
+        try self.expectedStateShouldMatch(
+          expected: expectedState,
+          actual: currentState,
+          updateStateToExpectedResult: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      } catch {
+        reportIssue(
+          "Threw error: \(error)",
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      }
+      // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
+      //     instrument their effects.
+      await Task.megaYield(count: 20)
+      return .init(rawValue: task, timeout: self.timeout)
     }
-    // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
-    //     instrument their effects.
-    await Task.megaYield(count: 20)
-    return .init(rawValue: task, timeout: self.timeout)
   }
 
   /// Assert against the current state of the store.
