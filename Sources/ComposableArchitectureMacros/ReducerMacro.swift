@@ -498,8 +498,7 @@ private enum ReducerCase {
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
-        if
-          let type = parameter.type.as(IdentifierTypeSyntax.self),
+        if let type = parameter.type.as(IdentifierTypeSyntax.self),
           type.isEphemeral,
           let generics = type.genericArgumentClause?.arguments,
           generics.count == 1,
