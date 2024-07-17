@@ -69,7 +69,7 @@ dependency or using the shared state tools discussed in this article.
 
 ## Explicit shared state
 
-This is the simplest kind of shared state to get start with. It allows you to share state amongst
+This is the simplest kind of shared state to get started with. It allows you to share state amongst
 many features without any persistence. The data is only held in memory, and will be cleared out the
 next time the application is run.
 
@@ -95,7 +95,7 @@ struct ParentFeature {
 > information about how to initialize types that use `@Shared`.
 
 Then suppose that this feature can present a child feature that wants access to this shared `count`
-value. It too would hold onto an `@Shared` property to a count:
+value. It too would hold onto a `@Shared` property to a count:
 
 ```swift
 @Reducer

@@ -3,9 +3,9 @@ import ComposableArchitecture
 import UIKit
 
 final class IfLetStoreController<State, Action>: UIViewController {
-  let store: Store<State?, Action>
-  let ifDestination: (Store<State, Action>) -> UIViewController
-  let elseDestination: () -> UIViewController
+  private let store: Store<State?, Action>
+  private let ifDestination: (Store<State, Action>) -> UIViewController
+  private let elseDestination: () -> UIViewController
 
   private var cancellables: Set<AnyCancellable> = []
   private var viewController = UIViewController() {

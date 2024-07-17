@@ -12,6 +12,10 @@ APIs and deprecated 1 API.
 > Important: Before following this migration guide be sure you have fully migrated to the newest
 > tools of version 1.10. See <doc:MigrationGuides> for more information.
 
+* [Mutating shared state concurrently](#Mutating-shared-state-concurrently)
+* [Supplying mock read-only state to previews](#Supplying-mock-read-only-state-to-previews)
+* [Migrating to 1.11.2](#Migrating-to-1112)
+
 ## Mutating shared state concurrently
 
 Version 1.10 of the Composable Architecture introduced a powerful tool for 

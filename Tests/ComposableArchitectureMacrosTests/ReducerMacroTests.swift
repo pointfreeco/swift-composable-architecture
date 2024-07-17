@@ -299,7 +299,7 @@
             case activity(Activity.Action)
             case timeline(Timeline.Action)
             case tweet(Tweet.Action)
-            case alert(AlertState<Alert>.Action)
+            case alert(Alert)
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
@@ -573,7 +573,7 @@
 
           @CasePathable
           enum Action {
-            case alert(AlertState<Never>.Action)
+            case alert(Never)
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
@@ -752,8 +752,8 @@
 
           @CasePathable
           enum Action {
-            case alert(AlertState<Alert>.Action)
-            case dialog(ConfirmationDialogState<Dialog>.Action)
+            case alert(Alert)
+            case dialog(Dialog)
             case meeting(Swift.Never)
           }
 
@@ -1185,7 +1185,7 @@
             case child(ChildFeature.Action)
             #if os(macOS)
             case mac(MacFeature.Action)
-            case macAlert(AlertState<MacAlert>.Action)
+            case macAlert(MacAlert)
             #elseif os(iOS)
             case phone(PhoneFeature.Action)
             #else
@@ -1196,7 +1196,7 @@
             #if DEBUG
             #if INNER
             case inner(InnerFeature.Action)
-            case innerDialog(ConfirmationDialogState<InnerDialog>.Action)
+            case innerDialog(InnerDialog)
             #endif
             #endif
 

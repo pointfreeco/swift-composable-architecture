@@ -53,7 +53,7 @@ struct LazyNavigation {
 }
 
 final class LazyNavigationViewController: UIViewController {
-  let store: StoreOf<LazyNavigation>
+  private let store: StoreOf<LazyNavigation>
 
   init(store: StoreOf<LazyNavigation>) {
     self.store = store
