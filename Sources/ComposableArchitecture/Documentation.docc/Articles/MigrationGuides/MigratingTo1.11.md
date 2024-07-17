@@ -15,7 +15,6 @@ APIs and deprecated 1 API.
 * [Mutating shared state concurrently](#Mutating-shared-state-concurrently)
 * [Supplying mock read-only state to previews](#Supplying-mock-read-only-state-to-previews)
 * [Migrating to 1.11.2](#Migrating-to-1112)
-* [Migrating to 1.11.3](#Migrating-to-1113)
 
 ## Mutating shared state concurrently
 
