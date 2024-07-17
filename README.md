@@ -7,7 +7,7 @@
 
 The Composable Architecture (TCA, for short) is a library for building applications in a consistent 
 and understandable way, with composition, testing, and ergonomics in mind. It can be used in 
-SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, tvOS, and watchOS).
+SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, visionOS, tvOS, and watchOS).
 
 * [What is the Composable Architecture?](#what-is-the-composable-architecture)
 * [Learn more](#learn-more)
@@ -419,7 +419,7 @@ func testFeature() async {
 ```
 
 With that little bit of upfront work we can finish the test by simulating the user tapping on the 
-fact button, and thenreceiving the response from the dependency to present the fact:
+fact button, and then receiving the response from the dependency to present the fact:
 
 ```swift
 await store.send(.numberFactButtonTapped)
@@ -532,13 +532,15 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/)
-* [1.9.0](https://pointfreeco.github.io/swift-composable-architecture/1.9.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.9))
+* [1.11.0](https://pointfreeco.github.io/swift-composable-architecture/1.11.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.11))
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [1.10.0](https://pointfreeco.github.io/swift-composable-architecture/1.10.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.10))
+  * [1.9.0](https://pointfreeco.github.io/swift-composable-architecture/1.9.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.9))
   * [1.8.0](https://pointfreeco.github.io/swift-composable-architecture/1.8.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.8))
   * [1.7.0](https://pointfreeco.github.io/swift-composable-architecture/1.7.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7))
   * [1.6.0](https://pointfreeco.github.io/swift-composable-architecture/1.6.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6))
@@ -562,6 +564,7 @@ comfortable with the library:
 * [Dependencies][dependencies-article]
 * [Testing][testing-article]
 * [Navigation][navigation-article]
+* [Sharing state][sharing-state-article]
 * [Performance][performance-article]
 * [Concurrency][concurrency-article]
 * [Bindings][bindings-article]
@@ -579,7 +582,7 @@ a particular problem, there are a number of places you can discuss with fellow
 
 You can add ComposableArchitecture to an Xcode project by adding it as a package dependency.
 
-  1. From the **File** menu, select **Add Packages...**
+  1. From the **File** menu, select **Add Package Dependencies...**
   2. Enter "https://github.com/pointfreeco/swift-composable-architecture" into the package 
      repository URL text field
   3. Depending on how your project is structured:
@@ -632,28 +635,8 @@ to a [Gist](https://gist.github.com)!
 
 ## FAQ
 
-* How does the Composable Architecture compare to Elm, Redux, and others?
-  <details>
-    <summary>Expand to see answer</summary>
-    The Composable Architecture (TCA) is built on a foundation of ideas popularized by the Elm 
-    Architecture (TEA) and Redux, but made to feel at home in the Swift language and on Apple's 
-    platforms.
-
-    In some ways TCA is a little more opinionated than the other libraries. For example, Redux is 
-    not prescriptive with how one executes side effects, but TCA requires all side effects to be 
-    modeled in the `Effect` type and returned from the reducer.
-
-    In other ways TCA is a little more lax than the other libraries. For example, Elm controls what 
-    kinds of effects can be created via the `Cmd` type, but TCA allows an escape hatch to any kind 
-    of effect since `Effect` wraps around an async operation.
-
-    And then there are certain things that TCA prioritizes highly that are not points of focus for 
-    Redux, Elm, or most other libraries. For example, composition is very important aspect of TCA, 
-    which is the process of breaking down large features into smaller units that can be glued 
-    together. This is accomplished with reducer builders and operators like `Scope`, and it aids in 
-    handling complex features as well as modularization for a better-isolated code base and improved 
-    compile times.
-  </details>
+We have a [dedicated article][faq-article] for all of the most frequently asked questions and 
+comments people have concerning the library.
 
 ## Credits and thanks
 
@@ -709,10 +692,12 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [gh-discussions]: https://github.com/pointfreeco/swift-composable-architecture/discussions
 [swift-forum]: https://forums.swift.org/c/related-projects/swift-composable-architecture
 [testing-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/testing
+[faq-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/faq
 [dependencies-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/dependencymanagement
 [getting-started-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/gettingstarted
 [navigation-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/navigation
 [performance-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance
 [concurrency-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/swiftconcurrency
 [bindings-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/bindings
+[sharing-state-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/sharingstate
 [meet-tca]: https://pointfreeco.github.io/swift-composable-architecture/main/tutorials/meetcomposablearchitecture

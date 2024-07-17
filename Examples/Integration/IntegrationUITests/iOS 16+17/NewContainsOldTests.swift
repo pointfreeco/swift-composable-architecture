@@ -18,7 +18,7 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["1"].exists, true)
     self.assertLogs {
       """
-
+      NewContainsOldTestCase.body
       """
     }
 
@@ -27,7 +27,13 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """
@@ -40,7 +46,7 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     XCTAssertEqual(self.app.staticTexts["Child count: 0"].exists, true)
     self.assertLogs {
       """
-
+      NewContainsOldTestCase.body
       """
     }
   }
@@ -55,7 +61,14 @@ final class iOS16_17_NewContainsOldTests: BaseIntegrationTests {
     self.assertLogs {
       """
       BasicsView.body
+      NewContainsOldTestCase.body
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.deinit
+      StoreOf<BasicsView.Feature>.init
+      StoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.deinit
+      ViewStoreOf<BasicsView.Feature>.init
       ViewStoreOf<BasicsView.Feature>.init
       WithViewStoreOf<BasicsView.Feature>.body
       """

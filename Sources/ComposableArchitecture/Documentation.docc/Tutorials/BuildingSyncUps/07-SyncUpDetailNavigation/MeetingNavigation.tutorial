@@ -1,0 +1,89 @@
+@Tutorial(time: 5) {
+  @Intro(title: "Navigating to a meeting") {
+    Now that we have a navigation stack in place we can start navigating to other features in the
+    application. The simplest is the meeting screen, which allows you to see the details of a 
+    previous recorded meeting.
+  }
+  
+  @Section(title: "The meeting screen") {
+    @ContentAndMedia {
+      The meeting screen is a static view that simply displays information. It has no logic or 
+      behavior of its own. And for that reason it's not necessary to create a whole new Composable
+      Architecture feature for this screen. We can use a vanilla SwiftUI view, and then integrate it
+      into the rest of the application.
+      
+      @Image(source: MeetingNavigation-01-cover.png)
+    }
+    
+    @Steps {
+      @Step {
+        Create a new file, Meeting.swift.
+        
+        @Code(name: "Meeting.swift", file: MeetingNavigation-01-code-0001.swift)
+      }
+      
+      @Step {
+        Create a new `View` conformance for displaying the details of the meeting. We will need to
+        hold onto both a `Meeting` and `SyncUp` so that we can display attendees and transcript.
+        
+        > Note: There's no need for a reducer or a ``ComposableArchitecture/Store`` here since the
+        > view is logic-less and inert. We can have it just hold onto simple data.
+        
+        @Code(name: "Meeting.swift", file: MeetingNavigation-01-code-0002.swift)
+      }
+      
+      @Step {
+        Implement the body of the view as a simple form that displays the attendees and transcript.
+        
+        @Code(name: "Meeting.swift", file: MeetingNavigation-01-code-0003.swift)
+      }
+    }
+  }
+  
+  @Section(title: "Navigate to a meeting") {
+    @ContentAndMedia {
+      With the meeting view in place we can now integrate it 
+    }
+    
+    @Steps {
+      @Step {
+        Go to AppFeature.swift where the `App` reducer is defined. Currently it defines a `Path`
+        reducer that has a case for each feature that can be navigated to in the stack. Currently
+        that's only the detail feature.
+        
+        @Code(name: "AppFeature.swift", file: MeetingNavigation-02-code-0001.swift)
+      }
+      
+      @Step {
+        Add a case for the meeting view that we want to be able to navigate to. Instead of holding
+        onto the state of some Composable Architecture feature, it can just hold onto the state
+        the `MeetingView` needs to do its job, which is a `Meeting` and a `SyncUp`.
+        
+        @Code(name: "AppFeature.swift", file: MeetingNavigation-02-code-0002.swift)
+      }
+      
+      @Step {
+        In the `AppView` we now need to add the `.meeting` case to our `switch` inside the
+        `NavigationStack`. Here we can bind to the data in the `.meeting` case and hand it to the
+        `MeetingView`.
+        
+        @Code(name: "AppFeature.swift", file: MeetingNavigation-02-code-0003.swift, previousFile: MeetingNavigation-02-code-0003-previous.swift)
+      }
+      
+      @Step {
+        Next, in SyncUpDetail.swift update the `SyncUpDetailView` to construct a `NavigationLink`
+        to the meeting view. This is done by using the special
+        ``SwiftUI/NavigationLink/init(state:label:fileID:line:)`` initializer that comes with the
+        Composable Architecture.
+        
+        @Code(name: "SyncUpDetail.swift", file: MeetingNavigation-02-code-0004.swift, previousFile: MeetingNavigation-02-code-0004-previous.swift)
+      }
+      
+      That's all it takes. We can now navigate to any meeting that has been previously recorded.
+      However, we haven't yet implemented the record meeting feature. That is by far the most 
+      complex feature of the app, and is covered in <doc:RecordMeetingFeature>, but before getting 
+      to that let's see what it takes to test features that are integrated together in a navigation 
+      stack.
+    }
+  }
+}

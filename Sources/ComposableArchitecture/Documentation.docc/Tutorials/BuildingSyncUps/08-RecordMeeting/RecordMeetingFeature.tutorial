@@ -1,0 +1,110 @@
+@Tutorial(time: 5) {
+  @Intro(title: "The RecordMeeting feature") {
+    Let's get the basics of a new feature into place that we can navigate to, and then we will 
+    slowly layer on its complex logic and behavior, such as the timer and speech recognizer.
+    
+<!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->
+  }
+  
+  @Section(title: "Create a new feature") {
+    @ContentAndMedia {
+      We will create a brand new feature to hold the logic, behavior and view of the record 
+      meeting feature. We won't actually implement any of the logic yet, but we will get the 
+      basics of the domain modeling and view into place.
+      
+<!--      @Image(source: <#file#>, alt: "<#accessible description#>")-->
+    }
+    
+    @Steps {
+      @Step {
+        Create a new file, RecordMeeting.swift, and add a new type with the 
+        [`@Reducer`](<doc:ComposableArchitecture/Reducer()>) macro applied that will house the
+        logic and behavior of this feature.
+        
+        @Code(name: "RecordMeeting.swift", file: RecordMeetingFeature-01-code-0001.swift)
+      }
+      
+      @Step {
+        Add properties to the `State` struct inside `RecordMeeting` that the feature needs to do
+        its job, including the current attendee that is speaking, the number of seconds elapsed,
+        the transcript of the meeting, and the current sync-up we are meeting about.
+        
+        Also add cases to the `Action` enum for what things the user can do in the view, which 
+        currently is just tapping the "End meeting" button to end a meeting early, and the "Next"
+        button for skipping a speaker's turn.
+        
+        > Note: We are using [`@Shared`](<doc:ComposableArchitecture/Shared>) on the sync-up so
+        that this feature can make mutations to sync-up that are visible to other parts of the 
+        application.
+        
+        @Code(name: "RecordMeeting.swift", file: RecordMeetingFeature-01-code-0002.swift)
+      }
+      
+      @Step {
+        Copy-and-paste the `RecordMeetingView` into the file, as well as its supplementary views.
+        
+        > Note: We are not writing this view code from scratch because we are not focused on 
+        learning how to build SwiftUI views. Apple's documentation handles that well! Instead we
+        are interested in how to implement the logic and behavior of our views, and so building
+        the view is just a distraction.
+        
+        @Code(name: "RecordMeeting.swift", file: RecordMeetingFeature-01-code-0003.swift)
+      }
+      
+      @Step {
+        Run the preview to see what the design of the feature looks like.
+        
+        @Image(source: "RecordMeetingFeature-01-image-0004.jpg")
+      }
+    }
+  }
+  
+  @Section(title: "Navigating to the record meeting feature") {
+    @ContentAndMedia {
+      We now have the basics of the record meeting feature in place, so let's make it so that we 
+      can navigate to the feature from the detail feature.
+    }
+    
+    @Steps {
+      @Step {
+        Go to the AppFeature.swift file so that we can create a new case in the `Path` reducer.
+        This allows us to express that we want to be able to navigate to the `RecordMeeting`
+        feature in the navigation stack.
+        
+        @Code(name: "AppFeature.swift", file: RecordMeetingFeature-02-code-0001.swift, previousFile: RecordMeetingFeature-02-code-0001-previous.swift)
+      }
+      
+      Adding a case to this enum causes a compiler error in the view where we are switching on the
+      enum.
+      
+      @Step {
+        Fix the compiler error by destructuring the `.record` case to get access to a 
+        ``ComposableArchitecture/Store`` focused on the `RecordMeeting` domain, and then 
+        construct the `RecordMeetingView`.
+        
+        @Code(name: "AppFeature.swift", file: RecordMeetingFeature-02-code-0002.swift, previousFile: RecordMeetingFeature-02-code-0002-previous.swift)
+      }
+      
+      That gets the app building again, but we still haven't implemented logic to actually
+      navigate to the record meeting feature.
+      
+      @Step {
+        Update the `NavigationLink` in the `SyncUpDetailView` so that when it is tapped it pushes
+        `Path` state to the stack.
+        
+        @Code(name: "SyncUpDetail.swift", file: RecordMeetingFeature-02-code-0003.swift, previousFile: RecordMeetingFeature-02-code-0003-previous.swift)
+      }
+
+      @Step {
+        Run the app in the simulator to see that you can tap the "Start meeting" button to drill
+        down to the record meeting feature.
+        
+        @Video(source: RecordMeetingFeature-02-video-0004.mov)
+      }
+      
+      We now have the basic scaffolding of a record meeting feature in place, and we can even 
+      navigate to it. It's now time to start implementing some of the complex logic and behavior
+      of the feature, starting with timers.
+    }
+  }
+}

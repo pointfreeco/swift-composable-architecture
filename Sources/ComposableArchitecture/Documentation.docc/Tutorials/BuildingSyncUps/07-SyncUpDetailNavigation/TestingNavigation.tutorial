@@ -1,0 +1,96 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Testing navigation") {
+    We have now implemented a navigation stack at the root of our application, and integrated
+    3 features into the stack: the `SyncUpsList` feature, the `SyncUpDetail` feature, and the 
+    `MeetingView`. Some of these features have quite complex logic binding them together, such as 
+    when one deletes a sync-up from the detail screen it should pop the screen off the stack.
+    
+    Let's see what it takes to write tests involving navigation stacks.
+  }
+  
+  @Section(title: "Deleting a sync-up") {
+    @ContentAndMedia {
+      Let's write a test to confirm that deleting a sync-up from the detail screen does indeed 
+      remove the item from the collection of sync-ups, _and_ it dismisses the screen off the 
+      navigation stack.
+    }
+    
+    @Steps {
+      @Step {
+        Create a new test file named AppFeatureTests.swift, and paste some test scaffolding into 
+        the file.
+        
+        @Code(name: "AppFeatureTests.swift", file: TestingNavigation-01-code-0001.swift)
+      }
+      
+      Typically we would start a new test by constructing a ``ComposableArchitecture/TestStore``
+      that holds onto the feature's initial state. However, this time the initial state is seeded 
+      by shared state, which is also persisted to disk. For this reason it is easier to use the
+      [`@Shared`](<doc:Shared>) property wrapper directly to set the initial state of the sync-ups.
+      
+      @Step {
+        Use the [`@Shared`](<doc:Shared>) property wrapper with the `.syncUps` persistence strategy
+        we defined earlier to initialize the state with a single sync-up.
+        
+        @Code(name: "AppFeatureTests.swift", file: TestingNavigation-01-code-0002.swift)
+      }
+      
+      @Step {
+        Construct a ``ComposableArchitecture/TestStore`` for the `AppFeature` reducer. We do not need to provide any 
+        explicit initial state because any usage of `@Shared(.syncUps)` will automatically pick up
+        the single sync-up we used above.
+        
+        @Code(name: "AppFeatureTests.swift", file: TestingNavigation-01-code-0003.swift)
+      }
+      
+      @Step {
+        We will first emulate the user tapping on the sync-up in the list, which means sending a 
+        ``ComposableArchitecture/StackAction/push(id:state:)`` action. However, to send that
+        action we need a ``ComposableArchitecture/Shared`` reference to the sync-up in the list. 
+        
+        @Code(name: "AppFeatureTests.swift", file: TestingNavigation-01-code-0004.swift)
+      }
+      
+      @Step {
+        We can derive a shared sync-up from the shared collection by using `IdentifiedArray`'s
+        `[id:]` subscript, and then unwrapping the result since the subscript returns an optional.
+        In the trailing closure we can mutate the `path` in order to assert that the detail 
+        feature is pushed onto the stack.
+        
+        @Code(name: "AppFeatureTests.swift", file: TestingNavigation-01-code-0005.swift)
+      }
+      
+      @Step {
+        Next we can emulate the user tapping the "Delete" button in the detail feature, and assert
+        that the alert is shown.
+        
+        @Code(name: "AppFeatureTests.swift", file: TestingNavigation-01-code-0006.swift)
+      }
+      
+      @Step {
+        Next we will emulate the user confirming the deletion of the sync-up by tapping the 
+        "Confirm" button in the alert. When this action is sent we must assert on how all state
+        changes, including that the alert goes away (i.e. the `destination` state is `nil`'d out),
+        and that the sync-ups collection is emptied out.
+        
+        @Code(name: "AppFeatureTests.swift", file: TestingNavigation-01-code-0007.swift)
+      }
+      
+      If we were to run the test right now it would fail, and that is because the test store 
+      receives an action from an effect, and we are forced to assert on that behavior. 
+      When the sync-up is deleted we also dismiss the detail feature from the navigation stack.
+      
+      @Step {
+        Assert that the ``ComposableArchitecture/StackAction/popFrom(id:)`` action is received,
+        which causes the `path` state to be emptied out.
+        
+        @Code(name: "AppFeatureTests.swift", file: TestingNavigation-01-code-0008.swift)
+      }
+      
+      @Step {
+        Run the test to see that it now passes, and we have proven that the user can delete a
+        sync-up from the detail screen and be navigated back to the list feature.
+      }
+    }
+  }
+}

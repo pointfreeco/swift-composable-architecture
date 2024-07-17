@@ -3,7 +3,7 @@ import OrderedCollections
 /// A wrapper type for actions that can be presented in a list.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``Reducer/forEach(_:action:element:fileID:line:)-247po``.
+/// ``Reducer/forEach(_:action:element:fileID:line:)-8wpyp``.
 public enum IdentifiedAction<ID: Hashable, Action>: CasePathable {
   /// An action sent to the element at a given identifier.
   case element(id: ID, action: Action)
@@ -15,7 +15,7 @@ public enum IdentifiedAction<ID: Hashable, Action>: CasePathable {
   public struct AllCasePaths {
     public var element: AnyCasePath<IdentifiedAction, (id: ID, action: Action)> {
       AnyCasePath(
-        embed: IdentifiedAction.element,
+        embed: { .element(id: $0, action: $1) },
         extract: {
           guard case let .element(id, action) = $0 else { return nil }
           return (id, action)
@@ -113,14 +113,15 @@ extension Reducer {
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
-  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
+  public func forEach<
+    ElementState, ElementAction, ID: Hashable, Element: Reducer<ElementState, ElementAction>
+  >(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: CaseKeyPath<Action, IdentifiedAction<ID, ElementAction>>,
     @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _ForEachReducer<Self, ID, Element>
-  where ElementState == Element.State, ElementAction == Element.Action {
+  ) -> some Reducer<State, Action> {
     _ForEachReducer(
       parent: self,
       toElementsState: toElementsState,
@@ -157,20 +158,21 @@ extension Reducer {
   )
   @inlinable
   @warn_unqualified_access
-  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
+  public func forEach<
+    ElementState, ElementAction, ID: Hashable, Element: Reducer<ElementState, ElementAction>
+  >(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: AnyCasePath<Action, (ID, ElementAction)>,
     @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _ForEachReducer<Self, ID, Element>
-  where ElementState == Element.State, ElementAction == Element.Action {
+  ) -> some Reducer<State, Action> {
     _ForEachReducer(
       parent: self,
       toElementsState: toElementsState,
       toElementAction: .init(
-        embed: toElementAction.embed,
-        extract: toElementAction.extract
+        embed: { toElementAction.embed($0) },
+        extract: { toElementAction.extract(from: $0) }
       ),
       element: element(),
       fileID: fileID,

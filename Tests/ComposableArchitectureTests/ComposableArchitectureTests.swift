@@ -70,6 +70,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
   @MainActor
   func testSimultaneousWorkOrdering() {
     var cancellables: Set<AnyCancellable> = []
+    defer { _ = cancellables }
 
     let mainQueue = DispatchQueue.test
 

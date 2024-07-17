@@ -81,8 +81,8 @@ class CounterTests: XCTestCase {
 > Tip: Tests that use ``TestStore`` should be annotated as `@MainActor` and marked as `async` since
 > most assertion helpers on ``TestStore`` can suspend.
 
-Test stores have a ``TestStore/send(_:assert:file:line:)-2co21`` method, but it behaves differently
-from stores and view stores. You provide an action to send into the system, but then you must also
+Test stores have a ``TestStore/send(_:assert:file:line:)-2co21`` method, but it behaves differently from
+stores and view stores. You provide an action to send into the system, but then you must also
 provide a trailing closure to describe how the state of the feature changed after sending the
 action:
 
@@ -246,7 +246,7 @@ class TimerTests: XCTestCase {
 With the basics set up, we can send an action into the system to assert on what happens, such as the
 `.startTimerButtonTapped` action. This time we don't actually expect state to change at first
 because when starting the timer we don't change state, and so in this case we can leave off the
-trailer closure:
+trailing closure:
 
 ```swift
 await store.send(.startTimerButtonTapped)
@@ -571,7 +571,7 @@ It can be important to understand how non-exhaustive testing works under the hoo
 limit the ways in which you can assert on state changes.
 
 When you construct an _exhaustive_ test store, which is the default, the `$0` used inside the
-trailing closure of ``TestStore/send(_:assert:file:line:)-2co21`` represents the state _before_ the 
+trailing closure of ``TestStore/send(_:assert:file:line:)-2co21`` represents the state _before_ the
 action is sent:
 
 ```swift
@@ -872,6 +872,43 @@ The solution is to remove the static link to `ComposableArchitecture` from your 
 transitively get access to it through the app itself. In Xcode, go to "Build Phases" and remove
 "ComposableArchitecture" from the "Link Binary With Libraries" section. When using SwiftPM, remove 
 the "ComposableArchitecture" entry from the `testTarget`'s' `dependencies` array in `Package.swift`.
+
+### Long-living test stores
+
+Test stores should always be created in individual tests when possible, rather than as a shared
+instance variable on the test class:
+
+```diff
+ final class FeatureTests: XCTestCase {
+   // 👎 Don't do this:
+-  let store = TestStore(initialState: Feature.State()) {
+-    Feature()
+-  }
+
+   func testBasics() async {
+     // 👍 Do this:
++    let store = TestStore(initialState: Feature.State()) {
++      Feature()
++    }
+     // ...
+   }
+ }
+```
+
+This allows you to be very precise in each test: you can start the store in a very specific state,
+and override just the dependencies a test cares about.
+
+More crucially, test stores that are held onto by the test class will not be deinitialized during a
+test run, and so various exhaustive assertions made during deinitialization will not be made,
+_e.g._ that the test store has unreceived actions that should be asserted against, or in-flight
+effects that should complete.
+
+If a test store does _not_ deinitialize at the end of a test, you must explicitly call
+``TestStore/finish(timeout:file:line:)-53gi5`` at the end of the test to retain exhaustive coverage:
+
+```swift
+await store.finish()
+```
 
 [xctest-dynamic-overlay-gh]: http://github.com/pointfreeco/xctest-dynamic-overlay
 [Testing-state-changes]: #Testing-state-changes

@@ -40,7 +40,7 @@ extension Reducer {
   ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
   ///     dialogs.
   ///
-  /// See ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` for a more advanced operator suited
+  /// See ``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` for a more advanced operator suited
   /// to navigation.
   ///
   /// - Parameters:
@@ -52,15 +52,14 @@ extension Reducer {
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
-  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
+  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer<WrappedState, WrappedAction>>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
     action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _IfLetReducer<Self, Wrapped>
-  where WrappedState == Wrapped.State, WrappedAction == Wrapped.Action {
-    .init(
+  ) -> some Reducer<State, Action> {
+    _IfLetReducer(
       parent: self,
       child: wrapped(),
       toChildState: toWrappedState,
@@ -70,7 +69,7 @@ extension Reducer {
     )
   }
 
-  /// A special overload of ``Reducer/ifLet(_:action:then:fileID:line:)-42kki`` for alerts
+  /// A special overload of ``Reducer/ifLet(_:action:then:fileID:line:)-7s8h2`` for alerts
   /// and confirmation dialogs that does not require a child reducer.
   @inlinable
   @warn_unqualified_access
@@ -79,8 +78,8 @@ extension Reducer {
     action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _IfLetReducer<Self, EmptyReducer<WrappedState, WrappedAction>> {
-    .init(
+  ) -> some Reducer<State, Action> {
+    _IfLetReducer(
       parent: self,
       child: EmptyReducer(),
       toChildState: toWrappedState,
@@ -116,15 +115,14 @@ extension Reducer {
   )
   @inlinable
   @warn_unqualified_access
-  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer>(
+  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer<WrappedState, WrappedAction>>(
     _ toWrappedState: WritableKeyPath<State, WrappedState?>,
     action toWrappedAction: AnyCasePath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _IfLetReducer<Self, Wrapped>
-  where WrappedState == Wrapped.State, WrappedAction == Wrapped.Action {
-    .init(
+  ) -> some Reducer<State, Action> {
+    _IfLetReducer(
       parent: self,
       child: wrapped(),
       toChildState: toWrappedState,
@@ -256,15 +254,13 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard state[keyPath: self.toChildState] != nil else {
-      var actionDump = ""
-      customDump(action, to: &actionDump, indent: 4)
       runtimeWarn(
         """
         An "ifLet" at "\(self.fileID):\(self.line)" received a child action when child state was \
         "nil". …
 
           Action:
-        \(actionDump)
+        \(String(customDumping: action).indent(by: 4))
 
         This is generally considered an application logic error, and can happen for a few reasons:
 

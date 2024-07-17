@@ -29,7 +29,7 @@ struct Counter {
 }
 
 final class CounterViewController: UIViewController {
-  let store: StoreOf<Counter>
+  private let store: StoreOf<Counter>
 
   init(store: StoreOf<Counter>) {
     self.store = store
@@ -75,11 +75,11 @@ final class CounterViewController: UIViewController {
     }
   }
 
-  @objc func decrementButtonTapped() {
+  @objc private func decrementButtonTapped() {
     store.send(.decrementButtonTapped)
   }
 
-  @objc func incrementButtonTapped() {
+  @objc private func incrementButtonTapped() {
     store.send(.incrementButtonTapped)
   }
 }

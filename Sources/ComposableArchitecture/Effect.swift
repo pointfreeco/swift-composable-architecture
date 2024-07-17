@@ -98,20 +98,16 @@ extension Effect {
               return
             } catch {
               guard let handler else {
-                #if DEBUG
-                  var errorDump = ""
-                  customDump(error, to: &errorDump, indent: 4)
-                  runtimeWarn(
-                    """
-                    An "Effect.run" returned from "\(fileID):\(line)" threw an unhandled error. …
+                runtimeWarn(
+                  """
+                  An "Effect.run" returned from "\(fileID):\(line)" threw an unhandled error. …
 
-                    \(errorDump)
+                  \(String(customDumping: error).indent(by: 4))
 
-                    All non-cancellation errors must be explicitly handled via the "catch" parameter \
-                    on "Effect.run", or via a "do" block.
-                    """
-                  )
-                #endif
+                  All non-cancellation errors must be explicitly handled via the "catch" parameter \
+                  on "Effect.run", or via a "do" block.
+                  """
+                )
                 return
               }
               await handler(error, send)
@@ -236,7 +232,7 @@ extension Effect {
   /// - Parameter effects: A sequence of effects.
   /// - Returns: A new effect
   @inlinable
-  public static func merge<S: Sequence>(_ effects: S) -> Self where S.Element == Self {
+  public static func merge(_ effects: some Sequence<Self>) -> Self {
     effects.reduce(.none) { $0.merge(with: $1) }
   }
 
@@ -293,7 +289,7 @@ extension Effect {
   /// - Parameter effects: A collection of effects.
   /// - Returns: A new effect
   @inlinable
-  public static func concatenate<C: Collection>(_ effects: C) -> Self where C.Element == Self {
+  public static func concatenate(_ effects: some Collection<Self>) -> Self {
     effects.reduce(.none) { $0.concatenate(with: $1) }
   }
 

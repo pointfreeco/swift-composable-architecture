@@ -12,7 +12,11 @@ public protocol ViewAction<ViewAction> {
 public protocol ViewActionSending<StoreState, StoreAction> {
   associatedtype StoreState
   associatedtype StoreAction: ViewAction
-  @MainActor(unsafe) var store: Store<StoreState, StoreAction> { get }
+  #if swift(>=5.10)
+    @MainActor @preconcurrency var store: Store<StoreState, StoreAction> { get }
+  #else
+    @MainActor(unsafe) var store: Store<StoreState, StoreAction> { get }
+  #endif
 }
 
 extension ViewActionSending {

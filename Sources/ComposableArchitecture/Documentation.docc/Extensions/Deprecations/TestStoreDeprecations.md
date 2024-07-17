@@ -9,10 +9,6 @@ instead.
 
 ## Topics
 
-### Creating a test store
-
-- ``TestStore/init(initialState:reducer:withDependencies:file:line:)-8f79s``
-
 ### Nanosecond timeouts
 
 - ``TestStore/finish(timeout:file:line:)-43l4y``

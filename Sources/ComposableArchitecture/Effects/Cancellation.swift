@@ -124,7 +124,7 @@ extension Effect {
 /// If the operation is in-flight when `Task.cancel(id:)` is called with the same identifier, the
 /// operation will be cancelled.
 ///
-/// ```
+/// ```swift
 /// enum CancelID { case timer }
 ///
 /// await withTaskCancellation(id: CancelID.timer) {
@@ -190,7 +190,7 @@ public func withTaskCancellation<ID: Hashable, T: Sendable>(
   }
 }
 
-extension Task where Success == Never, Failure == Never {
+extension Task<Never, Never> {
   /// Cancel any currently in-flight operation with the given identifier.
   ///
   /// - Parameter id: An identifier.

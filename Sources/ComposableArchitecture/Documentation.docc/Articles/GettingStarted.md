@@ -34,7 +34,7 @@ let package = Package(
 ## Writing your first feature
 
 > Note: For a step-by-step interactive tutorial, be sure to check out 
-> <doc:MeetComposableArchitecture>
+> <doc:MeetComposableArchitecture>.
 
 To build a feature using the Composable Architecture you define some types and values that model
 your domain:
@@ -58,7 +58,7 @@ and decrement the number. To make things interesting, suppose there is also a bu
 tapped makes an API request to fetch a random fact about that number and displays it in the view.
 
 To implement this feature we create a new type that will house the domain and behavior of the 
-feature, and it will be annotated with the `@Reducer` macro:
+feature, and it will be annotated with the [`@Reducer`](<doc:Reducer()>) macro:
 
 ```swift
 import ComposableArchitecture
@@ -360,7 +360,7 @@ func testFeature() async {
 ```
 
 With that little bit of upfront work we can finish the test by simulating the user tapping on the 
-fact button, and thenreceiving the response from the dependency to present the fact:
+fact button, and then receiving the response from the dependency to present the fact:
 
 ```swift
 await store.send(.numberFactButtonTapped)

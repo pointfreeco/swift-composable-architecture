@@ -11,7 +11,7 @@
       you must confirm deletion. We will implement the confirmation step using an alert. The tools
       that we used last section, such as ``ComposableArchitecture/Presents()``,
       ``ComposableArchitecture/PresentationAction`` and
-      ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4f2at``, all work
+      ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4k9by``, all work
       for presenting alerts from optional state too.
     }
     
@@ -56,7 +56,7 @@
       
       @Step {
         Integrate the alert's logic into the `ContactsFeature` by making another use of the 
-        ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` operator.
+        ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` operator.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0004.swift)
       }
@@ -144,7 +144,7 @@
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0002.swift)
       }
       
-      That is all it takes to define a single reducer that comes multiple mutually exclusive
+      That is all it takes to define a single reducer that combines multiple mutually exclusive
       reducers together. You can expand the macro code in Xcode to see all the code that is
       being written for you. And if in the future this feature can navigate to another feature,
       you will only have to add a single case to the `Destination` enum.
@@ -238,7 +238,7 @@
         can be done with familiar dot syntax because the 
         ``ComposableArchitecture/Reducer()`` macro applies the `@CasePathable` macro to each enum.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012.swift, previousFile: 02-02-02-code-0011-previous.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012.swift, previousFile: 02-02-02-code-0012-previous.swift)
       }
 
       @Step {

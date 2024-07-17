@@ -52,8 +52,8 @@ struct LazyNavigation {
   }
 }
 
-class LazyNavigationViewController: UIViewController {
-  let store: StoreOf<LazyNavigation>
+final class LazyNavigationViewController: UIViewController {
+  private let store: StoreOf<LazyNavigation>
 
   init(store: StoreOf<LazyNavigation>) {
     self.store = store
@@ -107,7 +107,7 @@ class LazyNavigationViewController: UIViewController {
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
 
-    if !isMovingToParent {
+    if !isMovingToParent && store.optionalCounter != nil {
       store.send(.setNavigation(isActive: false))
     }
   }

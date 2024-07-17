@@ -538,7 +538,7 @@ property wrapper:
 ```
 
 And the original code can now be updated to our custom initializer 
-``SwiftUI/NavigationStack/init(path:root:destination:)`` on `NavigationStack`:
+``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` on `NavigationStack`:
 
 ```swift
 NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
@@ -720,6 +720,55 @@ TabView(selection: $store.tab.sending(\.tabChanged)) {
   // ...
 }
 ```
+
+If the binding depends on more complex business logic, you can define a custom `get`-`set` property
+(or subscript, if this logic depends on external state) on the store to incorporate this logic. For
+example:
+
+@Row {
+  @Column {
+    ```swift
+    // Before
+
+    // In the view:
+    ForEach(Flag.allCases) { flag in
+      Toggle(
+        flag.description,
+        isOn: viewStore.binding(
+          get: { $0.featureFlags.contains(flag) }
+          send: { .flagToggled(flag, isOn: $0) }
+        )
+      )
+    }
+    ```
+  }
+  @Column {
+    ```swift
+    // After
+
+    // In the file:
+    extension StoreOf<Feature> {
+      subscript(hasFeatureFlag flag: Flag) -> Bool {
+        get { featureFlags.contains(flag) }
+        set {
+          send(.flagToggled(flag, isOn: newValue))
+        }
+      }
+    }
+
+    // In the view:
+    ForEach(Flag.allCases) { flag in
+      Toggle(
+        flag.description,
+        isOn: $store[hasFeatureFlag: flag]
+      )
+    }
+    ```
+  }
+}
+
+> Tip: When possible, consider moving complex binding logic into the reducer so that it can be more
+> easily tested.
 
 ## Computed view state
 

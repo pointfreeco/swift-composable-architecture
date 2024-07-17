@@ -5,86 +5,65 @@ import XCTest
 
 final class AppFeatureTests: XCTestCase {
   @MainActor
-  func testDelete() async throws {
-    let syncUp = SyncUp.mock
-
-    let store = TestStore(initialState: AppFeature.State()) {
-      AppFeature()
-    } withDependencies: {
-      $0.continuousClock = ImmediateClock()
-      $0.dataManager = .mock(
-        initialData: try! JSONEncoder().encode([syncUp])
-      )
-    }
-
-    await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: syncUp)))) {
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: syncUp))
-    }
-
-    await store.send(\.path[id:0].detail.deleteButtonTapped) {
-      $0.path[id: 0]?.detail?.destination = .alert(.deleteSyncUp)
-    }
-
-    await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
-      $0.path[id: 0]?.detail?.destination = nil
-    }
-
-    await store.receive(\.path[id:0].detail.delegate.deleteSyncUp) {
-      $0.syncUpsList.syncUps = []
-    }
-    await store.receive(\.path.popFrom) {
-      $0.path = StackState()
-    }
-  }
-
-  @MainActor
   func testDetailEdit() async throws {
     var syncUp = SyncUp.mock
-    let savedData = LockIsolated(Data?.none)
-
+    @Shared(.syncUps) var syncUps = [syncUp]
     let store = TestStore(initialState: AppFeature.State()) {
       AppFeature()
-    } withDependencies: { dependencies in
-      dependencies.continuousClock = ImmediateClock()
-      dependencies.dataManager = .mock(
-        initialData: try! JSONEncoder().encode([syncUp])
-      )
-      dependencies.dataManager.save = { @Sendable [dependencies] data, url in
-        savedData.setValue(data)
-        try await dependencies.dataManager.save(data, to: url)
-      }
     }
 
-    await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: syncUp)))) {
-      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: syncUp))
+    let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
+
+    await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
     }
 
     await store.send(\.path[id:0].detail.editButtonTapped) {
-      $0.path[id: 0]?.detail?.destination = .edit(
-        SyncUpForm.State(syncUp: syncUp)
-      )
+      $0.path[id: 0]?.modify(\.detail) { $0.destination = .edit(SyncUpForm.State(syncUp: syncUp)) }
     }
 
     syncUp.title = "Blob"
     await store.send(\.path[id:0].detail.destination.edit.binding.syncUp, syncUp) {
-      $0.path[id: 0]?.detail?.destination?.edit?.syncUp.title = "Blob"
+      $0.path[id: 0]?.modify(\.detail) {
+        $0.destination?.modify(\.edit) { $0.syncUp.title = "Blob" }
+      }
     }
 
     await store.send(\.path[id:0].detail.doneEditingButtonTapped) {
-      $0.path[id: 0]?.detail?.destination = nil
-      $0.path[id: 0]?.detail?.syncUp.title = "Blob"
+      $0.path[id: 0]?.modify(\.detail) {
+        $0.destination = nil
+        $0.syncUp.title = "Blob"
+      }
+    }
+    .finish()
+  }
+
+  @MainActor
+  func testDelete() async throws {
+    let syncUp = SyncUp.mock
+    @Shared(.syncUps) var syncUps = [syncUp]
+    let store = TestStore(initialState: AppFeature.State()) {
+      AppFeature()
     }
 
-    await store.receive(\.path[id:0].detail.delegate.syncUpUpdated) {
-      $0.syncUpsList.syncUps[0].title = "Blob"
+    let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
+
+    await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
+      $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
     }
 
-    var savedSyncUp = syncUp
-    savedSyncUp.title = "Blob"
-    XCTAssertNoDifference(
-      try JSONDecoder().decode([SyncUp].self, from: savedData.value!),
-      [savedSyncUp]
-    )
+    await store.send(\.path[id:0].detail.deleteButtonTapped) {
+      $0.path[id: 0]?.modify(\.detail) { $0.destination = .alert(.deleteSyncUp) }
+    }
+
+    await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
+      $0.path[id: 0]?.modify(\.detail) { $0.destination = nil }
+      $0.syncUpsList.syncUps = []
+    }
+
+    await store.receive(\.path.popFrom) {
+      $0.path = StackState()
+    }
   }
 
   @MainActor
@@ -103,17 +82,17 @@ final class AppFeatureTests: XCTestCase {
       duration: .seconds(6)
     )
 
+    let sharedSyncUp = Shared(syncUp)
     let store = TestStore(
       initialState: AppFeature.State(
         path: StackState([
-          .detail(SyncUpDetail.State(syncUp: syncUp)),
-          .record(RecordMeeting.State(syncUp: syncUp)),
+          .detail(SyncUpDetail.State(syncUp: sharedSyncUp)),
+          .record(RecordMeeting.State(syncUp: sharedSyncUp)),
         ])
       )
     ) {
       AppFeature()
     } withDependencies: {
-      $0.dataManager = .mock(initialData: try! JSONEncoder().encode([syncUp]))
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       $0.continuousClock = ImmediateClock()
       $0.speechClient.authorizationStatus = { .authorized }
@@ -128,17 +107,19 @@ final class AppFeatureTests: XCTestCase {
     store.exhaustivity = .off
 
     await store.send(\.path[id:1].record.onTask)
-    await store.receive(\.path[id:1].record.delegate.save) {
-      $0.path[id: 0]?.detail?.syncUp.meetings = [
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: "I completed the project"
-        )
-      ]
-    }
     await store.receive(\.path.popFrom) {
       XCTAssertEqual($0.path.count, 1)
+    }
+    store.assert {
+      $0.path[id: 0]?.modify(\.detail) {
+        $0.syncUp.meetings = [
+          Meeting(
+            id: Meeting.ID(UUID(0)),
+            date: Date(timeIntervalSince1970: 1_234_567_890),
+            transcript: "I completed the project"
+          )
+        ]
+      }
     }
   }
 }

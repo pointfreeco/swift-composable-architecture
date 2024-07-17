@@ -82,7 +82,7 @@ public enum Player: Equatable, Sendable {
   }
 }
 
-extension Three where Element == Three<Player?> {
+extension Three<Three<Player?>> {
   public static let empty = Self(
     .init(nil, nil, nil),
     .init(nil, nil, nil),

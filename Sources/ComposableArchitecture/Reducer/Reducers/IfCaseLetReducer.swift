@@ -35,7 +35,7 @@ extension Reducer {
   ///
   ///   * It forces a specific order of operations for the child and parent features. It runs the
   ///     child first, and then the parent. If the order was reversed, then it would be possible for
-  ///     for the parent feature to change the case of the child enum, in which case the child
+  ///     the parent feature to change the case of the child enum, in which case the child
   ///     feature would not be able to react to that action. That can cause subtle bugs.
   ///
   ///   * It automatically cancels all child effects when it detects the child enum case changes.
@@ -101,15 +101,14 @@ extension Reducer {
   )
   @inlinable
   @warn_unqualified_access
-  public func ifCaseLet<CaseState, CaseAction, Case: Reducer>(
+  public func ifCaseLet<CaseState, CaseAction, Case: Reducer<CaseState, CaseAction>>(
     _ toCaseState: AnyCasePath<State, CaseState>,
     action toCaseAction: AnyCasePath<Action, CaseAction>,
     @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) -> _IfCaseLetReducer<Self, Case>
-  where CaseState == Case.State, CaseAction == Case.Action {
-    .init(
+  ) -> some Reducer<State, Action> {
+    _IfCaseLetReducer(
       parent: self,
       child: `case`(),
       toChildState: toCaseState,
@@ -191,19 +190,15 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {
-      var actionDump = ""
-      customDump(action, to: &actionDump, indent: 4)
-      var stateDump = ""
-      customDump(state, to: &stateDump, indent: 4)
       runtimeWarn(
         """
         An "ifCaseLet" at "\(self.fileID):\(self.line)" received a child action when child state \
         was set to a different case. …
 
           Action:
-        \(actionDump)
+        \(String(customDumping: action).indent(by: 4))
           State:
-        \(stateDump)
+        \(String(customDumping: state).indent(by: 4))
 
         This is generally considered an application logic error, and can happen for a few reasons:
 

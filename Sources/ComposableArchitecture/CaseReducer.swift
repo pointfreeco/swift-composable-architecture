@@ -6,12 +6,7 @@ public protocol CaseReducer<State, Action>: Reducer
 where State: CaseReducerState, Body: Reducer, Body.State == State, Body.Action == Action {
   associatedtype State = State
   associatedtype Action = Action
-  #if DEBUG
-    associatedtype _Body = _Body
-    typealias Body = _Body
-  #else
-    associatedtype Body
-  #endif
+  associatedtype Body = Body
   associatedtype CaseScope
 
   @ReducerBuilder<State, Action>
@@ -32,7 +27,7 @@ public protocol CaseReducerState {
 }
 
 extension Reducer {
-  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` for enum
+  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` for enum
   /// reducers.
   public func ifLet<ChildState: CaseReducerState, ChildAction>(
     _ state: WritableKeyPath<State, PresentationState<ChildState>>,
@@ -43,7 +38,7 @@ extension Reducer {
     }
   }
 
-  /// A special overload of ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` for enum
+  /// A special overload of ``Reducer/forEach(_:action:destination:fileID:line:)-582rd`` for enum
   /// reducers.
   public func forEach<DestinationState: CaseReducerState, DestinationAction>(
     _ state: WritableKeyPath<State, StackState<DestinationState>>,

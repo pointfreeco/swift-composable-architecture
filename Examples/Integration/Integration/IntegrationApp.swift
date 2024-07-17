@@ -108,6 +108,9 @@ struct ContentView: View {
               .sheet(isPresented: self.$isObservableNavigationTestCasePresented) {
                 ObservableNavigationTestCaseView()
               }
+              NavigationLink("Shared state") {
+                ObservableSharedStateView()
+              }
               NavigationLink("Siblings") {
                 ObservableSiblingFeaturesView()
               }

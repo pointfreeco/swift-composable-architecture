@@ -1,0 +1,21 @@
+@Tutorial(time: 10) {
+  @Intro(title: "Adding a speech recognizer") {
+    We have just one feature left to implement, and it's one of the most complicated ones. We need
+    to use Apple's `SFSpeechRecognizer` API to ask the user for permission to transcribe their
+    audio, and then start a speech recognition task to live transcribe the meeting while it is
+    in progress. 
+  }
+  
+  @Section(title: "Asking for speech recognition permission") {
+    @ContentAndMedia {
+      Let's start with the simpler and more manageable task of simply asking the user for permission
+      to transcribe their audio. Even this brings up some interesting design considerations.
+    }
+    
+    @Steps {
+      @Step {
+        _Coming soon!_
+      }
+    }
+  }
+}

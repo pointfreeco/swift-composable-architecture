@@ -51,21 +51,26 @@ day-to-day when building applications, such as:
 - <doc:DependencyManagement>
 - <doc:Testing>
 - <doc:Navigation>
+- <doc:SharingState>
 - <doc:Performance>
+- <doc:FAQ>
 
 ### Tutorials
 
 - <doc:MeetComposableArchitecture>
+- <doc:BuildingSyncUps>
 
 ### State management
 
 - <doc:Reducers>
 - ``Effect``
 - ``Store``
+- <doc:SharingState>
 
 ### Testing
 
 - ``TestStore``
+- <doc:Testing>
 
 ### Integrations
 

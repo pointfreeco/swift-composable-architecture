@@ -11,30 +11,14 @@ public protocol Reducer<State, Action> {
   /// and/or kick off a side ``Effect`` that can communicate with the outside world.
   associatedtype Action
 
-  // NB: For Xcode to favor autocompleting `var body: Body` over `var body: Never` we must use a
-  //     type alias. We compile it out of release because this workaround is incompatible with
-  //     library evolution.
-  #if DEBUG
-    associatedtype _Body
-
-    /// A type representing the body of this reducer.
-    ///
-    /// When you create a custom reducer by implementing the ``body-swift.property``, Swift infers
-    /// this type from the value returned.
-    ///
-    /// If you create a custom reducer by implementing the ``reduce(into:action:)-1t2ri``, Swift
-    /// infers this type to be `Never`.
-    typealias Body = _Body
-  #else
-    /// A type representing the body of this reducer.
-    ///
-    /// When you create a custom reducer by implementing the ``body-swift.property``, Swift infers
-    /// this type from the value returned.
-    ///
-    /// If you create a custom reducer by implementing the ``reduce(into:action:)-1t2ri``, Swift
-    /// infers this type to be `Never`.
-    associatedtype Body
-  #endif
+  /// A type representing the body of this reducer.
+  ///
+  /// When you create a custom reducer by implementing the ``body-swift.property``, Swift infers
+  /// this type from the value returned.
+  ///
+  /// If you create a custom reducer by implementing the ``reduce(into:action:)-1t2ri``, Swift
+  /// infers this type to be `Never`.
+  associatedtype Body
 
   /// Evolves the current state of the reducer to the next state.
   ///
@@ -52,8 +36,23 @@ public protocol Reducer<State, Action> {
 
   /// The content and behavior of a reducer that is composed from other reducers.
   ///
-  /// Implement this requirement when you want to incorporate the behavior of other reducers
-  /// together.
+  /// In the body of a reducer one can compose many reducers together, which will be run in order,
+  /// from top to bottom, and usually involves some reducer operations for integrating, such as
+  /// `ifLet`, `forEach`, `_printChanges`, etc.:
+  ///
+  /// ```swift
+  /// var body: some ReducerOf<Self> {
+  ///   Reduce { state, action in
+  ///     …
+  ///   }
+  ///   .ifLet(\.child, action: \.child) {
+  ///     ChildFeature()
+  ///   }
+  ///   ._printChanges()
+  ///
+  ///   Analytics()
+  /// }
+  /// ```
   ///
   /// Do not invoke this property directly.
   ///
@@ -83,7 +82,7 @@ extension Reducer where Body == Never {
   }
 }
 
-extension Reducer where Body: Reducer, Body.State == State, Body.Action == Action {
+extension Reducer where Body: Reducer<State, Action> {
   /// Invokes the ``Body-40qdd``'s implementation of ``reduce(into:action:)-1t2ri``.
   @inlinable
   public func reduce(

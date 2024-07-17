@@ -165,26 +165,19 @@ public final class Store<State, Action> {
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
   ///     by the reducer.
-  public convenience init<R: Reducer>(
+  public convenience init<R: Reducer<State, Action>>(
     initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
-  ) where R.State == State, R.Action == Action {
-    if let prepareDependencies {
-      let (initialState, reducer, dependencies) = withDependencies(prepareDependencies) {
-        @Dependency(\.self) var dependencies
-        return (initialState(), reducer(), dependencies)
-      }
-      self.init(
-        initialState: initialState,
-        reducer: reducer.dependency(\.self, dependencies)
-      )
-    } else {
-      self.init(
-        initialState: initialState(),
-        reducer: reducer()
-      )
+  ) {
+    let (initialState, reducer, dependencies) = withDependencies(prepareDependencies ?? { _ in }) {
+      @Dependency(\.self) var dependencies
+      return (initialState(), reducer(), dependencies)
     }
+    self.init(
+      initialState: initialState,
+      reducer: reducer.dependency(\.self, dependencies)
+    )
   }
 
   init() {
@@ -498,15 +491,12 @@ public struct StorePublisher<State>: Publisher {
   let store: Any
   let upstream: AnyPublisher<State, Never>
 
-  init<P: Publisher>(
-    store: Any,
-    upstream: P
-  ) where P.Output == Output, P.Failure == Failure {
+  init(store: Any, upstream: some Publisher<Output, Failure>) {
     self.store = store
     self.upstream = upstream.eraseToAnyPublisher()
   }
 
-  public func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
+  public func receive(subscriber: some Subscriber<Output, Failure>) {
     self.upstream.subscribe(
       AnySubscriber(
         receiveSubscription: subscriber.receive(subscription:),
@@ -606,6 +596,7 @@ func storeTypeName<State, Action>(of store: Store<State, Action>) -> String {
 }
 
 // NB: From swift-custom-dump. Consider publicizing interface in some way to keep things in sync.
+@usableFromInline
 func typeName(
   _ type: Any.Type,
   qualified: Bool = true,
@@ -695,11 +686,19 @@ private enum PartialToState<State> {
 }
 
 #if canImport(Perception)
-  private let _isStorePerceptionCheckingEnabled: Bool = {
+  let _isStorePerceptionCheckingEnabled: Bool = {
     if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
       return false
     } else {
       return true
     }
   }()
+#endif
+
+#if canImport(Observation)
+  // NB: This extension must be placed in the same file as 'class Store' due to either a bug
+  //     in Swift, or very opaque and undocumented behavior of Swift.
+  //     See https://github.com/tuist/tuist/issues/6320#issuecomment-2148554117
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+  extension Store: Observable {}
 #endif

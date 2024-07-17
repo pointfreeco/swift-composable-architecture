@@ -370,28 +370,18 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
     self.viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: isDuplicate)
   }
 
-  #if swift(>=5.8)
-    /// Prints debug information to the console whenever the view is computed.
-    ///
-    /// - Parameter prefix: A string with which to prefix all debug messages.
-    /// - Returns: A structure that prints debug messages for all computations.
-    @_documentation(visibility:public)
-    public func _printChanges(_ prefix: String = "") -> Self {
-      var view = self
-      #if DEBUG
-        view.prefix = prefix
-      #endif
-      return view
-    }
-  #else
-    public func _printChanges(_ prefix: String = "") -> Self {
-      var view = self
-      #if DEBUG
-        view.prefix = prefix
-      #endif
-      return view
-    }
-  #endif
+  /// Prints debug information to the console whenever the view is computed.
+  ///
+  /// - Parameter prefix: A string with which to prefix all debug messages.
+  /// - Returns: A structure that prints debug messages for all computations.
+  @_documentation(visibility:public)
+  public func _printChanges(_ prefix: String = "") -> Self {
+    var view = self
+    #if DEBUG
+      view.prefix = prefix
+    #endif
+    return view
+  }
 
   public var body: Content {
     #if DEBUG
