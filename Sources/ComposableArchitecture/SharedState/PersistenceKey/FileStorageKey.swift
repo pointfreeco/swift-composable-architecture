@@ -12,8 +12,8 @@ extension PersistenceReaderKey {
   /// - Returns: A file persistence key.
   public static func fileStorage<Value: Codable>(
     _ url: URL,
-    decoder: JSONDecoder = .init(),
-    encoder: JSONEncoder = .init()
+    decoder: JSONDecoder = JSONDecoder(),
+    encoder: JSONEncoder = JSONEncoder()
   ) -> Self
   where Self == FileStorageKey<Value> {
     FileStorageKey(
