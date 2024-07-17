@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "revision" : "b9ad2661b6e8fb411fef6a441c9955c3413afac0",
-        "version" : "1.5.0"
+        "revision" : "bdd3bf565e84eab0fd612d07749e5b360d5e7d15",
+        "version" : "1.5.1"
       }
     },
     {
@@ -168,7 +168,7 @@
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
         "branch" : "swift-testing",
-        "revision" : "1896cdf4fea4079e56bca2f68a2cb251dc005517"
+        "revision" : "7f3e1d629ff4e4caeda0d994fad46a517cb77aeb"
       }
     }
   ],
