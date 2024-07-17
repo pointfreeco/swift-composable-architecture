@@ -399,8 +399,10 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
           self._$perceptionRegistrar.willSet(self, keyPath: \.value)
           defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
         #endif
-        self.lock.withLock {
-          self._value = value ?? initialValue
+        mainActorASAP {
+          self.lock.withLock {
+            self._value = value ?? initialValue
+          }
         }
       }
     }
