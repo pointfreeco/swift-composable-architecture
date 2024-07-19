@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-argument-parser",
       "state" : {
-        "revision" : "0fbc8848e389af3bb55c182bc19ca9d5dc2f255b",
-        "version" : "1.4.0"
+        "revision" : "41982a3656a71c768319979febd796c6fd111d5c",
+        "version" : "1.5.0"
       }
     },
     {
@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "revision" : "bdd3bf565e84eab0fd612d07749e5b360d5e7d15",
-        "version" : "1.5.1"
+        "revision" : "12bc5b9191b62ee62cafecbfed953fbb1e1554cd",
+        "version" : "1.5.2"
       }
     },
     {
@@ -168,7 +168,7 @@
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
         "branch" : "swift-testing",
-        "revision" : "7f3e1d629ff4e4caeda0d994fad46a517cb77aeb"
+        "revision" : "eb270c44fff42d8f0657749048e8519875ebdd6d"
       }
     }
   ],
