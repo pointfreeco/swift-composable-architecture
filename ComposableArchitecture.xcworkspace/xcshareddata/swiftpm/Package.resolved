@@ -78,7 +78,7 @@
       "location" : "https://github.com/pointfreeco/swift-dependencies",
       "state" : {
         "branch" : "swift-testing",
-        "revision" : "ddfd02ae5a2b8df116113a835bc5d445f0b3f8f3"
+        "revision" : "b8d324be7daaca852e1f37e3cf0d85cb5e143056"
       }
     },
     {
