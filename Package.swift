@@ -29,7 +29,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-perception", from: "1.3.3"),
-    .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "1.5.1"),
+    .package(url: "https://github.com/pointfreeco/swiftui-navigation", from: "1.5.2"),
     .package(url: "https://github.com/pointfreeco/swift-issue-reporting", from: "1.2.0"),
     .package(url: "https://github.com/swiftlang/swift-syntax", "509.0.0"..<"601.0.0-prerelease"),
   ],
