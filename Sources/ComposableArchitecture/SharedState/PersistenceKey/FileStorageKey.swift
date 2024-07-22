@@ -3,23 +3,52 @@ import Dependencies
 import Foundation
 
 extension PersistenceReaderKey {
-  /// Creates a persistence key that can read and write to a `Codable` value to the file system.
+  /// Creates a persistence key that can read and write to a `Codable` value in the file system.
   ///
-  /// - Parameter url: The file URL from which to read and write the value.
+  /// - Parameters:
+  ///   - url: The file URL from which to read and write the value.
+  ///   - decoder: The JSONDecoder to use for decoding the value.
+  ///   - encoder: The JSONEncoder to use for encoding the value.
   /// - Returns: A file persistence key.
-  public static func fileStorage<Value: Codable>(_ url: URL) -> Self
+  public static func fileStorage<Value: Codable>(
+    _ url: URL,
+    decoder: JSONDecoder = JSONDecoder(),
+    encoder: JSONEncoder = JSONEncoder()
+  ) -> Self
   where Self == FileStorageKey<Value> {
-    FileStorageKey(url: url)
+    FileStorageKey(
+      url: url,
+      decode: { try decoder.decode(Value.self, from: $0) },
+      encode: { try encoder.encode($0) }
+    )
+  }
+
+  /// Creates a persistence key that can read and write to a value in the file system.
+  ///
+  /// - Parameters:
+  ///   - url: The file URL from which to read and write the value.
+  ///   - decode: The closure to use for decoding the value.
+  ///   - encode: The closure to use for encoding the value.
+  /// - Returns: A file persistence key.
+  public static func fileStorage<Value>(
+    _ url: URL,
+    decode: @escaping @Sendable (Data) throws -> Value,
+    encode: @escaping @Sendable (Value) throws -> Data
+  ) -> Self
+  where Self == FileStorageKey<Value> {
+    FileStorageKey(url: url, decode: decode, encode: encode)
   }
 }
 
 /// A type defining a file persistence strategy
 ///
 /// Use ``PersistenceReaderKey/fileStorage(_:)`` to create values of this type.
-public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Sendable {
+public final class FileStorageKey<Value: Sendable>: PersistenceKey, Sendable {
   private let storage: FileStorage
   private let isSetting = LockIsolated(false)
   private let url: URL
+  private let decode: @Sendable (Data) throws -> Value
+  private let encode: @Sendable (Value) throws -> Data
   fileprivate let state = LockIsolated(State())
   //  private let value = LockIsolated<Value?>(nil)
   //  private let workItem = LockIsolated<DispatchWorkItem?>(nil)
@@ -33,15 +62,21 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
     FileStorageKeyID(url: self.url, storage: self.storage)
   }
 
-  fileprivate init(url: URL) {
+  fileprivate init(
+    url: URL,
+    decode: @escaping @Sendable (Data) throws -> Value,
+    encode: @escaping @Sendable (Value) throws -> Data
+  ) {
     @Dependency(\.defaultFileStorage) var storage
     self.storage = storage
     self.url = url
+    self.decode = decode
+    self.encode = encode
   }
 
   public func load(initialValue: Value?) -> Value? {
     do {
-      return try JSONDecoder().decode(Value.self, from: self.storage.load(self.url))
+      return try decode(self.storage.load(self.url))
     } catch {
       return initialValue
     }
@@ -51,7 +86,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
     self.state.withValue { state in
       if state.workItem == nil {
         self.isSetting.setValue(true)
-        try? self.storage.save(JSONEncoder().encode(value), self.url)
+        try? self.storage.save(encode(value), self.url)
         let workItem = DispatchWorkItem { [weak self] in
           guard let self else { return }
           self.state.withValue { state in
@@ -62,7 +97,7 @@ public final class FileStorageKey<Value: Codable & Sendable>: PersistenceKey, Se
             guard let value = state.value
             else { return }
             self.isSetting.setValue(true)
-            try? self.storage.save(JSONEncoder().encode(value), self.url)
+            try? self.storage.save(self.encode(value), self.url)
           }
         }
         state.workItem = workItem
