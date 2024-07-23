@@ -16,7 +16,7 @@ API, as well as beta support for Swift Testing.
 
 Version 1.10 of the Composable Architecture introduced a powerful tool for 
 [sharing state](<doc:SharingState>) amongst your features, and included several built-in persistence
-strategies, including [file storage]<doc:PersistenceReaderKey/fileStorage(_:decoder:encoder:)>. This
+strategies, including [file storage](<doc:PersistenceReaderKey/fileStorage(_:decoder:encoder:)>). This
 strategy, however, was not very flexible, and only supported the default JSON encoding and decoding
 offered by Swift.
 
