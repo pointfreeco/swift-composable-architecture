@@ -532,13 +532,14 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/)
-* [1.11.0](https://pointfreeco.github.io/swift-composable-architecture/1.11.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.11))
+* [1.12.0](https://pointfreeco.github.io/swift-composable-architecture/1.12.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.12))
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [1.11.0](https://pointfreeco.github.io/swift-composable-architecture/1.11.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.11))
   * [1.10.0](https://pointfreeco.github.io/swift-composable-architecture/1.10.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.10))
   * [1.9.0](https://pointfreeco.github.io/swift-composable-architecture/1.9.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.9))
   * [1.8.0](https://pointfreeco.github.io/swift-composable-architecture/1.8.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.8))
