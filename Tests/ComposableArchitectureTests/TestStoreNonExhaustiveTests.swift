@@ -684,7 +684,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
         XCTModify(&state.child) { _ in }
       } issueMatcher: {
         $0.compactDescription == """
-          failed - XCTModify failed: expected "Int" value to be modified but it was unchanged.
+          failed - XCTModify: Expected "Int" value to be modified but it was unchanged.
           """
       }
     }
@@ -694,7 +694,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
         XCTModify(&state.child) { _ in }
       } issueMatcher: {
         $0.compactDescription == """
-          failed - XCTModify failed: expected "Int" value to be modified but it was unchanged.
+          failed - XCTModify: Expected "Int" value to be modified but it was unchanged.
           """
       }
     }
