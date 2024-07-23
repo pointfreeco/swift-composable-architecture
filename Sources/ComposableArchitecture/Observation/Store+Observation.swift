@@ -79,10 +79,20 @@
     /// - Returns: An optional store of non-optional child state and actions.
     public func scope<ChildState, ChildAction>(
       state: KeyPath<State, ChildState?>,
-      action: CaseKeyPath<Action, ChildAction>
+      action: CaseKeyPath<Action, ChildAction>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
     ) -> Store<ChildState, ChildAction>? {
       if !self.canCacheChildren {
-        runtimeWarn(uncachedStoreWarning(self))
+        reportIssue(
+          uncachedStoreWarning(self),
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
       }
       guard var childState = self.state[keyPath: state]
       else { return nil }
@@ -149,15 +159,19 @@
       state: KeyPath<State, ChildState?>,
       action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
       fileID: StaticString = #fileID,
-      line: UInt = #line
+      filePath: StaticString = #fileID,
+      line: UInt = #line,
+      column: UInt = #column
     ) -> Binding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
       self[
         state: state,
         action: action,
         isInViewBody: _isInPerceptionTracking,
-        fileID: "\(fileID)",
-        line: line
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
       ]
     }
   }
@@ -214,15 +228,19 @@
       state: KeyPath<State, ChildState?>,
       action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
       fileID: StaticString = #fileID,
-      line: UInt = #line
+      filePath: StaticString = #fileID,
+      line: UInt = #line,
+      column: UInt = #column
     ) -> Binding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
       self[
         state: state,
         action: action,
         isInViewBody: _isInPerceptionTracking,
-        fileID: "\(fileID)",
-        line: line
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
       ]
     }
   }
@@ -282,15 +300,19 @@
       state: KeyPath<State, ChildState?>,
       action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
       fileID: StaticString = #fileID,
-      line: UInt = #line
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
     ) -> Binding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
       self[
         state: state,
         action: action,
         isInViewBody: _isInPerceptionTracking,
-        fileID: "\(fileID)",
-        line: line
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
       ]
     }
   }
@@ -301,23 +323,39 @@
       state state: KeyPath<State, ChildState?>,
       action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
       isInViewBody isInViewBody: Bool,
-      fileID fileID: String,
-      line line: UInt
+      fileID fileID: _HashableStaticString,
+      filePath filePath: _HashableStaticString,
+      line line: UInt,
+      column column: UInt
     ) -> Store<ChildState, ChildAction>? {
       get {
         #if DEBUG && !os(visionOS)
           _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
-            self.scope(state: state, action: action.appending(path: \.presented))
+            self.scope(
+              state: state,
+              action: action.appending(path: \.presented),
+              fileID: fileID.rawValue,
+              filePath: filePath.rawValue,
+              line: line,
+              column: column
+            )
           }
         #else
-          self.scope(state: state, action: action.appending(path: \.presented))
+          self.scope(
+            state: state,
+            action: action.appending(path: \.presented),
+            fileID: fileID.rawValue,
+            filePath: filePath.rawValue,
+            line: line,
+            column: column
+          )
         #endif
       }
       set {
         if newValue == nil, self.state[keyPath: state] != nil, !self._isInvalidated() {
           self.send(action(.dismiss))
           if self.state[keyPath: state] != nil {
-            runtimeWarn(
+            reportIssue(
               """
               SwiftUI dismissed a view through a binding at "\(fileID):\(line)", but the store \
               destination wasn't set to "nil".
@@ -336,7 +374,11 @@
 
               And ensure that every parent reducer is integrated into the root reducer that powers \
               the store.
-              """
+              """,
+              fileID: fileID.rawValue,
+              filePath: filePath.rawValue,
+              line: line,
+              column: column
             )
             return
           }

@@ -1,6 +1,6 @@
 import CustomDump
 import Dependencies
-import XCTestDynamicOverlay
+import IssueReporting
 
 #if canImport(Combine)
   import Combine
@@ -185,8 +185,10 @@ public struct Shared<Value> {
 
   public func assert(
     _ updateValueToExpectedResult: (inout Value) throws -> Void,
-    file: StaticString = #file,
-    line: UInt = #line
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) rethrows where Value: Equatable {
     @Dependency(\.sharedChangeTrackers) var changeTrackers
     guard
@@ -194,18 +196,35 @@ public struct Shared<Value> {
         changeTrackers
         .first(where: { $0.changes[ObjectIdentifier(self.reference)] != nil })
     else {
-      XCTFail("Expected changes, but none occurred.", file: file, line: line)
+      reportIssue(
+        "Expected changes, but none occurred.",
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
       return
     }
     try changeTracker.assert {
       guard var snapshot = self.snapshot, snapshot != self.currentValue else {
-        XCTFail("Expected changes, but none occurred.", file: file, line: line)
+        reportIssue(
+          "Expected changes, but none occurred.",
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
         return
       }
       try updateValueToExpectedResult(&snapshot)
       self.snapshot = snapshot
       // TODO: Finesse error more than `XCTAssertNoDifference`
-      XCTAssertNoDifference(self.currentValue, self.snapshot, file: file, line: line)
+      XCTAssertNoDifference(
+        self.currentValue,
+        self.snapshot,
+        file: filePath,
+        line: line
+      )
       self.snapshot = nil
     }
   }

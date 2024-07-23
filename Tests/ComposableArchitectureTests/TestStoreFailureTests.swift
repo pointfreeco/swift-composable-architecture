@@ -16,7 +16,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        Expected state to change, but no change occurred.
+        failed - Expected state to change, but no change occurred.
 
         The trailing closure made no observable modifications to state. If no change to state is \
         expected, omit the trailing closure.
@@ -26,7 +26,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        Expected state to change, but no change occurred.
+        failed - Expected state to change, but no change occurred.
 
         The trailing closure made no observable modifications to state. If no change to state is \
         expected, omit the trailing closure.
@@ -47,7 +47,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A state change does not match expectation: …
+        failed - A state change does not match expectation: …
 
             − TestStoreFailureTests.State(count: 0)
             + TestStoreFailureTests.State(count: 1)
@@ -70,7 +70,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        State was not expected to change, but a change occurred: …
+        failed - State was not expected to change, but a change occurred: …
 
             − TestStoreFailureTests.State(count: 0)
             + TestStoreFailureTests.State(count: 1)
@@ -99,7 +99,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.send(.first)
     XCTExpectFailure {
       $0.compactDescription == """
-        State was not expected to change, but a change occurred: …
+        failed - State was not expected to change, but a change occurred: …
 
             − TestStoreFailureTests.State(count: 0)
             + TestStoreFailureTests.State(count: 1)
@@ -124,7 +124,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        The store received 1 unexpected action: …
+        failed - The store received 1 unexpected action: …
 
           Unhandled actions:
             • .second
@@ -153,7 +153,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.send(.first)
     XCTExpectFailure {
       $0.compactDescription == """
-        The store received 1 unexpected action: …
+        failed - The store received 1 unexpected action: …
 
           Unhandled actions:
             • .second
@@ -177,8 +177,8 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        An effect returned for this action is still running. It must complete before the end of \
-        the test. …
+        failed - An effect returned for this action is still running. It must complete before the \
+        end of the test. …
 
         To fix, inspect any effects the reducer returns for this action and ensure that all of \
         them complete by the end of the test. There are a few reasons why an effect may not have \
@@ -221,7 +221,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        Must handle 1 received action before sending an action: …
+        failed - Must handle 1 received action before sending an action: …
 
         Unhandled actions: [
           [0]: .second
@@ -243,7 +243,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        Expected to receive the following action, but didn't: …
+        failed - Expected to receive the following action, but didn't: …
 
           TestStoreFailureTests.Action.action
         """
@@ -270,7 +270,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        Received unexpected action: …
+        failed - Received unexpected action: …
 
             − TestStoreFailureTests.Action.first
             + TestStoreFailureTests.Action.second
@@ -288,7 +288,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == "Threw error: SomeError()"
+      $0.compactDescription == "failed - Threw error: SomeError()"
     }
     await store.send(()) { _ in
       struct SomeError: Error {}

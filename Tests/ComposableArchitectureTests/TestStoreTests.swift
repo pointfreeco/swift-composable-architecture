@@ -469,7 +469,7 @@ final class TestStoreTests: BaseTCATestCase {
       }
     } issueMatcher: {
       $0.compactDescription == """
-        A state change does not match expectation: …
+        failed - A state change does not match expectation: …
 
             − 1
             + 0
@@ -564,7 +564,7 @@ final class TestStoreTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        Received unexpected action: …
+        failed - Received unexpected action: …
 
             Action.delegate(
           −   .success(43)
@@ -669,7 +669,7 @@ final class TestStoreTests: BaseTCATestCase {
     await store.send(.dismiss)
     XCTExpectFailure {
       $0.compactDescription == """
-        Can't send action to dismissed test store.
+        failed - Can't send action to dismissed test store.
         """
     }
     await store.send(.onTask)

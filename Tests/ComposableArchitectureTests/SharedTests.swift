@@ -38,7 +38,7 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        A state change does not match expectation: …
+        failed - A state change does not match expectation: …
 
               SharedFeature.State(
                 _count: 0,
@@ -76,7 +76,7 @@ final class SharedTests: XCTestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A state change does not match expectation: …
+        failed - A state change does not match expectation: …
 
               SharedFeature.State(
                 _count: 0,
@@ -145,7 +145,7 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        A state change does not match expectation: …
+        failed - A state change does not match expectation: …
 
               SharedFeature.State(
                 _count: 0,
@@ -194,7 +194,7 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        State was not expected to change, but a change occurred: …
+        failed - State was not expected to change, but a change occurred: …
 
               SharedFeature.State(
                 _count: 0,
@@ -246,7 +246,7 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        Test store finished before asserting against changes to shared state: …
+        failed - Test store finished before asserting against changes to shared state: …
 
               SharedFeature.State(
                 _count: 0,
@@ -280,7 +280,7 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        A state change does not match expectation: …
+        failed - A state change does not match expectation: …
 
               SharedFeature.State(
                 _count: 0,
@@ -434,7 +434,7 @@ final class SharedTests: XCTestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        State was not expected to change, but a change occurred: …
+        failed - State was not expected to change, but a change occurred: …
 
               SimpleFeature.State(
             −   _count: #1 0
@@ -496,7 +496,7 @@ final class SharedTests: XCTestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        Expected changes, but none occurred.
+        failed - Expected changes, but none occurred.
         """
     }
     store.state.$count.assert {

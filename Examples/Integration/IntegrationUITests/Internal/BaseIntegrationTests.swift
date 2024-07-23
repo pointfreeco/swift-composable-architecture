@@ -7,10 +7,10 @@ class BaseIntegrationTests: XCTestCase {
   @MainActor
   var app: XCUIApplication!
   var logs: XCUIElement!
-  private var _expectRuntimeWarnings: (file: StaticString, line: UInt)?
+  private var _expectRuntimeWarnings: (filePath: StaticString, line: UInt)?
 
-  func expectRuntimeWarnings(file: StaticString = #file, line: UInt = #line) {
-    self._expectRuntimeWarnings = (file, line)
+  func expectRuntimeWarnings(filePath: StaticString = #filePath, line: UInt = #line) {
+    self._expectRuntimeWarnings = (filePath, line)
   }
 
   @MainActor
@@ -61,7 +61,7 @@ class BaseIntegrationTests: XCTestCase {
   func assertLogs(
     _ logConfiguration: LogConfiguration = .unordered,
     matches expectedLogs: (() -> String)? = nil,
-    file: StaticString = #file,
+    filePath: StaticString = #filePath,
     function: StaticString = #function,
     line: UInt = #line,
     column: UInt = #column
@@ -78,7 +78,8 @@ class BaseIntegrationTests: XCTestCase {
       of: logs,
       as: ._lines,
       matches: expectedLogs,
-      file: file,
+      fileID: fileID,
+      file: filePath,
       function: function,
       line: line,
       column: column

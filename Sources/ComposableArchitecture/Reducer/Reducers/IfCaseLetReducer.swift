@@ -57,7 +57,9 @@ extension Reducer {
     action toCaseAction: CaseKeyPath<Action, CaseAction>,
     @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> _IfCaseLetReducer<Self, Case>
   where
     State: CasePathable,
@@ -71,7 +73,9 @@ extension Reducer {
       toChildState: AnyCasePath(toCaseState),
       toChildAction: AnyCasePath(toCaseAction),
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -106,7 +110,9 @@ extension Reducer {
     action toCaseAction: AnyCasePath<Action, CaseAction>,
     @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> some Reducer<State, Action> {
     _IfCaseLetReducer(
       parent: self,
@@ -114,7 +120,9 @@ extension Reducer {
       toChildState: toCaseState,
       toChildAction: toCaseAction,
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 }
@@ -136,7 +144,13 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let fileID: StaticString
 
   @usableFromInline
+  let filePath: StaticString
+
+  @usableFromInline
   let line: UInt
+
+  @usableFromInline
+  let column: UInt
 
   @Dependency(\.navigationIDPath) var navigationIDPath
 
@@ -147,14 +161,18 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     toChildState: AnyCasePath<Parent.State, Child.State>,
     toChildAction: AnyCasePath<Parent.Action, Child.Action>,
     fileID: StaticString,
-    line: UInt
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
   ) {
     self.parent = parent
     self.child = child
     self.toChildState = toChildState
     self.toChildAction = toChildAction
     self.fileID = fileID
+    self.filePath = filePath
     self.line = line
+    self.column = column
   }
 
   public func reduce(
@@ -190,7 +208,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {
-      runtimeWarn(
+      reportIssue(
         """
         An "ifCaseLet" at "\(self.fileID):\(self.line)" received a child action when child state \
         was set to a different case. …
@@ -214,7 +232,11 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
         • This action was sent to the store while state was another case. Make sure that actions \
         for this reducer can only be sent from a view store when state is set to the appropriate \
         case. In SwiftUI applications, use "SwitchStore".
-        """
+        """,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       return .none
     }

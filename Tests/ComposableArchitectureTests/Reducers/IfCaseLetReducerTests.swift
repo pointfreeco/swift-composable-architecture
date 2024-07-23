@@ -42,8 +42,8 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        An "ifCaseLet" at "\(#fileID):\(#line - 5)" received a child action when child state was \
-        set to a different case. …
+        failed - An "ifCaseLet" at "\(#fileID):\(#line - 5)" received a child action when child \
+        state was set to a different case. …
 
           Action:
             Result.success(1)

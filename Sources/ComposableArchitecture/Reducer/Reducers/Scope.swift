@@ -104,7 +104,9 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     case casePath(
       AnyCasePath<ParentState, Child.State>,
       fileID: StaticString,
-      line: UInt
+      filePath: StaticString,
+      line: UInt,
+      column: UInt
     )
     case keyPath(WritableKeyPath<ParentState, Child.State>)
   }
@@ -228,10 +230,18 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     action toChildAction: CaseKeyPath<ParentAction, ChildAction>,
     @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) where ChildState == Child.State, ChildAction == Child.Action {
     self.init(
-      toChildState: .casePath(AnyCasePath(toChildState), fileID: fileID, line: line),
+      toChildState: .casePath(
+        AnyCasePath(toChildState),
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ),
       toChildAction: AnyCasePath(toChildAction),
       child: child()
     )
@@ -304,10 +314,18 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     action toChildAction: AnyCasePath<ParentAction, ChildAction>,
     @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) where ChildState == Child.State, ChildAction == Child.Action {
     self.init(
-      toChildState: .casePath(toChildState, fileID: fileID, line: line),
+      toChildState: .casePath(
+        toChildState,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ),
       toChildAction: toChildAction,
       child: child()
     )
@@ -320,9 +338,9 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     switch self.toChildState {
-    case let .casePath(toChildState, fileID, line):
+    case let .casePath(toChildState, fileID, filePath, line, column):
       guard var childState = toChildState.extract(from: state) else {
-        runtimeWarn(
+        reportIssue(
           """
           A "Scope" at "\(fileID):\(line)" received a child action when child state was set to a \
           different case. …
@@ -349,7 +367,11 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
           • This action was sent to the store while state was another case. Make sure that actions \
           for this reducer can only be sent from a view store when state is set to the appropriate \
           case. In SwiftUI applications, use "SwitchStore".
-          """
+          """,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
         return .none
       }

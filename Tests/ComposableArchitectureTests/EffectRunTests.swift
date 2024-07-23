@@ -50,7 +50,7 @@ final class EffectRunTests: BaseTCATestCase {
       var line: UInt!
       XCTExpectFailure(nil, enabled: nil, strict: nil) {
         $0.compactDescription == """
-          An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
+          failed - An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
 
               EffectRunTests.Failure()
 
@@ -131,7 +131,7 @@ final class EffectRunTests: BaseTCATestCase {
   func testRunEscapeFailure() async {
     XCTExpectFailure {
       $0.compactDescription == """
-        An action was sent from a completed effect:
+        failed - An action was sent from a completed effect:
 
           Action:
             EffectRunTests.Action.response

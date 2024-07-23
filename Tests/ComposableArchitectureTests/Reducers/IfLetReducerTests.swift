@@ -12,8 +12,8 @@ final class IfLetReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        An "ifLet" at "\(#fileID):\(#line - 5)" received a child action when child state was \
-        "nil". …
+        failed - An "ifLet" at "\(#fileID):\(#line - 5)" received a child action when child state \
+        was "nil". …
 
           Action:
             ()

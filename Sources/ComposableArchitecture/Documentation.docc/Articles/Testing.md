@@ -839,13 +839,13 @@ they are, you can omit the entire entry point of your application:
 
 ```swift
 import SwiftUI
-import XCTestDynamicOverlay
+import ComposableArchitecture
 
 @main
 struct MyApp: App {
   var body: some Scene {
     WindowGroup {
-      if !_XCTIsTesting {
+      if TestContext.current == nil{
         // Your real root view
       }
     }

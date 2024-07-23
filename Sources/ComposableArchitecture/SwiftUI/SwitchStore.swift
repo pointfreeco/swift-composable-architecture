@@ -122,7 +122,9 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
   public let content: (Store<CaseState, CaseAction>) -> Content
 
   private let fileID: StaticString
+  private let filePath: StaticString
   private let line: UInt
+  private let column: UInt
 
   @EnvironmentObject private var store: StoreObservableObject<EnumState, EnumAction>
 
@@ -140,13 +142,17 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
     action fromCaseAction: @escaping (CaseAction) -> EnumAction,
     @ViewBuilder then content: @escaping (_ store: Store<CaseState, CaseAction>) -> Content,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) {
     self.toCaseState = toCaseState
     self.fromCaseAction = fromCaseAction
     self.content = content
     self.fileID = fileID
+    self.filePath = filePath
     self.line = line
+    self.column = column
   }
 
   public var body: some View {
@@ -161,7 +167,9 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
       else: {
         _CaseLetMismatchView<EnumState, EnumAction>(
           fileID: self.fileID,
-          line: self.line
+          filePath: self.filePath,
+          line: self.line,
+          column: self.column
         )
       }
     )
@@ -192,7 +200,9 @@ extension CaseLet where EnumAction == CaseAction {
 public struct _CaseLetMismatchView<State, Action>: View {
   @EnvironmentObject private var store: StoreObservableObject<State, Action>
   let fileID: StaticString
+  let filePath: StaticString
   let line: UInt
+  let column: UInt
 
   public var body: some View {
     #if DEBUG
@@ -229,7 +239,9 @@ public struct _CaseLetMismatchView<State, Action>: View {
       .foregroundColor(.white)
       .padding()
       .background(Color.red.edgesIgnoringSafeArea(.all))
-      .onAppear { runtimeWarn(message) }
+      .onAppear {
+        reportIssue(message, fileID: fileID, filePath: filePath, line: line, column: column)
+      }
     #else
       return EmptyView()
     #endif

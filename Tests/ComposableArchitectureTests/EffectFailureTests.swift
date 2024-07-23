@@ -11,7 +11,7 @@
       var line: UInt!
       XCTExpectFailure {
         $0.compactDescription == """
-          An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
+          failed - An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
 
               EffectFailureTests.Unexpected()
 

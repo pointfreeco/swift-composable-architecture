@@ -9,7 +9,7 @@
       uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
         $0.compactDescription == """
-          A store initialized on a non-main thread. …
+          failed - A store initialized on a non-main thread. …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
           (including all of its scopes and derived view stores) must be done on the main thread.
@@ -26,7 +26,7 @@
     func testEffectFinishedMainThread() async throws {
       XCTExpectFailure {
         $0.compactDescription == """
-          An effect completed on a non-main thread. …
+          failed - An effect completed on a non-main thread. …
 
             Effect returned from:
               RuntimeWarningTests.Action.tap
@@ -62,14 +62,14 @@
       XCTExpectFailure {
         [
           """
-          "Store.scope" was called on a non-main thread. …
+          failed - "Store.scope" was called on a non-main thread. …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
           "Store" (including all of its scopes and derived view stores) must be done on the main \
           thread.
           """,
           """
-          A store initialized on a non-main thread. …
+          failed - A store initialized on a non-main thread. …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of "Store" \
           (including all of its scopes and derived view stores) must be done on the main thread.
@@ -89,7 +89,7 @@
       uncheckedUseMainSerialExecutor = false
       XCTExpectFailure {
         $0.compactDescription == """
-          "Store.send" was called on a non-main thread with: () …
+          failed - "Store.send" was called on a non-main thread with: () …
 
           The "Store" class is not thread-safe, and so all interactions with an instance of \
           "Store" (including all of its scopes and derived view stores) must be done on the main \
@@ -109,7 +109,7 @@
       XCTExpectFailure {
         [
           """
-          An effect completed on a non-main thread. …
+          failed - An effect completed on a non-main thread. …
 
             Effect returned from:
               RuntimeWarningTests.Action.response
@@ -122,7 +122,7 @@
           thread.
           """,
           """
-          An effect completed on a non-main thread. …
+          failed - An effect completed on a non-main thread. …
 
             Effect returned from:
               RuntimeWarningTests.Action.tap
@@ -135,7 +135,7 @@
           thread.
           """,
           """
-          An effect published an action on a non-main thread. …
+          failed - An effect published an action on a non-main thread. …
 
             Effect published:
               RuntimeWarningTests.Action.response
@@ -190,7 +190,7 @@
         ViewStore(store, observe: { $0 }).$value.wrappedValue = 42
       } issueMatcher: {
         $0.compactDescription == """
-          A binding action sent from a store for binding state defined at \
+          failed - A binding action sent from a store for binding state defined at \
           "\(#fileID):\(line)" was not handled. …
 
             Action:
@@ -216,7 +216,7 @@
         ViewStore(store, observe: { $0 }).$value.wrappedValue = 42
       } issueMatcher: {
         $0.compactDescription == """
-          A binding action sent from a store for binding state defined at \
+          failed - A binding action sent from a store for binding state defined at \
           "\(#fileID):\(line)" was not handled. …
 
             Action:
@@ -244,13 +244,15 @@
       }
 
       XCTExpectFailure {
-        store.scope(state: \.path, action: \.path)[fileID: "file.swift", line: 1] = .init()
+        store.scope(state: \.path, action: \.path)[
+          fileID: "file.swift", filePath: "/file.swift", line: 1, column: 1
+        ] = .init()
       } issueMatcher: {
         $0.compactDescription == """
-          SwiftUI wrote to a "NavigationStack" binding at "file.swift:1" with a path that has the \
-          same number of elements that already exist in the store. SwiftUI should only write to \
-          this binding with a path that has pushed a new element onto the stack, or popped one or \
-          more elements from the stack.
+          failed - SwiftUI wrote to a "NavigationStack" binding at "file.swift:1" with a path that \
+          has the same number of elements that already exist in the store. SwiftUI should only \
+          write to this binding with a path that has pushed a new element onto the stack, or \
+          popped one or more elements from the stack.
 
           This usually means the "forEach" has not been integrated with the reducer powering the \
           store, and this reducer is responsible for handling stack actions.
@@ -296,12 +298,14 @@
           action: \.destination,
           isInViewBody: false,
           fileID: "file.swift",
-          line: 1
+          filePath: "/file.swift",
+          line: 1,
+          column: 1
         ] = nil
       } issueMatcher: {
         $0.compactDescription == """
-          SwiftUI dismissed a view through a binding at "file.swift:1", but the store destination \
-          wasn't set to "nil".
+          failed - SwiftUI dismissed a view through a binding at "file.swift:1", but the store \
+          destination wasn't set to "nil".
 
           This usually means an "ifLet" has not been integrated with the reducer powering the \
           store, and this reducer is responsible for handling presentation actions.

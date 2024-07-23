@@ -138,15 +138,25 @@
     /// }
     /// ```
     @discardableResult
-    public func observe(_ apply: @escaping () -> Void) -> ObservationToken {
+    public func observe(
+      _ apply: @escaping () -> Void,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> ObservationToken {
       if ObserveLocals.isApplying {
-        runtimeWarn(
+        reportIssue(
           """
           An "observe" was called from another "observe" closure, which can lead to \
           over-observation and unintended side effects.
 
           Avoid nested closures by moving child observation into their own lifecycle methods.
-          """
+          """,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
       }
       let token = ObservationToken()

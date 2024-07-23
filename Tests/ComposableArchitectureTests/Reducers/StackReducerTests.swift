@@ -30,7 +30,7 @@ final class StackReducerTests: BaseTCATestCase {
       stack[id: 0, case: /Element.text]?.append("!")
     } issueMatcher: {
       $0.compactDescription == """
-        Can't modify unrelated case "int"
+        failed - Can't modify unrelated case "int"
         """
     }
 
@@ -38,7 +38,7 @@ final class StackReducerTests: BaseTCATestCase {
       stack[id: 0, case: /Element.text] = nil
     } issueMatcher: {
       $0.compactDescription == """
-        Can't modify unrelated case "int"
+        failed - Can't modify unrelated case "int"
         """
     }
 
@@ -268,7 +268,7 @@ final class StackReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        Received unexpected action: …
+        failed - Received unexpected action: …
 
               StackReducerTests.Parent.Action.children(
             −   .popFrom(id: #1)
@@ -787,8 +787,8 @@ final class StackReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received an \
-        action for a missing element. …
+        failed - A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
+        received an action for a missing element. …
 
           Action:
             ()
@@ -836,8 +836,8 @@ final class StackReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
-        "popFrom" action for a missing element. …
+        failed - A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
+        received a "popFrom" action for a missing element. …
 
           ID:
             #999
@@ -888,8 +888,8 @@ final class StackReducerTests: BaseTCATestCase {
       $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
         || $0.sourceCodeContext.location?.lineNumber == line + 1
           && $0.compactDescription == """
-            An effect returned for this action is still running. It must complete before the end \
-            of the test. …
+            failed - An effect returned for this action is still running. It must complete before \
+            the end of the test. …
 
             To fix, inspect any effects the reducer returns for this action and ensure that all \
             of them complete by the end of the test. There are a few reasons why an effect may \
@@ -1102,8 +1102,8 @@ final class StackReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
-        "push" action for an element it already contains. …
+        failed - A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
+        received a "push" action for an element it already contains. …
 
           ID:
             #0
@@ -1147,8 +1147,8 @@ final class StackReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
-        "push" action with an unexpected generational ID. …
+        failed - A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
+        received a "push" action with an unexpected generational ID. …
 
           Received ID:
             #1
@@ -1189,7 +1189,7 @@ final class StackReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A state change does not match expectation: …
+        failed - A state change does not match expectation: …
 
               StackReducerTests.Parent.State(
                 children: [

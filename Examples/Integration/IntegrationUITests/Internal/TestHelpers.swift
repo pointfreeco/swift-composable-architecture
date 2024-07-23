@@ -12,11 +12,11 @@ func XCTTODO(_ message: String) {
 extension XCUIElement {
   func find(
     timeout: TimeInterval = 0.3,
-    file: StaticString = #file,
+    filePath: StaticString = #filePath,
     line: UInt = #line
   ) -> XCUIElement {
     if !self.waitForExistence(timeout: timeout) {
-      XCTFail("Failed to find \(self).", file: file, line: line)
+      XCTFail("Failed to find \(self).", file: filePath, line: line)
     }
     return self
   }
