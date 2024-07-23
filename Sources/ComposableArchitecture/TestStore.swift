@@ -3,8 +3,8 @@ import Combine
 import ConcurrencyExtras
 import CustomDump
 @_spi(Beta) import Dependencies
-import IssueReporting
 import Foundation
+import IssueReporting
 
 /// A testable runtime for a reducer.
 ///
@@ -2451,10 +2451,10 @@ extension TestStore {
 
             \(message)
             """,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
           )
         }
       }

@@ -164,13 +164,12 @@ import SwiftUI
             .destination(
               self.store.scope(
                 id: self.store.id(
-                  state: \.[
-                    id:component.id,
-                    fileID:_HashableStaticString(rawValue: fileID),
-                    filePath:_HashableStaticString(rawValue: filePath),
-                    line:line,
-                    column:column
-                  ],
+                  state:
+                    \.[
+                      id:component.id,fileID:_HashableStaticString(
+                        rawValue: fileID),filePath:_HashableStaticString(
+                          rawValue: filePath),line:line,column:column
+                    ],
                   action: \.[id:component.id]
                 ),
                 state: ToState {

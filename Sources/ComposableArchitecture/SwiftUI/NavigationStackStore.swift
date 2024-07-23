@@ -58,13 +58,12 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
         store
           .scope(
             id: store.id(
-              state: \.[
-                id:component.id,
-                fileID:_HashableStaticString(rawValue: fileID),
-                filePath:_HashableStaticString(rawValue: filePath),
-                line:line,
-                column:column
-              ]!,
+              state:
+                \.[
+                  id:component.id,fileID:_HashableStaticString(
+                    rawValue: fileID),filePath:_HashableStaticString(
+                      rawValue: filePath),line:line,column:column
+                ]!,
               action: \.[id:component.id]
             ),
             state: ToState {
@@ -110,13 +109,12 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
         store
           .scope(
             id: store.id(
-              state: \.[
-                id:component.id,
-                fileID:_HashableStaticString(rawValue: fileID),
-                filePath:_HashableStaticString(rawValue: filePath),
-                line:line,
-                column:column
-              ]!,
+              state:
+                \.[
+                  id:component.id,fileID:_HashableStaticString(
+                    rawValue: fileID),filePath:_HashableStaticString(
+                      rawValue: filePath),line:line,column:column
+                ]!,
               action: \.[id:component.id]
             ),
             state: ToState {

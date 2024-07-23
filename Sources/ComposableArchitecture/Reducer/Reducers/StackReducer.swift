@@ -65,34 +65,34 @@ public struct StackState<Element> {
     }
   }
 
-//  subscript(
-//    id id: StackElementID,
-//    fileID fileID: HashableStaticString,
-//    filePath filePath: HashableStaticString,
-//    line line: UInt = #line,
-//    column column: UInt = #column
-//  ) -> Element? {
-//    _read { yield self._dictionary[id] }
-//    _modify { yield &self._dictionary[id] }
-//    set {
-//      switch (self.ids.contains(id), newValue, _XCTIsTesting) {
-//      case (true, _, _), (false, .some, true):
-//        self._dictionary[id] = newValue
-//      case (false, .some, false):
-//        if !_XCTIsTesting {
-//          reportIssue(
-//            "Can't assign element at missing ID.",
-//            fileID: fileID.rawValue,
-//            filePath: filePath.rawValue,
-//            line: line,
-//            column: column
-//          )
-//        }
-//      case (false, .none, _):
-//        break
-//      }
-//    }
-//  }
+  //  subscript(
+  //    id id: StackElementID,
+  //    fileID fileID: HashableStaticString,
+  //    filePath filePath: HashableStaticString,
+  //    line line: UInt = #line,
+  //    column column: UInt = #column
+  //  ) -> Element? {
+  //    _read { yield self._dictionary[id] }
+  //    _modify { yield &self._dictionary[id] }
+  //    set {
+  //      switch (self.ids.contains(id), newValue, _XCTIsTesting) {
+  //      case (true, _, _), (false, .some, true):
+  //        self._dictionary[id] = newValue
+  //      case (false, .some, false):
+  //        if !_XCTIsTesting {
+  //          reportIssue(
+  //            "Can't assign element at missing ID.",
+  //            fileID: fileID.rawValue,
+  //            filePath: filePath.rawValue,
+  //            line: line,
+  //            column: column
+  //          )
+  //        }
+  //      case (false, .none, _):
+  //        break
+  //      }
+  //    }
+  //  }
 
   /// Accesses the value associated with the given id and case for reading and writing.
   ///
