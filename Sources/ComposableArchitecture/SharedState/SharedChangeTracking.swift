@@ -30,7 +30,7 @@ protocol Change<Value> {
 extension Change {
   func assertUnchanged() {
     if let difference = diff(snapshot, self.reference.value, format: .proportional) {
-      XCTFail(
+      reportIssue(
         """
         Tracked changes to '\(self.reference.description)' but failed to assert: …
 
