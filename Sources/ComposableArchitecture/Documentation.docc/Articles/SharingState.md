@@ -1133,7 +1133,7 @@ struct MainApp: App {
 
   var body: some Scene {
     WindowGroup {
-      if _XCTIsTesting {
+      if isTesting {
         // NB: Don't run application in tests to avoid interference 
         //     between the app and the test.
         EmptyView()

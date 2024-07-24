@@ -46,11 +46,11 @@ public struct StackState<Element> {
     _read { yield self._dictionary[id] }
     _modify { yield &self._dictionary[id] }
     set {
-      switch (self.ids.contains(id), newValue, _XCTIsTesting) {
+      switch (self.ids.contains(id), newValue, isTesting) {
       case (true, _, _), (false, .some, true):
         self._dictionary[id] = newValue
       case (false, .some, false):
-        if !_XCTIsTesting {
+        if !isTesting {
           reportIssue(
             "Can't assign element at missing ID.",
             fileID: fileID.rawValue,
@@ -64,35 +64,6 @@ public struct StackState<Element> {
       }
     }
   }
-
-  //  subscript(
-  //    id id: StackElementID,
-  //    fileID fileID: HashableStaticString,
-  //    filePath filePath: HashableStaticString,
-  //    line line: UInt = #line,
-  //    column column: UInt = #column
-  //  ) -> Element? {
-  //    _read { yield self._dictionary[id] }
-  //    _modify { yield &self._dictionary[id] }
-  //    set {
-  //      switch (self.ids.contains(id), newValue, _XCTIsTesting) {
-  //      case (true, _, _), (false, .some, true):
-  //        self._dictionary[id] = newValue
-  //      case (false, .some, false):
-  //        if !_XCTIsTesting {
-  //          reportIssue(
-  //            "Can't assign element at missing ID.",
-  //            fileID: fileID.rawValue,
-  //            filePath: filePath.rawValue,
-  //            line: line,
-  //            column: column
-  //          )
-  //        }
-  //      case (false, .none, _):
-  //        break
-  //      }
-  //    }
-  //  }
 
   /// Accesses the value associated with the given id and case for reading and writing.
   ///
@@ -755,7 +726,7 @@ extension StackElementID: CustomDumpStringConvertible {
 
 extension StackElementID: ExpressibleByIntegerLiteral {
   public init(integerLiteral value: Int) {
-    if !_XCTIsTesting {
+    if !isTesting {
       fatalError(
         """
         Specifying stack element IDs by integer literal is not allowed outside of tests.
