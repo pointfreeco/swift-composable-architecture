@@ -139,7 +139,7 @@ public macro Presents() =
 
 /// Provides a view with access to a feature's ``ViewAction``s.
 ///
-/// If you want to restrict what actions can be sent from the view you can use this macro along the
+/// If you want to restrict what actions can be sent from the view you can use this macro along with the
 /// ``ViewAction`` protocol. You start by conforming your reducer's `Action` enum to the
 /// ``ViewAction`` protocol, and moving view-specific actions to its own inner enum:
 ///

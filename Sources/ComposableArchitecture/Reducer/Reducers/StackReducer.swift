@@ -6,7 +6,7 @@ import OrderedCollections
 /// A list of data representing the content of a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``.
+/// ``Reducer/forEach(_:action:destination:fileID:line:)-582rd``.
 ///
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
@@ -36,16 +36,28 @@ public struct StackState<Element> {
   }
 
   /// Accesses the value associated with the given id for reading and writing.
-  public subscript(id id: StackElementID) -> Element? {
+  public subscript(
+    id id: StackElementID,
+    fileID fileID: _HashableStaticString = #fileID,
+    filePath filePath: _HashableStaticString = #filePath,
+    line line: UInt = #line,
+    column column: UInt = #column
+  ) -> Element? {
     _read { yield self._dictionary[id] }
     _modify { yield &self._dictionary[id] }
     set {
-      switch (self.ids.contains(id), newValue, _XCTIsTesting) {
+      switch (self.ids.contains(id), newValue, isTesting) {
       case (true, _, _), (false, .some, true):
         self._dictionary[id] = newValue
       case (false, .some, false):
-        if !_XCTIsTesting {
-          runtimeWarn("Can't assign element at missing ID.")
+        if !isTesting {
+          reportIssue(
+            "Can't assign element at missing ID.",
+            fileID: fileID.rawValue,
+            filePath: filePath.rawValue,
+            line: line,
+            column: column
+          )
         }
       case (false, .none, _):
         break
@@ -105,7 +117,14 @@ public struct StackState<Element> {
     message:
       "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
-  public subscript<Case>(id id: StackElementID, case path: AnyCasePath<Element, Case>) -> Case? {
+  public subscript<Case>(
+    id id: StackElementID,
+    case path: AnyCasePath<Element, Case>,
+    fileID fileID: _HashableStaticString = #fileID,
+    filePath filePath: _HashableStaticString = #filePath,
+    line line: UInt = #line,
+    column column: UInt = #column
+  ) -> Case? {
     _read { yield self[id: id].flatMap(path.extract) }
     _modify {
       let root = self[id: id]
@@ -120,10 +139,14 @@ public struct StackState<Element> {
         {
           description = caseName
         }
-        runtimeWarn(
+        reportIssue(
           """
           Can't modify unrelated case\(description.map { " \($0.debugDescription)" } ?? "")
-          """
+          """,
+          fileID: fileID.rawValue,
+          filePath: filePath.rawValue,
+          line: line,
+          column: column
         )
         return
       }
@@ -220,7 +243,7 @@ extension StackState: CustomDumpReflectable {
 /// A wrapper type for actions that can be presented in a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``Reducer/forEach(_:action:destination:fileID:line:)-yz3v``.
+/// ``Reducer/forEach(_:action:destination:fileID:line:)-582rd``.
 ///
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
@@ -356,7 +379,9 @@ extension Reducer {
     action toStackAction: CaseKeyPath<Action, StackAction<DestinationState, DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> some Reducer<State, Action> {
     _StackReducer(
       base: self,
@@ -364,7 +389,9 @@ extension Reducer {
       toStackAction: AnyCasePath(toStackAction),
       destination: destination(),
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -401,7 +428,9 @@ extension Reducer {
     action toStackAction: AnyCasePath<Action, StackAction<DestinationState, DestinationAction>>,
     @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> some Reducer<State, Action> {
     _StackReducer(
       base: self,
@@ -409,7 +438,9 @@ extension Reducer {
       toStackAction: toStackAction,
       destination: destination(),
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 }
@@ -435,7 +466,9 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
   let toStackAction: AnyCasePath<Base.Action, StackAction<Destination.State, Destination.Action>>
   let destination: Destination
   let fileID: StaticString
+  let filePath: StaticString
   let line: UInt
+  let column: UInt
 
   @Dependency(\.navigationIDPath) var navigationIDPath
 
@@ -446,14 +479,18 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
     toStackAction: AnyCasePath<Base.Action, StackAction<Destination.State, Destination.Action>>,
     destination: Destination,
     fileID: StaticString,
-    line: UInt
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
   ) {
     self.base = base
     self.toStackState = toStackState
     self.toStackAction = toStackAction
     self.destination = destination
     self.fileID = fileID
+    self.filePath = filePath
     self.line = line
+    self.column = column
   }
 
   public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
@@ -483,7 +520,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           .map { toStackAction.embed(.element(id: elementID, action: $0)) }
           ._cancellable(navigationIDPath: elementNavigationIDPath)
       } else {
-        runtimeWarn(
+        reportIssue(
           """
           A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element. …
 
@@ -504,7 +541,11 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           fix this make sure that actions for this reducer can only be sent from a view store when \
           its state contains an element at this id. In SwiftUI applications, use \
           "NavigationStack.init(path:)" with a binding to a store.
-          """
+          """,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
         destinationEffects = .none
       }
@@ -518,7 +559,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
       if canPop {
         state[keyPath: self.toStackState].pop(from: id)
       } else {
-        runtimeWarn(
+        reportIssue(
           """
           A "forEach" at "\(self.fileID):\(self.line)" received a "popFrom" action for a missing \
           element. …
@@ -527,14 +568,18 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
               \(id)
             Path IDs:
               \(state[keyPath: self.toStackState].ids)
-          """
+          """,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
       }
 
     case let .push(id, element):
       destinationEffects = .none
       if state[keyPath: self.toStackState].ids.contains(id) {
-        runtimeWarn(
+        reportIssue(
           """
           A "forEach" at "\(self.fileID):\(self.line)" received a "push" action for an element it \
           already contains. …
@@ -543,14 +588,18 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
               \(id)
             Path IDs:
               \(state[keyPath: self.toStackState].ids)
-          """
+          """,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
         baseEffects = self.base.reduce(into: &state, action: action)
         break
       } else if DependencyValues._current.context == .test {
         let nextID = DependencyValues._current.stackElementID.peek()
         if id.generation > nextID.generation {
-          runtimeWarn(
+          reportIssue(
             """
             A "forEach" at "\(self.fileID):\(self.line)" received a "push" action with an \
             unexpected generational ID. …
@@ -559,7 +608,11 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
                 \(id)
               Expected ID:
                 \(nextID)
-            """
+            """,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
           )
         } else if id.generation == nextID.generation {
           _ = DependencyValues._current.stackElementID.next()
@@ -673,7 +726,7 @@ extension StackElementID: CustomDumpStringConvertible {
 
 extension StackElementID: ExpressibleByIntegerLiteral {
   public init(integerLiteral value: Int) {
-    if !_XCTIsTesting {
+    if !isTesting {
       fatalError(
         """
         Specifying stack element IDs by integer literal is not allowed outside of tests.

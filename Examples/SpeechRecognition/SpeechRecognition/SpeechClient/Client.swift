@@ -21,7 +21,7 @@ struct SpeechClient {
 
 extension SpeechClient: TestDependencyKey {
   static var previewValue: Self {
-    let isRecording = ActorIsolated(false)
+    let isRecording = LockIsolated(false)
 
     return Self(
       finishTask: { await isRecording.setValue(false) },
@@ -29,7 +29,7 @@ extension SpeechClient: TestDependencyKey {
       startTask: { _ in
         AsyncThrowingStream { continuation in
           Task {
-            await isRecording.setValue(true)
+            isRecording.setValue(true)
             var finalText = """
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
               incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud \
@@ -39,7 +39,7 @@ extension SpeechClient: TestDependencyKey {
               officia deserunt mollit anim id est laborum.
               """
             var text = ""
-            while await isRecording.value {
+            while isRecording.value {
               let word = finalText.prefix { $0 != " " }
               try await Task.sleep(for: .milliseconds(word.count * 50 + .random(in: 0...200)))
               finalText.removeFirst(word.count)

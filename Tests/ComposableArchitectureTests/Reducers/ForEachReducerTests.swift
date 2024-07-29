@@ -45,7 +45,8 @@ final class ForEachReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A "forEach" at "\(#fileID):\(#line - 5)" received an action for a missing element. …
+        failed - A "forEach" at "\(#fileID):\(#line - 5)" received an action for a missing \
+        element. …
 
           Action:
             Elements.Action.rows(.element(id:, action:))

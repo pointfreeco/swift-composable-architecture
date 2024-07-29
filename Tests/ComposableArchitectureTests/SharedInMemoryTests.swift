@@ -55,7 +55,7 @@ final class SharedInMemoryTests: XCTestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        State was not expected to change, but a change occurred: …
+        failed - State was not expected to change, but a change occurred: …
 
               ParentFeature.State(
                 _child1: Feature.State(

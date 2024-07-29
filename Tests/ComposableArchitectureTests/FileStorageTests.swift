@@ -16,6 +16,21 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
+  func testBasics_CustomDecodeEncodeClosures() {
+    let fileSystem = LockIsolated<[URL: Data]>([:])
+    withDependencies {
+      $0.defaultFileStorage = .inMemory(fileSystem: fileSystem, scheduler: .immediate)
+    } operation: {
+      @Shared(.utf8String) var string = ""
+      XCTAssertNoDifference(fileSystem.value, [.utf8StringURL: Data()])
+      string = "hello"
+      XCTAssertNoDifference(
+        fileSystem.value[.utf8StringURL].map { String(decoding: $0, as: UTF8.self) },
+        "hello"
+      )
+    }
+  }
+
   func testThrottle() throws {
     let fileSystem = LockIsolated<[URL: Data]>([:])
     let testScheduler = DispatchQueue.test
@@ -221,7 +236,7 @@ final class FileStorageTests: XCTestCase {
   }
 
   @MainActor
-  func testWriteFileWhileDebouncing() throws {
+  func testWriteFileWhileThrottling() throws {
     let fileSystem = LockIsolated<[URL: Data]>([:])
     let scheduler = DispatchQueue.test
     let fileStorage = FileStorage.inMemory(
@@ -235,6 +250,8 @@ final class FileStorageTests: XCTestCase {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
 
       users.append(.blob)
+      try XCTAssertNoDifference(fileSystem.value.users(for: .fileURL), [.blob])
+
       try fileStorage.save(Data(), .fileURL)
       scheduler.run()
       XCTAssertNoDifference(users, [])
@@ -386,6 +403,91 @@ final class FileStorageTests: XCTestCase {
     XCTAssertEqual(shared1.wrappedValue.name, "Blob Jr")
     XCTAssertEqual(shared2.wrappedValue.name, "Blob Sr")
   }
+
+  func testCancelThrottleWhenFileIsDeleted() async throws {
+    try await withMainSerialExecutor {
+      try? FileManager.default.removeItem(at: .fileURL)
+
+      try await withDependencies {
+        $0.defaultFileStorage = .fileSystem
+      } operation: {
+        @Shared(.fileStorage(.fileURL)) var users = [User.blob]
+        await Task.yield()
+        XCTAssertNoDifference(users, [.blob])
+
+        $users.withLock { $0 = [.blobJr] }  // NB: Saved immediately
+        $users.withLock { $0 = [.blobSr] }  // NB: Throttled for 1 second
+        try FileManager.default.removeItem(at: .fileURL)
+        try await Task.sleep(nanoseconds: 1_200_000_000)
+        XCTAssertNoDifference(users, [.blob])
+        try XCTAssertEqual(Data(contentsOf: .fileURL), Data())
+      }
+    }
+  }
+
+  func testWritesFromManyThreads() async {
+    let fileSystem = LockIsolated<[URL: Data]>([:])
+    let fileStorage = FileStorage.inMemory(
+      fileSystem: fileSystem,
+      scheduler: DispatchQueue.main.eraseToAnyScheduler()
+    )
+
+    await withDependencies {
+      $0.defaultFileStorage = fileStorage
+    } operation: {
+      @Shared(.fileStorage(.fileURL)) var count = 0
+      let max = 10_000
+      await withTaskGroup(of: Void.self) { group in
+        for index in (1...max) {
+          group.addTask { [count = $count] in
+            try? await Task.sleep(for: .milliseconds(Int.random(in: 200...3_000)))
+            await count.withLock { $0 += index }
+          }
+        }
+      }
+
+      XCTAssertEqual(count, max * (max + 1) / 2)
+    }
+  }
+
+  @MainActor
+  func testUpdateFileSystemFromBackgroundThread() async throws {
+    await withDependencies {
+      $0.defaultFileStorage = .fileSystem
+    } operation: {
+      try? FileManager.default.removeItem(at: .fileURL)
+
+      @Shared(.fileStorage(.fileURL)) var count = 0
+
+      let publisherExpectation = expectation(description: "publisher")
+      let cancellable = $count.publisher.sink { _ in
+        XCTAssertTrue(Thread.isMainThread)
+        publisherExpectation.fulfill()
+      }
+      defer { _ = cancellable }
+
+      await withUnsafeContinuation { continuation in
+        DispatchQueue.global().async {
+          XCTAssertFalse(Thread.isMainThread)
+          try! Data("1".utf8).write(to: .fileURL)
+          continuation.resume()
+        }
+      }
+
+      await fulfillment(of: [publisherExpectation], timeout: 0.1)
+    }
+  }
+}
+
+extension PersistenceReaderKey
+where Self == FileStorageKey<String> {
+  fileprivate static var utf8String: Self {
+    .fileStorage(
+      .utf8StringURL,
+      decode: { data in String(decoding: data, as: UTF8.self) },
+      encode: { string in Data(string.utf8) }
+    )
+  }
 }
 
 extension URL {
@@ -395,6 +497,8 @@ extension URL {
     .appendingPathComponent("user.json")
   fileprivate static let anotherFileURL = Self(fileURLWithPath: NSTemporaryDirectory())
     .appendingPathComponent("another-file.json")
+  fileprivate static let utf8StringURL = Self(fileURLWithPath: NSTemporaryDirectory())
+    .appendingPathComponent("utf8-string.json")
 }
 
 private struct User: Codable, Equatable, Identifiable {

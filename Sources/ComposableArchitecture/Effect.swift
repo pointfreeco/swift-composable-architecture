@@ -1,7 +1,6 @@
 import Combine
 import Foundation
 import SwiftUI
-import XCTestDynamicOverlay
 
 public struct Effect<Action> {
   @usableFromInline
@@ -86,7 +85,9 @@ extension Effect {
     operation: @escaping @Sendable (_ send: Send<Action>) async throws -> Void,
     catch handler: (@Sendable (_ error: Error, _ send: Send<Action>) async -> Void)? = nil,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> Self {
     withEscapedDependencies { escaped in
       Self(
@@ -98,7 +99,7 @@ extension Effect {
               return
             } catch {
               guard let handler else {
-                runtimeWarn(
+                reportIssue(
                   """
                   An "Effect.run" returned from "\(fileID):\(line)" threw an unhandled error. …
 
@@ -106,7 +107,11 @@ extension Effect {
 
                   All non-cancellation errors must be explicitly handled via the "catch" parameter \
                   on "Effect.run", or via a "do" block.
-                  """
+                  """,
+                  fileID: fileID,
+                  filePath: filePath,
+                  line: line,
+                  column: column
                 )
                 return
               }

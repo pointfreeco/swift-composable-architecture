@@ -41,7 +41,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     await store.receive(false) { $0 = 2 }
     XCTAssertEqual(store.state, 2)
     XCTExpectFailure {
-      $0.compactDescription == "There were no received actions to skip."
+      $0.compactDescription == "failed - There were no received actions to skip."
     }
     await store.skipReceivedActions(strict: true)
   }
@@ -111,7 +111,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     let task = await store.send(true)
     await task.finish(timeout: NSEC_PER_SEC / 2)
     XCTExpectFailure {
-      $0.compactDescription == "There were no in-flight effects to skip."
+      $0.compactDescription == "failed - There were no in-flight effects to skip."
     }
     await store.skipInFlightEffects(strict: true)
   }
@@ -240,7 +240,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        A state change does not match expectation: …
+        failed - A state change does not match expectation: …
 
               Counter.State(
             −   count: 0,
@@ -342,7 +342,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     }
     XCTExpectFailure {
       $0.compactDescription == """
-        A state change does not match expectation: …
+        failed - A state change does not match expectation: …
 
               TestStoreNonExhaustiveTests.State(
             −   count: 2,
@@ -630,7 +630,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        Expected to receive an action matching case path, but didn't get one.
+        failed - Expected to receive an action matching case path, but didn't get one.
         """
     }
 
@@ -651,7 +651,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        Expected to receive an action matching case path, but didn't get one.
+        failed - Expected to receive an action matching case path, but didn't get one.
         """
     }
 
@@ -684,7 +684,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
         XCTModify(&state.child) { _ in }
       } issueMatcher: {
         $0.compactDescription == """
-          XCTModify failed: expected "Int" value to be modified but it was unchanged.
+          failed - XCTModify: Expected "Int" value to be modified but it was unchanged.
           """
       }
     }
@@ -694,7 +694,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
         XCTModify(&state.child) { _ in }
       } issueMatcher: {
         $0.compactDescription == """
-          XCTModify failed: expected "Int" value to be modified but it was unchanged.
+          failed - XCTModify: Expected "Int" value to be modified but it was unchanged.
           """
       }
     }

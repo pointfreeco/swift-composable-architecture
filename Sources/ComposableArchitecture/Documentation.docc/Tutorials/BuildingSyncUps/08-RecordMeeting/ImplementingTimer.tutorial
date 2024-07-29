@@ -238,7 +238,7 @@
         @Code(name: "RecordMeeting.swift", file: ImplementingTimer-03-code-0003.swift)
       }
       @Step {
-        Use the ``ComposableArchitecture/Reducer/ifLet(_:action:fileID:line:)-2eczg`` reducer
+        Use the ``ComposableArchitecture/Reducer/ifLet(_:action:fileID:line:)-3s2cw`` reducer
         method to integrate the alert's logic in your reducer.
         
         @Code(name: "RecordMeeting.swift", file: ImplementingTimer-03-code-0004.swift)

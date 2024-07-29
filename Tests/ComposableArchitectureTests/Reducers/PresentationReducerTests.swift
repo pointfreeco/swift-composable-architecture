@@ -40,7 +40,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       parent.$child[case: /Child.text]?.append("!")
     } issueMatcher: {
       $0.compactDescription == """
-        Can't modify unrelated case "int"
+        failed - Can't modify unrelated case "int"
         """
     }
 
@@ -48,7 +48,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       parent.$child[case: /Child.text] = nil
     } issueMatcher: {
       $0.compactDescription == """
-        Can't modify unrelated case "int"
+        failed - Can't modify unrelated case "int"
         """
     }
 
@@ -1749,7 +1749,7 @@ final class PresentationReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        An "ifLet" at \
+        failed - An "ifLet" at \
         "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
         presentation action when destination state was absent. …
 
@@ -1807,7 +1807,7 @@ final class PresentationReducerTests: BaseTCATestCase {
 
     XCTExpectFailure {
       $0.compactDescription == """
-        An "ifLet" at \
+        failed - An "ifLet" at \
         "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
         presentation action when destination state was absent. …
 
@@ -2295,8 +2295,8 @@ final class PresentationReducerTests: BaseTCATestCase {
       $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
         || $0.sourceCodeContext.location?.lineNumber == line + 1
           && $0.compactDescription == """
-            An effect returned for this action is still running. It must complete before the end \
-            of the test. …
+            failed - An effect returned for this action is still running. It must complete before \
+            the end of the test. …
 
             To fix, inspect any effects the reducer returns for this action and ensure that all of \
             them complete by the end of the test. There are a few reasons why an effect may not \
@@ -2612,8 +2612,8 @@ final class PresentationReducerTests: BaseTCATestCase {
       XCTExpectFailure {
         $0.compactDescription.hasPrefix(
           """
-          A "Scope" at "\(#fileID):\(line)" received a child action when child state was set to a \
-          different case. …
+          failed - A "Scope" at "\(#fileID):\(line)" received a child action when child state was \
+          set to a different case. …
           """
         )
       }

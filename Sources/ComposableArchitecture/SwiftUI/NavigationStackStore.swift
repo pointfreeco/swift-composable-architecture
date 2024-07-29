@@ -45,7 +45,11 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   public init(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
-    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) {
     self.root = root()
     self.destination = { component in
@@ -53,7 +57,15 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       return destination(
         store
           .scope(
-            id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
+            id: store.id(
+              state:
+                \.[
+                  id:component.id,fileID:_HashableStaticString(
+                    rawValue: fileID),filePath:_HashableStaticString(
+                      rawValue: filePath),line:line,column:column
+                ]!,
+              action: \.[id:component.id]
+            ),
             state: ToState {
               element = $0[id: component.id] ?? element
               return element
@@ -84,7 +96,11 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   public init<D: View>(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
-    @ViewBuilder destination: @escaping (_ initialState: State) -> D
+    @ViewBuilder destination: @escaping (_ initialState: State) -> D,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) where Destination == SwitchStore<State, Action, D> {
     self.root = root()
     self.destination = { component in
@@ -92,7 +108,15 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       return SwitchStore(
         store
           .scope(
-            id: store.id(state: \.[id:component.id]!, action: \.[id:component.id]),
+            id: store.id(
+              state:
+                \.[
+                  id:component.id,fileID:_HashableStaticString(
+                    rawValue: fileID),filePath:_HashableStaticString(
+                      rawValue: filePath),line:line,column:column
+                ]!,
+              action: \.[id:component.id]
+            ),
             state: ToState {
               element = $0[id: component.id] ?? element
               return element

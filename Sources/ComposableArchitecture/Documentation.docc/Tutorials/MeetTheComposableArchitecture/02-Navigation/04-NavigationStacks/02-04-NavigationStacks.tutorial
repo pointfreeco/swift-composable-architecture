@@ -110,7 +110,7 @@
       
       @Step {
         At the very end of the reducer use the
-        ``ComposableArchitecture/Reducer/forEach(_:action:destination:fileID:line:)-yz3v`` operator 
+        ``ComposableArchitecture/Reducer/forEach(_:action:destination:fileID:line:)-582rd`` operator 
         to integrate the `ContactDetailFeature` into the stack of the `ContactsFeature`.
         
         > Tip: Scroll down to the bottom of the code snippet to see the application of the

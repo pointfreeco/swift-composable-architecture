@@ -106,7 +106,7 @@ public final class RootStore {
                 await operation(
                   Send { effectAction in
                     if isCompleted.value {
-                      runtimeWarn(
+                      reportIssue(
                         """
                         An action was sent from a completed effect:
 
@@ -173,7 +173,7 @@ public final class RootStore {
 
     switch status {
     case let .effectCompletion(action):
-      runtimeWarn(
+      reportIssue(
         """
         An effect completed on a non-main thread. …
 
@@ -190,7 +190,7 @@ public final class RootStore {
       )
 
     case .`init`:
-      runtimeWarn(
+      reportIssue(
         """
         A store initialized on a non-main thread. …
 
@@ -201,7 +201,7 @@ public final class RootStore {
       )
 
     case .scope:
-      runtimeWarn(
+      reportIssue(
         """
         "Store.scope" was called on a non-main thread. …
 
@@ -212,7 +212,7 @@ public final class RootStore {
       )
 
     case let .send(action, originatingAction: nil):
-      runtimeWarn(
+      reportIssue(
         """
         "Store.send" was called on a non-main thread with: \(debugCaseOutput(action)) …
 
@@ -223,7 +223,7 @@ public final class RootStore {
       )
 
     case let .send(action, originatingAction: .some(originatingAction)):
-      runtimeWarn(
+      reportIssue(
         """
         An effect published an action on a non-main thread. …
 
@@ -243,7 +243,7 @@ public final class RootStore {
       )
 
     case .state:
-      runtimeWarn(
+      reportIssue(
         """
         Store state was accessed on a non-main thread. …
 
@@ -260,6 +260,7 @@ public final class RootStore {
   }
 #endif
 
+// TODO: Should this traffic file/line through to `reportIssue`?
 enum ThreadCheckStatus {
   case effectCompletion(Any)
   case `init`

@@ -45,19 +45,25 @@ public struct BindingState<Value> {
   public var wrappedValue: Value
   #if DEBUG
     let fileID: StaticString
+    let filePath: StaticString
     let line: UInt
+    let column: UInt
   #endif
 
   /// Creates bindable state from the value of another bindable state.
   public init(
     wrappedValue: Value,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) {
     self.wrappedValue = wrappedValue
     #if DEBUG
       self.fileID = fileID
+      self.filePath = filePath
       self.line = line
+      self.column = column
     #endif
   }
 
@@ -309,7 +315,9 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             context: .bindingState,
             isInvalidated: self.store._isInvalidated,
             fileID: bindingState.fileID,
-            line: bindingState.line
+            filePath: bindingState.filePath,
+            line: bindingState.line,
+            column: bindingState.column
           )
           let set: @Sendable (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
@@ -399,13 +407,17 @@ public struct BindingViewStore<State> {
   #if DEBUG
     let bindableActionType: Any.Type
     let fileID: StaticString
+    let filePath: StaticString
     let line: UInt
+    let column: UInt
   #endif
 
   init<Action: BindableAction<State>>(
     store: Store<State, Action>,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) {
     self.store = store.scope(
       id: nil,
@@ -416,7 +428,9 @@ public struct BindingViewStore<State> {
     #if DEBUG
       self.bindableActionType = type(of: Action.self)
       self.fileID = fileID
+      self.filePath = filePath
       self.line = line
+      self.column = column
     #endif
   }
 
@@ -451,7 +465,9 @@ public struct BindingViewStore<State> {
                 context: .bindingStore,
                 isInvalidated: self.store._isInvalidated,
                 fileID: self.fileID,
-                line: self.line
+                filePath: self.filePath,
+                line: self.line,
+                column: self.column
               )
               let set: @Sendable (inout State) -> Void = {
                 $0[keyPath: keyPath].wrappedValue = value
@@ -734,7 +750,9 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     let context: Context
     let isInvalidated: () -> Bool
     let fileID: StaticString
+    let filePath: StaticString
     let line: UInt
+    let column: UInt
     var wasCalled = false
 
     init(
@@ -743,14 +761,18 @@ extension WithViewStore where ViewState: Equatable, Content: View {
       context: Context,
       isInvalidated: @escaping () -> Bool,
       fileID: StaticString,
-      line: UInt
+      filePath: StaticString,
+      line: UInt,
+      column: UInt
     ) {
       self.value = value
       self.bindableActionType = bindableActionType
       self.context = context
       self.isInvalidated = isInvalidated
       self.fileID = fileID
+      self.filePath = filePath
       self.line = line
+      self.column = column
     }
 
     deinit {
@@ -764,7 +786,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
       guard self.wasCalled else {
         var value = ""
         customDump(self.value, to: &value, maxDepth: 0)
-        runtimeWarn(
+        reportIssue(
           """
           A binding action sent from a store \
           \(self.context == .bindingState ? "for binding state defined " : "")at \
@@ -774,7 +796,11 @@ extension WithViewStore where ViewState: Equatable, Content: View {
               \(typeName(self.bindableActionType)).binding(.set(_, \(value)))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
-          """
+          """,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
         return
       }
