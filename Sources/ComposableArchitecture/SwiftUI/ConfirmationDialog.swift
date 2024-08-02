@@ -2,7 +2,7 @@ import SwiftUI
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension View {
-  /// Displays a dialog when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// Displays a dialog when the store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
   ///
   /// - Parameters:
