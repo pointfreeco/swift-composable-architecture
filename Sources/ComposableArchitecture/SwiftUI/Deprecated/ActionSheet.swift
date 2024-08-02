@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension View {
-  /// Displays an action sheet when then store's state becomes non-`nil`, and dismisses it when it
+  /// Displays an action sheet when the store's state becomes non-`nil`, and dismisses it when it
   /// becomes `nil`.
   ///
   /// - Parameters:
@@ -37,7 +37,7 @@ extension View {
     self.actionSheet(store: store, state: { $0 }, action: { $0 })
   }
 
-  /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// Displays an alert when the store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
   ///
   /// - Parameters:
