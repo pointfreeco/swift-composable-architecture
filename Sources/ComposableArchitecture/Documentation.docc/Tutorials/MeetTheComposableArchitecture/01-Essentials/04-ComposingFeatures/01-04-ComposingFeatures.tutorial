@@ -111,7 +111,7 @@
         > Note: The `body` computed property is using result builders behind the scenes. It allows
         us to list any number of reducers in the `body` as  long as the types match up. When an
         action comes into the system each reducer will run on the feature's state from 
-        top-to-bottom. Result builders is also what what SwiftUI uses to compose view hierarchies
+        top-to-bottom. Result builders is also what SwiftUI uses to compose view hierarchies
         in a view `body`.
         
         
