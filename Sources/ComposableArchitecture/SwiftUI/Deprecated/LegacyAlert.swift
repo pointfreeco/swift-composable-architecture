@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension View {
-  /// Displays a legacy alert when then store's state becomes non-`nil`, and dismisses it when it
+  /// Displays a legacy alert when the store's state becomes non-`nil`, and dismisses it when it
   /// becomes `nil`.
   ///
   /// - Parameters:
@@ -21,7 +21,7 @@ extension View {
     self.legacyAlert(store: store, state: { $0 }, action: { $0 })
   }
 
-  /// Displays a legacy alert when then store's state becomes non-`nil`, and dismisses it when it
+  /// Displays a legacy alert when the store's state becomes non-`nil`, and dismisses it when it
   /// becomes `nil`.
   ///
   /// - Parameters:

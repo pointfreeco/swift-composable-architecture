@@ -19,7 +19,7 @@ struct AppView: View {
     } destination: { store in
       switch store.case {
       case let .detail(detailStore):
-        SyncUpDetail(store: detailStore)
+        SyncUpDetailView(store: detailStore)
       case let .meeting(meeting, syncUp: syncUp):
         MeetingView(meeting: meeting, syncUp: syncUp)
       case let .record(recordStore):

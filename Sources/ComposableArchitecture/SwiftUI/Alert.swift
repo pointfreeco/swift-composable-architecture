@@ -2,7 +2,7 @@ import SwiftUI
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension View {
-  /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// Displays an alert when the store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
   ///
   /// - Parameters:
@@ -14,7 +14,7 @@ extension View {
     self._alert(store: store, state: { $0 }, action: { $0 })
   }
 
-  /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// Displays an alert when the store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
   ///
   /// - Parameters:
