@@ -11,6 +11,16 @@
     }
   }
 
+  extension UIBinding {
+    @_disfavoredOverload
+    public subscript<State: ObservableState, Action, Member>(
+      dynamicMember keyPath: KeyPath<State, Member>
+    ) -> _StoreUIBinding<State, Action, Member>
+    where Value == Store<State, Action> {
+      _StoreUIBinding(binding: self, keyPath: keyPath)
+    }
+  }
+
   @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
   extension SwiftUI.Bindable {
     @_disfavoredOverload
@@ -34,6 +44,16 @@
     ) -> _StoreBindable_Perception<State, Action, Member>
     where Value == Store<State, Action> {
       _StoreBindable_Perception(bindable: self, keyPath: keyPath)
+    }
+  }
+
+  extension UIBindable {
+    @_disfavoredOverload
+    public subscript<State: ObservableState, Action, Member>(
+      dynamicMember keyPath: KeyPath<State, Member>
+    ) -> _StoreUIBindable<State, Action, Member>
+    where Value == Store<State, Action> {
+      _StoreUIBindable(bindable: self, keyPath: keyPath)
     }
   }
 
@@ -157,6 +177,30 @@
     }
   }
 
+  @dynamicMemberLookup
+  public struct _StoreUIBinding<State: ObservableState, Action, Value> {
+    fileprivate let binding: UIBinding<Store<State, Action>>
+    fileprivate let keyPath: KeyPath<State, Value>
+
+    public subscript<Member>(
+      dynamicMember keyPath: KeyPath<Value, Member>
+    ) -> _StoreUIBinding<State, Action, Member> {
+      _StoreUIBinding<State, Action, Member>(
+        binding: self.binding,
+        keyPath: self.keyPath.appending(path: keyPath)
+      )
+    }
+
+    /// Creates a binding to the value by sending new values through the given action.
+    ///
+    /// - Parameter action: An action for the binding to send values through.
+    /// - Returns: A binding.
+    @MainActor
+    public func sending(_ action: CaseKeyPath<Action, Value>) -> UIBinding<Value> {
+      self.binding[state: self.keyPath, action: action]
+    }
+  }
+
   @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
   @dynamicMemberLookup
   public struct _StoreBindable_SwiftUI<State: ObservableState, Action, Value> {
@@ -205,6 +249,29 @@
     /// - Parameter action: An action for the binding to send values through.
     /// - Returns: A binding.
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
+      self.bindable[state: self.keyPath, action: action]
+    }
+  }
+
+  public struct _StoreUIBindable<State: ObservableState, Action, Value> {
+    fileprivate let bindable: UIBindable<Store<State, Action>>
+    fileprivate let keyPath: KeyPath<State, Value>
+
+    public subscript<Member>(
+      dynamicMember keyPath: KeyPath<Value, Member>
+    ) -> _StoreUIBindable<State, Action, Member> {
+      _StoreUIBindable<State, Action, Member>(
+        bindable: self.bindable,
+        keyPath: self.keyPath.appending(path: keyPath)
+      )
+    }
+
+    /// Creates a binding to the value by sending new values through the given action.
+    ///
+    /// - Parameter action: An action for the binding to send values through.
+    /// - Returns: A binding.
+    @MainActor
+    public func sending(_ action: CaseKeyPath<Action, Value>) -> UIBinding<Value> {
       self.bindable[state: self.keyPath, action: action]
     }
   }

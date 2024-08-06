@@ -1,5 +1,7 @@
 import SwiftUI
 
+// TODO: UIBindable
+
 #if canImport(Perception)
   extension Binding {
     /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.

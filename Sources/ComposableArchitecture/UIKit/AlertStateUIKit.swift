@@ -53,6 +53,7 @@
       }
     }
 
+    // TODO: Deprecate for `$store.scope`
     /// Creates a `UIAlertController` from a ``Store`` focused on alert state.
     ///
     /// You can use this initializer in tandem with ``ObjectiveC/NSObject/observe(_:)`` and
@@ -102,6 +103,23 @@
             style: .cancel,
             handler: { _ in store.send(.dismiss) })
         )
+      }
+    }
+
+    public convenience init<Action>(
+      store: Store<AlertState<Action>, Action>
+    ) {
+      let state = store.currentState
+      self.init(
+        title: String(state: state.title),
+        message: state.message.map { String(state: $0) },
+        preferredStyle: .alert
+      )
+      for button in state.buttons {
+        addAction(UIAlertAction(button, action: { _ = $0.map(store.send) }))
+      }
+      if state.buttons.isEmpty {
+        addAction(UIAlertAction(title: "OK", style: .cancel))
       }
     }
 
@@ -175,40 +193,5 @@
       }
     }
 
-  }
-
-  @available(iOS 13, *)
-  @available(macCatalyst 13, *)
-  @available(macOS, unavailable)
-  @available(tvOS 13, *)
-  @available(watchOS, unavailable)
-  extension UIAlertAction.Style {
-    init(_ role: ButtonStateRole) {
-      switch role {
-      case .cancel:
-        self = .cancel
-      case .destructive:
-        self = .destructive
-      }
-    }
-  }
-
-  @available(iOS 13, *)
-  @available(macCatalyst 13, *)
-  @available(macOS, unavailable)
-  @available(tvOS 13, *)
-  @available(watchOS, unavailable)
-  extension UIAlertAction {
-    convenience init<Action>(
-      _ button: ButtonState<Action>,
-      action handler: @escaping (_ action: Action?) -> Void
-    ) {
-      self.init(
-        title: String(state: button.label),
-        style: button.role.map(UIAlertAction.Style.init) ?? .default
-      ) { _ in
-        button.withAction(handler)
-      }
-    }
   }
 #endif

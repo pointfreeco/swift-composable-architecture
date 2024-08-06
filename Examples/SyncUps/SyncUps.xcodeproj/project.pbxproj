@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CA14FF052B361C7400104A70 /* SwiftUINavigation in Frameworks */ = {isa = PBXBuildFile; productRef = CA14FF042B361C7400104A70 /* SwiftUINavigation */; };
 		DC7CE4E729E9E6E4006B6263 /* ding.wav in Resources */ = {isa = PBXBuildFile; fileRef = DC7CE4E629E9E6E4006B6263 /* ding.wav */; };
 		DC808D7329E9C3AC0072B4A9 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC808D7229E9C3AC0072B4A9 /* App.swift */; };
 		DC808D7729E9C3AD0072B4A9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC808D7629E9C3AD0072B4A9 /* Assets.xcassets */; };
@@ -80,7 +79,6 @@
 			files = (
 				DC808DB629E9C58F0072B4A9 /* Tagged in Frameworks */,
 				DC808DA329E9C4490072B4A9 /* ComposableArchitecture in Frameworks */,
-				CA14FF052B361C7400104A70 /* SwiftUINavigation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -205,7 +203,6 @@
 			packageProductDependencies = (
 				DC808DA229E9C4490072B4A9 /* ComposableArchitecture */,
 				DC808DB529E9C58F0072B4A9 /* Tagged */,
-				CA14FF042B361C7400104A70 /* SwiftUINavigation */,
 			);
 			productName = SyncUps;
 			productReference = DC808D6F29E9C3AC0072B4A9 /* SyncUps.app */;
@@ -281,7 +278,6 @@
 			mainGroup = DC808D6629E9C3AC0072B4A9;
 			packageReferences = (
 				DC808DB429E9C58F0072B4A9 /* XCRemoteSwiftPackageReference "swift-tagged" */,
-				CA14FF032B361C7400104A70 /* XCRemoteSwiftPackageReference "swiftui-navigation" */,
 			);
 			productRefGroup = DC808D7029E9C3AC0072B4A9 /* Products */;
 			projectDirPath = "";
@@ -664,14 +660,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		CA14FF032B361C7400104A70 /* XCRemoteSwiftPackageReference "swiftui-navigation" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pointfreeco/swiftui-navigation.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.5.2;
-			};
-		};
 		DC808DB429E9C58F0072B4A9 /* XCRemoteSwiftPackageReference "swift-tagged" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swift-tagged.git";
@@ -683,11 +671,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		CA14FF042B361C7400104A70 /* SwiftUINavigation */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CA14FF032B361C7400104A70 /* XCRemoteSwiftPackageReference "swiftui-navigation" */;
-			productName = SwiftUINavigation;
-		};
 		DC808DA229E9C4490072B4A9 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;

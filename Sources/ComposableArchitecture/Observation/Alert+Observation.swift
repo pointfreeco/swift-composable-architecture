@@ -8,7 +8,7 @@ extension View {
     let alertState = store?.withState { $0 }
     return self.alert(
       (alertState?.title).map(Text.init) ?? Text(verbatim: ""),
-      isPresented: item.isPresent(),
+      isPresented: Binding(item),
       presenting: alertState,
       actions: { alertState in
         ForEach(alertState.buttons) { button in
@@ -45,7 +45,7 @@ extension View {
     let confirmationDialogState = store?.withState { $0 }
     return self.confirmationDialog(
       (confirmationDialogState?.title).map(Text.init) ?? Text(verbatim: ""),
-      isPresented: item.isPresent(),
+      isPresented: Binding(item),
       titleVisibility: (confirmationDialogState?.titleVisibility).map(Visibility.init)
         ?? .automatic,
       presenting: confirmationDialogState,
