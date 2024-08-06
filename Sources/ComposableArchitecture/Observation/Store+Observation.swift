@@ -322,15 +322,19 @@
       state: KeyPath<State, ChildState?>,
       action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
       fileID: StaticString = #fileID,
-      line: UInt = #line
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
     ) -> UIBinding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
       self[
         state: state,
         action: action,
         isInViewBody: _isInPerceptionTracking,
-        fileID: "\(fileID)",
-        line: line
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
       ]
     }
   }

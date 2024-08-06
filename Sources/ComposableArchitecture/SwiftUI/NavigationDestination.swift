@@ -44,7 +44,7 @@ extension View {
       store: store,
       id: { $0.wrappedValue.map(NavigationDestinationID.init) }
     ) { `self`, $item, destinationContent in
-      self.navigationDestination(isPresented: $item.isPresent()) {
+      self.navigationDestination(isPresented: Binding($item)) {
         destinationContent(destination)
       }
     }
@@ -102,7 +102,7 @@ extension View {
       id: { $0.wrappedValue.map(NavigationDestinationID.init) },
       action: fromDestinationAction
     ) { `self`, $item, destinationContent in
-      self.navigationDestination(isPresented: $item.isPresent()) {
+      self.navigationDestination(isPresented: Binding($item)) {
         destinationContent(destination)
       }
     }
