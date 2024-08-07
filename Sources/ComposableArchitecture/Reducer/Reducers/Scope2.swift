@@ -19,6 +19,14 @@ public struct Wrapped<Value>: Sendable {
     }
   }
 
+  fileprivate var toOptional: Wrapped<Value>? {
+    get { self }
+    set {
+      guard let newValue else { return }
+      self = newValue
+    }
+  }
+
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member>
   ) -> Wrapped<Member> {
@@ -33,8 +41,21 @@ public struct Wrapped<Value>: Sendable {
   }
 
   public subscript<Member>(
+    dynamicMember keyPath: WritableKeyPath<Value, Member?>
+  ) -> Wrapped<Member>? {
+    Wrapped<Member>(
+      get: { self.get($0)?[keyPath: keyPath] },
+      set: { root, member in
+        guard var value = self.get(root)?[keyPath: keyPath] as! Value? else { return }
+        value[keyPath: keyPath] = member
+        self.set(&root, value)
+      }
+    )
+  }
+
+  public subscript<Member>(
     dynamicMember keyPath: CaseKeyPath<Value, Member>
-  ) -> Wrapped<Member>
+  ) -> Wrapped<Member>?
   where Value: CasePathable {
     Wrapped<Member>(
       get: { self.get($0)?[case: keyPath] },
@@ -47,12 +68,22 @@ public struct Wrapped<Value>: Sendable {
   }
 }
 
-public typealias OptionalPath<Root, Value> = KeyPath<Wrapped<Root>, Wrapped<Value>>
+public typealias OptionalPath<Root, Value> = KeyPath<Wrapped<Root>, Wrapped<Value>?>
 
 public struct Scope2<State, Action: CasePathable, Child: Reducer>: Reducer {
   let toChildState: OptionalPath<State, Child.State>
   let toChildAction: CaseKeyPath<Action, Child.Action>
   let child: Child
+
+  public init<ChildAction>(
+    state toChildState: WritableKeyPath<State, State>,
+    action toChildAction: CaseKeyPath<Action, ChildAction>,
+    @ReducerBuilder<State, ChildAction> child: () -> Child
+  ) where Child.State == State, Child.Action == ChildAction {
+    self.toChildState = \Wrapped<State>.toOptional
+    self.toChildAction = toChildAction
+    self.child = child()
+  }
 
   public init<ChildState, ChildAction>(
     state toChildState: OptionalPath<State, ChildState>,
@@ -65,7 +96,7 @@ public struct Scope2<State, Action: CasePathable, Child: Reducer>: Reducer {
   }
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    let wrapped = Wrapped<State>()[keyPath: toChildState]
+    let wrapped = Wrapped<State>()[keyPath: toChildState]!
     guard var childState = wrapped.get(state) else { return .none }
     guard let childAction = action[case: toChildAction] else { return .none }
     let childEffects = child.reduce(into: &childState, action: childAction)
@@ -77,7 +108,16 @@ public struct Scope2<State, Action: CasePathable, Child: Reducer>: Reducer {
 }
 
 @Reducer
+struct Grandchild {}
+
+@Reducer
 struct Child {
+  struct State {
+    var grandchild: Grandchild.State
+  }
+  enum Action {
+    case grandchild(Grandchild.Action)
+  }
 }
 
 @Reducer
@@ -89,6 +129,10 @@ struct Parent {
 
   @ObservableState
   struct State {
+    var foo: Foo
+  }
+
+  struct Foo {
     var destination: Destination?
   }
 
@@ -97,8 +141,9 @@ struct Parent {
   }
 
   var body: some ReducerOf<Self> {
-    Scope2(state: \.destination.child, action: \.child) {
-      Child()
+    Scope2(state: \.self, action: \.self) {}
+    Scope2(state: \.foo.destination?.child?.grandchild, action: \.child.grandchild) {
+      Grandchild()
     }
   }
 }
