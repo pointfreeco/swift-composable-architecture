@@ -101,8 +101,8 @@
 public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   @usableFromInline
   enum StatePath {
-    case casePath(
-      AnyCasePath<ParentState, Child.State>,
+    case optionalPath(
+      AnyOptionalPath<ParentState, Child.State>,
       fileID: StaticString,
       filePath: StaticString,
       line: UInt,
@@ -226,7 +226,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   ///   - child: A reducer that will be invoked with child actions against child state.
   @inlinable
   public init<ChildState, ChildAction>(
-    state toChildState: CaseKeyPath<ParentState, ChildState>,
+    state toChildState: OptionalKeyPath<ParentState, ChildState>,
     action toChildAction: CaseKeyPath<ParentAction, ChildAction>,
     @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
     fileID: StaticString = #fileID,
@@ -235,8 +235,8 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     column: UInt = #column
   ) where ChildState == Child.State, ChildAction == Child.Action {
     self.init(
-      toChildState: .casePath(
-        AnyCasePath(toChildState),
+      toChildState: .optionalPath(
+        AnyOptionalPath(toChildState),
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -319,8 +319,8 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     column: UInt = #column
   ) where ChildState == Child.State, ChildAction == Child.Action {
     self.init(
-      toChildState: .casePath(
-        toChildState,
+      toChildState: .optionalPath(
+        AnyOptionalPath(toChildState),
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -338,7 +338,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     switch self.toChildState {
-    case let .casePath(toChildState, fileID, filePath, line, column):
+    case let .optionalPath(toChildState, fileID, filePath, line, column):
       guard var childState = toChildState.extract(from: state) else {
         reportIssue(
           """
@@ -375,7 +375,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
         )
         return .none
       }
-      defer { state = toChildState.embed(childState) }
+      defer { toChildState.set(into: &state, childState) }
 
       return self.child
         .reduce(into: &childState, action: childAction)

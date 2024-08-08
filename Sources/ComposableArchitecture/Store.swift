@@ -450,7 +450,7 @@ public final class Store<State, Action> {
 
   @_spi(Internals) public func id<ChildState, ChildAction>(
     state: KeyPath<State, ChildState>,
-    action: CaseKeyPath<Action, ChildAction>
+    action: OptionalKeyPath<Action, ChildAction>
   ) -> ScopeID<State, Action> {
     ScopeID(state: state, action: action)
   }

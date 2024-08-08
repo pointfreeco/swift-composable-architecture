@@ -10,6 +10,7 @@ private let readMe = """
 
 @Reducer
 struct NavigateAndLoadList {
+  @ObservableState
   struct State: Equatable {
     var rows: IdentifiedArrayOf<Row> = [
       Row(count: 1, id: UUID()),
@@ -56,15 +57,13 @@ struct NavigateAndLoadList {
 
       case .setNavigationSelectionDelayCompleted:
         guard let id = state.selection?.id else { return .none }
-        state.selection?.value = Counter.State(count: state.rows[id: id]?.count ?? 0)
+        let counterState = Counter.State(count: state.rows[id: id]?.count ?? 0)
+        state.selection?.value = counterState
         return .none
       }
     }
-    .ifLet(\.selection, action: \.counter) {
-      EmptyReducer()
-        .ifLet(\.value, action: \.self) {
-          Counter()
-        }
+    .ifLet(\.selection.some.value, action: \.counter) {
+      Counter()
     }
   }
 }
@@ -73,25 +72,20 @@ struct NavigateAndLoadListView: View {
   @Bindable var store: StoreOf<NavigateAndLoadList>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        ForEach(viewStore.rows) { row in
-          NavigationLink(
-            "Load optional counter that starts from \(row.count)",
-            tag: row.id,
-            selection: viewStore.binding(
-              get: \.selection?.id,
-              send: { .setNavigation(selection: $0) }
-            )
-          ) {
-            IfLetStore(self.store.scope(state: \.selection?.value, action: \.counter)) {
-              CounterView(store: $0)
-            } else: {
-              ProgressView()
-            }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
+      ForEach(store.rows) { row in
+        NavigationLink(
+          "Load optional counter that starts from \(row.count)",
+          tag: row.id,
+          selection: $store[dynamicMember: \.selection?.id].sending(\.setNavigation)
+        ) {
+          if let store = store.scope(state: \.selection?.value, action: \.counter) {
+            CounterView(store: store)
+          } else {
+            ProgressView()
           }
         }
       }

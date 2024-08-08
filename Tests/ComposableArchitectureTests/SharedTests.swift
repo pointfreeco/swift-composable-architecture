@@ -4,6 +4,8 @@ import CustomDump
 import XCTest
 
 final class SharedTests: XCTestCase {
+  var tokens: Set<ObservationToken> = []
+
   @MainActor
   func testSharing() async {
     let store = TestStore(
@@ -677,9 +679,10 @@ final class SharedTests: XCTestCase {
     }
 
     var observations: [Int] = []
-    observe {
+    SwiftNavigation.observe {
       observations.append(store.state.count)
     }
+    .store(in: &tokens)
 
     XCTAssertEqual(observations, [0])
     await store.send(.incrementInReducer) {

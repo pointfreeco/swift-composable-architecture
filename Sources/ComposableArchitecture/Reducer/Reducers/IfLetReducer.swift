@@ -53,7 +53,7 @@ extension Reducer {
   @inlinable
   @warn_unqualified_access
   public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer<WrappedState, WrappedAction>>(
-    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
+    _ toWrappedState: OptionalKeyPath<State, WrappedState?>,
     action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     fileID: StaticString = #fileID,
@@ -78,7 +78,7 @@ extension Reducer {
   @inlinable
   @warn_unqualified_access
   public func ifLet<WrappedState: _EphemeralState, WrappedAction>(
-    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
+    _ toWrappedState: OptionalKeyPath<State, WrappedState?>,
     action toWrappedAction: CaseKeyPath<Action, WrappedAction>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
@@ -124,7 +124,7 @@ extension Reducer {
   @inlinable
   @warn_unqualified_access
   public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer<WrappedState, WrappedAction>>(
-    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
+    _ toWrappedState: OptionalKeyPath<State, WrappedState?>,
     action toWrappedAction: AnyCasePath<Action, WrappedAction>,
     @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
     fileID: StaticString = #fileID,
@@ -171,7 +171,7 @@ extension Reducer {
   @inlinable
   @warn_unqualified_access
   public func ifLet<WrappedState: _EphemeralState, WrappedAction>(
-    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
+    _ toWrappedState: OptionalKeyPath<State, WrappedState?>,
     action toWrappedAction: AnyCasePath<Action, WrappedAction>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
@@ -199,7 +199,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let child: Child
 
   @usableFromInline
-  let toChildState: WritableKeyPath<Parent.State, Child.State?>
+  let toChildState: AnyOptionalPath<Parent.State, Child.State?>
 
   @usableFromInline
   let toChildAction: AnyCasePath<Parent.Action, Child.Action>
@@ -222,7 +222,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   init(
     parent: Parent,
     child: Child,
-    toChildState: WritableKeyPath<Parent.State, Child.State?>,
+    toChildState: OptionalKeyPath<Parent.State, Child.State?>,
     toChildAction: AnyCasePath<Parent.Action, Child.Action>,
     fileID: StaticString,
     filePath: StaticString,
@@ -231,7 +231,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   ) {
     self.parent = parent
     self.child = child
-    self.toChildState = toChildState
+    self.toChildState = AnyOptionalPath(toChildState)
     self.toChildAction = toChildAction
     self.fileID = fileID
     self.filePath = filePath
@@ -244,20 +244,21 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   ) -> Effect<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
-    let childIDBefore = state[keyPath: self.toChildState].map {
-      NavigationID(base: $0, keyPath: self.toChildState)
+    let childIDBefore = self.toChildState.extract(from: state).map {
+      NavigationID(root: state, value: $0)
     }
     let parentEffects = self.parent.reduce(into: &state, action: action)
-    let childIDAfter = state[keyPath: self.toChildState].map {
-      NavigationID(base: $0, keyPath: self.toChildState)
+    let childState = self.toChildState.extract(from: state)
+    let childIDAfter = childState.map {
+      NavigationID(root: state, value: $0)
     }
 
     if childIDAfter == childIDBefore,
       self.toChildAction.extract(from: action) != nil,
-      let childState = state[keyPath: self.toChildState],
+      let childState,
       isEphemeral(childState)
     {
-      state[keyPath: toChildState] = nil
+      self.toChildState.set(into: &state, nil)
     }
 
     let childCancelEffects: Effect<Parent.Action>
@@ -277,9 +278,8 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action> {
-    guard let childAction = self.toChildAction.extract(from: action)
-    else { return .none }
-    guard state[keyPath: self.toChildState] != nil else {
+    guard let childAction = self.toChildAction.extract(from: action) else { return .none }
+    guard case var childState?? = self.toChildState.extract(from: state) else {
       reportIssue(
         """
         An "ifLet" at "\(self.fileID):\(self.line)" received a child action when child state was \
@@ -309,11 +309,11 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       )
       return .none
     }
-    let navigationID = NavigationID(
-      base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)
+    defer { self.toChildState.set(into: &state, childState) }
+    let navigationID = NavigationID(root: state, value: childState)
     return self.child
       .dependency(\.navigationIDPath, self.navigationIDPath.appending(navigationID))
-      .reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
+      .reduce(into: &childState, action: childAction)
       .map { self.toChildAction.embed($0) }
       ._cancellable(id: navigationID, navigationIDPath: self.navigationIDPath)
   }

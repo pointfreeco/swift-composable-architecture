@@ -53,7 +53,7 @@ extension Reducer {
   @inlinable
   @warn_unqualified_access
   public func ifCaseLet<CaseState, CaseAction, Case: Reducer>(
-    _ toCaseState: CaseKeyPath<State, CaseState>,
+    _ toCaseState: OptionalKeyPath<State, CaseState>,
     action toCaseAction: CaseKeyPath<Action, CaseAction>,
     @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
     fileID: StaticString = #fileID,
@@ -70,7 +70,7 @@ extension Reducer {
     .init(
       parent: self,
       child: `case`(),
-      toChildState: AnyCasePath(toCaseState),
+      toChildState: AnyOptionalPath(toCaseState),
       toChildAction: AnyCasePath(toCaseAction),
       fileID: fileID,
       filePath: filePath,
@@ -117,7 +117,7 @@ extension Reducer {
     _IfCaseLetReducer(
       parent: self,
       child: `case`(),
-      toChildState: toCaseState,
+      toChildState: AnyOptionalPath(toCaseState),
       toChildAction: toCaseAction,
       fileID: fileID,
       filePath: filePath,
@@ -135,7 +135,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let child: Child
 
   @usableFromInline
-  let toChildState: AnyCasePath<Parent.State, Child.State>
+  let toChildState: AnyOptionalPath<Parent.State, Child.State>
 
   @usableFromInline
   let toChildAction: AnyCasePath<Parent.Action, Child.Action>
@@ -158,7 +158,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   init(
     parent: Parent,
     child: Child,
-    toChildState: AnyCasePath<Parent.State, Child.State>,
+    toChildState: AnyOptionalPath<Parent.State, Child.State>,
     toChildAction: AnyCasePath<Parent.Action, Child.Action>,
     fileID: StaticString,
     filePath: StaticString,
@@ -181,11 +181,11 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     let childEffects = self.reduceChild(into: &state, action: action)
 
     let childIDBefore = self.toChildState.extract(from: state).map {
-      NavigationID(root: state, value: $0, casePath: self.toChildState)
+      NavigationID(root: state, value: $0)
     }
     let parentEffects = self.parent.reduce(into: &state, action: action)
     let childIDAfter = self.toChildState.extract(from: state).map {
-      NavigationID(root: state, value: $0, casePath: self.toChildState)
+      NavigationID(root: state, value: $0)
     }
 
     let childCancelEffects: Effect<Parent.Action>
@@ -240,8 +240,8 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       )
       return .none
     }
-    defer { state = self.toChildState.embed(childState) }
-    let childID = NavigationID(root: state, value: childState, casePath: self.toChildState)
+    defer { self.toChildState.set(into: &state, childState) }
+    let childID = NavigationID(root: state, value: childState)
     let newNavigationID = self.navigationIDPath.appending(childID)
     return self.child
       .dependency(\.navigationIDPath, newNavigationID)
