@@ -3,6 +3,7 @@ import SwiftUI
 import XCTest
 
 class ScopeLoggerTests: XCTestCase {
+  @MainActor
   func testScoping() {
     #if DEBUG
       Logger.shared.isEnabled = true

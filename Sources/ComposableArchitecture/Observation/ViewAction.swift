@@ -9,14 +9,11 @@ public protocol ViewAction<ViewAction> {
 }
 
 /// A type that represents a view with a ``Store`` that can send ``ViewAction``s.
+@MainActor
 public protocol ViewActionSending<StoreState, StoreAction> {
   associatedtype StoreState
   associatedtype StoreAction: ViewAction
-  #if swift(>=5.10)
-    @MainActor @preconcurrency var store: Store<StoreState, StoreAction> { get }
-  #else
-    @MainActor(unsafe) var store: Store<StoreState, StoreAction> { get }
-  #endif
+  var store: Store<StoreState, StoreAction> { get }
 }
 
 extension ViewActionSending {

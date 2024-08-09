@@ -306,6 +306,7 @@ public struct AnyIdentifiable: Identifiable {
 }
 
 @_spi(Presentation)
+@MainActor
 public struct DestinationContent<State, Action> {
   let store: Store<State?, Action>
 

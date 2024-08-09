@@ -106,6 +106,7 @@
       )
     }
 
+    @MainActor
     func testDebugReducer_Order() {
       let logs = LockIsolated<String>("")
       let printer = _ReducerPrinter<Int, Bool>(

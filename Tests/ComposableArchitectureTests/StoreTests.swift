@@ -238,6 +238,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(numCalls3, 6)
   }
 
+  @MainActor
   func testSynchronousEffectsSentAfterSinking() {
     @MainActor
     enum Action {
@@ -305,6 +306,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testIfLetAfterScope() {
     struct AppState: Equatable {
       var count: Int?

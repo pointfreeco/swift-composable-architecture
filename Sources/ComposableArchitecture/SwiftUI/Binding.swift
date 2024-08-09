@@ -402,6 +402,7 @@ where Value: CustomDebugStringConvertible {
 /// Read <doc:Bindings> for more information.
 @dynamicMemberLookup
 @propertyWrapper
+@MainActor
 public struct BindingViewStore<State> {
   let store: Store<State, BindingAction<State>>
   #if DEBUG

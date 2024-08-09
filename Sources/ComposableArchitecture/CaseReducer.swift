@@ -12,6 +12,7 @@ where State: CaseReducerState, Body: Reducer, Body.State == State, Body.Action =
   @ReducerBuilder<State, Action>
   static var body: Body { get }
 
+  @MainActor
   static func scope(_ store: Store<State, Action>) -> CaseScope
 }
 

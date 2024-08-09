@@ -423,6 +423,7 @@ import IssueReporting
 /// [merowing.info]: https://www.merowing.info
 /// [exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
 /// [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
+@MainActor
 public final class TestStore<State, Action> {
 
   /// The current dependencies of the test store.
@@ -624,8 +625,16 @@ public final class TestStore<State, Action> {
   }
 
   deinit {
-    self.completed()
     uncheckedUseMainSerialExecutor = self.originalUseMainSerialExecutor
+
+    guard Thread.isMainThread
+    else {
+      reportIssue("TODO")
+      return
+    }
+    MainActor.assumeIsolated {
+      self.completed()
+    }
   }
 
   func completed() {
@@ -753,22 +762,22 @@ public final class TestStore<State, Action> {
     return try operation()
   }
 
-  /// Overrides the store's dependencies for a given operation.
-  ///
-  /// - Parameters:
-  ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
-  ///     duration of the operation.
-  ///   - operation: The operation.
-  @MainActor
-  public func withDependencies<R>(
-    _ updateValuesForOperation: (_ dependencies: inout DependencyValues) async throws -> Void,
-    operation: @MainActor () async throws -> R
-  ) async rethrows -> R {
-    let previous = self.dependencies
-    defer { self.dependencies = previous }
-    try await updateValuesForOperation(&self.dependencies)
-    return try await operation()
-  }
+//  /// Overrides the store's dependencies for a given operation.
+//  ///
+//  /// - Parameters:
+//  ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
+//  ///     duration of the operation.
+//  ///   - operation: The operation.
+//  @MainActor
+//  public func withDependencies<R>(
+//    _ updateValuesForOperation: (_ dependencies: inout DependencyValues) async throws -> Void,
+//    operation: @MainActor () async throws -> R
+//  ) async rethrows -> R {
+//    let previous = self.dependencies
+//    defer { self.dependencies = previous }
+//    try await updateValuesForOperation(&self.dependencies)
+//    return try await operation()
+//  }
 
   /// Overrides the store's exhaustivity for a given operation.
   ///
@@ -1168,6 +1177,7 @@ extension TestStore where State: Equatable {
         }
       }
 
+      @MainActor
       func expectationFailure(expected: State) {
         let difference = self.withExhaustivity(.on) {
           diff(expected, actual, format: .proportional)
@@ -1199,6 +1209,7 @@ extension TestStore where State: Equatable {
         )
       }
 
+      @MainActor
       func tryUnnecessaryModifyFailure() {
         guard
           !skipUnnecessaryModifyFailure,

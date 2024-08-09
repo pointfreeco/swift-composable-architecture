@@ -378,7 +378,7 @@ extension ReducerMacro: MemberMacro {
       ) {
         decls.append(
           """
-          \(access)static func scope(\
+          @MainActor \(access)static func scope(\
           _ store: ComposableArchitecture.Store<Self.State, Self.Action>\
           ) -> CaseScope {
           switch store.state {

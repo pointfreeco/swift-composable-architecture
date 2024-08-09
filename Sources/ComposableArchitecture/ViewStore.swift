@@ -86,6 +86,7 @@ import SwiftUI
     "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 @dynamicMemberLookup
+@MainActor
 public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
@@ -94,7 +95,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   private var viewCancellable: AnyCancellable?
   #if DEBUG
-    private var storeTypeName: String
+    private let storeTypeName: String
   #endif
   let store: Store<ViewState, ViewAction>
 
