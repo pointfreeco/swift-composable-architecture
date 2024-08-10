@@ -2,6 +2,7 @@ import ComposableArchitecture
 import GameCore
 import SwiftUI
 
+@MainActor
 public struct GameView: View {
   let store: StoreOf<Game>
 
