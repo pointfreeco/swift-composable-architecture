@@ -14,6 +14,7 @@ final class StorePerceptionTests: BaseTCATestCase {
 
   @MainActor
   func testPerceptionCheck_SkipWhenActionClosureOfView() {
+    @MainActor
     struct FeatureView: View {
       let store = Store(initialState: Feature.State()) {
         Feature()
@@ -29,6 +30,7 @@ final class StorePerceptionTests: BaseTCATestCase {
   @MainActor
   func testPerceptionCheck_AccessStateWithoutTracking() {
     if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10) {
+      @MainActor
       struct FeatureView: View {
         let store = Store(initialState: Feature.State()) {
           Feature()
@@ -50,6 +52,7 @@ final class StorePerceptionTests: BaseTCATestCase {
 
   @MainActor
   func testPerceptionCheck_AccessStateWithTracking() {
+    @MainActor
     struct FeatureView: View {
       let store = Store(initialState: Feature.State()) {
         Feature()
