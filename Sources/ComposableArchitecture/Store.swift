@@ -132,6 +132,11 @@ import SwiftUI
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-90255``)
 /// of the store are also checked to make sure that work is performed on the main thread.
 @dynamicMemberLookup
+#if swift(<5.10)
+  @MainActor(unsafe)
+#else
+  @preconcurrency @MainActor
+#endif
 public final class Store<State, Action> {
   var canCacheChildren = true
   private var children: [ScopeID<State, Action>: AnyObject] = [:]
@@ -462,7 +467,7 @@ public final class Store<State, Action> {
 }
 
 extension Store: CustomDebugStringConvertible {
-  public var debugDescription: String {
+  public nonisolated var debugDescription: String {
     storeTypeName(of: self)
   }
 }

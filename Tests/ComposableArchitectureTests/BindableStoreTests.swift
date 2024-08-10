@@ -116,6 +116,7 @@ final class BindableStoreTests: XCTestCase {
       var isLoginButtonDisabled: Bool
       @BindingViewState var password: String
 
+      @MainActor
       init(_ store: BindingViewStore<LoginFeature.State>) {
         self._email = store.$email
         self.isFormDisabled = store.isRequestInFlight

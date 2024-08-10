@@ -2,6 +2,7 @@ import Combine
 import Foundation
 
 @_spi(Internals)
+@MainActor
 public final class RootStore {
   private var bufferedActions: [Any] = []
   let didSet = CurrentValueRelay(())

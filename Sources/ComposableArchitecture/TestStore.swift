@@ -76,10 +76,9 @@ import IssueReporting
 /// One can assert against its behavior over time:
 ///
 /// ```swift
-/// @MainActor
 /// class CounterTests: XCTestCase {
 ///   func testCounter() async {
-///     let store = TestStore(
+///     let store = await TestStore(
 ///       // Given: a counter state of 0
 ///       initialState: Counter.State(count: 0),
 ///     ) {
@@ -423,6 +422,11 @@ import IssueReporting
 /// [merowing.info]: https://www.merowing.info
 /// [exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
 /// [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
+#if swift(<5.10)
+  @MainActor(unsafe)
+#else
+  @preconcurrency @MainActor
+#endif
 public final class TestStore<State, Action> {
 
   /// The current dependencies of the test store.
@@ -553,7 +557,6 @@ public final class TestStore<State, Action> {
   ///
   /// - Parameter duration: The amount of time to wait before asserting.
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-  @MainActor
   public func finish(
     timeout duration: Duration,
     fileID: StaticString = #fileID,
@@ -574,7 +577,6 @@ public final class TestStore<State, Action> {
   ///
   /// - Parameter nanoseconds: The amount of time to wait before asserting.
   @_disfavoredOverload
-  @MainActor
   public func finish(
     timeout nanoseconds: UInt64? = nil,
     fileID: StaticString = #fileID,
@@ -624,8 +626,8 @@ public final class TestStore<State, Action> {
   }
 
   deinit {
-    self.completed()
     uncheckedUseMainSerialExecutor = self.originalUseMainSerialExecutor
+    mainActorNow { self.completed() }
   }
 
   func completed() {
@@ -759,14 +761,13 @@ public final class TestStore<State, Action> {
   ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
   ///     duration of the operation.
   ///   - operation: The operation.
-  @MainActor
   public func withDependencies<R>(
-    _ updateValuesForOperation: (_ dependencies: inout DependencyValues) async throws -> Void,
-    operation: @MainActor () async throws -> R
+    _ updateValuesForOperation: (_ dependencies: inout DependencyValues) throws -> Void,
+    operation: () async throws -> R
   ) async rethrows -> R {
     let previous = self.dependencies
     defer { self.dependencies = previous }
-    try await updateValuesForOperation(&self.dependencies)
+    try updateValuesForOperation(&self.dependencies)
     return try await operation()
   }
 
@@ -790,10 +791,9 @@ public final class TestStore<State, Action> {
   /// - Parameters:
   ///   - exhaustivity: The exhaustivity.
   ///   - operation: The operation.
-  @MainActor
   public func withExhaustivity<R>(
     _ exhaustivity: Exhaustivity,
-    operation: @MainActor () async throws -> R
+    operation: () async throws -> R
   ) async rethrows -> R {
     let previous = self.exhaustivity
     defer { self.exhaustivity = previous }
@@ -838,7 +838,6 @@ extension TestStore where State: Equatable {
   /// immediately after awaiting `store.send`:
   ///
   /// ```swift
-  /// @MainActor
   /// func testAnalytics() async {
   ///   let events = LockIsolated<[String]>([])
   ///   let analytics = AnalyticsClient(
@@ -847,7 +846,7 @@ extension TestStore where State: Equatable {
   ///     }
   ///   )
   ///
-  ///   let store = TestStore(initialState: Feature.State()) {
+  ///   let store = await TestStore(initialState: Feature.State()) {
   ///     Feature()
   ///   } withDependencies {
   ///     $0.analytics = analytics
@@ -893,7 +892,6 @@ extension TestStore where State: Equatable {
   ///     expected.
   /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
-  @MainActor
   @discardableResult
   public func send(
     _ action: Action,
@@ -1024,7 +1022,6 @@ extension TestStore where State: Equatable {
   /// - Parameters:
   ///   - updateStateToExpectedResult: A closure that asserts against the current state of the test
   ///   store.
-  @MainActor
   public func assert(
     _ updateStateToExpectedResult: @escaping (_ state: inout State) throws -> Void,
     fileID: StaticString = #fileID,
@@ -1293,7 +1290,6 @@ extension TestStore where State: Equatable, Action: Equatable {
   ///     of the store after processing the given action. Do not provide a closure if no change
   ///     is expected.
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-  @MainActor
   public func receive(
     _ expectedAction: Action,
     timeout duration: Duration,
@@ -1342,7 +1338,6 @@ extension TestStore where State: Equatable, Action: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
-  @MainActor
   @_disfavoredOverload
   public func receive(
     _ expectedAction: Action,
@@ -1508,9 +1503,8 @@ extension TestStore where State: Equatable {
   ///     to the store. The mutable state sent to this closure must be modified to match the state
   ///     of the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-  @MainActor
   @_disfavoredOverload
+  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive(
     _ isMatching: (_ action: Action) -> Bool,
     timeout duration: Duration,
@@ -1563,7 +1557,6 @@ extension TestStore where State: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
-  @MainActor
   @_disfavoredOverload
   public func receive(
     _ isMatching: (_ action: Action) -> Bool,
@@ -1641,7 +1634,6 @@ extension TestStore where State: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
-  @MainActor
   @_disfavoredOverload
   public func receive<Value>(
     _ actionCase: CaseKeyPath<Action, Value>,
@@ -1687,7 +1679,6 @@ extension TestStore where State: Equatable {
   ///     to the store. The mutable state sent to this closure must be modified to match the state
   ///     of the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
-  @MainActor
   @_disfavoredOverload
   public func receive<Value: Equatable>(
     _ actionCase: CaseKeyPath<Action, Value>,
@@ -1764,7 +1755,6 @@ extension TestStore where State: Equatable {
     message:
       "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
-  @MainActor
   @_disfavoredOverload
   public func receive<Value>(
     _ actionCase: AnyCasePath<Action, Value>,
@@ -1842,7 +1832,6 @@ extension TestStore where State: Equatable {
   ///     to the store. The mutable state sent to this closure must be modified to match the state
   ///     of the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
-  @MainActor
   @_disfavoredOverload
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive<Value>(
@@ -1889,7 +1878,6 @@ extension TestStore where State: Equatable {
   ///     to the store. The mutable state sent to this closure must be modified to match the state
   ///     of the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
-  @MainActor
   @_disfavoredOverload
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive<Value: Equatable>(
@@ -1919,7 +1907,6 @@ extension TestStore where State: Equatable {
     )
   }
 
-  @MainActor
   @_disfavoredOverload
   @available(
     iOS,
@@ -2103,7 +2090,6 @@ extension TestStore where State: Equatable {
     self.reducer.state = state
   }
 
-  @MainActor
   private func receiveAction(
     matching predicate: (Action) -> Bool,
     timeout nanoseconds: UInt64?,
@@ -2196,9 +2182,8 @@ extension TestStore where State: Equatable {
   ///     expected.
   /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
-  @MainActor
-  @discardableResult
   @_disfavoredOverload
+  @discardableResult
   public func send(
     _ action: CaseKeyPath<Action, Void>,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
@@ -2243,9 +2228,8 @@ extension TestStore where State: Equatable {
   ///     expected.
   /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
-  @MainActor
-  @discardableResult
   @_disfavoredOverload
+  @discardableResult
   public func send<Value>(
     _ action: CaseKeyPath<Action, Value>,
     _ value: Value,
@@ -2288,7 +2272,6 @@ extension TestStore {
   ///
   /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
-  @MainActor
   public func skipReceivedActions(
     strict: Bool = true,
     fileID: StaticString = #fileID,
@@ -2369,7 +2352,6 @@ extension TestStore {
   ///
   /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
-  @MainActor
   public func skipInFlightEffects(
     strict: Bool = true,
     fileID: StaticString = #fileID,
@@ -2872,7 +2854,6 @@ public enum Exhaustivity: Equatable, Sendable {
 }
 
 extension TestStore {
-  @MainActor
   @available(
     *,
     unavailable,
