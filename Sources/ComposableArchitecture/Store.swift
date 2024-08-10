@@ -336,8 +336,7 @@ public final class Store<State, Action> {
 
   @_spi(Internals)
   public var currentState: State {
-    threadCheck(status: .state)
-    return self.toState(self.rootStore.state)
+    self.toState(self.rootStore.state)
   }
 
   @_spi(Internals)
@@ -349,8 +348,6 @@ public final class Store<State, Action> {
       isInvalid: ((State) -> Bool)?
     ) -> Store<ChildState, ChildAction>
   {
-    threadCheck(status: .scope)
-
     if self.canCacheChildren,
       let id = id,
       let childStore = self.children[id] as? Store<ChildState, ChildAction>
