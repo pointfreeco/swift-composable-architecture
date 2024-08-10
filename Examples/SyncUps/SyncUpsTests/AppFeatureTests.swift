@@ -64,6 +64,7 @@ final class AppFeatureTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testRecording() async {
     let speechResult = SpeechRecognitionResult(
       bestTranscription: Transcription(formattedString: "I completed the project"),
@@ -80,7 +81,7 @@ final class AppFeatureTests: XCTestCase {
     )
 
     let sharedSyncUp = Shared(syncUp)
-    let store = await TestStore(
+    let store = TestStore(
       initialState: AppFeature.State(
         path: StackState([
           .detail(SyncUpDetail.State(syncUp: sharedSyncUp)),

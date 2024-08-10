@@ -83,10 +83,11 @@ final class RecordMeetingTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testRecordTranscript() async {
     let clock = TestClock()
 
-    let store = await TestStore(
+    let store = TestStore(
       initialState: RecordMeeting.State(
         syncUp: Shared(
           SyncUp(
