@@ -4,12 +4,11 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 final class WebSocketTests: XCTestCase {
-  @MainActor
   func testWebSocketHappyPath() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
     let messages = AsyncStream.makeStream(of: Result<WebSocketClient.Message, Error>.self)
 
-    let store = TestStore(initialState: WebSocket.State()) {
+    let store = await TestStore(initialState: WebSocket.State()) {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
@@ -56,12 +55,11 @@ final class WebSocketTests: XCTestCase {
     await store.finish()
   }
 
-  @MainActor
   func testWebSocketSendFailure() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
     let messages = AsyncStream.makeStream(of: Result<WebSocketClient.Message, Error>.self)
 
-    let store = TestStore(initialState: WebSocket.State()) {
+    let store = await TestStore(initialState: WebSocket.State()) {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
@@ -103,13 +101,12 @@ final class WebSocketTests: XCTestCase {
     await store.finish()
   }
 
-  @MainActor
   func testWebSocketPings() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
     let clock = TestClock()
     var pingsCount = 0
 
-    let store = TestStore(initialState: WebSocket.State()) {
+    let store = await TestStore(initialState: WebSocket.State()) {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = clock
@@ -138,11 +135,10 @@ final class WebSocketTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testWebSocketConnectError() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
 
-    let store = TestStore(initialState: WebSocket.State()) {
+    let store = await TestStore(initialState: WebSocket.State()) {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()

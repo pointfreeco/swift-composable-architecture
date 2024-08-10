@@ -6,9 +6,8 @@ import XCTest
 final class TodosTests: XCTestCase {
   let clock = TestClock()
 
-  @MainActor
   func testAddTodo() async {
-    let store = TestStore(initialState: Todos.State()) {
+    let store = await TestStore(initialState: Todos.State()) {
       Todos()
     } withDependencies: {
       $0.uuid = .incrementing
@@ -41,7 +40,6 @@ final class TodosTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testEditTodo() async {
     let state = Todos.State(
       todos: [
@@ -53,7 +51,7 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(initialState: state) {
+    let store = await TestStore(initialState: state) {
       Todos()
     }
 
@@ -62,7 +60,6 @@ final class TodosTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testCompleteTodo() async {
     let state = Todos.State(
       todos: [
@@ -79,7 +76,7 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(initialState: state) {
+    let store = await TestStore(initialState: state) {
       Todos()
     } withDependencies: {
       $0.continuousClock = self.clock
@@ -97,7 +94,6 @@ final class TodosTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testCompleteTodoDebounces() async {
     let state = Todos.State(
       todos: [
@@ -114,7 +110,7 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(initialState: state) {
+    let store = await TestStore(initialState: state) {
       Todos()
     } withDependencies: {
       $0.continuousClock = self.clock
@@ -131,7 +127,6 @@ final class TodosTests: XCTestCase {
     await store.receive(\.sortCompletedTodos)
   }
 
-  @MainActor
   func testClearCompleted() async {
     let state = Todos.State(
       todos: [
@@ -148,7 +143,7 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(initialState: state) {
+    let store = await TestStore(initialState: state) {
       Todos()
     }
 
@@ -159,7 +154,6 @@ final class TodosTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testDelete() async {
     let state = Todos.State(
       todos: [
@@ -181,7 +175,7 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(initialState: state) {
+    let store = await TestStore(initialState: state) {
       Todos()
     }
 
@@ -193,7 +187,6 @@ final class TodosTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testDeleteWhileFiltered() async {
     let state = Todos.State(
       filter: .completed,
@@ -216,7 +209,7 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(initialState: state) {
+    let store = await TestStore(initialState: state) {
       Todos()
     }
 
@@ -228,7 +221,6 @@ final class TodosTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testEditModeMoving() async {
     let state = Todos.State(
       todos: [
@@ -250,7 +242,7 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(initialState: state) {
+    let store = await TestStore(initialState: state) {
       Todos()
     } withDependencies: {
       $0.continuousClock = self.clock
@@ -270,7 +262,6 @@ final class TodosTests: XCTestCase {
     await store.receive(\.sortCompletedTodos)
   }
 
-  @MainActor
   func testEditModeMovingWithFilter() async {
     let state = Todos.State(
       todos: [
@@ -297,7 +288,7 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(initialState: state) {
+    let store = await TestStore(initialState: state) {
       Todos()
     } withDependencies: {
       $0.continuousClock = self.clock
@@ -322,7 +313,6 @@ final class TodosTests: XCTestCase {
     await store.receive(\.sortCompletedTodos)
   }
 
-  @MainActor
   func testFilteredEdit() async {
     let state = Todos.State(
       todos: [
@@ -339,7 +329,7 @@ final class TodosTests: XCTestCase {
       ]
     )
 
-    let store = TestStore(initialState: state) {
+    let store = await TestStore(initialState: state) {
       Todos()
     }
 

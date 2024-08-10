@@ -142,9 +142,8 @@ final class EffectTests: BaseTCATestCase {
       }
     }
   }
-  @MainActor
   func testDependenciesTransferredToEffects_Task() async {
-    let store = TestStore(initialState: 0) {
+    let store = await TestStore(initialState: 0) {
       Feature_testDependenciesTransferredToEffects_Task()
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
     }
@@ -176,9 +175,9 @@ final class EffectTests: BaseTCATestCase {
       }
     }
   }
-  @MainActor
+
   func testDependenciesTransferredToEffects_Run() async {
-    let store = TestStore(initialState: 0) {
+    let store = await TestStore(initialState: 0) {
       Feature_testDependenciesTransferredToEffects_Run()
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
     }

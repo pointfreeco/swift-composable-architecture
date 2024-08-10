@@ -158,7 +158,6 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testLivePersistence() async throws {
     guard let willResignNotificationName else { return }
     try? FileManager.default.removeItem(at: .fileURL)
@@ -168,7 +167,7 @@ final class FileStorageTests: XCTestCase {
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
 
-      $users.withLock { $0.append(.blob) }
+      await $users.withLock { $0.append(.blob) }
       NotificationCenter.default
         .post(name: willResignNotificationName, object: nil)
       await Task.yield()
@@ -215,7 +214,6 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testWriteFile() async throws {
     try await withMainSerialExecutor {
       try? FileManager.default.removeItem(at: .fileURL)
@@ -235,7 +233,6 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testWriteFileWhileThrottling() throws {
     let fileSystem = LockIsolated<[URL: Data]>([:])
     let scheduler = DispatchQueue.test
@@ -259,7 +256,6 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testDeleteFile() async throws {
     try await withMainSerialExecutor {
       try? FileManager.default.removeItem(at: .fileURL)
@@ -279,7 +275,6 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testMoveFile() async throws {
     try await withMainSerialExecutor {
       try? FileManager.default.removeItem(at: .fileURL)
@@ -305,7 +300,6 @@ final class FileStorageTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testDeleteFile_ThenWriteToFile() async throws {
     try await withMainSerialExecutor {
       try? FileManager.default.removeItem(at: .fileURL)

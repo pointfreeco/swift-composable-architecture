@@ -4,9 +4,8 @@ import XCTest
 @testable import UIKitCaseStudies
 
 final class UIKitCaseStudiesTests: XCTestCase {
-  @MainActor
   func testCountDown() async {
-    let store = TestStore(initialState: Counter.State()) {
+    let store = await TestStore(initialState: Counter.State()) {
       Counter()
     }
 
@@ -18,13 +17,12 @@ final class UIKitCaseStudiesTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testCountDownList() async {
     let firstState = Counter.State()
     let secondState = Counter.State()
     let thirdState = Counter.State()
 
-    let store = TestStore(
+    let store = await TestStore(
       initialState: CounterList.State(
         counters: [firstState, secondState, thirdState]
       )

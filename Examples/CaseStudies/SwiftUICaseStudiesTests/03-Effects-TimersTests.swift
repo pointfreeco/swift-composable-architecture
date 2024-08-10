@@ -4,11 +4,10 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 final class TimersTests: XCTestCase {
-  @MainActor
   func testStart() async {
     let clock = TestClock()
 
-    let store = TestStore(initialState: Timers.State()) {
+    let store = await TestStore(initialState: Timers.State()) {
       Timers()
     } withDependencies: {
       $0.continuousClock = clock

@@ -3,7 +3,6 @@ import XCTest
 
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class PresentationReducerTests: BaseTCATestCase {
-  @MainActor
   func testPresentationStateSubscriptCase() {
     enum Child: Equatable {
       case int(Int)
@@ -23,7 +22,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     XCTAssertNil(parent.child)
   }
 
-  @MainActor
   func testPresentationStateSubscriptCase_Unexpected() {
     enum Child: Equatable {
       case int(Int)
@@ -55,7 +53,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     XCTAssertEqual(parent.child, .int(42))
   }
 
-  @MainActor
   func testPresentation_parentDismissal() async {
     struct Child: Reducer {
       struct State: Equatable {
@@ -103,7 +100,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -120,7 +117,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_parentDismissal_NilOut() async {
     struct Child: Reducer {
       struct State: Equatable {
@@ -172,7 +168,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -189,7 +185,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_childDismissal() async {
     struct Child: Reducer {
       struct State: Equatable {
@@ -247,7 +242,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -266,7 +261,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_parentDismissal_effects() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -320,7 +314,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
 
       let clock = TestClock()
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       } withDependencies: {
         $0.continuousClock = clock
@@ -347,7 +341,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_childDismissal_effects() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -408,7 +401,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
 
       let clock = TestClock()
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       } withDependencies: {
         $0.continuousClock = clock
@@ -436,7 +429,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_identifiableDismissal_effects() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -492,7 +484,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
 
       let clock = TestClock()
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       } withDependencies: {
         $0.continuousClock = clock
@@ -524,7 +516,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_LeavePresented() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -558,7 +549,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -567,7 +558,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_LeavePresented_FinishStore() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -601,7 +591,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -611,7 +601,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     await store.finish()
   }
 
-  @MainActor
   func testInertPresentation() async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
       struct Parent: Reducer {
@@ -640,7 +629,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
       }
 
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       }
 
@@ -652,7 +641,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testInertPresentation_dismissal() async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
       struct Parent: Reducer {
@@ -681,7 +669,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
       }
 
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       }
 
@@ -696,7 +684,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testInertPresentation_automaticDismissal() async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
       struct Parent: Reducer {
@@ -735,7 +722,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
       }
 
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       }
 
@@ -755,7 +742,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_hydratedDestination_childDismissal() async {
     struct Child: Reducer {
       struct State: Equatable {
@@ -809,7 +795,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State(child: Child.State())) {
+    let store = await TestStore(initialState: Parent.State(child: Child.State())) {
       Parent()
     }
 
@@ -819,7 +805,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_rehydratedDestination_childDismissal() async {
     struct ChildFeature: Reducer {
       struct State: Equatable {}
@@ -868,7 +853,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
       }
     }
-    let store = TestStore(initialState: ParentFeature.State()) { ParentFeature() }
+    let store = await TestStore(initialState: ParentFeature.State()) { ParentFeature() }
 
     await store.send(.childContainer(.openChild)) { state in
       state.childContainer.child = ChildFeature.State()
@@ -887,7 +872,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testEnumPresentation() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -985,7 +969,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
 
       let clock = TestClock()
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       } withDependencies: {
         $0.continuousClock = clock
@@ -1067,7 +1051,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testNavigation_cancelID_childCancellation() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -1115,7 +1098,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
     let presentationTask = await store.send(.presentChild) {
@@ -1126,7 +1109,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     await presentationTask.cancel()
   }
 
-  @MainActor
   func testNavigation_cancelID_parentCancellation() async {
     struct Grandchild: Reducer {
       struct State: Equatable {}
@@ -1208,7 +1190,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
     let childPresentationTask = await store.send(.presentChild) {
@@ -1224,7 +1206,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     await childPresentationTask.cancel()
   }
 
-  @MainActor
   func testNavigation_cancelID_parentCancelTwoChildren() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -1289,7 +1270,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
 
       let clock = TestClock()
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       } withDependencies: {
         $0.continuousClock = clock
@@ -1320,7 +1301,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testNavigation_cancelID_childCannotCancelSibling() async throws {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -1385,7 +1365,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
 
       let clock = TestClock()
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       } withDependencies: {
         $0.continuousClock = clock
@@ -1423,7 +1403,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testNavigation_cancelID_childCannotCancelIdentifiableSibling() async throws {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -1490,7 +1469,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
 
       let clock = TestClock()
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       } withDependencies: {
         $0.continuousClock = clock
@@ -1529,7 +1508,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testNavigation_cancelID_childCannotCancelParent() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -1589,7 +1567,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
 
       let clock = TestClock()
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       } withDependencies: {
         $0.continuousClock = clock
@@ -1610,7 +1588,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testNavigation_cancelID_parentDismissGrandchild() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Grandchild: Reducer {
@@ -1689,7 +1666,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
 
       let clock = TestClock()
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       } withDependencies: {
         $0.continuousClock = clock
@@ -1716,7 +1693,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testRuntimeWarn_NilChild_SendDismissAction() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -1743,7 +1719,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -1772,7 +1748,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     await store.send(.child(.dismiss))
   }
 
-  @MainActor
   func testRuntimeWarn_NilChild_SendChildAction() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -1801,7 +1776,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -1830,7 +1805,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     await store.send(.child(.presented(.tap)))
   }
 
-  @MainActor
   func testRehydrateSameChild_SendDismissAction() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -1863,7 +1837,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State(child: Child.State())) {
+    let store = await TestStore(initialState: Parent.State(child: Child.State())) {
       Parent()
     }
 
@@ -1872,7 +1846,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testRehydrateDifferentChild_SendDismissAction() async {
     struct Child: Reducer {
       struct State: Equatable, Identifiable {
@@ -1910,7 +1883,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(
+    let store = await TestStore(
       initialState: Parent.State(
         child: Child.State(id: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!)
       )
@@ -1928,7 +1901,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_parentNilsOutChildWithLongLivingEffect() async {
     struct Child: Reducer {
       struct State: Equatable {
@@ -1982,7 +1954,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -1996,7 +1968,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_DestinationEnum_IdentityChange() async {
     struct Child: Reducer {
       struct State: Equatable, Identifiable {
@@ -2070,7 +2041,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
 
     let mainQueue = DispatchQueue.test
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     } withDependencies: {
       $0.uuid = .incrementing
@@ -2099,7 +2070,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testAlertThenDialog() async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
       struct Feature: Reducer {
@@ -2172,7 +2142,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         }
       }
 
-      let store = TestStore(initialState: Feature.State()) {
+      let store = await TestStore(initialState: Feature.State()) {
         Feature()
       }
 
@@ -2202,7 +2172,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_leaveChildPresented() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -2236,7 +2205,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -2245,7 +2214,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresentation_leaveChildPresented_WithLongLivingEffect() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -2281,7 +2249,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -2322,7 +2290,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testCancelInFlightEffects() async {
     struct Child: Reducer {
       struct State: Equatable {
@@ -2386,7 +2353,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
 
     let mainQueue = DispatchQueue.test
-    let store = TestStore(initialState: .init()) {
+    let store = await TestStore(initialState: .init()) {
       Parent()
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
@@ -2411,7 +2378,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testOuterCancellation() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -2483,7 +2449,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -2506,7 +2472,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     await store.send(.tapAfter)
   }
 
-  @MainActor
   func testPresentation_leaveAlertPresentedForNonAlertActions() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Child: Reducer {
@@ -2593,7 +2558,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
       let line = #line - 6
 
-      let store = TestStore(initialState: Parent.State()) {
+      let store = await TestStore(initialState: Parent.State()) {
         Parent()
       }
 
@@ -2621,7 +2586,6 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testFastPathEquality() {
     struct State: Equatable {
       static func == (lhs: Self, rhs: Self) -> Bool {
@@ -2636,9 +2600,8 @@ final class PresentationReducerTests: BaseTCATestCase {
     XCTAssertLessThan(Date().timeIntervalSince(start), 0.1)
   }
 
-  @MainActor
   func testNestedDismiss() async {
-    let store = TestStore(initialState: NestedDismissFeature.State()) {
+    let store = await TestStore(initialState: NestedDismissFeature.State()) {
       NestedDismissFeature()
     }
 

@@ -3,7 +3,6 @@ import ComposableArchitecture
 import XCTest
 
 final class SharedReaderTests: XCTestCase {
-  @MainActor
   func testSharedReader() {
     @Shared var count: Int
     _count = Shared(0)

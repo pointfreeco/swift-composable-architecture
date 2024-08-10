@@ -36,6 +36,7 @@ final class ReducerTests: BaseTCATestCase {
       }
     }
   }
+
   @MainActor
   func testCombine_EffectsAreMerged() async throws {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
@@ -85,6 +86,7 @@ final class ReducerTests: BaseTCATestCase {
       }
     }
   }
+
   @MainActor
   func testCombine() async {
     var first = false

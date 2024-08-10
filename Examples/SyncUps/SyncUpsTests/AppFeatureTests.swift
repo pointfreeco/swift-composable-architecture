@@ -4,11 +4,10 @@ import XCTest
 @testable import SyncUps
 
 final class AppFeatureTests: XCTestCase {
-  @MainActor
   func testDetailEdit() async throws {
     var syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
-    let store = TestStore(initialState: AppFeature.State()) {
+    let store = await TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
 
@@ -38,11 +37,10 @@ final class AppFeatureTests: XCTestCase {
     .finish()
   }
 
-  @MainActor
   func testDelete() async throws {
     let syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
-    let store = TestStore(initialState: AppFeature.State()) {
+    let store = await TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
 
@@ -66,7 +64,6 @@ final class AppFeatureTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testRecording() async {
     let speechResult = SpeechRecognitionResult(
       bestTranscription: Transcription(formattedString: "I completed the project"),
@@ -83,7 +80,7 @@ final class AppFeatureTests: XCTestCase {
     )
 
     let sharedSyncUp = Shared(syncUp)
-    let store = TestStore(
+    let store = await TestStore(
       initialState: AppFeature.State(
         path: StackState([
           .detail(SyncUpDetail.State(syncUp: sharedSyncUp)),

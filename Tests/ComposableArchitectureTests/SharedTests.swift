@@ -96,11 +96,10 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(store.state.sharedCount, 2)
   }
 
-  @MainActor
   func testMultiSharing() async {
     @Shared(Stats()) var stats
 
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SharedFeature.State(
         profile: Shared(Profile(stats: $stats)),
         sharedCount: Shared(0),
@@ -116,9 +115,8 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(stats.count, 2)
   }
 
-  @MainActor
   func testIncrementalMutation() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SharedFeature.State(
         profile: Shared(Profile(stats: Shared(Stats()))),
         sharedCount: Shared(0),
@@ -164,9 +162,8 @@ final class SharedTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testEffect() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SharedFeature.State(
         profile: Shared(Profile(stats: Shared(Stats()))),
         sharedCount: Shared(0),
@@ -212,9 +209,8 @@ final class SharedTests: XCTestCase {
     await store.receive(\.sharedIncrement)
   }
 
-  @MainActor
   func testMutationOfSharedStateInLongLivingEffect() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SharedFeature.State(
         profile: Shared(Profile(stats: Shared(Stats()))),
         sharedCount: Shared(0),
@@ -226,7 +222,7 @@ final class SharedTests: XCTestCase {
       $0.mainQueue = .immediate
     }
     await store.send(.longLivingEffect).finish()
-    store.assert {
+    await store.assert {
       $0.sharedCount = 1
     }
   }
@@ -300,7 +296,6 @@ final class SharedTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testComplexSharedEffect_ReducerMutation() async {
     struct Feature: Reducer {
       struct State: Equatable {
@@ -333,7 +328,7 @@ final class SharedTests: XCTestCase {
       }
     }
     let mainQueue = DispatchQueue.test
-    let store = TestStore(initialState: Feature.State(count: Shared(0))) {
+    let store = await TestStore(initialState: Feature.State(count: Shared(0))) {
       Feature()
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
@@ -347,7 +342,6 @@ final class SharedTests: XCTestCase {
     await mainQueue.advance(by: .seconds(1))
   }
 
-  @MainActor
   func testComplexSharedEffect_EffectMutation() async {
     struct Feature: Reducer {
       struct State: Equatable {
@@ -388,7 +382,7 @@ final class SharedTests: XCTestCase {
       }
     }
     let mainQueue = DispatchQueue.test
-    let store = TestStore(initialState: Feature.State(count: Shared(0))) {
+    let store = await TestStore(initialState: Feature.State(count: Shared(0))) {
       Feature()
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
@@ -400,7 +394,7 @@ final class SharedTests: XCTestCase {
     }
     await store.send(.stopTimer)
     await mainQueue.advance(by: .seconds(1))
-    store.assert {
+    await store.assert {
       $0.count = 42
     }
   }

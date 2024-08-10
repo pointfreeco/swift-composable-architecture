@@ -3,7 +3,6 @@ import XCTest
 
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class OnChangeReducerTests: BaseTCATestCase {
-  @MainActor
   func testOnChange() async {
     struct Feature: Reducer {
       struct State: Equatable {
@@ -33,7 +32,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
         }
       }
     }
-    let store = TestStore(initialState: Feature.State()) { Feature() }
+    let store = await TestStore(initialState: Feature.State()) { Feature() }
     await store.send(.incrementButtonTapped) {
       $0.count = 1
       $0.description = "!"
@@ -48,7 +47,6 @@ final class OnChangeReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testOnChangeChildStates() async {
     struct Feature: Reducer {
       struct ChildFeature: Reducer {
@@ -113,7 +111,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
         }
       }
     }
-    let store = TestStore(
+    let store = await TestStore(
       initialState: Feature.State(
         childStates: [
           .init(id: 0)
@@ -140,7 +138,6 @@ final class OnChangeReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testOnChangeTuple() async {
     struct Feature: Reducer {
       struct State: Equatable {
@@ -178,7 +175,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(
+    let store = await TestStore(
       initialState: Feature.State()
     ) { Feature() }
 
@@ -194,7 +191,6 @@ final class OnChangeReducerTests: BaseTCATestCase {
     await store.send(.noop)
   }
 
-  @MainActor
   func testSharedState() async {
     struct Count: Codable, Equatable {
       var value = 0
@@ -224,7 +220,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
         }
       }
     }
-    let store = TestStore(initialState: Feature.State()) { Feature() }
+    let store = await TestStore(initialState: Feature.State()) { Feature() }
     await store.send(.incrementButtonTapped) {
       $0.count.value = 1
       $0.description = "old: 0, new: 1"

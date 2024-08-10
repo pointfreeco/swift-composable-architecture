@@ -3,7 +3,6 @@ import Combine
 import XCTest
 
 final class EffectDebounceTests: BaseTCATestCase {
-  @MainActor
   func testDebounce() async {
     let mainQueue = DispatchQueue.test
     var values: [Int] = []
@@ -54,7 +53,6 @@ final class EffectDebounceTests: BaseTCATestCase {
     XCTAssertEqual(values, [3])
   }
 
-  @MainActor
   func testDebounceIsLazy() async {
     let mainQueue = DispatchQueue.test
     var values: [Int] = []

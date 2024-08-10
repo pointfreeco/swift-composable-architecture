@@ -4,9 +4,8 @@ import XCTest
 @testable import tvOSCaseStudies
 
 final class tvOSCaseStudiesTests: XCTestCase {
-  @MainActor
   func testFocus() async {
-    let store = TestStore(initialState: Focus.State(currentFocus: 1)) {
+    let store = await TestStore(initialState: Focus.State(currentFocus: 1)) {
       Focus()
     } withDependencies: {
       $0.withRandomNumberGenerator = .init(LCRNG())
