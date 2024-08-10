@@ -6,7 +6,7 @@
   final class ReducerMacroTests: XCTestCase {
     override func invokeTest() {
       withMacroTesting(
-        // isRecording: true,
+        // record: .failed,
         macros: [ReducerMacro.self]
       ) {
         super.invokeTest()
@@ -242,6 +242,7 @@
 
             }
 
+            @MainActor
             static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
                 switch store.state {
 
@@ -322,6 +323,7 @@
             case alert(AlertState<Alert>)
           }
 
+          @MainActor
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .activity:
@@ -387,6 +389,7 @@
             case meeting(ComposableArchitecture.StoreOf<Meeting>)
           }
 
+          @MainActor
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .timeline:
@@ -436,6 +439,7 @@
 
             }
 
+            @MainActor
             static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
                 switch store.state {
 
@@ -485,6 +489,8 @@
             package enum CaseScope {
 
             }
+
+            @MainActor
 
             package static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
                 switch store.state {
@@ -536,6 +542,8 @@
 
             }
 
+            @MainActor
+
             public static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
                 switch store.state {
 
@@ -585,6 +593,7 @@
             case alert(AlertState<Never>)
           }
 
+          @MainActor
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case let .alert(v0):
@@ -644,6 +653,7 @@
             case timeline(ComposableArchitecture.StoreOf<Timeline>)
           }
 
+          @MainActor
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .activity:
@@ -704,6 +714,7 @@
             case meeting(Meeting)
           }
 
+          @MainActor
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .timeline:
@@ -768,6 +779,7 @@
             case meeting(Meeting, syncUp: SyncUp)
           }
 
+          @MainActor
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case let .alert(v0):
@@ -839,6 +851,7 @@
             case sheet(ComposableArchitecture.StoreOf<Counter>)
           }
 
+          @MainActor
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .drillDown:
@@ -894,6 +907,7 @@
             case feature(ComposableArchitecture.StoreOf<Nested.Feature>)
           }
 
+          @MainActor
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .feature:
@@ -1257,6 +1271,7 @@
 
           }
 
+          @MainActor
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .child:

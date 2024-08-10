@@ -101,12 +101,13 @@ final class WebSocketTests: XCTestCase {
     await store.finish()
   }
 
+  @MainActor
   func testWebSocketPings() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
     let clock = TestClock()
     var pingsCount = 0
 
-    let store = await TestStore(initialState: WebSocket.State()) {
+    let store = TestStore(initialState: WebSocket.State()) {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = clock
