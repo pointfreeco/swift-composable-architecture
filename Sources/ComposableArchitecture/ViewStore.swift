@@ -354,7 +354,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: An action.
   ///   - predicate: A predicate on `ViewState` that determines for how long this method should
   ///     suspend.
-  @MainActor
   public func send(
     _ action: ViewAction,
     while predicate: @escaping (_ state: ViewState) -> Bool
@@ -376,7 +375,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - animation: The animation to perform when the action is sent.
   ///   - predicate: A predicate on `ViewState` that determines for how long this method should
   ///     suspend.
-  @MainActor
   public func send(
     _ action: ViewAction,
     animation: Animation?,
@@ -397,7 +395,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///
   /// - Parameter predicate: A predicate on `ViewState` that determines for how long this method
   ///   should suspend.
-  @MainActor
   public func yield(while predicate: @escaping (_ state: ViewState) -> Bool) async {
     if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
       _ = await self.publisher

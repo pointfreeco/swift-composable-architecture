@@ -4,12 +4,11 @@ import XCTest
 @testable import SyncUps
 
 final class AppFeatureTests: XCTestCase {
-  @MainActor
   func testDelete() async throws {
     let syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
 
-    let store = TestStore(initialState: AppFeature.State()) {
+    let store = await TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
   }

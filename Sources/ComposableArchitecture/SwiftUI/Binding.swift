@@ -300,7 +300,6 @@ extension BindableAction {
 }
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
-  @MainActor
   public subscript<Value: Equatable>(
     dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
   ) -> Binding<Value> {
