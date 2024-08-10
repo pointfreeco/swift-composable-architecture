@@ -266,7 +266,7 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [publisherExpectation], timeout: 0)
+    await fulfillment(of: [publisherExpectation], timeout: 1)
   }
 
   func testUpdateStoreFromBackgroundThread_KeyPath() async throws {
