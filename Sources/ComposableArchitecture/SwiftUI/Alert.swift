@@ -1,6 +1,7 @@
 import SwiftUI
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@MainActor
 extension View {
   /// Displays an alert when the store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.

@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 extension View {
   /// Displays a legacy alert when the store's state becomes non-`nil`, and dismisses it when it
   /// becomes `nil`.

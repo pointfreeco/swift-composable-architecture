@@ -1,6 +1,7 @@
 import SwiftUI
 
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
+@MainActor
 extension View {
   /// Presents an alert when a piece of optional state held in a store becomes non-`nil`.
   public func alert<Action>(_ item: Binding<Store<AlertState<Action>, Action>?>) -> some View {
@@ -33,10 +34,7 @@ extension View {
       }
     )
   }
-}
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-extension View {
   /// Presents an alert when a piece of optional state held in a store becomes non-`nil`.
   public func confirmationDialog<Action>(
     _ item: Binding<Store<ConfirmationDialogState<Action>, Action>?>

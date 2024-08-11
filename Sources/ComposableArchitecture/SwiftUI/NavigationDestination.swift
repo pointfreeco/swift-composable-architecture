@@ -2,6 +2,7 @@
 import SwiftUI
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+@MainActor
 extension View {
   /// Associates a destination view with a store that can be used to push the view onto a
   /// `NavigationStack`.

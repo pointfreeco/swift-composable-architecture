@@ -2,6 +2,7 @@ import SwiftUI
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@MainActor
 extension View {
   /// Presents a popover using the given store as a data source for the popover's content.
   ///

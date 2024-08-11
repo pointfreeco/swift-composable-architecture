@@ -1165,6 +1165,7 @@ extension TestStore where State: Equatable {
         }
       }
 
+      @MainActor
       func expectationFailure(expected: State) {
         let difference = self.withExhaustivity(.on) {
           diff(expected, actual, format: .proportional)
@@ -1196,6 +1197,7 @@ extension TestStore where State: Equatable {
         )
       }
 
+      @MainActor
       func tryUnnecessaryModifyFailure() {
         guard
           !skipUnnecessaryModifyFailure,

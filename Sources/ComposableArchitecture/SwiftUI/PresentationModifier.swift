@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 extension View {
   @_spi(Presentation)
   public func presentation<State, Action, Content: View>(
