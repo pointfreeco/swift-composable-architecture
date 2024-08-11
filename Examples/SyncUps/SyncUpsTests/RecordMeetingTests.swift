@@ -137,7 +137,8 @@ final class RecordMeetingTests: XCTestCase {
       await store.receive(\.timerTick)
     }
 
-    XCTAssertEqual(store.state.syncUp.meetings[0].transcript, "I completed the project")
+    let transcript = await store.state.syncUp.meetings[0].transcript
+    XCTAssertEqual(transcript, "I completed the project")
   }
 
   func testEndMeetingSave() async {

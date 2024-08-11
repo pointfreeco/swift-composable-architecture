@@ -82,9 +82,10 @@ final class SyncUpDetailTests: XCTestCase {
     await store.receive(\.delegate.startMeeting)
   }
 
+  @MainActor
   func testEdit() async {
     var syncUp = SyncUp.mock
-    let store = await TestStore(initialState: SyncUpDetail.State(syncUp: Shared(syncUp))) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(syncUp))) {
       SyncUpDetail()
     } withDependencies: {
       $0.uuid = .incrementing

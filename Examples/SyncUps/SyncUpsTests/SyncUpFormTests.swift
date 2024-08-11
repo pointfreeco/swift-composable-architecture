@@ -20,7 +20,7 @@ final class SyncUpFormTests: XCTestCase {
     }
 
     let attendees = await store.state.syncUp.attendees
-    XCTAssertNoDifference(
+    expectNoDifference(
       attendees,
       [
         Attendee(id: Attendee.ID(UUID(0)))

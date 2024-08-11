@@ -220,7 +220,7 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [publisherExpectation], timeout: 0)
+    await fulfillment(of: [publisherExpectation], timeout: 1)
   }
 
   @MainActor
