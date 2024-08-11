@@ -755,21 +755,33 @@ public final class TestStore<State, Action> {
     return try operation()
   }
 
-  /// Overrides the store's dependencies for a given operation.
-  ///
-  /// - Parameters:
-  ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
-  ///     duration of the operation.
-  ///   - operation: The operation.
-  public func withDependencies<R>(
-    _ updateValuesForOperation: (_ dependencies: inout DependencyValues) throws -> Void,
-    operation: () async throws -> R
-  ) async rethrows -> R {
-    let previous = self.dependencies
-    defer { self.dependencies = previous }
-    try updateValuesForOperation(&self.dependencies)
-    return try await operation()
-  }
+  #if compiler(>=6)
+    /// Overrides the store's dependencies for a given operation.
+    ///
+    /// - Parameters:
+    ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
+    ///     duration of the operation.
+    ///   - operation: The operation.
+    public func withDependencies<R>(
+      _ updateValuesForOperation: (_ dependencies: inout DependencyValues) throws -> Void,
+      operation: () async throws -> sending R
+    ) async rethrows -> R {
+      let previous = self.dependencies
+      defer { self.dependencies = previous }
+      try updateValuesForOperation(&self.dependencies)
+      return try await operation()
+    }
+  #else
+    public func withDependencies<R: Sendable>(
+      _ updateValuesForOperation: (_ dependencies: inout DependencyValues) throws -> Void,
+      operation: () async throws -> R
+    ) async rethrows -> R {
+      let previous = self.dependencies
+      defer { self.dependencies = previous }
+      try updateValuesForOperation(&self.dependencies)
+      return try await operation()
+    }
+  #endif
 
   /// Overrides the store's exhaustivity for a given operation.
   ///
@@ -786,20 +798,32 @@ public final class TestStore<State, Action> {
     return try operation()
   }
 
-  /// Overrides the store's exhaustivity for a given operation.
-  ///
-  /// - Parameters:
-  ///   - exhaustivity: The exhaustivity.
-  ///   - operation: The operation.
-  public func withExhaustivity<R>(
-    _ exhaustivity: Exhaustivity,
-    operation: () async throws -> R
-  ) async rethrows -> R {
-    let previous = self.exhaustivity
-    defer { self.exhaustivity = previous }
-    self.exhaustivity = exhaustivity
-    return try await operation()
-  }
+  #if compiler(>=6)
+    /// Overrides the store's exhaustivity for a given operation.
+    ///
+    /// - Parameters:
+    ///   - exhaustivity: The exhaustivity.
+    ///   - operation: The operation.
+    public func withExhaustivity<R>(
+      _ exhaustivity: Exhaustivity,
+      operation: () async throws -> sending R
+    ) async rethrows -> R {
+      let previous = self.exhaustivity
+      defer { self.exhaustivity = previous }
+      self.exhaustivity = exhaustivity
+      return try await operation()
+    }
+  #else
+    public func withExhaustivity<R: Sendable>(
+      _ exhaustivity: Exhaustivity,
+      operation: () async throws -> R
+    ) async rethrows -> R {
+      let previous = self.exhaustivity
+      defer { self.exhaustivity = previous }
+      self.exhaustivity = exhaustivity
+      return try await operation()
+    }
+  #endif
 }
 
 /// A convenience type alias for referring to a test store of a given reducer's domain.
@@ -901,7 +925,7 @@ extension TestStore where State: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) async -> TestStoreTask {
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.isDismissed else {
         reportIssue(
           "Can't send action to dismissed test store.",
@@ -1350,7 +1374,7 @@ extension TestStore where State: Equatable, Action: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
@@ -1569,7 +1593,7 @@ extension TestStore where State: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
@@ -1694,7 +1718,7 @@ extension TestStore where State: Equatable {
   ) async
   where Action: CasePathable {
     let actionCase = AnyCasePath(actionCase)
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
@@ -1767,7 +1791,7 @@ extension TestStore where State: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
@@ -2872,4 +2896,21 @@ extension TestStore {
   ) async {
     fatalError()
   }
+}
+
+// TODO: Move to `swift-issue-reporting`?
+fileprivate func _withIssueContext<R>(
+  fileID: StaticString,
+  filePath: StaticString,
+  line: UInt,
+  column: UInt,
+  @_inheritActorContext operation: () async throws -> R
+) async rethrows -> R {
+  try await withIssueContext(
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column,
+    operation: operation
+  )
 }
