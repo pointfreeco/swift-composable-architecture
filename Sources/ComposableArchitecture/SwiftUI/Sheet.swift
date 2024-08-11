@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 extension View {
   /// Presents a sheet using the given store as a data source for the sheet's content.
   ///

@@ -47,6 +47,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testScopedStoreReceivesUpdatesFromParent() {
     let counterReducer = Reduce<Int, Void>({ state, _ in
       state += 1
@@ -71,6 +72,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testParentStoreReceivesUpdatesFromChild() {
     let counterReducer = Reduce<Int, Void>({ state, _ in
       state += 1
@@ -95,6 +97,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testScopeCallCount_OneLevel_NoSubscription() {
     var numCalls1 = 0
     let store = Store<Int, Void>(initialState: 0) {}
@@ -112,6 +115,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testScopeCallCount_OneLevel_Subscribing() {
     var numCalls1 = 0
     let store = Store<Int, Void>(initialState: 0) {}
@@ -130,6 +134,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testScopeCallCount_TwoLevels_Subscribing() {
     var numCalls1 = 0
     var numCalls2 = 0
@@ -158,6 +163,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testScopeCallCount_ThreeLevels_ViewStoreSubscribing() {
     var numCalls1 = 0
     var numCalls2 = 0
@@ -232,6 +238,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(numCalls3, 6)
   }
 
+  @MainActor
   func testSynchronousEffectsSentAfterSinking() {
     enum Action {
       case tap
@@ -279,6 +286,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(values, [1, 2, 3, 4])
   }
 
+  @MainActor
   func testLotsOfSynchronousActions() {
     enum Action { case incr, noop }
     let reducer = Reduce<Int, Action>({ state, action in
@@ -297,6 +305,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testIfLetAfterScope() {
     struct AppState: Equatable {
       var count: Int?
@@ -348,6 +357,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(outputs, [nil, 1, nil, 1, nil, 1, nil])
   }
 
+  @MainActor
   func testIfLetTwo() {
     let parentStore = Store(initialState: 0) {
       Reduce<Int?, Bool> { state, action in
@@ -380,6 +390,7 @@ final class StoreTests: BaseTCATestCase {
       .store(in: &self.cancellables)
   }
 
+  @MainActor
   func testActionQueuing() async {
     let subject = PassthroughSubject<Void, Never>()
 
@@ -418,6 +429,7 @@ final class StoreTests: BaseTCATestCase {
     subject.send(completion: .finished)
   }
 
+  @MainActor
   func testCoalesceSynchronousActions() {
     let store = Store(initialState: 0) {
       Reduce<Int, Int> { state, action in
@@ -449,6 +461,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testBufferedActionProcessing() {
     struct ChildState: Equatable {
       var count: Int?
@@ -595,6 +608,7 @@ final class StoreTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testOverrideDependenciesDirectlyOnReducer() {
     let store = Store(initialState: 0) {
       Feature_testOverrideDependenciesDirectlyOnReducer()
@@ -618,6 +632,7 @@ final class StoreTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testOverrideDependenciesDirectlyOnStore() {
     @Dependency(\.uuid) var uuid
     let store = Store(initialState: uuid()) {

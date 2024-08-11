@@ -11,6 +11,7 @@ final class ViewStoreTests: BaseTCATestCase {
     subEqualityChecks = 0
   }
 
+  @MainActor
   func testPublisherFirehose() {
     let store = Store<Int, Void>(initialState: 0) {}
     let viewStore = ViewStore(store, observe: { $0 })
@@ -30,6 +31,7 @@ final class ViewStoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testEqualityChecks() {
     let store = Store<State, Void>(initialState: State()) {}
 
@@ -68,6 +70,7 @@ final class ViewStoreTests: BaseTCATestCase {
     XCTAssertEqual(16, subEqualityChecks)
   }
 
+  @MainActor
   func testAccessViewStoreStateInPublisherSink() {
     let reducer = Reduce<Int, Void> { count, _ in
       count += 1
@@ -90,6 +93,7 @@ final class ViewStoreTests: BaseTCATestCase {
     XCTAssertEqual([0, 1, 2, 3], results)
   }
 
+  @MainActor
   func testWillSet() {
     let reducer = Reduce<Int, Void> { count, _ in
       count += 1
@@ -114,6 +118,7 @@ final class ViewStoreTests: BaseTCATestCase {
     XCTAssertEqual([0, 1, 2], results)
   }
 
+  @MainActor
   func testPublisherOwnsViewStore() {
     let reducer = Reduce<Int, Void> { count, _ in
       count += 1
@@ -131,6 +136,7 @@ final class ViewStoreTests: BaseTCATestCase {
     XCTAssertEqual(results, [0, 1])
   }
 
+  @MainActor
   func testStorePublisherSubscriptionOrder() {
     let store = Store<Int, Void>(initialState: 0) {
       Reduce { state, _ in

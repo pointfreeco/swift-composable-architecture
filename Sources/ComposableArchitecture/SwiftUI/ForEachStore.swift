@@ -115,6 +115,7 @@ public struct ForEachStore<
   /// - Parameters:
   ///   - store: A store on an identified array of data and an identified action.
   ///   - content: A function that can generate content given a store of an element.
+  @MainActor
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>>,
     @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
@@ -174,6 +175,7 @@ public struct ForEachStore<
     message:
       "Use an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
   )
+  @MainActor
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
     @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent

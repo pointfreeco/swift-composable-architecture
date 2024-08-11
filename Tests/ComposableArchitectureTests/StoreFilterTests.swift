@@ -3,6 +3,7 @@ import Combine
 import XCTest
 
 final class StoreInvalidationTests: BaseTCATestCase {
+  @MainActor
   func testInvalidation() {
     var cancellables: Set<AnyCancellable> = []
 

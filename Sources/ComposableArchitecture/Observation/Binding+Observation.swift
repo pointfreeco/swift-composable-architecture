@@ -248,6 +248,7 @@
     ///
     /// - Parameter action: An action for the binding to send values through.
     /// - Returns: A binding.
+    @MainActor
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
       self.bindable[state: self.keyPath, action: action]
     }
