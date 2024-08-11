@@ -336,7 +336,7 @@ final class IfLetReducerTests: BaseTCATestCase {
           case .alert(.ok):
             return .none
           case .alert(.again), .tap:
-            state.alert = AlertState(title: TextState("Hello"))
+            state.alert = AlertState { TextState("Hello") }
             return .none
           }
         }
@@ -347,7 +347,7 @@ final class IfLetReducerTests: BaseTCATestCase {
     let store = TestStore(initialState: Feature.State()) { Feature() }
 
     await store.send(.tap) {
-      $0.alert = AlertState(title: TextState("Hello"))
+      $0.alert = AlertState { TextState("Hello") }
     }
     await store.send(.alert(.again))
     await store.send(.alert(.ok)) {
