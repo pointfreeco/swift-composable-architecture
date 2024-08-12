@@ -172,6 +172,11 @@
     ///
     /// - Parameter action: An action for the binding to send values through.
     /// - Returns: A binding.
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency @MainActor
+  #endif
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
       self.binding[state: self.keyPath, action: action]
     }
@@ -220,6 +225,11 @@
     ///
     /// - Parameter action: An action for the binding to send values through.
     /// - Returns: A binding.
+    #if swift(<5.10)
+      @MainActor(unsafe)
+    #else
+      @preconcurrency @MainActor
+    #endif
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
       self.bindable[state: self.keyPath, action: action]
     }
@@ -248,7 +258,11 @@
     ///
     /// - Parameter action: An action for the binding to send values through.
     /// - Returns: A binding.
-    @MainActor
+    #if swift(<5.10)
+      @MainActor(unsafe)
+    #else
+      @preconcurrency @MainActor
+    #endif
     public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
       self.bindable[state: self.keyPath, action: action]
     }
