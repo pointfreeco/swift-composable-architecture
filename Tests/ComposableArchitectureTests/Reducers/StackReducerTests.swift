@@ -1,6 +1,7 @@
 @_spi(Internals) import ComposableArchitecture
 import XCTest
 
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class StackReducerTests: BaseTCATestCase {
   func testStackStateSubscriptCase() {
     enum Element: Equatable {

@@ -658,6 +658,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     await store.receive(\.response2)
   }
 
+  @available(*, deprecated)
   @MainActor
   func testXCTModifyExhaustive() async {
     struct State: Equatable {
@@ -700,6 +701,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     }
   }
 
+  @available(*, deprecated)
   @MainActor
   func testXCTModifyNonExhaustive() async {
     enum Action { case tap, response }

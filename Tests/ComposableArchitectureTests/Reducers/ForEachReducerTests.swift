@@ -67,6 +67,7 @@ final class ForEachReducerTests: BaseTCATestCase {
     await store.send(\.rows[id:1], "Blob Esq.")
   }
 
+  @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
   func testAutomaticEffectCancellation() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Timer: Reducer {

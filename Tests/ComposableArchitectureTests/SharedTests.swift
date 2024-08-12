@@ -955,9 +955,9 @@ final class SharedTests: XCTestCase {
 
     first.wrappedValue.name = "Blob"
     second.wrappedValue.name = "Blob Jr"
-    XCTAssertNoDifference(first.wrappedValue, User(id: 1, name: "Blob"))
-    XCTAssertNoDifference(second.wrappedValue, User(id: 2, name: "Blob Jr"))
-    XCTAssertNoDifference(
+    expectNoDifference(first.wrappedValue, User(id: 1, name: "Blob"))
+    expectNoDifference(second.wrappedValue, User(id: 2, name: "Blob Jr"))
+    expectNoDifference(
       sharedCollection.wrappedValue,
       [
         User(id: 1, name: "Blob"),
@@ -966,9 +966,9 @@ final class SharedTests: XCTestCase {
     )
 
     sharedCollection.wrappedValue.swapAt(0, 1)
-    XCTAssertNoDifference(first.wrappedValue, User(id: 1, name: "Blob"))
-    XCTAssertNoDifference(second.wrappedValue, User(id: 2, name: "Blob Jr"))
-    XCTAssertNoDifference(
+    expectNoDifference(first.wrappedValue, User(id: 1, name: "Blob"))
+    expectNoDifference(second.wrappedValue, User(id: 2, name: "Blob Jr"))
+    expectNoDifference(
       sharedCollection.wrappedValue,
       [
         User(id: 2, name: "Blob Jr"),
@@ -978,9 +978,9 @@ final class SharedTests: XCTestCase {
 
     first.wrappedValue.name += ", M.D."
     second.wrappedValue.name += ", Esq."
-    XCTAssertNoDifference(first.wrappedValue, User(id: 1, name: "Blob, M.D."))
-    XCTAssertNoDifference(second.wrappedValue, User(id: 2, name: "Blob Jr, Esq."))
-    XCTAssertNoDifference(
+    expectNoDifference(first.wrappedValue, User(id: 1, name: "Blob, M.D."))
+    expectNoDifference(second.wrappedValue, User(id: 2, name: "Blob Jr, Esq."))
+    expectNoDifference(
       sharedCollection.wrappedValue,
       [
         User(id: 2, name: "Blob Jr, Esq."),
