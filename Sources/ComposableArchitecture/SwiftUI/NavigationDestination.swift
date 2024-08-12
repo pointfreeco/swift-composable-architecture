@@ -2,7 +2,6 @@
 import SwiftUI
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-@MainActor
 extension View {
   /// Associates a destination view with a store that can be used to push the view onto a
   /// `NavigationStack`.
@@ -37,6 +36,11 @@ extension View {
     message:
       "Pass a binding of a store to 'navigationDestination(item:)' instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
   )
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency @MainActor
+  #endif
   public func navigationDestination<State, Action, Destination: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
@@ -88,6 +92,11 @@ extension View {
     message:
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency @MainActor
+  #endif
   public func navigationDestination<
     State, Action, DestinationState, DestinationAction, Destination: View
   >(

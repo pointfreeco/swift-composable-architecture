@@ -90,7 +90,6 @@
     private let store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
     private let data: IdentifiedArray<ID, State>
 
-    @MainActor
     fileprivate init(_ store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>) {
       self.store = store
       self.data = store.withState { $0 }
@@ -99,23 +98,21 @@
     public var startIndex: Int { self.data.startIndex }
     public var endIndex: Int { self.data.endIndex }
     public subscript(position: Int) -> Store<State, Action> {
-      MainActor.assumeIsolated {
-        guard self.data.indices.contains(position)
-        else {
-          return Store()
-        }
-        let id = self.data.ids[position]
-        var element = self.data[position]
-        return self.store.scope(
-          id: self.store.id(state: \.[id:id]!, action: \.[id:id]),
-          state: ToState {
-            element = $0[id: id] ?? element
-            return element
-          },
-          action: { .element(id: id, action: $0) },
-          isInvalid: { !$0.ids.contains(id) }
-        )
+      guard self.data.indices.contains(position)
+      else {
+        return Store()
       }
+      let id = self.data.ids[position]
+      var element = self.data[position]
+      return self.store.scope(
+        id: self.store.id(state: \.[id:id]!, action: \.[id:id]),
+        state: ToState {
+          element = $0[id: id] ?? element
+          return element
+        },
+        action: { .element(id: id, action: $0) },
+        isInvalid: { !$0.ids.contains(id) }
+      )
     }
   }
 #endif
