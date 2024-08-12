@@ -11,8 +11,8 @@
     /// - Parameters:
     ///   - navigationBarClass: Specify the custom `UINavigationBar` subclass you want to use, or
     ///     specify `nil` to use the standard `UINavigationBar` class.
-    ///   - toolbarClass: Specify the custom `UIToolbar` subclass you want to use, or specify `nil` to
-    ///     use the standard `UIToolbar` class.
+    ///   - toolbarClass: Specify the custom `UIToolbar` subclass you want to use, or specify `nil`
+    ///     to use the standard `UIToolbar` class.
     ///   - path: A binding to a store of stack state.
     ///   - root: A root view controller.
     ///   - fileID: The source `#fileID` associated with the controller.
