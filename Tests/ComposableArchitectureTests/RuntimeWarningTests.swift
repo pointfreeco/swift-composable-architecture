@@ -304,8 +304,8 @@
         ] = nil
       } issueMatcher: {
         $0.compactDescription == """
-          failed - SwiftUI dismissed a view through a binding at "file.swift:1", but the store \
-          destination wasn't set to "nil".
+          failed - A binding at "file.swift:1" was set to "nil", but the store destination wasn't \
+          nil'd out.
 
           This usually means an "ifLet" has not been integrated with the reducer powering the \
           store, and this reducer is responsible for handling presentation actions.

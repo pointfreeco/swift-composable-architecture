@@ -374,13 +374,17 @@
         #endif
       }
       set {
-        if newValue == nil, self.state[keyPath: state] != nil, !self._isInvalidated() {
+        if newValue == nil,
+          let childState = self.state[keyPath: state],
+          !isEphemeral(childState),
+          !self._isInvalidated()
+        {
           self.send(action(.dismiss))
           if self.state[keyPath: state] != nil {
             reportIssue(
               """
-              SwiftUI dismissed a view through a binding at "\(fileID):\(line)", but the store \
-              destination wasn't set to "nil".
+              A binding at "\(fileID):\(line)" was set to "nil", but the store destination wasn't \
+              nil'd out.
 
               This usually means an "ifLet" has not been integrated with the reducer powering the \
               store, and this reducer is responsible for handling presentation actions.
