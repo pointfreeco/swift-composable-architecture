@@ -218,12 +218,14 @@ public struct Shared<Value> {
       }
       try updateValueToExpectedResult(&snapshot)
       self.snapshot = snapshot
-      // TODO: Finesse error more than `XCTAssertNoDifference`
-      XCTAssertNoDifference(
+      // TODO: Finesse error more than `expectNoDifference`
+      expectNoDifference(
         self.currentValue,
         self.snapshot,
-        file: filePath,
-        line: line
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       self.snapshot = nil
     }

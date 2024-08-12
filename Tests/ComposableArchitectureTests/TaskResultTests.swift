@@ -35,13 +35,13 @@ final class TaskResultTests: BaseTCATestCase {
       }
 
       XCTExpectFailure {
-        XCTAssertNoDifference(
+        expectNoDifference(
           TaskResult<Never>.failure(Failure1(message: "Something went wrong")),
           TaskResult<Never>.failure(Failure2(message: "Something went wrong"))
         )
       } issueMatcher: {
         $0.compactDescription == """
-          failed - XCTAssertNoDifference failed: …
+          failed - Difference: …
 
               TaskResult.failure(
             −   TaskResultTests.Failure1(message: "Something went wrong")
