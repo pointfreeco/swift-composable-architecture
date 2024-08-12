@@ -101,6 +101,20 @@ import SwiftUI
     }
   }
 
+  extension UIBindable {
+    /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
+    ///
+    /// See ``SwiftUI/Binding/scope(state:action:fileID:line:)`` defined on `Binding` for more
+    /// information.
+    public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+      state: KeyPath<State, StackState<ElementState>>,
+      action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+    ) -> UIBinding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+    where Value == Store<State, Action> {
+      self[state: state, action: action]
+    }
+  }
+
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   extension NavigationStack {
     /// Drives a navigation stack with a store.
