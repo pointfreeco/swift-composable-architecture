@@ -175,7 +175,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
   public struct AllCasePaths {
     #if canImport(Perception)
       public subscript<Value: Equatable>(
-        dynamicMember keyPath: WritableKeyPath<Root, Value>
+        dynamicMember keyPath: _WritableKeyPath<Root, Value>
       ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
         AnyCasePath(
           embed: { .set(keyPath, $0) },
@@ -185,7 +185,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
     #endif
 
     public subscript<Value: Equatable>(
-      dynamicMember keyPath: WritableKeyPath<Root, BindingState<Value>>
+      dynamicMember keyPath: _WritableKeyPath<Root, BindingState<Value>>
     ) -> AnyCasePath<BindingAction, Value> {
       AnyCasePath(
         embed: { .set(keyPath, $0) },
@@ -206,7 +206,7 @@ extension BindingAction {
   /// - Returns: An action that describes simple mutations to some root state at a writable key
   ///   path.
   public static func set<Value: Equatable & Sendable>(
-    _ keyPath: WritableKeyPath<Root, BindingState<Value>>,
+    _ keyPath: _WritableKeyPath<Root, BindingState<Value>>,
     _ value: Value
   ) -> Self {
     return .init(
@@ -292,7 +292,7 @@ extension BindableAction {
   ///
   /// - Returns: A binding action.
   public static func set<Value: Equatable>(
-    _ keyPath: WritableKeyPath<State, BindingState<Value>>,
+    _ keyPath: _WritableKeyPath<State, BindingState<Value>>,
     _ value: Value
   ) -> Self {
     self.binding(.set(keyPath, value))
@@ -301,7 +301,7 @@ extension BindableAction {
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
+    dynamicMember keyPath: _WritableKeyPath<ViewState, BindingState<Value>>
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
@@ -456,7 +456,7 @@ public struct BindingViewStore<State> {
   }
 
   public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
+    dynamicMember keyPath: _WritableKeyPath<State, BindingState<Value>>
   ) -> BindingViewState<Value> {
     BindingViewState(
       binding: ViewStore(self.store, observe: { $0[keyPath: keyPath].wrappedValue })
