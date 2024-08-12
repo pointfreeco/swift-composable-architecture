@@ -678,7 +678,7 @@ final class SharedTests: XCTestCase {
       }
 
       var observations: [Int] = []
-      SwiftNavigation.observe {
+      observe {
         observations.append(store.state.count)
       }
 
