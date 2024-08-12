@@ -113,8 +113,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-macro-testing",
       "state" : {
-        "revision" : "a35257b7e9ce44e92636447003a8eeefb77b145c",
-        "version" : "0.5.1"
+        "revision" : "20c1a8f3b624fb5d1503eadcaa84743050c350f4",
+        "version" : "0.5.2"
       }
     },
     {
@@ -122,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-navigation",
       "state" : {
-        "revision" : "f6aee4300a956e90e6d000f29c26aa793beefbb2",
-        "version" : "2.0.0"
+        "revision" : "47cfd149ed01223d14fc8e3f52ae27d3a35fe036",
+        "version" : "2.0.3"
       }
     },
     {
@@ -140,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
       "state" : {
-        "revision" : "e883fc9ea51e76dc9ed13fd4a92b0ee258a1e8c9",
-        "version" : "1.17.3"
+        "revision" : "6d932a79e7173b275b96c600c86c603cf84f153c",
+        "version" : "1.17.4"
       }
     },
     {

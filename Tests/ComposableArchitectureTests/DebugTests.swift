@@ -97,7 +97,7 @@
       }
       store.send(true)
       try await Task.sleep(nanoseconds: 300_000_000)
-      XCTAssertNoDifference(
+      expectNoDifference(
         logs.value,
         """
         - true
@@ -129,7 +129,7 @@
       store.send(true)
       store.send(false)
       _ = XCTWaiter.wait(for: [self.expectation(description: "wait")], timeout: 0.3)
-      XCTAssertNoDifference(
+      expectNoDifference(
         logs.value,
         """
         - true
@@ -177,7 +177,7 @@
       }
       store.send(true)
       try await Task.sleep(nanoseconds: 300_000_000)
-      XCTAssertNoDifference(
+      expectNoDifference(
         logs.value,
         #"""
           DebugTests.State(

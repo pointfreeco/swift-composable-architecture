@@ -20,7 +20,7 @@ final class SyncUpFormTests: XCTestCase {
       $0.uuid = .incrementing
     }
 
-    XCTAssertNoDifference(
+    expectNoDifference(
       store.state.syncUp.attendees,
       [
         Attendee(id: Attendee.ID(UUID(0)))
