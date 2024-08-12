@@ -50,8 +50,6 @@ public final class FileStorageKey<Value: Sendable>: PersistenceKey, Sendable {
   private let decode: @Sendable (Data) throws -> Value
   private let encode: @Sendable (Value) throws -> Data
   fileprivate let state = LockIsolated(State())
-  //  private let value = LockIsolated<Value?>(nil)
-  //  private let workItem = LockIsolated<DispatchWorkItem?>(nil)
 
   fileprivate struct State {
     var value: Value?
@@ -261,8 +259,11 @@ public struct FileStorage: Hashable, Sendable {
   let asyncAfter: @Sendable (DispatchTimeInterval, DispatchWorkItem) -> Void
   let createDirectory: @Sendable (URL, Bool) throws -> Void
   let fileExists: @Sendable (URL) -> Bool
-  let fileSystemSource:
-    @Sendable (URL, DispatchSource.FileSystemEvent, @escaping () -> Void) -> AnyCancellable
+  let fileSystemSource: @Sendable (
+    URL,
+    DispatchSource.FileSystemEvent,
+    @escaping @Sendable () -> Void
+  ) -> AnyCancellable
   let load: @Sendable (URL) throws -> Data
   @_spi(Internals) public let save: @Sendable (Data, URL) throws -> Void
 
@@ -271,7 +272,7 @@ public struct FileStorage: Hashable, Sendable {
   ///
   /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency
   /// that is used by default when running your app in the simulator or on device.
-  public static var fileSystem = fileSystem(
+  public static let fileSystem = fileSystem(
     queue: DispatchQueue(label: "co.pointfree.ComposableArchitecture.FileStorage")
   )
 
@@ -345,9 +346,9 @@ public struct FileStorage: Hashable, Sendable {
     )
   }
 
-  fileprivate struct Handler: Hashable {
+  fileprivate struct Handler: Hashable, Sendable {
     let id = UUID()
-    let operation: () -> Void
+    let operation: @Sendable () -> Void
     static func == (lhs: Self, rhs: Self) -> Bool {
       lhs.id == rhs.id
     }
