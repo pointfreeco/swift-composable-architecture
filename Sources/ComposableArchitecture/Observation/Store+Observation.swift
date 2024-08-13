@@ -328,6 +328,11 @@
   }
 
   extension UIBindable {
+    #if swift(>=5.10)
+      @preconcurrency @MainActor
+    #else
+      @MainActor(unsafe)
+    #endif
     public func scope<State: ObservableState, Action, ChildState, ChildAction>(
       state: KeyPath<State, ChildState?>,
       action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
