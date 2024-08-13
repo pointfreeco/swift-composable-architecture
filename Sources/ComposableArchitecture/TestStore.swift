@@ -1906,7 +1906,7 @@ extension TestStore where State: Equatable {
   ///     expected.
   @_disfavoredOverload
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-  public func receive<Value: Equatable>(
+  public func receive<Value: Equatable & Sendable>(
     _ actionCase: _CaseKeyPath<Action, Value>,
     _ value: Value,
     timeout duration: Duration,
