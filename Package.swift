@@ -86,9 +86,11 @@ let package = Package(
   ]
 )
 
-for target in package.targets where target.type != .system {
-  target.swiftSettings = target.swiftSettings ?? []
-  target.swiftSettings?.append(contentsOf: [
-    .enableExperimentalFeature("StrictConcurrency"),
-  ])
-}
+#if compiler(>=6)
+  for target in package.targets where target.type != .system {
+    target.swiftSettings = target.swiftSettings ?? []
+    target.swiftSettings?.append(contentsOf: [
+      .enableExperimentalFeature("StrictConcurrency"),
+    ])
+  }
+#endif
