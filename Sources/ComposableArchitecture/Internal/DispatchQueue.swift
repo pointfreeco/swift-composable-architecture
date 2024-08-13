@@ -12,13 +12,13 @@ func mainActorASAP(execute block: @escaping @MainActor @Sendable () -> Void) {
   }
 }
 
-func mainActorNow(execute block: @escaping @MainActor @Sendable () -> Void) {
+func mainActorNow<T: Sendable>(execute block: @escaping @MainActor @Sendable () -> T) -> T {
   if DispatchQueue.getSpecific(key: key) == value {
-    MainActor._assumeIsolated {
+    return MainActor._assumeIsolated {
       block()
     }
   } else {
-    DispatchQueue.main.sync {
+    return DispatchQueue.main.sync {
       block()
     }
   }
