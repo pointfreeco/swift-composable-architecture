@@ -7,7 +7,7 @@
 
 // NB: Deprecated with 1.13.0:
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
   extension UIAlertController {
     @_disfavoredOverload
     @available(*, unavailable, renamed: "init(state:handler:)")
