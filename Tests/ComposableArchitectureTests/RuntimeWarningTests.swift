@@ -325,7 +325,6 @@
       }
     }
 
-
     @Reducer
     struct TestStoreDestination_NotIntegrated_EphemeralState {
       @Reducer
