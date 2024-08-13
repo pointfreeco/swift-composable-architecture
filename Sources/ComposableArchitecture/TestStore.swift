@@ -1971,7 +1971,7 @@ extension TestStore where State: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
