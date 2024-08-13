@@ -105,7 +105,7 @@ import SwiftUI
 )
 public struct ForEachStore<
   EachState, EachAction, Data: Collection, ID: Hashable, Content: View
->: @preconcurrency DynamicViewContent, View {
+>: View {
   public let data: Data
   let content: Content
 
@@ -225,6 +225,12 @@ public struct ForEachStore<
     self.content
   }
 }
+
+#if compiler(>=6)
+  extension ForEachStore: @preconcurrency DynamicViewContent {}
+#else
+  extension ForEachStore: DynamicViewContent {}
+#endif
 
 extension Case {
   fileprivate subscript<ID: Hashable & Sendable, Action>(id id: ID) -> Case<Action>
