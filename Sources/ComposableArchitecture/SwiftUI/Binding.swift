@@ -174,7 +174,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
   @dynamicMemberLookup
   public struct AllCasePaths {
     #if canImport(Perception)
-      public subscript<Value: Equatable>(
+      public subscript<Value: Equatable & Sendable>(
         dynamicMember keyPath: _WritableKeyPath<Root, Value>
       ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
         AnyCasePath(
@@ -184,7 +184,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
       }
     #endif
 
-    public subscript<Value: Equatable>(
+    public subscript<Value: Equatable & Sendable>(
       dynamicMember keyPath: _WritableKeyPath<Root, BindingState<Value>>
     ) -> AnyCasePath<BindingAction, Value> {
       AnyCasePath(
