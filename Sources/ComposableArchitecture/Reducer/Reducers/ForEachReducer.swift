@@ -23,7 +23,7 @@ public enum IdentifiedAction<ID: Hashable, Action>: CasePathable {
       )
     }
 
-    public subscript(id id: ID) -> AnyCasePath<IdentifiedAction, Action> {
+    public subscript(id id: ID) -> AnyCasePath<IdentifiedAction, Action> where ID: Sendable {
       AnyCasePath(
         embed: { .element(id: id, action: $0) },
         extract: {

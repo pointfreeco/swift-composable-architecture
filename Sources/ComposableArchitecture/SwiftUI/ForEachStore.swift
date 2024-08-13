@@ -125,6 +125,7 @@ public struct ForEachStore<
     @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
   )
   where
+    ID: Sendable,
     Data == IdentifiedArray<ID, EachState>,
     Content == WithViewStore<
       IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>,
