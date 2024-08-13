@@ -785,7 +785,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   }
 }
 
-extension WithViewStore: DynamicViewContent
+extension WithViewStore: @preconcurrency DynamicViewContent
 where
   ViewState: Collection,
   Content: DynamicViewContent
