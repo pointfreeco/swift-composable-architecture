@@ -86,10 +86,12 @@ let package = Package(
   ]
 )
 
-for target in package.targets where target.type != .system {
-  target.swiftSettings = target.swiftSettings ?? []
-  target.swiftSettings?.append(contentsOf: [
-    .enableExperimentalFeature("StrictConcurrency"),
-    .enableUpcomingFeature("InferSendableFromCaptures"),
-  ])
-}
+#if compiler(>=6)
+  for target in package.targets where target.type != .system {
+    target.swiftSettings = target.swiftSettings ?? []
+    target.swiftSettings?.append(contentsOf: [
+      .enableExperimentalFeature("StrictConcurrency"),
+      .enableUpcomingFeature("InferSendableFromCaptures"),
+    ])
+  }
+#endif
