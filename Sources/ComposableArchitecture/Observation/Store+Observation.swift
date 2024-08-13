@@ -317,6 +317,28 @@
     }
   }
 
+  extension UIBindable {
+    public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+      state: KeyPath<State, ChildState?>,
+      action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> UIBinding<Store<ChildState, ChildAction>?>
+    where Value == Store<State, Action> {
+      self[
+        state: state,
+        action: action,
+        isInViewBody: _isInPerceptionTracking,
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
+      ]
+    }
+  }
+
   extension Store where State: ObservableState {
     @_spi(Internals)
     public subscript<ChildState, ChildAction>(
@@ -352,13 +374,17 @@
         #endif
       }
       set {
-        if newValue == nil, self.state[keyPath: state] != nil, !self._isInvalidated() {
+        if newValue == nil,
+          let childState = self.state[keyPath: state],
+          !isEphemeral(childState),
+          !self._isInvalidated()
+        {
           self.send(action(.dismiss))
           if self.state[keyPath: state] != nil {
             reportIssue(
               """
-              SwiftUI dismissed a view through a binding at "\(fileID):\(line)", but the store \
-              destination wasn't set to "nil".
+              A binding at "\(fileID):\(line)" was set to "nil", but the store destination wasn't \
+              nil'd out.
 
               This usually means an "ifLet" has not been integrated with the reducer powering the \
               store, and this reducer is responsible for handling presentation actions.

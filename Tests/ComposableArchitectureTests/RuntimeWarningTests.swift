@@ -304,8 +304,8 @@
         ] = nil
       } issueMatcher: {
         $0.compactDescription == """
-          failed - SwiftUI dismissed a view through a binding at "file.swift:1", but the store \
-          destination wasn't set to "nil".
+          failed - A binding at "file.swift:1" was set to "nil", but the store destination wasn't \
+          nil'd out.
 
           This usually means an "ifLet" has not been integrated with the reducer powering the \
           store, and this reducer is responsible for handling presentation actions.
@@ -323,6 +323,39 @@
           store.
           """
       }
+    }
+
+    @Reducer
+    struct TestStoreDestination_NotIntegrated_EphemeralState {
+      @Reducer
+      struct Destination {}
+      @ObservableState
+      struct State: Equatable {
+        @Presents var alert: AlertState<Never>?
+      }
+      enum Action {
+        case alert(PresentationAction<Never>)
+      }
+    }
+    @MainActor
+    func testStoreDestination_NotIntegrated_EphemeralState() {
+      let store = Store(
+        initialState: TestStoreDestination_NotIntegrated_EphemeralState.State(
+          alert: .init(title: { TextState("Hi") })
+        )
+      ) {
+        TestStoreDestination_NotIntegrated_EphemeralState()
+      }
+
+      store[
+        state: \.alert,
+        action: \.alert,
+        isInViewBody: false,
+        fileID: "file.swift",
+        filePath: "/file.swift",
+        line: 1,
+        column: 1
+      ] = nil  // NB: Not issue reported
     }
   }
 #endif
