@@ -359,7 +359,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///     suspend.
   public func send(
     _ action: ViewAction,
-    while predicate: @escaping (_ state: ViewState) -> Bool
+    while predicate: @escaping @Sendable (_ state: ViewState) -> Bool
   ) async {
     let task = self.send(action)
     await withTaskCancellationHandler {
@@ -381,7 +381,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   public func send(
     _ action: ViewAction,
     animation: Animation?,
-    while predicate: @escaping (_ state: ViewState) -> Bool
+    while predicate: @escaping @Sendable (_ state: ViewState) -> Bool
   ) async {
     let task = withAnimation(animation) { self.send(action) }
     await withTaskCancellationHandler {
@@ -398,22 +398,18 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///
   /// - Parameter predicate: A predicate on `ViewState` that determines for how long this method
   ///   should suspend.
-  public func yield(while predicate: @escaping (_ state: ViewState) -> Bool) async {
-    if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-      _ = await self.publisher
-        .values
-        .first(where: { !predicate($0) })
-    } else {
-      let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
-      try? await withTaskCancellationHandler {
-        try Task.checkCancellation()
-        try await withUnsafeThrowingContinuation {
-          (continuation: UnsafeContinuation<Void, Error>) in
-          guard !Task.isCancelled else {
-            continuation.resume(throwing: CancellationError())
-            return
-          }
-          cancellable.wrappedValue = self.publisher
+  public func yield(while predicate: @escaping @Sendable (_ state: ViewState) -> Bool) async {
+    let cancellable = LockIsolated<AnyCancellable?>(nil)
+    try? await withTaskCancellationHandler {
+      try Task.checkCancellation()
+      try await withUnsafeThrowingContinuation {
+        (continuation: UnsafeContinuation<Void, Error>) in
+        guard !Task.isCancelled else {
+          continuation.resume(throwing: CancellationError())
+          return
+        }
+        cancellable.withValue { [publisher = publisher.eraseToAnyPublisher()] in
+          $0 = publisher
             .filter { !predicate($0) }
             .prefix(1)
             .sink { _ in
@@ -421,9 +417,9 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
               _ = cancellable
             }
         }
-      } onCancel: {
-        cancellable.wrappedValue?.cancel()
       }
+    } onCancel: {
+      cancellable.value?.cancel()
     }
   }
 
