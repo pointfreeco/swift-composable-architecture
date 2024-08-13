@@ -114,6 +114,11 @@ import SwiftUI
     ///
     /// See ``SwiftUI/Binding/scope(state:action:fileID:line:)`` defined on `Binding` for more
     /// information.
+    #if swift(>=5.10)
+      @preconcurrency @MainActor
+    #else
+      @MainActor(unsafe)
+    #endif
     public func scope<State: ObservableState, Action, ElementState, ElementAction>(
       state: KeyPath<State, StackState<ElementState>>,
       action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
