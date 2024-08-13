@@ -193,7 +193,10 @@ public final class Store<State, Action> {
   }
 
   deinit {
-    Logger.shared.log("\(storeTypeName(of: self)).deinit")
+    guard Thread.isMainThread else { return }
+    MainActor._assumeIsolated {
+      Logger.shared.log("\(storeTypeName(of: self)).deinit")
+    }
   }
 
   /// Calls the given closure with a snapshot of the current state of the store.
