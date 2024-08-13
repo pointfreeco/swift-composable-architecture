@@ -54,9 +54,11 @@ public class NewGameViewController: UIViewController {
     ])
     playerORow.spacing = 24
 
-    let letsPlayButton = UIButton(type: .system, primaryAction: UIAction { [store] _ in
-      store.send(.letsPlayButtonTapped)
-    })
+    let letsPlayButton = UIButton(
+      type: .system,
+      primaryAction: UIAction { [store] _ in
+        store.send(.letsPlayButtonTapped)
+      })
     letsPlayButton.setTitle("Let’s Play!", for: .normal)
 
     let rootStackView = UIStackView(arrangedSubviews: [

@@ -29,42 +29,53 @@ public final class GameViewController: UIViewController {
     let titleLabel = UILabel()
     titleLabel.textAlignment = .center
 
-    let playAgainButton = UIButton(type: .system, primaryAction: UIAction { [store] _ in
-      store.send(.playAgainButtonTapped)
-    })
+    let playAgainButton = UIButton(
+      type: .system,
+      primaryAction: UIAction { [store] _ in
+        store.send(.playAgainButtonTapped)
+      })
     playAgainButton.setTitle("Play again?", for: .normal)
 
     let titleStackView = UIStackView(arrangedSubviews: [titleLabel, playAgainButton])
     titleStackView.axis = .vertical
     titleStackView.spacing = 12
 
-    let gridCell11 = UIButton(primaryAction: UIAction { [store] _ in
-      store.send(.cellTapped(row: 0, column: 0))
-    })
-    let gridCell21 = UIButton(primaryAction: UIAction { [store] _ in
-      store.send(.cellTapped(row: 1, column: 0))
-    })
-    let gridCell31 = UIButton(primaryAction: UIAction { [store] _ in
-      store.send(.cellTapped(row: 2, column: 0))
-    })
-    let gridCell12 = UIButton(primaryAction: UIAction { [store] _ in
-      store.send(.cellTapped(row: 0, column: 1))
-    })
-    let gridCell22 = UIButton(primaryAction: UIAction { [store] _ in
-      store.send(.cellTapped(row: 1, column: 1))
-    })
-    let gridCell32 = UIButton(primaryAction: UIAction { [store] _ in
-      store.send(.cellTapped(row: 2, column: 1))
-    })
-    let gridCell13 = UIButton(primaryAction: UIAction { [store] _ in
-      store.send(.cellTapped(row: 0, column: 2))
-    })
-    let gridCell23 = UIButton(primaryAction: UIAction { [store] _ in
-      store.send(.cellTapped(row: 1, column: 2))
-    })
-    let gridCell33 = UIButton(primaryAction: UIAction { [store] _ in
-      store.send(.cellTapped(row: 2, column: 2))
-    })
+    let gridCell11 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 0, column: 0))
+      })
+    let gridCell21 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 1, column: 0))
+      })
+    let gridCell31 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 2, column: 0))
+      })
+    let gridCell12 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 0, column: 1))
+      })
+    let gridCell22 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 1, column: 1))
+      })
+    let gridCell32 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 2, column: 1))
+      })
+    let gridCell13 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 0, column: 2))
+      })
+    let gridCell23 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 1, column: 2))
+      })
+    let gridCell33 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 2, column: 2))
+      })
 
     let cells = [
       [gridCell11, gridCell12, gridCell13],

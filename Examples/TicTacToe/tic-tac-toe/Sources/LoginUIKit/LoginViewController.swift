@@ -49,9 +49,11 @@ public class LoginViewController: UIViewController {
     passwordTextField.borderStyle = .roundedRect
     passwordTextField.isSecureTextEntry = true
 
-    let loginButton = UIButton(type: .system, primaryAction: UIAction { [weak self] _ in
-      self?.send(.loginButtonTapped)
-    })
+    let loginButton = UIButton(
+      type: .system,
+      primaryAction: UIAction { [weak self] _ in
+        self?.send(.loginButtonTapped)
+      })
     loginButton.setTitle("Login", for: .normal)
 
     let activityIndicator = UIActivityIndicatorView(style: .large)

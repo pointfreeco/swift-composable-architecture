@@ -28,9 +28,11 @@ public final class TwoFactorViewController: UIViewController {
     codeTextField.placeholder = "1234"
     codeTextField.borderStyle = .roundedRect
 
-    let loginButton = UIButton(type: .system, primaryAction: UIAction { [weak self] _ in
-      self?.send(.submitButtonTapped)
-    })
+    let loginButton = UIButton(
+      type: .system,
+      primaryAction: UIAction { [weak self] _ in
+        self?.send(.submitButtonTapped)
+      })
     loginButton.setTitle("Login", for: .normal)
 
     let activityIndicator = UIActivityIndicatorView(style: .large)
