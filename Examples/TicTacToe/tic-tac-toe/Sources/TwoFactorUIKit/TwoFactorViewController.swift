@@ -4,7 +4,7 @@ import UIKit
 
 @ViewAction(for: TwoFactor.self)
 public final class TwoFactorViewController: UIViewController {
-  public let store: StoreOf<TwoFactor>
+  @UIBindable public var store: StoreOf<TwoFactor>
 
   public init(store: StoreOf<TwoFactor>) {
     self.store = store
@@ -24,15 +24,16 @@ public final class TwoFactorViewController: UIViewController {
     titleLabel.text = "Enter the one time code to continue"
     titleLabel.textAlignment = .center
 
-    let codeTextField = UITextField()
+    let codeTextField = UITextField(text: $store.code)
     codeTextField.placeholder = "1234"
     codeTextField.borderStyle = .roundedRect
-    codeTextField.addTarget(
-      self, action: #selector(codeTextFieldChanged(sender:)), for: .editingChanged)
 
-    let loginButton = UIButton(type: .system)
+    let loginButton = UIButton(
+      type: .system,
+      primaryAction: UIAction { [weak self] _ in
+        self?.send(.submitButtonTapped)
+      })
     loginButton.setTitle("Login", for: .normal)
-    loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
 
     let activityIndicator = UIActivityIndicatorView(style: .large)
     activityIndicator.startAnimating()
@@ -57,32 +58,15 @@ public final class TwoFactorViewController: UIViewController {
       rootStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
 
-    var alertController: UIAlertController?
-
     observe { [weak self] in
       guard let self else { return }
       activityIndicator.isHidden = store.isActivityIndicatorHidden
-      codeTextField.text = store.code
       loginButton.isEnabled = store.isLoginButtonEnabled
-
-      if let store = store.scope(state: \.alert, action: \.alert),
-        alertController == nil
-      {
-        alertController = UIAlertController(store: store)
-        present(alertController!, animated: true, completion: nil)
-      } else if store.alert == nil, alertController != nil {
-        alertController?.dismiss(animated: true)
-        alertController = nil
-      }
     }
-  }
 
-  @objc private func codeTextFieldChanged(sender: UITextField) {
-    store.code = sender.text ?? ""
-  }
-
-  @objc private func loginButtonTapped() {
-    send(.submitButtonTapped)
+    present(item: $store.scope(state: \.alert, action: \.alert)) { store in
+      UIAlertController(store: store)
+    }
   }
 }
 

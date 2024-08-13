@@ -17,45 +17,65 @@ public final class GameViewController: UIViewController {
   public override func viewDidLoad() {
     super.viewDidLoad()
 
-    self.navigationItem.title = "Tic-Tac-Toe"
-    self.view.backgroundColor = .systemBackground
-
-    self.navigationItem.leftBarButtonItem = UIBarButtonItem(
+    navigationItem.title = "Tic-Tac-Toe"
+    navigationItem.leftBarButtonItem = UIBarButtonItem(
       title: "Quit",
-      style: .done,
-      target: self,
-      action: #selector(quitButtonTapped)
+      primaryAction: UIAction { [store] _ in store.send(.quitButtonTapped) }
     )
+    navigationItem.leftBarButtonItem?.style = .done
+
+    view.backgroundColor = .systemBackground
 
     let titleLabel = UILabel()
     titleLabel.textAlignment = .center
 
-    let playAgainButton = UIButton(type: .system)
+    let playAgainButton = UIButton(
+      type: .system,
+      primaryAction: UIAction { [store] _ in
+        store.send(.playAgainButtonTapped)
+      })
     playAgainButton.setTitle("Play again?", for: .normal)
-    playAgainButton.addTarget(self, action: #selector(playAgainButtonTapped), for: .touchUpInside)
 
     let titleStackView = UIStackView(arrangedSubviews: [titleLabel, playAgainButton])
     titleStackView.axis = .vertical
     titleStackView.spacing = 12
 
-    let gridCell11 = UIButton()
-    gridCell11.addTarget(self, action: #selector(gridCell11Tapped), for: .touchUpInside)
-    let gridCell21 = UIButton()
-    gridCell21.addTarget(self, action: #selector(gridCell21Tapped), for: .touchUpInside)
-    let gridCell31 = UIButton()
-    gridCell31.addTarget(self, action: #selector(gridCell31Tapped), for: .touchUpInside)
-    let gridCell12 = UIButton()
-    gridCell12.addTarget(self, action: #selector(gridCell12Tapped), for: .touchUpInside)
-    let gridCell22 = UIButton()
-    gridCell22.addTarget(self, action: #selector(gridCell22Tapped), for: .touchUpInside)
-    let gridCell32 = UIButton()
-    gridCell32.addTarget(self, action: #selector(gridCell32Tapped), for: .touchUpInside)
-    let gridCell13 = UIButton()
-    gridCell13.addTarget(self, action: #selector(gridCell13Tapped), for: .touchUpInside)
-    let gridCell23 = UIButton()
-    gridCell23.addTarget(self, action: #selector(gridCell23Tapped), for: .touchUpInside)
-    let gridCell33 = UIButton()
-    gridCell33.addTarget(self, action: #selector(gridCell33Tapped), for: .touchUpInside)
+    let gridCell11 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 0, column: 0))
+      })
+    let gridCell21 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 1, column: 0))
+      })
+    let gridCell31 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 2, column: 0))
+      })
+    let gridCell12 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 0, column: 1))
+      })
+    let gridCell22 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 1, column: 1))
+      })
+    let gridCell32 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 2, column: 1))
+      })
+    let gridCell13 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 0, column: 2))
+      })
+    let gridCell23 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 1, column: 2))
+      })
+    let gridCell33 = UIButton(
+      primaryAction: UIAction { [store] _ in
+        store.send(.cellTapped(row: 2, column: 2))
+      })
 
     let cells = [
       [gridCell11, gridCell12, gridCell13],
@@ -88,12 +108,12 @@ public final class GameViewController: UIViewController {
     rootStackView.axis = .vertical
     rootStackView.spacing = 100
 
-    self.view.addSubview(rootStackView)
+    view.addSubview(rootStackView)
 
     NSLayoutConstraint.activate([
-      rootStackView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-      rootStackView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-      rootStackView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+      rootStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      rootStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      rootStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
 
     gameStackView.arrangedSubviews
@@ -108,35 +128,17 @@ public final class GameViewController: UIViewController {
 
     observe { [weak self] in
       guard let self else { return }
-      titleLabel.text = self.store.title
-      playAgainButton.isHidden = self.store.isPlayAgainButtonHidden
+      titleLabel.text = store.title
+      playAgainButton.isHidden = store.isPlayAgainButtonHidden
 
-      for (rowIdx, row) in self.store.rows.enumerated() {
+      for (rowIdx, row) in store.rows.enumerated() {
         for (colIdx, label) in row.enumerated() {
           let button = cells[rowIdx][colIdx]
           button.setTitle(label, for: .normal)
-          button.isEnabled = self.store.isGameEnabled
+          button.isEnabled = store.isGameEnabled
         }
       }
     }
-  }
-
-  @objc private func gridCell11Tapped() { self.store.send(.cellTapped(row: 0, column: 0)) }
-  @objc private func gridCell12Tapped() { self.store.send(.cellTapped(row: 0, column: 1)) }
-  @objc private func gridCell13Tapped() { self.store.send(.cellTapped(row: 0, column: 2)) }
-  @objc private func gridCell21Tapped() { self.store.send(.cellTapped(row: 1, column: 0)) }
-  @objc private func gridCell22Tapped() { self.store.send(.cellTapped(row: 1, column: 1)) }
-  @objc private func gridCell23Tapped() { self.store.send(.cellTapped(row: 1, column: 2)) }
-  @objc private func gridCell31Tapped() { self.store.send(.cellTapped(row: 2, column: 0)) }
-  @objc private func gridCell32Tapped() { self.store.send(.cellTapped(row: 2, column: 1)) }
-  @objc private func gridCell33Tapped() { self.store.send(.cellTapped(row: 2, column: 2)) }
-
-  @objc private func quitButtonTapped() {
-    self.store.send(.quitButtonTapped)
-  }
-
-  @objc private func playAgainButtonTapped() {
-    self.store.send(.playAgainButtonTapped)
   }
 }
 

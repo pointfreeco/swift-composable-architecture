@@ -16,6 +16,7 @@ It also allows for complex and recursive navigation paths in your application.
   * [Dismissal](#Dismissal)
   * [Testing](#Testing)
   * [StackState vs NavigationPath](#StackState-vs-NavigationPath)
+  * [UIKit](#UIKit)
 
 ## Basics
 
@@ -651,3 +652,34 @@ compile-time guarantees, and that it is the perfect tool for modeling navigation
 Composable Architecture.
 
 [nav-path-docs]: https://developer.apple.com/documentation/swiftui/navigationpath
+
+## UIKit
+
+The library also comes with a tool that allows you to use UIKit's `UINavigationController` in a 
+state-driven manner. If you model your domains using ``StackState`` as described above, then you 
+can use the special `NavigationStackController` type to implement a view controller for your stack:
+
+```swift
+class AppController: NavigationStackController {
+  private var store: StoreOf<AppFeature>!
+
+  @MainActor
+  init(store: StoreOf<AppFeature>) {
+    @UIBindable var store = store
+
+    self.init(path: $store.scope(state: \.path, action: \.path)) {
+      RootViewController(store: store)
+    } destination: { store in 
+      switch store.case {
+      case .addItem(let store):
+        AddViewController(store: store)
+      case .detailItem(let store):
+        DetailViewController(store: store)
+      case .editItem(let store):
+        EditViewController(store: store)
+      }
+    }
+    self.model = model
+  }
+}
+```

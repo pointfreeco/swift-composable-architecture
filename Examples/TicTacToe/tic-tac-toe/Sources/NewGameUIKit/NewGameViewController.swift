@@ -4,7 +4,7 @@ import NewGameCore
 import UIKit
 
 public class NewGameViewController: UIViewController {
-  let store: StoreOf<NewGame>
+  @UIBindable var store: StoreOf<NewGame>
 
   public init(store: StoreOf<NewGame>) {
     self.store = store
@@ -19,24 +19,19 @@ public class NewGameViewController: UIViewController {
     super.viewDidLoad()
 
     navigationItem.title = "New Game"
-
     navigationItem.rightBarButtonItem = UIBarButtonItem(
       title: "Logout",
-      style: .done,
-      target: self,
-      action: #selector(logoutButtonTapped)
+      primaryAction: UIAction { [store] _ in store.send(.logoutButtonTapped) }
     )
 
     let playerXLabel = UILabel()
     playerXLabel.text = "Player X"
     playerXLabel.setContentHuggingPriority(.required, for: .horizontal)
 
-    let playerXTextField = UITextField()
+    let playerXTextField = UITextField(text: $store.xPlayerName)
     playerXTextField.borderStyle = .roundedRect
     playerXTextField.placeholder = "Blob Sr."
     playerXTextField.setContentCompressionResistancePriority(.required, for: .horizontal)
-    playerXTextField.addTarget(
-      self, action: #selector(playerXTextChanged(sender:)), for: .editingChanged)
 
     let playerXRow = UIStackView(arrangedSubviews: [
       playerXLabel,
@@ -48,12 +43,10 @@ public class NewGameViewController: UIViewController {
     playerOLabel.text = "Player O"
     playerOLabel.setContentHuggingPriority(.required, for: .horizontal)
 
-    let playerOTextField = UITextField()
+    let playerOTextField = UITextField(text: $store.oPlayerName)
     playerOTextField.borderStyle = .roundedRect
     playerOTextField.placeholder = "Blob Jr."
     playerOTextField.setContentCompressionResistancePriority(.required, for: .horizontal)
-    playerOTextField.addTarget(
-      self, action: #selector(playerOTextChanged(sender:)), for: .editingChanged)
 
     let playerORow = UIStackView(arrangedSubviews: [
       playerOLabel,
@@ -61,9 +54,12 @@ public class NewGameViewController: UIViewController {
     ])
     playerORow.spacing = 24
 
-    let letsPlayButton = UIButton(type: .system)
+    let letsPlayButton = UIButton(
+      type: .system,
+      primaryAction: UIAction { [store] _ in
+        store.send(.letsPlayButtonTapped)
+      })
     letsPlayButton.setTitle("Let’s Play!", for: .normal)
-    letsPlayButton.addTarget(self, action: #selector(letsPlayTapped), for: .touchUpInside)
 
     let rootStackView = UIStackView(arrangedSubviews: [
       playerXRow,
@@ -84,40 +80,14 @@ public class NewGameViewController: UIViewController {
       rootStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
 
-    var gameController: GameViewController?
-
     observe { [weak self] in
       guard let self else { return }
-      playerOTextField.text = store.oPlayerName
-      playerXTextField.text = store.xPlayerName
       letsPlayButton.isEnabled = store.isLetsPlayButtonEnabled
-
-      if let store = store.scope(state: \.game, action: \.game.presented),
-        gameController == nil
-      {
-        gameController = GameViewController(store: store)
-        navigationController?.pushViewController(gameController!, animated: true)
-      } else if store.game == nil, gameController != nil {
-        navigationController?.popToViewController(self, animated: true)
-        gameController = nil
-      }
     }
-  }
 
-  @objc private func logoutButtonTapped() {
-    store.send(.logoutButtonTapped)
-  }
-
-  @objc private func playerXTextChanged(sender: UITextField) {
-    store.xPlayerName = sender.text ?? ""
-  }
-
-  @objc private func playerOTextChanged(sender: UITextField) {
-    store.oPlayerName = sender.text ?? ""
-  }
-
-  @objc private func letsPlayTapped() {
-    store.send(.letsPlayButtonTapped)
+    navigationDestination(item: $store.scope(state: \.game, action: \.game)) { store in
+      GameViewController(store: store)
+    }
   }
 }
 
