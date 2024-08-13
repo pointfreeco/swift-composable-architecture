@@ -2,6 +2,7 @@
   import UIKit
 
   extension NavigationStackController {
+
     /// Drives a navigation stack controller with a store.
     ///
     /// See the dedicated article on <doc:Navigation> for more information on the library's
@@ -15,6 +16,7 @@
     ///     to use the standard `UIToolbar` class.
     ///   - path: A binding to a store of stack state.
     ///   - root: A root view controller.
+    ///   - destination: A function to create a `UIViewController` from a store.
     ///   - fileID: The source `#fileID` associated with the controller.
     ///   - filePath: The source `#filePath` associated with the controller.
     ///   - line: The source `#line` associated with the controller.
@@ -24,11 +26,12 @@
       toolbarClass: AnyClass? = nil,
       path: UIBinding<Store<StackState<State>, StackAction<State, Action>>>,
       root: () -> UIViewController,
+      destination: @escaping (Store<State, Action>) -> UIViewController,
       fileID: StaticString = #fileID,
       filePath: StaticString = #filePath,
       line: UInt = #line,
       column: UInt = #column
-    ) where Data.Element: Hashable {
+    ) {
       self.init(
         navigationBarClass: navigationBarClass,
         toolbarClass: toolbarClass,
@@ -40,6 +43,30 @@
         ],
         root: root
       )
+      navigationDestination(for: StackState<State>.Component.self) { component in
+        var element = component.element
+        return destination(
+          path.wrappedValue.scope(
+            id: path.wrappedValue.id(
+              state:
+                \.[
+                  id: component.id,
+                  fileID: _HashableStaticString(rawValue: fileID),
+                  filePath: _HashableStaticString(rawValue: filePath),
+                  line: line,
+                  column: column
+                ],
+              action: \.[id: component.id]
+            ),
+            state: ToState {
+              element = $0[id: component.id] ?? element
+              return element
+            },
+            action: { .element(id: component.id, action: $0) },
+            isInvalid: { !$0.ids.contains(component.id) }
+          )
+        )
+      }
     }
   }
 #endif

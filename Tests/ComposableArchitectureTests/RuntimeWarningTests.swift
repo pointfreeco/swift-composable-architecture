@@ -324,5 +324,39 @@
           """
       }
     }
+
+
+    @Reducer
+    struct TestStoreDestination_NotIntegrated_EphemeralState {
+      @Reducer
+      struct Destination {}
+      @ObservableState
+      struct State: Equatable {
+        @Presents var alert: AlertState<Never>?
+      }
+      enum Action {
+        case alert(PresentationAction<Never>)
+      }
+    }
+    @MainActor
+    func testStoreDestination_NotIntegrated_EphemeralState() {
+      let store = Store(
+        initialState: TestStoreDestination_NotIntegrated_EphemeralState.State(
+          alert: .init(title: { TextState("Hi") })
+        )
+      ) {
+        TestStoreDestination_NotIntegrated_EphemeralState()
+      }
+
+      store[
+        state: \.alert,
+        action: \.alert,
+        isInViewBody: false,
+        fileID: "file.swift",
+        filePath: "/file.swift",
+        line: 1,
+        column: 1
+      ] = nil  // NB: Not issue reported
+    }
   }
 #endif
