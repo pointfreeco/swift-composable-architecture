@@ -187,7 +187,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   #if DEBUG
     deinit {
-      Logger.shared.log("View\(self.storeTypeName).deinit")
+      guard Thread.isMainThread else { return }
+      MainActor._assumeIsolated {
+        Logger.shared.log("View\(self.storeTypeName).deinit")
+      }
     }
   #endif
 
