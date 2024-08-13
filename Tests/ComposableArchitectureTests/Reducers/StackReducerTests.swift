@@ -757,6 +757,7 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testSendActionWithIDThatDoesNotExist() async {
     struct Parent: Reducer {
       struct State: Equatable {
@@ -799,12 +800,13 @@ final class StackReducerTests: BaseTCATestCase {
 
     var path = StackState<Int>()
     path.append(1)
-    let store = await TestStore(initialState: Parent.State(path: path)) {
+    let store = TestStore(initialState: Parent.State(path: path)) {
       Parent()
     }
     await store.send(.path(.element(id: 999, action: ())))
   }
 
+  @MainActor
   func testPopIDThatDoesNotExist() async {
     struct Parent: Reducer {
       struct State: Equatable {
@@ -832,7 +834,7 @@ final class StackReducerTests: BaseTCATestCase {
         """
     }
 
-    let store = await TestStore(initialState: Parent.State(path: StackState<Int>([1]))) {
+    let store = TestStore(initialState: Parent.State(path: StackState<Int>([1]))) {
       Parent()
     }
     await store.send(.path(.popFrom(id: 999)))
