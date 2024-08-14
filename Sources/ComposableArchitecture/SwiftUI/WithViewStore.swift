@@ -786,7 +786,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
 }
 
 #if compiler(>=6)
-  extension ForEachStore: @preconcurrency DynamicViewContent
+  extension WithViewStore: @preconcurrency DynamicViewContent
   where
     ViewState: Collection,
     Content: DynamicViewContent
@@ -797,7 +797,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     }
   }
 #else
-  extension ForEachStore: DynamicViewContent
+  extension WithViewStore: DynamicViewContent
   where
     ViewState: Collection,
     Content: DynamicViewContent
