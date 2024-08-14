@@ -2906,11 +2906,13 @@ fileprivate func _withIssueContext<R>(
   column: UInt,
   @_inheritActorContext operation: () async throws -> R
 ) async rethrows -> R {
-  try await withIssueContext(
+  let result = try await withIssueContext(
     fileID: fileID,
     filePath: filePath,
     line: line,
     column: column,
     operation: operation
   )
+  await Task.megaYield()
+  return result
 }
