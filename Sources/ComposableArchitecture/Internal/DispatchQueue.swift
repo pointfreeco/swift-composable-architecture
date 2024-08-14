@@ -1,7 +1,7 @@
 import Dispatch
 
 func mainActorASAP(execute block: @escaping @MainActor @Sendable () -> Void) {
-  if DispatchQueue.getSpecific(key: key) == value {
+  if DispatchQueue.getSpecific(key: key.wrappedValue) == value {
     MainActor._assumeIsolated {
       block()
     }
@@ -13,20 +13,20 @@ func mainActorASAP(execute block: @escaping @MainActor @Sendable () -> Void) {
 }
 
 func mainActorNow<T: Sendable>(execute block: @escaping @MainActor @Sendable () -> T) -> T {
-  if DispatchQueue.getSpecific(key: key) == value {
+  if DispatchQueue.getSpecific(key: key.wrappedValue) == value {
     return MainActor._assumeIsolated {
       block()
     }
   } else {
     return DispatchQueue.main.sync {
-      block()
+      MainActor._assumeIsolated { block() }
     }
   }
 }
 
-private let key: DispatchSpecificKey<UInt8> = {
+private let key: UncheckedSendable<DispatchSpecificKey<UInt8>> = {
   let key = DispatchSpecificKey<UInt8>()
   DispatchQueue.main.setSpecific(key: key, value: value)
-  return key
+  return UncheckedSendable(key)
 }()
 private let value: UInt8 = 0

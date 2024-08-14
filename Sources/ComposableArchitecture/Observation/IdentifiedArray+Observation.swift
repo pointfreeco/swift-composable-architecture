@@ -86,11 +86,11 @@
     }
   }
 
+  @MainActor(unsafe)
   public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAccessCollection {
     private let store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
     private let data: IdentifiedArray<ID, State>
 
-    @MainActor
     fileprivate init(_ store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>) {
       self.store = store
       self.data = store.withState { $0 }
