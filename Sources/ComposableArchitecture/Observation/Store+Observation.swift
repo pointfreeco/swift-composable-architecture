@@ -375,8 +375,7 @@
       }
       set {
         if newValue == nil,
-          let childState = self.state[keyPath: state],
-          !isEphemeral(childState),
+          self.state[keyPath: state] != nil,
           !self._isInvalidated()
         {
           self.send(action(.dismiss))
