@@ -69,7 +69,7 @@ on these tools):
 @Reducer
 struct AppFeature {
   struct State {
-    var path: StackState<
+    var path = StackState<Path.State>()
     // ...
   }
 
