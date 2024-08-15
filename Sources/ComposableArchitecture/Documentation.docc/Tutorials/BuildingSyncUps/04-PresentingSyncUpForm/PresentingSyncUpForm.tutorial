@@ -49,7 +49,7 @@
       integrate the logic and behavior of the features by composing the reducers together.
       
       The way one integrates an optional child feature into a parent feature is via the 
-      ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:line:)-4k9by``
+      ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:filePath:line:column:)-4ub6q``
       reducer operator. It allows you to single out the presentation domain of a child feature
       embedded in the parent feature, and then specify the child reducer to run on that domain. It
       also takes care of a lot of logic for you under the hood, such as the ordering of when the
@@ -112,7 +112,7 @@
       
       Luckily the library comes with the tools necessary. Just as there is a scoping operation on
       stores for focusing on sub-domains of a parent domain, there is also a scope on _bindings_ of
-      stores for doing the same: ``SwiftUI/Binding/scope(state:action:fileID:line:)``. This tool can
+      stores for doing the same: ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)``. This tool can
       be used to derive a binding that is appropriate to pass to `sheet(item:)`.
       
       @Step {
@@ -127,7 +127,7 @@
       }
       
       @Step {
-        Use the ``SwiftUI/Binding/scope(state:action:fileID:line:)`` operator on `$store` to focus
+        Use the ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` operator on `$store` to focus
         the binding to the presentation domain of the `SyncUpForm`. The `sheet(item:)` modifier will
         hand the trailing closure a `StoreOf<SyncUpForm>`, and that is exactly what can be handed to
         the `SyncUpFormView`.

@@ -15,5 +15,5 @@ controls and drive navigation.
 
 ### Navigation bindings
 
-- ``SwiftUI/Binding/scope(state:action:fileID:line:)``
+- ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)``
 - ``SwiftUI/Binding/scope(state:action:)-35r82``

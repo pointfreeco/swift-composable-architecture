@@ -1,8 +1,8 @@
 # Migrating to 1.9
 
-Update your code to make use of the new ``TestStore/send(_:assert:file:line:)-1oopl`` method on 
-``TestStore`` which gives a succinct syntax for sending actions with case key paths, and the
-``Reducer/dependency(_:)`` method for overriding dependencies.
+Update your code to make use of the new ``TestStore/send(_:assert:fileID:file:line:column:)-8877x`` 
+method on ``TestStore`` which gives a succinct syntax for sending actions with case key paths, and 
+the ``Reducer/dependency(_:)`` method for overriding dependencies.
 
 ## Overview
 
@@ -29,9 +29,10 @@ store.receive(\.child.presented.success, "Hello")
 ```
 
 Version 1.9 introduces similar affordances for _sending_ actions to test stores via
-``TestStore/send(_:assert:file:line:)-1oopl`` and ``TestStore/send(_:_:assert:file:line:)``. These
-methods can significantly simplify integration-style tests that send deeply-nested actions to child
-features, and provide symmetry to how actions are received:
+``TestStore/send(_:assert:fileID:file:line:column:)-8877x`` and 
+``TestStore/send(_:_:assert:fileID:file:line:column:)``. These methods can significantly simplify 
+integration-style tests that send deeply-nested actions to child features, and provide symmetry to 
+how actions are received:
 
 ```diff
 -store.send(.path(.element(id: 0, action: .destination(.presented(.record(.startButtonTapped))))))

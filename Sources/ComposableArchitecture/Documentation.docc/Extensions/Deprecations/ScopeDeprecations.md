@@ -12,4 +12,4 @@ instead.
 ### Case path deprecations
 
 - ``Scope/init(state:action:child:)-2srhu``
-- ``Scope/init(state:action:child:fileID:line:)-8n6qr``
+- ``Scope/init(state:action:child:fileID:filePath:line:column:)-8j92g``

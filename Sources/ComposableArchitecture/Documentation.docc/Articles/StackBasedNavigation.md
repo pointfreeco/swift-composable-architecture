@@ -21,8 +21,8 @@ It also allows for complex and recursive navigation paths in your application.
 ## Basics
 
 The tools for this style of navigation include ``StackState``, ``StackAction`` and the
-``Reducer/forEach(_:action:destination:fileID:line:)-582rd`` operator, as well as a new 
-initializer ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` on 
+``Reducer/forEach(_:action:destination:fileID:filePath:line:column:)-9svqb`` operator, as well as a new 
+initializer ``SwiftUI/NavigationStack/init(path:root:destination:fileID:filePath:line:column:)`` on 
 `NavigationStack` that behaves like the normal initializer, but is tuned specifically for 
 the Composable Architecture.
 
@@ -96,7 +96,7 @@ That completes the steps to integrate the child and parent features together for
 
 Next we must integrate the child and parent views together. This is done by a 
 `NavigationStack` using a special initializer that comes with this library, called
-``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)``. This initializer takes 3 
+``SwiftUI/NavigationStack/init(path:root:destination:fileID:filePath:line:column:)``. This initializer takes 3 
 arguments: a binding of a store focused in on ``StackState`` and ``StackAction`` in your domain, a 
 trailing view builder for the root view of the stack, and another trailing view builder for all of 
 the views that can be pushed onto the stack:
@@ -176,9 +176,9 @@ Continue reading into <doc:StackBasedNavigation#Integration> for more informatio
 
 There are two primary ways to push features onto the stack once you have their domains integrated
 and `NavigationStack` in the view, as described above. The simplest way is to use the 
-``SwiftUI/NavigationLink/init(state:label:fileID:line:)`` initializer on `NavigationLink`, which
-requires you to specify the state of the feature you want to push onto the stack. You must specify
-the full state, going all the way back to the `Path` reducer's state:
+``SwiftUI/NavigationLink/init(state:label:fileID:filePath:line:column:)`` initializer on 
+`NavigationLink`, which requires you to specify the state of the feature you want to push onto the 
+stack. You must specify the full state, going all the way back to the `Path` reducer's state:
 
 ```swift
 Form {
@@ -255,8 +255,9 @@ case let .path(.element(id: id, action: .editItem(.saveButtonTapped))):
 Note that when destructuring the ``StackAction/element(id:action:)`` action we get access to not
 only the action that happened in the child domain, but also the ID of the element in the stack.
 ``StackState`` automatically manages IDs for every feature added to the stack, which can be used
-to look up specific elements in the stack using ``StackState/subscript(id:)`` and pop elements 
-from the stack using ``StackState/pop(from:)``.
+to look up specific elements in the stack using 
+``StackState/subscript(id:fileID:filePath:line:column:)`` and pop elements from the stack using
+``StackState/pop(from:)``.
 
 ## Dismissal
 
@@ -319,7 +320,8 @@ struct Feature {
 ```
 
 > Note: The ``DismissEffect`` function is async which means it cannot be invoked directly inside a 
-> reducer. Instead it must be called from ``Effect/run(priority:operation:catch:fileID:line:)``
+> reducer. Instead it must be called from 
+> ``Effect/run(priority:operation:catch:fileID:filePath:line:column:)``.
 
 When `self.dismiss()` is invoked it will remove the corresponding value from the ``StackState``
 powering the navigation stack. It does this by sending a ``StackAction/popFrom(id:)`` action back
@@ -507,8 +509,8 @@ await store.send(\.path[id: 0].counter.incrementButtonTapped) {
 
 And then we finally expect that the child dismisses itself, which manifests itself as the 
 ``StackAction/popFrom(id:)`` action being sent to pop the counter feature off the stack, which we 
-can assert using the ``TestStore/receive(_:timeout:assert:file:line:)-6325h`` method on
-``TestStore``:
+can assert using the ``TestStore/receive(_:timeout:assert:fileID:file:line:column:)-53wic`` method 
+on ``TestStore``:
 
 ```swift
 await store.receive(\.path.popFrom) {
@@ -663,8 +665,7 @@ can use the special `NavigationStackController` type to implement a view control
 class AppController: NavigationStackController {
   private var store: StoreOf<AppFeature>!
 
-  @MainActor
-  init(store: StoreOf<AppFeature>) {
+  convenience init(store: StoreOf<AppFeature>) {
     @UIBindable var store = store
 
     self.init(path: $store.scope(state: \.path, action: \.path)) {
@@ -679,6 +680,7 @@ class AppController: NavigationStackController {
         EditViewController(store: store)
       }
     }
+
     self.model = model
   }
 }

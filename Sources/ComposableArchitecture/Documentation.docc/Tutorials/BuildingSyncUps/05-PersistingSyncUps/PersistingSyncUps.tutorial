@@ -2,7 +2,7 @@
   @Intro(title: "Persisting sync-ups") {
     Now that we have the ability to add and remove sync-ups from the application, let's add some 
     persistence. This will involve using the "shared state" tools from the library, such as 
-    [`@Shared`](<doc:Shared>) and ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)``.
+    [`@Shared`](<doc:Shared>) and ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)``.
   }
     
   @Section(title: "Persisting data to disk") {
@@ -29,18 +29,18 @@
       @Step {
         Further customize the [`@Shared`](<doc:Shared>) property wrapper with a persistence 
         strategy. The library comes with a few strategies you can use, but the most appropriate here 
-        is ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` since we are trying to
+        is ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` since we are trying to
         save a complex data structure.
         
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0002.swift)
       }
       
-      The ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` persistence strategy saves
+      The ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` persistence strategy saves
       data to disk anytime the value in [`@Shared`](<doc:Shared>) changes, but it spaces the saves
       out a bit so as to not thrash the file system with every single change.
       
       @Step {
-        The ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` persistence strategy
+        The ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` persistence strategy
         needs to be provided a URL for where to save the data. Add an extension to `URL` at the
         bottom of the file to define such a URL, and then provide it to the `.fileStorage` value.
         
@@ -48,7 +48,7 @@
       }
 
       With that change the project should be compiling. It is worth noting that 
-      ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` only works with `Codable` data
+      ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` only works with `Codable` data
       types, and earlier in the tutorial when we added models to Models.swift we made them codable from
       the beginning.
             

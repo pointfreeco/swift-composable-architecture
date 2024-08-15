@@ -4,7 +4,7 @@
 
 ### Storing a value
 
-- ``PersistenceReaderKey/fileStorage(_:)``
+- ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``
 
 ### Overriding storage
 

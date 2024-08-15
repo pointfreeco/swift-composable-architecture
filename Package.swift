@@ -28,7 +28,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.3.5"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.0"),
-    .package(url: "https://github.com/pointfreeco/swift-navigation", from: "2.0.3"),
+    .package(url: "https://github.com/pointfreeco/swift-navigation", branch: "main"),
     .package(url: "https://github.com/pointfreeco/swift-perception", from: "1.3.4"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.2.2"),
     .package(url: "https://github.com/swiftlang/swift-syntax", "509.0.0"..<"601.0.0-prerelease"),

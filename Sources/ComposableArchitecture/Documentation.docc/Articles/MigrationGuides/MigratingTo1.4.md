@@ -44,7 +44,7 @@ You can also technically drop the ``Reducer`` conformance:
 ```
 
 However, there are some known issues in Xcode that cause autocomplete and type inference to break.
-See the documentation of <doc:Reducers#Gotchas> for more gotchas on using the `@Reducer` macro. 
+See the documentation of <doc:Reducer#Gotchas> for more gotchas on using the `@Reducer` macro. 
 
 
 ### Using case key paths
@@ -278,8 +278,9 @@ enum Action {
 }
 ```
 
-And in the reducer, instead of invoking ``Reducer/forEach(_:action:element:fileID:line:)-92aox``
-with a case path using the `/` prefix operator:
+And in the reducer, instead of invoking 
+``Reducer/forEach(_:action:element:fileID:filePath:line:column:)-3dw7i`` with a case path using the 
+`/` prefix operator:
 
 ```swift
 Reduce { state, action in 

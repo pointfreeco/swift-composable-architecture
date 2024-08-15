@@ -3,7 +3,7 @@ import OrderedCollections
 /// A wrapper type for actions that can be presented in a list.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``Reducer/forEach(_:action:element:fileID:line:)-8wpyp``.
+/// ``Reducer/forEach(_:action:element:fileID:filePath:line:column:)-3dw7i``.
 public enum IdentifiedAction<ID: Hashable, Action>: CasePathable {
   /// An action sent to the element at a given identifier.
   case element(id: ID, action: Action)

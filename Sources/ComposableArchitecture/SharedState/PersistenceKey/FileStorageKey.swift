@@ -42,7 +42,7 @@ extension PersistenceReaderKey {
 
 /// A type defining a file persistence strategy
 ///
-/// Use ``PersistenceReaderKey/fileStorage(_:)`` to create values of this type.
+/// Use ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` to create values of this type.
 public final class FileStorageKey<Value: Sendable>: PersistenceKey, Sendable {
   private let storage: FileStorage
   private let isSetting = LockIsolated(false)
@@ -226,9 +226,9 @@ private enum FileStorageDependencyKey: DependencyKey {
 }
 
 extension DependencyValues {
-  /// Default file storage used by ``PersistenceReaderKey/fileStorage(_:)``.
+  /// Default file storage used by ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``.
   ///
-  /// Use this dependency to override the manner in which ``PersistenceReaderKey/fileStorage(_:)``
+  /// Use this dependency to override the manner in which ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``
   /// interacts with file storage. For example, while your app is running for UI tests you
   /// probably do not want your features writing changes to disk, which would cause that data to
   /// bleed over from test to test.

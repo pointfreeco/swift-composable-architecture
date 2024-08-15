@@ -8,7 +8,7 @@ for the time being, but in Swift 6 most (if not all) of these warnings will beco
 you will need to know how to prove to the compiler that your types are safe to use concurrently.
 
 There primary way to create an ``Effect`` in the library is via
-``Effect/run(priority:operation:catch:fileID:line:)``. It takes a `@Sendable`, asynchronous closure,
+``Effect/run(priority:operation:catch:fileID:filePath:line:column:)``. It takes a `@Sendable`, asynchronous closure,
 which restricts the types of closures you can use for your effects. In particular, the closure can
 only capture `Sendable` variables that are bound with `let`. Mutable variables and non-`Sendable`
 types are simply not allowed to be passed to `@Sendable` closures.

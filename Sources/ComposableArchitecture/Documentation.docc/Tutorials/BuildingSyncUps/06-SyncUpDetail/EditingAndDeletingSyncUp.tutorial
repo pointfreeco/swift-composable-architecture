@@ -39,7 +39,8 @@
       
       @Step {
         Integrate the `SyncUpForm` reducer into the `SyncUpDetail` reducer by using the 
-        ``ComposableArchitecture/Reducer/ifLet(_:action:then:fileID:line:)-7s8h2`` operator.
+        ``ComposableArchitecture/Reducer/ifLet(_:action:destination:fileID:filePath:line:column:)-4ub6q``
+        operator.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0003.swift)
       }
@@ -70,7 +71,7 @@
       
       @Step {
         At the very bottom of the view use the `sheet(item:)` modifier by deriving a binding to the 
-        `SyncUpForm` domain using ``SwiftUI/Binding/scope(state:action:fileID:line:)``.
+        `SyncUpForm` domain using ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)``.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0006.swift)
       }
@@ -250,13 +251,13 @@
       
       However, remember that in <doc:PersistingSyncUps> we showed how to persist the collection
       of sync-ups using the [`@Shared`](<doc:Shared>) property wrapper with the
-      ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` persistence strategy. This
+      ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` persistence strategy. This
       gives the app _global_ access to that state, and we can make edits to it from anywhere. We can
       even do it directly inline in the `.confirmButtonTapped` action.
       
       @Step {
         Use the ``Shared`` property wrapper with the 
-        ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:)`` persistence strategy to get
+        ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` persistence strategy to get
         a reference to the sync-ups loaded from disk.
         
         > Note: This does not actually load data from disk. The data has already been loaded from
@@ -307,7 +308,7 @@
       just have to invoke it as if it's a function: `dismiss()`. However, the dismiss effect is an
       asynchronous function, and therefore it cannot be invoked directly in the reducer. It can
       only be invoked inside an effect, and so we must use the
-      ``ComposableArchitecture/Effect/run(priority:operation:catch:fileID:line:)`` effect, which
+      ``ComposableArchitecture/Effect/run(priority:operation:catch:fileID:filePath:line:column:)`` effect, which
       gives us an asynchronous context to execute the work in, as well as a handle on 
       ``ComposableArchitecture/Send`` for sending actions back into the system.
       
@@ -369,7 +370,7 @@
         testing, and so we are proactively making the `State` type generated for the `Destination`
         reducer equatable via the `state` argument of 
         ``ComposableArchitecture/Reducer(state:action:)``. See the article 
-        <doc:Reducers#Circular-reference-errors> for more information of why this is the necessary 
+        <doc:Reducer#Circular-reference-errors> for more information of why this is the necessary 
         way to make `State` equatable.
         
         > Note: We have collapsed the implementation of `SyncUpDetail` and `SyncUpDetailView` in
