@@ -78,7 +78,7 @@
         ] = .init()
       } issueMatcher: {
         $0.compactDescription == """
-          failed - A navigation stack binding at "file.swift:1" was written to with a path that \ 
+          failed - A navigation stack binding at "file.swift:1" was written to with a path that \
           has the same number of elements that already exist in the store. A view should only \
           write to this binding with a path that has pushed a new element onto the stack, or \
           popped one or more elements from the stack.
