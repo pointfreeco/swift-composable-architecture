@@ -117,6 +117,48 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
+
+  func testPresentation_parentDismissal_Minimal() async {
+    struct Child: Reducer {
+      struct State: Equatable {
+      }
+      enum Action: Equatable {}
+      var body: some Reducer<State, Action> { EmptyReducer() }
+    }
+
+    struct Parent: Reducer {
+      struct State: Equatable {
+        @PresentationState var child: Child.State?
+      }
+      enum Action: Equatable {
+        case child(PresentationAction<Child.Action>)
+        case presentChild
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .child:
+            return .none
+          case .presentChild:
+            state.child = Child.State()
+            return .none
+          }
+        }
+        .ifLet(\.$child, action: /Action.child) {
+          Child()
+        }
+      }
+    }
+
+    let store = await TestStore(initialState: Parent.State()) {
+      Parent()
+    }
+
+    await store.send(.presentChild) {
+      $0.child = Child.State()
+    }
+  }
+
   func testPresentation_parentDismissal_NilOut() async {
     struct Child: Reducer {
       struct State: Equatable {

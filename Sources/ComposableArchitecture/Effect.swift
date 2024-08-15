@@ -302,6 +302,8 @@ public struct Send<Action>: Sendable {
       self.onTermination(.finished)
     }
     public func callAsFunction(_ action: Action) {
+      guard !self.storage.isFinished
+      else { return }
       self.send(action)
     }
     public func callAsFunction(_ action: Action, animation: Animation?) {
@@ -436,11 +438,14 @@ extension Effect {
     case let (.sync(lhsOperation), .sync(rhsOperation)):
       return .sync { continuation in
         let lhsContinuation = Send.Continuation { continuation($0) }
-        lhsContinuation.onTermination {
-          guard $0 != .cancelled else { return }
+        lhsContinuation.onTermination { _ in 
+          guard !continuation.isFinished else { return }
+          //guard $0 != .cancelled else { return }
           rhsOperation(continuation)
         }
         lhsOperation(lhsContinuation)
+
+        // concat(a, b)
       }
     case (.run, .sync), (.sync, .run):
       return .publisher {
