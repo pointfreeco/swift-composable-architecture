@@ -373,8 +373,8 @@ import SwiftUI
         guard newCount != self.currentState.count else {
           reportIssue(
             """
-            SwiftUI wrote to a "NavigationStack" binding at "\(fileID.rawValue):\(line)" with a \
-            path that has the same number of elements that already exist in the store. SwiftUI \
+            A navigation stack binding at "\(fileID.rawValue):\(line)" was written to with a \
+            path that has the same number of elements that already exist in the store. A view \
             should only write to this binding with a path that has pushed a new element onto the \
             stack, or popped one or more elements from the stack.
 
