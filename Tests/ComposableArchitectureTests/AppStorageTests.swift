@@ -261,7 +261,7 @@ final class AppStorageTests: XCTestCase {
   func testWillEnterForegroundFromBackgroundThread() async throws {
     @Shared(.appStorage("count")) var count = 0
 
-    let publisherExpectation: XCTestExpectation = expectation(description: "publisher")
+    let publisherExpectation = expectation(description: "publisher")
     let cancellable = $count.publisher.sink { _ in
       XCTAssertTrue(Thread.isMainThread)
       publisherExpectation.fulfill()
