@@ -4,15 +4,18 @@ extension Effect {
     switch self.operation {
     case .none:
       return .finished
-    case let .publisher(publisher):
+    case let .sync(operation):
       return AsyncStream { continuation in
-        let cancellable = publisher.sink(
-          receiveCompletion: { _ in continuation.finish() },
-          receiveValue: { continuation.yield($0) }
-        )
-        continuation.onTermination = { _ in
-          cancellable.cancel()
+        let sendContinuation = Send.Continuation { action in
+          continuation.yield(action)
         }
+        sendContinuation.onTermination = { _ in
+          continuation.finish()
+        }
+        continuation.onTermination = { _ in
+          sendContinuation.finish()
+        }
+        operation(sendContinuation)
       }
     case let .run(priority, operation):
       return AsyncStream { continuation in

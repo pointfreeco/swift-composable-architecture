@@ -36,11 +36,18 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case let .publisher(publisher):
+    case let .sync(operation):
+      let uncheckedTransaction = UncheckedSendable(transaction)
       return Self(
-        operation: .publisher(
-          TransactionPublisher(upstream: publisher, transaction: transaction).eraseToAnyPublisher()
-        )
+        operation: .sync { continuation in
+          let newContinuation = Send.Continuation { action in
+            withTransaction(uncheckedTransaction.value) {
+              continuation(action)
+            }
+          }
+          newContinuation.onTermination = continuation.onTermination
+          operation(newContinuation)
+        }
       )
     case let .run(priority, operation):
       let uncheckedTransaction = UncheckedSendable(transaction)

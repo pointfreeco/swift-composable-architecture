@@ -28,8 +28,17 @@ public struct _EffectPublisher<Action>: Publisher {
     switch effect.operation {
     case .none:
       return Empty().eraseToAnyPublisher()
-    case let .publisher(publisher):
-      return publisher
+    case let .sync(operation):
+      return AnyPublisher.create { subscriber in
+        let continuation = Send<Action>.Continuation { subscriber.send($0) }
+        continuation.onTermination = { _ in
+          subscriber.send(completion: .finished)
+        }
+        operation(continuation)
+        return AnyCancellable {
+          continuation.finish()
+        }
+      }
     case let .run(priority, operation):
       return .create { subscriber in
         let task = Task(priority: priority) { @MainActor in

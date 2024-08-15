@@ -39,14 +39,14 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case let .publisher(publisher):
+    case .sync:
       return Self(
         operation: .publisher(
           Deferred {
             ()
               -> Publishers.HandleEvents<
                 Publishers.PrefixUntilOutput<
-                  AnyPublisher<Action, Never>, PassthroughSubject<Void, Never>
+                  _EffectPublisher<Action>, PassthroughSubject<Void, Never>
                 >
               > in
             _cancellablesLock.lock()
@@ -67,7 +67,7 @@ extension Effect {
               }
             }
 
-            return publisher.prefix(untilOutputFrom: cancellationSubject)
+            return _EffectPublisher(self).prefix(untilOutputFrom: cancellationSubject)
               .handleEvents(
                 receiveSubscription: { _ in
                   _cancellablesLock.sync {

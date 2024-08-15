@@ -56,40 +56,48 @@ public final class RootStore {
         switch effect.operation {
         case .none:
           break
-        case let .publisher(publisher):
-          var didComplete = false
-          let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
-          let uuid = UUID()
-          let effectCancellable = withEscapedDependencies { continuation in
-            publisher
-              .receive(on: UIScheduler.shared)
-              .handleEvents(receiveCancel: { [weak self] in self?.effectCancellables[uuid] = nil })
-              .sink(
-                receiveCompletion: { [weak self] _ in
-                  boxedTask.wrappedValue?.cancel()
-                  didComplete = true
-                  self?.effectCancellables[uuid] = nil
-                },
-                receiveValue: { [weak self] effectAction in
-                  guard let self else { return }
-                  if let task = continuation.yield({
-                    self.send(effectAction, originatingFrom: action)
-                  }) {
-                    tasks.wrappedValue.append(task)
-                  }
-                }
-              )
+        case let .sync(operation):
+          let didComplete = LockIsolated(false)
+          let sendContinuation = Send.Continuation { [weak self] in
+            self?.send($0, originatingFrom: action)
+          }
+          sendContinuation.onTermination { _ in
+            didComplete.setValue(true)
           }
 
-          if !didComplete {
-            let task = Task<Void, Never> { @MainActor in
-              for await _ in AsyncStream<Void>.never {}
-              effectCancellable.cancel()
-            }
-            boxedTask.wrappedValue = task
-            tasks.wrappedValue.append(task)
-            self.effectCancellables[uuid] = effectCancellable
-          }
+//          var didComplete = false
+//          let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
+//          let uuid = UUID()
+//          let effectCancellable = withEscapedDependencies { continuation in
+//            publisher
+//              .receive(on: UIScheduler.shared)
+//              .handleEvents(receiveCancel: { [weak self] in self?.effectCancellables[uuid] = nil })
+//              .sink(
+//                receiveCompletion: { [weak self] _ in
+//                  boxedTask.wrappedValue?.cancel()
+//                  didComplete = true
+//                  self?.effectCancellables[uuid] = nil
+//                },
+//                receiveValue: { [weak self] effectAction in
+//                  guard let self else { return }
+//                  if let task = continuation.yield({
+//                    self.send(effectAction, originatingFrom: action)
+//                  }) {
+//                    tasks.wrappedValue.append(task)
+//                  }
+//                }
+//              )
+//          }
+//
+//          if !didComplete {
+//            let task = Task<Void, Never> { @MainActor in
+//              for await _ in AsyncStream<Void>.never {}
+//              effectCancellable.cancel()
+//            }
+//            boxedTask.wrappedValue = task
+//            tasks.wrappedValue.append(task)
+//            self.effectCancellables[uuid] = effectCancellable
+//          }
         case let .run(priority, operation):
           withEscapedDependencies { continuation in
             tasks.wrappedValue.append(

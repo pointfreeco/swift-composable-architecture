@@ -88,10 +88,10 @@ extension Effect {
     switch self.operation {
     case .none:
       return self
-    case let .publisher(publisher):
+    case .sync:
       return .init(
         operation: .publisher(
-          publisher.handleEvents(
+          _EffectPublisher(self).handleEvents(
             receiveSubscription: { _ in
               os_signpost(
                 .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,

@@ -6,12 +6,18 @@ public struct Effect<Action> {
   @usableFromInline
   enum Operation {
     case none
-    case publisher(AnyPublisher<Action, Never>)
+    case sync(@Sendable (Send<Action>.Continuation) -> Void)
     case run(TaskPriority? = nil, @Sendable (_ send: Send<Action>) async -> Void)
+
+    // TODO: `some Publisher<Action, Never>`
+    @usableFromInline
+    static func publisher(_ publisher: AnyPublisher<Action, Never>) -> Self {
+      fatalError()
+    }
   }
 
   @usableFromInline
-  let operation: Operation
+  let operation: Operation // [Operation]
 
   @usableFromInline
   init(operation: Operation) {
@@ -216,6 +222,64 @@ public struct Send<Action>: Sendable {
       self(action)
     }
   }
+
+  public struct Continuation: Sendable {
+    let send: @MainActor @Sendable (Action) -> Void
+    @usableFromInline
+    init(send: @escaping @MainActor @Sendable (Action) -> Void) {
+      self.send = send
+    }
+    public var onTermination: @Sendable (Termination) -> Void {
+      get {
+        self.storage.onTermination
+      }
+      nonmutating set {
+        let t = self.storage.onTermination
+        self.storage.onTermination = {
+          newValue($0)
+          t($0)
+        }
+      }
+    }
+    public func onTermination(_ newTermination: @Sendable @escaping (Termination) -> Void) {
+      let current = self.storage.onTermination
+      self.onTermination = { @Sendable action in
+        current(action)
+        newTermination(action)
+      }
+    }
+    public var isFinished: Bool { self.storage.isFinished }
+    let storage = Storage()
+    public func finish() {
+      self.storage.isFinished = true
+      self.onTermination(.finished)
+    }
+    @MainActor
+    public func callAsFunction(_ action: Action) {
+      self.send(action)
+    }
+    @MainActor
+    public func callAsFunction(_ action: Action, animation: Animation?) {
+      callAsFunction(action, transaction: Transaction(animation: animation))
+    }
+    @MainActor
+    public func callAsFunction(_ action: Action, transaction: Transaction) {
+      withTransaction(transaction) {
+        self(action)
+      }
+    }
+    final class Storage: @unchecked Sendable {
+      var onTermination: @Sendable (Termination) -> Void
+      var isFinished = false
+      init(onTermination: @Sendable @escaping (Termination) -> Void = { _ in }) {
+        self.onTermination = onTermination
+      }
+    }
+    public enum Termination: Sendable {
+      case finished
+      case cancelled
+    }
+  }
 }
 
 // MARK: - Composing Effects
@@ -252,7 +316,20 @@ extension Effect {
       return self
     case (.none, _):
       return other
-    case (.publisher, .publisher), (.run, .publisher), (.publisher, .run):
+    case let (.sync(lhsOperation), .sync(rhsOperation)):
+      return Self(
+        operation: .sync { continuation in
+          let lhsContinuation = Send.Continuation { continuation($0) }
+          let rhsContinuation = Send.Continuation { continuation($0) }
+          continuation.onTermination = {
+            lhsContinuation.onTermination($0)
+            rhsContinuation.onTermination($0)
+          }
+          lhsOperation(lhsContinuation)
+          rhsOperation(rhsContinuation)
+        }
+      )
+    case (.run, .sync), (.sync, .run):
       return Self(
         operation: .publisher(
           Publishers.Merge(
@@ -312,7 +389,18 @@ extension Effect {
       return self
     case (.none, _):
       return other
-    case (.publisher, .publisher), (.run, .publisher), (.publisher, .run):
+    case let (.sync(lhsOperation), .sync(rhsOperation)):
+      return Self(
+        operation: .sync { continuation in
+          let lhsContinuation = Send.Continuation { continuation($0) }
+          lhsContinuation.onTermination {
+            guard $0 != .cancelled else { return }
+            rhsOperation(continuation)
+          }
+          lhsOperation(lhsContinuation)
+        }
+      )
+    case (.run, .sync), (.sync, .run):
       return Self(
         operation: .publisher(
           Publishers.Concatenate(
@@ -350,22 +438,28 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case let .publisher(publisher):
-      return .init(
-        operation: .publisher(
-          publisher
-            .map(
-              withEscapedDependencies { escaped in
-                { action in
-                  escaped.yield {
-                    transform(action)
-                  }
-                }
+    case let .sync(operation):
+      return withEscapedDependencies { escaped in
+        Effect<T>(
+          operation: .sync { continuation in
+            let transformedContinuation = Send.Continuation { action in
+              escaped.yield {
+                continuation(transform(action))
               }
-            )
-            .eraseToAnyPublisher()
+            }
+            transformedContinuation.onTermination {
+              switch $0 {
+              case .cancelled:
+                continuation.onTermination(.cancelled)
+              case .finished:
+                continuation.onTermination(.finished)
+              }
+            }
+            operation(transformedContinuation)
+          }
         )
-      )
+      }
+
     case let .run(priority, operation):
       return withEscapedDependencies { escaped in
         .init(

@@ -37,7 +37,7 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case .publisher, .run:
+    case .sync, .run:
       return Self(
         operation: .publisher(
           Just(())

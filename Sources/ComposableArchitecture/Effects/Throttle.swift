@@ -37,9 +37,9 @@ extension Effect {
       return .publisher { _EffectPublisher(self) }
         .throttle(id: id, for: interval, scheduler: scheduler, latest: latest)
 
-    case let .publisher(publisher):
+    case .sync:
       return .publisher {
-        publisher
+        _EffectPublisher(self)
           .receive(on: scheduler)
           .flatMap { value -> AnyPublisher<Action, Never> in
             throttleLock.lock()
