@@ -213,6 +213,14 @@ final class AppStorageTests: XCTestCase {
     }
     defer { _ = cancellable }
 
+    let perceptionExpectation = self.expectation(description: "perception")
+    withPerceptionTracking {
+      _ = count
+    } onChange: {
+      XCTAssertTrue(Thread.isMainThread)
+      perceptionExpectation.fulfill()
+    }
+
     await withUnsafeContinuation { continuation in
       DispatchQueue.global().async { [store = UncheckedSendable(store)] in
         XCTAssertFalse(Thread.isMainThread)
@@ -221,7 +229,7 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [publisherExpectation], timeout: 0)
+    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 0)
   }
 
   @MainActor
@@ -253,12 +261,20 @@ final class AppStorageTests: XCTestCase {
   func testWillEnterForegroundFromBackgroundThread() async throws {
     @Shared(.appStorage("count")) var count = 0
 
-    let publisherExpectation = expectation(description: "publisher")
+    let publisherExpectation: XCTestExpectation = expectation(description: "publisher")
     let cancellable = $count.publisher.sink { _ in
       XCTAssertTrue(Thread.isMainThread)
       publisherExpectation.fulfill()
     }
     defer { _ = cancellable }
+
+    let perceptionExpectation = self.expectation(description: "perception")
+    withPerceptionTracking {
+      _ = count
+    } onChange: {
+      XCTAssertTrue(Thread.isMainThread)
+      perceptionExpectation.fulfill()
+    }
 
     await withUnsafeContinuation { continuation in
       DispatchQueue.global().async {
@@ -268,7 +284,7 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [publisherExpectation], timeout: 0)
+    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 0)
   }
 
   @MainActor
@@ -284,6 +300,14 @@ final class AppStorageTests: XCTestCase {
     }
     defer { _ = cancellable }
 
+    let perceptionExpectation = self.expectation(description: "perception")
+    withPerceptionTracking {
+      _ = count
+    } onChange: {
+      XCTAssertTrue(Thread.isMainThread)
+      perceptionExpectation.fulfill()
+    }
+
     await withUnsafeContinuation { continuation in
       DispatchQueue.global().async { [store = UncheckedSendable(store)] in
         XCTAssertFalse(Thread.isMainThread)
@@ -292,7 +316,7 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [publisherExpectation], timeout: 0)
+    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 0)
   }
 }
 
