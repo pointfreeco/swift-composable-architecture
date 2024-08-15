@@ -16,9 +16,9 @@ application. There are two main kinds of shared state in the library: explicitly
 persisted state. And there are 3 persistence strategies shipped with the library: 
 [in-memory](<doc:PersistenceReaderKey/inMemory(_:)>),
 [user defaults](<doc:PersistenceReaderKey/appStorage(_:)-4l5b>), and
-[file storage](<doc:PersistenceReaderKey/fileStorage(_:)>). You can also implement your own
-persistence strategy if you want to use something other than user defaults or the file system, such
-as SQLite.
+[file storage](<doc:PersistenceReaderKey/fileStorage(_:decoder:encoder:)>). You can also implement 
+your own persistence strategy if you want to use something other than user defaults or the file 
+system, such as SQLite.
 
 * ["Source of truth"](#Source-of-truth)
 * [Explicit shared state](#Explicit-shared-state)
@@ -181,7 +181,7 @@ to use the [`.fileStorage`](<doc:SharingState#File-storage>) strategy or a
 #### File storage
 
 If you would like to persist your shared value across application launches, and your value is
-complex (such as a custom data type), then you can use the ``PersistenceReaderKey/fileStorage(_:)``
+complex (such as a custom data type), then you can use the ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``
 strategy with `@Shared`. It automatically persists any changes to the file system.
 
 It works similarly to the in-memory sharing discussed above, but it requires a URL to store the data
@@ -219,7 +219,7 @@ extension PersistenceReaderKey {
 ```
 
 With those steps done you can make use of the strategy in the same way one does for 
-``PersistenceReaderKey/appStorage(_:)-4l5b`` and ``PersistenceReaderKey/fileStorage(_:)``:
+``PersistenceReaderKey/appStorage(_:)-4l5b`` and ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``:
 
 ```swift
 @Shared(.custom(/* ... */)) var myValue: Value
@@ -316,7 +316,7 @@ should take a plain, non-`Shared` value and you construct the `Shared` value in 
   ```
 
 * You are using a persistence strategy with shared state (_e.g._ 
-``PersistenceReaderKey/appStorage(_:)-4l5b``, ``PersistenceReaderKey/fileStorage(_:)``, _etc._),
+``PersistenceReaderKey/appStorage(_:)-4l5b``, ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``, _etc._),
 then the initializer should take a plain, non-`Shared` value and you construct the `Shared` value in
 the initializer using ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` which takes a
 ``PersistenceKey`` as the second argument:
@@ -606,7 +606,7 @@ Call 'Shared<Int>.assert' to exhaustively test these changes, or call 'skipChang
 ```
 
 In order to get this test passing we have to explicitly assert on the shared counter state at
-the end of the test, which we can do using the ``Shared/assert(_:file:line:)`` method:
+the end of the test, which we can do using the ``Shared/assert(_:fileID:file:line:column:)`` method:
 
 ```swift
 func testIncrement() async {
@@ -629,7 +629,7 @@ to its reference semantics, it is still possible to get exhaustive test coverage
 
 It is also possible to test when using one of the persistence strategies provided by the library, 
 which are ``PersistenceReaderKey/appStorage(_:)-4l5b`` and
-``PersistenceReaderKey/fileStorage(_:)``. Typically persistence is difficult to test because the
+``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``. Typically persistence is difficult to test because the
 persisted data bleeds over from test to test, making it difficult to exhaustively prove how each
 test behaves in isolation.
 
@@ -658,7 +658,7 @@ dependency so that one can inject a custom `UserDefaults` in order to execute in
 environment. By default ``Dependencies/DependencyValues/defaultAppStorage`` uses a non-persisting
 user defaults, but you can also customize it to use any kind of defaults.
 
-Similarly the ``PersistenceReaderKey/fileStorage(_:)`` persistence strategy uses an internal
+Similarly the ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` persistence strategy uses an internal
 dependency for changing how files are written to the disk and loaded from disk. In tests the
 dependency will forgo any interaction with the file system and instead write data to a `[URL: Data]`
 dictionary, and load data from that dictionary. That emulates how the file system works, but without
@@ -852,7 +852,7 @@ configuration file held on your server so that it is kept automatically in sync:
 
 Due to the nature of persisting data to external systems, you lose some type safety when shuffling
 data from your app to the persistence storage and back. For example, if you are using the
-``PersistenceReaderKey/fileStorage(_:)`` strategy to save an array of users to disk you might do so
+``PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` strategy to save an array of users to disk you might do so
 like this:
 
 ```swift

@@ -18,6 +18,7 @@ private struct Counter {
   }
 }
 
+@available(*, deprecated)
 let storeScopeSuite = BenchmarkSuite(name: "Store scoping") { suite in
   var store = Store(initialState: 0) { Counter() }
   var viewStores: [ViewStore<Int, Bool>] = [ViewStore(store, observe: { $0 })]

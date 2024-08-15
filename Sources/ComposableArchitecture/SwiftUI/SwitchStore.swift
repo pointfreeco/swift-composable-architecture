@@ -50,9 +50,9 @@ import SwiftUI
 /// > it changes. As such, you should not rely on this value for anything other than checking the
 /// > current case, _e.g._ by switching on it and routing to an appropriate `CaseLet`.
 ///
-/// See ``Reducer/ifCaseLet(_:action:then:fileID:line:)-3k4yb`` and
-/// ``Scope/init(state:action:child:fileID:line:)-7yj7l`` for embedding reducers that operate on
-/// each case of an enum in reducers that operate on the entire enum.
+/// See ``Reducer/ifCaseLet(_:action:then:fileID:filePath:line:column:)-7sg8d`` and
+/// ``Scope/init(state:action:child:fileID:filePath:line:column:)-9g44g`` for embedding reducers
+/// that operate on each case of an enum in reducers that operate on the entire enum.
 @available(
   iOS, deprecated: 9999,
   message:

@@ -11,16 +11,15 @@ instead.
 
 ### Nanosecond timeouts
 
-- ``TestStore/finish(timeout:file:line:)-43l4y``
-- ``TestStore/receive(_:timeout:assert:file:line:)-5vi0x``
-- ``TestStore/receive(_:timeout:assert:file:line:)-7hcfs``
-- ``TestStore/receive(_:timeout:assert:file:line:)-8r59i``
-- ``TestStore/receive(_:_:timeout:assert:file:line:)-8g1si``
+- ``TestStore/finish(timeout:fileID:file:line:column:)-7kh9u``
+- ``TestStore/receive(_:timeout:assert:fileID:file:line:column:)-39wbm``
+- ``TestStore/receive(_:timeout:assert:fileID:file:line:column:)-8stm2``
+- ``TestStore/receive(_:timeout:assert:fileID:file:line:column:)-6peg7``
+- ``TestStore/receive(_:_:timeout:assert:fileID:file:line:column:)-3i3n6``
 
 ### Case path deprecations
 
-- ``TestStore/receive(_:timeout:assert:file:line:)-7608x``
-- ``TestStore/receive(_:timeout:assert:file:line:)-42avx``
+- ``TestStore/receive(_:timeout:assert:fileID:file:line:column:)-9ckw3``
 - ``TestStore/bindings(action:)-7aomj``
 
 ### Bindings

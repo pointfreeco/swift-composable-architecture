@@ -6,7 +6,7 @@ import OrderedCollections
 /// A list of data representing the content of a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``Reducer/forEach(_:action:destination:fileID:line:)-582rd``.
+/// ``Reducer/forEach(_:action:destination:fileID:filePath:line:column:)-9svqb``.
 ///
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
@@ -243,7 +243,7 @@ extension StackState: CustomDumpReflectable {
 /// A wrapper type for actions that can be presented in a navigation stack.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``Reducer/forEach(_:action:destination:fileID:line:)-582rd``.
+/// ``Reducer/forEach(_:action:destination:fileID:filePath:line:column:)-9svqb``.
 ///
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation

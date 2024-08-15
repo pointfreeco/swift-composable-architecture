@@ -1,8 +1,5 @@
 /// A protocol that describes how to evolve the current state of an application to the next state,
 /// given an action, and describes what ``Effect``s should be executed later by the store, if any.
-///
-/// See the article <doc:Reducers> for more information about the protocol and
-/// ``Reducer()`` macro.
 public protocol Reducer<State, Action> {
   /// A type that holds the current state of the reducer.
   associatedtype State

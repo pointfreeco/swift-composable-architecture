@@ -96,7 +96,7 @@
         > `Equatable` as well. While this would typically be done with an extension, a Swift
         > compiler bug prevents this, so the ``ComposableArchitecture/Reducer(state:action:)`` macro
         > can generate this conformance for you by specifying the `state` parameter. See the article 
-        > <doc:Reducers#Circular-reference-errors> for more.
+        > <doc:Reducer#Circular-reference-errors> for more.
 
         @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0006.swift)        
       }
@@ -158,7 +158,7 @@
       @Step {
         Implement the `body` of the view by constructing a `NavigationStack`, but we will be using
         special initializer that comes with the library:
-        ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)``. This initializer takes 
+        ``SwiftUI/NavigationStack/init(path:root:destination:fileID:filePath:line:column:)``. This initializer takes 
         a binding to a store focused on the stack domain, as well as two trailing closures. The 
         first for the root view that is always present, and the second for the destinations that 
         can be  pushed onto the stack.
@@ -180,7 +180,7 @@
         to a special super power of enum reducers. We can switch on `store.case` to destructure
         a child store for each case of the enum.
         
-        See <doc:Reducers#Destination-and-path-reducers> for more information on this tool.
+        See <doc:Reducer#Destination-and-path-reducers> for more information on this tool.
         
         @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0005.swift)
       }
@@ -216,7 +216,7 @@
         Go to the SyncUpsList.swift file where the `SyncUpListView` is defined. In that view we 
         currently have a `Button` in the list. Let's now replace it with a `NavigationLink`, but
         using the special initializer that comes with this library: 
-        ``SwiftUI/NavigationLink/init(state:label:fileID:line:)``.
+        ``SwiftUI/NavigationLink/init(state:label:fileID:filePath:line:column:)``.
         
         @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0001.swift, previousFile: SyncUpDetailNavigation-03-code-0001-previous.swift))
       }

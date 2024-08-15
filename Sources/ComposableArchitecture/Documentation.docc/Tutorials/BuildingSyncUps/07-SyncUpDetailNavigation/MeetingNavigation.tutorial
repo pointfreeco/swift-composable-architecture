@@ -73,7 +73,7 @@
       @Step {
         Next, in SyncUpDetail.swift update the `SyncUpDetailView` to construct a `NavigationLink`
         to the meeting view. This is done by using the special
-        ``SwiftUI/NavigationLink/init(state:label:fileID:line:)`` initializer that comes with the
+        ``SwiftUI/NavigationLink/init(state:label:fileID:filePath:line:column:)`` initializer that comes with the
         Composable Architecture.
         
         @Code(name: "SyncUpDetail.swift", file: MeetingNavigation-02-code-0004.swift, previousFile: MeetingNavigation-02-code-0004-previous.swift)

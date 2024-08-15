@@ -17,13 +17,13 @@ designed with SwiftUI in mind, and comes with many powerful tools to integrate i
 
 ### Presentation
 
-- ``SwiftUI/Binding/scope(state:action:fileID:line:)``
+- ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)``
 
 ### Navigation stacks and links
 
 - ``SwiftUI/Binding/scope(state:action:)-35r82``
-- ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)``
-- ``SwiftUI/NavigationLink/init(state:label:fileID:line:)``
+- ``SwiftUI/NavigationStack/init(path:root:destination:fileID:filePath:line:column:)``
+- ``SwiftUI/NavigationLink/init(state:label:fileID:filePath:line:column:)``
 
 ### Bindings
 

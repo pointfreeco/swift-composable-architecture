@@ -170,7 +170,7 @@ IfLetStore(store: store.scope(state: \.child, action: \.child)) { childStore in
 }
 ```
 
-This can now be updated to use plain `if let` syntax with ``Store/scope(state:action:)-36e72``:
+This can now be updated to use plain `if let` syntax with ``Store/scope(state:action:)-90255``:
 
 ```swift
 if let childStore = store.scope(state: \.child, action: \.child) {
@@ -212,7 +212,7 @@ ForEachStore(
 ```
 
 This can now be updated to use the vanilla `ForEach` view in SwiftUI, along with 
-``Store/scope(state:action:)-1nelp``, identified by the state of each row:
+``Store/scope(state:action:)-90255``, identified by the state of each row:
 
 ```swift
 ForEach(
@@ -538,7 +538,7 @@ property wrapper:
 ```
 
 And the original code can now be updated to our custom initializer 
-``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` on `NavigationStack`:
+``SwiftUI/NavigationStack/init(path:root:destination:fileID:filePath:line:column:)`` on `NavigationStack`:
 
 ```swift
 NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
