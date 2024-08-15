@@ -1008,7 +1008,7 @@ extension TestStore where State: Equatable {
   /// <doc:Testing#Non-exhaustive-testing>), which allow you to assert on a subset of the things
   /// happening inside your features. For example, you can send an action in a child feature
   /// without asserting on how many changes in the system, and then tell the test store to
-  /// ``finish(timeout:fileID:file:line:column:)-klnc`` by executing all of its effects, and finally 
+  /// ``finish(timeout:fileID:file:line:column:)-klnc`` by executing all of its effects, and finally
   /// to ``skipReceivedActions(strict:fileID:file:line:column:)`` to receive all actions. After that
   /// is done you can assert on the final state of the store:
   ///
