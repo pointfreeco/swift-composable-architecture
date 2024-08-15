@@ -256,7 +256,14 @@ extension Result: _ErrorMechanism {}
 
 @_spi(Internals)
 public class CancellablesCollection {
-  var storage: [_CancelID: Set<AnyCancellable>] = [:]
+  var storage: [_CancelID: Set<AnyCancellable>] = [:] {
+    didSet {
+      print(String(customDumping: Array(oldValue.keys)))
+      print("->")
+      print(String(customDumping: Array(storage.keys)))
+      print("---")
+    }
+  }
 
   func insert<ID: Hashable>(
     _ cancellable: AnyCancellable,

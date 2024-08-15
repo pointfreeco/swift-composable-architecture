@@ -1,5 +1,5 @@
 import Combine
-@_spi(Canary) @_spi(Internals) import ComposableArchitecture
+@testable @_spi(Canary) @_spi(Internals) import ComposableArchitecture
 import XCTest
 
 final class EffectTests: BaseTCATestCase {
@@ -14,10 +14,10 @@ final class EffectTests: BaseTCATestCase {
 
         let effect = Effect<Int>.concatenate(
           (1...3).map { count in
-            .run { send in
-              try await clock.sleep(for: .seconds(count))
-              await send(count)
-            }
+              .run { send in
+                try await clock.sleep(for: .seconds(count))
+                await send(count)
+              }
           }
         )
 
@@ -76,10 +76,10 @@ final class EffectTests: BaseTCATestCase {
 
       let effect = Effect<Int>.merge(
         (1...3).map { count in
-          .run { send in
-            try await clock.sleep(for: .seconds(count))
-            await send(count)
-          }
+            .run { send in
+              try await clock.sleep(for: .seconds(count))
+              await send(count)
+            }
         }
       )
 
@@ -129,7 +129,7 @@ final class EffectTests: BaseTCATestCase {
     }
     @Dependency(\.date) var date
     var body: some Reducer<Int, Action> {
-      Reduce { state, action in
+      Reduce(internal: { state, action in
         switch action {
         case .tap:
           return .run { send in
@@ -139,7 +139,7 @@ final class EffectTests: BaseTCATestCase {
           state = value
           return .none
         }
-      }
+      })
     }
   }
   func testDependenciesTransferredToEffects_Task() async {
@@ -162,7 +162,7 @@ final class EffectTests: BaseTCATestCase {
     }
     @Dependency(\.date) var date
     var body: some Reducer<Int, Action> {
-      Reduce { state, action in
+      Reduce(internal: { state, action in
         switch action {
         case .tap:
           return .run { send in
@@ -172,7 +172,7 @@ final class EffectTests: BaseTCATestCase {
           state = value
           return .none
         }
-      }
+      })
     }
   }
 
@@ -230,33 +230,33 @@ final class EffectTests: BaseTCATestCase {
     }
   }
 
-//  func testSyncMerge() async {
-//    let effect = Effect<Int>.merge(
-//      .sync { $0(1); $0.finish() },
-//      .sync { $0(2); $0.finish() },
-//      .sync { $0(3); $0.finish() }
-//    )
-//
-//    let actions = await effect.actions.reduce(into: []) { $0.append($1) }
-//    XCTAssertEqual(actions, [1, 2, 3])
-//  }
-//
-//  func testSyncConcatenate() async {
-//    let effect = Effect<Int>.concatenate(
-//      .sync { $0(1); $0.finish() },
-//      .sync { $0(2); $0.finish() },
-//      .sync { $0(3); $0.finish() }
-//    )
-//
-//    let actions = await effect.actions.reduce(into: []) { $0.append($1) }
-//    XCTAssertEqual(actions, [1, 2, 3])
-//  }
+  //  func testSyncMerge() async {
+  //    let effect = Effect<Int>.merge(
+  //      .sync { $0(1); $0.finish() },
+  //      .sync { $0(2); $0.finish() },
+  //      .sync { $0(3); $0.finish() }
+  //    )
+  //
+  //    let actions = await effect.actions.reduce(into: []) { $0.append($1) }
+  //    XCTAssertEqual(actions, [1, 2, 3])
+  //  }
+  //
+  //  func testSyncConcatenate() async {
+  //    let effect = Effect<Int>.concatenate(
+  //      .sync { $0(1); $0.finish() },
+  //      .sync { $0(2); $0.finish() },
+  //      .sync { $0(3); $0.finish() }
+  //    )
+  //
+  //    let actions = await effect.actions.reduce(into: []) { $0.append($1) }
+  //    XCTAssertEqual(actions, [1, 2, 3])
+  //  }
 
   func testSyncCancellation() async {
-//    let effect = Effect<Int>.sync {
-//
-//    let actions = await effect.actions.reduce(into: []) { $0.append($1) }
-//    XCTAssertEqual(actions, [1, 2, 3])
+    //    let effect = Effect<Int>.sync {
+    //
+    //    let actions = await effect.actions.reduce(into: []) { $0.append($1) }
+    //    XCTAssertEqual(actions, [1, 2, 3])
   }
 
   func testTaskGroupConcat() async throws {
@@ -278,5 +278,65 @@ final class EffectTests: BaseTCATestCase {
     }
 
     XCTAssertEqual(xs.value, [1, 2])
+  }
+
+  func testSyncDependencies() async {
+    let effect = withDependencies {
+      $0.date.now = Date(timeIntervalSinceReferenceDate: 0)
+    } operation: {
+      Effect<Never>.sync {
+        @Dependency(\.date.now) var now
+        XCTAssertEqual(now, Date(timeIntervalSinceReferenceDate: 0))
+        $0.finish()
+      }
+    }
+    for await _ in effect.actions {}
+  }
+
+  func testSyncDependencies_publisher() async {
+    let effect = withDependencies {
+      $0.date.now = Date(timeIntervalSinceReferenceDate: 0)
+    } operation: {
+      Effect.publisher {
+        _EffectPublisher<Never>(
+          Effect<Never>.sync {
+            @Dependency(\.date.now) var now
+            XCTAssertEqual(now, Date(timeIntervalSinceReferenceDate: 0))
+            $0.finish()
+          }
+        )
+      }
+    }
+    for await _ in effect.actions {}
+  }
+
+  func testSyncDependencies_merge() async {
+    let effect = withDependencies {
+      $0.date.now = Date(timeIntervalSinceReferenceDate: 0)
+    } operation: {
+      Effect<Never>.merge([
+        Effect<Never>.sync {
+          @Dependency(\.date.now) var now
+          XCTAssertEqual(now, Date(timeIntervalSinceReferenceDate: 0))
+          $0.finish()
+        }
+      ])
+    }
+    for await _ in effect.actions {}
+  }
+
+  func testSyncDependencies_concat() async {
+    let effect = withDependencies {
+      $0.date.now = Date(timeIntervalSinceReferenceDate: 0)
+    } operation: {
+      Effect<Never>.concatenate([
+        Effect<Never>.sync {
+          @Dependency(\.date.now) var now
+          XCTAssertEqual(now, Date(timeIntervalSinceReferenceDate: 0))
+          $0.finish()
+        }
+      ])
+    }
+    for await _ in effect.actions {}
   }
 }

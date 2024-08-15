@@ -37,11 +37,17 @@ public struct _EffectPublisher<Action>: Publisher {
             }
           }
           continuation.onTermination = { _ in
-            subscriber.send(completion: .finished)
+            dependencies.yield {
+              subscriber.send(completion: .finished)
+            }
           }
-          operation(continuation)
+          dependencies.yield {
+            operation(continuation)
+          }
           return AnyCancellable {
-            continuation.finish()
+            dependencies.yield {
+              continuation.finish()
+            }
           }
         }
       }

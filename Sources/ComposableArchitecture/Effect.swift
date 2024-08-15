@@ -15,17 +15,21 @@ public struct Effect<Action> {
         .sync { continuation in
           let cancellable = publisher
             .handleEvents(receiveCancel: {
-              continuation.finish()  // TODO: should this be cancel?
+              dependencies.yield {
+                continuation.finish()  // TODO: should this be cancel?
+              }
             })
             .sink { completion in
-              continuation.finish()
+              dependencies.yield { continuation.finish() }
             } receiveValue: { action in
               dependencies.yield {
                 continuation(action)
               }
             }
           continuation.onTermination { _ in
-            cancellable.cancel()
+            dependencies.yield {
+              cancellable.cancel()
+            }
           }
         }
       }
@@ -77,8 +81,14 @@ extension Effect {
     withEscapedDependencies { dependencies in
       Self(
         operation: .sync { continuation in
+          let newContinuation = Send<Action>.Continuation { action in
+            dependencies.yield {
+              continuation(action)
+            }
+          }
+          newContinuation.onTermination = continuation.onTermination
           dependencies.yield {
-            operation(continuation)
+            operation(newContinuation)
           }
         }
       )
@@ -174,7 +184,7 @@ extension Effect {
   ///
   /// - Parameter action: The action that is immediately emitted by the effect.
   public static func send(_ action: Action) -> Self {
-    Self(operation: .sync { $0(action); $0.finish() })
+    .sync { $0(action); $0.finish() }
   }
 
   /// Initializes an effect that immediately emits the action passed in.
