@@ -226,7 +226,7 @@
         Next we want to assert that sometime after the user taps the "Save" button that the 
         contact is added to the array and the child feature is dismissed. However, we cannot assert
         on that until all the actions have been received, and so we can do that by using
-        ``ComposableArchitecture/TestStore/skipReceivedActions(strict:file:line:)``.
+        ``ComposableArchitecture/TestStore/skipReceivedActions(strict:fileID:file:line:column:)``.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0005.swift)
       }

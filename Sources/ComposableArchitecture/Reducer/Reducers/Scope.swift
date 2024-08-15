@@ -60,8 +60,8 @@
 /// ## Enum state
 ///
 /// The ``Scope`` reducer also works when state is modeled as an enum, not just a struct. In that
-/// case you can use ``init(state:action:child:fileID:line:)-7yj7l`` to specify a case path that
-/// identifies the case of state you want to scope to.
+/// case you can use ``init(state:action:child:fileID:filePath:line:column:)`` to specify a case
+/// path that identifies the case of state you want to scope to.
 ///
 /// For example, if your state was modeled as an enum for unloaded/loading/loaded, you could
 /// scope to the loaded case to run a reduce on only that case:

@@ -1,4 +1,4 @@
-# ``SwiftUI/NavigationLink/init(state:label:fileID:line:)``
+# ``SwiftUI/NavigationLink/init(state:label:fileID:filePath:line:column:)``
 
 ## Topics
 

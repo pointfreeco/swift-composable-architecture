@@ -62,6 +62,10 @@ extension Reducer {
 
   /// Adds a reducer to run when this reducer changes the given value in state.
   ///
+  /// > Important: The `onChange` operator is only capable of detecting changes made by the reducer
+  /// > it is directly attached to. It does not observe changes that are made from other actions,
+  /// > such as parent actions.
+  ///
   /// Use this operator to trigger additional logic when a value changes, like when a
   /// ``BindingReducer`` makes a deeper change to a struct held in ``BindingState``.
   ///
