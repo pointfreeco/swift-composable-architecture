@@ -329,7 +329,7 @@ final class EffectCancellationTests: BaseTCATestCase {
         DispatchQueue.global(qos: .utility),
       ]
       let ids = (1...10).map { _ in UUID() }
-
+      
       let effect = Effect.merge(
         (1...1_000).map { idx -> Effect<Int> in
           let id = ids[idx % 10]
@@ -341,15 +341,15 @@ final class EffectCancellationTests: BaseTCATestCase {
                   for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
                 )
             }
-            .cancellable(id: id),
+              .cancellable(id: id),
 
-            .publisher {
-              Empty()
-                .delay(
-                  for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
-                )
-                .handleEvents(receiveCompletion: { _ in Task.cancel(id: id) })
-            }
+              .publisher {
+                Empty()
+                  .delay(
+                    for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+                  )
+                  .handleEvents(receiveCompletion: { _ in Task.cancel(id: id) })
+              }
           )
         }
       )

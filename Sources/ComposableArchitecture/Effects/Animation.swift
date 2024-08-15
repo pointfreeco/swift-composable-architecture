@@ -38,30 +38,26 @@ extension Effect {
       return .none
     case let .sync(operation):
       let uncheckedTransaction = UncheckedSendable(transaction)
-      return Self(
-        operation: .sync { continuation in
-          let newContinuation = Send.Continuation { action in
-            withTransaction(uncheckedTransaction.value) {
-              continuation(action)
-            }
+      return .sync { continuation in
+        let newContinuation = Send.Continuation { action in
+          withTransaction(uncheckedTransaction.value) {
+            continuation(action)
           }
-          newContinuation.onTermination = continuation.onTermination
-          operation(newContinuation)
         }
-      )
+        newContinuation.onTermination = continuation.onTermination
+        operation(newContinuation)
+      }
     case let .run(priority, operation):
       let uncheckedTransaction = UncheckedSendable(transaction)
-      return Self(
-        operation: .run(priority) { send in
-          await operation(
-            Send { value in
-              withTransaction(uncheckedTransaction.value) {
-                send(value)
-              }
+      return .run(priority: priority) { send in
+        await operation(
+          Send { value in
+            withTransaction(uncheckedTransaction.value) {
+              send(value)
             }
-          )
-        }
-      )
+          }
+        )
+      }
     }
   }
 }

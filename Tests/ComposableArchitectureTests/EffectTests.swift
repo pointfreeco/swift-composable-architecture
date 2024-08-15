@@ -229,4 +229,54 @@ final class EffectTests: BaseTCATestCase {
       await task.finish()
     }
   }
+
+//  func testSyncMerge() async {
+//    let effect = Effect<Int>.merge(
+//      .sync { $0(1); $0.finish() },
+//      .sync { $0(2); $0.finish() },
+//      .sync { $0(3); $0.finish() }
+//    )
+//
+//    let actions = await effect.actions.reduce(into: []) { $0.append($1) }
+//    XCTAssertEqual(actions, [1, 2, 3])
+//  }
+//
+//  func testSyncConcatenate() async {
+//    let effect = Effect<Int>.concatenate(
+//      .sync { $0(1); $0.finish() },
+//      .sync { $0(2); $0.finish() },
+//      .sync { $0(3); $0.finish() }
+//    )
+//
+//    let actions = await effect.actions.reduce(into: []) { $0.append($1) }
+//    XCTAssertEqual(actions, [1, 2, 3])
+//  }
+
+  func testSyncCancellation() async {
+//    let effect = Effect<Int>.sync {
+//
+//    let actions = await effect.actions.reduce(into: []) { $0.append($1) }
+//    XCTAssertEqual(actions, [1, 2, 3])
+  }
+
+  func testTaskGroupConcat() async throws {
+    let xs = LockIsolated<[Int]>([])
+    try await withThrowingTaskGroup(of: Void.self) { group in
+      group.addTask {
+        print("Starting first task")
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        xs.withValue { $0.append(1) }
+        print(xs.value)
+      }
+      try await group.waitForAll()
+      group.addTask {
+        print("Starting second task")
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        xs.withValue { $0.append(2) }
+        print(xs.value)
+      }
+    }
+
+    XCTAssertEqual(xs.value, [1, 2])
+  }
 }

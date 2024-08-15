@@ -38,14 +38,12 @@ extension Effect {
     case .none:
       return .none
     case .sync, .run:
-      return Self(
-        operation: .publisher(
-          Just(())
-            .delay(for: dueTime, scheduler: scheduler, options: options)
-            .flatMap { _EffectPublisher(self).receive(on: scheduler) }
-            .eraseToAnyPublisher()
-        )
-      )
+      return .publisher {
+        Just(())
+          .delay(for: dueTime, scheduler: scheduler, options: options)
+          .flatMap { _EffectPublisher(self).receive(on: scheduler) }
+          .eraseToAnyPublisher()
+      }
       .cancellable(id: id, cancelInFlight: true)
     }
   }

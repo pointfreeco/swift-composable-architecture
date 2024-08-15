@@ -2766,7 +2766,7 @@ class TestReducer<State, Action>: Reducer {
       self.effectDidSubscribe.continuation.yield()
       return .none
 
-    case .publisher, .run:
+    case .sync, .run:
       let effect = LongLivingEffect(action: action)
       return .publisher { [effectDidSubscribe, weak self] in
         _EffectPublisher(effects)

@@ -6,7 +6,7 @@ extension Effect {
   /// - Parameter createPublisher: The closure to execute when the effect is performed.
   /// - Returns: An effect wrapping a Combine publisher.
   public static func publisher(_ createPublisher: () -> some Publisher<Action, Never>) -> Self {
-    Self(operation: .publisher(createPublisher().eraseToAnyPublisher()))
+    Self(operation: .publisher(createPublisher()))
   }
 }
 
@@ -29,14 +29,20 @@ public struct _EffectPublisher<Action>: Publisher {
     case .none:
       return Empty().eraseToAnyPublisher()
     case let .sync(operation):
-      return AnyPublisher.create { subscriber in
-        let continuation = Send<Action>.Continuation { subscriber.send($0) }
-        continuation.onTermination = { _ in
-          subscriber.send(completion: .finished)
-        }
-        operation(continuation)
-        return AnyCancellable {
-          continuation.finish()
+      return withEscapedDependencies { dependencies in
+        AnyPublisher.create { subscriber in
+          let continuation = Send<Action>.Continuation { action in
+            dependencies.yield {
+              subscriber.send(action)
+            }
+          }
+          continuation.onTermination = { _ in
+            subscriber.send(completion: .finished)
+          }
+          operation(continuation)
+          return AnyCancellable {
+            continuation.finish()
+          }
         }
       }
     case let .run(priority, operation):

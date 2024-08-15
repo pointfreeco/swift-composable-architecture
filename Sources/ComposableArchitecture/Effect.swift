@@ -8,11 +8,27 @@ public struct Effect<Action> {
     case none
     case sync(@Sendable (Send<Action>.Continuation) -> Void)
     case run(TaskPriority? = nil, @Sendable (_ send: Send<Action>) async -> Void)
-
-    // TODO: `some Publisher<Action, Never>`
+    
     @usableFromInline
-    static func publisher(_ publisher: AnyPublisher<Action, Never>) -> Self {
-      fatalError()
+    static func publisher(_ publisher: some Publisher<Action, Never>) -> Self {
+      withEscapedDependencies { dependencies in
+        .sync { continuation in
+          let cancellable = publisher
+            .handleEvents(receiveCancel: {
+              continuation.finish()  // TODO: should this be cancel?
+            })
+            .sink { completion in
+              continuation.finish()
+            } receiveValue: { action in
+              dependencies.yield {
+                continuation(action)
+              }
+            }
+          continuation.onTermination { _ in
+            cancellable.cancel()
+          }
+        }
+      }
     }
   }
 
@@ -48,6 +64,25 @@ extension Effect {
   @inlinable
   public static var none: Self {
     Self(operation: .none)
+  }
+
+  @usableFromInline
+  static func sync(
+    operation: @escaping @Sendable (_ send: Send<Action>.Continuation) -> Void,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Self {
+    withEscapedDependencies { dependencies in
+      Self(
+        operation: .sync { continuation in
+          dependencies.yield {
+            operation(continuation)
+          }
+        }
+      )
+    }
   }
 
   /// Wraps an asynchronous unit of work that can emit actions any number of times in an effect.
@@ -139,7 +174,7 @@ extension Effect {
   ///
   /// - Parameter action: The action that is immediately emitted by the effect.
   public static func send(_ action: Action) -> Self {
-    Self(operation: .publisher(Just(action).eraseToAnyPublisher()))
+    Self(operation: .sync { $0(action); $0.finish() })
   }
 
   /// Initializes an effect that immediately emits the action passed in.
@@ -224,9 +259,9 @@ public struct Send<Action>: Sendable {
   }
 
   public struct Continuation: Sendable {
-    let send: @MainActor @Sendable (Action) -> Void
+    let send: @Sendable (Action) -> Void
     @usableFromInline
-    init(send: @escaping @MainActor @Sendable (Action) -> Void) {
+    init(send: @escaping @Sendable (Action) -> Void) {
       self.send = send
     }
     public var onTermination: @Sendable (Termination) -> Void {
@@ -241,7 +276,7 @@ public struct Send<Action>: Sendable {
         }
       }
     }
-    public func onTermination(_ newTermination: @Sendable @escaping (Termination) -> Void) {
+    public func onTermination(_ newTermination: @escaping @Sendable (Termination) -> Void) {
       let current = self.storage.onTermination
       self.onTermination = { @Sendable action in
         current(action)
@@ -251,18 +286,17 @@ public struct Send<Action>: Sendable {
     public var isFinished: Bool { self.storage.isFinished }
     let storage = Storage()
     public func finish() {
+      guard !self.storage.isFinished
+      else { return }
       self.storage.isFinished = true
       self.onTermination(.finished)
     }
-    @MainActor
     public func callAsFunction(_ action: Action) {
       self.send(action)
     }
-    @MainActor
     public func callAsFunction(_ action: Action, animation: Animation?) {
       callAsFunction(action, transaction: Transaction(animation: animation))
     }
-    @MainActor
     public func callAsFunction(_ action: Action, transaction: Transaction) {
       withTransaction(transaction) {
         self(action)
@@ -271,7 +305,7 @@ public struct Send<Action>: Sendable {
     final class Storage: @unchecked Sendable {
       var onTermination: @Sendable (Termination) -> Void
       var isFinished = false
-      init(onTermination: @Sendable @escaping (Termination) -> Void = { _ in }) {
+      init(onTermination: @escaping @Sendable (Termination) -> Void = { _ in }) {
         self.onTermination = onTermination
       }
     }
@@ -317,41 +351,41 @@ extension Effect {
     case (.none, _):
       return other
     case let (.sync(lhsOperation), .sync(rhsOperation)):
-      return Self(
-        operation: .sync { continuation in
-          let lhsContinuation = Send.Continuation { continuation($0) }
-          let rhsContinuation = Send.Continuation { continuation($0) }
-          continuation.onTermination = {
-            lhsContinuation.onTermination($0)
-            rhsContinuation.onTermination($0)
-          }
-          lhsOperation(lhsContinuation)
-          rhsOperation(rhsContinuation)
+      return .sync { continuation in
+        let lhsContinuation = Send.Continuation { continuation($0) }
+        let rhsContinuation = Send.Continuation { continuation($0) }
+        lhsContinuation.onTermination { _ in
+          guard rhsContinuation.isFinished
+          else { return }
+          continuation.finish()
         }
-      )
+        rhsContinuation.onTermination { _ in
+          guard lhsContinuation.isFinished
+          else { return }
+          continuation.finish()
+        }
+        lhsOperation(lhsContinuation)
+        rhsOperation(rhsContinuation)
+      }
     case (.run, .sync), (.sync, .run):
-      return Self(
-        operation: .publisher(
-          Publishers.Merge(
-            _EffectPublisher(self),
-            _EffectPublisher(other)
-          )
-          .eraseToAnyPublisher()
+      return .publisher {
+        Publishers.Merge(
+          _EffectPublisher(self),
+          _EffectPublisher(other)
         )
-      )
+        .eraseToAnyPublisher()
+      }
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
-      return Self(
-        operation: .run { send in
-          await withTaskGroup(of: Void.self) { group in
-            group.addTask(priority: lhsPriority) {
-              await lhsOperation(send)
-            }
-            group.addTask(priority: rhsPriority) {
-              await rhsOperation(send)
-            }
+      return .run { send in
+        await withTaskGroup(of: Void.self) { group in
+          group.addTask(priority: lhsPriority) {
+            await lhsOperation(send)
+          }
+          group.addTask(priority: rhsPriority) {
+            await rhsOperation(send)
           }
         }
-      )
+      }
     }
   }
 
@@ -390,41 +424,36 @@ extension Effect {
     case (.none, _):
       return other
     case let (.sync(lhsOperation), .sync(rhsOperation)):
-      return Self(
-        operation: .sync { continuation in
-          let lhsContinuation = Send.Continuation { continuation($0) }
-          lhsContinuation.onTermination {
-            guard $0 != .cancelled else { return }
-            rhsOperation(continuation)
-          }
-          lhsOperation(lhsContinuation)
+      return .sync { continuation in
+        let lhsContinuation = Send.Continuation { continuation($0) }
+        lhsContinuation.onTermination {
+          guard $0 != .cancelled else { return }
+          rhsOperation(continuation)
         }
-      )
+        lhsOperation(lhsContinuation)
+      }
     case (.run, .sync), (.sync, .run):
-      return Self(
-        operation: .publisher(
-          Publishers.Concatenate(
-            prefix: _EffectPublisher(self),
-            suffix: _EffectPublisher(other)
-          )
-          .eraseToAnyPublisher()
+      return .publisher {
+        Publishers.Concatenate(
+          prefix: _EffectPublisher(self),
+          suffix: _EffectPublisher(other)
         )
-      )
+        .eraseToAnyPublisher()
+
+      }
+
     case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
-      return Self(
-        operation: .run { send in
-          if let lhsPriority {
-            await Task(priority: lhsPriority) { await lhsOperation(send) }.cancellableValue
-          } else {
+      return .run { send in
+        await withTaskGroup(of: Void.self) { group in
+          group.addTask(priority: lhsPriority) {
             await lhsOperation(send)
           }
-          if let rhsPriority {
-            await Task(priority: rhsPriority) { await rhsOperation(send) }.cancellableValue
-          } else {
+          await group.waitForAll()
+          group.addTask(priority: rhsPriority) {
             await rhsOperation(send)
           }
         }
-      )
+      }
     }
   }
 
@@ -439,38 +468,26 @@ extension Effect {
     case .none:
       return .none
     case let .sync(operation):
-      return withEscapedDependencies { escaped in
-        Effect<T>(
-          operation: .sync { continuation in
-            let transformedContinuation = Send.Continuation { action in
-              escaped.yield {
-                continuation(transform(action))
-              }
-            }
-            transformedContinuation.onTermination {
-              switch $0 {
-              case .cancelled:
-                continuation.onTermination(.cancelled)
-              case .finished:
-                continuation.onTermination(.finished)
-              }
-            }
-            operation(transformedContinuation)
+      return .sync { continuation in
+        let transformedContinuation = Send.Continuation { action in
+          continuation(transform(action))
+        }
+        transformedContinuation.onTermination {
+          switch $0 {
+          case .cancelled:
+            continuation.onTermination(.cancelled)
+          case .finished:
+            continuation.onTermination(.finished)
           }
-        )
+        }
+        operation(transformedContinuation)
       }
 
     case let .run(priority, operation):
-      return withEscapedDependencies { escaped in
-        .init(
-          operation: .run(priority) { send in
-            await escaped.yield {
-              await operation(
-                Send { action in
-                  send(transform(action))
-                }
-              )
-            }
+      return .run(priority: priority) { send in
+        await operation(
+          Send { action in
+            send(transform(action))
           }
         )
       }

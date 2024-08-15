@@ -89,52 +89,47 @@ extension Effect {
     case .none:
       return self
     case .sync:
-      return .init(
-        operation: .publisher(
-          _EffectPublisher(self).handleEvents(
-            receiveSubscription: { _ in
-              os_signpost(
-                .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
-                actionOutput)
-            },
-            receiveOutput: { value in
-              os_signpost(
-                .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
-            },
-            receiveCompletion: { completion in
-              switch completion {
-              case .finished:
-                os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
-              }
-            },
-            receiveCancel: {
-              os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
+      return .publisher {
+        _EffectPublisher(self).handleEvents(
+          receiveSubscription: { _ in
+            os_signpost(
+              .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
+              actionOutput)
+          },
+          receiveOutput: { value in
+            os_signpost(
+              .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
+          },
+          receiveCompletion: { completion in
+            switch completion {
+            case .finished:
+              os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
             }
-          )
-          .eraseToAnyPublisher()
-        )
-      )
-    case let .run(priority, operation):
-      return .init(
-        operation: .run(priority) { send in
-          os_signpost(
-            .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
-            actionOutput
-          )
-          await operation(
-            Send { action in
-              os_signpost(
-                .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
-              )
-              send(action)
-            }
-          )
-          if Task.isCancelled {
+          },
+          receiveCancel: {
             os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
           }
-          os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
+        )
+      }
+    case let .run(priority, operation):
+      return .run(priority: priority) { send in
+        os_signpost(
+          .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
+          actionOutput
+        )
+        await operation(
+          Send { action in
+            os_signpost(
+              .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
+            )
+            send(action)
+          }
+        )
+        if Task.isCancelled {
+          os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
         }
-      )
+        os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
+      }
     }
   }
 }
