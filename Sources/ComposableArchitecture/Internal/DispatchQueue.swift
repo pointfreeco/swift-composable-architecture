@@ -12,7 +12,7 @@ func mainActorASAP(execute block: @escaping @MainActor @Sendable () -> Void) {
   }
 }
 
-func mainActorNow(execute block: @escaping @MainActor @Sendable () -> Void) {
+func mainActorNow(execute block: @MainActor @Sendable () -> Void) {
   if DispatchQueue.getSpecific(key: key) == value {
     MainActor._assumeIsolated {
       block()

@@ -1,6 +1,7 @@
 import Combine
+import _Effects
 
-extension Effect {
+extension _Effect {
   /// Turns an effect into one that can be debounced.
   ///
   /// To turn an effect into a debounce-able one you must provide an identifier, which is used to
@@ -34,19 +35,12 @@ extension Effect {
     scheduler: S,
     options: S.SchedulerOptions? = nil
   ) -> Self {
-    switch self.operation {
-    case .none:
-      return .none
-    case .publisher, .run:
-      return Self(
-        operation: .publisher(
-          Just(())
-            .delay(for: dueTime, scheduler: scheduler, options: options)
-            .flatMap { _EffectPublisher(self).receive(on: scheduler) }
-            .eraseToAnyPublisher()
-        )
-      )
-      .cancellable(id: id, cancelInFlight: true)
+    .publisher {
+      Just(())
+        .delay(for: dueTime, scheduler: scheduler, options: options)
+        .flatMap { self.publisher.receive(on: scheduler) }
+        .eraseToAnyPublisher()
     }
+    .cancellable(id: id, cancelInFlight: true)
   }
 }

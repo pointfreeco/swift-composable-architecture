@@ -36,62 +36,34 @@ extension Effect {
   public func cancellable<ID: Hashable>(id: ID, cancelInFlight: Bool = false) -> Self {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
-    switch self.operation {
-    case .none:
-      return .none
-    case let .publisher(publisher):
-      return Self(
-        operation: .publisher(
-          Deferred {
-            ()
-              -> Publishers.HandleEvents<
-                Publishers.PrefixUntilOutput<
-                  AnyPublisher<Action, Never>, PassthroughSubject<Void, Never>
-                >
-              > in
-            _cancellablesLock.lock()
-            defer { _cancellablesLock.unlock() }
+    return .sync { continuation in
+      _cancellablesLock.lock()
+      defer { _cancellablesLock.unlock() }
 
-            if cancelInFlight {
-              _cancellationCancellables.cancel(id: id, path: navigationIDPath)
-            }
+      if cancelInFlight {
+        _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+      }
 
-            let cancellationSubject = PassthroughSubject<Void, Never>()
+      var cancellable: AnyCancellable!
+      cancellable = AnyCancellable {
+        _cancellablesLock.sync {
+          continuation.finish()
+          _cancellationCancellables.remove(cancellable, at: id, path: navigationIDPath)
+        }
+      }
 
-            var cancellable: AnyCancellable!
-            cancellable = AnyCancellable {
-              _cancellablesLock.sync {
-                cancellationSubject.send(())
-                cancellationSubject.send(completion: .finished)
-                _cancellationCancellables.remove(cancellable, at: id, path: navigationIDPath)
-              }
-            }
+      _cancellablesLock.sync {
+        _cancellationCancellables.insert(cancellable, at: id, path: navigationIDPath)
+      }
 
-            return publisher.prefix(untilOutputFrom: cancellationSubject)
-              .handleEvents(
-                receiveSubscription: { _ in
-                  _cancellablesLock.sync {
-                    _cancellationCancellables.insert(cancellable, at: id, path: navigationIDPath)
-                  }
-                },
-                receiveCompletion: { _ in cancellable.cancel() },
-                receiveCancel: cancellable.cancel
-              )
-          }
-          .eraseToAnyPublisher()
-        )
-      )
-    case let .run(priority, operation):
-      return withEscapedDependencies { continuation in
-        return Self(
-          operation: .run(priority) { send in
-            await continuation.yield {
-              await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
-                await operation(send)
-              }
-            }
-          }
-        )
+
+      let task = self.run { action in
+        continuation(action)
+      } onTermination: { termination in
+        cancellable.cancel()
+      }
+      continuation.onTermination = { _ in
+        task.cancel()
       }
     }
   }
@@ -102,20 +74,27 @@ extension Effect {
   /// - Returns: A new effect that will cancel any currently in-flight effect with the given
   ///   identifier.
   public static func cancel<ID: Hashable>(id: ID) -> Self {
-    let dependencies = DependencyValues._current
     @Dependency(\.navigationIDPath) var navigationIDPath
-    // NB: Ideally we'd return a `Deferred` wrapping an `Empty(completeImmediately: true)`, but
-    //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
-    //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
-    //     trickery to make sure the deferred publisher completes.
-    return .publisher { () -> Publishers.CompactMap<Just<Action?>, Action> in
-      DependencyValues.$_current.withValue(dependencies) {
-        _cancellablesLock.sync {
-          _cancellationCancellables.cancel(id: id, path: navigationIDPath)
-        }
+    return .sync { continuation in
+      _cancellablesLock.sync {
+        _cancellationCancellables.cancel(id: id, path: navigationIDPath)
       }
-      return Just<Action?>(nil).compactMap { $0 }
+      continuation.finish()
     }
+
+//    let dependencies = DependencyValues._current
+//    // NB: Ideally we'd return a `Deferred` wrapping an `Empty(completeImmediately: true)`, but
+//    //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
+//    //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
+//    //     trickery to make sure the deferred publisher completes.
+//    return .publisher { () -> Publishers.CompactMap<Just<Action?>, Action> in
+//      DependencyValues.$_current.withValue(dependencies) {
+//        _cancellablesLock.sync {
+//          _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+//        }
+//      }
+//      return Just<Action?>(nil).compactMap { $0 }
+//    }
   }
 }
 

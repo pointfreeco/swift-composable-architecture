@@ -79,20 +79,18 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
         return withSharedChangeTracking { changeTracker in
           let oldState = state
           let effects = self.base.reduce(into: &state, action: action)
-          return withEscapedDependencies { continuation in
+          return withEscapedDependencies { dependencies in
             effects.merge(
-              with: .publisher { [newState = state, queue = printer.queue] in
-                Deferred<Empty<Action, Never>> {
-                  queue.async {
-                    continuation.yield {
-                      changeTracker.assert {
-                        printer.printChange(
-                          receivedAction: action, oldState: oldState, newState: newState
-                        )
-                      }
+              with: .sync { [newState = state, queue = printer.queue] continuation in
+                queue.async {
+                  dependencies.yield {
+                    changeTracker.assert {
+                      printer.printChange(
+                        receivedAction: action, oldState: oldState, newState: newState
+                      )
                     }
                   }
-                  return Empty()
+                  continuation.finish()
                 }
               }
             )

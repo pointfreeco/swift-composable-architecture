@@ -2761,41 +2761,71 @@ class TestReducer<State, Action>: Reducer {
       self.receivedActions.append((action, state))
     }
 
-    switch effects.operation {
-    case .none:
-      self.effectDidSubscribe.continuation.yield()
-      return .none
-
-    case .publisher, .run:
-      let effect = LongLivingEffect(action: action)
-      return .publisher { [effectDidSubscribe, weak self] in
-        _EffectPublisher(effects)
-          .handleEvents(
-            receiveSubscription: { _ in
-              self?.inFlightEffects.insert(effect)
-              Task {
-                await Task.megaYield()
-                effectDidSubscribe.continuation.yield()
-              }
-            },
-            receiveCompletion: { [weak self] _ in
-              self?.inFlightEffects.remove(effect)
-            },
-            receiveCancel: { [weak self] in
-              self?.inFlightEffects.remove(effect)
+    let effect = LongLivingEffect(action: action)
+    return .publisher { [effectDidSubscribe, weak self] in
+      effects.publisher
+        .handleEvents(
+          receiveSubscription: { _ in
+            self?.inFlightEffects.insert(effect)
+            Task {
+              await Task.megaYield()
+              effectDidSubscribe.continuation.yield()
             }
-          )
-          .map {
-            .init(
-              origin: .receive($0),
-              fileID: action.fileID,
-              filePath: action.filePath,
-              line: action.line,
-              column: action.column
-            )
+          },
+          receiveCompletion: { [weak self] _ in
+            self?.inFlightEffects.remove(effect)
+          },
+          receiveCancel: { [weak self] in
+            self?.inFlightEffects.remove(effect)
           }
-      }
+        )
+        .map {
+          .init(
+            origin: .receive($0),
+            fileID: action.fileID,
+            filePath: action.filePath,
+            line: action.line,
+            column: action.column
+          )
+        }
     }
+
+
+//    switch effects.operation {
+//    case .none:
+//      self.effectDidSubscribe.continuation.yield()
+//      return .none
+//
+//    case .publisher, .run:
+//      let effect = LongLivingEffect(action: action)
+//      return .publisher { [effectDidSubscribe, weak self] in
+//        _EffectPublisher(effects)
+//          .handleEvents(
+//            receiveSubscription: { _ in
+//              self?.inFlightEffects.insert(effect)
+//              Task {
+//                await Task.megaYield()
+//                effectDidSubscribe.continuation.yield()
+//              }
+//            },
+//            receiveCompletion: { [weak self] _ in
+//              self?.inFlightEffects.remove(effect)
+//            },
+//            receiveCancel: { [weak self] in
+//              self?.inFlightEffects.remove(effect)
+//            }
+//          )
+//          .map {
+//            .init(
+//              origin: .receive($0),
+//              fileID: action.fileID,
+//              filePath: action.filePath,
+//              line: action.line,
+//              column: action.column
+//            )
+//          }
+//      }
+//    }
   }
 
   struct LongLivingEffect: Hashable {

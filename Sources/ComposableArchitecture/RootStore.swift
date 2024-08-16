@@ -52,83 +52,122 @@ public final class RootStore {
         defer { index += 1 }
         let action = self.bufferedActions[index] as! Action
         let effect = reducer.reduce(into: &currentState, action: action)
+        let uuid = UUID()
+        let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
+        let didComplete = LockIsolated(false)
 
-        switch effect.operation {
-        case .none:
-          break
-        case let .publisher(publisher):
-          var didComplete = false
-          let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
-          let uuid = UUID()
-          let effectCancellable = withEscapedDependencies { continuation in
-            publisher
-              .receive(on: UIScheduler.shared)
-              .handleEvents(receiveCancel: { [weak self] in self?.effectCancellables[uuid] = nil })
-              .sink(
-                receiveCompletion: { [weak self] _ in
-                  boxedTask.wrappedValue?.cancel()
-                  didComplete = true
-                  self?.effectCancellables[uuid] = nil
-                },
-                receiveValue: { [weak self] effectAction in
-                  guard let self else { return }
-                  if let task = continuation.yield({
-                    self.send(effectAction, originatingFrom: action)
-                  }) {
-                    tasks.wrappedValue.append(task)
-                  }
-                }
-              )
-          }
+        let cancellable = withEscapedDependencies { dependencies in
+          effect.run { [weak self] effectAction in
+            guard let self else { return }
 
-          if !didComplete {
-            let task = Task<Void, Never> { @MainActor in
-              for await _ in AsyncStream<Void>.never {}
-              effectCancellable.cancel()
-            }
-            boxedTask.wrappedValue = task
-            tasks.wrappedValue.append(task)
-            self.effectCancellables[uuid] = effectCancellable
-          }
-        case let .run(priority, operation):
-          withEscapedDependencies { continuation in
-            tasks.wrappedValue.append(
-              Task(priority: priority) { @MainActor in
-                let isCompleted = LockIsolated(false)
-                defer { isCompleted.setValue(true) }
-                await operation(
-                  Send { effectAction in
-                    if isCompleted.value {
-                      reportIssue(
-                        """
-                        An action was sent from a completed effect:
-
-                          Action:
-                            \(debugCaseOutput(effectAction))
-
-                          Effect returned from:
-                            \(debugCaseOutput(action))
-
-                        Avoid sending actions using the 'send' argument from 'Effect.run' after \
-                        the effect has completed. This can happen if you escape the 'send' \
-                        argument in an unstructured context.
-
-                        To fix this, make sure that your 'run' closure does not return until \
-                        you're done calling 'send'.
-                        """
-                      )
-                    }
-                    if let task = continuation.yield({
-                      self.send(effectAction, originatingFrom: action)
-                    }) {
-                      tasks.wrappedValue.append(task)
-                    }
-                  }
-                )
+            mainActorNow {
+              if let task = dependencies.yield({
+                self.send(effectAction, originatingFrom: action)
+              }) {
+                tasks.wrappedValue.append(task)
               }
-            )
+            }
+          } onTermination: { [weak self] termination in
+            guard let self else { return }
+            mainActorNow {
+              self.effectCancellables[uuid] = nil
+              switch termination {
+              case .cancelled:
+                break
+              case .finished:
+                boxedTask.wrappedValue?.cancel()
+                didComplete.withValue { $0 = true }
+                break
+              }
+            }
           }
         }
+        if !didComplete.value {
+          let task = Task<Void, Never> { @MainActor in
+            for await _ in AsyncStream<Void>.never {}
+            cancellable.cancel()
+          }
+          boxedTask.wrappedValue = task
+          tasks.wrappedValue.append(task)
+          self.effectCancellables[uuid] = AnyCancellable { cancellable.cancel() }
+        }
+
+//        switch effect.operation {
+//        case .none:
+//          break
+//        case let .publisher(publisher):
+//          var didComplete = false
+//          let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
+//          let uuid = UUID()
+//          let effectCancellable = withEscapedDependencies { continuation in
+//            publisher
+//              .receive(on: UIScheduler.shared)
+//              .handleEvents(receiveCancel: { [weak self] in self?.effectCancellables[uuid] = nil })
+//              .sink(
+//                receiveCompletion: { [weak self] _ in
+//                  boxedTask.wrappedValue?.cancel()
+//                  didComplete = true
+//                  self?.effectCancellables[uuid] = nil
+//                },
+//                receiveValue: { [weak self] effectAction in
+//                  guard let self else { return }
+//                  if let task = continuation.yield({
+//                    self.send(effectAction, originatingFrom: action)
+//                  }) {
+//                    tasks.wrappedValue.append(task)
+//                  }
+//                }
+//              )
+//          }
+//
+//          if !didComplete {
+//            let task = Task<Void, Never> { @MainActor in
+//              for await _ in AsyncStream<Void>.never {}
+//              effectCancellable.cancel()
+//            }
+//            boxedTask.wrappedValue = task
+//            tasks.wrappedValue.append(task)
+//            self.effectCancellables[uuid] = effectCancellable
+//          }
+//        case let .run(priority, operation):
+//          withEscapedDependencies { continuation in
+//            tasks.wrappedValue.append(
+//              Task(priority: priority) { @MainActor in
+//                let isCompleted = LockIsolated(false)
+//                defer { isCompleted.setValue(true) }
+//                await operation(
+//                  Send { effectAction in
+//                    if isCompleted.value {
+//                      reportIssue(
+//                        """
+//                        An action was sent from a completed effect:
+//
+//                          Action:
+//                            \(debugCaseOutput(effectAction))
+//
+//                          Effect returned from:
+//                            \(debugCaseOutput(action))
+//
+//                        Avoid sending actions using the 'send' argument from 'Effect.run' after \
+//                        the effect has completed. This can happen if you escape the 'send' \
+//                        argument in an unstructured context.
+//
+//                        To fix this, make sure that your 'run' closure does not return until \
+//                        you're done calling 'send'.
+//                        """
+//                      )
+//                    }
+//                    if let task = continuation.yield({
+//                      self.send(effectAction, originatingFrom: action)
+//                    }) {
+//                      tasks.wrappedValue.append(task)
+//                    }
+//                  }
+//                )
+//              }
+//            )
+//          }
+//        }
       }
 
       guard !tasks.wrappedValue.isEmpty else { return nil }

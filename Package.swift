@@ -15,6 +15,10 @@ let package = Package(
     .library(
       name: "ComposableArchitecture",
       targets: ["ComposableArchitecture"]
+    ),
+    .library(
+      name: "_Effects",
+      targets: ["_Effects"]
     )
   ],
   dependencies: [
@@ -35,8 +39,12 @@ let package = Package(
   ],
   targets: [
     .target(
+      name: "_Effects"
+    ),
+    .target(
       name: "ComposableArchitecture",
       dependencies: [
+        "_Effects",
         "ComposableArchitectureMacros",
         .product(name: "CasePaths", package: "swift-case-paths"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),

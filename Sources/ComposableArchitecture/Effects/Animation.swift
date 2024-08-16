@@ -33,29 +33,30 @@ extension Effect {
   /// - Parameter transaction: A transaction.
   /// - Returns: A publisher.
   public func transaction(_ transaction: Transaction) -> Self {
-    switch self.operation {
-    case .none:
-      return .none
-    case let .publisher(publisher):
-      return Self(
-        operation: .publisher(
-          TransactionPublisher(upstream: publisher, transaction: transaction).eraseToAnyPublisher()
-        )
-      )
-    case let .run(priority, operation):
-      let uncheckedTransaction = UncheckedSendable(transaction)
-      return Self(
-        operation: .run(priority) { send in
-          await operation(
-            Send { value in
-              withTransaction(uncheckedTransaction.value) {
-                send(value)
-              }
-            }
-          )
-        }
-      )
-    }
+    fatalError()
+//    switch self.operation {
+//    case .none:
+//      return .none
+//    case let .publisher(publisher):
+//      return Self(
+//        operation: .publisher(
+//          TransactionPublisher(upstream: publisher, transaction: transaction).eraseToAnyPublisher()
+//        )
+//      )
+//    case let .run(priority, operation):
+//      let uncheckedTransaction = UncheckedSendable(transaction)
+//      return Self(
+//        operation: .run(priority) { send in
+//          await operation(
+//            Send { value in
+//              withTransaction(uncheckedTransaction.value) {
+//                send(value)
+//              }
+//            }
+//          )
+//        }
+//      )
+//    }
   }
 }
 

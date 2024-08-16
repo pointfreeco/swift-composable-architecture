@@ -253,7 +253,7 @@ public struct _ForEachReducer<
       ? .none
       : .merge(
         idsBefore.subtracting(idsAfter).map {
-          ._cancel(
+          _Effect._cancel(
             id: NavigationID(id: $0, keyPath: self.toElementsState),
             navigationID: self.navigationIDPath
           )

@@ -85,56 +85,24 @@ extension Effect {
   ) -> Self {
     let sid = OSSignpostID(log: log)
 
-    switch self.operation {
-    case .none:
-      return self
-    case let .publisher(publisher):
-      return .init(
-        operation: .publisher(
-          publisher.handleEvents(
-            receiveSubscription: { _ in
-              os_signpost(
-                .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
-                actionOutput)
-            },
-            receiveOutput: { value in
-              os_signpost(
-                .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
-            },
-            receiveCompletion: { completion in
-              switch completion {
-              case .finished:
-                os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
-              }
-            },
-            receiveCancel: {
-              os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
-            }
-          )
-          .eraseToAnyPublisher()
-        )
-      )
-    case let .run(priority, operation):
-      return .init(
-        operation: .run(priority) { send in
-          os_signpost(
-            .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
-            actionOutput
-          )
-          await operation(
-            Send { action in
-              os_signpost(
-                .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
-              )
-              send(action)
-            }
-          )
-          if Task.isCancelled {
-            os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
-          }
+    return .sync { continuation in
+      os_signpost(
+        .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
+        actionOutput)
+      let task = self.run { value in
+        os_signpost(
+          .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput)
+      } onTermination: { termination in
+        switch termination {
+        case .cancelled:
+          os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sCancelled", prefix)
+        case .finished:
           os_signpost(.end, log: log, name: "Effect", signpostID: sid, "%sFinished", prefix)
         }
-      )
+      }
+      continuation.onTermination = { _ in
+        task.cancel()
+      }
     }
   }
 }
