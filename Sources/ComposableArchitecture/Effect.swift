@@ -3,6 +3,58 @@
 public typealias Effect<Action> = _Effect<Action>
 public typealias EffectOf<R: Reducer> = Effect<R.Action>
 
+public typealias Send<Action> = _Effect<Action>.AsyncContinuation
+
+extension _Effect {
+  public static func run(
+    priority: TaskPriority? = nil,
+    operation: @escaping @Sendable (_ send: Send<Action>) async throws -> Void,
+    catch handler: (@Sendable (_ error: Error, _ send: Send<Action>) async -> Void)? = nil,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Self {
+    withEscapedDependencies { escaped in
+      .async { send in
+        await escaped.yield {
+          do {
+            try await operation(send)
+          } catch is CancellationError {
+            return
+          } catch {
+            guard let handler else {
+              reportIssue(
+                """
+                An "Effect.run" returned from "\(fileID):\(line)" threw an unhandled error. …
+                
+                \(String(customDumping: error).indent(by: 4))
+                
+                All non-cancellation errors must be explicitly handled via the "catch" parameter \
+                on "Effect.run", or via a "do" block.
+                """,
+                fileID: fileID,
+                filePath: filePath,
+                line: line,
+                column: column
+              )
+              return
+            }
+            await handler(error, send)
+          }
+        }
+      }
+    }
+  }
+
+  public static func send(_ action: Action) -> Self {
+    .sync {
+      $0(action)
+      $0.finish()
+    }
+  }
+}
+
 //import Combine
 //import Foundation
 //import SwiftUI

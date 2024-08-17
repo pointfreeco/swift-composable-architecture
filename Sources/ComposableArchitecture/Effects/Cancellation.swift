@@ -37,34 +37,42 @@ extension Effect {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
     return .sync { continuation in
-      _cancellablesLock.lock()
-      defer { _cancellablesLock.unlock() }
-
-      if cancelInFlight {
-        _cancellationCancellables.cancel(id: id, path: navigationIDPath)
-      }
-
-      var cancellable: AnyCancellable!
-      cancellable = AnyCancellable {
-        _cancellablesLock.sync {
-          continuation.finish()
-          _cancellationCancellables.remove(cancellable, at: id, path: navigationIDPath)
-        }
-      }
-
-      _cancellablesLock.sync {
-        _cancellationCancellables.insert(cancellable, at: id, path: navigationIDPath)
-      }
-
-
       let task = self.run { action in
         continuation(action)
-      } onTermination: { termination in
-        cancellable.cancel()
+      } onTermination: { _ in
+        continuation.finish()
       }
       continuation.onTermination = { _ in
         task.cancel()
       }
+//      _cancellablesLock.lock()
+//      defer { _cancellablesLock.unlock() }
+//
+//      if cancelInFlight {
+//        _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+//      }
+//
+//      var cancellable: AnyCancellable!
+//      cancellable = AnyCancellable {
+//        _cancellablesLock.sync {
+//          continuation.finish()
+//          _cancellationCancellables.remove(cancellable, at: id, path: navigationIDPath)
+//        }
+//      }
+//
+//      _cancellablesLock.sync {
+//        _cancellationCancellables.insert(cancellable, at: id, path: navigationIDPath)
+//      }
+//
+//      let task = self.run { action in
+//        continuation(action)
+//      } onTermination: { termination in
+//        continuation.finish()
+//        cancellable.cancel()
+//      }
+//      continuation.onTermination = { _ in
+//        task.cancel()
+//      }
     }
   }
 

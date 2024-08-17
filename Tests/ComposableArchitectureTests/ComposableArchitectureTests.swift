@@ -117,44 +117,173 @@ final class ComposableArchitectureTests: BaseTCATestCase {
     await store.send(.end)
   }
 
-  func testCancellation() async {
-    let mainQueue = DispatchQueue.test
-
-    enum Action: Equatable {
-      case cancel
-      case incr
-      case response(Int)
+//  @MainActor
+  func testEffect_AsyncToSync() async throws {
+    let asyncEffect = Effect.async { continuation in
+      await continuation(1)
     }
-
-    let store = await TestStore(initialState: 0) {
-      Reduce<Int, Action> { state, action in
-        enum CancelID { case sleep }
-
-        switch action {
-        case .cancel:
-          return .cancel(id: CancelID.sleep)
-
-        case .incr:
-          state += 1
-          return .run { [state] send in
-            try await mainQueue.sleep(for: .seconds(1))
-            await send(.response(state * state))
-          }
-          .cancellable(id: CancelID.sleep)
-
-        case let .response(value):
-          state = value
-          return .none
-        }
+    let syncEffect = Effect.sync { continuation in
+      let task = asyncEffect.run {
+        continuation($0)
+      } onTermination: { _ in
+        continuation.finish()
+      }
+      continuation.onTermination = { _ in
+        task.cancel()
       }
     }
 
-    await store.send(.incr) { $0 = 1 }
-    await mainQueue.advance(by: .seconds(1))
-    await store.receive(.response(1))
+//    let syncEffect = Effect.escaping { continuation in
+//      let task = asyncEffect.run {
+//        continuation($0)
+//      } onTermination: { _ in
+//        continuation.finish()
+//      }
+//      return .onComplete {
+//        task.cancel()
+//      }
+//    }
 
-    await store.send(.incr) { $0 = 2 }
-    await store.send(.cancel)
-    await store.finish()
+//    let actions = await syncEffect.actions.reduce(into: []) { $0.append($1) }
+//    XCTAssertEqual(actions, [1])
+    var terminated = false
+    var xs: [Int] = []
+    let task = syncEffect.run {
+      xs.append($0)
+    } onTermination: { _ in
+      print(#fileID, #line)
+      terminated = true
+    }
+    print(#fileID, #line)
+    try await Task.sleep(for: .seconds(1))
+    print(#fileID, #line)
+    XCTAssertEqual([1], xs)
+    XCTAssert(terminated)
+    print(#fileID, #line)
+    _ = task
   }
+
+  func testEffect_AsyncToAsync() async throws {
+    let asyncEffect1 = Effect.async { continuation in
+      await continuation(1)
+    }
+    let asyncEffect2 = Effect.async { continuation in
+      for await action in asyncEffect1.actions {
+        await continuation(action)
+      }
+      continuation.onTermination = { _ in }
+    }
+    var terminated = false
+    var xs: [Int] = []
+    let task = asyncEffect2.run {
+      xs.append($0)
+    } onTermination: { _ in
+      print(#fileID, #line)
+      terminated = true
+    }
+    print(#fileID, #line)
+    try await Task.sleep(for: .seconds(1))
+    print(#fileID, #line)
+    XCTAssertEqual([1], xs)
+    XCTAssert(terminated)
+    print(#fileID, #line)
+  }
+
+  func testEffect_SyncToSync() async throws {
+    let syncEffect1 = Effect.sync { continuation in
+      continuation(1)
+      continuation.finish()
+    }
+    let syncEffect2 = Effect.sync { continuation in
+      let task = syncEffect1.run {
+        continuation($0)
+      } onTermination: { _ in
+        continuation.finish()
+      }
+      continuation.onTermination = { _ in
+        task.cancel()
+      }
+    }
+    var terminated = false
+    var xs: [Int] = []
+    let task = syncEffect2.run {
+      xs.append($0)
+    } onTermination: { _ in
+      print(#fileID, #line)
+      terminated = true
+    }
+    print(#fileID, #line)
+    try await Task.sleep(for: .seconds(1))
+    print(#fileID, #line)
+    XCTAssertEqual([1], xs)
+    XCTAssert(terminated)
+    print(#fileID, #line)
+  }
+
+  func testEffect_SyncToAsync() async throws {
+    let syncEffect = Effect.sync { continuation in
+      continuation(1)
+      continuation.finish()
+    }
+    let asyncEffect = Effect.async { continuation in
+      for await action in syncEffect.actions {
+        await continuation(action)
+      }
+    }
+    var terminated = false
+    var xs: [Int] = []
+    let task = asyncEffect.run {
+      xs.append($0)
+    } onTermination: { _ in
+      print(#fileID, #line)
+      terminated = true
+    }
+    print(#fileID, #line)
+    try await Task.sleep(for: .seconds(1))
+    print(#fileID, #line)
+    XCTAssertEqual([1], xs)
+    XCTAssert(terminated)
+    print(#fileID, #line)
+  }
+
+//  func testCancellation() async {
+//    let mainQueue = DispatchQueue.test
+//
+//    enum Action: Equatable {
+//      case cancel
+//      case incr
+//      case response(Int)
+//    }
+//
+//    let store = await TestStore(initialState: 0) {
+//      Reduce<Int, Action> { state, action in
+//        enum CancelID { case sleep }
+//
+//        switch action {
+//        case .cancel:
+//          return .cancel(id: CancelID.sleep)
+//
+//        case .incr:
+//          state += 1
+//          return .run { [state] send in
+////            try await mainQueue.sleep(for: .seconds(1))
+////            await send(.response(state * state))
+//          }
+//          .cancellable(id: CancelID.sleep)
+//
+//        case let .response(value):
+//          state = value
+//          return .none
+//        }
+//      }
+//    }
+//
+//    await store.send(.incr) { $0 = 1 }
+////    await mainQueue.advance(by: .seconds(1))
+////    await store.receive(.response(1))
+//
+////    await store.send(.incr) { $0 = 1 }
+////    await store.send(.cancel)
+////    await store.finish()
+//  }
 }

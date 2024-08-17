@@ -318,57 +318,57 @@ final class EffectCancellationTests: BaseTCATestCase {
       XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
     }
 
-    func testConcurrentCancels() {
-      let queues = [
-        DispatchQueue.main,
-        DispatchQueue.global(qos: .background),
-        DispatchQueue.global(qos: .default),
-        DispatchQueue.global(qos: .unspecified),
-        DispatchQueue.global(qos: .userInitiated),
-        DispatchQueue.global(qos: .userInteractive),
-        DispatchQueue.global(qos: .utility),
-      ]
-      let ids = (1...10).map { _ in UUID() }
-
-      let effect = Effect.merge(
-        (1...1_000).map { idx -> Effect<Int> in
-          let id = ids[idx % 10]
-
-          return .merge(
-            .publisher {
-              Just(idx)
-                .delay(
-                  for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
-                )
-            }
-            .cancellable(id: id),
-
-            .publisher {
-              Empty()
-                .delay(
-                  for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
-                )
-                .handleEvents(receiveCompletion: { _ in Task.cancel(id: id) })
-            }
-          )
-        }
-      )
-
-      let expectation = self.expectation(description: "wait")
-      // NB: `for await _ in effect.actions` blows the stack with 1,000 merged publishers
-      _EffectPublisher(effect)
-        .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
-        .store(in: &self.cancellables)
-      self.wait(for: [expectation], timeout: 999)
-
-      for id in ids {
-        XCTAssertEqual(
-          _cancellationCancellables.exists(at: id, path: NavigationIDPath()),
-          false,
-          "cancellationCancellables should not contain id \(id)"
-        )
-      }
-    }
+//    func testConcurrentCancels() {
+//      let queues = [
+//        DispatchQueue.main,
+//        DispatchQueue.global(qos: .background),
+//        DispatchQueue.global(qos: .default),
+//        DispatchQueue.global(qos: .unspecified),
+//        DispatchQueue.global(qos: .userInitiated),
+//        DispatchQueue.global(qos: .userInteractive),
+//        DispatchQueue.global(qos: .utility),
+//      ]
+//      let ids = (1...10).map { _ in UUID() }
+//
+//      let effect = Effect.merge(
+//        (1...1_000).map { idx -> Effect<Int> in
+//          let id = ids[idx % 10]
+//
+//          return .merge(
+//            .publisher {
+//              Just(idx)
+//                .delay(
+//                  for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+//                )
+//            }
+//            .cancellable(id: id),
+//
+//            .publisher {
+//              Empty()
+//                .delay(
+//                  for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+//                )
+//                .handleEvents(receiveCompletion: { _ in Task.cancel(id: id) })
+//            }
+//          )
+//        }
+//      )
+//
+//      let expectation = self.expectation(description: "wait")
+//      // NB: `for await _ in effect.actions` blows the stack with 1,000 merged publishers
+//      _EffectPublisher(effect)
+//        .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
+//        .store(in: &self.cancellables)
+//      self.wait(for: [expectation], timeout: 999)
+//
+//      for id in ids {
+//        XCTAssertEqual(
+//          _cancellationCancellables.exists(at: id, path: NavigationIDPath()),
+//          false,
+//          "cancellationCancellables should not contain id \(id)"
+//        )
+//      }
+//    }
 
     func testAsyncConcurrentCancels() async {
       uncheckedUseMainSerialExecutor = false

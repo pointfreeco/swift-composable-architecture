@@ -95,7 +95,9 @@ public struct _Effect<Action>: Sendable {
         return _terminal
       }
       var onTermination: (@Sendable (Termination) -> Void)? {
-        get { terminate }
+        get {
+          return { self.terminate($0) }
+        }
         set {
           _lock.lock()
           defer { _lock.unlock() }
@@ -160,8 +162,7 @@ public struct _Effect<Action>: Sendable {
       }
       var onTermination: (@Sendable (Termination) -> Void)? {
         get {
-          print("!!!")
-          return terminate
+          return { self.terminate($0) }
         }
         set {
           _lock.lock()
@@ -202,17 +203,12 @@ public struct _Effect<Action>: Sendable {
 }
 
 extension _Effect where Action: Sendable {
-  public var actions: AsyncThrowingStream<Action, Error> {
-    AsyncThrowingStream { continuation in
+  public var actions: AsyncStream<Action> {
+    AsyncStream { continuation in
       let task = self.run {
         continuation.yield($0)
-      } onTermination: { termination in
-        switch termination {
-        case .cancelled:
-          continuation.finish(throwing: CancellationError())
-        case .finished:
-          continuation.finish()
-        }
+      } onTermination: { _ in
+        continuation.finish()
       }
       continuation.onTermination = { _ in
         task.cancel()
@@ -308,10 +304,23 @@ private enum Effects {
   struct Sync<Action>: EffectProtocol {
     let operation: @Sendable (_Effect<Action>.SyncContinuation) -> Void
     func receive(_ subscriber: some EffectSubscriberProtocol<Action>) {
-      let continuation = _Effect<Action>.SyncContinuation(subscriber.receive)
-      continuation.onTermination = subscriber.receive
+      let continuation = _Effect<Action>.SyncContinuation {
+        subscriber.receive(action: $0)
+      }
+      continuation.onTermination = {
+        subscriber.receive(termination: $0)
+      }
       operation(continuation)
     }
+//    struct Subscriber<Base: EffectSubscriber<Action>>: EffectSubscriberProtocol {
+//      let base: Base
+//      func receive(action: Action) {
+//        base.receive(action: action)
+//      }
+//      func receive(termination: _Effect<Action>.Termination) {
+//        base.receive(termination: termination)
+//      }
+//    }
   }
 
   struct Async<Action>: EffectProtocol {
