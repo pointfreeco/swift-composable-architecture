@@ -1,6 +1,7 @@
 @_spi(Logging) import ComposableArchitecture
 import SwiftUI
 import TestCases
+import IssueReporting
 
 private struct LogsView: View {
   @State var logs: [String] = []
@@ -48,13 +49,16 @@ final class IntegrationSceneDelegate: NSObject, UIWindowSceneDelegate {
     self.keyWindow.makeKeyAndVisible()
   }
 }
+
 final class IntegrationAppDelegate: NSObject, UIApplicationDelegate {
   func application(
     _ application: UIApplication,
     configurationForConnecting connectingSceneSession: UISceneSession,
     options: UIScene.ConnectionOptions
   ) -> UISceneConfiguration {
+    UIView.setAnimationsEnabled(false)
     Logger.shared.isEnabled = true
+    IssueReporters.current.append(NotificationReporter())
     let sceneConfig = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
     sceneConfig.delegateClass = IntegrationSceneDelegate.self
     return sceneConfig
@@ -279,7 +283,7 @@ struct RuntimeWarnings: View {
         .transition(.opacity.animation(.default))
       }
     }
-    .onReceive(NotificationCenter.default.publisher(for: ._runtimeWarning)) { notification in
+    .onReceive(NotificationCenter.default.publisher(for: .issueReported)) { notification in
       if let message = notification.userInfo?["message"] as? String {
         self.runtimeWarnings.append(message)
       }
@@ -289,6 +293,23 @@ struct RuntimeWarnings: View {
 
 extension Notification.Name {
   static let clearLogs = Self("clear-logs")
+  static let issueReported = Self("issue-reported")
+}
+
+private struct NotificationReporter: IssueReporter {
+  func reportIssue(
+    _ message: @autoclosure () -> String?,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) {
+    NotificationCenter.default.post(
+      name: .issueReported,
+      object: nil,
+      userInfo: message().map { ["message": $0] }
+    )
+  }
 }
 
 #Preview {

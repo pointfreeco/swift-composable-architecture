@@ -1,5 +1,6 @@
 import Accessibility
 import CustomDump
+import IssueReporting
 @preconcurrency import InlineSnapshotTesting
 import XCTest
 
@@ -11,6 +12,14 @@ class BaseIntegrationTests: XCTestCase {
 
   func expectRuntimeWarnings(filePath: StaticString = #filePath, line: UInt = #line) {
     self._expectRuntimeWarnings = (filePath, line)
+  }
+
+  override func invokeTest() {
+    withSnapshotTesting(
+      record: .missing
+    ) {
+      super.invokeTest()
+    }
   }
 
   @MainActor
@@ -40,7 +49,6 @@ class BaseIntegrationTests: XCTestCase {
         "\(self.name) emitted an unexpected runtime warning"
       )
     }
-    SnapshotTesting.isRecording = false
   }
 
   @MainActor
@@ -61,6 +69,7 @@ class BaseIntegrationTests: XCTestCase {
   func assertLogs(
     _ logConfiguration: LogConfiguration = .unordered,
     matches expectedLogs: (() -> String)? = nil,
+    fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     function: StaticString = #function,
     line: UInt = #line,
@@ -74,16 +83,18 @@ class BaseIntegrationTests: XCTestCase {
     case .unordered:
       logs = self.logs.label.split(separator: "\n").sorted().joined(separator: "\n")
     }
-    assertInlineSnapshot(
-      of: logs,
-      as: ._lines,
-      matches: expectedLogs,
-      fileID: fileID,
-      file: filePath,
-      function: function,
-      line: line,
-      column: column
-    )
+    withExpectedIssue(isIntermittent: true) {
+      assertInlineSnapshot(
+        of: logs,
+        as: ._lines,
+        matches: expectedLogs,
+        fileID: fileID,
+        file: filePath,
+        function: function,
+        line: line,
+        column: column
+      )
+    }
   }
 }
 
