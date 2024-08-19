@@ -1,7 +1,7 @@
 @_spi(Logging) import ComposableArchitecture
+import IssueReporting
 import SwiftUI
 import TestCases
-import IssueReporting
 
 private struct LogsView: View {
   @State var logs: [String] = []
