@@ -15,9 +15,7 @@ class BaseIntegrationTests: XCTestCase {
   }
 
   override func invokeTest() {
-    withSnapshotTesting(
-      //record: .failed
-    ) {
+    withSnapshotTesting {
       super.invokeTest()
     }
   }
