@@ -134,18 +134,20 @@ private struct ChildView: View {
   @Environment(\.dismiss) var dismiss
 
   var body: some View {
-    Form {
-      Button("Dismiss") {
-        self.dismiss()
+    WithPerceptionTracking {
+      Form {
+        Button("Dismiss") {
+          self.dismiss()
+        }
+        TextField("Text", text: self.$store.text)
+        Button(self.store.sendOnDisappear ? "Don't send onDisappear" : "Send onDisappear") {
+          self.store.sendOnDisappear.toggle()
+        }
       }
-      TextField("Text", text: self.$store.text)
-      Button(self.store.sendOnDisappear ? "Don't send onDisappear" : "Send onDisappear") {
-        self.store.sendOnDisappear.toggle()
-      }
-    }
-    .onDisappear {
-      if self.store.sendOnDisappear {
-        self.store.send(.onDisappear)
+      .onDisappear {
+        if self.store.sendOnDisappear {
+          self.store.send(.onDisappear)
+        }
       }
     }
   }
