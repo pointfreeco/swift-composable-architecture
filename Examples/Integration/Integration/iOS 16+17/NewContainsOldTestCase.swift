@@ -7,26 +7,28 @@ struct NewContainsOldTestCase: View {
   }
 
   var body: some View {
-    let _ = Logger.shared.log("\(Self.self).body")
-    Form {
-      Section {
-        Text(self.store.count.description)
-        Button("Increment") { self.store.send(.incrementButtonTapped) }
-      } header: {
-        Text("iOS 17")
-      }
-      Section {
-        if self.store.isObservingChildCount {
-          Text("Child count: \(self.store.child.count)")
+    WithPerceptionTracking {
+      let _ = Logger.shared.log("\(Self.self).body")
+      Form {
+        Section {
+          Text(self.store.count.description)
+          Button("Increment") { self.store.send(.incrementButtonTapped) }
+        } header: {
+          Text("iOS 17")
         }
-        Button("Toggle observe child count") {
-          self.store.send(.toggleIsObservingChildCount)
+        Section {
+          if self.store.isObservingChildCount {
+            Text("Child count: \(self.store.child.count)")
+          }
+          Button("Toggle observe child count") {
+            self.store.send(.toggleIsObservingChildCount)
+          }
         }
-      }
-      Section {
-        BasicsView(store: self.store.scope(state: \.child, action: \.child))
-      } header: {
-        Text("iOS 16")
+        Section {
+          BasicsView(store: self.store.scope(state: \.child, action: \.child))
+        } header: {
+          Text("iOS 16")
+        }
       }
     }
   }
