@@ -380,9 +380,8 @@ extension NavigationLink {
       isActive: Binding(
         get: { item.wrappedValue != nil },
         set: { isActive, transaction in
-          if isActive {
-            onNavigate()  
-          } else {
+          onNavigate(isActive)
+          if !isActive {
             item.transaction(transaction).wrappedValue = nil
           }
         }
