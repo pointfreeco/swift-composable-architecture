@@ -160,19 +160,19 @@ extension Effect {
 ///
 /// ```swift
 /// return .run { send in
-///   send(.started)
-///   defer { send(.finished) }
+///   await send(.started)
 ///   for await event in self.events {
 ///     send(.event(event))
 ///   }
+///   await send(.finished)
 /// }
 /// ```
 ///
-/// You can also send actions with animation:
+/// You can also send actions with animation and transaction:
 ///
 /// ```swift
-/// send(.started, animation: .spring())
-/// defer { send(.finished, animation: .default) }
+/// await send(.started, animation: .spring())
+/// await send(.finished, transaction: .init(animation: .default))
 /// ```
 ///
 /// See ``Effect/run(priority:operation:catch:fileID:filePath:line:column:)`` for more information on how to
