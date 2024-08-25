@@ -24,7 +24,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "1.5.4"),
     .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.2"),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.3.5"),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.3.8"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-navigation", from: "2.0.6"),
