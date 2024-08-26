@@ -7,7 +7,7 @@ final class SwitchStoreTests: BaseIntegrationTests {
   override func setUpWithError() throws {
     try super.setUpWithError()
     app.buttons["Legacy"].tap()
-    app.collectionViews.buttons[TestCase.switchStore.rawValue].tap()
+    app.collectionViews.buttons[TestCase.Legacy.switchStore.rawValue].tap()
   }
 
   @MainActor
