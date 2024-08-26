@@ -6,7 +6,7 @@ final class ForEachBindingTests: BaseIntegrationTests {
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
-    app.collectionViews.buttons[TestCase.forEachBinding.rawValue].tap()
+    app.collectionViews.buttons[TestCase.Legacy.forEachBinding.rawValue].tap()
   }
 
   @MainActor

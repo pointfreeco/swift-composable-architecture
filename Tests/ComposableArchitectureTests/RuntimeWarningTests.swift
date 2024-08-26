@@ -294,6 +294,7 @@
 
       XCTExpectFailure {
         store[
+          id: nil,
           state: \.destination,
           action: \.destination,
           isInViewBody: false,
