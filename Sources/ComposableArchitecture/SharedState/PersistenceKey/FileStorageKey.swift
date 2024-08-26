@@ -234,7 +234,7 @@ extension DependencyValues {
   /// bleed over from test to test.
   ///
   /// So, for that situation you can use the ``FileStorage/inMemory`` file storage so that each
-  /// run of the app starts with a fresh "file system" that will never interfer with other tests:
+  /// run of the app starts with a fresh "file system" that will never interfere with other tests:
   ///
   /// ```swift
   /// @main
