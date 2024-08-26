@@ -122,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-navigation",
       "state" : {
-        "revision" : "70321c441d51b0b893c3abbf79687f550a027fde",
-        "version" : "2.0.6"
+        "revision" : "4d04eb04807dc3176515184abe08c3adcbb04713",
+        "version" : "2.1.0"
       }
     },
     {
