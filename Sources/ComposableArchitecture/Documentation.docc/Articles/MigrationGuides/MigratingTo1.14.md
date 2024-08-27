@@ -1,4 +1,4 @@
-# Migrating to 1.13
+# Migrating to 1.14
 
 The ``Store`` type is now officially `@MainActor` isolated. 
 
@@ -16,10 +16,22 @@ done in a way that should be 100% backwards compatible, and if you have problems
 [discussion][tca-discussion].
 
 However, if you are using _strict_ concurrency settings in your app, then there is one circumstance
-in which you may have a compilation error. If you are 
+in which you may have a compilation error. If you are accessing the `store` in a view method or
+property, then you may have to mark that property as `@MainActor`:
 
-```swift
-struct 
+```diff
+ struct FeatureView: View {
+   let store: StoreOf<Feature>
+ 
+   var body: some View {
+     // ...
+   }
+ 
++  @MainActor
+   var title: some View {
+     Text(store.name)
+   }
+ }
 ```
 
 [tca-discussion]: http://github.com/pointfreeco/swift-composable-architecture/discussions
