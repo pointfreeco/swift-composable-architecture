@@ -935,7 +935,7 @@ extension PersistenceReaderKey
 where Self == PersistenceKeyDefault<FileStorageKey<IdentifiedArrayOf<User>>>
 {
   static var users: Self {
-    PersistenceKeyDefault(.fileStorage(.users), [])
+    PersistenceKeyDefault(.users, [])
   }
 }
 ```
