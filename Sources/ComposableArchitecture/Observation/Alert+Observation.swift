@@ -3,6 +3,11 @@ import SwiftUI
 @available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension View {
   /// Presents an alert when a piece of optional state held in a store becomes non-`nil`.
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency @MainActor
+  #endif
   public func alert<Action>(_ item: Binding<Store<AlertState<Action>, Action>?>) -> some View {
     let store = item.wrappedValue
     let alertState = store?.withState { $0 }
@@ -33,11 +38,13 @@ extension View {
       }
     )
   }
-}
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
-extension View {
   /// Presents an alert when a piece of optional state held in a store becomes non-`nil`.
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency @MainActor
+  #endif
   public func confirmationDialog<Action>(
     _ item: Binding<Store<ConfirmationDialogState<Action>, Action>?>
   ) -> some View {

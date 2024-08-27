@@ -26,13 +26,13 @@
   }
 
   extension Store: Equatable {
-    public static func == (lhs: Store, rhs: Store) -> Bool {
+    public static nonisolated func == (lhs: Store, rhs: Store) -> Bool {
       lhs === rhs
     }
   }
 
   extension Store: Hashable {
-    public func hash(into hasher: inout Hasher) {
+    public nonisolated func hash(into hasher: inout Hasher) {
       hasher.combine(ObjectIdentifier(self))
     }
   }
@@ -155,6 +155,11 @@
     ///   - state: A key path to optional child state.
     ///   - action: A case key path to presentation child actions.
     /// - Returns: A binding of an optional child store.
+    #if swift(>=5.10)
+      @preconcurrency @MainActor
+    #else
+      @MainActor(unsafe)
+    #endif
     public func scope<State: ObservableState, Action, ChildState, ChildAction>(
       state: KeyPath<State, ChildState?>,
       action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
@@ -225,6 +230,11 @@
     ///   - state: A key path to optional child state.
     ///   - action: A case key path to presentation child actions.
     /// - Returns: A binding of an optional child store.
+    #if swift(>=5.10)
+      @preconcurrency @MainActor
+    #else
+      @MainActor(unsafe)
+    #endif
     public func scope<State: ObservableState, Action, ChildState, ChildAction>(
       state: KeyPath<State, ChildState?>,
       action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
@@ -321,6 +331,11 @@
   }
 
   extension UIBindable {
+    #if swift(>=5.10)
+      @preconcurrency @MainActor
+    #else
+      @MainActor(unsafe)
+    #endif
     public func scope<State: ObservableState, Action, ChildState, ChildAction>(
       state: KeyPath<State, ChildState?>,
       action: CaseKeyPath<Action, PresentationAction<ChildAction>>,

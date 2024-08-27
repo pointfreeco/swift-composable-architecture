@@ -1,4 +1,4 @@
-import Combine
+@preconcurrency import Combine
 import SwiftUI
 
 /// A `ViewStore` is an object that can observe state changes and send actions. They are most
@@ -187,7 +187,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   #if DEBUG
     deinit {
-      Logger.shared.log("View\(self.storeTypeName).deinit")
+      guard Thread.isMainThread else { return }
+      MainActor._assumeIsolated {
+        Logger.shared.log("View\(self.storeTypeName).deinit")
+      }
     }
   #endif
 

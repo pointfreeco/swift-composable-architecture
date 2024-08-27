@@ -86,14 +86,11 @@ let package = Package(
   ]
 )
 
-//for target in package.targets where target.type != .system {
-//  target.swiftSettings = target.swiftSettings ?? []
-//  target.swiftSettings?.append(
-//    .unsafeFlags([
-//      "-c", "release",
-//      "-emit-module-interface", "-enable-library-evolution",
-//      "-Xfrontend", "-warn-concurrency",
-//      "-Xfrontend", "-enable-actor-data-race-checks",
-//    ])
-//  )
-//}
+#if compiler(>=6)
+  for target in package.targets where target.type != .system {
+    target.swiftSettings = target.swiftSettings ?? []
+    target.swiftSettings?.append(contentsOf: [
+      .enableExperimentalFeature("StrictConcurrency"),
+    ])
+  }
+#endif
