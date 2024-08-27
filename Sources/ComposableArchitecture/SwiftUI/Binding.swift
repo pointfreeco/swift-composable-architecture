@@ -404,7 +404,7 @@ where Value: CustomDebugStringConvertible {
 #if swift(<5.10)
   @MainActor(unsafe)
 #else
-  @preconcurrency @MainActor
+  @preconcurrency@MainActor
 #endif
 public struct BindingViewStore<State> {
   let store: Store<State, BindingAction<State>>

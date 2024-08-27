@@ -15,7 +15,7 @@ where State: CaseReducerState, Body: Reducer, Body.State == State, Body.Action =
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   static func scope(_ store: Store<State, Action>) -> CaseScope
 }

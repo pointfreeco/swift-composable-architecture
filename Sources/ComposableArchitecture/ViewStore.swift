@@ -89,7 +89,7 @@ import SwiftUI
 #if swift(<5.10)
   @MainActor(unsafe)
 #else
-  @preconcurrency @MainActor
+  @preconcurrency@MainActor
 #endif
 public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
