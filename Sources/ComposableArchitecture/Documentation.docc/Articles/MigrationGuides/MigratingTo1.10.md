@@ -33,7 +33,7 @@ will be instantly observed by all features holding onto it.
 
 Further, there are persistence strategies one can employ in `@Shared`. For example, if you want any
 changes of `signUpData` to be automatically persisted to the file system you can use the
-``PersistenceReaderKey/fileStorage(_:)`` and specify a URL:
+``PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` and specify a URL:
 
 ```swift
 @ObservableState
@@ -59,7 +59,7 @@ struct State {
 }
 ```
 
-Similar to ``PersistenceReaderKey/fileStorage(_:)``, upon launch of the application the initial
+Similar to ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``, upon launch of the application the initial
 value of `isOn` will be populated from user defaults, and any change to `isOn` will be automatically
 persisted to user defaults. Further, if the user defaults value changes, all instances of `isOn`
 in the application will automatically update.

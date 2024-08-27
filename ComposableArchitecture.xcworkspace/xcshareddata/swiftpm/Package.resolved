@@ -77,14 +77,14 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-dependencies",
       "state" : {
-        "revision" : "d7472be6b3c89251ce4c0db07d32405b43426781",
-        "version" : "1.3.7"
+        "revision" : "21660b042cd8fd0bdd45cc39050cacd4e91a63a4",
+        "version" : "1.3.8"
       }
     },
     {
       "identity" : "swift-docc-plugin",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-docc-plugin",
+      "location" : "https://github.com/swiftlang/swift-docc-plugin",
       "state" : {
         "revision" : "26ac5758409154cc448d7ab82389c520fa8a8247",
         "version" : "1.3.0"
@@ -122,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-navigation",
       "state" : {
-        "revision" : "47cfd149ed01223d14fc8e3f52ae27d3a35fe036",
-        "version" : "2.0.3"
+        "revision" : "4d04eb04807dc3176515184abe08c3adcbb04713",
+        "version" : "2.1.0"
       }
     },
     {

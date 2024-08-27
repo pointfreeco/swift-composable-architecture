@@ -32,7 +32,7 @@ public protocol CaseReducerState {
 }
 
 extension Reducer {
-  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` for enum
+  /// A special overload of ``Reducer/ifLet(_:action:destination:fileID:filePath:line:column:)-4ub6q`` for enum
   /// reducers.
   public func ifLet<ChildState: CaseReducerState, ChildAction>(
     _ state: WritableKeyPath<State, PresentationState<ChildState>>,
@@ -43,7 +43,7 @@ extension Reducer {
     }
   }
 
-  /// A special overload of ``Reducer/forEach(_:action:destination:fileID:line:)-582rd`` for enum
+  /// A special overload of ``Reducer/forEach(_:action:destination:fileID:filePath:line:column:)-9svqb`` for enum
   /// reducers.
   public func forEach<DestinationState: CaseReducerState, DestinationAction>(
     _ state: WritableKeyPath<State, StackState<DestinationState>>,

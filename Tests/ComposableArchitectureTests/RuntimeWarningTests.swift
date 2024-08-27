@@ -78,8 +78,8 @@
         ] = .init()
       } issueMatcher: {
         $0.compactDescription == """
-          failed - SwiftUI wrote to a "NavigationStack" binding at "file.swift:1" with a path that \
-          has the same number of elements that already exist in the store. SwiftUI should only \
+          failed - A navigation stack binding at "file.swift:1" was written to with a path that \
+          has the same number of elements that already exist in the store. A view should only \
           write to this binding with a path that has pushed a new element onto the stack, or \
           popped one or more elements from the stack.
 
@@ -123,6 +123,7 @@
 
       XCTExpectFailure {
         store[
+          id: nil,
           state: \.destination,
           action: \.destination,
           isInViewBody: false,
@@ -152,39 +153,6 @@
           store.
           """
       }
-    }
-
-    @Reducer
-    struct TestStoreDestination_NotIntegrated_EphemeralState {
-      @Reducer
-      struct Destination {}
-      @ObservableState
-      struct State: Equatable {
-        @Presents var alert: AlertState<Never>?
-      }
-      enum Action {
-        case alert(PresentationAction<Never>)
-      }
-    }
-    @MainActor
-    func testStoreDestination_NotIntegrated_EphemeralState() {
-      let store = Store(
-        initialState: TestStoreDestination_NotIntegrated_EphemeralState.State(
-          alert: .init(title: { TextState("Hi") })
-        )
-      ) {
-        TestStoreDestination_NotIntegrated_EphemeralState()
-      }
-
-      store[
-        state: \.alert,
-        action: \.alert,
-        isInViewBody: false,
-        fileID: "file.swift",
-        filePath: "/file.swift",
-        line: 1,
-        column: 1
-      ] = nil  // NB: Not issue reported
     }
   }
 #endif

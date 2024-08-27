@@ -52,7 +52,7 @@
       
       @Step {
         Provide a trailing closure to
-        ``ComposableArchitecture/TestStore/send(_:assert:file:line:)-2co21`` that mutates the state
+        ``ComposableArchitecture/TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` that mutates the state
         to its final value. In particular, we expect the `syncUps` to be an empty array, and for
         no other changes to happen.
         

@@ -62,7 +62,7 @@ day-to-day when building applications, such as:
 
 ### State management
 
-- <doc:Reducers>
+- ``Reducer``
 - ``Effect``
 - ``Store``
 - <doc:SharingState>

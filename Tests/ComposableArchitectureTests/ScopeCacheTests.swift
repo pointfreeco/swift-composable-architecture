@@ -35,7 +35,6 @@ final class ScopeCacheTests: BaseTCATestCase {
     store.send(.child(.dismiss))
   }
 
-  @MainActor
   func testOptionalScope_CachedStore() {
     #if DEBUG
       let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
@@ -47,7 +46,6 @@ final class ScopeCacheTests: BaseTCATestCase {
     #endif
   }
 
-  @MainActor
   func testOptionalScope_StoreIfLet() {
     #if DEBUG
       let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
@@ -64,7 +62,6 @@ final class ScopeCacheTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
-  @MainActor
   func testOptionalScope_StoreIfLet_UncachedStore() {
     let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
     }
@@ -96,7 +93,6 @@ final class ScopeCacheTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testIdentifiedArrayScope_CachedStore() {
     #if DEBUG
       let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
@@ -112,7 +108,6 @@ final class ScopeCacheTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
-  @MainActor
   func testIdentifiedArrayScope_UncachedStore() {
     let store = StoreOf<Feature>(initialState: Feature.State(rows: [Feature.State()])) {
       Feature()

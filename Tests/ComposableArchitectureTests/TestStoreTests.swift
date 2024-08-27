@@ -396,7 +396,6 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPrepareDependenciesCalledOnce() {
     var count = 0
     let store = TestStore(initialState: 0) {

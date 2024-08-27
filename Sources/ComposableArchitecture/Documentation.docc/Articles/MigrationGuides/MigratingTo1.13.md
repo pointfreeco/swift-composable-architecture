@@ -69,7 +69,7 @@ on these tools):
 @Reducer
 struct AppFeature {
   struct State {
-    var path: StackState<
+    var path = StackState<Path.State>()
     // ...
   }
 
@@ -91,8 +91,7 @@ stack state:
 class AppController: NavigationStackController {
   private var store: StoreOf<AppFeature>!
 
-  @MainActor
-  init(store: StoreOf<AppFeature>) {
+  convenience init(store: StoreOf<AppFeature>) {
     @UIBindable var store = store
 
     self.init(path: $store.scope(state: \.path, action: \.path)) {
@@ -107,6 +106,7 @@ class AppController: NavigationStackController {
         EditViewController(store: store)
       }
     }
+
     self.model = model
   }
 }

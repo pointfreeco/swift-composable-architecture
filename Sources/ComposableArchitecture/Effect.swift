@@ -68,10 +68,10 @@ extension Effect {
   ///
   /// See ``Send`` for more information on how to use the `send` argument passed to `run`'s closure.
   ///
-  /// The closure provided to ``run(priority:operation:catch:fileID:line:)`` is allowed to
-  /// throw, but any non-cancellation errors thrown will cause a runtime warning when run in the
-  /// simulator or on a device, and will cause a test failure in tests. To catch non-cancellation
-  /// errors use the `catch` trailing closure.
+  /// The closure provided to ``run(priority:operation:catch:fileID:filePath:line:column:)`` is
+  /// allowed to throw, but any non-cancellation errors thrown will cause a runtime warning when run
+  /// in the simulator or on a device, and will cause a test failure in tests. To catch
+  /// non-cancellation errors use the `catch` trailing closure.
   ///
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
@@ -153,29 +153,29 @@ extension Effect {
 }
 
 /// A type that can send actions back into the system when used from
-/// ``Effect/run(priority:operation:catch:fileID:line:)``.
+/// ``Effect/run(priority:operation:catch:fileID:filePath:line:column:)``.
 ///
 /// This type implements [`callAsFunction`][callAsFunction] so that you invoke it as a function
 /// rather than calling methods on it:
 ///
 /// ```swift
 /// return .run { send in
-///   send(.started)
-///   defer { send(.finished) }
+///   await send(.started)
 ///   for await event in self.events {
 ///     send(.event(event))
 ///   }
+///   await send(.finished)
 /// }
 /// ```
 ///
-/// You can also send actions with animation:
+/// You can also send actions with animation and transaction:
 ///
 /// ```swift
-/// send(.started, animation: .spring())
-/// defer { send(.finished, animation: .default) }
+/// await send(.started, animation: .spring())
+/// await send(.finished, transaction: .init(animation: .default))
 /// ```
 ///
-/// See ``Effect/run(priority:operation:catch:fileID:line:)`` for more information on how to
+/// See ``Effect/run(priority:operation:catch:fileID:filePath:line:column:)`` for more information on how to
 /// use this value to construct effects that can emit any number of times in an asynchronous
 /// context.
 ///

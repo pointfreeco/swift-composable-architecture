@@ -212,6 +212,14 @@ final class AppStorageTests: XCTestCase {
     }
     defer { _ = cancellable }
 
+    let perceptionExpectation = self.expectation(description: "perception")
+    withPerceptionTracking {
+      _ = count
+    } onChange: {
+      XCTAssertTrue(Thread.isMainThread)
+      perceptionExpectation.fulfill()
+    }
+
     await withUnsafeContinuation { continuation in
       DispatchQueue.global().async { [store = UncheckedSendable(store)] in
         XCTAssertFalse(Thread.isMainThread)
@@ -220,7 +228,7 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [publisherExpectation], timeout: 1)
+    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 1)
   }
 
   @MainActor
@@ -258,6 +266,14 @@ final class AppStorageTests: XCTestCase {
     }
     defer { _ = cancellable }
 
+    let perceptionExpectation = self.expectation(description: "perception")
+    withPerceptionTracking {
+      _ = count
+    } onChange: {
+      XCTAssertTrue(Thread.isMainThread)
+      perceptionExpectation.fulfill()
+    }
+
     await withUnsafeContinuation { continuation in
       DispatchQueue.global().async {
         XCTAssertFalse(Thread.isMainThread)
@@ -266,7 +282,7 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [publisherExpectation], timeout: 1)
+    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 1)
   }
 
   func testUpdateStoreFromBackgroundThread_KeyPath() async throws {
@@ -281,6 +297,14 @@ final class AppStorageTests: XCTestCase {
     }
     defer { _ = cancellable }
 
+    let perceptionExpectation = self.expectation(description: "perception")
+    withPerceptionTracking {
+      _ = count
+    } onChange: {
+      XCTAssertTrue(Thread.isMainThread)
+      perceptionExpectation.fulfill()
+    }
+
     await withUnsafeContinuation { continuation in
       DispatchQueue.global().async { [store = UncheckedSendable(store)] in
         XCTAssertFalse(Thread.isMainThread)
@@ -289,7 +313,7 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [publisherExpectation], timeout: 1)
+    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 1)
   }
 }
 

@@ -170,6 +170,7 @@
     ) -> Binding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
       self[
+        id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
         state: state,
         action: action,
         isInViewBody: _isInPerceptionTracking,
@@ -244,6 +245,7 @@
     ) -> Binding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
       self[
+        id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
         state: state,
         action: action,
         isInViewBody: _isInPerceptionTracking,
@@ -316,6 +318,7 @@
     ) -> Binding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
       self[
+        id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
         state: state,
         action: action,
         isInViewBody: _isInPerceptionTracking,
@@ -343,6 +346,7 @@
     ) -> UIBinding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
       self[
+        id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
         state: state,
         action: action,
         isInViewBody: _isInPerceptionTracking,
@@ -357,6 +361,7 @@
   extension Store where State: ObservableState {
     @_spi(Internals)
     public subscript<ChildState, ChildAction>(
+      id id: AnyHashable?,
       state state: KeyPath<State, ChildState?>,
       action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
       isInViewBody isInViewBody: Bool,
@@ -391,7 +396,7 @@
       set {
         if newValue == nil,
           let childState = self.state[keyPath: state],
-          !isEphemeral(childState),
+          id == _identifiableID(childState),
           !self._isInvalidated()
         {
           self.send(action(.dismiss))
