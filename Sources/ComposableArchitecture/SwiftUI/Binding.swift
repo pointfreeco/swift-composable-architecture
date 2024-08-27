@@ -274,15 +274,6 @@ public protocol BindableAction<State> {
   ///
   /// - Returns: A binding action.
   static func binding(_ action: BindingAction<State>) -> Self
-
-  /// Extracts a binding action from this action type.
-  var binding: BindingAction<State>? { get }
-}
-
-extension BindableAction {
-  public var binding: BindingAction<State>? {
-    AnyCasePath(unsafe: { .binding($0) }).extract(from: self)
-  }
 }
 
 extension BindableAction {
