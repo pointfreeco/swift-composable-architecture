@@ -261,13 +261,14 @@ import IssueReporting
 /// complete before the test is finished. To turn off exhaustivity you can set ``exhaustivity``
 /// to ``Exhaustivity/off``. When that is done the ``TestStore``'s behavior changes:
 ///
-///   * The trailing closures of ``send(_:assert:file:line:)-2co21`` and
-///     ``receive(_:timeout:assert:file:line:)-6325h`` no longer need to assert on all state
-///     changes. They can assert on any subset of changes, and only if they make an incorrect
+///   * The trailing closures of ``send(_:assert:fileID:file:line:column:)-8f2pl`` and
+///     ``receive(_:timeout:assert:fileID:file:line:column:)-8zqxk`` no longer need to assert on all
+///     state changes. They can assert on any subset of changes, and only if they make an incorrect
 ///     mutation will a test failure be reported.
-///   * The ``send(_:assert:file:line:)-2co21`` and ``receive(_:timeout:assert:file:line:)-6325h``
-///     methods are allowed to be called even when actions have been received from effects that have
-///     not been asserted on yet. Any pending actions will be cleared.
+///   * The ``send(_:assert:fileID:file:line:column:)-8f2pl`` and
+///     ``receive(_:timeout:assert:fileID:file:line:column:)-8zqxk`` methods are allowed to be
+///     called even when actions have been received from effects that have not been asserted on yet.
+///     Any pending actions will be cleared.
 ///   * Tests are allowed to finish with unasserted, received actions and in-flight effects. No test
 ///     failures will be reported.
 ///
@@ -479,8 +480,10 @@ public final class TestStore<State, Action> {
 
   /// The current state of the test store.
   ///
-  /// When read from a trailing closure assertion in ``send(_:assert:file:line:)-2co21`` or
-  /// ``receive(_:timeout:assert:file:line:)-6325h``, it will equal the `inout` state passed to the
+  /// When read from a trailing closure assertion in
+  /// ``send(_:assert:fileID:file:line:column:)-8f2pl`` or
+  /// ``receive(_:timeout:assert:fileID:file:line:column:)-8zqxk``, it will equal the `inout` state
+  /// passed to the
   /// closure.
   public var state: State {
     self.reducer.state
@@ -489,7 +492,8 @@ public final class TestStore<State, Action> {
   /// The default timeout used in all methods that take an optional timeout.
   ///
   /// This is the default timeout used in all methods that take an optional timeout, such as
-  /// ``receive(_:timeout:assert:file:line:)-6325h`` and ``finish(timeout:file:line:)-53gi5``.
+  /// ``receive(_:timeout:assert:fileID:file:line:column:)-8zqxk`` and
+  /// ``finish(timeout:fileID:file:line:column:)-klnc``.
   public var timeout: UInt64
 
   private let fileID: StaticString
@@ -561,7 +565,8 @@ public final class TestStore<State, Action> {
     timeout duration: Duration,
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
     await self.finish(
       timeout: duration.nanoseconds, fileID: fileID, file: filePath, line: line, column: column
@@ -755,21 +760,33 @@ public final class TestStore<State, Action> {
     return try operation()
   }
 
-  /// Overrides the store's dependencies for a given operation.
-  ///
-  /// - Parameters:
-  ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
-  ///     duration of the operation.
-  ///   - operation: The operation.
-  public func withDependencies<R>(
-    _ updateValuesForOperation: (_ dependencies: inout DependencyValues) throws -> Void,
-    operation: () async throws -> R
-  ) async rethrows -> R {
-    let previous = self.dependencies
-    defer { self.dependencies = previous }
-    try updateValuesForOperation(&self.dependencies)
-    return try await operation()
-  }
+  #if compiler(>=6)
+    /// Overrides the store's dependencies for a given operation.
+    ///
+    /// - Parameters:
+    ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
+    ///     duration of the operation.
+    ///   - operation: The operation.
+    public func withDependencies<R>(
+      _ updateValuesForOperation: (_ dependencies: inout DependencyValues) throws -> Void,
+      operation: () async throws -> sending R
+    ) async rethrows -> R {
+      let previous = self.dependencies
+      defer { self.dependencies = previous }
+      try updateValuesForOperation(&self.dependencies)
+      return try await operation()
+    }
+  #else
+    public func withDependencies<R: Sendable>(
+      _ updateValuesForOperation: (_ dependencies: inout DependencyValues) throws -> Void,
+      operation: () async throws -> R
+    ) async rethrows -> R {
+      let previous = self.dependencies
+      defer { self.dependencies = previous }
+      try updateValuesForOperation(&self.dependencies)
+      return try await operation()
+    }
+  #endif
 
   /// Overrides the store's exhaustivity for a given operation.
   ///
@@ -786,20 +803,32 @@ public final class TestStore<State, Action> {
     return try operation()
   }
 
-  /// Overrides the store's exhaustivity for a given operation.
-  ///
-  /// - Parameters:
-  ///   - exhaustivity: The exhaustivity.
-  ///   - operation: The operation.
-  public func withExhaustivity<R>(
-    _ exhaustivity: Exhaustivity,
-    operation: () async throws -> R
-  ) async rethrows -> R {
-    let previous = self.exhaustivity
-    defer { self.exhaustivity = previous }
-    self.exhaustivity = exhaustivity
-    return try await operation()
-  }
+  #if compiler(>=6)
+    /// Overrides the store's exhaustivity for a given operation.
+    ///
+    /// - Parameters:
+    ///   - exhaustivity: The exhaustivity.
+    ///   - operation: The operation.
+    public func withExhaustivity<R>(
+      _ exhaustivity: Exhaustivity,
+      operation: () async throws -> sending R
+    ) async rethrows -> R {
+      let previous = self.exhaustivity
+      defer { self.exhaustivity = previous }
+      self.exhaustivity = exhaustivity
+      return try await operation()
+    }
+  #else
+    public func withExhaustivity<R: Sendable>(
+      _ exhaustivity: Exhaustivity,
+      operation: () async throws -> R
+    ) async rethrows -> R {
+      let previous = self.exhaustivity
+      defer { self.exhaustivity = previous }
+      self.exhaustivity = exhaustivity
+      return try await operation()
+    }
+  #endif
 }
 
 /// A convenience type alias for referring to a test store of a given reducer's domain.
@@ -901,7 +930,7 @@ extension TestStore where State: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) async -> TestStoreTask {
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.isDismissed else {
         reportIssue(
           "Can't send action to dismissed test store.",
@@ -1001,9 +1030,9 @@ extension TestStore where State: Equatable {
   /// <doc:Testing#Non-exhaustive-testing>), which allow you to assert on a subset of the things
   /// happening inside your features. For example, you can send an action in a child feature
   /// without asserting on how many changes in the system, and then tell the test store to
-  /// ``finish(timeout:file:line:)-53gi5`` by executing all of its effects, and finally to
-  /// ``skipReceivedActions(strict:file:line:)-a4ri`` to receive all actions. After that is done you
-  /// can assert on the final state of the store:
+  /// ``finish(timeout:fileID:file:line:column:)-klnc`` by executing all of its effects, and finally
+  /// to ``skipReceivedActions(strict:fileID:file:line:column:)`` to receive all actions. After that
+  /// is done you can assert on the final state of the store:
   ///
   /// ```swift
   /// store.exhaustivity = .off
@@ -1165,6 +1194,7 @@ extension TestStore where State: Equatable {
         }
       }
 
+      @MainActor
       func expectationFailure(expected: State) {
         let difference = self.withExhaustivity(.on) {
           diff(expected, actual, format: .proportional)
@@ -1196,6 +1226,7 @@ extension TestStore where State: Equatable {
         )
       }
 
+      @MainActor
       func tryUnnecessaryModifyFailure() {
         guard
           !skipUnnecessaryModifyFailure,
@@ -1296,7 +1327,8 @@ extension TestStore where State: Equatable, Action: Equatable {
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
-    line: UInt = #line
+    line: UInt = #line,
+    column: UInt = #column
   ) async {
     await self.receive(
       expectedAction,
@@ -1348,7 +1380,7 @@ extension TestStore where State: Equatable, Action: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
@@ -1475,8 +1507,9 @@ extension TestStore where State: Equatable {
   /// Asserts an action was received from an effect that matches a predicate, and asserts how the
   /// state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows you
-  /// to assert that an action was received that matches a predicate instead of a case key path
+  /// This method is similar to ``receive(_:timeout:assert:fileID:file:line:column:)-8zqxk``, except
+  /// it allows you to assert that an action was received that matches a predicate instead of a case
+  /// key path:
   ///
   /// ```swift
   /// await store.send(.buttonTapped)
@@ -1493,7 +1526,8 @@ extension TestStore where State: Equatable {
   /// was in the effect that you chose not to assert on.
   ///
   /// If you only want to check that a particular action case was received, then you might find the
-  /// ``receive(_:timeout:assert:file:line:)-6325h`` overload of this method more useful.
+  /// ``receive(_:timeout:assert:fileID:file:line:column:)-53wic`` overload of this method more
+  /// useful.
   ///
   /// - Parameters:
   ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
@@ -1528,9 +1562,9 @@ extension TestStore where State: Equatable {
   /// Asserts an action was received from an effect that matches a predicate, and asserts how the
   /// state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows
-  /// you to assert that an action was received that matches a predicate instead of a case key
-  /// path:
+  /// This method is similar to ``receive(_:timeout:assert:fileID:file:line:column:)-8zqxk``, except
+  /// it allows you to assert that an action was received that matches a predicate instead of a case
+  /// key path:
   ///
   /// ```swift
   /// await store.send(.buttonTapped)
@@ -1547,7 +1581,8 @@ extension TestStore where State: Equatable {
   /// was in the effect that you chose not to assert on.
   ///
   /// If you only want to check that a particular action case was received, then you might find the
-  /// ``receive(_:timeout:assert:file:line:)-6325h`` overload of this method more useful.
+  /// ``receive(_:timeout:assert:fileID:file:line:column:)-53wic`` overload of this method more
+  /// useful.
   ///
   /// - Parameters:
   ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
@@ -1567,7 +1602,7 @@ extension TestStore where State: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
@@ -1606,8 +1641,9 @@ extension TestStore where State: Equatable {
 
   /// Asserts an action was received matching a case path and asserts how the state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-7md3m``, except it allows
-  /// you to assert that an action was received that matches a case key path instead of a predicate.
+  /// This method is similar to ``receive(_:timeout:assert:fileID:file:line:column:)-35638``, except
+  /// it allows you to assert that an action was received that matches a case key path instead of a
+  /// predicate.
   ///
   /// It can be useful to assert that a particular action was received without asserting on the data
   /// inside the action. For example:
@@ -1658,8 +1694,8 @@ extension TestStore where State: Equatable {
   /// Asserts an action was received matching a case path with a specific payload, and asserts how
   /// the state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows you
-  /// to assert on the value inside the action too.
+  /// This method is similar to ``receive(_:timeout:assert:fileID:file:line:column:)-53wic``, except
+  /// it allows you to assert on the value inside the action too.
   ///
   /// It can be useful when asserting on delegate actions sent by a child feature:
   ///
@@ -1692,7 +1728,7 @@ extension TestStore where State: Equatable {
   ) async
   where Action: CasePathable {
     let actionCase = AnyCasePath(actionCase)
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
@@ -1765,7 +1801,7 @@ extension TestStore where State: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
@@ -1804,8 +1840,9 @@ extension TestStore where State: Equatable {
 
   /// Asserts an action was received matching a case path and asserts how the state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-7md3m``, except it allows you
-  /// to assert that an action was received that matches a case key path instead of a predicate.
+  /// This method is similar to ``receive(_:timeout:assert:fileID:file:line:column:)-8zqxk``, except
+  /// it allows you to assert that an action was received that matches a case key path instead of a
+  /// predicate.
   ///
   /// It can be useful to assert that a particular action was received without asserting on the data
   /// inside the action. For example:
@@ -1857,8 +1894,8 @@ extension TestStore where State: Equatable {
   /// Asserts an action was received matching a case path with a specific payload, and asserts how
   /// the state changes.
   ///
-  /// This method is similar to ``receive(_:timeout:assert:file:line:)-6325h``, except it allows you
-  /// to assert on the value inside the action too.
+  /// This method is similar to ``receive(_:timeout:assert:fileID:file:line:column:)-53wic``, except
+  /// it allows you to assert on the value inside the action too.
   ///
   /// It can be useful when asserting on delegate actions sent by a child feature:
   ///
@@ -1945,7 +1982,7 @@ extension TestStore where State: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
         _ = {
@@ -2160,15 +2197,15 @@ extension TestStore where State: Equatable {
 extension TestStore where State: Equatable {
   /// Sends an action to the store and asserts when state changes.
   ///
-  /// This method is similar to ``send(_:assert:file:line:)-2co21``, except it allows you to specify
-  /// a case key path to an action, which can be useful when testing the integration of features and
-  /// sending deeply nested actions. For example:
+  /// This method is similar to ``send(_:assert:fileID:file:line:column:)-8f2pl``, except it allows
+  /// you to specify a case key path to an action, which can be useful when testing the integration
+  /// of features and sending deeply nested actions. For example:
   ///
   /// ```swift
   /// await store.send(.destination(.presented(.child(.tap))))
   /// ```
   ///
-  /// Can be simplified to:
+  /// …can be simplified to:
   ///
   /// ```swift
   /// await store.send(\.destination.child.tap)
@@ -2204,16 +2241,16 @@ extension TestStore where State: Equatable {
 
   /// Sends an action to the store and asserts when state changes.
   ///
-  /// This method is similar to ``send(_:assert:file:line:)-1oopl``, except it allows
+  /// This method is similar to ``send(_:assert:fileID:file:line:column:)-8f2pl``, except it allows
   /// you to specify a value for the associated value of the action.
   ///
-  /// It can be useful when sending nested action.  For example::
+  /// It can be useful when sending nested action.  For example:
   ///
   /// ```swift
   /// await store.send(.destination(.presented(.child(.emailChanged("blob@pointfree.co")))))
   /// ```
   ///
-  /// Can be simplified to:
+  /// …can be simplified to:
   ///
   /// ```swift
   /// await store.send(\.destination.child.emailChanged, "blob@pointfree.co")
@@ -2552,7 +2589,7 @@ extension TestStore where Action: BindableAction, State == Action.State {
   }
 }
 
-/// The type returned from ``TestStore/send(_:assert:file:line:)-2co21`` that represents the
+/// The type returned from ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` that represents the
 /// lifecycle of the effect started from sending an action.
 ///
 /// You can use this value in tests to cancel the effect started from sending an action:
@@ -2577,8 +2614,8 @@ extension TestStore where Action: BindableAction, State == Action.State {
 /// await store.send(.stopTimerButtonTapped).finish()
 /// ```
 ///
-/// See ``TestStore/finish(timeout:file:line:)-53gi5`` for the ability to await all in-flight
-/// effects in the test store.
+/// See ``TestStore/finish(timeout:fileID:file:line:column:)-klnc`` for the ability to await all
+/// in-flight effects in the test store.
 ///
 /// See ``StoreTask`` for the analog provided to ``Store``.
 public struct TestStoreTask: Hashable, Sendable {
@@ -2826,12 +2863,12 @@ public enum Exhaustivity: Equatable, Sendable {
   /// deallocated.
   ///
   /// To manually skip actions or effects, use
-  /// ``TestStore/skipReceivedActions(strict:file:line:)-a4ri`` or
-  /// ``TestStore/skipInFlightEffects(strict:file:line:)-5hbsk``.
+  /// ``TestStore/skipReceivedActions(strict:fileID:file:line:column:)`` or
+  /// ``TestStore/skipInFlightEffects(strict:fileID:file:line:column:)``.
   ///
   /// To partially match an action received from an effect, use
-  /// ``TestStore/receive(_:timeout:assert:file:line:)-6325h`` or
-  /// ``TestStore/receive(_:timeout:assert:file:line:)-7md3m``.
+  /// ``TestStore/receive(_:timeout:assert:fileID:file:line:column:)-53wic`` or
+  /// ``TestStore/receive(_:timeout:assert:fileID:file:line:column:)-35638``.
 
   case on
 
@@ -2870,4 +2907,23 @@ extension TestStore {
   ) async {
     fatalError()
   }
+}
+
+// TODO: Move to `swift-issue-reporting`?
+fileprivate func _withIssueContext<R>(
+  fileID: StaticString,
+  filePath: StaticString,
+  line: UInt,
+  column: UInt,
+  @_inheritActorContext operation: () async throws -> R
+) async rethrows -> R {
+  let result = try await withIssueContext(
+    fileID: fileID,
+    filePath: filePath,
+    line: line,
+    column: column,
+    operation: operation
+  )
+  await Task.yield()
+  return result
 }

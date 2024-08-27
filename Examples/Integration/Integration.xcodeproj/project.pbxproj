@@ -55,6 +55,7 @@
 		CAF5802729A567BB0042FB62 /* LegacyPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF5802629A567BB0042FB62 /* LegacyPresentationTests.swift */; };
 		DC140CC529E0BB2C006DF553 /* SwitchStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC140CC429E0BB2C006DF553 /* SwitchStoreTestCase.swift */; };
 		DC140CC729E0E8F3006DF553 /* SwitchStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */; };
+		DC44CFC12C751C1E009F9FE4 /* MultipleAlertsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC44CFBF2C751BDA009F9FE4 /* MultipleAlertsTestCase.swift */; };
 		DC6268502AD1C85E00F2E2EF /* InlineSnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DC62684F2AD1C85E00F2E2EF /* InlineSnapshotTesting */; };
 		DC6268532AD1E06300F2E2EF /* InlineSnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DC6268522AD1E06300F2E2EF /* InlineSnapshotTesting */; };
 		DC6E2D942AD5C56F005ACC26 /* ObservableIdentifiedListTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6E2D8D2AD5C56F005ACC26 /* ObservableIdentifiedListTestCase.swift */; };
@@ -73,6 +74,7 @@
 		DC6E2DAB2AD5C677005ACC26 /* ObservablePresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6E2DA42AD5C677005ACC26 /* ObservablePresentationTests.swift */; };
 		DC808D6529E91FAA0072B4A9 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = DC808D6429E91FAA0072B4A9 /* ComposableArchitecture */; };
 		DC92799B2A1E59D500B2031A /* PresentationItemTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC92799A2A1E59D500B2031A /* PresentationItemTestCase.swift */; };
+		DCA6716B2C7CEC550086F359 /* MultipleAlertsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA6716A2C7CEC4D0086F359 /* MultipleAlertsTests.swift */; };
 		DCFFB8E72A156488006AF839 /* BindingLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFFB8E62A156488006AF839 /* BindingLocalTestCase.swift */; };
 		DCFFB8E92A15792C006AF839 /* BindingLocalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFFB8E82A15792C006AF839 /* BindingLocalTests.swift */; };
 		E9919D3E296E28C800C8716B /* EscapedWithViewStoreTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */; };
@@ -168,6 +170,7 @@
 		CAF5802629A567BB0042FB62 /* LegacyPresentationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LegacyPresentationTests.swift; sourceTree = "<group>"; };
 		DC140CC429E0BB2C006DF553 /* SwitchStoreTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchStoreTestCase.swift; sourceTree = "<group>"; };
 		DC140CC629E0E8F3006DF553 /* SwitchStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchStoreTests.swift; sourceTree = "<group>"; };
+		DC44CFBF2C751BDA009F9FE4 /* MultipleAlertsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipleAlertsTestCase.swift; sourceTree = "<group>"; };
 		DC6E2D8D2AD5C56F005ACC26 /* ObservableIdentifiedListTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObservableIdentifiedListTestCase.swift; sourceTree = "<group>"; };
 		DC6E2D8E2AD5C56F005ACC26 /* ObservableBasicsTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObservableBasicsTestCase.swift; sourceTree = "<group>"; };
 		DC6E2D8F2AD5C56F005ACC26 /* ObservableNavigationTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObservableNavigationTestCase.swift; sourceTree = "<group>"; };
@@ -183,6 +186,7 @@
 		DC6E2DA32AD5C677005ACC26 /* ObservableBasicsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObservableBasicsTests.swift; sourceTree = "<group>"; };
 		DC6E2DA42AD5C677005ACC26 /* ObservablePresentationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObservablePresentationTests.swift; sourceTree = "<group>"; };
 		DC92799A2A1E59D500B2031A /* PresentationItemTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationItemTestCase.swift; sourceTree = "<group>"; };
+		DCA6716A2C7CEC4D0086F359 /* MultipleAlertsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipleAlertsTests.swift; sourceTree = "<group>"; };
 		DCFFB8E62A156488006AF839 /* BindingLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindingLocalTestCase.swift; sourceTree = "<group>"; };
 		DCFFB8E82A15792C006AF839 /* BindingLocalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindingLocalTests.swift; sourceTree = "<group>"; };
 		E9919D3D296E28C800C8716B /* EscapedWithViewStoreTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EscapedWithViewStoreTestCase.swift; sourceTree = "<group>"; };
@@ -293,6 +297,7 @@
 				DC6E2D8C2AD5C525005ACC26 /* iOS 17 */,
 				CA8B2E932AC57518008272E0 /* Legacy */,
 				CAA1CAFA296DEE79000665B1 /* Preview Content */,
+				DC44CFC02C751BEA009F9FE4 /* Test Cases */,
 			);
 			path = Integration;
 			sourceTree = "<group>";
@@ -313,6 +318,7 @@
 				CAA6BEAC2ADADE4300FF83BC /* iOS 16+17 */,
 				DC6E2D9D2AD5C64C005ACC26 /* iOS 17 */,
 				CA8B2E9D2AC576CE008272E0 /* Legacy */,
+				DCA671692C7CEC380086F359 /* Test Cases */,
 			);
 			path = IntegrationUITests;
 			sourceTree = "<group>";
@@ -354,6 +360,14 @@
 				CAF5801A29A5642B0042FB62 /* TestCase.swift */,
 			);
 			path = TestCases;
+			sourceTree = "<group>";
+		};
+		DC44CFC02C751BEA009F9FE4 /* Test Cases */ = {
+			isa = PBXGroup;
+			children = (
+				DC44CFBF2C751BDA009F9FE4 /* MultipleAlertsTestCase.swift */,
+			);
+			path = "Test Cases";
 			sourceTree = "<group>";
 		};
 		DC6E2D8B2AD5C512005ACC26 /* iOS 16 */ = {
@@ -414,6 +428,14 @@
 				DC6E2DA12AD5C677005ACC26 /* ObservableSiblingTests.swift */,
 			);
 			path = "iOS 17";
+			sourceTree = "<group>";
+		};
+		DCA671692C7CEC380086F359 /* Test Cases */ = {
+			isa = PBXGroup;
+			children = (
+				DCA6716A2C7CEC4D0086F359 /* MultipleAlertsTests.swift */,
+			);
+			path = "Test Cases";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -582,6 +604,7 @@
 				CA4BA5E929E76A7F0004FF9D /* NavigationStackTestCase.swift in Sources */,
 				E9919D42296E47A400C8716B /* BindingsAnimationsTestBench.swift in Sources */,
 				CAE2E9232B23417000EE370B /* IfLetStoreTestCase.swift in Sources */,
+				DC44CFC12C751C1E009F9FE4 /* MultipleAlertsTestCase.swift in Sources */,
 				DCFFB8E72A156488006AF839 /* BindingLocalTestCase.swift in Sources */,
 				DC6E2D992AD5C56F005ACC26 /* ObservableOptionalTestCase.swift in Sources */,
 				CA7BDDA12ADB543400277984 /* NewContainsOldTestCase.swift in Sources */,
@@ -623,6 +646,7 @@
 				CA8B2E9B2AC576CA008272E0 /* EnumTests.swift in Sources */,
 				DC6E2DA62AD5C677005ACC26 /* ObservableIdentifiedListTests.swift in Sources */,
 				CAF5802729A567BB0042FB62 /* LegacyPresentationTests.swift in Sources */,
+				DCA6716B2C7CEC550086F359 /* MultipleAlertsTests.swift in Sources */,
 				CA487B2C2A15185300F54A79 /* BaseIntegrationTests.swift in Sources */,
 				CA8B2EA72AC584BE008272E0 /* SiblingTests.swift in Sources */,
 				DC6E2DA72AD5C677005ACC26 /* ObservableNavigationTests.swift in Sources */,

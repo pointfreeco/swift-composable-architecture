@@ -1,4 +1,5 @@
 @_spi(Logging) import ComposableArchitecture
+import IssueReporting
 import SwiftUI
 import TestCases
 
@@ -48,13 +49,18 @@ final class IntegrationSceneDelegate: NSObject, UIWindowSceneDelegate {
     self.keyWindow.makeKeyAndVisible()
   }
 }
+
 final class IntegrationAppDelegate: NSObject, UIApplicationDelegate {
   func application(
     _ application: UIApplication,
     configurationForConnecting connectingSceneSession: UISceneSession,
     options: UIScene.ConnectionOptions
   ) -> UISceneConfiguration {
+    if ProcessInfo.processInfo.environment["UI_TEST"] != nil {
+      UIView.setAnimationsEnabled(false)
+    }
     Logger.shared.isEnabled = true
+    IssueReporters.current.append(NotificationReporter())
     let sceneConfig = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
     sceneConfig.delegateClass = IntegrationSceneDelegate.self
     return sceneConfig
@@ -181,9 +187,23 @@ struct ContentView: View {
           .navigationTitle(Text("iOS 16"))
         }
 
+        NavigationLink("Test cases") {
+          List {
+            ForEach(TestCase.Cases.allCases) { test in
+              switch test {
+              case .multipleAlerts:
+                NavigationLink(test.rawValue) {
+                  MultipleAlertsTestCaseView()
+                }
+              }
+            }
+          }
+          .navigationTitle(Text("Test cases"))
+        }
+
         NavigationLink("Legacy") {
           List {
-            ForEach(TestCase.allCases) { test in
+            ForEach(TestCase.Legacy.allCases) { test in
               switch test {
               case .escapedWithViewStore:
                 NavigationLink(test.rawValue) {
@@ -279,7 +299,7 @@ struct RuntimeWarnings: View {
         .transition(.opacity.animation(.default))
       }
     }
-    .onReceive(NotificationCenter.default.publisher(for: ._runtimeWarning)) { notification in
+    .onReceive(NotificationCenter.default.publisher(for: .issueReported)) { notification in
       if let message = notification.userInfo?["message"] as? String {
         self.runtimeWarnings.append(message)
       }
@@ -289,6 +309,23 @@ struct RuntimeWarnings: View {
 
 extension Notification.Name {
   static let clearLogs = Self("clear-logs")
+  static let issueReported = Self("issue-reported")
+}
+
+private struct NotificationReporter: IssueReporter {
+  func reportIssue(
+    _ message: @autoclosure () -> String?,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
+  ) {
+    NotificationCenter.default.post(
+      name: .issueReported,
+      object: nil,
+      userInfo: message().map { ["message": $0] }
+    )
+  }
 }
 
 #Preview {

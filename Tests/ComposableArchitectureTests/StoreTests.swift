@@ -232,6 +232,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(numCalls3, 6)
   }
 
+  @MainActor
   func testSynchronousEffectsSentAfterSinking() {
     enum Action {
       case tap
@@ -297,6 +298,7 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testIfLetAfterScope() {
     struct AppState: Equatable {
       var count: Int?
@@ -595,6 +597,7 @@ final class StoreTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testOverrideDependenciesDirectlyOnReducer() {
     let store = Store(initialState: 0) {
       Feature_testOverrideDependenciesDirectlyOnReducer()
@@ -618,6 +621,7 @@ final class StoreTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testOverrideDependenciesDirectlyOnStore() {
     @Dependency(\.uuid) var uuid
     let store = Store(initialState: uuid()) {

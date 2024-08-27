@@ -30,7 +30,7 @@
 
 ### Unit testing the value
 
-- ``assert(_:file:line:)``
+- ``assert(_:fileID:file:line:column:)``
 
 ### SwiftUI integration
 

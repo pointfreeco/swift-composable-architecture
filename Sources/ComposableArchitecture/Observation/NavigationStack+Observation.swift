@@ -5,7 +5,7 @@ import SwiftUI
     /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
     ///
     /// This operator is most used in conjunction with `NavigationStack`, and in particular
-    /// the initializer ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` that
+    /// the initializer ``SwiftUI/NavigationStack/init(path:root:destination:fileID:filePath:line:column:)`` that
     /// ships with this library.
     ///
     /// For example, suppose you have a feature that holds onto ``StackState`` in its state in order
@@ -37,11 +37,11 @@ import SwiftUI
     /// ```
     ///
     /// > Note: We are using the ``Reducer()`` macro on an enum to compose together all the features
-    /// that can be pushed onto the stack. See <doc:Reducers#Destination-and-path-reducers> for
+    /// that can be pushed onto the stack. See <doc:Reducer#Destination-and-path-reducers> for
     /// more information.
     ///
     /// Then in the view you can use this operator, with
-    /// `NavigationStack` ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)``, to
+    /// `NavigationStack` ``SwiftUI/NavigationStack/init(path:root:destination:fileID:filePath:line:column:)``, to
     /// derive a store for each element in the stack:
     ///
     /// ```swift
@@ -57,6 +57,11 @@ import SwiftUI
     ///   }
     /// }
     /// ```
+    #if swift(>=5.10)
+      @preconcurrency@MainActor
+    #else
+      @MainActor(unsafe)
+    #endif
     public func scope<State: ObservableState, Action, ElementState, ElementAction>(
       state: KeyPath<State, StackState<ElementState>>,
       action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
@@ -70,8 +75,13 @@ import SwiftUI
   extension SwiftUI.Bindable {
     /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
     ///
-    /// See ``SwiftUI/Binding/scope(state:action:fileID:line:)`` defined on `Binding` for more
+    /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
     /// information.
+    #if swift(>=5.10)
+      @preconcurrency@MainActor
+    #else
+      @MainActor(unsafe)
+    #endif
     public func scope<State: ObservableState, Action, ElementState, ElementAction>(
       state: KeyPath<State, StackState<ElementState>>,
       action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
@@ -88,7 +98,7 @@ import SwiftUI
   extension Perception.Bindable {
     /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
     ///
-    /// See ``SwiftUI/Binding/scope(state:action:fileID:line:)`` defined on `Binding` for more
+    /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
     /// information.
     public func scope<State: ObservableState, Action, ElementState, ElementAction>(
       state: KeyPath<State, StackState<ElementState>>,
@@ -102,8 +112,13 @@ import SwiftUI
   extension UIBindable {
     /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
     ///
-    /// See ``SwiftUI/Binding/scope(state:action:fileID:line:)`` defined on `Binding` for more
+    /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
     /// information.
+    #if swift(>=5.10)
+      @preconcurrency@MainActor
+    #else
+      @MainActor(unsafe)
+    #endif
     public func scope<State: ObservableState, Action, ElementState, ElementAction>(
       state: KeyPath<State, StackState<ElementState>>,
       action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
@@ -375,8 +390,8 @@ import SwiftUI
         guard newCount != self.currentState.count else {
           reportIssue(
             """
-            SwiftUI wrote to a "NavigationStack" binding at "\(fileID.rawValue):\(line)" with a \
-            path that has the same number of elements that already exist in the store. SwiftUI \
+            A navigation stack binding at "\(fileID.rawValue):\(line)" was written to with a \
+            path that has the same number of elements that already exist in the store. A view \
             should only write to this binding with a path that has pushed a new element onto the \
             stack, or popped one or more elements from the stack.
 

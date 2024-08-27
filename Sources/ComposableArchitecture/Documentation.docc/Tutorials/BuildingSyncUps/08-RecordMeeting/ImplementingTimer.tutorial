@@ -34,7 +34,7 @@
       
       In the `onAppear` action we want to start up a long-living effect that represents a timer.
       Timers can be easily handled using an asynchronous context, and the 
-      ``ComposableArchitecture/Effect/run(priority:operation:catch:fileID:line:)`` helper is
+      ``ComposableArchitecture/Effect/run(priority:operation:catch:fileID:filePath:line:column:)`` helper is
       what gives us an asynchronous context to work in.
       
       @Step {
@@ -238,8 +238,8 @@
         @Code(name: "RecordMeeting.swift", file: ImplementingTimer-03-code-0003.swift)
       }
       @Step {
-        Use the ``ComposableArchitecture/Reducer/ifLet(_:action:fileID:line:)-3s2cw`` reducer
-        method to integrate the alert's logic in your reducer.
+        Use the ``ComposableArchitecture/Reducer/ifLet(_:action:fileID:filePath:line:column:)-3ux09``
+        reducer method to integrate the alert's logic in your reducer.
         
         @Code(name: "RecordMeeting.swift", file: ImplementingTimer-03-code-0004.swift)
       }
@@ -372,7 +372,7 @@
       }
       
       @Step {
-        Use the ``ComposableArchitecture/TestStore/receive(_:timeout:assert:file:line:)-6325h``
+        Use the ``ComposableArchitecture/TestStore/receive(_:timeout:assert:fileID:file:line:column:)-53wic``
         method to assert that the store receives a `timerTick` action, and that when that action is
         received the `secondsElapsed` state increments to 1.
         

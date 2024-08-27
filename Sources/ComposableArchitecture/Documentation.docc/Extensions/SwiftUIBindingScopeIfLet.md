@@ -1,4 +1,4 @@
-# ``SwiftUI/Binding/scope(state:action:fileID:line:)``
+# ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)``
 
 ## Topics
 

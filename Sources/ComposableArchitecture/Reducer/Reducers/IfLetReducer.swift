@@ -40,7 +40,7 @@ extension Reducer {
   ///   * Automatically `nil`s out child state when an action is sent for alerts and confirmation
   ///     dialogs.
   ///
-  /// See ``Reducer/ifLet(_:action:destination:fileID:line:)-4k9by`` for a more advanced operator suited
+  /// See ``Reducer/ifLet(_:action:destination:fileID:filePath:line:column:)-4ub6q`` for a more advanced operator suited
   /// to navigation.
   ///
   /// - Parameters:
@@ -73,8 +73,8 @@ extension Reducer {
     )
   }
 
-  /// A special overload of ``Reducer/ifLet(_:action:then:fileID:line:)-7s8h2`` for alerts
-  /// and confirmation dialogs that does not require a child reducer.
+  /// A special overload of ``Reducer/ifLet(_:action:then:fileID:filePath:line:column:)-2r2pn``
+  /// for alerts and confirmation dialogs that does not require a child reducer.
   @inlinable
   @warn_unqualified_access
   public func ifLet<WrappedState: _EphemeralState, WrappedAction>(

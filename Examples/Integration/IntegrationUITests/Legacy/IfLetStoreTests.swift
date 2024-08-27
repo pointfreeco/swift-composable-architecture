@@ -6,7 +6,7 @@ final class IfLetStoreTests: BaseIntegrationTests {
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
-    self.app.buttons[TestCase.ifLetStore.rawValue].tap()
+    self.app.buttons[TestCase.Legacy.ifLetStore.rawValue].tap()
   }
 
   @MainActor

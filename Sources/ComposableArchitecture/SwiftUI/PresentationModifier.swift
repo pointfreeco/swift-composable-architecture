@@ -2,6 +2,11 @@ import SwiftUI
 
 extension View {
   @_spi(Presentation)
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder body: @escaping (
@@ -17,6 +22,11 @@ extension View {
 
   @_disfavoredOverload
   @_spi(Presentation)
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder body: @escaping (
@@ -35,6 +45,11 @@ extension View {
 
   @_disfavoredOverload
   @_spi(Presentation)
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     id toID: @escaping (PresentationState<State>) -> AnyHashable?,
@@ -50,6 +65,11 @@ extension View {
   }
 
   @_spi(Presentation)
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<
     State,
     Action,
@@ -75,6 +95,11 @@ extension View {
 
   @_disfavoredOverload
   @_spi(Presentation)
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<
     State,
     Action,
@@ -102,6 +127,11 @@ extension View {
 
   @_spi(Presentation)
   @ViewBuilder
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<
     State,
     Action,

@@ -110,7 +110,7 @@
       
       @Step {
         At the very end of the reducer use the
-        ``ComposableArchitecture/Reducer/forEach(_:action:destination:fileID:line:)-582rd`` operator 
+        ``ComposableArchitecture/Reducer/forEach(_:action:destination:fileID:filePath:line:column:)-9svqb`` operator 
         to integrate the `ContactDetailFeature` into the stack of the `ContactsFeature`.
         
         > Tip: Scroll down to the bottom of the code snippet to see the application of the
@@ -121,7 +121,7 @@
       
       @Step {
         Go to the `ContactsView` that holds the view for the contacts list. Swap out the
-        `NavigationStack` for ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)``, 
+        `NavigationStack` for ``SwiftUI/NavigationStack/init(path:root:destination:fileID:filePath:line:column:)``, 
         which is a special initializer that is specifically tuned for driving stacks from a
         ``ComposableArchitecture/Store``. 
         You hand it a binding to a store that is scoped down to
@@ -132,7 +132,7 @@
       }
       
       @Step {
-        ``SwiftUI/NavigationStack/init(path:root:destination:fileID:line:)`` takes two trailing 
+        ``SwiftUI/NavigationStack/init(path:root:destination:fileID:filePath:line:column:)`` takes two trailing 
         closures. The first is for the root of the stack, which is our list of contacts. The second 
         is to describe the destinations that can be navigated to. It is handled a store that is 
         focused on the domain of just a single element in the stack.
@@ -142,12 +142,12 @@
       
       @Step {
         Wrap the row in the contacts list in a `NavigationLink`, using the special 
-        ``SwiftUI/NavigationLink/init(state:label:fileID:line:)`` initializer that ships with this
+        ``SwiftUI/NavigationLink/init(state:label:fileID:filePath:line:column:)`` initializer that ships with this
         library. We are also applying a `.borderless` button style so that we can have the delete
         button in the row too.
         
         > Warning: It is necessary to use the
-        > ``SwiftUI/NavigationLink/init(state:label:fileID:line:)`` initializer on `NavigationLink`
+        > ``SwiftUI/NavigationLink/init(state:label:fileID:filePath:line:column:)`` initializer on `NavigationLink`
         > instead of the `init(value:)` initializer that comes with SwiftUI.
         
         @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0005.swift, previousFile: 02-04-02-code-0005-previous.swift) 
