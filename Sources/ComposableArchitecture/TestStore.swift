@@ -2924,6 +2924,6 @@ fileprivate func _withIssueContext<R>(
     column: column,
     operation: operation
   )
-  await Task.megaYield()
+  await Task.yield()
   return result
 }
