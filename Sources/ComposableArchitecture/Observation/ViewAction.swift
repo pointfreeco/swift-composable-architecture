@@ -12,7 +12,7 @@ public protocol ViewAction<ViewAction> {
 #if swift(<5.10)
   @MainActor(unsafe)
 #else
-  @preconcurrency @MainActor
+  @preconcurrency@MainActor
 #endif
 public protocol ViewActionSending<StoreState, StoreAction> {
   associatedtype StoreState

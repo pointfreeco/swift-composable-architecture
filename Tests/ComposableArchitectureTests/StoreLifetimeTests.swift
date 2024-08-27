@@ -48,7 +48,7 @@ final class StoreLifetimeTests: BaseTCATestCase {
   }
 
   #if DEBUG
-      func testStoreDeinit() {
+    func testStoreDeinit() {
       Logger.shared.isEnabled = true
       do {
         let store = Store<Void, Void>(initialState: ()) {}

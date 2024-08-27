@@ -135,7 +135,7 @@ import SwiftUI
 #if swift(<5.10)
   @MainActor(unsafe)
 #else
-  @preconcurrency @MainActor
+  @preconcurrency@MainActor
 #endif
 public final class Store<State, Action> {
   var canCacheChildren = true

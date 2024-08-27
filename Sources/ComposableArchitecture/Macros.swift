@@ -47,7 +47,7 @@ public macro Reducer(state: _SynthesizedConformance..., action: _SynthesizedConf
 /// the ``Reducer()`` macro.
 ///
 /// See <doc:Reducers#Synthesizing-protocol-conformances-on-State-and-Action> for more information.
-@_documentation(visibility:public)
+@_documentation(visibility: public)
 public struct _SynthesizedConformance {}
 
 extension _SynthesizedConformance {
