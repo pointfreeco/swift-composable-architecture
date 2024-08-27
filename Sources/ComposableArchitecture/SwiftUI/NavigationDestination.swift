@@ -39,7 +39,7 @@ extension View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public func navigationDestination<State, Action, Destination: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
@@ -95,7 +95,7 @@ extension View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public func navigationDestination<
     State, Action, DestinationState, DestinationAction, Destination: View

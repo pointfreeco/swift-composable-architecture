@@ -52,7 +52,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public init<IfContent, ElseContent>(
     _ store: Store<State?, Action>,
@@ -98,7 +98,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public init<IfContent>(
     _ store: Store<State?, Action>,
@@ -161,7 +161,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public init<IfContent, ElseContent>(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
@@ -205,7 +205,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public init<IfContent>(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
@@ -239,7 +239,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public init<DestinationState, DestinationAction, IfContent, ElseContent>(
     _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
@@ -278,7 +278,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public init<DestinationState, DestinationAction, IfContent>(
     _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,

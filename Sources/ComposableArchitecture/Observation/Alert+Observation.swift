@@ -6,7 +6,7 @@ extension View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public func alert<Action>(_ item: Binding<Store<AlertState<Action>, Action>?>) -> some View {
     let store = item.wrappedValue
@@ -43,7 +43,7 @@ extension View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public func confirmationDialog<Action>(
     _ item: Binding<Store<ConfirmationDialogState<Action>, Action>?>

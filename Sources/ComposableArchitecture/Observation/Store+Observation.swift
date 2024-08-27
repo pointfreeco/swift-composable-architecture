@@ -156,7 +156,7 @@
     ///   - action: A case key path to presentation child actions.
     /// - Returns: A binding of an optional child store.
     #if swift(>=5.10)
-      @preconcurrency @MainActor
+      @preconcurrency@MainActor
     #else
       @MainActor(unsafe)
     #endif
@@ -231,7 +231,7 @@
     ///   - action: A case key path to presentation child actions.
     /// - Returns: A binding of an optional child store.
     #if swift(>=5.10)
-      @preconcurrency @MainActor
+      @preconcurrency@MainActor
     #else
       @MainActor(unsafe)
     #endif
@@ -332,7 +332,7 @@
 
   extension UIBindable {
     #if swift(>=5.10)
-      @preconcurrency @MainActor
+      @preconcurrency@MainActor
     #else
       @MainActor(unsafe)
     #endif

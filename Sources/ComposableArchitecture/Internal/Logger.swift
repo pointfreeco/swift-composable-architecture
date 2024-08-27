@@ -4,7 +4,7 @@ import OSLog
 #if swift(<5.10)
   @MainActor(unsafe)
 #else
-  @preconcurrency @MainActor
+  @preconcurrency@MainActor
 #endif
 public final class Logger {
   public static let shared = Logger()

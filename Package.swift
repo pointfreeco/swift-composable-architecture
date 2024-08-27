@@ -90,7 +90,7 @@ let package = Package(
   for target in package.targets where target.type != .system {
     target.swiftSettings = target.swiftSettings ?? []
     target.swiftSettings?.append(contentsOf: [
-      .enableExperimentalFeature("StrictConcurrency"),
+      .enableExperimentalFeature("StrictConcurrency")
     ])
   }
 #endif

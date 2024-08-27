@@ -32,7 +32,7 @@ extension View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public func actionSheet<ButtonAction>(
     store: Store<
@@ -73,7 +73,7 @@ extension View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public func actionSheet<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,

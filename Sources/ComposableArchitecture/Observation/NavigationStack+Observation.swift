@@ -58,7 +58,7 @@ import SwiftUI
     /// }
     /// ```
     #if swift(>=5.10)
-      @preconcurrency @MainActor
+      @preconcurrency@MainActor
     #else
       @MainActor(unsafe)
     #endif
@@ -78,7 +78,7 @@ import SwiftUI
     /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
     /// information.
     #if swift(>=5.10)
-      @preconcurrency @MainActor
+      @preconcurrency@MainActor
     #else
       @MainActor(unsafe)
     #endif
@@ -115,7 +115,7 @@ import SwiftUI
     /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
     /// information.
     #if swift(>=5.10)
-      @preconcurrency @MainActor
+      @preconcurrency@MainActor
     #else
       @MainActor(unsafe)
     #endif

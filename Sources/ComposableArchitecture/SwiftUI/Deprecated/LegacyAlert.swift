@@ -18,7 +18,7 @@ extension View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public func legacyAlert<ButtonAction>(
     store: Store<PresentationState<AlertState<ButtonAction>>, PresentationAction<ButtonAction>>
@@ -62,7 +62,7 @@ extension View {
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public func legacyAlert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,

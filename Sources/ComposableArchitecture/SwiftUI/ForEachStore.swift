@@ -119,7 +119,7 @@ public struct ForEachStore<
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>>,
@@ -183,7 +183,7 @@ public struct ForEachStore<
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
