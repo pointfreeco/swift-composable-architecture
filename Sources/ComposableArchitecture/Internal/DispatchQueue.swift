@@ -14,18 +14,6 @@ func mainActorNow(execute block: @MainActor @Sendable () -> Void) {
   }
 }
 
-func mainActorNow(execute block: @escaping @MainActor @Sendable () -> Void) {
-  if DispatchQueue.getSpecific(key: key) == value {
-    MainActor._assumeIsolated {
-      block()
-    }
-  } else {
-    DispatchQueue.main.sync {
-      block()
-    }
-  }
-}
-
 private let key: DispatchSpecificKey<UInt8> = {
   let key = DispatchSpecificKey<UInt8>()
   DispatchQueue.main.setSpecific(key: key, value: value)
