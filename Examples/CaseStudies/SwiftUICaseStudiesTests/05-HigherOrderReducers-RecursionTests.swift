@@ -4,9 +4,8 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 final class RecursionTests: XCTestCase {
-  @MainActor
   func testAddRow() async {
-    let store = TestStore(initialState: Nested.State(id: UUID())) {
+    let store = await TestStore(initialState: Nested.State(id: UUID())) {
       Nested()
     } withDependencies: {
       $0.uuid = .incrementing
@@ -21,9 +20,8 @@ final class RecursionTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testChangeName() async {
-    let store = TestStore(initialState: Nested.State(id: UUID())) {
+    let store = await TestStore(initialState: Nested.State(id: UUID())) {
       Nested()
     }
 
@@ -32,9 +30,8 @@ final class RecursionTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testDeleteRow() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: Nested.State(
         id: UUID(),
         rows: [

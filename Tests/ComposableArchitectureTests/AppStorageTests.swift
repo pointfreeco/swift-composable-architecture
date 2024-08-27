@@ -201,7 +201,6 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(values.value, [1])
   }
 
-  @MainActor
   func testUpdateStoreFromBackgroundThread() async throws {
     @Dependency(\.defaultAppStorage) var store
     @Shared(.appStorage("count")) var count = 0
@@ -229,7 +228,7 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 0)
+    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 1)
   }
 
   @MainActor
@@ -257,7 +256,6 @@ final class AppStorageTests: XCTestCase {
     await fulfillment(of: [publisherExpectation], timeout: 0)
   }
 
-  @MainActor
   func testWillEnterForegroundFromBackgroundThread() async throws {
     @Shared(.appStorage("count")) var count = 0
 
@@ -284,10 +282,9 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 0)
+    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 1)
   }
 
-  @MainActor
   func testUpdateStoreFromBackgroundThread_KeyPath() async throws {
     @Dependency(\.defaultAppStorage) var store
     @Shared(.appStorage(\.count)) var count = 0
@@ -316,7 +313,7 @@ final class AppStorageTests: XCTestCase {
       }
     }
 
-    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 0)
+    await fulfillment(of: [perceptionExpectation, publisherExpectation], timeout: 1)
   }
 }
 

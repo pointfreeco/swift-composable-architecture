@@ -24,7 +24,7 @@ extension SpeechClient: TestDependencyKey {
     let isRecording = LockIsolated(false)
 
     return Self(
-      finishTask: { await isRecording.setValue(false) },
+      finishTask: { isRecording.setValue(false) },
       requestAuthorization: { .authorized },
       startTask: { _ in
         AsyncThrowingStream { continuation in

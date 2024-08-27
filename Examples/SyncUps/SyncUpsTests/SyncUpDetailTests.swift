@@ -4,9 +4,8 @@ import XCTest
 @testable import SyncUps
 
 final class SyncUpDetailTests: XCTestCase {
-  @MainActor
   func testSpeechRestricted() async {
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
+    let store = await TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
       SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = { .restricted }
@@ -17,9 +16,8 @@ final class SyncUpDetailTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testSpeechDenied() async throws {
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
+    let store = await TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
       SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = {
@@ -32,11 +30,10 @@ final class SyncUpDetailTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testOpenSettings() async {
     let settingsOpened = LockIsolated(false)
 
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SyncUpDetail.State(
         destination: .alert(.speechRecognitionDenied),
         syncUp: Shared(.mock)
@@ -54,9 +51,8 @@ final class SyncUpDetailTests: XCTestCase {
     XCTAssertEqual(settingsOpened.value, true)
   }
 
-  @MainActor
   func testContinueWithoutRecording() async throws {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SyncUpDetail.State(
         destination: .alert(.speechRecognitionDenied),
         syncUp: Shared(.mock)
@@ -74,9 +70,8 @@ final class SyncUpDetailTests: XCTestCase {
     await store.receive(\.delegate.startMeeting)
   }
 
-  @MainActor
   func testSpeechAuthorized() async throws {
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
+    let store = await TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
       SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = { .authorized }
@@ -111,7 +106,6 @@ final class SyncUpDetailTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testDelete() async throws {
     let syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
@@ -119,16 +113,16 @@ final class SyncUpDetailTests: XCTestCase {
     defer { XCTAssertEqual([], syncUps) }
 
     let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: sharedSyncUp)) {
+    let store = await TestStore(initialState: SyncUpDetail.State(syncUp: sharedSyncUp)) {
       SyncUpDetail()
     }
-    defer { XCTAssert(store.isDismissed) }
-
     await store.send(.deleteButtonTapped) {
       $0.destination = .alert(.deleteSyncUp)
     }
     await store.send(\.destination.alert.confirmDeletion) {
       $0.destination = nil
     }
+    let isDismissed = await store.isDismissed
+    XCTAssert(isDismissed)
   }
 }

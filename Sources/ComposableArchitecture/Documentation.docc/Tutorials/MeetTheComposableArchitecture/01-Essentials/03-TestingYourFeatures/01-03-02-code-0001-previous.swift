@@ -3,6 +3,5 @@ import XCTest
 
 @testable import CounterApp
 
-@MainActor
 final class CounterFeatureTests: XCTestCase {
 }

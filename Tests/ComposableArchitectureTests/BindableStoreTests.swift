@@ -5,7 +5,6 @@ import XCTest
 
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class BindableStoreTests: XCTestCase {
-  @MainActor
   func testBindableStore() {
     struct BindableReducer: Reducer {
       struct State: Equatable {
@@ -116,6 +115,7 @@ final class BindableStoreTests: XCTestCase {
       var isLoginButtonDisabled: Bool
       @BindingViewState var password: String
 
+      @MainActor
       init(_ store: BindingViewStore<LoginFeature.State>) {
         self._email = store.$email
         self.isFormDisabled = store.isRequestInFlight
@@ -182,6 +182,7 @@ final class BindableStoreTests: XCTestCase {
       var isLoginButtonDisabled: Bool
       @BindingViewState var password: String
 
+      @MainActor
       init(_ store: BindingViewStore<LoginFeature.State>) {
         self._email = store.$email
         self.isFormDisabled = store.isRequestInFlight

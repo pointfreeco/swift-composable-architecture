@@ -3,9 +3,8 @@ import GameCore
 import XCTest
 
 final class GameCoreTests: XCTestCase {
-  @MainActor
   func testFlow_Winner_Quit() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")
     ) {
       Game()
@@ -32,9 +31,8 @@ final class GameCoreTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testFlow_Tie() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: Game.State(oPlayerName: "Blob Jr.", xPlayerName: "Blob Sr.")
     ) {
       Game()

@@ -3,7 +3,6 @@ import XCTest
 
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class StackReducerTests: BaseTCATestCase {
-  @MainActor
   func testStackStateSubscriptCase() {
     enum Element: Equatable {
       case int(Int)
@@ -18,7 +17,6 @@ final class StackReducerTests: BaseTCATestCase {
     XCTAssertTrue(stack.isEmpty)
   }
 
-  @MainActor
   func testStackStateSubscriptCase_Unexpected() {
     enum Element: Equatable {
       case int(Int)
@@ -46,7 +44,6 @@ final class StackReducerTests: BaseTCATestCase {
     XCTAssertEqual(Array(stack), [.int(42)])
   }
 
-  @MainActor
   func testCustomDebugStringConvertible() {
     @Dependency(\.stackElementID) var stackElementID
     XCTAssertEqual(stackElementID.peek().generation, 0)
@@ -62,7 +59,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPresent() async {
     struct Child: Reducer {
       struct State: Equatable {
@@ -109,7 +105,7 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -118,7 +114,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testDismissFromParent() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -164,7 +159,7 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -177,7 +172,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testDismissFromChild() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -225,7 +219,7 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -239,7 +233,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testDismissReceiveWrongAction() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -263,7 +256,7 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State(children: StackState([Child.State()]))) {
+    let store = await TestStore(initialState: Parent.State(children: StackState([Child.State()]))) {
       Parent()
     }
 
@@ -286,7 +279,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testDismissFromIntermediateChild() async {
     struct Child: Reducer {
       struct State: Equatable { var count = 0 }
@@ -321,7 +313,7 @@ final class StackReducerTests: BaseTCATestCase {
     }
 
     let mainQueue = DispatchQueue.test
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
@@ -351,7 +343,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testDismissFromDeepLinkedChild() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -396,7 +387,7 @@ final class StackReducerTests: BaseTCATestCase {
 
     var children = StackState<Child.State>()
     children.append(Child.State())
-    let store = TestStore(initialState: Parent.State(children: children)) {
+    let store = await TestStore(initialState: Parent.State(children: children)) {
       Parent()
     }
 
@@ -406,7 +397,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testEnumChild() async {
     struct Child: Reducer {
       struct State: Equatable {
@@ -482,7 +472,7 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
     await store.send(.pushChild1) {
@@ -498,7 +488,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testParentDismiss() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -538,7 +527,7 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
     await store.send(.pushChild) {
@@ -629,13 +618,12 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
   }
-  @MainActor
   func testSiblingCannotCancel() async {
     var path = StackState<TestSiblingCannotCancel.Path.State>()
     path.append(.child1(TestSiblingCannotCancel.Child.State()))
     path.append(.child2(TestSiblingCannotCancel.Child.State()))
     let mainQueue = DispatchQueue.test
-    let store = TestStore(initialState: TestSiblingCannotCancel.Parent.State(path: path)) {
+    let store = await TestStore(initialState: TestSiblingCannotCancel.Parent.State(path: path)) {
       TestSiblingCannotCancel.Parent()
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
@@ -729,10 +717,9 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
   }
-  @MainActor
   func testFirstChildWhileEffectInFlight_DeliversToCorrectID() async {
     let mainQueue = DispatchQueue.test
-    let store = TestStore(
+    let store = await TestStore(
       initialState: TestFirstChildWhileEffectInFlight_DeliversToCorrectID.Parent.State(
         path: StackState([
           .child1(TestFirstChildWhileEffectInFlight_DeliversToCorrectID.Child.State()),
@@ -853,7 +840,6 @@ final class StackReducerTests: BaseTCATestCase {
     await store.send(.path(.popFrom(id: 999)))
   }
 
-  @MainActor
   func testChildWithInFlightEffect() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -879,7 +865,7 @@ final class StackReducerTests: BaseTCATestCase {
 
     var path = StackState<Child.State>()
     path.append(Child.State())
-    let store = TestStore(initialState: Parent.State(path: path)) {
+    let store = await TestStore(initialState: Parent.State(path: path)) {
       Parent()
     }
     let line = #line
@@ -916,7 +902,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testMultipleChildEffects() async {
     struct Child: Reducer {
       struct State: Equatable { var count = 0 }
@@ -954,7 +939,7 @@ final class StackReducerTests: BaseTCATestCase {
     }
 
     let mainQueue = DispatchQueue.test
-    let store = TestStore(
+    let store = await TestStore(
       initialState: Parent.State(
         children: StackState([
           Child.State(count: 1),
@@ -979,7 +964,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testChildEffectCancellation() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -1003,7 +987,7 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(
+    let store = await TestStore(
       initialState: Parent.State(
         children: StackState([
           Child.State()
@@ -1019,7 +1003,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPush() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -1050,7 +1033,7 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -1074,7 +1057,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPushReusedID() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -1097,7 +1079,7 @@ final class StackReducerTests: BaseTCATestCase {
     }
     let line = #line - 3
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -1119,7 +1101,6 @@ final class StackReducerTests: BaseTCATestCase {
     await store.send(.child(.push(id: 0, state: Child.State())))
   }
 
-  @MainActor
   func testPushIDGreaterThanNextGeneration() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -1142,7 +1123,7 @@ final class StackReducerTests: BaseTCATestCase {
     }
     let line = #line - 3
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -1163,7 +1144,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testMismatchedIDFailure() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -1184,7 +1164,7 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 
@@ -1207,7 +1187,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testSendCopiesStackElementIDGenerator() async {
     struct Feature: Reducer {
       struct State: Equatable {
@@ -1235,7 +1214,7 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Feature.State()) {
+    let store = await TestStore(initialState: Feature.State()) {
       Feature()
     }
 
@@ -1261,7 +1240,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testOuterCancellation() async {
     struct Child: Reducer {
       struct State: Equatable {}
@@ -1325,7 +1303,7 @@ final class StackReducerTests: BaseTCATestCase {
       }
     }
 
-    let store = TestStore(initialState: Parent.State()) {
+    let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
 

@@ -4,9 +4,8 @@ import XCTest
 @testable import Search
 
 final class SearchTests: XCTestCase {
-  @MainActor
   func testSearchAndClearQuery() async {
-    let store = TestStore(initialState: Search.State()) {
+    let store = await TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
       $0.weatherClient.search = { @Sendable _ in .mock }
@@ -25,9 +24,8 @@ final class SearchTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testSearchFailure() async {
-    let store = TestStore(initialState: Search.State()) {
+    let store = await TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
       $0.weatherClient.search = { @Sendable _ in
@@ -43,9 +41,8 @@ final class SearchTests: XCTestCase {
     await store.receive(\.searchResponse.failure)
   }
 
-  @MainActor
   func testClearQueryCancelsInFlightSearchRequest() async {
-    let store = TestStore(initialState: Search.State()) {
+    let store = await TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
       $0.weatherClient.search = { @Sendable _ in .mock }
@@ -60,7 +57,6 @@ final class SearchTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testTapOnLocation() async {
     let specialResult = GeocodingSearch.Result(
       country: "Special Country",
@@ -73,7 +69,7 @@ final class SearchTests: XCTestCase {
     var results = GeocodingSearch.mock.results
     results.append(specialResult)
 
-    let store = TestStore(initialState: Search.State(results: results)) {
+    let store = await TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
       $0.weatherClient.forecast = { @Sendable _ in .mock }
@@ -113,7 +109,6 @@ final class SearchTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testTapOnLocationCancelsInFlightRequest() async {
     let specialResult = GeocodingSearch.Result(
       country: "Special Country",
@@ -128,7 +123,7 @@ final class SearchTests: XCTestCase {
 
     let clock = TestClock()
 
-    let store = TestStore(initialState: Search.State(results: results)) {
+    let store = await TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
       $0.weatherClient.forecast = { @Sendable _ in
@@ -175,11 +170,10 @@ final class SearchTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testTapOnLocationFailure() async {
     let results = GeocodingSearch.mock.results
 
-    let store = TestStore(initialState: Search.State(results: results)) {
+    let store = await TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
       $0.weatherClient.forecast = { @Sendable _ in

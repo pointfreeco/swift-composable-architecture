@@ -2,15 +2,16 @@ import XCTest
 
 final class SyncUpsUITests: XCTestCase {
   @MainActor
-  var app: XCUIApplication!
-
-  @MainActor
-  override func setUpWithError() throws {
-    continueAfterFailure = false
-    app = XCUIApplication()
+  var app: XCUIApplication = {
+    let app = XCUIApplication()
     app.launchEnvironment = [
       "UITesting": "true"
     ]
+    return app
+  }()
+
+  override func setUp() {
+    continueAfterFailure = false
   }
 
   // This test demonstrates the simple flow of tapping the "Add" button, filling in some fields in

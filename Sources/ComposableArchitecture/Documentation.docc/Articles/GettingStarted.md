@@ -259,9 +259,8 @@ To test use a `TestStore`, which can be created with the same information as the
 does extra work to allow you to assert how your feature evolves as actions are sent:
 
 ```swift
-@MainActor
 func testFeature() async {
-  let store = TestStore(initialState: Feature.State()) {
+  let store = await TestStore(initialState: Feature.State()) {
     Feature()
   }
 }
@@ -351,9 +350,8 @@ But in tests we can use a mock dependency that immediately returns a determinist
 fact: 
 
 ```swift
-@MainActor
 func testFeature() async {
-  let store = TestStore(initialState: Feature.State()) {
+  let store = await TestStore(initialState: Feature.State()) {
     Feature(numberFact: { "\($0) is a good number Brent" })
   }
 }

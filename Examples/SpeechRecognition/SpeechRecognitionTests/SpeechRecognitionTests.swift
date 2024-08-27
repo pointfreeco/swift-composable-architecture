@@ -4,9 +4,8 @@ import XCTest
 @testable import SpeechRecognition
 
 final class SpeechRecognitionTests: XCTestCase {
-  @MainActor
   func testDenyAuthorization() async {
-    let store = TestStore(initialState: SpeechRecognition.State()) {
+    let store = await TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.requestAuthorization = { .denied }
@@ -27,9 +26,8 @@ final class SpeechRecognitionTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testRestrictedAuthorization() async {
-    let store = TestStore(initialState: SpeechRecognition.State()) {
+    let store = await TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.requestAuthorization = { .restricted }
@@ -44,10 +42,9 @@ final class SpeechRecognitionTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testAllowAndRecord() async {
     let recognitionTask = AsyncThrowingStream.makeStream(of: SpeechRecognitionResult.self)
-    let store = TestStore(initialState: SpeechRecognition.State()) {
+    let store = await TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.finishTask = { recognitionTask.continuation.finish() }
@@ -89,10 +86,9 @@ final class SpeechRecognitionTests: XCTestCase {
     await store.finish()
   }
 
-  @MainActor
   func testAudioSessionFailure() async {
     let recognitionTask = AsyncThrowingStream.makeStream(of: SpeechRecognitionResult.self)
-    let store = TestStore(initialState: SpeechRecognition.State()) {
+    let store = await TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.startTask = { @Sendable _ in recognitionTask.stream }
@@ -111,10 +107,9 @@ final class SpeechRecognitionTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testAudioEngineFailure() async {
     let recognitionTask = AsyncThrowingStream.makeStream(of: SpeechRecognitionResult.self)
-    let store = TestStore(initialState: SpeechRecognition.State()) {
+    let store = await TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.startTask = { @Sendable _ in recognitionTask.stream }

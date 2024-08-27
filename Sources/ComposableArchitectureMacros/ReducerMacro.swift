@@ -378,6 +378,11 @@ extension ReducerMacro: MemberMacro {
       ) {
         decls.append(
           """
+          #if swift(<5.10)
+          @MainActor(unsafe)
+          #else
+          @preconcurrency @MainActor
+          #endif
           \(access)static func scope(\
           _ store: ComposableArchitecture.Store<Self.State, Self.Action>\
           ) -> CaseScope {

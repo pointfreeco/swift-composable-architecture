@@ -300,7 +300,6 @@ extension BindableAction {
 }
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
-  @MainActor
   public subscript<Value: Equatable>(
     dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
   ) -> Binding<Value> {
@@ -402,6 +401,11 @@ where Value: CustomDebugStringConvertible {
 /// Read <doc:Bindings> for more information.
 @dynamicMemberLookup
 @propertyWrapper
+#if swift(<5.10)
+  @MainActor(unsafe)
+#else
+  @preconcurrency @MainActor
+#endif
 public struct BindingViewStore<State> {
   let store: Store<State, BindingAction<State>>
   #if DEBUG

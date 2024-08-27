@@ -4,9 +4,8 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 final class SharedStateFileStorageTests: XCTestCase {
-  @MainActor
   func testTabSelection() async {
-    let store = TestStore(initialState: SharedStateFileStorage.State()) {
+    let store = await TestStore(initialState: SharedStateFileStorage.State()) {
       SharedStateFileStorage()
     }
 
@@ -18,9 +17,8 @@ final class SharedStateFileStorageTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testSharedCounts() async {
-    let store = TestStore(initialState: SharedStateFileStorage.State()) {
+    let store = await TestStore(initialState: SharedStateFileStorage.State()) {
       SharedStateFileStorage()
     }
 
@@ -37,9 +35,8 @@ final class SharedStateFileStorageTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testAlert() async {
-    let store = TestStore(initialState: SharedStateFileStorage.State()) {
+    let store = await TestStore(initialState: SharedStateFileStorage.State()) {
       SharedStateFileStorage()
     }
 

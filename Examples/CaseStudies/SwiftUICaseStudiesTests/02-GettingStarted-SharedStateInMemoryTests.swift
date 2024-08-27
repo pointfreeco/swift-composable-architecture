@@ -4,9 +4,8 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 final class SharedStateInMemoryTests: XCTestCase {
-  @MainActor
   func testTabSelection() async {
-    let store = TestStore(initialState: SharedStateInMemory.State()) {
+    let store = await TestStore(initialState: SharedStateInMemory.State()) {
       SharedStateInMemory()
     }
 
@@ -18,9 +17,8 @@ final class SharedStateInMemoryTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testSharedCounts() async {
-    let store = TestStore(initialState: SharedStateInMemory.State()) {
+    let store = await TestStore(initialState: SharedStateInMemory.State()) {
       SharedStateInMemory()
     }
 
@@ -37,9 +35,8 @@ final class SharedStateInMemoryTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testAlert() async {
-    let store = TestStore(initialState: SharedStateInMemory.State()) {
+    let store = await TestStore(initialState: SharedStateInMemory.State()) {
       SharedStateInMemory()
     }
 

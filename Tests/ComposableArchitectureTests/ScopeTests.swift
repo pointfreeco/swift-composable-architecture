@@ -3,9 +3,8 @@ import XCTest
 
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class ScopeTests: BaseTCATestCase {
-  @MainActor
   func testStructChild() async {
-    let store = TestStore(initialState: Feature.State()) {
+    let store = await TestStore(initialState: Feature.State()) {
       Feature()
     }
 
@@ -23,9 +22,8 @@ final class ScopeTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testEnumChild() async {
-    let store = TestStore(initialState: Feature.State()) {
+    let store = await TestStore(initialState: Feature.State()) {
       Feature()
     }
 

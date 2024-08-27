@@ -5,9 +5,8 @@ import XCTest
 @testable import SyncUps
 
 class SyncUpFormTests: XCTestCase {
-  @MainActor
   func testAddAttendee() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SyncUpForm.State(
         syncUp: SyncUp(id: SyncUp.ID())
       )
@@ -16,12 +15,10 @@ class SyncUpFormTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testRemoveFocusedAttendee() async {
     // ...
   }
 
-  @MainActor
   func testRemoveAttendee() async {
     // ...
   }

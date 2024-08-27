@@ -4,9 +4,8 @@ import NewGameCore
 import XCTest
 
 final class NewGameCoreTests: XCTestCase {
-  @MainActor
   func testFlow_NewGame_Integration() async {
-    let store = TestStore(initialState: NewGame.State()) {
+    let store = await TestStore(initialState: NewGame.State()) {
       NewGame()
     }
     await store.send(\.binding.oPlayerName, "Blob Sr.") {

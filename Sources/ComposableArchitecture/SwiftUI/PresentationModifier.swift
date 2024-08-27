@@ -305,6 +305,11 @@ public struct AnyIdentifiable: Identifiable {
   }
 }
 
+#if swift(<5.10)
+  @MainActor(unsafe)
+#else
+  @preconcurrency @MainActor
+#endif
 @_spi(Presentation)
 public struct DestinationContent<State, Action> {
   let store: Store<State?, Action>

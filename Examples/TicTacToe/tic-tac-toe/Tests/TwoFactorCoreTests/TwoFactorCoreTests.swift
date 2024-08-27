@@ -4,9 +4,8 @@ import TwoFactorCore
 import XCTest
 
 final class TwoFactorCoreTests: XCTestCase {
-  @MainActor
   func testFlow_Success() async {
-    let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
+    let store = await TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
       TwoFactor()
     } withDependencies: {
       $0.authenticationClient.twoFactor = { @Sendable _, _ in
@@ -35,9 +34,8 @@ final class TwoFactorCoreTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testFlow_Failure() async {
-    let store = TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
+    let store = await TestStore(initialState: TwoFactor.State(token: "deadbeefdeadbeef")) {
       TwoFactor()
     } withDependencies: {
       $0.authenticationClient.twoFactor = { @Sendable _, _ in

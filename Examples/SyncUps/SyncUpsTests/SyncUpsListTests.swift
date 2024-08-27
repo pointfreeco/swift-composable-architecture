@@ -33,11 +33,10 @@ final class SyncUpsListTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testAdd_ValidatedAttendees() async throws {
     @Dependency(\.uuid) var uuid
 
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SyncUpsList.State(
         destination: .add(
           SyncUpForm.State(
