@@ -364,10 +364,10 @@ public final class Store<State, Action> {
     )
     childStore._isInvalidated =
       id == nil || !self.canCacheChildren
-      ? {
+      ? { @MainActor @Sendable in
         isInvalid?(self.currentState) == true || self._isInvalidated()
       }
-      : { [weak self] in
+      : { @MainActor @Sendable [weak self] in
         guard let self else { return true }
         return isInvalid?(self.currentState) == true || self._isInvalidated()
       }
