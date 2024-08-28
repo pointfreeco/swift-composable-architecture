@@ -1,8 +1,7 @@
 @preconcurrency import Combine
-@testable import ComposableArchitecture
 
 extension Effect where Action: Sendable {
-  var actions: AsyncStream<Action> {
+  @_spi(Internals) public var actions: AsyncStream<Action> {
     switch self.operation {
     case .none:
       return .finished
