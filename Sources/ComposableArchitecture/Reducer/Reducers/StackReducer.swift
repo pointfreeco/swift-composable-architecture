@@ -517,7 +517,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
             into: &state[keyPath: self.toStackState][id: elementID]!,
             action: destinationAction
           )
-          .map { toStackAction.embed(.element(id: elementID, action: $0)) }
+          .map { [toStackAction] in toStackAction.embed(.element(id: elementID, action: $0)) }
           ._cancellable(navigationIDPath: elementNavigationIDPath)
       } else {
         reportIssue(
