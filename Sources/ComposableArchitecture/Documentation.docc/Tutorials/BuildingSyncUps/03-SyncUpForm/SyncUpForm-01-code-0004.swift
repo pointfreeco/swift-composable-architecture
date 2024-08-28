@@ -13,7 +13,7 @@ struct SyncUpForm {
   }
 
   var body: some ReducerOf<Self> {
-    BindingReducer()
+    BindingReducer(action: \.binding)
     
     Reduce { state, action in
       switch action {

@@ -77,7 +77,7 @@ private struct Child {
     case onDisappear
   }
   var body: some ReducerOf<Self> {
-    BindingReducer()
+    BindingReducer(action: \.binding)
   }
 }
 

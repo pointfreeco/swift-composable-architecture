@@ -224,7 +224,7 @@ private enum PresentationTestCase {
     }
     @Dependency(\.dismiss) var dismiss
     var body: some ReducerOf<Self> {
-      BindingReducer()
+      BindingReducer(action: \.binding)
       Reduce<State, Action> { state, action in
         switch action {
         case .binding:

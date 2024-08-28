@@ -790,7 +790,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
             Action:
               \(typeName(self.bindableActionType)).binding(.set(_, \(value)))
 
-          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+          To fix this, invoke "BindingReducer(action: \\.binding)" from your feature reducer's \
+          "body".
           """,
           fileID: fileID,
           filePath: filePath,

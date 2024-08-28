@@ -98,10 +98,10 @@ private struct Feature {
   }
   @Dependency(\.defaultAppStorage) var defaults
   var body: some ReducerOf<Self> {
-    BindingReducer()
+    BindingReducer(action: \.binding)
     Reduce<State, Action> { state, action in
       switch action {
-      case .binding(_):
+      case .binding:
         return .none
       case .deleteFileButtonTapped:
         return .run { _ in

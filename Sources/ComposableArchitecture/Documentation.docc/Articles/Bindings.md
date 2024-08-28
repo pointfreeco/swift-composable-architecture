@@ -223,7 +223,7 @@ struct Settings {
   enum Action: BindableAction { /* ... */ }
 
   var body: some Reducer<State, Action> {
-    BindingReducer()
+    BindingReducer(action: \.binding)
   }
 }
 ```
@@ -252,7 +252,7 @@ action for a given key path in the reducer:
 
 ```swift
 var body: some Reducer<State, Action> {
-  BindingReducer()
+  BindingReducer(action: \.binding)
 
   Reduce { state, action in
     switch action
@@ -273,7 +273,7 @@ particular fields:
 
 ```swift
 var body: some Reducer<State, Action> {
-  BindingReducer()
+  BindingReducer(action: \.binding)
     .onChange(of: \.displayName) { oldValue, newValue in
       // Validate display name
     }

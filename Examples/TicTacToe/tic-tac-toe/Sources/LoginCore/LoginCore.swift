@@ -37,7 +37,7 @@ public struct Login: Sendable {
   public init() {}
 
   public var body: some Reducer<State, Action> {
-    BindingReducer(action: \.view)
+    BindingReducer(action: \.view.binding)
     Reduce { state, action in
       switch action {
       case .alert:

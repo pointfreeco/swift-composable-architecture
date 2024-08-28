@@ -44,29 +44,54 @@ import SwiftUI
 /// fixed.
 public struct BindingReducer<State, Action>: Reducer {
   @usableFromInline
-  let toBindingAction: AnyCasePath<Action, BindingAction<State>>
+  let toBindingAction: (Action) -> BindingAction<State>?
+
+  @usableFromInline
+  init(internal toBindingAction: @escaping (Action) -> BindingAction<State>?) {
+    self.toBindingAction = toBindingAction
+  }
 
   /// Initializes a reducer that updates bindable state when it receives binding actions.
   ///
   /// - Parameter toBindingAction: A case key path to the binding action case.
   @inlinable
   public init(action toBindingAction: CaseKeyPath<Action, BindingAction<State>>) {
-    self.init(internal: AnyCasePath(toBindingAction))
+    self.init(internal: AnyCasePath(toBindingAction).extract(from:))
   }
 
-  @available(
-    *, deprecated,
-    message: "Pass an explicit case key path, for example: 'BindingReducer(action: \\.binding)'"
-  )
+  @inlinable
+  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    guard let bindingAction = toBindingAction(action)
+    else { return .none }
+
+    bindingAction.set(&state)
+    return .none
+  }
+}
+
+@available(
+  iOS, deprecated: 9999,
+  message: "Pass an explicit case key path, for example: 'BindingReducer(action: \\.binding)'"
+)
+@available(
+  macOS, deprecated: 9999,
+  message: "Pass an explicit case key path, for example: 'BindingReducer(action: \\.binding)'"
+)
+@available(
+  tvOS, deprecated: 9999,
+  message: "Pass an explicit case key path, for example: 'BindingReducer(action: \\.binding)'"
+)
+@available(
+  watchOS, deprecated: 9999,
+  message: "Pass an explicit case key path, for example: 'BindingReducer(action: \\.binding)'"
+)
+extension BindingReducer {
   @inlinable
   public init() where Action: BindableAction<State> {
-    self.init(internal: AnyCasePath(unsafe: { .binding($0) }))
+    self.init(internal: AnyCasePath(unsafe: { .binding($0) }).extract(from:))
   }
 
-  @available(
-    *, deprecated,
-    message: "Pass an explicit case key path, for example: 'BindingReducer(action: \\.binding)'"
-  )
+  @_disfavoredOverload
   @inlinable
   public init<ViewAction: BindableAction<State>>(
     action toViewAction: CaseKeyPath<Action, ViewAction>
@@ -74,31 +99,17 @@ public struct BindingReducer<State, Action>: Reducer {
     self.init(
       internal: AnyCasePath(toViewAction)
         .appending(path: AnyCasePath(unsafe: { .binding($0) }))
+        .extract(from:)
     )
   }
 
-  @available(*, deprecated)
+  @_disfavoredOverload
   @inlinable
   public init<ViewAction: BindableAction<State>>(
     action toViewAction: @escaping (_ action: Action) -> ViewAction?
   ) {
-    self.init(
-      internal: AnyCasePath(embed: { _ in fatalError() }, extract: { toViewAction($0) })
-        .appending(path: AnyCasePath(unsafe: { .binding($0) }))
-    )
-  }
-
-  @usableFromInline
-  init(internal toBindingAction: AnyCasePath<Action, BindingAction<State>>) {
-    self.toBindingAction = toBindingAction
-  }
-
-  @inlinable
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    guard let bindingAction = toBindingAction.extract(from: action)
-    else { return .none }
-
-    bindingAction.set(&state)
-    return .none
+    let toBindingAction = AnyCasePath<ViewAction, BindingAction<State>>(unsafe: { .binding($0) })
+      .extract(from:)
+    self.init(internal: { toViewAction($0).flatMap(toBindingAction) })
   }
 }

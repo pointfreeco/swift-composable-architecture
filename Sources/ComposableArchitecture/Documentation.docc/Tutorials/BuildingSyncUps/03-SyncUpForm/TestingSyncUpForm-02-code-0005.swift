@@ -23,7 +23,7 @@ struct SyncUpForm {
   @Dependency(\.uuid) var uuid
 
   var body: some ReducerOf<Self> {
-    BindingReducer()
+    BindingReducer(action: \.binding)
 
     Reduce { state, action in
       switch action {

@@ -37,7 +37,7 @@ public struct TwoFactor: Sendable {
   public init() {}
 
   public var body: some ReducerOf<Self> {
-    BindingReducer(action: \.view)
+    BindingReducer(action: \.view.binding)
     Reduce { state, action in
       switch action {
       case .alert:
