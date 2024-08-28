@@ -710,7 +710,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
 }
 
 @usableFromInline
-struct PresentationDismissID: Hashable {
+struct PresentationDismissID: Hashable, Sendable {
   @usableFromInline init() {}
 }
 @usableFromInline
