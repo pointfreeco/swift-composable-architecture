@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import Combine
+@preconcurrency import Combine
 import Darwin
 
 final class DemandBuffer<S: Subscriber>: @unchecked Sendable {
@@ -105,25 +105,25 @@ final class DemandBuffer<S: Subscriber>: @unchecked Sendable {
 
 extension AnyPublisher where Failure == Never {
   private init(
-    _ callback: @escaping (Effect<Output>.Subscriber) -> Cancellable
+    _ callback: @escaping @Sendable (Effect<Output>.Subscriber) -> Cancellable
   ) {
     self = Publishers.Create(callback: callback).eraseToAnyPublisher()
   }
 
   static func create(
-    _ factory: @escaping (Effect<Output>.Subscriber) -> Cancellable
+    _ factory: @escaping @Sendable (Effect<Output>.Subscriber) -> Cancellable
   ) -> AnyPublisher<Output, Failure> {
     AnyPublisher(factory)
   }
 }
 
 extension Publishers {
-  fileprivate class Create<Output>: Publisher {
+  fileprivate final class Create<Output>: Publisher, Sendable {
     typealias Failure = Never
 
-    private let callback: (Effect<Output>.Subscriber) -> Cancellable
+    private let callback: @Sendable (Effect<Output>.Subscriber) -> Cancellable
 
-    init(callback: @escaping (Effect<Output>.Subscriber) -> Cancellable) {
+    init(callback: @escaping @Sendable (Effect<Output>.Subscriber) -> Cancellable) {
       self.callback = callback
     }
 
@@ -134,25 +134,25 @@ extension Publishers {
 }
 
 extension Publishers.Create {
-  fileprivate final class Subscription<Downstream: Subscriber>: Combine.Subscription
+  fileprivate final class Subscription<Downstream: Subscriber>: Combine.Subscription, Sendable
   where Downstream.Input == Output, Downstream.Failure == Never {
     private let buffer: DemandBuffer<Downstream>
-    private var cancellable: Cancellable?
+    private let cancellable = LockIsolated<Cancellable?>(nil)
 
     init(
-      callback: @escaping (Effect<Output>.Subscriber) -> Cancellable,
+      callback: @escaping @Sendable (Effect<Output>.Subscriber) -> Cancellable,
       downstream: Downstream
     ) {
       self.buffer = DemandBuffer(subscriber: downstream)
 
-      let cancellable = callback(
-        .init(
-          send: { [weak self] in _ = self?.buffer.buffer(value: $0) },
-          complete: { [weak self] in self?.buffer.complete(completion: $0) }
+      self.cancellable.setValue(
+        callback(
+          .init(
+            send: { [weak self] in _ = self?.buffer.buffer(value: $0) },
+            complete: { [weak self] in self?.buffer.complete(completion: $0) }
+          )
         )
       )
-
-      self.cancellable = cancellable
     }
 
     func request(_ demand: Subscribers.Demand) {
@@ -160,7 +160,7 @@ extension Publishers.Create {
     }
 
     func cancel() {
-      self.cancellable?.cancel()
+      self.cancellable.value?.cancel()
     }
   }
 }
@@ -172,13 +172,13 @@ extension Publishers.Create.Subscription: CustomStringConvertible {
 }
 
 extension Effect {
-  struct Subscriber {
-    private let _send: (Action) -> Void
-    private let _complete: (Subscribers.Completion<Never>) -> Void
+  struct Subscriber: Sendable {
+    private let _send: @Sendable (Action) -> Void
+    private let _complete: @Sendable (Subscribers.Completion<Never>) -> Void
 
     init(
-      send: @escaping (Action) -> Void,
-      complete: @escaping (Subscribers.Completion<Never>) -> Void
+      send: @escaping @Sendable (Action) -> Void,
+      complete: @escaping @Sendable (Subscribers.Completion<Never>) -> Void
     ) {
       self._send = send
       self._complete = complete
