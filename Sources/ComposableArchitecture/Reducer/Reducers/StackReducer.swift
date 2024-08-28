@@ -742,5 +742,9 @@ extension StackElementID: ExpressibleByIntegerLiteral {
 }
 
 private struct NavigationDismissID: Hashable, Sendable {
-  let elementID: AnyHashable
+  private let elementID: AnyHashableSendable
+
+  init(elementID: some Hashable & Sendable) {
+    self.elementID = AnyHashableSendable(elementID)
+  }
 }
