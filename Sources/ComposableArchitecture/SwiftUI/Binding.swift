@@ -143,8 +143,8 @@ extension BindingState: Sendable where Value: Sendable {}
 /// boilerplate typically associated with mutating multiple fields in state.
 ///
 /// Read <doc:Bindings> for more information.
-public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable {
-  public let keyPath: PartialKeyPath<Root>
+public struct BindingAction<Root>: CasePathable, Equatable, Sendable {
+  public let keyPath: _PartialKeyPath<Root>
 
   @usableFromInline
   let set: @Sendable (inout Root) -> Void
@@ -152,7 +152,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
   let valueIsEqualTo: @Sendable (Any) -> Bool
 
   init(
-    keyPath: PartialKeyPath<Root>,
+    keyPath: _PartialKeyPath<Root>,
     set: @escaping @Sendable (inout Root) -> Void,
     value: any Sendable,
     valueIsEqualTo: @escaping @Sendable (Any) -> Bool
