@@ -346,7 +346,7 @@ extension Effect {
   /// - Returns: A publisher that uses the provided closure to map elements from the upstream effect
   ///   to new elements that it then publishes.
   @inlinable
-  public func map<T>(_ transform: @escaping (Action) -> T) -> Effect<T> {
+  public func map<T>(_ transform: @escaping @Sendable (Action) -> T) -> Effect<T> {
     switch self.operation {
     case .none:
       return .none
