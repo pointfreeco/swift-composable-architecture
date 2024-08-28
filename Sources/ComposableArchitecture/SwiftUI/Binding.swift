@@ -174,7 +174,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, Sendable {
   @dynamicMemberLookup
   public struct AllCasePaths {
     #if canImport(Perception)
-      public subscript<Value: Equatable>(
+      public subscript<Value: Equatable & Sendable>(
         dynamicMember keyPath: _WritableKeyPath<Root, Value>
       ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
         AnyCasePath(
@@ -184,7 +184,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, Sendable {
       }
     #endif
 
-    public subscript<Value: Equatable>(
+    public subscript<Value: Equatable & Sendable>(
       dynamicMember keyPath: _WritableKeyPath<Root, BindingState<Value>>
     ) -> AnyCasePath<BindingAction, Value> {
       AnyCasePath(
@@ -236,7 +236,7 @@ extension BindingAction {
   }
 
   init<Value: Equatable & Sendable>(
-    keyPath: WritableKeyPath<Root, BindingState<Value>>,
+    keyPath: _WritableKeyPath<Root, BindingState<Value>>,
     set: @escaping @Sendable (_ state: inout Root) -> Void,
     value: Value
   ) {
@@ -291,7 +291,7 @@ extension BindableAction {
   /// Shorthand for `.binding(.set(\.$keyPath, value))`.
   ///
   /// - Returns: A binding action.
-  public static func set<Value: Equatable>(
+  public static func set<Value: Equatable & Sendable>(
     _ keyPath: _WritableKeyPath<State, BindingState<Value>>,
     _ value: Value
   ) -> Self {
@@ -300,7 +300,7 @@ extension BindableAction {
 }
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
-  public subscript<Value: Equatable>(
+  public subscript<Value: Equatable & Sendable>(
     dynamicMember keyPath: _WritableKeyPath<ViewState, BindingState<Value>>
   ) -> Binding<Value> {
     self.binding(
@@ -455,7 +455,7 @@ public struct BindingViewStore<State> {
     self.wrappedValue[keyPath: keyPath]
   }
 
-  public subscript<Value: Equatable>(
+  public subscript<Value: Equatable & Sendable>(
     dynamicMember keyPath: _WritableKeyPath<State, BindingState<Value>>
   ) -> BindingViewState<Value> {
     BindingViewState(
