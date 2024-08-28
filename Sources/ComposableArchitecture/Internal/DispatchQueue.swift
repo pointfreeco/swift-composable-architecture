@@ -1,12 +1,12 @@
 import Dispatch
 
-func mainActorNow(execute block: @MainActor @Sendable () -> Void) {
+func mainActorNow<R: Sendable>(execute block: @MainActor @Sendable () -> R) -> R {
   if DispatchQueue.getSpecific(key: key) == value {
-    MainActor._assumeIsolated {
+    return MainActor._assumeIsolated {
       block()
     }
   } else {
-    DispatchQueue.main.sync {
+    return DispatchQueue.main.sync {
       MainActor._assumeIsolated {
         block()
       }
