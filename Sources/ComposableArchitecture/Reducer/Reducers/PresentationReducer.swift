@@ -742,8 +742,8 @@ extension Task<Never, Never> {
 }
 
 extension Effect {
-  internal func _cancellable<ID: Hashable>(
-    id: ID = _PresentedID(),
+  internal func _cancellable(
+    id: some Hashable & Sendable = _PresentedID(),
     navigationIDPath: NavigationIDPath,
     cancelInFlight: Bool = false
   ) -> Self {
@@ -753,8 +753,8 @@ extension Effect {
       self.cancellable(id: id, cancelInFlight: cancelInFlight)
     }
   }
-  internal static func _cancel<ID: Hashable>(
-    id: ID = _PresentedID(),
+  internal static func _cancel(
+    id: some Hashable & Sendable = _PresentedID(),
     navigationID: NavigationIDPath
   ) -> Self {
     withDependencies {
