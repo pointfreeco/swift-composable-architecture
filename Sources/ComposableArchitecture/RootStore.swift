@@ -30,7 +30,7 @@ public final class RootStore {
 
       self.isSending = true
       var currentState = self.state as! State
-      let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
+      let tasks = LockIsolated<[Task<Void, Never>]>([])
       defer {
         withExtendedLifetime(self.bufferedActions) {
           self.bufferedActions.removeAll()
@@ -42,7 +42,7 @@ public final class RootStore {
             self.bufferedActions.removeLast(),
             originatingFrom: originatingAction
           ) {
-            tasks.wrappedValue.append(task)
+            tasks.withValue { $0.append(task) }
           }
         }
       }
@@ -75,7 +75,7 @@ public final class RootStore {
                   if let task = continuation.yield({
                     self.send(effectAction, originatingFrom: action)
                   }) {
-                    tasks.wrappedValue.append(task)
+                    tasks.withValue { $0.append(task) }
                   }
                 }
               )
@@ -87,63 +87,62 @@ public final class RootStore {
               effectCancellable.cancel()
             }
             boxedTask.wrappedValue = task
-            tasks.wrappedValue.append(task)
+            tasks.withValue { $0.append(task) }
             self.effectCancellables[uuid] = effectCancellable
           }
         case let .run(priority, operation):
           withEscapedDependencies { continuation in
-            tasks.wrappedValue.append(
-              Task(priority: priority) { @MainActor in
-                let isCompleted = LockIsolated(false)
-                defer { isCompleted.setValue(true) }
-                await operation(
-                  Send { effectAction in
-                    if isCompleted.value {
-                      reportIssue(
-                        """
-                        An action was sent from a completed effect:
+            let task = Task(priority: priority) { @MainActor in
+              let isCompleted = LockIsolated(false)
+              defer { isCompleted.setValue(true) }
+              await operation(
+                Send { effectAction in
+                  if isCompleted.value {
+                    reportIssue(
+                      """
+                      An action was sent from a completed effect:
 
-                          Action:
-                            \(debugCaseOutput(effectAction))
+                        Action:
+                          \(debugCaseOutput(effectAction))
 
-                          Effect returned from:
-                            \(debugCaseOutput(action))
+                        Effect returned from:
+                          \(debugCaseOutput(action))
 
-                        Avoid sending actions using the 'send' argument from 'Effect.run' after \
-                        the effect has completed. This can happen if you escape the 'send' \
-                        argument in an unstructured context.
+                      Avoid sending actions using the 'send' argument from 'Effect.run' after \
+                      the effect has completed. This can happen if you escape the 'send' \
+                      argument in an unstructured context.
 
-                        To fix this, make sure that your 'run' closure does not return until \
-                        you're done calling 'send'.
-                        """
-                      )
-                    }
-                    if let task = continuation.yield({
-                      self.send(effectAction, originatingFrom: action)
-                    }) {
-                      tasks.wrappedValue.append(task)
-                    }
+                      To fix this, make sure that your 'run' closure does not return until \
+                      you're done calling 'send'.
+                      """
+                    )
                   }
-                )
-              }
-            )
+                  if let task = continuation.yield({
+                    self.send(effectAction, originatingFrom: action)
+                  }) {
+                    tasks.withValue { $0.append(task) }
+                  }
+                }
+              )
+            }
+            tasks.withValue { $0.append(task) }
           }
         }
       }
 
-      guard !tasks.wrappedValue.isEmpty else { return nil }
+      guard !tasks.isEmpty else { return nil }
       return Task { @MainActor in
         await withTaskCancellationHandler {
-          var index = tasks.wrappedValue.startIndex
-          while index < tasks.wrappedValue.endIndex {
+          var index = tasks.startIndex
+          while index < tasks.endIndex {
             defer { index += 1 }
-            await tasks.wrappedValue[index].value
+            await tasks[index].value
           }
         } onCancel: {
-          var index = tasks.wrappedValue.startIndex
-          while index < tasks.wrappedValue.endIndex {
+          var index = tasks.startIndex
+          while index < tasks.endIndex {
             defer { index += 1 }
-            tasks.wrappedValue[index].cancel()
+            tasks[index].cancel()
           }
         }
       }
