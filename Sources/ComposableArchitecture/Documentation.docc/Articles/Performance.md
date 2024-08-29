@@ -93,7 +93,7 @@ store.send(.toggleChanged) {
 store.receive(\.sharedComputation) {
   // Assert on shared logic
 }
-store.send(.textFieldChanged("Hello") {
+store.send(.textFieldChanged("Hello")) {
   $0.description = "Hello"
 }
 store.receive(\.sharedComputation) {
@@ -274,7 +274,7 @@ case .startButtonTapped:
 
     for await event in self.eventsClient.events() {
       defer { count += 1 }
-      send(.progress(Double(count) / Double(max)))
+      await send(.progress(Double(count) / Double(max)))
     }
   }
 }
@@ -297,7 +297,7 @@ case .startButtonTapped:
     for await event in self.eventsClient.events() {
       defer { count += 1 }
       if count.isMultiple(of: interval) {
-        send(.progress(Double(count) / Double(max)))
+        await send(.progress(Double(count) / Double(max)))
       }
     }
   }
