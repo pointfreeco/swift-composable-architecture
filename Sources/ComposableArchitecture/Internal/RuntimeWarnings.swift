@@ -2,7 +2,7 @@ import Foundation
 import IssueReporting
 
 extension Notification.Name {
-  @_documentation(visibility:private)
+  @_documentation(visibility: private)
   @available(*, deprecated, renamed: "_runtimeWarning")
   public static let runtimeWarning = Self("ComposableArchitecture.runtimeWarning")
 

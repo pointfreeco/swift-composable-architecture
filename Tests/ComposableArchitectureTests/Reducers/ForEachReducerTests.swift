@@ -15,13 +15,13 @@ final class ForEachReducerTests: BaseTCATestCase {
       Elements()
     }
 
-    await store.send(\.rows[id:1], "Blob Esq.") {
+    await store.send(\.rows[id: 1], "Blob Esq.") {
       $0.rows[id: 1]?.value = "Blob Esq."
     }
-    await store.send(\.rows[id:2], "") {
+    await store.send(\.rows[id: 2], "") {
       $0.rows[id: 2]?.value = ""
     }
-    await store.receive(\.rows[id:2]) {
+    await store.receive(\.rows[id: 2]) {
       $0.rows[id: 2]?.value = "Empty"
     }
   }
@@ -64,7 +64,7 @@ final class ForEachReducerTests: BaseTCATestCase {
         """
     }
 
-    await store.send(\.rows[id:1], "Blob Esq.")
+    await store.send(\.rows[id: 1], "Blob Esq.")
   }
 
   @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")

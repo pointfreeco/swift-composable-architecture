@@ -140,7 +140,7 @@ import SwiftUI
 public final class Store<State, Action> {
   var canCacheChildren = true
   private var children: [ScopeID<State, Action>: AnyObject] = [:]
-  var _isInvalidated = { false }
+  var _isInvalidated: @MainActor @Sendable () -> Bool = { false }
 
   @_spi(Internals) public let rootStore: RootStore
   private let toState: PartialToState<State>
@@ -364,10 +364,10 @@ public final class Store<State, Action> {
     )
     childStore._isInvalidated =
       id == nil || !self.canCacheChildren
-      ? {
+      ? { @MainActor @Sendable in
         isInvalid?(self.currentState) == true || self._isInvalidated()
       }
-      : { [weak self] in
+      : { @MainActor @Sendable [weak self] in
         guard let self else { return true }
         return isInvalid?(self.currentState) == true || self._isInvalidated()
       }

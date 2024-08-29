@@ -105,7 +105,7 @@
       let id = self.data.ids[position]
       var element = self.data[position]
       return self.store.scope(
-        id: self.store.id(state: \.[id:id]!, action: \.[id:id]),
+        id: self.store.id(state: \.[id: id]!, action: \.[id: id]),
         state: ToState {
           element = $0[id: id] ?? element
           return element

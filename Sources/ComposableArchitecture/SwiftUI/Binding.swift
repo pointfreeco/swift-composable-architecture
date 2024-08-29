@@ -143,8 +143,8 @@ extension BindingState: Sendable where Value: Sendable {}
 /// boilerplate typically associated with mutating multiple fields in state.
 ///
 /// Read <doc:Bindings> for more information.
-public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable {
-  public let keyPath: PartialKeyPath<Root>
+public struct BindingAction<Root>: CasePathable, Equatable, Sendable {
+  public let keyPath: _PartialKeyPath<Root>
 
   @usableFromInline
   let set: @Sendable (inout Root) -> Void
@@ -152,7 +152,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
   let valueIsEqualTo: @Sendable (Any) -> Bool
 
   init(
-    keyPath: PartialKeyPath<Root>,
+    keyPath: _PartialKeyPath<Root>,
     set: @escaping @Sendable (inout Root) -> Void,
     value: any Sendable,
     valueIsEqualTo: @escaping @Sendable (Any) -> Bool
@@ -174,8 +174,8 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
   @dynamicMemberLookup
   public struct AllCasePaths {
     #if canImport(Perception)
-      public subscript<Value: Equatable>(
-        dynamicMember keyPath: WritableKeyPath<Root, Value>
+      public subscript<Value: Equatable & Sendable>(
+        dynamicMember keyPath: _WritableKeyPath<Root, Value>
       ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
         AnyCasePath(
           embed: { .set(keyPath, $0) },
@@ -184,8 +184,8 @@ public struct BindingAction<Root>: CasePathable, Equatable, @unchecked Sendable 
       }
     #endif
 
-    public subscript<Value: Equatable>(
-      dynamicMember keyPath: WritableKeyPath<Root, BindingState<Value>>
+    public subscript<Value: Equatable & Sendable>(
+      dynamicMember keyPath: _WritableKeyPath<Root, BindingState<Value>>
     ) -> AnyCasePath<BindingAction, Value> {
       AnyCasePath(
         embed: { .set(keyPath, $0) },
@@ -206,7 +206,7 @@ extension BindingAction {
   /// - Returns: An action that describes simple mutations to some root state at a writable key
   ///   path.
   public static func set<Value: Equatable & Sendable>(
-    _ keyPath: WritableKeyPath<Root, BindingState<Value>>,
+    _ keyPath: _WritableKeyPath<Root, BindingState<Value>>,
     _ value: Value
   ) -> Self {
     return .init(
@@ -236,7 +236,7 @@ extension BindingAction {
   }
 
   init<Value: Equatable & Sendable>(
-    keyPath: WritableKeyPath<Root, BindingState<Value>>,
+    keyPath: _WritableKeyPath<Root, BindingState<Value>>,
     set: @escaping @Sendable (_ state: inout Root) -> Void,
     value: Value
   ) {
@@ -291,8 +291,8 @@ extension BindableAction {
   /// Shorthand for `.binding(.set(\.$keyPath, value))`.
   ///
   /// - Returns: A binding action.
-  public static func set<Value: Equatable>(
-    _ keyPath: WritableKeyPath<State, BindingState<Value>>,
+  public static func set<Value: Equatable & Sendable>(
+    _ keyPath: _WritableKeyPath<State, BindingState<Value>>,
     _ value: Value
   ) -> Self {
     self.binding(.set(keyPath, value))
@@ -300,8 +300,8 @@ extension BindableAction {
 }
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
+  public subscript<Value: Equatable & Sendable>(
+    dynamicMember keyPath: _WritableKeyPath<ViewState, BindingState<Value>>
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
@@ -320,7 +320,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
           )
           let set: @Sendable (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
-            debugger.wasCalled = true
+            debugger.wasCalled.setValue(true)
           }
         #else
           let set: @Sendable (inout ViewState) -> Void = {
@@ -455,8 +455,8 @@ public struct BindingViewStore<State> {
     self.wrappedValue[keyPath: keyPath]
   }
 
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
+  public subscript<Value: Equatable & Sendable>(
+    dynamicMember keyPath: _WritableKeyPath<State, BindingState<Value>>
   ) -> BindingViewState<Value> {
     BindingViewState(
       binding: ViewStore(self.store, observe: { $0[keyPath: keyPath].wrappedValue })
@@ -475,7 +475,7 @@ public struct BindingViewStore<State> {
               )
               let set: @Sendable (inout State) -> Void = {
                 $0[keyPath: keyPath].wrappedValue = value
-                debugger.wasCalled = true
+                debugger.wasCalled.setValue(true)
               }
             #else
               let set: @Sendable (inout State) -> Void = {
@@ -742,7 +742,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
 }
 
 #if DEBUG
-  private final class BindableActionViewStoreDebugger<Value> {
+  private final class BindableActionViewStoreDebugger<Value: Sendable>: Sendable {
     enum Context {
       case bindingState
       case bindingStore
@@ -752,18 +752,18 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     let value: Value
     let bindableActionType: Any.Type
     let context: Context
-    let isInvalidated: () -> Bool
+    let isInvalidated: @MainActor @Sendable () -> Bool
     let fileID: StaticString
     let filePath: StaticString
     let line: UInt
     let column: UInt
-    var wasCalled = false
+    let wasCalled = LockIsolated(false)
 
     init(
       value: Value,
       bindableActionType: Any.Type,
       context: Context,
-      isInvalidated: @escaping () -> Bool,
+      isInvalidated: @escaping @MainActor @Sendable () -> Bool,
       fileID: StaticString,
       filePath: StaticString,
       line: UInt,
@@ -780,16 +780,14 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     }
 
     deinit {
-      // NB: `isInvalidated()` can access store state, which must happen on the main thread.
-      let isInvalidated =
-        Thread.isMainThread
-        ? self.isInvalidated()
-        : DispatchQueue.main.sync(execute: self.isInvalidated)
-
+      let isInvalidated = mainActorNow(execute: isInvalidated)
       guard !isInvalidated else { return }
-      guard self.wasCalled else {
-        var value = ""
-        customDump(self.value, to: &value, maxDepth: 0)
+      guard self.wasCalled.value else {
+        var valueDump: String {
+          var valueDump = ""
+          customDump(self.value, to: &valueDump, maxDepth: 0)
+          return valueDump
+        }
         reportIssue(
           """
           A binding action sent from a store \
@@ -797,7 +795,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
           "\(self.fileID):\(self.line)" was not handled. …
 
             Action:
-              \(typeName(self.bindableActionType)).binding(.set(_, \(value)))
+              \(typeName(self.bindableActionType)).binding(.set(_, \(valueDump)))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """,

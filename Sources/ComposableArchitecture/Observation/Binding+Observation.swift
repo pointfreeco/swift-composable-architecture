@@ -59,7 +59,7 @@
 
   extension BindingAction {
     public static func set<Value: Equatable & Sendable>(
-      _ keyPath: WritableKeyPath<Root, Value>,
+      _ keyPath: _WritableKeyPath<Root, Value>,
       _ value: Value
     ) -> Self where Root: ObservableState {
       .init(
@@ -80,7 +80,7 @@
 
   extension BindableAction where State: ObservableState {
     public static func set<Value: Equatable & Sendable>(
-      _ keyPath: WritableKeyPath<State, Value>,
+      _ keyPath: _WritableKeyPath<State, Value>,
       _ value: Value
     ) -> Self {
       self.binding(.set(keyPath, value))
@@ -88,8 +88,8 @@
   }
 
   extension Store where State: ObservableState, Action: BindableAction, Action.State == State {
-    public subscript<Value: Equatable>(
-      dynamicMember keyPath: WritableKeyPath<State, Value>
+    public subscript<Value: Equatable & Sendable>(
+      dynamicMember keyPath: _WritableKeyPath<State, Value>
     ) -> Value {
       get { self.state[keyPath: keyPath] }
       set {
@@ -102,7 +102,7 @@
 
   extension Store
   where
-    State: Equatable,
+    State: Equatable & Sendable,
     State: ObservableState,
     Action: BindableAction,
     Action.State == State
@@ -124,8 +124,8 @@
     Action.ViewAction: BindableAction,
     Action.ViewAction.State == State
   {
-    public subscript<Value: Equatable>(
-      dynamicMember keyPath: WritableKeyPath<State, Value>
+    public subscript<Value: Equatable & Sendable>(
+      dynamicMember keyPath: _WritableKeyPath<State, Value>
     ) -> Value {
       get { self.state[keyPath: keyPath] }
       set {
@@ -138,7 +138,7 @@
 
   extension Store
   where
-    State: Equatable,
+    State: Equatable & Sendable,
     State: ObservableState,
     Action: ViewAction,
     Action.ViewAction: BindableAction,
