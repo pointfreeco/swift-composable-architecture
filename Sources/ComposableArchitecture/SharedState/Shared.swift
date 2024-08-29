@@ -62,7 +62,7 @@ public struct Shared<Value> {
     else { return nil }
     self.init(
       reference: base.reference,
-      keyPath: base.keyPath.appending(path: \Value?.[default: DefaultSubscript(initialValue)])!
+      keyPath: base.keyPath.appending(path: \Value?.[default:DefaultSubscript(initialValue)])!
     )
   }
 

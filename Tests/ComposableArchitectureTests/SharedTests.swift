@@ -626,16 +626,16 @@ final class SharedTests: XCTestCase {
       await store.send(.incrementValue) {
         $0.value = 1
       }
-      await store.receive(\.children[id: 0].response) {
+      await store.receive(\.children[id:0].response) {
         $0.children[id: 0]?.text = "1"
       }
-      await store.receive(\.children[id: 1].response) {
+      await store.receive(\.children[id:1].response) {
         $0.children[id: 1]?.text = "1"
       }
-      await store.receive(\.children[id: 2].response) {
+      await store.receive(\.children[id:2].response) {
         $0.children[id: 2]?.text = "1"
       }
-      await store.receive(\.children[id: 3].response) {
+      await store.receive(\.children[id:3].response) {
         $0.children[id: 3]?.text = "1"
       }
     }

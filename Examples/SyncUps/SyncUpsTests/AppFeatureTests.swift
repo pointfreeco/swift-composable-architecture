@@ -17,18 +17,18 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
     }
 
-    await store.send(\.path[id: 0].detail.editButtonTapped) {
+    await store.send(\.path[id:0].detail.editButtonTapped) {
       $0.path[id: 0]?.modify(\.detail) { $0.destination = .edit(SyncUpForm.State(syncUp: syncUp)) }
     }
 
     syncUp.title = "Blob"
-    await store.send(\.path[id: 0].detail.destination.edit.binding.syncUp, syncUp) {
+    await store.send(\.path[id:0].detail.destination.edit.binding.syncUp, syncUp) {
       $0.path[id: 0]?.modify(\.detail) {
         $0.destination?.modify(\.edit) { $0.syncUp.title = "Blob" }
       }
     }
 
-    await store.send(\.path[id: 0].detail.doneEditingButtonTapped) {
+    await store.send(\.path[id:0].detail.doneEditingButtonTapped) {
       $0.path[id: 0]?.modify(\.detail) {
         $0.destination = nil
         $0.syncUp.title = "Blob"
@@ -50,11 +50,11 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
     }
 
-    await store.send(\.path[id: 0].detail.deleteButtonTapped) {
+    await store.send(\.path[id:0].detail.deleteButtonTapped) {
       $0.path[id: 0]?.modify(\.detail) { $0.destination = .alert(.deleteSyncUp) }
     }
 
-    await store.send(\.path[id: 0].detail.destination.alert.confirmDeletion) {
+    await store.send(\.path[id:0].detail.destination.alert.confirmDeletion) {
       $0.path[id: 0]?.modify(\.detail) { $0.destination = nil }
       $0.syncUpsList.syncUps = []
     }
@@ -104,7 +104,7 @@ final class AppFeatureTests: XCTestCase {
     }
 
     await store.withExhaustivity(.off) {
-      await store.send(\.path[id: 1].record.onTask)
+      await store.send(\.path[id:1].record.onTask)
       await store.receive(\.path.popFrom) {
         XCTAssertEqual($0.path.count, 1)
       }
