@@ -347,18 +347,9 @@ ChildView(
 )
 ```
 
-Another example is scoping to some collection of a child domain in order to use with 
-``ForEachStore``:
-
-```swift
-ForEachStore(store.scope(state: \.rows, action: \.rows)) { store in
-  RowView(store: store)
-}
-```
-
-And similarly for ``IfLetStore`` and ``SwitchStore``. And finally, scoping to a child domain to be
-used with one of the libraries navigation view modifiers, such as 
-``SwiftUI/View/sheet(store:onDismiss:content:)``, also falls under the intended use of scope:
+Furthermore, scoping to a child domain to be used with one of the libraries navigation view modifiers,
+such as ``SwiftUI/View/sheet(store:onDismiss:content:)``, also falls under the intended 
+use of scope:
 
 ```swift
 .sheet(store: store.scope(state: \.child, action: \.child)) { store in
