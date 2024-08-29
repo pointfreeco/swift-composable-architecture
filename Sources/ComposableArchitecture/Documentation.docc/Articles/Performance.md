@@ -93,7 +93,7 @@ store.send(.toggleChanged) {
 store.receive(\.sharedComputation) {
   // Assert on shared logic
 }
-store.send(.textFieldChanged("Hello") {
+store.send(.textFieldChanged("Hello")) {
   $0.description = "Hello"
 }
 store.receive(\.sharedComputation) {
@@ -274,7 +274,7 @@ case .startButtonTapped:
 
     for await event in self.eventsClient.events() {
       defer { count += 1 }
-      send(.progress(Double(count) / Double(max)))
+      await send(.progress(Double(count) / Double(max)))
     }
   }
 }
@@ -297,7 +297,7 @@ case .startButtonTapped:
     for await event in self.eventsClient.events() {
       defer { count += 1 }
       if count.isMultiple(of: interval) {
-        send(.progress(Double(count) / Double(max)))
+        await send(.progress(Double(count) / Double(max)))
       }
     }
   }
@@ -347,18 +347,9 @@ ChildView(
 )
 ```
 
-Another example is scoping to some collection of a child domain in order to use with 
-``ForEachStore``:
-
-```swift
-ForEachStore(store.scope(state: \.rows, action: \.rows)) { store in
-  RowView(store: store)
-}
-```
-
-And similarly for ``IfLetStore`` and ``SwitchStore``. And finally, scoping to a child domain to be
-used with one of the libraries navigation view modifiers, such as 
-``SwiftUI/View/sheet(store:onDismiss:content:)``, also falls under the intended use of scope:
+Furthermore, scoping to a child domain to be used with one of the libraries navigation view modifiers,
+such as ``SwiftUI/View/sheet(store:onDismiss:content:)``, also falls under the intended 
+use of scope:
 
 ```swift
 .sheet(store: store.scope(state: \.child, action: \.child)) { store in
