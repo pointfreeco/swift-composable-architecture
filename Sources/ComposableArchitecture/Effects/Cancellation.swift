@@ -172,7 +172,8 @@ extension Effect {
   ) async rethrows -> T {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
-    let (cancellable, task): (AnyCancellable, Task<T, Error>) = _cancellationCancellables
+    let (cancellable, task): (AnyCancellable, Task<T, Error>) =
+      _cancellationCancellables
       .withValue {
         if cancelInFlight {
           $0.cancel(id: id, path: navigationIDPath)
@@ -202,7 +203,8 @@ extension Effect {
   ) async rethrows -> T {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
-    let (cancellable, task): (AnyCancellable, Task<T, Error>) = _cancellationCancellables
+    let (cancellable, task): (AnyCancellable, Task<T, Error>) =
+      _cancellationCancellables
       .withValue {
         if cancelInFlight {
           $0.cancel(id: id, path: navigationIDPath)
