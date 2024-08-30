@@ -292,7 +292,10 @@ final class EffectCancellationTests: BaseTCATestCase {
 
       for await _ in Effect.send(1).cancellable(id: id).actions {}
 
-      XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
+      XCTAssertEqual(
+        _cancellationCancellables.withValue { $0.exists(at: id, path: NavigationIDPath()) },
+        false
+      )
     }
 
     func testCancellablesCleanUp_OnCancel() async {
@@ -315,7 +318,10 @@ final class EffectCancellationTests: BaseTCATestCase {
 
       await task.value
 
-      XCTAssertEqual(_cancellationCancellables.exists(at: id, path: NavigationIDPath()), false)
+      XCTAssertEqual(
+        _cancellationCancellables.withValue { $0.exists(at: id, path: NavigationIDPath()) },
+        false
+      )
     }
 
     func testConcurrentCancels() {
@@ -363,7 +369,7 @@ final class EffectCancellationTests: BaseTCATestCase {
 
       for id in ids {
         XCTAssertEqual(
-          _cancellationCancellables.exists(at: id, path: NavigationIDPath()),
+          _cancellationCancellables.withValue { $0.exists(at: id, path: NavigationIDPath()) },
           false,
           "cancellationCancellables should not contain id \(id)"
         )
@@ -396,7 +402,7 @@ final class EffectCancellationTests: BaseTCATestCase {
 
       for id in ids {
         XCTAssertEqual(
-          _cancellationCancellables.exists(at: id, path: NavigationIDPath()),
+          _cancellationCancellables.withValue { $0.exists(at: id, path: NavigationIDPath()) },
           false,
           "cancellationCancellables should not contain id \(id)"
         )
