@@ -90,7 +90,11 @@
     private let store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
     private let data: IdentifiedArray<ID, State>
 
-    @MainActor
+    #if swift(<5.10)
+      @MainActor(unsafe)
+    #else
+      @preconcurrency@MainActor
+    #endif
     fileprivate init(_ store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>) {
       self.store = store
       self.data = store.withState { $0 }
