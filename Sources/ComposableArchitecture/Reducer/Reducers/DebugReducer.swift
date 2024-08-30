@@ -22,11 +22,12 @@ extension Reducer {
 private let printQueue = DispatchQueue(label: "co.pointfree.swift-composable-architecture.printer")
 
 public struct _ReducerPrinter<State, Action>: Sendable {
-  private let _printChange: @Sendable (
-    _ receivedAction: Action,
-    _ oldState: State,
-    _ newState: State
-  ) -> Void
+  private let _printChange:
+    @Sendable (
+      _ receivedAction: Action,
+      _ oldState: State,
+      _ newState: State
+    ) -> Void
   @usableFromInline
   let queue: DispatchQueue
 
@@ -89,11 +90,12 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
           let effects = self.base.reduce(into: &state, action: action)
           return withEscapedDependencies { continuation in
             effects.merge(
-              with: .publisher { [
-                newState = UncheckedSendable(state),
-                action = UncheckedSendable(action),
-                queue = printer.queue
-              ] in
+              with: .publisher {
+                [
+                  newState = UncheckedSendable(state),
+                  action = UncheckedSendable(action),
+                  queue = printer.queue
+                ] in
                 Deferred<Empty<Action, Never>> {
                   queue.async {
                     continuation.yield {
