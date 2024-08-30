@@ -12,11 +12,11 @@ import IssueReporting
 /// wrapper.
 @dynamicMemberLookup
 @propertyWrapper
-public struct Shared<Value: Sendable> {
+public struct Shared<Value: Sendable>: Sendable {
   private let reference: any Reference
-  private let keyPath: AnyKeyPath
+  private let keyPath: _AnyKeyPath
 
-  init(reference: any Reference, keyPath: AnyKeyPath) {
+  init(reference: any Reference, keyPath: _AnyKeyPath) {
     self.reference = reference
     self.keyPath = keyPath
   }
@@ -62,7 +62,13 @@ public struct Shared<Value: Sendable> {
     else { return nil }
     self.init(
       reference: base.reference,
-      keyPath: base.keyPath.appending(path: \Value?.[default:DefaultSubscript(initialValue)])!
+      // NB: Can get rid of bitcast when this is fixed:
+      //     https://github.com/swiftlang/swift/issues/75531
+      keyPath: unsafeBitCast(
+        (base.keyPath as AnyKeyPath)
+          .appending(path: \Value?.[default:DefaultSubscript(initialValue)])!,
+        to: _AnyKeyPath.self
+      )
     )
   }
 
@@ -170,7 +176,15 @@ public struct Shared<Value: Sendable> {
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member>
   ) -> Shared<Member> {
-    Shared<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
+    Shared<Member>(
+      reference: self.reference,
+      // NB: Can get rid of bitcast when this is fixed:
+      //     https://github.com/swiftlang/swift/issues/75531
+      keyPath: unsafeBitCast(
+        (self.keyPath as AnyKeyPath).appending(path: keyPath)!,
+        to: _AnyKeyPath.self
+      )
+    )
   }
 
   @_disfavoredOverload
@@ -301,8 +315,6 @@ public struct Shared<Value: Sendable> {
     }
   }
 }
-
-extension Shared: @unchecked Sendable where Value: Sendable {}
 
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
@@ -449,7 +461,12 @@ extension Shared {
   ) -> SharedReader<Member> {
     SharedReader<Member>(
       reference: self.reference,
-      keyPath: self.keyPath.appending(path: keyPath)!
+      // NB: Can get rid of bitcast when this is fixed:
+      //     https://github.com/swiftlang/swift/issues/75531
+      keyPath: unsafeBitCast(
+        (self.keyPath as AnyKeyPath).appending(path: keyPath)!,
+        to: _AnyKeyPath.self
+      )
     )
   }
 
