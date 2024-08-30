@@ -541,6 +541,7 @@ final class ObservableTests: BaseTCATestCase {
     state.children[0].count += 1
   }
 
+  @MainActor
   func testEnumStateWithInertCases() {
     let store = Store<EnumState, Void>(initialState: EnumState.count(.one)) {
       Reduce { state, _ in
@@ -560,6 +561,7 @@ final class ObservableTests: BaseTCATestCase {
     self.wait(for: [onChangeExpectation], timeout: 0)
   }
 
+  @MainActor
   func testEnumStateWithInertCasesTricky() {
     let store = Store<EnumState, Void>(initialState: EnumState.count(.one)) {
       Reduce { state, _ in
@@ -579,6 +581,7 @@ final class ObservableTests: BaseTCATestCase {
     self.wait(for: [onChangeExpectation], timeout: 0)
   }
 
+  @MainActor
   func testEnumStateWithIntCase() {
     let store = Store<EnumState, Void>(initialState: EnumState.int(0)) {
       Reduce { state, _ in

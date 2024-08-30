@@ -4,9 +4,8 @@ import XCTest
 @testable import SyncUps
 
 class SyncUpFormTests: XCTestCase {
-  @MainActor
   func testRemoveAttendee() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SyncUpForm.State(
         syncUp: SyncUp(
           id: SyncUp.ID(),

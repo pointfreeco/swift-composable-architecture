@@ -4,9 +4,8 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 final class EffectsBasicsTests: XCTestCase {
-  @MainActor
   func testCountDown() async {
-    let store = TestStore(initialState: EffectsBasics.State()) {
+    let store = await TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
@@ -20,9 +19,8 @@ final class EffectsBasicsTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testNumberFact() async {
-    let store = TestStore(initialState: EffectsBasics.State()) {
+    let store = await TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
     } withDependencies: {
       $0.factClient.fetch = { "\($0) is a good number Brent" }
@@ -41,9 +39,8 @@ final class EffectsBasicsTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testDecrement() async {
-    let store = TestStore(initialState: EffectsBasics.State()) {
+    let store = await TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
@@ -57,9 +54,8 @@ final class EffectsBasicsTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testDecrementCancellation() async {
-    let store = TestStore(initialState: EffectsBasics.State()) {
+    let store = await TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
     } withDependencies: {
       $0.continuousClock = TestClock()

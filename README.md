@@ -318,9 +318,8 @@ To test use a `TestStore`, which can be created with the same information as the
 does extra work to allow you to assert how your feature evolves as actions are sent:
 
 ```swift
-@MainActor
 func testFeature() async {
-  let store = TestStore(initialState: Feature.State()) {
+  let store = await TestStore(initialState: Feature.State()) {
     Feature()
   }
 }
@@ -410,9 +409,8 @@ But in tests we can use a mock dependency that immediately returns a determinist
 fact: 
 
 ```swift
-@MainActor
 func testFeature() async {
-  let store = TestStore(initialState: Feature.State()) {
+  let store = await TestStore(initialState: Feature.State()) {
     Feature(numberFact: { "\($0) is a good number Brent" })
   }
 }
@@ -532,13 +530,14 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/)
-* [1.13.0](https://pointfreeco.github.io/swift-composable-architecture/1.13.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13))
+* [1.14.0](https://pointfreeco.github.io/swift-composable-architecture/1.14.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.14))
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [1.13.0](https://pointfreeco.github.io/swift-composable-architecture/1.13.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13))
   * [1.12.0](https://pointfreeco.github.io/swift-composable-architecture/1.12.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.12))
   * [1.11.0](https://pointfreeco.github.io/swift-composable-architecture/1.11.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.11))
   * [1.10.0](https://pointfreeco.github.io/swift-composable-architecture/1.10.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.10))

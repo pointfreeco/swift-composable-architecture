@@ -314,7 +314,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     return self.child
       .dependency(\.navigationIDPath, self.navigationIDPath.appending(navigationID))
       .reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
-      .map { self.toChildAction.embed($0) }
+      .map { [toChildAction] in toChildAction.embed($0) }
       ._cancellable(id: navigationID, navigationIDPath: self.navigationIDPath)
   }
 }

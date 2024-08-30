@@ -4,9 +4,8 @@ import XCTest
 @testable import SyncUps
 
 final class SyncUpFormTests: XCTestCase {
-  @MainActor
   func testAddAttendee() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SyncUpForm.State(
         syncUp: SyncUp(
           id: SyncUp.ID(),
@@ -20,12 +19,9 @@ final class SyncUpFormTests: XCTestCase {
       $0.uuid = .incrementing
     }
 
-    expectNoDifference(
-      store.state.syncUp.attendees,
-      [
-        Attendee(id: Attendee.ID(UUID(0)))
-      ]
-    )
+    await store.assert {
+      $0.syncUp.attendees = [Attendee(id: Attendee.ID(UUID(0)))]
+    }
 
     await store.send(.addAttendeeButtonTapped) {
       $0.focus = .attendee(Attendee.ID(UUID(1)))
@@ -36,9 +32,8 @@ final class SyncUpFormTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testFocus_RemoveAttendee() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SyncUpForm.State(
         syncUp: SyncUp(
           id: SyncUp.ID(),

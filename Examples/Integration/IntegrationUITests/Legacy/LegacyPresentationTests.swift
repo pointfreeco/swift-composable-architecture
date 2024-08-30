@@ -7,7 +7,7 @@ final class LegacyPresentationTests: BaseIntegrationTests {
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
-    self.app.buttons[TestCase.presentation.rawValue].tap()
+    self.app.buttons[TestCase.Legacy.presentation.rawValue].tap()
   }
 
   @MainActor

@@ -7,7 +7,7 @@ final class BindingLocalTests: BaseIntegrationTests {
     try XCTSkipIf(ProcessInfo.processInfo.environment["CI"] != nil)
     try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
-    app.collectionViews.buttons[TestCase.bindingLocal.rawValue].tap()
+    app.collectionViews.buttons[TestCase.Legacy.bindingLocal.rawValue].tap()
   }
 
   @MainActor

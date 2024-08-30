@@ -517,7 +517,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
             into: &state[keyPath: self.toStackState][id: elementID]!,
             action: destinationAction
           )
-          .map { toStackAction.embed(.element(id: elementID, action: $0)) }
+          .map { [toStackAction] in toStackAction.embed(.element(id: elementID, action: $0)) }
           ._cancellable(navigationIDPath: elementNavigationIDPath)
       } else {
         reportIssue(
@@ -741,6 +741,10 @@ extension StackElementID: ExpressibleByIntegerLiteral {
   }
 }
 
-private struct NavigationDismissID: Hashable {
-  let elementID: AnyHashable
+private struct NavigationDismissID: Hashable, Sendable {
+  private let elementID: AnyHashableSendable
+
+  init(elementID: some Hashable & Sendable) {
+    self.elementID = AnyHashableSendable(elementID)
+  }
 }

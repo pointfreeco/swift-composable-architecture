@@ -132,10 +132,15 @@ import SwiftUI
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-90255``)
 /// of the store are also checked to make sure that work is performed on the main thread.
 @dynamicMemberLookup
+#if swift(<5.10)
+  @MainActor(unsafe)
+#else
+  @preconcurrency@MainActor
+#endif
 public final class Store<State, Action> {
   var canCacheChildren = true
   private var children: [ScopeID<State, Action>: AnyObject] = [:]
-  var _isInvalidated = { false }
+  var _isInvalidated: @MainActor @Sendable () -> Bool = { false }
 
   @_spi(Internals) public let rootStore: RootStore
   private let toState: PartialToState<State>
@@ -188,7 +193,10 @@ public final class Store<State, Action> {
   }
 
   deinit {
-    Logger.shared.log("\(storeTypeName(of: self)).deinit")
+    guard Thread.isMainThread else { return }
+    MainActor._assumeIsolated {
+      Logger.shared.log("\(storeTypeName(of: self)).deinit")
+    }
   }
 
   /// Calls the given closure with a snapshot of the current state of the store.
@@ -331,8 +339,7 @@ public final class Store<State, Action> {
 
   @_spi(Internals)
   public var currentState: State {
-    threadCheck(status: .state)
-    return self.toState(self.rootStore.state)
+    self.toState(self.rootStore.state)
   }
 
   @_spi(Internals)
@@ -344,8 +351,6 @@ public final class Store<State, Action> {
       isInvalid: ((State) -> Bool)?
     ) -> Store<ChildState, ChildAction>
   {
-    threadCheck(status: .scope)
-
     if self.canCacheChildren,
       let id = id,
       let childStore = self.children[id] as? Store<ChildState, ChildAction>
@@ -359,10 +364,10 @@ public final class Store<State, Action> {
     )
     childStore._isInvalidated =
       id == nil || !self.canCacheChildren
-      ? {
+      ? { @MainActor @Sendable in
         isInvalid?(self.currentState) == true || self._isInvalidated()
       }
-      : { [weak self] in
+      : { @MainActor @Sendable [weak self] in
         guard let self else { return true }
         return isInvalid?(self.currentState) == true || self._isInvalidated()
       }
@@ -462,7 +467,7 @@ public final class Store<State, Action> {
 }
 
 extension Store: CustomDebugStringConvertible {
-  public var debugDescription: String {
+  public nonisolated var debugDescription: String {
     storeTypeName(of: self)
   }
 }

@@ -4,11 +4,10 @@ import XCTest
 @testable import SyncUps
 
 final class AppFeatureTests: XCTestCase {
-  @MainActor
   func testDetailEdit() async throws {
     var syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
-    let store = TestStore(initialState: AppFeature.State()) {
+    let store = await TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
 
@@ -38,11 +37,10 @@ final class AppFeatureTests: XCTestCase {
     .finish()
   }
 
-  @MainActor
   func testDelete() async throws {
     let syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
-    let store = TestStore(initialState: AppFeature.State()) {
+    let store = await TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
 
@@ -104,13 +102,14 @@ final class AppFeatureTests: XCTestCase {
       }
       $0.uuid = .incrementing
     }
-    store.exhaustivity = .off
 
-    await store.send(\.path[id:1].record.onTask)
-    await store.receive(\.path.popFrom) {
-      XCTAssertEqual($0.path.count, 1)
+    await store.withExhaustivity(.off) {
+      await store.send(\.path[id:1].record.onTask)
+      await store.receive(\.path.popFrom) {
+        XCTAssertEqual($0.path.count, 1)
+      }
     }
-    store.assert {
+    await store.assert {
       $0.path[id: 0]?.modify(\.detail) {
         $0.syncUp.meetings = [
           Meeting(

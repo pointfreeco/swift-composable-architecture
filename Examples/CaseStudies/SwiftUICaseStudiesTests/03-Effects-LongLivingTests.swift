@@ -4,11 +4,10 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 final class LongLivingEffectsTests: XCTestCase {
-  @MainActor
   func testReducer() async {
     let (screenshots, takeScreenshot) = AsyncStream.makeStream(of: Void.self)
 
-    let store = TestStore(initialState: LongLivingEffects.State()) {
+    let store = await TestStore(initialState: LongLivingEffects.State()) {
       LongLivingEffects()
     } withDependencies: {
       $0.screenshots = { screenshots }

@@ -79,7 +79,6 @@
       )
     }
 
-    @MainActor
     func testDebugReducer() async throws {
       let logs = LockIsolated<String>("")
       let printer = _ReducerPrinter<Int, Bool>(
@@ -88,14 +87,14 @@
         }
       )
 
-      let store = Store<Int, Bool>(initialState: 0) {
+      let store = await Store<Int, Bool>(initialState: 0) {
         Reduce<Int, Bool>(internal: { state, action in
           state += action ? 1 : -1
           return .none
         })
         ._printChanges(printer)
       }
-      store.send(true)
+      await store.send(true)
       try await Task.sleep(nanoseconds: 300_000_000)
       expectNoDifference(
         logs.value,
@@ -106,6 +105,7 @@
       )
     }
 
+    @MainActor
     func testDebugReducer_Order() {
       let logs = LockIsolated<String>("")
       let printer = _ReducerPrinter<Int, Bool>(
@@ -153,7 +153,6 @@
       )
     }
 
-    @MainActor
     func testDebugReducer_SharedState() async throws {
       let logs = LockIsolated<String>("")
       let printer = _ReducerPrinter<State, Bool>(
@@ -168,14 +167,14 @@
         @Shared var count: Int
       }
 
-      let store = Store<State, Bool>(initialState: State(count: Shared(0))) {
+      let store = await Store<State, Bool>(initialState: State(count: Shared(0))) {
         Reduce<State, Bool>(internal: { state, action in
           state.count += action ? 1 : -1
           return .none
         })
         ._printChanges(printer)
       }
-      store.send(true)
+      await store.send(true)
       try await Task.sleep(nanoseconds: 300_000_000)
       expectNoDifference(
         logs.value,

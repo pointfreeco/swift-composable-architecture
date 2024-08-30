@@ -4,9 +4,8 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 final class RefreshableTests: XCTestCase {
-  @MainActor
   func testHappyPath() async {
-    let store = TestStore(initialState: Refreshable.State()) {
+    let store = await TestStore(initialState: Refreshable.State()) {
       Refreshable()
     } withDependencies: {
       $0.factClient.fetch = { "\($0) is a good number." }
@@ -22,11 +21,10 @@ final class RefreshableTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testUnhappyPath() async {
     struct FactError: Equatable, Error {}
 
-    let store = TestStore(initialState: Refreshable.State()) {
+    let store = await TestStore(initialState: Refreshable.State()) {
       Refreshable()
     } withDependencies: {
       $0.factClient.fetch = { _ in throw FactError() }
@@ -40,9 +38,8 @@ final class RefreshableTests: XCTestCase {
     await store.receive(\.factResponse.failure)
   }
 
-  @MainActor
   func testCancellation() async {
-    let store = TestStore(initialState: Refreshable.State()) {
+    let store = await TestStore(initialState: Refreshable.State()) {
       Refreshable()
     } withDependencies: {
       $0.factClient.fetch = {

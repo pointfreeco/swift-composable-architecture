@@ -4,7 +4,6 @@ import XCTest
 @testable import SyncUps
 
 final class RecordMeetingTests: XCTestCase {
-  @MainActor
   func testTimerFinishes() async {
     let clock = TestClock()
     let syncUp = SyncUp(
@@ -16,7 +15,7 @@ final class RecordMeetingTests: XCTestCase {
       duration: .seconds(4),
       title: "Morning Sync"
     )
-    let store = TestStore(
+    let store = await TestStore(
       initialState: RecordMeeting.State(syncUp: Shared(syncUp))
     ) {
       RecordMeeting()

@@ -6,7 +6,7 @@
   final class ReducerMacroTests: XCTestCase {
     override func invokeTest() {
       withMacroTesting(
-        // isRecording: true,
+        // record: .failed,
         macros: [ReducerMacro.self]
       ) {
         super.invokeTest()
@@ -241,7 +241,6 @@
             enum CaseScope {
 
             }
-
             static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
                 switch store.state {
 
@@ -321,7 +320,6 @@
             case tweet(ComposableArchitecture.StoreOf<Tweet>)
             case alert(AlertState<Alert>)
           }
-
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .activity:
@@ -386,7 +384,6 @@
             case timeline(ComposableArchitecture.StoreOf<Timeline>)
             case meeting(ComposableArchitecture.StoreOf<Meeting>)
           }
-
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .timeline:
@@ -435,7 +432,6 @@
             enum CaseScope {
 
             }
-
             static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
                 switch store.state {
 
@@ -584,7 +580,6 @@
           enum CaseScope {
             case alert(AlertState<Never>)
           }
-
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case let .alert(v0):
@@ -643,7 +638,6 @@
             case activity(ComposableArchitecture.StoreOf<Activity>)
             case timeline(ComposableArchitecture.StoreOf<Timeline>)
           }
-
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .activity:
@@ -703,7 +697,6 @@
             case timeline(ComposableArchitecture.StoreOf<Timeline>)
             case meeting(Meeting)
           }
-
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .timeline:
@@ -767,7 +760,6 @@
             case dialog(ConfirmationDialogState<Dialog>)
             case meeting(Meeting, syncUp: SyncUp)
           }
-
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case let .alert(v0):
@@ -838,7 +830,6 @@
             case popover(ComposableArchitecture.StoreOf<Counter>)
             case sheet(ComposableArchitecture.StoreOf<Counter>)
           }
-
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .drillDown:
@@ -893,7 +884,6 @@
           enum CaseScope {
             case feature(ComposableArchitecture.StoreOf<Nested.Feature>)
           }
-
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .feature:
@@ -1256,7 +1246,6 @@
             #endif
 
           }
-
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .child:

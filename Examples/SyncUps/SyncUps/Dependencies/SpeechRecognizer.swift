@@ -8,9 +8,10 @@ struct SpeechClient {
     .denied
   }
   var startTask:
-    @Sendable (_ request: SFSpeechAudioBufferRecognitionRequest) async -> AsyncThrowingStream<
-      SpeechRecognitionResult, Error
-    > = { _ in .finished() }
+    @Sendable (_ request: UncheckedSendable<SFSpeechAudioBufferRecognitionRequest>) async ->
+      AsyncThrowingStream<
+        SpeechRecognitionResult, Error
+      > = { _ in .finished() }
 }
 
 extension SpeechClient: DependencyKey {
@@ -26,7 +27,7 @@ extension SpeechClient: DependencyKey {
         }
       },
       startTask: { request in
-        await speech.startTask(request: request)
+        await speech.startTask(request: request.value)
       }
     )
   }

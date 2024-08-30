@@ -7,7 +7,7 @@ final class EscapedWithViewStoreTests: BaseIntegrationTests {
   override func setUpWithError() throws {
     try super.setUpWithError()
     self.app.buttons["Legacy"].tap()
-    app.collectionViews.buttons[TestCase.escapedWithViewStore.rawValue].tap()
+    app.collectionViews.buttons[TestCase.Legacy.escapedWithViewStore.rawValue].tap()
   }
 
   @MainActor

@@ -4,9 +4,8 @@ import XCTest
 @testable import SyncUps
 
 class SyncUpsListTests: XCTestCase {
-  @MainActor
   func testDeletion() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SyncUpsList.State(
         syncUps: [
           SyncUp(

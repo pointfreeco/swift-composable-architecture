@@ -293,7 +293,7 @@ extension PresentationAction: CasePathable {
     }
 
     public subscript<AppendedAction>(
-      dynamicMember keyPath: CaseKeyPath<Action, AppendedAction>
+      dynamicMember keyPath: _CaseKeyPath<Action, AppendedAction>
     ) -> AnyCasePath<PresentationAction, AppendedAction>
     where Action: CasePathable {
       AnyCasePath<PresentationAction, AppendedAction>(
@@ -307,7 +307,7 @@ extension PresentationAction: CasePathable {
 
     @_disfavoredOverload
     public subscript<AppendedAction>(
-      dynamicMember keyPath: CaseKeyPath<Action, AppendedAction>
+      dynamicMember keyPath: _CaseKeyPath<Action, AppendedAction>
     ) -> AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>
     where Action: CasePathable {
       AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>(
@@ -607,7 +607,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
         .reduce(
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction
         )
-        .map { self.toPresentationAction.embed(.presented($0)) }
+        .map { [toPresentationAction] in toPresentationAction.embed(.presented($0)) }
         ._cancellable(navigationIDPath: destinationNavigationIDPath)
       baseEffects = self.base.reduce(into: &state, action: action)
       if let ephemeralType = ephemeralType(of: destinationState),
@@ -710,15 +710,15 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
 }
 
 @usableFromInline
-struct PresentationDismissID: Hashable {
+struct PresentationDismissID: Hashable, Sendable {
   @usableFromInline init() {}
 }
 @usableFromInline
-struct OnFirstAppearID: Hashable {
+struct OnFirstAppearID: Hashable, Sendable {
   @usableFromInline init() {}
 }
 
-public struct _PresentedID: Hashable {
+public struct _PresentedID: Hashable, Sendable {
   @inlinable
   public init() {
     self.init(internal: ())
@@ -729,8 +729,8 @@ public struct _PresentedID: Hashable {
 }
 
 extension Task<Never, Never> {
-  internal static func _cancel<ID: Hashable>(
-    id: ID,
+  internal static func _cancel(
+    id: some Hashable,
     navigationID: NavigationIDPath
   ) {
     withDependencies {
@@ -742,8 +742,8 @@ extension Task<Never, Never> {
 }
 
 extension Effect {
-  internal func _cancellable<ID: Hashable>(
-    id: ID = _PresentedID(),
+  internal func _cancellable(
+    id: some Hashable & Sendable = _PresentedID(),
     navigationIDPath: NavigationIDPath,
     cancelInFlight: Bool = false
   ) -> Self {
@@ -753,8 +753,8 @@ extension Effect {
       self.cancellable(id: id, cancelInFlight: cancelInFlight)
     }
   }
-  internal static func _cancel<ID: Hashable>(
-    id: ID = _PresentedID(),
+  internal static func _cancel(
+    id: some Hashable = _PresentedID(),
     navigationID: NavigationIDPath
   ) -> Self {
     withDependencies {

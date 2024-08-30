@@ -241,11 +241,11 @@ extension WebSocketClient: DependencyKey {
       sendPing: { try await WebSocketActor.shared.sendPing(id: $0) }
     )
 
-    final actor WebSocketActor: GlobalActor {
-      final class Delegate: NSObject, URLSessionWebSocketDelegate {
+    @globalActor final actor WebSocketActor {
+      private final class Delegate: NSObject, @unchecked Sendable, URLSessionWebSocketDelegate {
         var continuation: AsyncStream<Action>.Continuation?
 
-        func urlSession(
+        nonisolated func urlSession(
           _: URLSession,
           webSocketTask _: URLSessionWebSocketTask,
           didOpenWithProtocol protocol: String?
@@ -253,7 +253,7 @@ extension WebSocketClient: DependencyKey {
           self.continuation?.yield(.didOpen(protocol: `protocol`))
         }
 
-        func urlSession(
+        nonisolated func urlSession(
           _: URLSession,
           webSocketTask _: URLSessionWebSocketTask,
           didCloseWith closeCode: URLSessionWebSocketTask.CloseCode,

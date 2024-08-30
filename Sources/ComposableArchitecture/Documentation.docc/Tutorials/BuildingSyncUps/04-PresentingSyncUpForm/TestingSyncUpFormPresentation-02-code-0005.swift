@@ -4,9 +4,8 @@ import XCTest
 @testable import SyncUps
 
 class SyncUpsListTests: XCTestCase {
-  @MainActor
   func testAddSyncUp_NonExhaustive() async {
-    let store = TestStore(initialState: SyncUpsList.State()) {
+    let store = await TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()
     } withDependencies: {
       $0.uuid = .incrementing
@@ -30,12 +29,10 @@ class SyncUpsListTests: XCTestCase {
     }
   }
   
-  @MainActor
   func testAddSyncUp() async {
     // ...
   }
 
-  @MainActor
   func testDeletion() async {
     // ...
   }

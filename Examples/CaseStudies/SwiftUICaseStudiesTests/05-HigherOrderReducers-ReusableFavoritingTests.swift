@@ -4,7 +4,6 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 final class ReusableComponentsFavoritingTests: XCTestCase {
-  @MainActor
   func testHappyPath() async {
     let clock = TestClock()
 
@@ -25,7 +24,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
         title: "Functions"
       ),
     ]
-    let store = TestStore(initialState: Episodes.State(episodes: episodes)) {
+    let store = await TestStore(initialState: Episodes.State(episodes: episodes)) {
       Episodes(
         favorite: { _, isFavorite in
           try await clock.sleep(for: .seconds(1))
@@ -50,7 +49,6 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
     await store.receive(\.episodes[id:episodes[1].id].favorite.response.success)
   }
 
-  @MainActor
   func testUnhappyPath() async {
     let episodes: IdentifiedArrayOf<Episode.State> = [
       Episode.State(
@@ -59,7 +57,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
         title: "Functions"
       )
     ]
-    let store = TestStore(initialState: Episodes.State(episodes: episodes)) {
+    let store = await TestStore(initialState: Episodes.State(episodes: episodes)) {
       Episodes(favorite: { _, _ in throw FavoriteError() })
     }
 

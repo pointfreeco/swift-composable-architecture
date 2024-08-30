@@ -3,7 +3,6 @@ import ComposableArchitecture
 import XCTest
 
 final class TestStoreTests: BaseTCATestCase {
-  @MainActor
   func testEffectConcatenation() async {
     struct State: Equatable {}
 
@@ -12,7 +11,7 @@ final class TestStoreTests: BaseTCATestCase {
     }
 
     let mainQueue = DispatchQueue.test
-    let store = TestStore(initialState: State()) {
+    let store = await TestStore(initialState: State()) {
       Reduce<State, Action> { _, action in
         switch action {
         case .a:
@@ -52,13 +51,12 @@ final class TestStoreTests: BaseTCATestCase {
     await store.send(.d)
   }
 
-  @MainActor
   func testAsync() async {
     enum Action: Equatable {
       case tap
       case response(Int)
     }
-    let store = TestStore(initialState: 0) {
+    let store = await TestStore(initialState: 0) {
       Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
@@ -76,7 +74,6 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testExpectedStateEquality() async {
     struct State: Equatable {
       var count: Int = 0
@@ -88,7 +85,7 @@ final class TestStoreTests: BaseTCATestCase {
       case changed(from: Int, to: Int)
     }
 
-    let store = TestStore(initialState: State()) {
+    let store = await TestStore(initialState: State()) {
       Reduce<State, Action> { state, action in
         switch action {
         case .increment:
@@ -124,7 +121,6 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testExpectedStateEqualityMustModify() async {
     struct State: Equatable {
       var count: Int = 0
@@ -134,7 +130,7 @@ final class TestStoreTests: BaseTCATestCase {
       case noop, finished
     }
 
-    let store = TestStore(initialState: State()) {
+    let store = await TestStore(initialState: State()) {
       Reduce<State, Action> { state, action in
         switch action {
         case .noop:
@@ -159,13 +155,12 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testReceiveActionMatchingPredicate() async {
     enum Action: Equatable {
       case noop, finished
     }
 
-    let store = TestStore(initialState: 0) {
+    let store = await TestStore(initialState: 0) {
       Reduce<Int, Action> { state, action in
         switch action {
         case .noop:
@@ -250,9 +245,8 @@ final class TestStoreTests: BaseTCATestCase {
       }
     }
   }
-  @MainActor
   func testOverrideDependenciesDirectlyOnReducer() async {
-    let store = TestStore(initialState: 0) {
+    let store = await TestStore(initialState: 0) {
       Feature_testOverrideDependenciesDirectlyOnReducer()
         .dependency(\.calendar, Calendar(identifier: .gregorian))
         .dependency(\.locale, Locale(identifier: "en_US"))
@@ -340,9 +334,8 @@ final class TestStoreTests: BaseTCATestCase {
       }
     }
   }
-  @MainActor
   func testOverrideDependenciesOnTestStore_Init() async {
-    let store = TestStore(initialState: 0) {
+    let store = await TestStore(initialState: 0) {
       Feature_testOverrideDependenciesOnTestStore_Init()
     } withDependencies: {
       $0.calendar = Calendar(identifier: .gregorian)
@@ -384,9 +377,8 @@ final class TestStoreTests: BaseTCATestCase {
       }
     }
   }
-  @MainActor
   func testDependenciesEarlyBinding() async {
-    let store = TestStore(initialState: Feature_testDependenciesEarlyBinding.State()) {
+    let store = await TestStore(initialState: Feature_testDependenciesEarlyBinding.State()) {
       Feature_testDependenciesEarlyBinding()
     } withDependencies: {
       $0.date = .constant(Date(timeIntervalSince1970: 1_234_567_890))
@@ -404,7 +396,6 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testPrepareDependenciesCalledOnce() {
     var count = 0
     let store = TestStore(initialState: 0) {
@@ -417,11 +408,10 @@ final class TestStoreTests: BaseTCATestCase {
     _ = store
   }
 
-  @MainActor
   func testEffectEmitAfterSkipInFlightEffects() async {
     let mainQueue = DispatchQueue.test
     enum Action: Equatable { case tap, response }
-    let store = TestStore(initialState: 0) {
+    let store = await TestStore(initialState: 0) {
       Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
@@ -479,7 +469,6 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testSubscribeReceiveCombineScheduler() async {
     let subject = PassthroughSubject<Void, Never>()
     let scheduler = DispatchQueue.test
@@ -493,7 +482,7 @@ final class TestStoreTests: BaseTCATestCase {
       case start
     }
 
-    let store = TestStore(initialState: State()) {
+    let store = await TestStore(initialState: State()) {
       Reduce<State, Action> { state, action in
         switch action {
         case .start:
@@ -518,11 +507,10 @@ final class TestStoreTests: BaseTCATestCase {
     await task.cancel()
   }
 
-  @MainActor
   func testMainSerialExecutor_AutoAssignsAndResets_False() async {
     uncheckedUseMainSerialExecutor = false
     XCTAssertFalse(uncheckedUseMainSerialExecutor)
-    var store: TestStore? = TestStore(initialState: 0) {
+    var store: TestStore? = await TestStore(initialState: 0) {
       EmptyReducer<Int, Void>()
     }
     XCTAssertTrue(uncheckedUseMainSerialExecutor)
@@ -531,11 +519,10 @@ final class TestStoreTests: BaseTCATestCase {
     _ = store
   }
 
-  @MainActor
   func testMainSerialExecutor_AutoAssignsAndResets_True() async {
     uncheckedUseMainSerialExecutor = true
     XCTAssertTrue(uncheckedUseMainSerialExecutor)
-    var store: TestStore? = TestStore(initialState: 0) {
+    var store: TestStore? = await TestStore(initialState: 0) {
       EmptyReducer<Int, Void>()
     }
     XCTAssertTrue(uncheckedUseMainSerialExecutor)
@@ -544,9 +531,8 @@ final class TestStoreTests: BaseTCATestCase {
     _ = store
   }
 
-  @MainActor
   func testReceiveCaseKeyPathWithValue() async {
-    let store = TestStore<Int, Action>(initialState: 0) {
+    let store = await TestStore<Int, Action>(initialState: 0) {
       Reduce { state, action in
         switch action {
         case .tap:
@@ -578,9 +564,8 @@ final class TestStoreTests: BaseTCATestCase {
     await store.receive(\.delegate.success, 43)
   }
 
-  @MainActor
   func testSendCaseKeyPath() async {
-    let store = TestStore<Int, Action>(initialState: 0) {
+    let store = await TestStore<Int, Action>(initialState: 0) {
       Reduce { state, action in
         switch action {
         case .tap:
@@ -616,9 +601,8 @@ final class TestStoreTests: BaseTCATestCase {
     await store.receive(\.delegate.success, 42)
   }
 
-  @MainActor
   func testBindingTestStore_WhenStateAndActionHaveSameName() async {
-    let store = TestStore(initialState: .init()) {
+    let store = await TestStore(initialState: .init()) {
       SameNameForStateAndAction()
     }
     await store.send(.onAppear)
@@ -652,18 +636,16 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testDismissCancelsEffects() async {
-    let store = TestStore(initialState: TestDismissCancelsEffects.State()) {
+    let store = await TestStore(initialState: TestDismissCancelsEffects.State()) {
       TestDismissCancelsEffects()
     }
     await store.send(.onTask)
     await store.send(.dismiss)
   }
 
-  @MainActor
   func testDismissedStoreSend() async {
-    let store = TestStore(initialState: TestDismissCancelsEffects.State()) {
+    let store = await TestStore(initialState: TestDismissCancelsEffects.State()) {
       TestDismissCancelsEffects()
     }
     await store.send(.dismiss)

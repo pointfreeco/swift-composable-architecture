@@ -69,17 +69,16 @@ initial state of the feature and the ``Reducer`` that runs the feature's logic:
 
 ```swift
 class CounterTests: XCTestCase {
-  @MainActor
   func testBasics() async {
-    let store = TestStore(initialState: Feature.State(count: 0)) {
+    let store = await TestStore(initialState: Feature.State(count: 0)) {
       Feature()
     }
   }
 }
 ```
 
-> Tip: Tests that use ``TestStore`` should be annotated as `@MainActor` and marked as `async` since
-> most assertion helpers on ``TestStore`` can suspend.
+> Tip: Tests that use ``TestStore`` should be marked as `async` since most assertion helpers on
+> ``TestStore`` can suspend.
 
 Test stores have a ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` method, but it behaves differently from
 stores and view stores. You provide an action to send into the system, but then you must also
@@ -234,9 +233,8 @@ when testing state mutations:
 
 ```swift
 class TimerTests: XCTestCase {
-  @MainActor
   func testBasics() async {
-    let store = TestStore(initialState: Feature.State(count: 0)) {
+    let store = await TestStore(initialState: Feature.State(count: 0)) {
       Feature()
     }
   }

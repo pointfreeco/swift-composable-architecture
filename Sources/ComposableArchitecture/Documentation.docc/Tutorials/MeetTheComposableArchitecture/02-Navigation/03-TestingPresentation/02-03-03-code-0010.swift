@@ -3,10 +3,9 @@ import XCTest
 
 @testable import ContactsApp
 
-@MainActor
 final class ContactsFeatureTests: XCTestCase {
   func testDeleteContact() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: ContactsFeature.State(
         contacts: [
           Contact(id: UUID(0), name: "Blob"),

@@ -105,8 +105,8 @@ import SwiftUI
     "Pass 'ForEach' a store scoped to an identified array and identified action, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-ForEachStore-with-ForEach]"
 )
 public struct ForEachStore<
-  EachState, EachAction, Data: Collection, ID: Hashable, Content: View
->: DynamicViewContent {
+  EachState, EachAction, Data: Collection, ID: Hashable & Sendable, Content: View
+>: View {
   public let data: Data
   let content: Content
 
@@ -116,6 +116,11 @@ public struct ForEachStore<
   /// - Parameters:
   ///   - store: A store on an identified array of data and an identified action.
   ///   - content: A function that can generate content given a store of an element.
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>>,
     @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
@@ -175,6 +180,11 @@ public struct ForEachStore<
     message:
       "Use an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Identified-actions"
   )
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public init<EachContent>(
     _ store: Store<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
     @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
@@ -215,8 +225,14 @@ public struct ForEachStore<
   }
 }
 
+#if compiler(>=6)
+  extension ForEachStore: @preconcurrency DynamicViewContent {}
+#else
+  extension ForEachStore: DynamicViewContent {}
+#endif
+
 extension Case {
-  fileprivate subscript<ID: Hashable, Action>(id id: ID) -> Case<Action>
+  fileprivate subscript<ID: Hashable & Sendable, Action>(id id: ID) -> Case<Action>
   where Value == (id: ID, action: Action) {
     Case<Action>(
       embed: { (id: id, action: $0) },

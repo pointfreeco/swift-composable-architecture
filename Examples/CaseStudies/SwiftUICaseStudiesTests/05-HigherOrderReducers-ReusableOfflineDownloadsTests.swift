@@ -4,10 +4,9 @@ import XCTest
 @testable import SwiftUICaseStudies
 
 final class ReusableComponentsDownloadComponentTests: XCTestCase {
-  @MainActor
   func testDownloadFlow() async {
     let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
-    let store = TestStore(
+    let store = await TestStore(
       initialState: DownloadComponent.State(
         id: 1,
         mode: .notDownloaded,
@@ -35,10 +34,9 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testCancelDownloadFlow() async {
     let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
-    let store = TestStore(
+    let store = await TestStore(
       initialState: DownloadComponent.State(
         id: 1,
         mode: .notDownloaded,
@@ -78,10 +76,9 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     }
   }
 
-  @MainActor
   func testDownloadFinishesWhileTryingToCancel() async {
     let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
-    let store = TestStore(
+    let store = await TestStore(
       initialState: DownloadComponent.State(
         id: 1,
         mode: .notDownloaded,
@@ -120,10 +117,9 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     await task.finish()
   }
 
-  @MainActor
   func testDeleteDownloadFlow() async {
     let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
-    let store = TestStore(
+    let store = await TestStore(
       initialState: DownloadComponent.State(
         id: 1,
         mode: .downloaded,

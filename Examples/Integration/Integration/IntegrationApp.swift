@@ -56,7 +56,9 @@ final class IntegrationAppDelegate: NSObject, UIApplicationDelegate {
     configurationForConnecting connectingSceneSession: UISceneSession,
     options: UIScene.ConnectionOptions
   ) -> UISceneConfiguration {
-    UIView.setAnimationsEnabled(false)
+    if ProcessInfo.processInfo.environment["UI_TEST"] != nil {
+      UIView.setAnimationsEnabled(false)
+    }
     Logger.shared.isEnabled = true
     IssueReporters.current.append(NotificationReporter())
     let sceneConfig = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
@@ -185,9 +187,23 @@ struct ContentView: View {
           .navigationTitle(Text("iOS 16"))
         }
 
+        NavigationLink("Test cases") {
+          List {
+            ForEach(TestCase.Cases.allCases) { test in
+              switch test {
+              case .multipleAlerts:
+                NavigationLink(test.rawValue) {
+                  MultipleAlertsTestCaseView()
+                }
+              }
+            }
+          }
+          .navigationTitle(Text("Test cases"))
+        }
+
         NavigationLink("Legacy") {
           List {
-            ForEach(TestCase.allCases) { test in
+            ForEach(TestCase.Legacy.allCases) { test in
               switch test {
               case .escapedWithViewStore:
                 NavigationLink(test.rawValue) {

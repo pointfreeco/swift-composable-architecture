@@ -2,9 +2,8 @@ import ComposableArchitecture
 import XCTest
 
 final class ForEachReducerTests: BaseTCATestCase {
-  @MainActor
   func testElementAction() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: Elements.State(
         rows: [
           .init(id: 1, value: "Blob"),
@@ -27,18 +26,16 @@ final class ForEachReducerTests: BaseTCATestCase {
     }
   }
 
-  @MainActor
   func testNonElementAction() async {
-    let store = TestStore(initialState: Elements.State()) {
+    let store = await TestStore(initialState: Elements.State()) {
       Elements()
     }
 
     await store.send(.buttonTapped)
   }
 
-  @MainActor
   func testMissingElement() async {
-    let store = TestStore(initialState: Elements.State()) {
+    let store = await TestStore(initialState: Elements.State()) {
       EmptyReducer<Elements.State, Elements.Action>()
         .forEach(\.rows, action: \.rows) {}
     }
@@ -71,7 +68,6 @@ final class ForEachReducerTests: BaseTCATestCase {
   }
 
   @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
-  @MainActor
   func testAutomaticEffectCancellation() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
       struct Timer: Reducer {
@@ -130,7 +126,7 @@ final class ForEachReducerTests: BaseTCATestCase {
       }
 
       let clock = TestClock()
-      let store = TestStore(initialState: Timers.State()) {
+      let store = await TestStore(initialState: Timers.State()) {
         Timers()
       } withDependencies: {
         $0.uuid = .incrementing
