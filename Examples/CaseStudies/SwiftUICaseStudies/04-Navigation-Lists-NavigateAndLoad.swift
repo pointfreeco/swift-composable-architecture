@@ -10,13 +10,15 @@ private let readMe = """
 
 @Reducer
 struct NavigateAndLoadList {
+  @ObservableState
   struct State: Equatable {
     var rows: IdentifiedArrayOf<Row> = [
       Row(count: 1, id: UUID()),
       Row(count: 42, id: UUID()),
       Row(count: 100, id: UUID()),
     ]
-    var selection: Identified<Row.ID, Counter.State?>?
+    var selectedRowID: UUID?
+    var selection: Counter.State?
 
     struct Row: Equatable, Identifiable {
       var count: Int
@@ -40,7 +42,7 @@ struct NavigateAndLoadList {
         return .none
 
       case let .setNavigation(selection: .some(id)):
-        state.selection = Identified(nil, id: id)
+        state.selectedRowID = id
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))
           await send(.setNavigationSelectionDelayCompleted)
@@ -48,23 +50,21 @@ struct NavigateAndLoadList {
         .cancellable(id: CancelID.load, cancelInFlight: true)
 
       case .setNavigation(selection: .none):
-        if let selection = state.selection, let count = selection.value?.count {
-          state.rows[id: selection.id]?.count = count
+        if let selectedRowID = state.selectedRowID, let count = state.selection?.count {
+          state.rows[id: selectedRowID]?.count = count
         }
         state.selection = nil
+        state.selectedRowID = nil
         return .cancel(id: CancelID.load)
 
       case .setNavigationSelectionDelayCompleted:
-        guard let id = state.selection?.id else { return .none }
-        state.selection?.value = Counter.State(count: state.rows[id: id]?.count ?? 0)
+        guard let id = state.selectedRowID else { return .none }
+        state.selection = Counter.State(count: state.rows[id: id]?.count ?? 0)
         return .none
       }
     }
     .ifLet(\.selection, action: \.counter) {
-      EmptyReducer()
-        .ifLet(\.value, action: \.self) {
-          Counter()
-        }
+      Counter()
     }
   }
 }
@@ -73,25 +73,23 @@ struct NavigateAndLoadListView: View {
   @Bindable var store: StoreOf<NavigateAndLoadList>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Form {
-        Section {
-          AboutView(readMe: readMe)
-        }
-        ForEach(viewStore.rows) { row in
-          NavigationLink(
-            "Load optional counter that starts from \(row.count)",
-            tag: row.id,
-            selection: viewStore.binding(
-              get: \.selection?.id,
-              send: { .setNavigation(selection: $0) }
-            )
-          ) {
-            IfLetStore(self.store.scope(state: \.selection?.value, action: \.counter)) {
-              CounterView(store: $0)
-            } else: {
-              ProgressView()
-            }
+    Form {
+      Section {
+        AboutView(readMe: readMe)
+      }
+      ForEach(store.rows) { row in
+        NavigationLink(
+          "Load optional counter that starts from \(row.count)",
+          tag: row.id,
+          selection: .init(
+            get: { store.selectedRowID },
+            set: { id in store.send(.setNavigation(selection: id)) }
+          )
+        ) {
+          if let store = store.scope(state: \.selection, action: \.counter) {
+            CounterView(store: store)
+          } else {
+            ProgressView()
           }
         }
       }
