@@ -12,7 +12,7 @@ import IssueReporting
 /// wrapper.
 @dynamicMemberLookup
 @propertyWrapper
-public struct Shared<Value> {
+public struct Shared<Value: Sendable> {
   private let reference: any Reference
   private let keyPath: AnyKeyPath
 
@@ -275,7 +275,7 @@ public struct Shared<Value> {
 
   private var snapshot: Value? {
     get {
-      func open<Root>(_ reference: some Reference<Root>) -> Value? {
+      func open<Root: Sendable>(_ reference: some Reference<Root>) -> Value? {
         @Dependency(\.sharedChangeTracker) var changeTracker
         return changeTracker?[reference]?.snapshot[
           keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
@@ -284,7 +284,7 @@ public struct Shared<Value> {
       return open(self.reference)
     }
     nonmutating set {
-      func open<Root>(_ reference: some Reference<Root>) {
+      func open<Root: Sendable>(_ reference: some Reference<Root>) {
         @Dependency(\.sharedChangeTracker) var changeTracker
         guard let newValue else {
           changeTracker?[reference] = nil
@@ -344,7 +344,10 @@ extension Shared: _CustomDiffObject {
 }
 
 extension Shared
-where Value: _MutableIdentifiedCollection {
+where
+  Value: _MutableIdentifiedCollection,
+  Value.Element: Sendable
+{
   /// Allows a `ForEach` view to transform a shared collection into shared elements.
   ///
   /// ```swift
@@ -408,11 +411,10 @@ extension Shared: MutableCollection
 where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
   public subscript(position: Value.Index) -> Shared<Value.Element> {
     get {
-      assertionFailure("Conformance of 'Shared<Value>' to 'MutableCollection' is unavailable.")
-      return self[position, default: DefaultSubscript(self.wrappedValue[position])]
+      fatalError("Conformance of 'Shared<Value>' to 'MutableCollection' is unavailable.")
     }
     set {
-      self._wrappedValue[position] = newValue.wrappedValue
+      fatalError("Conformance of 'Shared<Value>' to 'MutableCollection' is unavailable.")
     }
   }
 }

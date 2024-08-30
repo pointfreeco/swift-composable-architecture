@@ -17,7 +17,7 @@ extension Shared {
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading and saving the shared reference's value from some external source.
   public init(
-    wrappedValue value: @autoclosure @escaping () -> Value,
+    wrappedValue value: @autoclosure @escaping @Sendable () -> Value,
     _ persistenceKey: some PersistenceKey<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -93,7 +93,7 @@ extension Shared {
   }
 
   private init(
-    throwingValue value: @autoclosure @escaping () throws -> Value,
+    throwingValue value: @autoclosure @escaping @Sendable () throws -> Value,
     _ persistenceKey: some PersistenceKey<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -154,7 +154,7 @@ extension Shared {
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading and saving the shared reference's value from some external source.
   public init<Key: PersistenceKey<Value>>(
-    wrappedValue value: @autoclosure @escaping () -> Value,
+    wrappedValue value: @autoclosure @escaping @Sendable () -> Value,
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -177,7 +177,7 @@ extension SharedReader {
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading the shared reference's value from some external source.
   public init(
-    wrappedValue value: @autoclosure @escaping () -> Value,
+    wrappedValue value: @autoclosure @escaping @Sendable () -> Value,
     _ persistenceKey: some PersistenceReaderKey<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -252,7 +252,7 @@ extension SharedReader {
   }
 
   private init(
-    throwingValue value: @autoclosure @escaping () throws -> Value,
+    throwingValue value: @autoclosure @escaping @Sendable () throws -> Value,
     _ persistenceKey: some PersistenceReaderKey<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -312,7 +312,7 @@ extension SharedReader {
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading the shared reference's value from some external source.
   public init<Key: PersistenceReaderKey<Value>>(
-    wrappedValue value: @autoclosure @escaping () -> Value,
+    wrappedValue value: @autoclosure @escaping @Sendable () -> Value,
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
     line: UInt = #line
@@ -328,15 +328,15 @@ extension SharedReader {
 
 private struct LoadError: Error {}
 
-final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Reference, @unchecked
-  Sendable
+final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Reference,
+  @unchecked Sendable
 {
   private let lock = NSRecursiveLock()
   private let persistenceKey: Persistence?
   #if canImport(Combine)
     private let subject: CurrentValueRelay<Value>
   #endif
-  private var subscription: Shared<Value>.Subscription?
+  private var subscription: Shared<Value>.Subscription!
   private var _value: Value {
     willSet {
       self.subject.send(newValue)
