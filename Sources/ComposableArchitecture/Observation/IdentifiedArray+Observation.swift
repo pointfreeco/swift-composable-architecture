@@ -99,7 +99,8 @@
     public var startIndex: Int { self.data.startIndex }
     public var endIndex: Int { self.data.endIndex }
     public subscript(position: Int) -> Store<State, Action> {
-      MainActor.preconditionIsolated(
+      precondition(
+        Thread.isMainThread,
         #"""
         Store collections must be interacted with on the main actor.
 
