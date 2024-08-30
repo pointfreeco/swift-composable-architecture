@@ -202,18 +202,19 @@ extension Effect {
   ) async rethrows -> T {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
-    let (cancellable, task) = _cancellablesLock.sync { () -> (AnyCancellable, Task<T, Error>) in
-      if cancelInFlight {
-        _cancellationCancellables.cancel(id: id, path: navigationIDPath)
+    let (cancellable, task): (AnyCancellable, Task<T, Error>) = _cancellationCancellables
+      .withValue {
+        if cancelInFlight {
+          $0.cancel(id: id, path: navigationIDPath)
+        }
+        let task = Task { try await operation() }
+        let cancellable = AnyCancellable { task.cancel() }
+        $0.insert(cancellable, at: id, path: navigationIDPath)
+        return (cancellable, task)
       }
-      let task = Task { try await operation() }
-      let cancellable = AnyCancellable { task.cancel() }
-      _cancellationCancellables.insert(cancellable, at: id, path: navigationIDPath)
-      return (cancellable, task)
-    }
     defer {
-      _cancellablesLock.sync {
-        _cancellationCancellables.remove(cancellable, at: id, path: navigationIDPath)
+      _cancellationCancellables.withValue {
+        $0.remove(cancellable, at: id, path: navigationIDPath)
       }
     }
     do {
