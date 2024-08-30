@@ -1,7 +1,7 @@
 import Combine
 import Dispatch
 
-extension Reducer where State: Sendable, Action: Sendable {
+extension Reducer {
   /// Enhances a reducer with debug logging of received actions and state mutations for the given
   /// printer.
   ///
@@ -66,8 +66,7 @@ extension _ReducerPrinter {
   }
 }
 
-public struct _PrintChangesReducer<Base: Reducer>: Reducer
-where Base.State: Sendable, Base.Action: Sendable {
+public struct _PrintChangesReducer<Base: Reducer>: Reducer {
   @usableFromInline
   let base: Base
 
@@ -86,17 +85,23 @@ where Base.State: Sendable, Base.Action: Sendable {
     ) -> Effect<Base.Action> {
       if let printer = self.printer {
         return withSharedChangeTracking { changeTracker in
-          let oldState = state
+          let oldState = UncheckedSendable(state)
           let effects = self.base.reduce(into: &state, action: action)
           return withEscapedDependencies { continuation in
             effects.merge(
-              with: .publisher { [newState = state, queue = printer.queue] in
+              with: .publisher { [
+                newState = UncheckedSendable(state),
+                action = UncheckedSendable(action),
+                queue = printer.queue
+              ] in
                 Deferred<Empty<Action, Never>> {
                   queue.async {
                     continuation.yield {
                       changeTracker.assert {
                         printer.printChange(
-                          receivedAction: action, oldState: oldState, newState: newState
+                          receivedAction: action.wrappedValue,
+                          oldState: oldState.wrappedValue,
+                          newState: newState.wrappedValue
                         )
                       }
                     }
