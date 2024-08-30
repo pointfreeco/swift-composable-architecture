@@ -25,7 +25,6 @@ extension PersistenceReaderKey {
 ///
 /// See ``PersistenceReaderKey/appStorage(_:)-5jsie`` to create values of this type.
 public struct AppStorageKeyPathKey<Value: Sendable>: Sendable {
-  
   private let keyPath: _ReferenceWritableKeyPath<UserDefaults, Value>
   private let store: UncheckedSendable<UserDefaults>
 
