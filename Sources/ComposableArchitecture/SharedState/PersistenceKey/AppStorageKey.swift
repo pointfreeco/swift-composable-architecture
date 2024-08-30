@@ -157,132 +157,132 @@ extension PersistenceReaderKey {
 public struct AppStorageKey<Value: Sendable>: Sendable {
   private let lookup: any Lookup<Value>
   private let key: String
-  private let store: UncheckedSendable<UserDefaults>
+  private let store: UserDefaults
 
   public var id: AnyHashable {
-    AppStorageKeyID(key: self.key, store: self.store.wrappedValue)
+    AppStorageKeyID(key: self.key, store: self.store)
   }
 
   fileprivate init(_ key: String) where Value == Bool {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value == Int {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value == Double {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value == String {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value == URL {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = URLLookup()
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value == Data {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value: RawRepresentable<Int> {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = RawRepresentableLookup(base: CastableLookup())
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value: RawRepresentable<String> {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = RawRepresentableLookup(base: CastableLookup())
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value == Bool? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value == Int? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value == Double? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value == String? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value == URL? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: URLLookup())
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init(_ key: String) where Value == Data? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init<R: RawRepresentable<Int>>(_ key: String) where Value == R? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: RawRepresentableLookup(base: CastableLookup()))
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 
   fileprivate init<R: RawRepresentable<String>>(_ key: String) where Value == R? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: RawRepresentableLookup(base: CastableLookup()))
     self.key = key
-    self.store = UncheckedSendable(store)
+    self.store = store
   }
 }
 
 extension AppStorageKey: PersistenceKey {
   public func load(initialValue: Value?) -> Value? {
-    self.lookup.loadValue(from: self.store.wrappedValue, at: self.key, default: initialValue)
+    self.lookup.loadValue(from: self.store, at: self.key, default: initialValue)
   }
 
   public func save(_ value: Value) {
-    self.lookup.saveValue(value, to: self.store.wrappedValue, at: self.key)
+    self.lookup.saveValue(value, to: self.store, at: self.key)
   }
 
   public func subscribe(

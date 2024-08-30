@@ -87,7 +87,7 @@ let package = Package(
 )
 
 #if compiler(>=6)
-  for target in package.targets where target.type != .system {
+  for target in package.targets where target.type != .system && target.type != .test {
     target.swiftSettings = target.swiftSettings ?? []
     target.swiftSettings?.append(contentsOf: [
       .enableExperimentalFeature("StrictConcurrency"),
