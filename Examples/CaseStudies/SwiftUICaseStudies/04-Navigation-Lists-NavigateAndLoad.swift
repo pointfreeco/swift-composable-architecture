@@ -17,8 +17,7 @@ struct NavigateAndLoadList {
       Row(count: 42, id: UUID()),
       Row(count: 100, id: UUID()),
     ]
-    var selectedRowID: UUID?
-    var selection: Counter.State?
+    var selection: Identified<Row.ID, Counter.State?>?
 
     struct Row: Equatable, Identifiable {
       var count: Int
@@ -42,7 +41,7 @@ struct NavigateAndLoadList {
         return .none
 
       case let .setNavigation(selection: .some(id)):
-        state.selectedRowID = id
+        state.selection = Identified(nil, id: id)
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))
           await send(.setNavigationSelectionDelayCompleted)
@@ -50,21 +49,24 @@ struct NavigateAndLoadList {
         .cancellable(id: CancelID.load, cancelInFlight: true)
 
       case .setNavigation(selection: .none):
-        if let selectedRowID = state.selectedRowID, let count = state.selection?.count {
-          state.rows[id: selectedRowID]?.count = count
+        if let selection = state.selection, let count = selection.value?.count {
+          state.rows[id: selection.id]?.count = count
         }
         state.selection = nil
-        state.selectedRowID = nil
         return .cancel(id: CancelID.load)
 
       case .setNavigationSelectionDelayCompleted:
-        guard let id = state.selectedRowID else { return .none }
-        state.selection = Counter.State(count: state.rows[id: id]?.count ?? 0)
+        guard let id = state.selection?.id else { return .none }
+        let count = state.rows[id: id]?.count ?? 0
+        state.selection?.value = Counter.State(count: count)
         return .none
       }
     }
     .ifLet(\.selection, action: \.counter) {
-      Counter()
+      EmptyReducer()
+        .ifLet(\.value, action: \.self) {
+          Counter()
+        }
     }
   }
 }
@@ -81,11 +83,14 @@ struct NavigateAndLoadListView: View {
         NavigationLink(
           "Load optional counter that starts from \(row.count)",
           tag: row.id,
-          selection: $store.selectedRowID.sending(\.setNavigation)
+          selection: .init(
+            get: { store.selection?.id },
+            set: { id in store.send(.setNavigation(selection: id)) }
+          )
         ) {
-          if let store = store.scope(state: \.selection, action: \.counter) {
+          if let store = store.scope(state: \.selection?.value, action: \.counter) {
             CounterView(store: store)
-          } else {
+          }else {
             ProgressView()
           }
         }
