@@ -81,10 +81,7 @@ struct NavigateAndLoadListView: View {
         NavigationLink(
           "Load optional counter that starts from \(row.count)",
           tag: row.id,
-          selection: .init(
-            get: { store.selectedRowID },
-            set: { id in store.send(.setNavigation(selection: id)) }
-          )
+          selection: $store.selectedRowID.sending(\.setNavigation)
         ) {
           if let store = store.scope(state: \.selection, action: \.counter) {
             CounterView(store: store)
