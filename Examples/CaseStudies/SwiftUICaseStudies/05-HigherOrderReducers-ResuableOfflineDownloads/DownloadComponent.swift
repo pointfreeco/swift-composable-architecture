@@ -3,8 +3,9 @@ import SwiftUI
 
 @Reducer
 struct DownloadComponent {
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Action.Alert>?
+    @Presents var alert: AlertState<Action.Alert>?
     let id: AnyHashable
     var mode: Mode
     let url: URL
@@ -137,33 +138,31 @@ struct DownloadComponentView: View {
   let store: StoreOf<DownloadComponent>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Button {
-        viewStore.send(.buttonTapped)
-      } label: {
-        if viewStore.mode == .downloaded {
-          Image(systemName: "checkmark.circle")
-            .tint(.accentColor)
-        } else if viewStore.mode.progress > 0 {
-          ZStack {
-            CircularProgressView(value: viewStore.mode.progress)
-              .frame(width: 16, height: 16)
-            Rectangle()
-              .frame(width: 6, height: 6)
-          }
-        } else if viewStore.mode == .notDownloaded {
-          Image(systemName: "icloud.and.arrow.down")
-        } else if viewStore.mode == .startingToDownload {
-          ZStack {
-            ProgressView()
-            Rectangle()
-              .frame(width: 6, height: 6)
-          }
+    Button {
+      store.send(.buttonTapped)
+    } label: {
+      if store.mode == .downloaded {
+        Image(systemName: "checkmark.circle")
+          .tint(.accentColor)
+      } else if store.mode.progress > 0 {
+        ZStack {
+          CircularProgressView(value: store.mode.progress)
+            .frame(width: 16, height: 16)
+          Rectangle()
+            .frame(width: 6, height: 6)
+        }
+      } else if store.mode == .notDownloaded {
+        Image(systemName: "icloud.and.arrow.down")
+      } else if store.mode == .startingToDownload {
+        ZStack {
+          ProgressView()
+          Rectangle()
+            .frame(width: 6, height: 6)
         }
       }
-      .foregroundStyle(.primary)
-      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
     }
+    .foregroundStyle(.primary)
+    .alert(store: self.store.scope(state: \.$alert, action: \.alert))
   }
 }
 

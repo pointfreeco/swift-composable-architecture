@@ -16,6 +16,7 @@ private let readMe = """
 
 @Reducer
 struct CityMap {
+  @ObservableState
   struct State: Equatable, Identifiable {
     var download: Download
     var downloadAlert: AlertState<DownloadComponent.Action.Alert>?
@@ -80,24 +81,22 @@ struct CityMapRowView: View {
   let store: StoreOf<CityMap>
 
   var body: some View {
-    WithViewStore(store, observe: { $0 }) { viewStore in
-      HStack {
-        NavigationLink(
-          destination: CityMapDetailView(store: store)
-        ) {
-          HStack {
-            Image(systemName: "map")
-            Text(viewStore.download.title)
-          }
-          .layoutPriority(1)
-
-          Spacer()
-
-          DownloadComponentView(
-            store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
-          )
-          .padding(.trailing, 8)
+    HStack {
+      NavigationLink(
+        destination: CityMapDetailView(store: store)
+      ) {
+        HStack {
+          Image(systemName: "map")
+          Text(store.download.title)
         }
+        .layoutPriority(1)
+
+        Spacer()
+
+        DownloadComponentView(
+          store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
+        )
+        .padding(.trailing, 8)
       }
     }
   }
@@ -107,36 +106,35 @@ struct CityMapDetailView: View {
   let store: StoreOf<CityMap>
 
   var body: some View {
-    WithViewStore(store, observe: { $0 }) { viewStore in
-      VStack(spacing: 32) {
-        Text(viewStore.download.blurb)
+    VStack(spacing: 32) {
+      Text(store.download.blurb)
 
-        HStack {
-          if viewStore.downloadMode == .notDownloaded {
-            Text("Download for offline viewing")
-          } else if viewStore.downloadMode == .downloaded {
-            Text("Downloaded")
-          } else {
-            Text("Downloading \(Int(100 * viewStore.downloadComponent.mode.progress))%")
-          }
-
-          Spacer()
-
-          DownloadComponentView(
-            store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
-          )
+      HStack {
+        if store.downloadMode == .notDownloaded {
+          Text("Download for offline viewing")
+        } else if store.downloadMode == .downloaded {
+          Text("Downloaded")
+        } else {
+          Text("Downloading \(Int(100 * store.downloadComponent.mode.progress))%")
         }
 
         Spacer()
+
+        DownloadComponentView(
+          store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
+        )
       }
-      .navigationTitle(viewStore.download.title)
-      .padding()
+
+      Spacer()
     }
+    .navigationTitle(store.download.title)
+    .padding()
   }
 }
 
 @Reducer
 struct MapApp {
+  @ObservableState
   struct State: Equatable {
     var cityMaps: IdentifiedArrayOf<CityMap.State> = .mocks
   }
@@ -160,7 +158,7 @@ struct CitiesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEachStore(store.scope(state: \.cityMaps, action: \.cityMaps)) { cityMapStore in
+      ForEach(store.scope(state: \.cityMaps, action: \.cityMaps)) { cityMapStore in
         CityMapRowView(store: cityMapStore)
           .buttonStyle(.borderless)
       }
