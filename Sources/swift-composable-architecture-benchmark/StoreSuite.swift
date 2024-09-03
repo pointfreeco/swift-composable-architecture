@@ -16,7 +16,7 @@ let storeSuite = BenchmarkSuite(name: "Store") { suite in
       }
     } tearDown: {
       precondition(count(of: store.withState { $0 }, level: level) == 1)
-      _cancellationCancellables.removeAll()
+      _cancellationCancellables.withValue { $0.removeAll() }
     }
   }
   for level in 1...levels {
@@ -28,7 +28,7 @@ let storeSuite = BenchmarkSuite(name: "Store") { suite in
       }
     } tearDown: {
       precondition(count(of: store.withState { $0 }, level: level) == 0)
-      _cancellationCancellables.removeAll()
+      _cancellationCancellables.withValue { $0.removeAll() }
     }
   }
 }
