@@ -70,7 +70,7 @@ struct Favoriting<ID: Hashable & Sendable> {
 }
 
 struct FavoriteButton<ID: Hashable & Sendable>: View {
-  let store: Store<FavoritingState<ID>, FavoritingAction>
+  @Bindable var store: Store<FavoritingState<ID>, FavoritingAction>
 
   var body: some View {
     Button {
@@ -79,7 +79,7 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
       Image(systemName: "heart")
         .symbolVariant(store.isFavorite ? .fill : .none)
     }
-    .alert(store: store.scope(state: \.$alert, action: \.alert))
+    .alert($store.scope(state: \.alert, action: \.alert))
   }
 }
 

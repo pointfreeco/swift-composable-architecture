@@ -135,7 +135,7 @@ enum Mode: Equatable {
 }
 
 struct DownloadComponentView: View {
-  let store: StoreOf<DownloadComponent>
+  @Bindable var store: StoreOf<DownloadComponent>
 
   var body: some View {
     Button {
@@ -162,7 +162,7 @@ struct DownloadComponentView: View {
       }
     }
     .foregroundStyle(.primary)
-    .alert(store: self.store.scope(state: \.$alert, action: \.alert))
+    .alert($store.scope(state: \.alert, action: \.alert))
   }
 }
 
