@@ -86,7 +86,7 @@
       
       @Step {
         Add a button to each row of the contacts list in order to send the `deleteButtonTapped`
-        action to the view store.
+        action to the store.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-01-code-0007.swift)
       }
