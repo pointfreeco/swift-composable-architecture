@@ -86,6 +86,7 @@
     }
   }
 
+  @MainActor
   public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAccessCollection {
     private let store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
     private let data: IdentifiedArray<ID, State>
