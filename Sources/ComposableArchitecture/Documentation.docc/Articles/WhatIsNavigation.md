@@ -258,7 +258,7 @@ navigation, and so it can be important to be aware of their differences when mod
     let path: [Path] = [
       .movie(/* ... */),
       .actors(/* ... */),
-      .actor(/* ... */)
+      .actor(/* ... */),
       .movies(/* ... */),
       .movie(/* ... */),
     ]
