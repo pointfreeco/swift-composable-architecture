@@ -640,7 +640,6 @@ private struct ChildState: Equatable, Identifiable {
     self
   }
 }
-import ComposableArchitectureMacros
 @ObservableState
 private struct ParentState: Equatable {
   var child = ChildState()
