@@ -19,7 +19,8 @@ final class ObservableTests: BaseTCATestCase {
   }
 
   func testCopyMutation() async {
-    XCTTODO("""
+    XCTTODO(
+      """
       Ideally this test would pass but it does not because making a copy of a child state, mutating
       it, and assigning it does not change the identified array's IDs, and therefore the fast-path
       of _$isIdentityEqual prevents observation.
