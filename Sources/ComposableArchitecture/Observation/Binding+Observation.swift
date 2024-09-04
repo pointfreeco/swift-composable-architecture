@@ -78,12 +78,71 @@
     }
   }
 
+  private final class BindableActionDebugger<Action>: Sendable {
+    let value: any Sendable
+    let wasCalled = LockIsolated(false)
+    init(value: some Sendable) {
+      self.value = value
+    }
+    deinit {
+      guard wasCalled.value else {
+        var valueDump: String {
+          var valueDump = ""
+          customDump(self.value, to: &valueDump, maxDepth: 0)
+          return valueDump
+        }
+        reportIssue(
+          """
+          A binding action sent from a store was not handled. …
+
+            Action:
+              \(typeName(Action.self)).binding(.set(_, \(valueDump)))
+
+          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+          """
+        )
+        return
+      }
+    }
+  }
+
   extension BindableAction where State: ObservableState {
+    fileprivate static func set<Value: Equatable & Sendable>(
+      _ keyPath: _WritableKeyPath<State, Value>,
+      _ value: Value,
+      debugger: Bool
+    ) -> Self {
+      #if DEBUG
+        if debugger {
+          let debugger = BindableActionDebugger<Self>(value: value)
+          return Self.binding(
+            .init(
+              keyPath: keyPath,
+              set: {
+                debugger.wasCalled.setValue(true)
+                $0[keyPath: keyPath] = value
+              },
+              value: value,
+              valueIsEqualTo: { $0 as? Value == value }
+            )
+          )
+        }
+      #endif
+      return Self.binding(
+        .init(
+          keyPath: keyPath,
+          set: { $0[keyPath: keyPath] = value },
+          value: value,
+          valueIsEqualTo: { $0 as? Value == value }
+        )
+      )
+    }
+
     public static func set<Value: Equatable & Sendable>(
       _ keyPath: _WritableKeyPath<State, Value>,
       _ value: Value
     ) -> Self {
-      self.binding(.set(keyPath, value))
+      self.set(keyPath, value, debugger: false)
     }
   }
 
@@ -94,7 +153,7 @@
       get { self.state[keyPath: keyPath] }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.binding(.set(keyPath, newValue)))
+          self.send(.set(keyPath, newValue, debugger: true))
         }
       }
     }
@@ -111,7 +170,7 @@
       get { self.observableState }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.binding(.set(\.self, newValue)))
+          self.send(.set(\.self, newValue, debugger: true))
         }
       }
     }
@@ -130,7 +189,7 @@
       get { self.state[keyPath: keyPath] }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.view(.binding(.set(keyPath, newValue))))
+          self.send(.view(.set(keyPath, newValue, debugger: true)))
         }
       }
     }
@@ -148,7 +207,7 @@
       get { self.observableState }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.view(.binding(.set(\.self, newValue))))
+          self.send(.view(.set(\.self, newValue, debugger: true)))
         }
       }
     }
