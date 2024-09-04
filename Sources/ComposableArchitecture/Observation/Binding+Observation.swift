@@ -79,12 +79,19 @@
   }
 
   private final class BindableActionDebugger<Action>: Sendable {
+    let isInvalidated: @MainActor @Sendable () -> Bool
     let value: any Sendable
     let wasCalled = LockIsolated(false)
-    init(value: some Sendable) {
+    init(
+      value: some Sendable,
+      isInvalidated: @escaping @MainActor @Sendable () -> Bool
+    ) {
       self.value = value
+      self.isInvalidated = isInvalidated
     }
     deinit {
+      let isInvalidated = mainActorNow(execute: isInvalidated)
+      guard !isInvalidated else { return }
       guard wasCalled.value else {
         var valueDump: String {
           var valueDump = ""
@@ -110,11 +117,14 @@
     fileprivate static func set<Value: Equatable & Sendable>(
       _ keyPath: _WritableKeyPath<State, Value>,
       _ value: Value,
-      debugger: Bool
+      isInvalidated: (@MainActor @Sendable () -> Bool)?
     ) -> Self {
       #if DEBUG
-        if debugger {
-          let debugger = BindableActionDebugger<Self>(value: value)
+        if let isInvalidated {
+          let debugger = BindableActionDebugger<Self>(
+            value: value,
+            isInvalidated: isInvalidated
+          )
           return Self.binding(
             .init(
               keyPath: keyPath,
@@ -142,7 +152,7 @@
       _ keyPath: _WritableKeyPath<State, Value>,
       _ value: Value
     ) -> Self {
-      self.set(keyPath, value, debugger: false)
+      self.set(keyPath, value, isInvalidated: nil)
     }
   }
 
@@ -153,7 +163,7 @@
       get { self.state[keyPath: keyPath] }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.set(keyPath, newValue, debugger: true))
+          self.send(.set(keyPath, newValue, isInvalidated: _isInvalidated))
         }
       }
     }
@@ -170,7 +180,7 @@
       get { self.observableState }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.set(\.self, newValue, debugger: true))
+          self.send(.set(\.self, newValue, isInvalidated: _isInvalidated))
         }
       }
     }
@@ -189,7 +199,7 @@
       get { self.state[keyPath: keyPath] }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.view(.set(keyPath, newValue, debugger: true)))
+          self.send(.view(.set(keyPath, newValue, isInvalidated: _isInvalidated)))
         }
       }
     }
@@ -207,7 +217,7 @@
       get { self.observableState }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.view(.set(\.self, newValue, debugger: true)))
+          self.send(.view(.set(\.self, newValue, isInvalidated: _isInvalidated)))
         }
       }
     }
