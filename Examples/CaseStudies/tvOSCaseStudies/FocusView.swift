@@ -12,6 +12,7 @@ private let readMe = """
 
 @Reducer
 struct Focus {
+  @ObservableState
   struct State: Equatable {
     var currentFocus = 1
   }
@@ -35,7 +36,6 @@ struct Focus {
   }
 }
 
-@available(tvOS 14.0, *)
 struct FocusView: View {
   let store: StoreOf<Focus>
 
@@ -43,45 +43,32 @@ struct FocusView: View {
   @Namespace private var namespace
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(spacing: 100) {
-        Text(readMe)
-          .font(.headline)
-          .multilineTextAlignment(.leading)
-          .padding()
+    VStack(spacing: 100) {
+      Text(readMe)
+        .font(.headline)
+        .multilineTextAlignment(.leading)
+        .padding()
 
-        HStack(spacing: 40) {
-          ForEach(1..<6) { index in
-            Button(numbers[index]) {}
-              .prefersDefaultFocus(viewStore.currentFocus == index, in: self.namespace)
-          }
+      HStack(spacing: 40) {
+        ForEach(1..<6) { index in
+          Button(numbers[index]) {}
+            .prefersDefaultFocus(store.currentFocus == index, in: namespace)
         }
-        HStack(spacing: 40) {
-          ForEach(6..<11) { index in
-            Button(numbers[index]) {}
-              .prefersDefaultFocus(viewStore.currentFocus == index, in: self.namespace)
-          }
+      }
+      HStack(spacing: 40) {
+        ForEach(6..<11) { index in
+          Button(numbers[index]) {}
+            .prefersDefaultFocus(store.currentFocus == index, in: namespace)
         }
+      }
 
-        Button("Focus Random") { viewStore.send(.randomButtonClicked) }
-      }
-      .onChange(of: viewStore.currentFocus) { _ in
-        // Update the view's focus when the state tells us the focus changed.
-        self.resetFocus(in: self.namespace)
-      }
-      .focusScope(self.namespace)
+      Button("Focus Random") { store.send(.randomButtonClicked) }
     }
-  }
-}
-
-@available(tvOS 14.0, *)
-struct FocusView_Previews: PreviewProvider {
-  static var previews: some View {
-    FocusView(
-      store: Store(initialState: Focus.State()) {
-        Focus()
-      }
-    )
+    .onChange(of: store.currentFocus) {
+      // Update the view's focus when the state tells us the focus changed.
+      resetFocus(in: namespace)
+    }
+    .focusScope(namespace)
   }
 }
 
@@ -98,3 +85,11 @@ private let numbers = [
   "Nine",
   "Ten",
 ]
+
+#Preview {
+  FocusView(
+    store: Store(initialState: Focus.State()) {
+      Focus()
+    }
+  )
+}

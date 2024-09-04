@@ -1,26 +1,13 @@
-import AuthenticationClient
 import ComposableArchitecture
-import Dispatch
 import LoginCore
 import NewGameCore
 
-@Reducer
-public struct TicTacToe {
-  public enum State: Equatable {
-    case login(Login.State)
-    case newGame(NewGame.State)
+@Reducer(state: .equatable)
+public enum TicTacToe {
+  case login(Login)
+  case newGame(NewGame)
 
-    public init() { self = .login(Login.State()) }
-  }
-
-  public enum Action {
-    case login(Login.Action)
-    case newGame(NewGame.Action)
-  }
-
-  public init() {}
-
-  public var body: some Reducer<State, Action> {
+  public static var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .login(.twoFactor(.presented(.twoFactorResponse(.success)))):

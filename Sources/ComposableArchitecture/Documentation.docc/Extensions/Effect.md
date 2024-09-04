@@ -5,7 +5,7 @@
 ### Creating an effect
 
 - ``none``
-- ``run(priority:operation:catch:fileID:line:)``
+- ``run(priority:operation:catch:fileID:filePath:line:column:)``
 - ``send(_:)``
 - ``EffectOf``
 - ``TaskResult``
@@ -15,6 +15,7 @@
 - ``cancellable(id:cancelInFlight:)``
 - ``cancel(id:)``
 - ``withTaskCancellation(id:cancelInFlight:operation:)``
+- ``_Concurrency/Task/cancel(id:)``
 
 ### Composition
 

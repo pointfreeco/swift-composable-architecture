@@ -3,6 +3,7 @@ import SwiftUI
 
 @Reducer
 struct VoiceMemo {
+  @ObservableState
   struct State: Equatable, Identifiable {
     var date: Date
     var duration: TimeInterval
@@ -100,47 +101,45 @@ struct VoiceMemo {
 }
 
 struct VoiceMemoView: View {
-  let store: StoreOf<VoiceMemo>
+  @Bindable var store: StoreOf<VoiceMemo>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      let currentTime =
-        viewStore.mode.playing.map { $0 * viewStore.duration } ?? viewStore.duration
-      HStack {
-        TextField(
-          "Untitled, \(viewStore.date.formatted(date: .numeric, time: .shortened))",
-          text: viewStore.binding(get: \.title, send: { .titleTextFieldChanged($0) })
-        )
-
-        Spacer()
-
-        dateComponentsFormatter.string(from: currentTime).map {
-          Text($0)
-            .font(.footnote.monospacedDigit())
-            .foregroundColor(Color(.systemGray))
-        }
-
-        Button {
-          viewStore.send(.playButtonTapped)
-        } label: {
-          Image(systemName: viewStore.mode.is(\.playing) ? "stop.circle" : "play.circle")
-            .font(.system(size: 22))
-        }
-      }
-      .buttonStyle(.borderless)
-      .frame(maxHeight: .infinity, alignment: .center)
-      .padding(.horizontal)
-      .listRowBackground(viewStore.mode.is(\.playing) ? Color(.systemGray6) : .clear)
-      .listRowInsets(EdgeInsets())
-      .background(
-        Color(.systemGray5)
-          .frame(maxWidth: viewStore.mode.is(\.playing) ? .infinity : 0)
-          .animation(
-            viewStore.mode.is(\.playing) ? .linear(duration: viewStore.duration) : nil,
-            value: viewStore.mode.is(\.playing)
-          ),
-        alignment: .leading
+    let currentTime =
+      store.mode.playing.map { $0 * store.duration } ?? store.duration
+    HStack {
+      TextField(
+        "Untitled, \(store.date.formatted(date: .numeric, time: .shortened))",
+        text: $store.title.sending(\.titleTextFieldChanged)
       )
+
+      Spacer()
+
+      dateComponentsFormatter.string(from: currentTime).map {
+        Text($0)
+          .font(.footnote.monospacedDigit())
+          .foregroundColor(Color(.systemGray))
+      }
+
+      Button {
+        store.send(.playButtonTapped)
+      } label: {
+        Image(systemName: store.mode.is(\.playing) ? "stop.circle" : "play.circle")
+          .font(.system(size: 22))
+      }
     }
+    .buttonStyle(.borderless)
+    .frame(maxHeight: .infinity, alignment: .center)
+    .padding(.horizontal)
+    .listRowBackground(store.mode.is(\.playing) ? Color(.systemGray6) : .clear)
+    .listRowInsets(EdgeInsets())
+    .background(
+      Color(.systemGray5)
+        .frame(maxWidth: store.mode.is(\.playing) ? .infinity : 0)
+        .animation(
+          store.mode.is(\.playing) ? .linear(duration: store.duration) : nil,
+          value: store.mode.is(\.playing)
+        ),
+      alignment: .leading
+    )
   }
 }

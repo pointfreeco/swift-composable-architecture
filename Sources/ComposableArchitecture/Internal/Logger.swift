@@ -1,6 +1,11 @@
 import OSLog
 
 @_spi(Logging)
+#if swift(<5.10)
+  @MainActor(unsafe)
+#else
+  @preconcurrency@MainActor
+#endif
 public final class Logger {
   public static let shared = Logger()
   public var isEnabled = false
@@ -13,7 +18,7 @@ public final class Logger {
     public func log(level: OSLogType = .default, _ string: @autoclosure () -> String) {
       guard self.isEnabled else { return }
       let string = string()
-      if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+      if isRunningForPreviews {
         print("\(string)")
       } else {
         if #available(iOS 14, macOS 11, tvOS 14, watchOS 7, *) {
@@ -34,3 +39,6 @@ public final class Logger {
     }
   #endif
 }
+
+private let isRunningForPreviews =
+  ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"

@@ -15,7 +15,7 @@ final class TaskResultTests: BaseTCATestCase {
         )
       } issueMatcher: {
         $0.compactDescription == """
-          "TaskResultTests.Failure" is not equatable. …
+          failed - "TaskResultTests.Failure" is not equatable. …
 
           To test two values of this type, it must conform to the "Equatable" protocol. For example:
 
@@ -35,13 +35,13 @@ final class TaskResultTests: BaseTCATestCase {
       }
 
       XCTExpectFailure {
-        XCTAssertNoDifference(
+        expectNoDifference(
           TaskResult<Never>.failure(Failure1(message: "Something went wrong")),
           TaskResult<Never>.failure(Failure2(message: "Something went wrong"))
         )
       } issueMatcher: {
         $0.compactDescription == """
-          XCTAssertNoDifference failed: …
+          failed - Difference: …
 
               TaskResult.failure(
             −   TaskResultTests.Failure1(message: "Something went wrong")
@@ -62,7 +62,7 @@ final class TaskResultTests: BaseTCATestCase {
         _ = TaskResult<Never>.failure(Failure(message: "Something went wrong")).hashValue
       } issueMatcher: {
         $0.compactDescription == """
-          "TaskResultTests.Failure" is not hashable. …
+          failed - "TaskResultTests.Failure" is not hashable. …
 
           To hash a value of this type, it must conform to the "Hashable" protocol. For example:
 

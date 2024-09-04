@@ -2,17 +2,17 @@ import Integration
 import TestCases
 import XCTest
 
-@MainActor
 final class SwitchStoreTests: BaseIntegrationTests {
+  @MainActor
   override func setUpWithError() throws {
     try super.setUpWithError()
-    self.app.buttons["Legacy"].tap()
+    app.buttons["Legacy"].tap()
+    app.collectionViews.buttons[TestCase.Legacy.switchStore.rawValue].tap()
   }
 
+  @MainActor
   func testExample() async throws {
-    self.expectRuntimeWarnings()
-
-    app.collectionViews.buttons[TestCase.switchStore.rawValue].tap()
+    expectRuntimeWarnings()
 
     XCTAssertFalse(
       app.staticTexts

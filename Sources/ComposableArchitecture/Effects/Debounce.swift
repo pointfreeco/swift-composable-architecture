@@ -28,8 +28,8 @@ extension Effect {
   ///   - scheduler: The scheduler you want to deliver the debounced output to.
   ///   - options: Scheduler options that customize the effect's delivery of elements.
   /// - Returns: An effect that publishes events only after a specified time elapses.
-  public func debounce<ID: Hashable, S: Scheduler>(
-    id: ID,
+  public func debounce<S: Scheduler>(
+    id: some Hashable & Sendable,
     for dueTime: S.SchedulerTimeType.Stride,
     scheduler: S,
     options: S.SchedulerOptions? = nil

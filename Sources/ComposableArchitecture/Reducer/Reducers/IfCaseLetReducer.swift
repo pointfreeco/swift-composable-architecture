@@ -35,7 +35,7 @@ extension Reducer {
   ///
   ///   * It forces a specific order of operations for the child and parent features. It runs the
   ///     child first, and then the parent. If the order was reversed, then it would be possible for
-  ///     for the parent feature to change the case of the child enum, in which case the child
+  ///     the parent feature to change the case of the child enum, in which case the child
   ///     feature would not be able to react to that action. That can cause subtle bugs.
   ///
   ///   * It automatically cancels all child effects when it detects the child enum case changes.
@@ -57,7 +57,9 @@ extension Reducer {
     action toCaseAction: CaseKeyPath<Action, CaseAction>,
     @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) -> _IfCaseLetReducer<Self, Case>
   where
     State: CasePathable,
@@ -71,7 +73,9 @@ extension Reducer {
       toChildState: AnyCasePath(toCaseState),
       toChildAction: AnyCasePath(toCaseAction),
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -79,43 +83,46 @@ extension Reducer {
     iOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     macOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     tvOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     watchOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @inlinable
   @warn_unqualified_access
-  public func ifCaseLet<CaseState, CaseAction, Case: Reducer>(
+  public func ifCaseLet<CaseState, CaseAction, Case: Reducer<CaseState, CaseAction>>(
     _ toCaseState: AnyCasePath<State, CaseState>,
     action toCaseAction: AnyCasePath<Action, CaseAction>,
     @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
     fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) -> _IfCaseLetReducer<Self, Case>
-  where CaseState == Case.State, CaseAction == Case.Action {
-    .init(
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> some Reducer<State, Action> {
+    _IfCaseLetReducer(
       parent: self,
       child: `case`(),
       toChildState: toCaseState,
       toChildAction: toCaseAction,
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 }
@@ -137,7 +144,13 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
   let fileID: StaticString
 
   @usableFromInline
+  let filePath: StaticString
+
+  @usableFromInline
   let line: UInt
+
+  @usableFromInline
+  let column: UInt
 
   @Dependency(\.navigationIDPath) var navigationIDPath
 
@@ -148,14 +161,18 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     toChildState: AnyCasePath<Parent.State, Child.State>,
     toChildAction: AnyCasePath<Parent.Action, Child.Action>,
     fileID: StaticString,
-    line: UInt
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
   ) {
     self.parent = parent
     self.child = child
     self.toChildState = toChildState
     self.toChildAction = toChildAction
     self.fileID = fileID
+    self.filePath = filePath
     self.line = line
+    self.column = column
   }
 
   public func reduce(
@@ -191,19 +208,15 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard var childState = self.toChildState.extract(from: state) else {
-      var actionDump = ""
-      customDump(action, to: &actionDump, indent: 4)
-      var stateDump = ""
-      customDump(state, to: &stateDump, indent: 4)
-      runtimeWarn(
+      reportIssue(
         """
         An "ifCaseLet" at "\(self.fileID):\(self.line)" received a child action when child state \
         was set to a different case. …
 
           Action:
-        \(actionDump)
+        \(String(customDumping: action).indent(by: 4))
           State:
-        \(stateDump)
+        \(String(customDumping: state).indent(by: 4))
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
@@ -219,7 +232,11 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
         • This action was sent to the store while state was another case. Make sure that actions \
         for this reducer can only be sent from a view store when state is set to the appropriate \
         case. In SwiftUI applications, use "SwitchStore".
-        """
+        """,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       return .none
     }
@@ -229,7 +246,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     return self.child
       .dependency(\.navigationIDPath, newNavigationID)
       .reduce(into: &childState, action: childAction)
-      .map { self.toChildAction.embed($0) }
+      .map { [toChildAction] in toChildAction.embed($0) }
       .cancellable(id: childID)
   }
 }

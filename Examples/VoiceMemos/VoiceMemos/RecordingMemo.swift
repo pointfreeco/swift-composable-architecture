@@ -3,7 +3,8 @@ import SwiftUI
 
 @Reducer
 struct RecordingMemo {
-  struct State: Equatable {
+  @ObservableState
+  struct State: Equatable, Sendable {
     var date: Date
     var duration: TimeInterval = 0
     var mode: Mode = .recording
@@ -15,7 +16,7 @@ struct RecordingMemo {
     }
   }
 
-  enum Action {
+  enum Action: Sendable {
     case audioRecorderDidFinish(Result<Bool, Error>)
     case delegate(Delegate)
     case finalRecordingTime(TimeInterval)
@@ -24,7 +25,7 @@ struct RecordingMemo {
     case stopButtonTapped
 
     @CasePathable
-    enum Delegate {
+    enum Delegate: Sendable {
       case didFinish(Result<State, Error>)
     }
   }
@@ -87,37 +88,35 @@ struct RecordingMemoView: View {
   let store: StoreOf<RecordingMemo>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack(spacing: 12) {
-        Text("Recording")
-          .font(.title)
-          .colorMultiply(Color(Int(viewStore.duration).isMultiple(of: 2) ? .systemRed : .label))
-          .animation(.easeInOut(duration: 0.5), value: viewStore.duration)
+    VStack(spacing: 12) {
+      Text("Recording")
+        .font(.title)
+        .colorMultiply(Color(Int(store.duration).isMultiple(of: 2) ? .systemRed : .label))
+        .animation(.easeInOut(duration: 0.5), value: store.duration)
 
-        if let formattedDuration = dateComponentsFormatter.string(from: viewStore.duration) {
-          Text(formattedDuration)
-            .font(.body.monospacedDigit().bold())
-            .foregroundColor(.black)
-        }
-
-        ZStack {
-          Circle()
-            .foregroundColor(Color(.label))
-            .frame(width: 74, height: 74)
-
-          Button {
-            viewStore.send(.stopButtonTapped, animation: .default)
-          } label: {
-            RoundedRectangle(cornerRadius: 4)
-              .foregroundColor(Color(.systemRed))
-              .padding(17)
-          }
-          .frame(width: 70, height: 70)
-        }
+      if let formattedDuration = dateComponentsFormatter.string(from: store.duration) {
+        Text(formattedDuration)
+          .font(.body.monospacedDigit().bold())
+          .foregroundColor(.black)
       }
-      .task {
-        await viewStore.send(.onTask).finish()
+
+      ZStack {
+        Circle()
+          .foregroundColor(Color(.label))
+          .frame(width: 74, height: 74)
+
+        Button {
+          store.send(.stopButtonTapped, animation: .default)
+        } label: {
+          RoundedRectangle(cornerRadius: 4)
+            .foregroundColor(Color(.systemRed))
+            .padding(17)
+        }
+        .frame(width: 70, height: 70)
       }
+    }
+    .task {
+      await store.send(.onTask).finish()
     }
   }
 }

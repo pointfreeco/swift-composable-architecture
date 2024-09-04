@@ -1,5 +1,6 @@
 import XCTest
 
+@_transparent
 @available(
   *,
   deprecated,

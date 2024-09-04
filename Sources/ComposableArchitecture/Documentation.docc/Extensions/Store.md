@@ -7,12 +7,10 @@
 - ``init(initialState:reducer:withDependencies:)``
 - ``StoreOf``
 
-### Scoping stores
-
-- ``scope(state:action:)-90255``
-
 ### Accessing state
 
+- ``state-1qxwl``
+- ``subscript(dynamicMember:)-655ef``
 - ``withState(_:)``
 
 ### Sending actions
@@ -21,6 +19,17 @@
 - ``send(_:animation:)``
 - ``send(_:transaction:)``
 - ``StoreTask``
+
+### Scoping stores
+
+- ``scope(state:action:)-90255``
+- ``scope(state:action:fileID:filePath:line:column:)-3yvuf``
+- ``scope(state:action:fileID:filePath:line:column:)-2ym6k``
+- ``case``
+
+### Scoping store bindings
+
+- ``SwiftUI/Binding``
 
 ### Combine integration
 

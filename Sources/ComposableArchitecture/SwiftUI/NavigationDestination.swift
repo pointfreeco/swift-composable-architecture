@@ -16,6 +16,31 @@ extension View {
   ///     in a view that the system pushes onto the navigation stack. If `store`'s state is
   ///     `nil`-ed out, the system pops the view from the stack.
   ///   - destination: A closure returning the content of the destination view.
+  @available(
+    iOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'navigationDestination(item:)' instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    macOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'navigationDestination(item:)' instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    tvOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'navigationDestination(item:)' instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    watchOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'navigationDestination(item:)' instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func navigationDestination<State, Action, Destination: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
@@ -24,7 +49,7 @@ extension View {
       store: store,
       id: { $0.wrappedValue.map(NavigationDestinationID.init) }
     ) { `self`, $item, destinationContent in
-      self.navigationDestination(isPresented: $item.isPresent()) {
+      self.navigationDestination(isPresented: Binding($item)) {
         destinationContent(destination)
       }
     }
@@ -50,23 +75,28 @@ extension View {
   @available(
     iOS, deprecated: 9999,
     message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   @available(
     macOS, deprecated: 9999,
     message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   @available(
     tvOS, deprecated: 9999,
     message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   @available(
     watchOS, deprecated: 9999,
     message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func navigationDestination<
     State, Action, DestinationState, DestinationAction, Destination: View
   >(
@@ -82,7 +112,7 @@ extension View {
       id: { $0.wrappedValue.map(NavigationDestinationID.init) },
       action: fromDestinationAction
     ) { `self`, $item, destinationContent in
-      self.navigationDestination(isPresented: $item.isPresent()) {
+      self.navigationDestination(isPresented: Binding($item)) {
         destinationContent(destination)
       }
     }

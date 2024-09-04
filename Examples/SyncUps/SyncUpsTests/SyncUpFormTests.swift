@@ -3,10 +3,9 @@ import XCTest
 
 @testable import SyncUps
 
-@MainActor
 final class SyncUpFormTests: XCTestCase {
   func testAddAttendee() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SyncUpForm.State(
         syncUp: SyncUp(
           id: SyncUp.ID(),
@@ -20,12 +19,9 @@ final class SyncUpFormTests: XCTestCase {
       $0.uuid = .incrementing
     }
 
-    XCTAssertNoDifference(
-      store.state.syncUp.attendees,
-      [
-        Attendee(id: Attendee.ID(UUID(0)))
-      ]
-    )
+    await store.assert {
+      $0.syncUp.attendees = [Attendee(id: Attendee.ID(UUID(0)))]
+    }
 
     await store.send(.addAttendeeButtonTapped) {
       $0.focus = .attendee(Attendee.ID(UUID(1)))
@@ -37,7 +33,7 @@ final class SyncUpFormTests: XCTestCase {
   }
 
   func testFocus_RemoveAttendee() async {
-    let store = TestStore(
+    let store = await TestStore(
       initialState: SyncUpForm.State(
         syncUp: SyncUp(
           id: SyncUp.ID(),

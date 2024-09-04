@@ -3,10 +3,9 @@ import XCTest
 
 @testable import UIKitCaseStudies
 
-@MainActor
 final class UIKitCaseStudiesTests: XCTestCase {
   func testCountDown() async {
-    let store = TestStore(initialState: Counter.State()) {
+    let store = await TestStore(initialState: Counter.State()) {
       Counter()
     }
 
@@ -23,7 +22,7 @@ final class UIKitCaseStudiesTests: XCTestCase {
     let secondState = Counter.State()
     let thirdState = Counter.State()
 
-    let store = TestStore(
+    let store = await TestStore(
       initialState: CounterList.State(
         counters: [firstState, secondState, thirdState]
       )
@@ -31,24 +30,24 @@ final class UIKitCaseStudiesTests: XCTestCase {
       CounterList()
     }
 
-    await store.send(.counters(.element(id: firstState.id, action: .incrementButtonTapped))) {
+    await store.send(\.counters[id:firstState.id].incrementButtonTapped) {
       $0.counters[id: firstState.id]?.count = 1
     }
-    await store.send(.counters(.element(id: firstState.id, action: .decrementButtonTapped))) {
+    await store.send(\.counters[id:firstState.id].decrementButtonTapped) {
       $0.counters[id: firstState.id]?.count = 0
     }
 
-    await store.send(.counters(.element(id: secondState.id, action: .incrementButtonTapped))) {
+    await store.send(\.counters[id:secondState.id].incrementButtonTapped) {
       $0.counters[id: secondState.id]?.count = 1
     }
-    await store.send(.counters(.element(id: secondState.id, action: .decrementButtonTapped))) {
+    await store.send(\.counters[id:secondState.id].decrementButtonTapped) {
       $0.counters[id: secondState.id]?.count = 0
     }
 
-    await store.send(.counters(.element(id: thirdState.id, action: .incrementButtonTapped))) {
+    await store.send(\.counters[id:thirdState.id].incrementButtonTapped) {
       $0.counters[id: thirdState.id]?.count = 1
     }
-    await store.send(.counters(.element(id: thirdState.id, action: .decrementButtonTapped))) {
+    await store.send(\.counters[id:thirdState.id].decrementButtonTapped) {
       $0.counters[id: thirdState.id]?.count = 0
     }
   }

@@ -1,21 +1,25 @@
 @_spi(Reflection) import CasePaths
 
 /// Loosely represents features that are only briefly shown and the first time they are interacted
-/// with they go away. Such features do not manage any behavior on the inside.
+/// with they are dismissed. Such features do not manage any behavior on the inside.
 ///
 /// Alerts and confirmation dialogs are examples of this kind of state.
-public protocol _EphemeralState {
+@_documentation(visibility:public)
+public protocol _EphemeralState<Action> {
+  associatedtype Action
   static var actionType: Any.Type { get }
 }
 
-extension AlertState: _EphemeralState {
+extension _EphemeralState {
   public static var actionType: Any.Type { Action.self }
 }
 
+@_documentation(visibility:private)
+extension AlertState: _EphemeralState {}
+
+@_documentation(visibility:private)
 @available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
-extension ConfirmationDialogState: _EphemeralState {
-  public static var actionType: Any.Type { Action.self }
-}
+extension ConfirmationDialogState: _EphemeralState {}
 
 @usableFromInline
 func ephemeralType<State>(of state: State) -> (any _EphemeralState.Type)? {

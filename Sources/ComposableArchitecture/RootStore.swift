@@ -2,6 +2,7 @@ import Combine
 import Foundation
 
 @_spi(Internals)
+@MainActor
 public final class RootStore {
   private var bufferedActions: [Any] = []
   let didSet = CurrentValueRelay(())
@@ -20,19 +21,16 @@ public final class RootStore {
   ) {
     self.state = initialState
     self.reducer = reducer
-    threadCheck(status: .`init`)
   }
 
   func send(_ action: Any, originatingFrom originatingAction: Any? = nil) -> Task<Void, Never>? {
     func open<State, Action>(reducer: some Reducer<State, Action>) -> Task<Void, Never>? {
-      threadCheck(status: .send(action, originatingAction: originatingAction))
-
       self.bufferedActions.append(action)
       guard !self.isSending else { return nil }
 
       self.isSending = true
       var currentState = self.state as! State
-      let tasks = Box<[Task<Void, Never>]>(wrappedValue: [])
+      let tasks = LockIsolated<[Task<Void, Never>]>([])
       defer {
         withExtendedLifetime(self.bufferedActions) {
           self.bufferedActions.removeAll()
@@ -44,7 +42,7 @@ public final class RootStore {
             self.bufferedActions.removeLast(),
             originatingFrom: originatingAction
           ) {
-            tasks.wrappedValue.append(task)
+            tasks.withValue { $0.append(task) }
           }
         }
       }
@@ -64,25 +62,20 @@ public final class RootStore {
           let uuid = UUID()
           let effectCancellable = withEscapedDependencies { continuation in
             publisher
-              .handleEvents(
-                receiveCancel: { [weak self] in
-                  threadCheck(status: .effectCompletion(action))
-                  self?.effectCancellables[uuid] = nil
-                }
-              )
+              .receive(on: UIScheduler.shared)
+              .handleEvents(receiveCancel: { [weak self] in self?.effectCancellables[uuid] = nil })
               .sink(
                 receiveCompletion: { [weak self] _ in
-                  threadCheck(status: .effectCompletion(action))
                   boxedTask.wrappedValue?.cancel()
                   didComplete = true
                   self?.effectCancellables[uuid] = nil
                 },
                 receiveValue: { [weak self] effectAction in
-                  guard let self = self else { return }
+                  guard let self else { return }
                   if let task = continuation.yield({
                     self.send(effectAction, originatingFrom: action)
                   }) {
-                    tasks.wrappedValue.append(task)
+                    tasks.withValue { $0.append(task) }
                   }
                 }
               )
@@ -94,177 +87,72 @@ public final class RootStore {
               effectCancellable.cancel()
             }
             boxedTask.wrappedValue = task
-            tasks.wrappedValue.append(task)
+            tasks.withValue { $0.append(task) }
             self.effectCancellables[uuid] = effectCancellable
           }
         case let .run(priority, operation):
           withEscapedDependencies { continuation in
-            tasks.wrappedValue.append(
-              Task(priority: priority) { @MainActor in
-                #if DEBUG
-                  let isCompleted = LockIsolated(false)
-                  defer { isCompleted.setValue(true) }
-                #endif
-                await operation(
-                  Send { effectAction in
-                    #if DEBUG
-                      if isCompleted.value {
-                        runtimeWarn(
-                          """
-                          An action was sent from a completed effect:
+            let task = Task(priority: priority) { @MainActor in
+              let isCompleted = LockIsolated(false)
+              defer { isCompleted.setValue(true) }
+              await operation(
+                Send { effectAction in
+                  if isCompleted.value {
+                    reportIssue(
+                      """
+                      An action was sent from a completed effect:
 
-                            Action:
-                              \(debugCaseOutput(effectAction))
+                        Action:
+                          \(debugCaseOutput(effectAction))
 
-                            Effect returned from:
-                              \(debugCaseOutput(action))
+                        Effect returned from:
+                          \(debugCaseOutput(action))
 
-                          Avoid sending actions using the 'send' argument from 'Effect.run' after \
-                          the effect has completed. This can happen if you escape the 'send' \
-                          argument in an unstructured context.
+                      Avoid sending actions using the 'send' argument from 'Effect.run' after \
+                      the effect has completed. This can happen if you escape the 'send' \
+                      argument in an unstructured context.
 
-                          To fix this, make sure that your 'run' closure does not return until \
-                          you're done calling 'send'.
-                          """
-                        )
-                      }
-                    #endif
-                    if let task = continuation.yield({
-                      self.send(
-                        effectAction
-                        //, originatingFrom: action
-                      )
-                    }) {
-                      tasks.wrappedValue.append(task)
-                    }
+                      To fix this, make sure that your 'run' closure does not return until \
+                      you're done calling 'send'.
+                      """
+                    )
                   }
-                )
-              }
-            )
+                  if let task = continuation.yield({
+                    self.send(effectAction, originatingFrom: action)
+                  }) {
+                    tasks.withValue { $0.append(task) }
+                  }
+                }
+              )
+            }
+            tasks.withValue { $0.append(task) }
           }
         }
       }
 
-      guard !tasks.wrappedValue.isEmpty else { return nil }
+      guard !tasks.isEmpty else { return nil }
       return Task { @MainActor in
         await withTaskCancellationHandler {
-          var index = tasks.wrappedValue.startIndex
-          while index < tasks.wrappedValue.endIndex {
+          var index = tasks.startIndex
+          while index < tasks.endIndex {
             defer { index += 1 }
-            await tasks.wrappedValue[index].value
+            await tasks[index].value
           }
         } onCancel: {
-          var index = tasks.wrappedValue.startIndex
-          while index < tasks.wrappedValue.endIndex {
+          var index = tasks.startIndex
+          while index < tasks.endIndex {
             defer { index += 1 }
-            tasks.wrappedValue[index].cancel()
+            tasks[index].cancel()
           }
         }
       }
     }
-    return open(reducer: self.reducer)
+    #if canImport(Perception)
+      return _withoutPerceptionChecking {
+        open(reducer: self.reducer)
+      }
+    #else
+      return open(reducer: self.reducer)
+    #endif
   }
-}
-
-#if DEBUG
-  @inline(__always)
-  func threadCheck(status: ThreadCheckStatus) {
-    guard !Thread.isMainThread
-    else { return }
-
-    switch status {
-    case let .effectCompletion(action):
-      runtimeWarn(
-        """
-        An effect completed on a non-main thread. …
-
-          Effect returned from:
-            \(debugCaseOutput(action))
-
-        Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-        receive their output on the main thread.
-
-        The "Store" class is not thread-safe, and so all interactions with an instance of \
-        "Store" (including all of its scopes and derived view stores) must be done on the main \
-        thread.
-        """
-      )
-
-    case .`init`:
-      runtimeWarn(
-        """
-        A store initialized on a non-main thread. …
-
-        The "Store" class is not thread-safe, and so all interactions with an instance of \
-        "Store" (including all of its scopes and derived view stores) must be done on the main \
-        thread.
-        """
-      )
-
-    case .scope:
-      runtimeWarn(
-        """
-        "Store.scope" was called on a non-main thread. …
-
-        The "Store" class is not thread-safe, and so all interactions with an instance of \
-        "Store" (including all of its scopes and derived view stores) must be done on the main \
-        thread.
-        """
-      )
-
-    case let .send(action, originatingAction: nil):
-      runtimeWarn(
-        """
-        "ViewStore.send" was called on a non-main thread with: \(debugCaseOutput(action)) …
-
-        The "Store" class is not thread-safe, and so all interactions with an instance of \
-        "Store" (including all of its scopes and derived view stores) must be done on the main \
-        thread.
-        """
-      )
-
-    case let .send(action, originatingAction: .some(originatingAction)):
-      runtimeWarn(
-        """
-        An effect published an action on a non-main thread. …
-
-          Effect published:
-            \(debugCaseOutput(action))
-
-          Effect returned from:
-            \(debugCaseOutput(originatingAction))
-
-        Make sure to use ".receive(on:)" on any effects that execute on background threads to \
-        receive their output on the main thread.
-
-        The "Store" class is not thread-safe, and so all interactions with an instance of \
-        "Store" (including all of its scopes and derived view stores) must be done on the main \
-        thread.
-        """
-      )
-
-    case .state:
-      runtimeWarn(
-        """
-        Store state was accessed on a non-main thread. …
-
-        The "Store" class is not thread-safe, and so all interactions with an instance of \
-        "Store" (including all of its scopes and derived view stores) must be done on the main \
-        thread.
-        """
-      )
-    }
-  }
-#else
-  @_transparent
-  func threadCheck(status: ThreadCheckStatus) {
-  }
-#endif
-
-enum ThreadCheckStatus {
-  case effectCompletion(Any)
-  case `init`
-  case scope
-  case send(Any, originatingAction: Any?)
-  case state
 }

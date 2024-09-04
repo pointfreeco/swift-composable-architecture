@@ -1,4 +1,4 @@
-import Combine
+@preconcurrency import Combine
 import SwiftUI
 
 /// A `ViewStore` is an object that can observe state changes and send actions. They are most
@@ -61,16 +61,45 @@ import SwiftUI
 /// > store it was derived from) must happen on the same thread. Further, for SwiftUI applications,
 /// > all interactions must happen on the _main_ thread. See the documentation of the ``Store``
 /// > class for more information as to why this decision was made.
+@available(
+  iOS,
+  deprecated: 9999,
+  message:
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+)
+@available(
+  macOS,
+  deprecated: 9999,
+  message:
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+)
+@available(
+  tvOS,
+  deprecated: 9999,
+  message:
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+)
+@available(
+  watchOS,
+  deprecated: 9999,
+  message:
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+)
 @dynamicMemberLookup
+#if swift(<5.10)
+  @MainActor(unsafe)
+#else
+  @preconcurrency@MainActor
+#endif
 public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
-  public private(set) lazy var objectWillChange = ObservableObjectPublisher()
+  public nonisolated let objectWillChange = ObservableObjectPublisher()
   private let _state: CurrentValueRelay<ViewState>
 
   private var viewCancellable: AnyCancellable?
   #if DEBUG
-    private var storeTypeName: String
+    private let storeTypeName: String
   #endif
   let store: Store<ViewState, ViewAction>
 
@@ -126,10 +155,15 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
-    self.store = store.scope(state: toViewState, action: fromViewAction)
-    self._state = CurrentValueRelay(self.store.currentState)
+    self.store = store.scope(
+      id: nil,
+      state: ToState(toViewState),
+      action: fromViewAction,
+      isInvalid: nil
+    )
+    self._state = CurrentValueRelay(self.store.withState { $0 })
     self.viewCancellable = self.store.rootStore.didSet
-      .compactMap { [weak self] in self?.store.currentState }
+      .compactMap { [weak self] in self?.store.withState { $0 } }
       .removeDuplicates(by: isDuplicate)
       .dropFirst()
       .sink { [weak self] in
@@ -153,7 +187,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
   #if DEBUG
     deinit {
-      Logger.shared.log("View\(self.storeTypeName).deinit")
+      guard Thread.isMainThread else { return }
+      MainActor._assumeIsolated {
+        Logger.shared.log("View\(self.storeTypeName).deinit")
+      }
     }
   #endif
 
@@ -320,7 +357,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - action: An action.
   ///   - predicate: A predicate on `ViewState` that determines for how long this method should
   ///     suspend.
-  @MainActor
   public func send(
     _ action: ViewAction,
     while predicate: @escaping (_ state: ViewState) -> Bool
@@ -342,7 +378,6 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - animation: The animation to perform when the action is sent.
   ///   - predicate: A predicate on `ViewState` that determines for how long this method should
   ///     suspend.
-  @MainActor
   public func send(
     _ action: ViewAction,
     animation: Animation?,
@@ -363,33 +398,27 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///
   /// - Parameter predicate: A predicate on `ViewState` that determines for how long this method
   ///   should suspend.
-  @MainActor
   public func yield(while predicate: @escaping (_ state: ViewState) -> Bool) async {
-    if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-      _ = await self.publisher
-        .values
-        .first(where: { !predicate($0) })
-    } else {
-      let cancellable = Box<AnyCancellable?>(wrappedValue: nil)
-      try? await withTaskCancellationHandler {
-        try Task.checkCancellation()
-        try await withUnsafeThrowingContinuation {
-          (continuation: UnsafeContinuation<Void, Error>) in
-          guard !Task.isCancelled else {
-            continuation.resume(throwing: CancellationError())
-            return
-          }
-          cancellable.wrappedValue = self.publisher
-            .filter { !predicate($0) }
-            .prefix(1)
-            .sink { _ in
-              continuation.resume()
-              _ = cancellable
-            }
+    let isolatedCancellable = LockIsolated<AnyCancellable?>(nil)
+    try? await withTaskCancellationHandler {
+      try Task.checkCancellation()
+      try await withUnsafeThrowingContinuation {
+        (continuation: UnsafeContinuation<Void, Error>) in
+        guard !Task.isCancelled else {
+          continuation.resume(throwing: CancellationError())
+          return
         }
-      } onCancel: {
-        cancellable.wrappedValue?.cancel()
+        let cancellable = self.publisher
+          .filter { !predicate($0) }
+          .prefix(1)
+          .sink { _ in
+            continuation.resume()
+            _ = isolatedCancellable
+          }
+        isolatedCancellable.setValue(cancellable)
       }
+    } onCancel: {
+      isolatedCancellable.value?.cancel()
     }
   }
 

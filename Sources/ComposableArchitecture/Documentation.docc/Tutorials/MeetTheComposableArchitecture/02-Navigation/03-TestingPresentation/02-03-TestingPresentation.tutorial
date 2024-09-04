@@ -7,7 +7,7 @@
   @Section(title: "Testing the add contact flow") {
     @ContentAndMedia {
       The first functionality we will test is adding a new contact. This entails emulating the 
-      entire use flow of the user tapping the "+" button, typing into the name text field, 
+      entire user flow of the user tapping the "+" button, typing into the name text field, 
       tapping the "Save" button, and confirming that the sheet is dismissed and the new contact
       is added to the list.
     }
@@ -103,6 +103,9 @@
         Emulate the user typing into the name text field of the contact. The trailing closure is
         where we can assert on how state changed after sending the action.
         
+        > Tip: The payload of an action can be sent as a second argument when using case key path
+        > syntax.
+        
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0010.swift)
       }
       
@@ -110,12 +113,12 @@
         Assert on how state changed by mutating the `destination` through the `addContact` case of
         the destination enum. 
         
-        To do this we use a special subscript defined on 
-        ``ComposableArchitecture/PresentationState`` that allows you to modify the data in the case
-        of any enum.
+        To do this we can chain into the `addContact` case name directly and mutate a part of its
+        associated value.
         
-        > Tip: See ``ComposableArchitecture/PresentationState/subscript(case:)-7uqte`` for 
-        > documentation on this subscript.
+        > Tip: To chain into an enum and mutate an associated value, the enum must be annotated with
+        > `@CasePathable` _and_ `@dynamicMemberLookup`. The `@Reducer` macro automatically applies
+        > these annotations to enum-based `State`, but you must manually apply it to other enums.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0011.swift)
       }
@@ -136,10 +139,23 @@
       }
       
       @Step {
-        Assert that when the `saveContact` delegate action is received that state mutates by adding
-        a contact to the array.
+        Assert that when a delegate action is received that state mutates by adding a contact to the
+        array.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0014.swift)
+      }
+      
+      @Step {
+        To further assert that when the `saveContact` delegate action was received, you must
+        annotate `AddContactFeature.Action.Delegate` with the `@CasePathable` macro.
+        
+        @Code(name: "ContactsFeature.swift", file: 02-03-01-code-0015.swift, previousFile: 02-03-01-code-0015-previous.swift)
+      }
+      
+      @Step {
+        Now you can further dive into the `saveContact` case and even assert against its payload.
+        
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0016.swift, previousFile: 02-03-01-code-0014.swift)
       }
       
       @Step {
@@ -147,7 +163,7 @@
         ``ComposableArchitecture/PresentationAction/dismiss`` action, which causes the "Add Contact"
         feature to be dismissed.
         
-        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0015.swift)
+        @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0017.swift)
       }
       
       This is a fully passing test, and proves the end-to-end lifecycle of presenting a child
@@ -210,7 +226,7 @@
         Next we want to assert that sometime after the user taps the "Save" button that the 
         contact is added to the array and the child feature is dismissed. However, we cannot assert
         on that until all the actions have been received, and so we can do that by using
-        ``ComposableArchitecture/TestStore/skipReceivedActions(strict:file:line:)``.
+        ``ComposableArchitecture/TestStore/skipReceivedActions(strict:fileID:file:line:column:)``.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-02-code-0005.swift)
       }
@@ -290,7 +306,7 @@
       }
       
       @Step {
-        Make use of the new `deleteConfirmation` static alert function in the `CounterFeature` 
+        Make use of the new `deleteConfirmation` static alert function in the `ContactsFeature` 
         reducer, rather than building `AlertState` from scratch.
         
         @Code(name: "ContactsFeature.swift", file: 02-03-03-code-0007.swift, previousFile: 02-03-03-code-0007-previous.swift)

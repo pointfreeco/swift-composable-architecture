@@ -17,6 +17,31 @@ extension View {
   ///   - arrowEdge: The edge of the `attachmentAnchor` that defines the location of the popover's
   ///     arrow in macOS. iOS ignores this parameter.
   ///   - content: A closure returning the content of the popover.
+  @available(
+    iOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'popover(item:)' instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    macOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'popover(item:)' instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    tvOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'popover(item:)' instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  @available(
+    watchOS, deprecated: 9999,
+    message:
+      "Pass a binding of a store to 'popover(item:)' instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+  )
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func popover<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
@@ -50,23 +75,28 @@ extension View {
   @available(
     iOS, deprecated: 9999,
     message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   @available(
     macOS, deprecated: 9999,
     message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   @available(
     tvOS, deprecated: 9999,
     message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   @available(
     watchOS, deprecated: 9999,
     message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func popover<State, Action, DestinationState, DestinationAction, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,

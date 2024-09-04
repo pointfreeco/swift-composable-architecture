@@ -7,105 +7,75 @@
   @available(tvOS 13, *)
   @available(watchOS, unavailable)
   extension UIAlertController {
-    /// Creates a `UIAlertController` from `AlertState`.
+    /// Creates a `UIAlertController` from a ``Store`` focused on alert state.
+    ///
+    /// You can use this API with the `UIViewController.present(item:)` method:
     ///
     /// ```swift
-    /// class ParentViewController: UIViewController {
-    ///   let store: Store<ParentState, ParentAction>
-    ///   let viewStore: ViewStore<ViewState, ViewAction>
-    ///   private var cancellables: Set<AnyCancellable> = []
-    ///   private weak var alertController: UIAlertController?
+    /// class FeatureController: UIViewController {
+    ///   @UIBindable var store: StoreOf<Feature>
     ///   // ...
+    ///
     ///   func viewDidLoad() {
     ///     // ...
-    ///     viewStore.publisher
-    ///       .settingsAlert
-    ///       .sink { [weak self] alert in
-    ///         guard let self = self else { return }
-    ///         if let alert = alert {
-    ///           let alertController = UIAlertController(state: alert, send: {
-    ///             self.viewStore.send(.settings($0))
-    ///           })
-    ///           self.present(alertController, animated: true, completion: nil)
-    ///           self.alertController = alertController
-    ///         } else {
-    ///           self.alertController?.dismiss(animated: true, completion: nil)
-    ///           self.alertController = nil
-    ///         }
-    ///       }
-    ///       .store(in: &cancellables)
+    ///
+    ///     present(item: $store.scope(state: \.alert, action: \.alert)) { store in
+    ///       UIAlertController(store: store)
+    ///     }
     ///   }
     /// }
     /// ```
-    ///
-    /// - Parameters:
-    ///   - state: The state of an alert that can be shown to the user.
-    ///   - send: A function that wraps an alert action in the view store's action type.
     public convenience init<Action>(
-      state: AlertState<Action>,
-      send: @escaping (_ action: Action?) -> Void
+      store: Store<AlertState<Action>, Action>
     ) {
+      let state = store.currentState
       self.init(
         title: String(state: state.title),
         message: state.message.map { String(state: $0) },
         preferredStyle: .alert
       )
       for button in state.buttons {
-        self.addAction(.init(button, action: send))
+        addAction(UIAlertAction(button, action: { _ = $0.map(store.send) }))
+      }
+      if state.buttons.isEmpty {
+        addAction(UIAlertAction(title: "OK", style: .cancel))
       }
     }
 
-    /// Creates a `UIAlertController` from `ConfirmationDialogState`.
+    /// Creates a `UIAlertController` from a ``Store`` focused on confirmation dialog state.
     ///
-    /// - Parameters:
-    ///   - state: The state of dialog that can be shown to the user.
-    ///   - send: A function that wraps a dialog action in the view store's action type.
+    /// You can use this API with the `UIViewController.present(item:)` method:
+    ///
+    /// ```swift
+    /// class FeatureController: UIViewController {
+    ///   @UIBindable var store: StoreOf<Feature>
+    ///   // ...
+    ///
+    ///   func viewDidLoad() {
+    ///     // ...
+    ///
+    ///     present(item: $store.scope(state: \.dialog, action: \.dialog)) { store in
+    ///       UIAlertController(store: store)
+    ///     }
+    ///   }
+    /// }
+    /// ```
     public convenience init<Action>(
-      state: ConfirmationDialogState<Action>, send: @escaping (_ action: Action?) -> Void
+      store: Store<ConfirmationDialogState<Action>, Action>
     ) {
+      let state = store.currentState
       self.init(
         title: String(state: state.title),
         message: state.message.map { String(state: $0) },
         preferredStyle: .actionSheet
       )
       for button in state.buttons {
-        self.addAction(.init(button, action: send))
+        addAction(UIAlertAction(button, action: { _ = $0.map(store.send) }))
+      }
+      if state.buttons.isEmpty {
+        addAction(UIAlertAction(title: "OK", style: .cancel))
       }
     }
-  }
 
-  @available(iOS 13, *)
-  @available(macCatalyst 13, *)
-  @available(macOS, unavailable)
-  @available(tvOS 13, *)
-  @available(watchOS, unavailable)
-  extension UIAlertAction.Style {
-    init(_ role: ButtonStateRole) {
-      switch role {
-      case .cancel:
-        self = .cancel
-      case .destructive:
-        self = .destructive
-      }
-    }
-  }
-
-  @available(iOS 13, *)
-  @available(macCatalyst 13, *)
-  @available(macOS, unavailable)
-  @available(tvOS 13, *)
-  @available(watchOS, unavailable)
-  extension UIAlertAction {
-    convenience init<Action>(
-      _ button: ButtonState<Action>,
-      action handler: @escaping (_ action: Action?) -> Void
-    ) {
-      self.init(
-        title: String(state: button.label),
-        style: button.role.map(UIAlertAction.Style.init) ?? .default
-      ) { _ in
-        button.withAction(handler)
-      }
-    }
   }
 #endif

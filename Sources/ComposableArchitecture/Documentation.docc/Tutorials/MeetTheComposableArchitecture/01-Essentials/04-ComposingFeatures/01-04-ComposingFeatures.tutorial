@@ -74,8 +74,7 @@
       our features get too big, and then we will split the reducer and view into their own files.
       
       @Step {
-        Create a new `AppFeature` struct and apply the ``ComposableArchitecture/Reducer()``
-        macro.
+        Create a new `AppFeature` struct and apply the ``ComposableArchitecture/Reducer()`` macro.
         
         @Code(name: "AppFeature.swift", file: 01-04-02-code-0001.swift)
       }
@@ -85,15 +84,18 @@
         and actions for each tab, each of which are just the `CounterFeature`.
         
         @Code(name: "AppFeature.swift", file: 01-04-02-code-0002.swift)
+        
+        > Note: We are proactively conforming `State` to `Equatable` in order to be able to write
+        tests on this feature later.
       }
       
       @Step {
-        Next we need to implement the ``ComposableArchitecture/Reducer/body-8lumc`` of the reducer.
+        Next we need to implement the ``ComposableArchitecture/Reducer/body-20w8t`` of the reducer.
         Previously we did this by using the ``ComposableArchitecture/Reduce`` type to open a closure
         and perform any state mutations necessary based on the action passed in. 
         
         We still want to do that for the core logic of the app feature, but we also want compose in
-        the  `CounterFeature` reducer so that it's logic can execute on the `tab1` and `tab2` state
+        the  `CounterFeature` reducer so that its logic can execute on the `tab1` and `tab2` state
         without the `AppFeature` having to recreate it.
         
         @Code(name: "AppFeature.swift", file: 01-04-02-code-0003.swift)
@@ -109,7 +111,7 @@
         > Note: The `body` computed property is using result builders behind the scenes. It allows
         us to list any number of reducers in the `body` as  long as the types match up. When an
         action comes into the system each reducer will run on the feature's state from 
-        top-to-bottom. Result builders is also what what SwiftUI uses to compose view hierarchies
+        top-to-bottom. Result builders is also what SwiftUI uses to compose view hierarchies
         in a view `body`.
         
         
@@ -147,11 +149,13 @@
       
       @Step {
         Send an action into the test store to emulate the user tapping on the increment button
-        in the first tab. 
+        in the first tab.
+        
+        > Tip: Use case key path syntax when sending actions through multiple layers of features.
         
         > Note: The nesting of the action enums of the features gives us a natural way to 
-        distinguish between actions in different tabs. Sending `.tab1(.incrementButtonTapped)` is 
-        very different from sending  `.tab2(.incrementButtonTapped)`.
+        distinguish between actions in different tabs. Sending `\.tab1.incrementButtonTapped` is 
+        very different from sending  `\.tab2.incrementButtonTapped`.
         
         @Code(name: "AppFeatureTests.swift", file: 01-04-02-code-0007.swift)
       }
@@ -187,7 +191,7 @@
       @Step {
         Replace the two individual store properties with a single store of the `AppFeature` domain.
         
-        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0001.swift, previousFile: 01-04-03-code-0001-previous.swift)
+        @Code(name: "AppFeature.swift", file: 01-04-03-code-0001.swift, previousFile: 01-04-03-code-0001-previous.swift)
       }
       
       @Step {
@@ -196,13 +200,13 @@
         domain. This is done by using key path syntax to single out the field of the state and
         the case of the action enum.
         
-        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0002.swift)
+        @Code(name: "AppFeature.swift", file: 01-04-03-code-0002.swift)
       }
       
       @Step {
         And do the same for the second tab.
         
-        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0003.swift)
+        @Code(name: "AppFeature.swift", file: 01-04-03-code-0003.swift)
       }
       
       That is all it takes. We now have a single ``ComposableArchitecture/Store`` powering this 
@@ -212,7 +216,7 @@
       @Step {
         Create a preview for `AppView` by initializing a store with the `AppFeature` domain.
         
-        @Code(name: "AppFeatureTests.swift", file: 01-04-03-code-0004.swift)
+        @Code(name: "AppFeature.swift", file: 01-04-03-code-0004.swift)
       }
       
       We can also run the feature in the simulator by updating the entry point of the app to be

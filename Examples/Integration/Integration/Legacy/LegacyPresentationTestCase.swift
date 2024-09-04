@@ -2,298 +2,327 @@
 import SwiftUI
 import SwiftUINavigation
 
-@Reducer
-private struct PresentationTestCase {
-  struct State: Equatable {
-    var message = ""
-    @PresentationState var destination: Destination.State?
-  }
-  enum Action: Equatable, Sendable {
-    case alertButtonTapped
-    case customAlertButtonTapped
-    case destination(PresentationAction<Destination.Action>)
-    case dialogButtonTapped
-    case fullScreenCoverButtonTapped
-    case navigationDestinationButtonTapped
-    case navigationLinkDemoButtonTapped
-    case popoverButtonTapped
-    case sheetButtonTapped
-  }
-
+private enum PresentationTestCase {
   @Reducer
-  struct Destination {
-    enum State: Equatable {
+  struct Feature {
+    struct State: Equatable {
+      var message = ""
+      @PresentationState var destination: Destination.State?
+    }
+    enum Action: Equatable, Sendable {
+      case alertButtonTapped
+      case customAlertButtonTapped
+      case destination(PresentationAction<Destination.Action>)
+      case dialogButtonTapped
+      case fullScreenCoverButtonTapped
+      case navigationDestinationButtonTapped
+      case navigationLinkDemoButtonTapped
+      case popoverButtonTapped
+      case sheetButtonTapped
+    }
+
+    @Reducer(state: .equatable, action: .equatable)
+    enum Destination {
       case alert(AlertState<AlertAction>)
       case customAlert
       case dialog(ConfirmationDialogState<DialogAction>)
-      case fullScreenCover(ChildFeature.State)
-      case navigationDestination(ChildFeature.State)
-      case navigationLinkDemo(NavigationLinkDemoFeature.State)
-      case popover(ChildFeature.State)
-      case sheet(ChildFeature.State)
+      case fullScreenCover(ChildFeature)
+      case navigationDestination(ChildFeature)
+      case navigationLinkDemo(NavigationLinkDemoFeature)
+      case popover(ChildFeature)
+      case sheet(ChildFeature)
+
+      enum AlertAction {
+        case ok
+        case showAlert
+        case showDialog
+        case showSheet
+      }
+      enum DialogAction {
+        case ok
+        case showAlert
+        case showDialog
+        case showSheet
+      }
+    }
+
+    var body: some ReducerOf<Self> {
+      Reduce<State, Action> { state, action in
+        switch action {
+        case .destination(.presented) where state.destination == nil:
+          state.message = "Action sent while state nil."
+          return .none
+        default: return .none
+        }
+      }
+      Reduce<State, Action> { state, action in
+        switch action {
+        case .alertButtonTapped:
+          state.destination = .alert(
+            AlertState {
+              TextState("Alert open")
+            } actions: {
+              ButtonState(action: .ok) {
+                TextState("OK")
+              }
+              ButtonState(action: .showAlert) {
+                TextState("Show alert")
+              }
+              ButtonState(action: .showDialog) {
+                TextState("Show dialog")
+              }
+              ButtonState(action: .showSheet) {
+                TextState("Show sheet")
+              }
+              ButtonState(role: .cancel) {
+                TextState("Cancel")
+              }
+            }
+          )
+          return .none
+
+        case .customAlertButtonTapped:
+          state.destination = .customAlert
+          return .none
+
+        case .destination(.presented(.fullScreenCover(.parentSendDismissActionButtonTapped))),
+          .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
+          .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
+          return .send(.destination(.dismiss))
+
+        case let .destination(.presented(.alert(alertAction))):
+          switch alertAction {
+          case .ok:
+            return .none
+          case .showAlert:
+            state.destination = .alert(
+              AlertState {
+                TextState("Hello again!")
+              } actions: {
+              }
+            )
+            return .none
+          case .showDialog:
+            state.destination = .dialog(
+              ConfirmationDialogState(titleVisibility: .visible) {
+                TextState("Hello!")
+              } actions: {
+              }
+            )
+            return .none
+          case .showSheet:
+            state.destination = .sheet(ChildFeature.State())
+            return .none
+          }
+
+        case let .destination(.presented(.dialog(dialogAction))):
+          switch dialogAction {
+          case .ok:
+            return .none
+          case .showAlert:
+            state.destination = .alert(
+              AlertState {
+                TextState("Hello!")
+              } actions: {
+              }
+            )
+            return .none
+          case .showDialog:
+            state.destination = .dialog(
+              ConfirmationDialogState(titleVisibility: .visible) {
+                TextState("Hello again!")
+              } actions: {
+              }
+            )
+            return .none
+          case .showSheet:
+            state.destination = .sheet(ChildFeature.State())
+            return .none
+          }
+
+        case .destination(.presented(.fullScreenCover(.dismissAndAlert))),
+          .destination(.presented(.popover(.dismissAndAlert))),
+          .destination(.presented(.navigationDestination(.dismissAndAlert))),
+          .destination(.presented(.sheet(.dismissAndAlert))):
+          state.destination = .alert(
+            AlertState {
+              TextState("Hello!")
+            }
+          )
+          return .none
+
+        case .destination(.dismiss):
+          state.message = "Dismiss action sent"
+          return .none
+
+        case .destination:
+          return .none
+
+        case .dialogButtonTapped:
+          state.destination = .dialog(
+            ConfirmationDialogState(titleVisibility: .visible) {
+              TextState("Dialog open")
+            } actions: {
+              ButtonState(action: .ok) {
+                TextState("OK")
+              }
+              ButtonState(action: .showAlert) {
+                TextState("Show alert")
+              }
+              ButtonState(action: .showDialog) {
+                TextState("Show dialog")
+              }
+              ButtonState(action: .showSheet) {
+                TextState("Show sheet")
+              }
+            }
+          )
+          return .none
+
+        case .fullScreenCoverButtonTapped:
+          state.destination = .fullScreenCover(ChildFeature.State())
+          return .none
+
+        case .navigationDestinationButtonTapped:
+          state.destination = .navigationDestination(ChildFeature.State())
+          return .none
+
+        case .navigationLinkDemoButtonTapped:
+          state.destination = .navigationLinkDemo(NavigationLinkDemoFeature.State())
+          return .none
+
+        case .popoverButtonTapped:
+          state.destination = .popover(ChildFeature.State())
+          return .none
+
+        case .sheetButtonTapped:
+          state.destination = .sheet(ChildFeature.State())
+          return .none
+        }
+      }
+      .ifLet(\.$destination, action: \.destination)
+    }
+  }
+
+  @Reducer
+  struct ChildFeature {
+    struct State: Equatable, Identifiable {
+      var id = UUID()
+      var count = 0
+      var isDismissed = false
+      @BindingState var text = ""
+    }
+    enum Action: BindableAction, Equatable {
+      case binding(BindingAction<State>)
+      case childDismissButtonTapped
+      case dismissAndAlert
+      case incrementButtonTapped
+      case parentSendDismissActionButtonTapped
+      case resetIdentity
+      case response
+      case startButtonTapped
+    }
+    @Dependency(\.dismiss) var dismiss
+    var body: some ReducerOf<Self> {
+      BindingReducer()
+      Reduce<State, Action> { state, action in
+        switch action {
+        case .binding:
+          return .none
+        case .childDismissButtonTapped:
+          state.isDismissed = true
+          return .run { _ in await self.dismiss() }
+        case .dismissAndAlert:
+          return .none
+        case .incrementButtonTapped:
+          state.count += 1
+          return .none
+        case .parentSendDismissActionButtonTapped:
+          state.isDismissed = true
+          return .none
+        case .resetIdentity:
+          state.id = UUID()
+          return .none
+        case .response:
+          state.count = 999
+          return .none
+        case .startButtonTapped:
+          state.count += 1
+          return .run { send in
+            try await Task.sleep(for: .seconds(2))
+            await send(.response)
+          }
+        }
+      }
+    }
+  }
+
+  @Reducer
+  struct NavigationLinkDemoFeature {
+    struct State: Equatable {
+      var message = ""
+      @PresentationState var child: ChildFeature.State?
+      @PresentationState var identifiedChild: ChildFeature.State?
     }
     enum Action: Equatable {
-      case alert(AlertAction)
-      case customAlert(AlertAction)
-      case dialog(DialogAction)
-      case fullScreenCover(ChildFeature.Action)
-      case navigationDestination(ChildFeature.Action)
-      case navigationLinkDemo(NavigationLinkDemoFeature.Action)
-      case popover(ChildFeature.Action)
-      case sheet(ChildFeature.Action)
-    }
-    enum AlertAction {
-      case ok
-      case showAlert
-      case showDialog
-      case showSheet
-    }
-    enum DialogAction {
-      case ok
-      case showAlert
-      case showDialog
-      case showSheet
+      case child(PresentationAction<ChildFeature.Action>)
+      case identifiedChild(PresentationAction<ChildFeature.Action>)
+      case identifiedNavigationLinkButtonTapped
+      case navigationLinkButtonTapped
+      case nonDeadbeefIdentifiedNavigationLinkButtonTapped
     }
     var body: some ReducerOf<Self> {
-      Scope(state: \.fullScreenCover, action: \.fullScreenCover) {
-        ChildFeature()
-      }
-      Scope(state: \.navigationDestination, action: \.navigationDestination) {
-        ChildFeature()
-      }
-      Scope(state: \.navigationLinkDemo, action: \.navigationLinkDemo) {
-        NavigationLinkDemoFeature()
-      }
-      Scope(state: \.sheet, action: \.sheet) {
-        ChildFeature()
-      }
-      Scope(state: \.popover, action: \.popover) {
-        ChildFeature()
-      }
-    }
-  }
-
-  var body: some ReducerOf<Self> {
-    Reduce<State, Action> { state, action in
-      switch action {
-      case .destination(.presented) where state.destination == nil:
-        state.message = "Action sent while state nil."
-        return .none
-      default: return .none
-      }
-    }
-    Reduce<State, Action> { state, action in
-      switch action {
-      case .alertButtonTapped:
-        state.destination = .alert(
-          AlertState {
-            TextState("Alert open")
-          } actions: {
-            ButtonState(action: .ok) {
-              TextState("OK")
-            }
-            ButtonState(action: .showAlert) {
-              TextState("Show alert")
-            }
-            ButtonState(action: .showDialog) {
-              TextState("Show dialog")
-            }
-            ButtonState(action: .showSheet) {
-              TextState("Show sheet")
-            }
-            ButtonState(role: .cancel) {
-              TextState("Cancel")
-            }
-          }
-        )
-        return .none
-
-      case .customAlertButtonTapped:
-        state.destination = .customAlert
-        return .none
-
-      case .destination(.presented(.fullScreenCover(.parentSendDismissActionButtonTapped))),
-        .destination(.presented(.sheet(.parentSendDismissActionButtonTapped))),
-        .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
-        return .send(.destination(.dismiss))
-
-      case let .destination(.presented(.alert(alertAction))):
-        switch alertAction {
-        case .ok:
+      Reduce { state, action in
+        switch action {
+        case .child(.presented) where state.child == nil:
+          state.message = "Action sent while state nil."
           return .none
-        case .showAlert:
-          state.destination = .alert(
-            AlertState {
-              TextState("Hello again!")
-            } actions: {
-            }
-          )
-          return .none
-        case .showDialog:
-          state.destination = .dialog(
-            ConfirmationDialogState(titleVisibility: .visible) {
-              TextState("Hello!")
-            } actions: {
-            }
-          )
-          return .none
-        case .showSheet:
-          state.destination = .sheet(ChildFeature.State())
+        default:
           return .none
         }
-
-      case let .destination(.presented(.dialog(dialogAction))):
-        switch dialogAction {
-        case .ok:
-          return .none
-        case .showAlert:
-          state.destination = .alert(
-            AlertState {
-              TextState("Hello!")
-            } actions: {
-            }
-          )
-          return .none
-        case .showDialog:
-          state.destination = .dialog(
-            ConfirmationDialogState(titleVisibility: .visible) {
-              TextState("Hello again!")
-            } actions: {
-            }
-          )
-          return .none
-        case .showSheet:
-          state.destination = .sheet(ChildFeature.State())
-          return .none
-        }
-
-      case .destination(.presented(.fullScreenCover(.dismissAndAlert))),
-        .destination(.presented(.popover(.dismissAndAlert))),
-        .destination(.presented(.navigationDestination(.dismissAndAlert))),
-        .destination(.presented(.sheet(.dismissAndAlert))):
-        state.destination = .alert(
-          AlertState {
-            TextState("Hello!")
-          }
-        )
-        return .none
-
-      case .destination(.dismiss):
-        state.message = "Dismiss action sent"
-        return .none
-
-      case .destination:
-        return .none
-
-      case .dialogButtonTapped:
-        state.destination = .dialog(
-          ConfirmationDialogState(titleVisibility: .visible) {
-            TextState("Dialog open")
-          } actions: {
-            ButtonState(action: .ok) {
-              TextState("OK")
-            }
-            ButtonState(action: .showAlert) {
-              TextState("Show alert")
-            }
-            ButtonState(action: .showDialog) {
-              TextState("Show dialog")
-            }
-            ButtonState(action: .showSheet) {
-              TextState("Show sheet")
-            }
-          }
-        )
-        return .none
-
-      case .fullScreenCoverButtonTapped:
-        state.destination = .fullScreenCover(ChildFeature.State())
-        return .none
-
-      case .navigationDestinationButtonTapped:
-        state.destination = .navigationDestination(ChildFeature.State())
-        return .none
-
-      case .navigationLinkDemoButtonTapped:
-        state.destination = .navigationLinkDemo(NavigationLinkDemoFeature.State())
-        return .none
-
-      case .popoverButtonTapped:
-        state.destination = .popover(ChildFeature.State())
-        return .none
-
-      case .sheetButtonTapped:
-        state.destination = .sheet(ChildFeature.State())
-        return .none
       }
-    }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
-  }
-}
-
-@Reducer
-private struct ChildFeature {
-  struct State: Equatable, Identifiable {
-    var id = UUID()
-    var count = 0
-    var isDismissed = false
-    @BindingState var text = ""
-  }
-  enum Action: BindableAction, Equatable {
-    case binding(BindingAction<State>)
-    case childDismissButtonTapped
-    case dismissAndAlert
-    case incrementButtonTapped
-    case parentSendDismissActionButtonTapped
-    case resetIdentity
-    case response
-    case startButtonTapped
-  }
-  @Dependency(\.dismiss) var dismiss
-  var body: some ReducerOf<Self> {
-    BindingReducer()
-    Reduce<State, Action> { state, action in
-      switch action {
-      case .binding:
-        return .none
-      case .childDismissButtonTapped:
-        state.isDismissed = true
-        return .run { _ in await self.dismiss() }
-      case .dismissAndAlert:
-        return .none
-      case .incrementButtonTapped:
-        state.count += 1
-        return .none
-      case .parentSendDismissActionButtonTapped:
-        state.isDismissed = true
-        return .none
-      case .resetIdentity:
-        state.id = UUID()
-        return .none
-      case .response:
-        state.count = 999
-        return .none
-      case .startButtonTapped:
-        state.count += 1
-        return .run { send in
-          try await Task.sleep(for: .seconds(2))
-          await send(.response)
+      Reduce { state, action in
+        switch action {
+        case .child(.presented(.parentSendDismissActionButtonTapped)):
+          state.child = nil
+          return .none
+        case .identifiedChild(.presented(.parentSendDismissActionButtonTapped)):
+          state.child = nil
+          return .none
+        case .child, .identifiedChild:
+          return .none
+        case .identifiedNavigationLinkButtonTapped:
+          state.identifiedChild = ChildFeature.State(
+            id: UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
+          )
+          return .none
+        case .navigationLinkButtonTapped:
+          state.child = ChildFeature.State()
+          return .none
+        case .nonDeadbeefIdentifiedNavigationLinkButtonTapped:
+          state.identifiedChild = ChildFeature.State()
+          return .none
         }
+      }
+      .ifLet(\.$child, action: \.child) {
+        ChildFeature()
+      }
+      .ifLet(\.$identifiedChild, action: \.identifiedChild) {
+        ChildFeature()
       }
     }
   }
+
 }
 
 struct PresentationTestCaseView: View {
-  private let store: StoreOf<PresentationTestCase>
-  @StateObject private var viewStore: ViewStoreOf<PresentationTestCase>
+  private let store: StoreOf<PresentationTestCase.Feature>
+  @StateObject private var viewStore: ViewStoreOf<PresentationTestCase.Feature>
   @State var alertMessage = ""
 
   init() {
-    let store = Store(initialState: PresentationTestCase.State()) {
-      PresentationTestCase()
+    let store = Store(initialState: PresentationTestCase.Feature.State()) {
+      PresentationTestCase.Feature()
         ._printChanges()
     }
     self.store = store
@@ -399,7 +428,7 @@ struct PresentationTestCaseView: View {
 
 private struct ChildView: View {
   @Environment(\.dismiss) var dismiss
-  let store: StoreOf<ChildFeature>
+  let store: StoreOf<PresentationTestCase.ChildFeature>
 
   var body: some View {
     WithViewStore(self.store, observe: { $0 }) { viewStore in
@@ -432,64 +461,8 @@ private struct ChildView: View {
   }
 }
 
-@Reducer
-private struct NavigationLinkDemoFeature {
-  struct State: Equatable {
-    var message = ""
-    @PresentationState var child: ChildFeature.State?
-    @PresentationState var identifiedChild: ChildFeature.State?
-  }
-  enum Action: Equatable {
-    case child(PresentationAction<ChildFeature.Action>)
-    case identifiedChild(PresentationAction<ChildFeature.Action>)
-    case identifiedNavigationLinkButtonTapped
-    case navigationLinkButtonTapped
-    case nonDeadbeefIdentifiedNavigationLinkButtonTapped
-  }
-  var body: some ReducerOf<Self> {
-    Reduce { state, action in
-      switch action {
-      case .child(.presented) where state.child == nil:
-        state.message = "Action sent while state nil."
-        return .none
-      default:
-        return .none
-      }
-    }
-    Reduce { state, action in
-      switch action {
-      case .child(.presented(.parentSendDismissActionButtonTapped)):
-        state.child = nil
-        return .none
-      case .identifiedChild(.presented(.parentSendDismissActionButtonTapped)):
-        state.child = nil
-        return .none
-      case .child, .identifiedChild:
-        return .none
-      case .identifiedNavigationLinkButtonTapped:
-        state.identifiedChild = ChildFeature.State(
-          id: UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
-        )
-        return .none
-      case .navigationLinkButtonTapped:
-        state.child = ChildFeature.State()
-        return .none
-      case .nonDeadbeefIdentifiedNavigationLinkButtonTapped:
-        state.identifiedChild = ChildFeature.State()
-        return .none
-      }
-    }
-    .ifLet(\.$child, action: \.child) {
-      ChildFeature()
-    }
-    .ifLet(\.$identifiedChild, action: \.identifiedChild) {
-      ChildFeature()
-    }
-  }
-}
-
 private struct NavigationLinkDemoView: View {
-  let store: StoreOf<NavigationLinkDemoFeature>
+  let store: StoreOf<PresentationTestCase.NavigationLinkDemoFeature>
 
   var body: some View {
     NavigationView {

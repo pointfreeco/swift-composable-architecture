@@ -3,10 +3,9 @@ import XCTest
 
 @testable import Search
 
-@MainActor
 final class SearchTests: XCTestCase {
   func testSearchAndClearQuery() async {
-    let store = TestStore(initialState: Search.State()) {
+    let store = await TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
       $0.weatherClient.search = { @Sendable _ in .mock }
@@ -26,10 +25,13 @@ final class SearchTests: XCTestCase {
   }
 
   func testSearchFailure() async {
-    let store = TestStore(initialState: Search.State()) {
+    let store = await TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
-      $0.weatherClient.search = { @Sendable _ in throw SomethingWentWrong() }
+      $0.weatherClient.search = { @Sendable _ in
+        struct SomethingWentWrong: Error {}
+        throw SomethingWentWrong()
+      }
     }
 
     await store.send(.searchQueryChanged("S")) {
@@ -40,7 +42,7 @@ final class SearchTests: XCTestCase {
   }
 
   func testClearQueryCancelsInFlightSearchRequest() async {
-    let store = TestStore(initialState: Search.State()) {
+    let store = await TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
       $0.weatherClient.search = { @Sendable _ in .mock }
@@ -67,7 +69,7 @@ final class SearchTests: XCTestCase {
     var results = GeocodingSearch.mock.results
     results.append(specialResult)
 
-    let store = TestStore(initialState: Search.State(results: results)) {
+    let store = await TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
       $0.weatherClient.forecast = { @Sendable _ in .mock }
@@ -121,7 +123,7 @@ final class SearchTests: XCTestCase {
 
     let clock = TestClock()
 
-    let store = TestStore(initialState: Search.State(results: results)) {
+    let store = await TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
       $0.weatherClient.forecast = { @Sendable _ in
@@ -171,10 +173,13 @@ final class SearchTests: XCTestCase {
   func testTapOnLocationFailure() async {
     let results = GeocodingSearch.mock.results
 
-    let store = TestStore(initialState: Search.State(results: results)) {
+    let store = await TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
-      $0.weatherClient.forecast = { @Sendable _ in throw SomethingWentWrong() }
+      $0.weatherClient.forecast = { @Sendable _ in
+        struct SomethingWentWrong: Error {}
+        throw SomethingWentWrong()
+      }
     }
 
     await store.send(.searchResultTapped(results.first!)) {
@@ -185,5 +190,3 @@ final class SearchTests: XCTestCase {
     }
   }
 }
-
-private struct SomethingWentWrong: Equatable, Error {}

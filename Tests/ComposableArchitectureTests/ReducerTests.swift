@@ -4,7 +4,6 @@ import CustomDump
 import XCTest
 import os.signpost
 
-@MainActor
 final class ReducerTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
@@ -19,57 +18,59 @@ final class ReducerTests: BaseTCATestCase {
     XCTAssertEqual(state, 1)
   }
 
-  #if (canImport(RegexBuilder) || !os(macOS) && !targetEnvironment(macCatalyst))
-    @Reducer
-    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-    fileprivate struct Feature_testCombine_EffectsAreMerged {
-      typealias State = Int
-      enum Action { case increment }
-      @Dependency(\.continuousClock) var clock
-      let delay: Duration
-      let setValue: @Sendable () async -> Void
-      var body: some Reducer<State, Action> {
-        Reduce { state, action in
-          state += 1
-          return .run { _ in
-            try await self.clock.sleep(for: self.delay)
-            await self.setValue()
-          }
+  @Reducer
+  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+  fileprivate struct Feature_testCombine_EffectsAreMerged {
+    typealias State = Int
+    enum Action { case increment }
+    @Dependency(\.continuousClock) var clock
+    let delay: Duration
+    let setValue: @Sendable () async -> Void
+    var body: some Reducer<State, Action> {
+      Reduce { state, action in
+        state += 1
+        return .run { _ in
+          try await self.clock.sleep(for: self.delay)
+          await self.setValue()
         }
       }
     }
-    func testCombine_EffectsAreMerged() async throws {
-      if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-        var fastValue: Int? = nil
-        var slowValue: Int? = nil
-        let clock = TestClock()
+  }
 
-        let store = TestStore(initialState: 0) {
+  @MainActor
+  func testCombine_EffectsAreMerged() async throws {
+    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+      var fastValue: Int? = nil
+      var slowValue: Int? = nil
+      let clock = TestClock()
+
+      let store = TestStore(initialState: 0) {
+        CombineReducers {
           Feature_testCombine_EffectsAreMerged(
             delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
           Feature_testCombine_EffectsAreMerged(
             delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
-        } withDependencies: {
-          $0.continuousClock = clock
         }
-
-        await store.send(.increment) {
-          $0 = 2
-        }
-        // Waiting a second causes the fast effect to fire.
-        await clock.advance(by: .seconds(1))
-        try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
-        XCTAssertEqual(fastValue, 42)
-        XCTAssertEqual(slowValue, nil)
-        // Waiting one more second causes the slow effect to fire. This proves that the effects
-        // are merged together, as opposed to concatenated.
-        await clock.advance(by: .seconds(1))
-        await store.finish()
-        XCTAssertEqual(fastValue, 42)
-        XCTAssertEqual(slowValue, 1729)
+      } withDependencies: {
+        $0.continuousClock = clock
       }
+
+      await store.send(.increment) {
+        $0 = 2
+      }
+      // Waiting a second causes the fast effect to fire.
+      await clock.advance(by: .seconds(1))
+      try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
+      XCTAssertEqual(fastValue, 42)
+      XCTAssertEqual(slowValue, nil)
+      // Waiting one more second causes the slow effect to fire. This proves that the effects
+      // are merged together, as opposed to concatenated.
+      await clock.advance(by: .seconds(1))
+      await store.finish()
+      XCTAssertEqual(fastValue, 42)
+      XCTAssertEqual(slowValue, 1729)
     }
-  #endif
+  }
 
   @Reducer
   fileprivate struct Feature_testCombine {
@@ -85,13 +86,17 @@ final class ReducerTests: BaseTCATestCase {
       }
     }
   }
+
+  @MainActor
   func testCombine() async {
     var first = false
     var second = false
 
     let store = TestStore(initialState: 0) {
-      Feature_testCombine(effect: { @MainActor in first = true })
-      Feature_testCombine(effect: { @MainActor in second = true })
+      CombineReducers {
+        Feature_testCombine(effect: { @MainActor in first = true })
+        Feature_testCombine(effect: { @MainActor in second = true })
+      }
     }
 
     await store

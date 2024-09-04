@@ -3,8 +3,8 @@ import OrderedCollections
 /// A wrapper type for actions that can be presented in a list.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``Reducer/forEach(_:action:element:fileID:line:)-247po``.
-public enum IdentifiedAction<ID: Hashable, Action>: CasePathable {
+/// ``Reducer/forEach(_:action:element:fileID:filePath:line:column:)-3dw7i``.
+public enum IdentifiedAction<ID: Hashable & Sendable, Action>: CasePathable {
   /// An action sent to the element at a given identifier.
   case element(id: ID, action: Action)
 
@@ -15,7 +15,7 @@ public enum IdentifiedAction<ID: Hashable, Action>: CasePathable {
   public struct AllCasePaths {
     public var element: AnyCasePath<IdentifiedAction, (id: ID, action: Action)> {
       AnyCasePath(
-        embed: IdentifiedAction.element,
+        embed: { .element(id: $0, action: $1) },
         extract: {
           guard case let .element(id, action) = $0 else { return nil }
           return (id, action)
@@ -113,21 +113,26 @@ extension Reducer {
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
-  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
+  public func forEach<
+    ElementState, ElementAction, ID: Hashable, Element: Reducer<ElementState, ElementAction>
+  >(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: CaseKeyPath<Action, IdentifiedAction<ID, ElementAction>>,
     @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) -> _ForEachReducer<Self, ID, Element>
-  where ElementState == Element.State, ElementAction == Element.Action {
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> some Reducer<State, Action> {
     _ForEachReducer(
       parent: self,
       toElementsState: toElementsState,
       toElementAction: AnyCasePath(toElementAction.appending(path: \.element)),
       element: element(),
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -135,52 +140,60 @@ extension Reducer {
     iOS,
     deprecated: 9999,
     message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
+      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
   )
   @available(
     macOS,
     deprecated: 9999,
     message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
+      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
   )
   @available(
     tvOS,
     deprecated: 9999,
     message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
+      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
   )
   @available(
     watchOS,
     deprecated: 9999,
     message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
+      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
   )
   @inlinable
   @warn_unqualified_access
-  public func forEach<ElementState, ElementAction, ID: Hashable, Element: Reducer>(
+  public func forEach<
+    ElementState,
+    ElementAction,
+    ID: Hashable & Sendable,
+    Element: Reducer<ElementState, ElementAction>
+  >(
     _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
     action toElementAction: AnyCasePath<Action, (ID, ElementAction)>,
     @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
     fileID: StaticString = #fileID,
-    line: UInt = #line
-  ) -> _ForEachReducer<Self, ID, Element>
-  where ElementState == Element.State, ElementAction == Element.Action {
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> some Reducer<State, Action> {
     _ForEachReducer(
       parent: self,
       toElementsState: toElementsState,
       toElementAction: .init(
-        embed: toElementAction.embed,
-        extract: toElementAction.extract
+        embed: { toElementAction.embed($0) },
+        extract: { toElementAction.extract(from: $0) }
       ),
       element: element(),
       fileID: fileID,
-      line: line
+      filePath: filePath,
+      line: line,
+      column: column
     )
   }
 }
 
 public struct _ForEachReducer<
-  Parent: Reducer, ID: Hashable, Element: Reducer
+  Parent: Reducer, ID: Hashable & Sendable, Element: Reducer
 >: Reducer {
   @usableFromInline
   let parent: Parent
@@ -198,7 +211,13 @@ public struct _ForEachReducer<
   let fileID: StaticString
 
   @usableFromInline
+  let filePath: StaticString
+
+  @usableFromInline
   let line: UInt
+
+  @usableFromInline
+  let column: UInt
 
   @Dependency(\.navigationIDPath) var navigationIDPath
 
@@ -209,14 +228,18 @@ public struct _ForEachReducer<
     toElementAction: AnyCasePath<Parent.Action, (id: ID, action: Element.Action)>,
     element: Element,
     fileID: StaticString,
-    line: UInt
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
   ) {
     self.parent = parent
     self.toElementsState = toElementsState
     self.toElementAction = toElementAction
     self.element = element
     self.fileID = fileID
+    self.filePath = filePath
     self.line = line
+    self.column = column
   }
 
   public func reduce(
@@ -252,7 +275,7 @@ public struct _ForEachReducer<
   ) -> Effect<Parent.Action> {
     guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
     if state[keyPath: self.toElementsState][id: id] == nil {
-      runtimeWarn(
+      reportIssue(
         """
         A "forEach" at "\(self.fileID):\(self.line)" received an action for a missing element. …
 
@@ -272,7 +295,11 @@ public struct _ForEachReducer<
         • This action was sent to the store while its state contained no element at this ID. To \
         fix this make sure that actions for this reducer can only be sent from a view store when \
         its state contains an element at this id. In SwiftUI applications, use "ForEachStore".
-        """
+        """,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
       return .none
     }
@@ -281,7 +308,7 @@ public struct _ForEachReducer<
     return self.element
       .dependency(\.navigationIDPath, elementNavigationID)
       .reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
-      .map { self.toElementAction.embed((id, $0)) }
+      .map { [toElementAction] in toElementAction.embed((id, $0)) }
       ._cancellable(id: navigationID, navigationIDPath: self.navigationIDPath)
   }
 }

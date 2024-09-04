@@ -3,10 +3,9 @@ import XCTest
 
 @testable import tvOSCaseStudies
 
-@MainActor
 final class tvOSCaseStudiesTests: XCTestCase {
   func testFocus() async {
-    let store = TestStore(initialState: Focus.State(currentFocus: 1)) {
+    let store = await TestStore(initialState: Focus.State(currentFocus: 1)) {
       Focus()
     } withDependencies: {
       $0.withRandomNumberGenerator = .init(LCRNG())

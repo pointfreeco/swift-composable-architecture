@@ -8,9 +8,10 @@ struct SpeechClient {
     .denied
   }
   var startTask:
-    @Sendable (_ request: SFSpeechAudioBufferRecognitionRequest) async -> AsyncThrowingStream<
-      SpeechRecognitionResult, Error
-    > = { _ in .finished() }
+    @Sendable (_ request: UncheckedSendable<SFSpeechAudioBufferRecognitionRequest>) async ->
+      AsyncThrowingStream<
+        SpeechRecognitionResult, Error
+      > = { _ in .finished() }
 }
 
 extension SpeechClient: DependencyKey {
@@ -26,20 +27,20 @@ extension SpeechClient: DependencyKey {
         }
       },
       startTask: { request in
-        await speech.startTask(request: request)
+        await speech.startTask(request: request.value)
       }
     )
   }
 
   static var previewValue: SpeechClient {
-    let isRecording = ActorIsolated(false)
+    let isRecording = LockIsolated(false)
     return Self(
       authorizationStatus: { .authorized },
       requestAuthorization: { .authorized },
       startTask: { _ in
         AsyncThrowingStream { continuation in
           Task { @MainActor in
-            await isRecording.setValue(true)
+            isRecording.setValue(true)
             var finalText = """
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
               incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud \
@@ -49,7 +50,7 @@ extension SpeechClient: DependencyKey {
               officia deserunt mollit anim id est laborum.
               """
             var text = ""
-            while await isRecording.value {
+            while isRecording.value {
               let word = finalText.prefix { $0 != " " }
               try await Task.sleep(for: .milliseconds(word.count * 50 + .random(in: 0...200)))
               finalText.removeFirst(word.count)
@@ -80,7 +81,7 @@ extension SpeechClient: DependencyKey {
       requestAuthorization: { .authorized },
       startTask: { request in
         AsyncThrowingStream { continuation in
-          Task { @MainActor in
+          Task {
             let start = ContinuousClock.now
             do {
               for try await result in await Self.previewValue.startTask(request) {
@@ -172,17 +173,17 @@ private actor Speech {
         recognitionTask?.finish()
       }
 
-      self.audioEngine?.inputNode.installTap(
+      audioEngine?.inputNode.installTap(
         onBus: 0,
         bufferSize: 1024,
-        format: self.audioEngine?.inputNode.outputFormat(forBus: 0)
+        format: audioEngine?.inputNode.outputFormat(forBus: 0)
       ) { buffer, when in
         request.append(buffer)
       }
 
-      self.audioEngine?.prepare()
+      audioEngine?.prepare()
       do {
-        try self.audioEngine?.start()
+        try audioEngine?.start()
       } catch {
         continuation.finish(throwing: error)
         return

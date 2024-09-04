@@ -10,7 +10,7 @@ private struct DestinationView: View {
 
 @Reducer
 private struct ChildFeature {
-  struct State: Hashable {
+  struct State: Equatable {
     @PresentationState var alert: AlertState<Action.Alert>?
     @PresentationState var navigationDestination: Int?
     var count = 0
@@ -142,7 +142,7 @@ private struct NavigationStackTestCase {
     var childResponse: Int?
   }
   enum Action {
-    case child(StackAction<ChildFeature.State, ChildFeature.Action>)
+    case child(StackActionOf<ChildFeature>)
   }
   var body: some ReducerOf<Self> {
     Reduce { state, action in

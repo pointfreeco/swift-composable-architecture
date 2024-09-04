@@ -25,8 +25,7 @@ public struct Reduce<State, Action>: Reducer {
   ///
   /// - Parameter reducer: A reducer that is called when ``reduce(into:action:)`` is invoked.
   @inlinable
-  public init<R: Reducer>(_ reducer: R)
-  where R.State == State, R.Action == Action {
+  public init(_ reducer: some Reducer<State, Action>) {
     self.init(internal: reducer.reduce)
   }
 

@@ -4,4 +4,4 @@
 
 ### Associated type
 
-- ``Body-swift.typealias``
+- ``Body``

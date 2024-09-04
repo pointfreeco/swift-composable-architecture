@@ -10,8 +10,9 @@ private let readMe = """
 
 @Reducer
 struct SpeechRecognition {
+  @ObservableState
   struct State: Equatable {
-    @PresentationState var alert: AlertState<Action.Alert>?
+    @Presents var alert: AlertState<Action.Alert>?
     var isRecording = false
     var transcribedText = ""
   }
@@ -109,56 +110,52 @@ struct SpeechRecognition {
 }
 
 struct SpeechRecognitionView: View {
-  let store: StoreOf<SpeechRecognition>
+  @Bindable var store: StoreOf<SpeechRecognition>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      VStack {
-        VStack(alignment: .leading) {
-          Text(readMe)
-            .padding(.bottom, 32)
-        }
+    VStack {
+      VStack(alignment: .leading) {
+        Text(readMe)
+          .padding(.bottom, 32)
+      }
 
-        ScrollView {
-          ScrollViewReader { proxy in
-            Text(viewStore.transcribedText)
-              .font(.largeTitle)
-              .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-          }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-
-        Spacer()
-
-        Button {
-          viewStore.send(.recordButtonTapped)
-        } label: {
-          HStack {
-            Image(
-              systemName: viewStore.isRecording
-                ? "stop.circle.fill" : "arrowtriangle.right.circle.fill"
-            )
-            .font(.title)
-            Text(viewStore.isRecording ? "Stop Recording" : "Start Recording")
-          }
-          .foregroundColor(.white)
-          .padding()
-          .background(viewStore.isRecording ? Color.red : .green)
-          .cornerRadius(16)
+      ScrollView {
+        ScrollViewReader { proxy in
+          Text(store.transcribedText)
+            .font(.largeTitle)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
       }
-      .padding()
-      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+
+      Spacer()
+
+      Button {
+        store.send(.recordButtonTapped)
+      } label: {
+        HStack {
+          Image(
+            systemName: store.isRecording
+              ? "stop.circle.fill" : "arrowtriangle.right.circle.fill"
+          )
+          .font(.title)
+          Text(store.isRecording ? "Stop Recording" : "Start Recording")
+        }
+        .foregroundColor(.white)
+        .padding()
+        .background(store.isRecording ? Color.red : .green)
+        .cornerRadius(16)
+      }
     }
+    .padding()
+    .alert($store.scope(state: \.alert, action: \.alert))
   }
 }
 
-struct SpeechRecognitionView_Previews: PreviewProvider {
-  static var previews: some View {
-    SpeechRecognitionView(
-      store: Store(initialState: SpeechRecognition.State(transcribedText: "Test test 123")) {
-        SpeechRecognition()
-      }
-    )
-  }
+#Preview {
+  SpeechRecognitionView(
+    store: Store(initialState: SpeechRecognition.State(transcribedText: "Test test 123")) {
+      SpeechRecognition()
+    }
+  )
 }

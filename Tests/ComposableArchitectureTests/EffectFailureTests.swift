@@ -3,17 +3,15 @@
   @_spi(Internals) import ComposableArchitecture
   import XCTest
 
-  @MainActor
   final class EffectFailureTests: BaseTCATestCase {
-    var cancellables: Set<AnyCancellable> = []
-
+    @MainActor
     func testRunUnexpectedThrows() async {
       guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 
       var line: UInt!
       XCTExpectFailure {
         $0.compactDescription == """
-          An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
+          failed - An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
 
               EffectFailureTests.Unexpected()
 

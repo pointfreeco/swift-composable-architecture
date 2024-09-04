@@ -7,7 +7,7 @@ struct TodosApp: App {
     WindowGroup {
       AppView(
         store: Store(initialState: Todos.State()) {
-          Todos()._printChanges()
+          Todos()
         }
       )
     }

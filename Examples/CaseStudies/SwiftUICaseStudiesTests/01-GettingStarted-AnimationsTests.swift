@@ -4,12 +4,11 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class AnimationTests: XCTestCase {
   func testRainbow() async {
     let clock = TestClock()
 
-    let store = TestStore(initialState: Animations.State()) {
+    let store = await TestStore(initialState: Animations.State()) {
       Animations()
     } withDependencies: {
       $0.continuousClock = clock
@@ -61,7 +60,7 @@ final class AnimationTests: XCTestCase {
   func testReset() async {
     let clock = TestClock()
 
-    let store = TestStore(initialState: Animations.State()) {
+    let store = await TestStore(initialState: Animations.State()) {
       Animations()
     } withDependencies: {
       $0.continuousClock = clock
@@ -93,7 +92,7 @@ final class AnimationTests: XCTestCase {
       }
     }
 
-    await store.send(.alert(.presented(.resetConfirmationButtonTapped))) {
+    await store.send(\.alert.resetConfirmationButtonTapped) {
       $0 = Animations.State()
     }
 

@@ -44,15 +44,22 @@
       }
       
       @Step {
+        ``ComposableArchitecture/TestStore`` requires equatable state in order to make its
+        assertions, so we must add a conformance.
+        
+        @Code(name: "CounterFeature.swift", file: 01-03-01-code-0003.swift, previousFile: 01-03-01-code-0003-previous.swift)
+      }
+      
+      @Step {
         Then we can start sending actions into the store in order to emulate something the user is
         doing. For example, we can emulate tapping the increment button and then the decrement 
         button.
         
-        > Note: The ``ComposableArchitecture/TestStore/send(_:assert:file:line:)`` method on
+        > Note: The ``ComposableArchitecture/TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` method on
         the test store is async because most features involve asynchronous side effects, and the
-        test store using the async context to track those effects.
+        test store uses the async context to track those effects.
         
-        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0003.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0004.swift, previousFile: file: 01-03-01-code-0002.swift)
       }
       
       @Step {
@@ -63,7 +70,7 @@
         failure message showing you exactly how state differed from what you expected (the lines
         with the minus "-") and the actual value (the lines with the plus "+").
         
-        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0004.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0005.swift)
       }
       
       @Step {
@@ -78,7 +85,7 @@
         know the exact state your feature is in rather than merely what transformation was applied
         to your state.
         
-        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0005.swift)
+        @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0006.swift)
       }
       
       Now the test passes and so proves that the incrementing and decrementing logic does work
@@ -146,7 +153,7 @@
       While this test does pass, it also isn't asserting on any of the timer behavior. We would
       like to assert that after some time a `timerTick` action is sent into the system and causes
       the `count` to increment. This can be done by using the 
-      ``ComposableArchitecture/TestStore/receive(_:timeout:assert:file:line:)-6325h`` method on
+      ``ComposableArchitecture/TestStore/receive(_:timeout:assert:fileID:file:line:column:)-53wic`` method on
       test store to assert that you expect to receive an action, and describe how state mutates
       upon receiving that action.
       
@@ -307,7 +314,7 @@
       Now we see the problem with using uncontrolled dependencies in our feature code. It makes our
       code hard to test, and can make tests take a long time to run or become flakey.
       
-      For these reasons, and more, it is highly encouraged for you to control you dependency on
+      For these reasons, and more, it is highly encouraged for you to control your dependency on
       external systems (see <doc:DependencyManagement> for more information). The Composable 
       Architecture comes with a complete set of tools for controlling and propagating dependencies
       throughout an application.
@@ -347,7 +354,7 @@
         and it's the place where it is appropriate to make live network requests.
         
         > Note: Technically the dependency management system in the Composable Architecture is 
-        > provided by another library of our, [swift-dependencies][swift-dependencies]. We split
+        > provided by another library of ours, [swift-dependencies][swift-dependencies]. We split
         > that library out of the Composable Architecture once it became clear that it could be
         > useful even in vanilla SwiftUI and UIKit applications.
         

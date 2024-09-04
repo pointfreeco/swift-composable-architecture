@@ -1,7 +1,6 @@
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   func testWritingFusion() async {
     let reducer: _DependencyKeyWritingReducer<Feature> = Feature()
@@ -26,7 +25,7 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   }
 
   func testWritingFusionOrder() async {
-    let store = TestStore(initialState: Feature.State()) {
+    let store = await TestStore(initialState: Feature.State()) {
       Feature()
         .dependency(\.myValue, 42)
         .dependency(\.myValue, 1729)
@@ -38,7 +37,7 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   }
 
   func testTransformFusionOrder() async {
-    let store = TestStore(initialState: Feature.State()) {
+    let store = await TestStore(initialState: Feature.State()) {
       Feature()
         .transformDependency(\.myValue) { $0 = 42 }
         .transformDependency(\.myValue) { $0 = 1729 }
@@ -50,7 +49,7 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   }
 
   func testWritingOrder() async {
-    let store = TestStore(initialState: Feature.State()) {
+    let store = await TestStore(initialState: Feature.State()) {
       CombineReducers {
         Feature()
           .dependency(\.myValue, 42)
@@ -64,7 +63,7 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
   }
 
   func testTransformOrder() async {
-    let store = TestStore(initialState: Feature.State()) {
+    let store = await TestStore(initialState: Feature.State()) {
       CombineReducers {
         Feature()
           .transformDependency(\.myValue) { $0 = 42 }
@@ -106,7 +105,7 @@ final class DependencyKeyWritingReducerTests: BaseTCATestCase {
     }
   }
   func testDependency_EffectOfEffect() async {
-    let store = TestStore(initialState: Feature_testDependency_EffectOfEffect.State()) {
+    let store = await TestStore(initialState: Feature_testDependency_EffectOfEffect.State()) {
       Feature_testDependency_EffectOfEffect()
         .dependency(\.myValue, 42)
     }

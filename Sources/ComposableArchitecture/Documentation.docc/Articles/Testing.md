@@ -22,6 +22,7 @@ then assert on how it changed after, like this:
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State: Equatable {
     var count = 0
   }
@@ -67,20 +68,19 @@ concise. It's called ``TestStore``, and it is constructed similarly to ``Store``
 initial state of the feature and the ``Reducer`` that runs the feature's logic:
 
 ```swift
-@MainActor
 class CounterTests: XCTestCase {
   func testBasics() async {
-    let store = TestStore(initialState: Feature.State(count: 0)) {
+    let store = await TestStore(initialState: Feature.State(count: 0)) {
       Feature()
     }
   }
 }
 ```
 
-> Tip: Test cases that use ``TestStore`` should be annotated as `@MainActor` and test methods should
-be marked as `async` since most assertion helpers on ``TestStore`` can suspend.
+> Tip: Tests that use ``TestStore`` should be marked as `async` since most assertion helpers on
+> ``TestStore`` can suspend.
 
-Test stores have a ``TestStore/send(_:assert:file:line:)`` method, but it behaves differently from
+Test stores have a ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` method, but it behaves differently from
 stores and view stores. You provide an action to send into the system, but then you must also
 provide a trailing closure to describe how the state of the feature changed after sending the
 action:
@@ -101,8 +101,8 @@ await store.send(.incrementButtonTapped) {
 }
 ```
 
-> The ``TestStore/send(_:assert:file:line:)`` method is `async` for technical reasons that we do not
-> have to worry about right now.
+> The ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` method is `async` for technical reasons that we
+> do not have to worry about right now.
 
 If your mutation is incorrect, meaning you perform a mutation that is different from what happened
 in the ``Reducer``, then you will get a test failure with a nicely formatted message showing exactly
@@ -155,7 +155,7 @@ await store.send(.decrementButtonTapped) {
 > by one, but we haven't proven we know the precise value of `count` at each step of the way.
 >
 > In general, the less logic you have in the trailing closure of
-> ``TestStore/send(_:assert:file:line:)``, the stronger your assertion will be. It is best to
+> ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl``, the stronger your assertion will be. It is best to
 > use simple, hard-coded data for the mutation.
 
 Test stores do expose a ``TestStore/state`` property, which can be useful for performing assertions
@@ -169,7 +169,7 @@ store.send(.incrementButtonTapped) {
 XCTAssertTrue(store.state.isPrime)
 ```
 
-However, when inside the trailing closure of ``TestStore/send(_:assert:file:line:)``, the
+However, when inside the trailing closure of ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl``, the
 ``TestStore/state`` property is equal to the state _before_ sending the action, not after. That
 prevents you from being able to use an escape hatch to get around needing to actually describe the
 state mutation, like so:
@@ -193,12 +193,13 @@ Location, Core Motion, Speech Recognition, etc.), and more.
 
 As a simple example, suppose we have a feature with a button such that when you tap it, it starts
 a timer that counts up until you reach 5, and then stops. This can be accomplished using the
-``Effect/run(priority:operation:catch:fileID:line:)`` helper on ``Effect``, which provides you with
+``Effect/run(priority:operation:catch:fileID:filePath:line:column:)`` helper on ``Effect``, which provides you with
 an asynchronous context to operate in and can send multiple actions back into the system:
 
 ```swift
 @Reducer
 struct Feature {
+  @ObservableState
   struct State: Equatable {
     var count = 0
   }
@@ -231,10 +232,9 @@ To test this we can start off similar to how we did in the [previous section][Te
 when testing state mutations:
 
 ```swift
-@MainActor
 class TimerTests: XCTestCase {
   func testBasics() async {
-    let store = TestStore(initialState: Feature.State(count: 0)) {
+    let store = await TestStore(initialState: Feature.State(count: 0)) {
       Feature()
     }
   }
@@ -244,7 +244,7 @@ class TimerTests: XCTestCase {
 With the basics set up, we can send an action into the system to assert on what happens, such as the
 `.startTimerButtonTapped` action. This time we don't actually expect state to change at first
 because when starting the timer we don't change state, and so in this case we can leave off the
-trailer closure:
+trailing closure:
 
 ```swift
 await store.send(.startTimerButtonTapped)
@@ -263,7 +263,7 @@ supposed to be running, or perhaps the data it feeds into the system later is wr
 requires all effects to finish.
 
 To get this test passing we need to assert on the actions that are sent back into the system
-by the effect. We do this by using the ``TestStore/receive(_:timeout:assert:file:line:)-6325h``
+by the effect. We do this by using the ``TestStore/receive(_:timeout:assert:fileID:file:line:column:)-53wic``
 method, which allows you to assert which action you expect to receive from an effect, as well as how
 the state changes after receiving that effect:
 
@@ -274,9 +274,9 @@ await store.receive(\.timerTick) {
 ```
 
 > Note: We are using key path syntax `\.timerTick` to specify the case of the action we expect to 
-receive. This works because the ``ComposableArchitecture/Reducer()`` macro automatically applies the 
-`@CasePathable` macro to the `Action` enum, and `@CasePathable` comes from our 
-[CasePaths][swift-case-paths] library which brings key path syntax to enum cases.
+> receive. This works because the ``ComposableArchitecture/Reducer()`` macro automatically applies
+> the `@CasePathable` macro to the `Action` enum, and `@CasePathable` comes from our
+> [CasePaths][swift-case-paths] library which brings key path syntax to enum cases.
 
 However, if we run this test we still get a failure because we asserted a `timerTick` action was
 going to be received, but after waiting around for a small amount of time no action was received:
@@ -284,7 +284,7 @@ going to be received, but after waiting around for a small amount of time no act
 > ❌ Failure: Expected to receive an action, but received none after 0.1 seconds.
 
 This is because our timer is on a 1 second interval, and by default
-``TestStore/receive(_:timeout:assert:file:line:)-6325h`` only waits for a fraction of a second. This
+``TestStore/receive(_:timeout:assert:fileID:file:line:column:)-53wic`` only waits for a fraction of a second. This
 is because typically you should not be performing real time-based asynchrony in effects, and instead
 using a controlled entity, such as a clock, that can be sped up in tests. We will demonstrate this
 in a moment, so for now let's increase the timeout:
@@ -384,7 +384,7 @@ let store = TestStore(initialState: Feature.State(count: 0)) {
 ```
 
 With that small change we can drop the `timeout` arguments from the
-``TestStore/receive(_:timeout:assert:file:line:)-6325h`` invocations:
+``TestStore/receive(_:timeout:assert:fileID:file:line:column:)-53wic`` invocations:
 
 ```swift
 await store.receive(\.timerTick) {
@@ -450,7 +450,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 }
 
 // 1️⃣ Emulate user tapping on submit button.
-await store.send(.login(.submitButtonTapped)) {
+await store.send(\.login.submitButtonTapped) {
   // 2️⃣ Assert how all state changes in the login feature
   $0.login?.isLoading = true
   // ...
@@ -498,7 +498,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 }
 store.exhaustivity = .off  // ⬅️
 
-await store.send(.login(.submitButtonTapped))
+await store.send(\.login.submitButtonTapped)
 await store.receive(\.login.delegate.didLogin) {
   $0.selectedTab = .activity
 }
@@ -520,7 +520,7 @@ let store = TestStore(initialState: AppFeature.State()) {
 }
 store.exhaustivity = .off(showSkippedAssertions: true)  // ⬅️
 
-await store.send(.login(.submitButtonTapped))
+await store.send(\.login.submitButtonTapped)
 await store.receive(\.login.delegate.didLogin) {
   $0.selectedTab = .activity
 }
@@ -569,7 +569,7 @@ It can be important to understand how non-exhaustive testing works under the hoo
 limit the ways in which you can assert on state changes.
 
 When you construct an _exhaustive_ test store, which is the default, the `$0` used inside the
-trailing closure of ``TestStore/send(_:assert:file:line:)`` represents the state _before_ the 
+trailing closure of ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` represents the state _before_ the
 action is sent:
 
 ```swift
@@ -661,10 +661,10 @@ await store.send(.removeButtonTapped) {
 
 Further, when using non-exhaustive test stores that also show skipped assertions (via
 ``Exhaustivity/off(showSkippedAssertions:)``), then there is another caveat to keep in mind. In
-such test stores, the trailing closure of ``TestStore/send(_:assert:file:line:)`` is invoked _twice_
-by the test store. First with `$0` representing the state after the action is sent to see if it does
-not match the true state, and then again with `$0` representing the state before the action is sent
-so that we can show what state assertions were skipped.
+such test stores, the trailing closure of ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` is invoked
+_twice_ by the test store. First with `$0` representing the state after the action is sent to see if
+it does not match the true state, and then again with `$0` representing the state before the action
+is sent so that we can show what state assertions were skipped.
 
 Because the test store can invoke your trailing assertion closure twice you must be careful if your
 closure performs any side effects, because those effects will be executed twice. For example,
@@ -837,13 +837,13 @@ they are, you can omit the entire entry point of your application:
 
 ```swift
 import SwiftUI
-import XCTestDynamicOverlay
+import ComposableArchitecture
 
 @main
 struct MyApp: App {
   var body: some Scene {
     WindowGroup {
-      if !_XCTIsTesting {
+      if TestContext.current == nil{
         // Your real root view
       }
     }
@@ -870,6 +870,44 @@ The solution is to remove the static link to `ComposableArchitecture` from your 
 transitively get access to it through the app itself. In Xcode, go to "Build Phases" and remove
 "ComposableArchitecture" from the "Link Binary With Libraries" section. When using SwiftPM, remove 
 the "ComposableArchitecture" entry from the `testTarget`'s' `dependencies` array in `Package.swift`.
+
+### Long-living test stores
+
+Test stores should always be created in individual tests when possible, rather than as a shared
+instance variable on the test class:
+
+```diff
+ final class FeatureTests: XCTestCase {
+   // 👎 Don't do this:
+-  let store = TestStore(initialState: Feature.State()) {
+-    Feature()
+-  }
+
+   func testBasics() async {
+     // 👍 Do this:
++    let store = TestStore(initialState: Feature.State()) {
++      Feature()
++    }
+     // ...
+   }
+ }
+```
+
+This allows you to be very precise in each test: you can start the store in a very specific state,
+and override just the dependencies a test cares about.
+
+More crucially, test stores that are held onto by the test class will not be deinitialized during a
+test run, and so various exhaustive assertions made during deinitialization will not be made,
+_e.g._ that the test store has unreceived actions that should be asserted against, or in-flight
+effects that should complete.
+
+If a test store does _not_ deinitialize at the end of a test, you must explicitly call
+``TestStore/finish(timeout:fileID:file:line:column:)-klnc`` at the end of the test to retain 
+exhaustive coverage:
+
+```swift
+await store.finish()
+```
 
 [xctest-dynamic-overlay-gh]: http://github.com/pointfreeco/xctest-dynamic-overlay
 [Testing-state-changes]: #Testing-state-changes

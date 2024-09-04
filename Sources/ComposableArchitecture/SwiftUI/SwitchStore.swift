@@ -50,9 +50,29 @@ import SwiftUI
 /// > it changes. As such, you should not rely on this value for anything other than checking the
 /// > current case, _e.g._ by switching on it and routing to an appropriate `CaseLet`.
 ///
-/// See ``Reducer/ifCaseLet(_:action:then:fileID:line:)-3k4yb`` and
-/// ``Scope/init(state:action:child:fileID:line:)-7yj7l`` for embedding reducers that operate on
-/// each case of an enum in reducers that operate on the entire enum.
+/// See ``Reducer/ifCaseLet(_:action:then:fileID:filePath:line:column:)-7sg8d`` and
+/// ``Scope/init(state:action:child:fileID:filePath:line:column:)-9g44g`` for embedding reducers
+/// that operate on each case of an enum in reducers that operate on the entire enum.
+@available(
+  iOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-SwitchStore-and-CaseLet-with-switch-and-case]"
+)
+@available(
+  macOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-SwitchStore-and-CaseLet-with-switch-and-case]"
+)
+@available(
+  tvOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-SwitchStore-and-CaseLet-with-switch-and-case]"
+)
+@available(
+  watchOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-SwitchStore-and-CaseLet-with-switch-and-case]"
+)
 public struct SwitchStore<State, Action, Content: View>: View {
   public let store: Store<State, Action>
   public let content: (State) -> Content
@@ -76,13 +96,35 @@ public struct SwitchStore<State, Action, Content: View>: View {
 }
 
 /// A view that handles a specific case of enum state in a ``SwitchStore``.
+@available(
+  iOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-SwitchStore-and-CaseLet-with-switch-and-case]"
+)
+@available(
+  macOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-SwitchStore-and-CaseLet-with-switch-and-case]"
+)
+@available(
+  tvOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-SwitchStore-and-CaseLet-with-switch-and-case]"
+)
+@available(
+  watchOS, deprecated: 9999,
+  message:
+    "Use 'switch' with a store of observable state, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-SwitchStore-and-CaseLet-with-switch-and-case]"
+)
 public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: View>: View {
   public let toCaseState: (EnumState) -> CaseState?
   public let fromCaseAction: (CaseAction) -> EnumAction
   public let content: (Store<CaseState, CaseAction>) -> Content
 
   private let fileID: StaticString
+  private let filePath: StaticString
   private let line: UInt
+  private let column: UInt
 
   @EnvironmentObject private var store: StoreObservableObject<EnumState, EnumAction>
 
@@ -100,26 +142,34 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
     action fromCaseAction: @escaping (CaseAction) -> EnumAction,
     @ViewBuilder then content: @escaping (_ store: Store<CaseState, CaseAction>) -> Content,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
   ) {
     self.toCaseState = toCaseState
     self.fromCaseAction = fromCaseAction
     self.content = content
     self.fileID = fileID
+    self.filePath = filePath
     self.line = line
+    self.column = column
   }
 
   public var body: some View {
     IfLetStore(
       self.store.wrappedValue.scope(
-        state: self.toCaseState,
-        action: self.fromCaseAction
+        id: nil,
+        state: ToState(self.toCaseState),
+        action: self.fromCaseAction,
+        isInvalid: nil
       ),
       then: self.content,
       else: {
         _CaseLetMismatchView<EnumState, EnumAction>(
           fileID: self.fileID,
-          line: self.line
+          filePath: self.filePath,
+          line: self.line,
+          column: self.column
         )
       }
     )
@@ -150,7 +200,9 @@ extension CaseLet where EnumAction == CaseAction {
 public struct _CaseLetMismatchView<State, Action>: View {
   @EnvironmentObject private var store: StoreObservableObject<State, Action>
   let fileID: StaticString
+  let filePath: StaticString
   let line: UInt
+  let column: UInt
 
   public var body: some View {
     #if DEBUG
@@ -187,7 +239,9 @@ public struct _CaseLetMismatchView<State, Action>: View {
       .foregroundColor(.white)
       .padding()
       .background(Color.red.edgesIgnoringSafeArea(.all))
-      .onAppear { runtimeWarn(message) }
+      .onAppear {
+        reportIssue(message, fileID: fileID, filePath: filePath, line: line, column: column)
+      }
     #else
       return EmptyView()
     #endif

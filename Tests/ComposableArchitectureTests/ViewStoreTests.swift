@@ -2,7 +2,6 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 final class ViewStoreTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
@@ -30,6 +29,7 @@ final class ViewStoreTests: BaseTCATestCase {
     XCTAssertEqual(emissionCount, 1)
   }
 
+  @available(*, deprecated)
   func testEqualityChecks() {
     let store = Store<State, Void>(initialState: State()) {}
 
@@ -213,12 +213,14 @@ final class ViewStoreTests: BaseTCATestCase {
       }
     }
 
-    let store = Store(initialState: false) { reducer }
-    let viewStore = ViewStore(store, observe: { $0 })
+    let store = await Store(initialState: false) { reducer }
+    let viewStore = await ViewStore(store, observe: { $0 })
 
-    XCTAssertEqual(viewStore.state, false)
+    var state = await viewStore.state
+    XCTAssertEqual(state, false)
     await viewStore.send(.tapped, while: { $0 })
-    XCTAssertEqual(viewStore.state, false)
+    state = await viewStore.state
+    XCTAssertEqual(state, false)
   }
 
   func testSuspend() {
@@ -239,14 +241,17 @@ final class ViewStoreTests: BaseTCATestCase {
         }
       }
 
-      let store = Store(initialState: false) { reducer }
-      let viewStore = ViewStore(store, observe: { $0 })
+      let store = await Store(initialState: false) { reducer }
+      let viewStore = await ViewStore(store, observe: { $0 })
 
-      XCTAssertEqual(viewStore.state, false)
-      _ = { viewStore.send(.tapped) }()
-      XCTAssertEqual(viewStore.state, true)
+      var state = await viewStore.state
+      XCTAssertEqual(state, false)
+      await viewStore.send(.tapped)
+      state = await viewStore.state
+      XCTAssertEqual(state, true)
       await viewStore.yield(while: { $0 })
-      XCTAssertEqual(viewStore.state, false)
+      state = await viewStore.state
+      XCTAssertEqual(state, false)
       expectation.fulfill()
     }
     self.wait(for: [expectation], timeout: 1)
@@ -257,7 +262,7 @@ final class ViewStoreTests: BaseTCATestCase {
       case tap
       case response(Int)
     }
-    let store = Store(initialState: 0) {
+    let store = await Store(initialState: 0) {
       Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
@@ -271,11 +276,13 @@ final class ViewStoreTests: BaseTCATestCase {
       }
     }
 
-    let viewStore = ViewStore(store, observe: { $0 })
+    let viewStore = await ViewStore(store, observe: { $0 })
 
-    XCTAssertEqual(viewStore.state, 0)
+    var state = await viewStore.state
+    XCTAssertEqual(state, 0)
     await viewStore.send(.tap).finish()
-    XCTAssertEqual(viewStore.state, 42)
+    state = await viewStore.state
+    XCTAssertEqual(state, 42)
   }
 
   func testAsyncSendCancellation() async throws {
@@ -283,7 +290,7 @@ final class ViewStoreTests: BaseTCATestCase {
       case tap
       case response(Int)
     }
-    let store = Store(initialState: 0) {
+    let store = await Store(initialState: 0) {
       Reduce<Int, Action> { state, action in
         switch action {
         case .tap:
@@ -298,13 +305,15 @@ final class ViewStoreTests: BaseTCATestCase {
       }
     }
 
-    let viewStore = ViewStore(store, observe: { $0 })
+    let viewStore = await ViewStore(store, observe: { $0 })
 
-    XCTAssertEqual(viewStore.state, 0)
-    let task = viewStore.send(.tap)
+    var state = await viewStore.state
+    XCTAssertEqual(state, 0)
+    let task = await viewStore.send(.tap)
     task.cancel()
     try await Task.sleep(nanoseconds: NSEC_PER_MSEC)
-    XCTAssertEqual(viewStore.state, 0)
+    state = await viewStore.state
+    XCTAssertEqual(state, 0)
   }
 }
 

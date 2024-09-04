@@ -2,6 +2,11 @@
 
 ## Topics
 
-### Reducer conformance
+### Enum reducers
 
-- ``Reducer``
+- ``Reducer(state:action:)``
+- ``ReducerCaseEphemeral()``
+- ``ReducerCaseIgnored()``
+- ``CaseReducer``
+- ``CaseReducerState``
+- ``_SynthesizedConformance``

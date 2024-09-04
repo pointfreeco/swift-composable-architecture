@@ -30,7 +30,7 @@ their type with `@Reducer`:
 ```
 
 No other changes to be made, and you can immediately start taking advantage of new capabilities of
-reducer composition, such as case key paths (see guides below). See the documentation of 
+reducer composition, such as case key paths (see guides below). See the documentation of
 ``Reducer()`` to see everything that macro adds to your feature's reducer.
 
 You can also technically drop the ``Reducer`` conformance:
@@ -44,7 +44,7 @@ You can also technically drop the ``Reducer`` conformance:
 ```
 
 However, there are some known issues in Xcode that cause autocomplete and type inference to break.
-See the documentation of <doc:Reducer()#Gotchas> for more gotchas on using the `@Reducer` macro. 
+See the documentation of <doc:Reducer#Gotchas> for more gotchas on using the `@Reducer` macro. 
 
 
 ### Using case key paths
@@ -103,7 +103,30 @@ things:
  }
 ```
 
-Further, if the feature's `State` is an enum, `@CasePathable` will also be applied.
+Further, if the feature's `State` is an enum, `@CasePathable` will also be applied, along with
+`@dynamicMemberLookup`:
+
+```diff
++@CasePathable
++@dynamicMemberLookup
+ enum State {
+   // ...
+ }
+```
+
+Dynamic member lookups allows a state's associated value to be accessed via dot-syntax, which can be
+useful when scoping a store's state to a specific case:
+
+```diff
+ IfLetStore(
+   store.scope(
+-    state: /Feature.State.tray, action: Feature.Action.tray
++    state: \.tray, action: { .tray($0) }
+   )
+) { store in
+  // ...
+}
+```
 
 To form a case key path for any other enum, you must apply the `@CasePathable` macro explicitly:
 
@@ -114,11 +137,21 @@ enum DelegateAction {
 }
 ```
 
+And to access its associated values, you must also apply the `@dynamicMemberLookup` attributes:
+
+```swift
+@CasePathable
+@dynamicMemberLookup
+enum DestinationState {
+  case tray(Tray.State)
+}
+```
+
 Anywhere you previously used the `/` prefix operator for case paths you should now be able to use
 key path syntax, so long as all of the enums involved are `@CasePathable`.
 
-If you encounter any problems, create a [discussion][tca-discussions] on the
-Composable Architecture repo.
+If you encounter any problems, create a [discussion][tca-discussions] on the Composable Architecture
+repo.
 
 ### Receiving test store actions
 
@@ -147,7 +180,7 @@ store.receive(\.child.presented.response.success)
 > }
 > ```
 
-And in the case of ``PresentationAction`` you can even omit the ``PresentationAction/presented(_:)`` 
+And in the case of ``PresentationAction`` you can even omit the ``PresentationAction/presented(_:)``
 path component:
 
 ```swift
@@ -245,8 +278,9 @@ enum Action {
 }
 ```
 
-And in the reducer, instead of invoking ``Reducer/forEach(_:action:element:fileID:line:)-65nr1``
-with a case path using the `/` prefix operator:
+And in the reducer, instead of invoking 
+``Reducer/forEach(_:action:element:fileID:filePath:line:column:)-3dw7i`` with a case path using the 
+`/` prefix operator:
 
 ```swift
 Reduce { state, action in 

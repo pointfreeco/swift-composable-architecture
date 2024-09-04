@@ -2,10 +2,7 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 final class CompatibilityTests: BaseTCATestCase {
-  var cancellables: Set<AnyCancellable> = []
-
   // Actions can be re-entrantly sent into the store if an action is sent that holds an object
   // which sends an action on deinit. In order to prevent a simultaneous access exception for this
   // case we need to use `withExtendedLifetime` on the buffered actions when clearing them out.
@@ -82,6 +79,9 @@ final class CompatibilityTests: BaseTCATestCase {
   // `isSending` to false _after_ the store's state mutation is made so that re-entrant actions
   // are buffered rather than immediately handled.
   func testCaseStudy_ActionReentranceFromStateObservation() {
+    var cancellables: Set<AnyCancellable> = []
+    defer { _ = cancellables }
+
     let store = Store<Int, Int>(initialState: 0) {
       Reduce { state, action in
         state = action
@@ -97,14 +97,14 @@ final class CompatibilityTests: BaseTCATestCase {
           viewStore.send(0)
         }
       }
-      .store(in: &self.cancellables)
+      .store(in: &cancellables)
 
     var stateChanges: [Int] = []
     viewStore.publisher
       .sink {
         stateChanges.append($0)
       }
-      .store(in: &self.cancellables)
+      .store(in: &cancellables)
 
     XCTAssertEqual(stateChanges, [0])
     viewStore.send(1)

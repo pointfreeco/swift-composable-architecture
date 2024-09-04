@@ -1,7 +1,6 @@
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 final class BindingTests: BaseTCATestCase {
   @Reducer
   struct BindingTest {
@@ -75,6 +74,7 @@ final class BindingTests: BaseTCATestCase {
     XCTAssertEqual(count.wrappedValue, 1)
   }
 
+  @MainActor
   func testNestedBindingState() {
     let store = Store(initialState: BindingTest.State()) { BindingTest() }
 
@@ -85,6 +85,7 @@ final class BindingTests: BaseTCATestCase {
     XCTAssertEqual(viewStore.state, .init(nested: .init(field: "Hello!")))
   }
 
+  @MainActor
   func testNestedBindingViewState() {
     struct ViewState: Equatable {
       @BindingViewState var field: String
@@ -100,7 +101,7 @@ final class BindingTests: BaseTCATestCase {
   }
 
   func testBindingActionUpdatesRespectsPatternMatching() async {
-    let testStore = TestStore(
+    let testStore = await TestStore(
       initialState: BindingTest.State(nested: BindingTest.State.Nested(field: ""))
     ) {
       BindingTest()
@@ -112,19 +113,6 @@ final class BindingTests: BaseTCATestCase {
     await testStore.send(.binding(.set(\.$nested, BindingTest.State.Nested(field: "Hello")))) {
       $0.nested = BindingTest.State.Nested(field: "Hello!")
     }
-  }
-
-  // NB: This crashes in Swift(<5.8) RELEASE when `BindingAction` holds directly onto an unboxed
-  //     `value: Any` existential
-  func testLayoutBug() {
-    enum Foo {
-      case bar(Baz)
-    }
-    enum Baz {
-      case fizz(BindingAction<Void>)
-      case buzz(Bool)
-    }
-    _ = AnyCasePath(unsafe: Foo.bar).extract(from: .bar(.buzz(true)))
   }
 
   struct TestMatching {

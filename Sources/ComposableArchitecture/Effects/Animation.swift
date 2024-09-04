@@ -66,8 +66,7 @@ private struct TransactionPublisher<Upstream: Publisher>: Publisher {
   var upstream: Upstream
   var transaction: Transaction
 
-  func receive<S: Combine.Subscriber>(subscriber: S)
-  where S.Input == Output, S.Failure == Failure {
+  func receive(subscriber: some Combine.Subscriber<Upstream.Output, Upstream.Failure>) {
     let conduit = Subscriber(downstream: subscriber, transaction: self.transaction)
     self.upstream.receive(subscriber: conduit)
   }

@@ -2,6 +2,11 @@ import SwiftUI
 
 extension View {
   @_spi(Presentation)
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder body: @escaping (
@@ -11,12 +16,17 @@ extension View {
     ) -> Content
   ) -> some View {
     self.presentation(store: store) { `self`, $item, destination in
-      body(self, $item.isPresent(), destination)
+      body(self, Binding($item), destination)
     }
   }
 
   @_disfavoredOverload
   @_spi(Presentation)
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder body: @escaping (
@@ -35,6 +45,11 @@ extension View {
 
   @_disfavoredOverload
   @_spi(Presentation)
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     id toID: @escaping (PresentationState<State>) -> AnyHashable?,
@@ -50,6 +65,11 @@ extension View {
   }
 
   @_spi(Presentation)
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<
     State,
     Action,
@@ -69,12 +89,17 @@ extension View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
     ) { `self`, $item, destination in
-      body(self, $item.isPresent(), destination)
+      body(self, Binding($item), destination)
     }
   }
 
   @_disfavoredOverload
   @_spi(Presentation)
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<
     State,
     Action,
@@ -102,6 +127,11 @@ extension View {
 
   @_spi(Presentation)
   @ViewBuilder
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func presentation<
     State,
     Action,
@@ -152,7 +182,7 @@ public struct PresentationStore<
     ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
     self.init(store) { $item, destination in
-      content($item.isPresent(), destination)
+      content(Binding($item), destination)
     }
   }
 
@@ -183,7 +213,7 @@ public struct PresentationStore<
     self.init(
       store, state: toDestinationState, action: fromDestinationAction
     ) { $item, destination in
-      content($item.isPresent(), destination)
+      content(Binding($item), destination)
     }
   }
 
@@ -215,7 +245,7 @@ public struct PresentationStore<
     ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
     let store = store.scope(
-      id: nil,
+      id: store.id(state: \.self, action: \.self),
       state: ToState(\.self),
       action: { $0 },
       isInvalid: { $0.wrappedValue == nil }
@@ -256,21 +286,17 @@ public struct PresentationStore<
       action: { $0 },
       isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
     )
-    let viewStore = ViewStore(
-      store,
-      observe: { $0 },
-      removeDuplicates: {
-        toID($0) == toID($1)
-      }
-    )
+    let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
 
     self.store = store
     self.toDestinationState = toDestinationState
     self.toID = toID
     self.fromDestinationAction = fromDestinationAction
     self.destinationStore = store.scope(
-      state: { $0.wrappedValue.flatMap(toDestinationState) },
-      action: { .presented(fromDestinationAction($0)) }
+      id: nil,
+      state: ToState { $0.wrappedValue.flatMap(toDestinationState) },
+      action: { .presented(fromDestinationAction($0)) },
+      isInvalid: nil
     )
     self.content = content
     self.viewStore = viewStore
@@ -285,11 +311,12 @@ public struct PresentationStore<
             ? toID($0).map { AnyIdentifiable(Identified($0) { $0 }) }
             : nil
         },
-        compactSend: {
+        compactSend: { [weak viewStore = self.viewStore] in
           guard
+            let viewStore = viewStore,
             $0 == nil,
-            self.viewStore.wrappedValue != nil,
-            id == nil || self.toID(self.viewStore.state) == id
+            viewStore.wrappedValue != nil,
+            id == nil || self.toID(viewStore.state) == id
           else { return nil }
           return .dismiss
         }
@@ -308,6 +335,11 @@ public struct AnyIdentifiable: Identifiable {
   }
 }
 
+#if swift(<5.10)
+  @MainActor(unsafe)
+#else
+  @preconcurrency@MainActor
+#endif
 @_spi(Presentation)
 public struct DestinationContent<State, Action> {
   let store: Store<State?, Action>

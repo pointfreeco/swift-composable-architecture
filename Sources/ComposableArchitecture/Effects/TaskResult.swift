@@ -1,5 +1,3 @@
-import XCTestDynamicOverlay
-
 /// A value that represents either a success or a failure. This type differs from Swift's `Result`
 /// type in that it uses only one generic for the success case, leaving the failure case as an
 /// untyped `Error`.
@@ -31,7 +29,7 @@ import XCTestDynamicOverlay
 /// }
 /// ```
 ///
-/// And finally you can use ``Effect/run(priority:operation:catch:fileID:line:)`` to construct an
+/// And finally you can use ``Effect/run(priority:operation:catch:fileID:filePath:line:column:)`` to construct an
 /// effect in the reducer that invokes the `numberFact` endpoint and wraps its response in a
 /// ``TaskResult`` by using its catching initializer, ``TaskResult/init(catching:)``:
 ///
@@ -106,25 +104,25 @@ import XCTestDynamicOverlay
   iOS,
   deprecated: 9999,
   message:
-    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Moving-off-of-TaskResult"
+    "Use 'Result', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Moving-off-of-TaskResult"
 )
 @available(
   macOS,
   deprecated: 9999,
   message:
-    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Moving-off-of-TaskResult"
+    "Use 'Result', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Moving-off-of-TaskResult"
 )
 @available(
   tvOS,
   deprecated: 9999,
   message:
-    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Moving-off-of-TaskResult"
+    "Use 'Result', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Moving-off-of-TaskResult"
 )
 @available(
   watchOS,
   deprecated: 9999,
   message:
-    "Use 'Result', instead. See the following migration guide for more information:\n\nhttps://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Moving-off-of-TaskResult"
+    "Use 'Result', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Moving-off-of-TaskResult"
 )
 public enum TaskResult<Success: Sendable>: Sendable {
   /// A success, storing a `Success` value.
@@ -271,7 +269,7 @@ extension TaskResult: Equatable where Success: Equatable {
             let lhsType = type(of: lhs)
             if TaskResultDebugging.emitRuntimeWarnings, lhsType == type(of: rhs) {
               let lhsTypeName = typeName(lhsType)
-              runtimeWarn(
+              reportIssue(
                 """
                 "\(lhsTypeName)" is not equatable. …
 
@@ -307,7 +305,7 @@ extension TaskResult: Hashable where Success: Hashable {
         #if DEBUG
           if TaskResultDebugging.emitRuntimeWarnings {
             let errorType = typeName(type(of: error))
-            runtimeWarn(
+            reportIssue(
               """
               "\(errorType)" is not hashable. …
 

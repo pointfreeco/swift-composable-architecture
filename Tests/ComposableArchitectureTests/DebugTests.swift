@@ -51,21 +51,12 @@
       var dump = ""
       customDump(action, to: &dump)
 
-      #if swift(>=5.9)
-        XCTAssertEqual(
-          dump,
-          #"""
-          .set(\State.$width, 50)
-          """#
-        )
-      #else
-        XCTAssertEqual(
-          dump,
-          #"""
-          .set(WritableKeyPath<DebugTests.State, BindingState<Int>>, 50)
-          """#
-        )
-      #endif
+      XCTAssertEqual(
+        dump,
+        #"""
+        .set(\State.$width, 50)
+        """#
+      )
     }
 
     func testBindingAction_Nested() {
@@ -80,24 +71,14 @@
       var dump = ""
       customDump(action, to: &dump)
 
-      #if swift(>=5.9)
-        XCTAssertEqual(
-          dump,
-          #"""
-          .set(\State.$settings, DebugTests.Settings(…))
-          """#
-        )
-      #else
-        XCTAssertEqual(
-          dump,
-          #"""
-          .set(WritableKeyPath<DebugTests.State, BindingState<DebugTests.Settings>>, DebugTests.Settings(…))
-          """#
-        )
-      #endif
+      XCTAssertEqual(
+        dump,
+        #"""
+        .set(\State.$settings, DebugTests.Settings(…))
+        """#
+      )
     }
 
-    @MainActor
     func testDebugReducer() async throws {
       let logs = LockIsolated<String>("")
       let printer = _ReducerPrinter<Int, Bool>(
@@ -106,16 +87,16 @@
         }
       )
 
-      let store = Store<Int, Bool>(initialState: 0) {
+      let store = await Store<Int, Bool>(initialState: 0) {
         Reduce<Int, Bool>(internal: { state, action in
           state += action ? 1 : -1
           return .none
         })
         ._printChanges(printer)
       }
-      store.send(true)
+      await store.send(true)
       try await Task.sleep(nanoseconds: 300_000_000)
-      XCTAssertNoDifference(
+      expectNoDifference(
         logs.value,
         """
         - true
@@ -124,6 +105,7 @@
       )
     }
 
+    @MainActor
     func testDebugReducer_Order() {
       let logs = LockIsolated<String>("")
       let printer = _ReducerPrinter<Int, Bool>(
@@ -147,7 +129,7 @@
       store.send(true)
       store.send(false)
       _ = XCTWaiter.wait(for: [self.expectation(description: "wait")], timeout: 0.3)
-      XCTAssertNoDifference(
+      expectNoDifference(
         logs.value,
         """
         - true
@@ -168,6 +150,41 @@
         - false
 
         """
+      )
+    }
+
+    func testDebugReducer_SharedState() async throws {
+      let logs = LockIsolated<String>("")
+      let printer = _ReducerPrinter<State, Bool>(
+        printChange: { action, oldState, newState in
+          logs.withValue {
+            $0.append(diff(oldState, newState).map { "\($0)\n" } ?? "  (No state changes)\n")
+          }
+        }
+      )
+
+      struct State {
+        @Shared var count: Int
+      }
+
+      let store = await Store<State, Bool>(initialState: State(count: Shared(0))) {
+        Reduce<State, Bool>(internal: { state, action in
+          state.count += action ? 1 : -1
+          return .none
+        })
+        ._printChanges(printer)
+      }
+      await store.send(true)
+      try await Task.sleep(nanoseconds: 300_000_000)
+      expectNoDifference(
+        logs.value,
+        #"""
+          DebugTests.State(
+        -   _count: #1 0
+        +   _count: #1 1
+          )
+
+        """#
       )
     }
   }

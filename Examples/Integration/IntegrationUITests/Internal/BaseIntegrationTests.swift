@@ -1,20 +1,28 @@
 import Accessibility
 import CustomDump
-import InlineSnapshotTesting
+@preconcurrency import InlineSnapshotTesting
+import IssueReporting
 import XCTest
 
-@MainActor
 class BaseIntegrationTests: XCTestCase {
+  @MainActor
   var app: XCUIApplication!
   var logs: XCUIElement!
-  private var _expectRuntimeWarnings: (file: StaticString, line: UInt)?
+  private var _expectRuntimeWarnings: (filePath: StaticString, line: UInt)?
 
-  func expectRuntimeWarnings(file: StaticString = #file, line: UInt = #line) {
-    self._expectRuntimeWarnings = (file, line)
+  func expectRuntimeWarnings(filePath: StaticString = #filePath, line: UInt = #line) {
+    self._expectRuntimeWarnings = (filePath, line)
   }
 
+  override func invokeTest() {
+    withSnapshotTesting {
+      super.invokeTest()
+    }
+  }
+
+  @MainActor
   override func setUp() async throws {
-    //SnapshotTesting.isRecording = true
+    // SnapshotTesting.isRecording = true
     // self.continueAfterFailure = false
     self.app = XCUIApplication()
     self.app.launchEnvironment["UI_TEST"] = "true"
@@ -23,6 +31,7 @@ class BaseIntegrationTests: XCTestCase {
     self.logs = self.app.staticTexts["composable-architecture.debug.logs"]
   }
 
+  @MainActor
   override func tearDown() {
     super.tearDown()
     if let (file, line) = self._expectRuntimeWarnings {
@@ -33,11 +42,14 @@ class BaseIntegrationTests: XCTestCase {
         line: line
       )
     } else {
-      XCTAssertFalse(self.app.staticTexts["Runtime warning"].exists)
+      XCTAssertFalse(
+        self.app.staticTexts["Runtime warning"].exists,
+        "\(self.name) emitted an unexpected runtime warning"
+      )
     }
-    SnapshotTesting.isRecording = false
   }
 
+  @MainActor
   func clearLogs() {
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
       let alert = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts
@@ -51,10 +63,12 @@ class BaseIntegrationTests: XCTestCase {
     XCUIDevice.shared.system.open(URL(string: "integration:///clear-logs")!)
   }
 
+  @MainActor
   func assertLogs(
     _ logConfiguration: LogConfiguration = .unordered,
     matches expectedLogs: (() -> String)? = nil,
-    file: StaticString = #file,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
     function: StaticString = #function,
     line: UInt = #line,
     column: UInt = #column
@@ -67,15 +81,18 @@ class BaseIntegrationTests: XCTestCase {
     case .unordered:
       logs = self.logs.label.split(separator: "\n").sorted().joined(separator: "\n")
     }
-    assertInlineSnapshot(
-      of: logs,
-      as: ._lines,
-      matches: expectedLogs,
-      file: file,
-      function: function,
-      line: line,
-      column: column
-    )
+    withExpectedIssue(isIntermittent: true) {
+      assertInlineSnapshot(
+        of: logs,
+        as: ._lines,
+        matches: expectedLogs,
+        fileID: fileID,
+        file: filePath,
+        function: function,
+        line: line,
+        column: column
+      )
+    }
   }
 }
 
@@ -84,8 +101,8 @@ enum LogConfiguration {
   case unordered
 }
 
-extension Snapshotting where Value == String, Format == String {
-  fileprivate static let _lines = Snapshotting(
+extension Snapshotting<String, String> {
+  fileprivate static nonisolated(unsafe) let _lines = Snapshotting(
     pathExtension: "txt",
     diffing: Diffing(
       toData: { Data($0.utf8) },

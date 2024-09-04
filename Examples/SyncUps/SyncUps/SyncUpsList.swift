@@ -3,23 +3,21 @@ import SwiftUI
 
 @Reducer
 struct SyncUpsList {
-  struct State: Equatable {
-    @PresentationState var destination: Destination.State?
-    var syncUps: IdentifiedArrayOf<SyncUp> = []
+  @Reducer(state: .equatable)
+  enum Destination {
+    case add(SyncUpForm)
+    case alert(AlertState<Alert>)
 
-    init(
-      destination: Destination.State? = nil
-    ) {
-      self.destination = destination
-
-      do {
-        @Dependency(\.dataManager.load) var load
-        self.syncUps = try JSONDecoder().decode(IdentifiedArray.self, from: load(.syncUps))
-      } catch is DecodingError {
-        self.destination = .alert(.dataFailedToLoad)
-      } catch {
-      }
+    @CasePathable
+    enum Alert {
+      case confirmLoadMockData
     }
+  }
+
+  @ObservableState
+  struct State: Equatable {
+    @Presents var destination: Destination.State?
+    @Shared(.syncUps) var syncUps
   }
 
   enum Action {
@@ -27,39 +25,20 @@ struct SyncUpsList {
     case confirmAddSyncUpButtonTapped
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
+    case onDelete(IndexSet)
   }
 
-  @Reducer
-  struct Destination {
-    enum State: Equatable {
-      case add(SyncUpForm.State)
-      case alert(AlertState<Action.Alert>)
-    }
-
-    enum Action {
-      case add(SyncUpForm.Action)
-      case alert(Alert)
-
-      enum Alert {
-        case confirmLoadMockData
-      }
-    }
-
-    var body: some ReducerOf<Self> {
-      Scope(state: \.add, action: \.add) {
-        SyncUpForm()
-      }
-    }
-  }
-
-  @Dependency(\.continuousClock) var clock
   @Dependency(\.uuid) var uuid
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .addSyncUpButtonTapped:
-        state.destination = .add(SyncUpForm.State(syncUp: SyncUp(id: SyncUp.ID(self.uuid()))))
+        state.destination = .add(
+          SyncUpForm.State(
+            syncUp: SyncUp(id: SyncUp.ID(uuid()))
+          )
+        )
         return .none
 
       case .confirmAddSyncUpButtonTapped:
@@ -72,19 +51,11 @@ struct SyncUpsList {
         if syncUp.attendees.isEmpty {
           syncUp.attendees.append(
             editState.syncUp.attendees.first
-              ?? Attendee(id: Attendee.ID(self.uuid()))
+              ?? Attendee(id: Attendee.ID(uuid()))
           )
         }
         state.syncUps.append(syncUp)
         state.destination = nil
-        return .none
-
-      case .destination(.presented(.alert(.confirmLoadMockData))):
-        state.syncUps = [
-          .mock,
-          .designMock,
-          .engineeringMock,
-        ]
         return .none
 
       case .destination:
@@ -93,79 +64,59 @@ struct SyncUpsList {
       case .dismissAddSyncUpButtonTapped:
         state.destination = nil
         return .none
+
+      case let .onDelete(indexSet):
+        state.syncUps.remove(atOffsets: indexSet)
+        return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
   }
 }
 
 struct SyncUpsListView: View {
-  let store: StoreOf<SyncUpsList>
+  @Bindable var store: StoreOf<SyncUpsList>
 
   var body: some View {
-    WithViewStore(self.store, observe: \.syncUps) { viewStore in
-      List {
-        ForEach(viewStore.state) { syncUp in
-          NavigationLink(
-            state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: syncUp))
-          ) {
-            CardView(syncUp: syncUp)
-          }
-          .listRowBackground(syncUp.theme.mainColor)
+    List {
+      ForEach(store.$syncUps.elements) { $syncUp in
+        NavigationLink(state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: $syncUp))) {
+          CardView(syncUp: syncUp)
         }
+        .listRowBackground(syncUp.theme.mainColor)
       }
-      .toolbar {
-        Button {
-          viewStore.send(.addSyncUpButtonTapped)
-        } label: {
-          Image(systemName: "plus")
-        }
+      .onDelete { indexSet in
+        store.send(.onDelete(indexSet))
       }
-      .navigationTitle("Daily Sync-ups")
-      .alert(store: self.store.scope(state: \.$destination.alert, action: \.destination.alert))
-      .sheet(
-        store: self.store.scope(state: \.$destination.add, action: \.destination.add)
-      ) { store in
-        NavigationStack {
-          SyncUpFormView(store: store)
-            .navigationTitle("New sync-up")
-            .toolbar {
-              ToolbarItem(placement: .cancellationAction) {
-                Button("Dismiss") {
-                  viewStore.send(.dismissAddSyncUpButtonTapped)
-                }
-              }
-              ToolbarItem(placement: .confirmationAction) {
-                Button("Add") {
-                  viewStore.send(.confirmAddSyncUpButtonTapped)
-                }
+    }
+    .toolbar {
+      Button {
+        store.send(.addSyncUpButtonTapped)
+      } label: {
+        Image(systemName: "plus")
+      }
+    }
+    .navigationTitle("Daily Sync-ups")
+    .sheet(
+      item: $store.scope(state: \.destination?.add, action: \.destination.add)
+    ) { addSyncUpStore in
+      NavigationStack {
+        SyncUpFormView(store: addSyncUpStore)
+          .navigationTitle("New sync-up")
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Dismiss") {
+                store.send(.dismissAddSyncUpButtonTapped)
               }
             }
-        }
+            ToolbarItem(placement: .confirmationAction) {
+              Button("Add") {
+                store.send(.confirmAddSyncUpButtonTapped)
+              }
+            }
+          }
       }
     }
-  }
-}
-
-extension AlertState where Action == SyncUpsList.Destination.Action.Alert {
-  static let dataFailedToLoad = Self {
-    TextState("Data failed to load")
-  } actions: {
-    ButtonState(action: .send(.confirmLoadMockData, animation: .default)) {
-      TextState("Yes")
-    }
-    ButtonState(role: .cancel) {
-      TextState("No")
-    }
-  } message: {
-    TextState(
-      """
-      Unfortunately your past data failed to load. Would you like to load some mock data to play \
-      around with?
-      """
-    )
   }
 }
 
@@ -174,19 +125,19 @@ struct CardView: View {
 
   var body: some View {
     VStack(alignment: .leading) {
-      Text(self.syncUp.title)
+      Text(syncUp.title)
         .font(.headline)
       Spacer()
       HStack {
-        Label("\(self.syncUp.attendees.count)", systemImage: "person.3")
+        Label("\(syncUp.attendees.count)", systemImage: "person.3")
         Spacer()
-        Label(self.syncUp.duration.formatted(.units()), systemImage: "clock")
+        Label(syncUp.duration.formatted(.units()), systemImage: "clock")
           .labelStyle(.trailingIcon)
       }
       .font(.caption)
     }
     .padding()
-    .foregroundColor(self.syncUp.theme.accentColor)
+    .foregroundColor(syncUp.theme.accentColor)
   }
 }
 
@@ -203,29 +154,37 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
   static var trailingIcon: Self { Self() }
 }
 
-struct SyncUpsList_Previews: PreviewProvider {
-  static var previews: some View {
+#Preview("List") {
+  @Shared(.syncUps) var syncUps = [
+    .mock,
+    .productMock,
+    .engineeringMock,
+  ]
+  return NavigationStack {
     SyncUpsListView(
       store: Store(initialState: SyncUpsList.State()) {
         SyncUpsList()
-      } withDependencies: {
-        $0.dataManager.load = { @Sendable _ in
-          try JSONEncoder().encode([
-            SyncUp.mock,
-            .designMock,
-            .engineeringMock,
-          ])
-        }
       }
     )
+  }
+}
 
-    SyncUpsListView(
-      store: Store(initialState: SyncUpsList.State()) {
-        SyncUpsList()
-      } withDependencies: {
-        $0.dataManager = .mock(initialData: Data("!@#$% bad data ^&*()".utf8))
-      }
+#Preview("Card") {
+  CardView(
+    syncUp: SyncUp(
+      id: SyncUp.ID(),
+      duration: .seconds(60),
+      title: "Point-Free Morning Sync"
     )
-    .previewDisplayName("Load data failure")
+  )
+}
+
+extension PersistenceReaderKey
+where Self == PersistenceKeyDefault<FileStorageKey<IdentifiedArrayOf<SyncUp>>> {
+  static var syncUps: Self {
+    PersistenceKeyDefault(
+      .fileStorage(.documentsDirectory.appending(component: "sync-ups.json")),
+      []
+    )
   }
 }

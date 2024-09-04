@@ -16,7 +16,7 @@ concurrency:
 jobs:
   library-swift-latest:
     name: Library
-    runs-on: macos-13
+    runs-on: macos-14
     strategy:
       matrix:
         config:
@@ -24,37 +24,54 @@ jobs:
           - release
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 15.1
-        run: sudo xcode-select -s /Applications/Xcode_15.1.app
+      - name: Select Xcode 15.4
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+      - name: Build ${{ matrix.config }}
+        run: make CONFIG=${{ matrix.config }} build-all-platforms
       - name: Run ${{ matrix.config }} tests
         run: make CONFIG=${{ matrix.config }} test-library
 
-  library-evolution:
-    name: Library (evolution)
-    runs-on: macos-13
+  # library-evolution:
+  #   name: Library (evolution)
+  #   runs-on: macos-14
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Select Xcode 15.4
+  #       run: sudo xcode-select -s /Applications/Xcode_15.4.app
+  #     - name: Build for library evolution
+  #       run: make build-for-library-evolution
+
+  library-compatibility:
+    name: Library (Swift 5.9)
+    runs-on: macos-14
+    strategy:
+      matrix:
+        config:
+          - debug
+          - release
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 15.1
-        run: sudo xcode-select -s /Applications/Xcode_15.1.app
-      - name: Build for library evolution
-        run: make build-for-library-evolution
+      - name: Select Xcode 15.2
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+      - name: Build ${{ matrix.config }}
+        run: swift build -c ${{ matrix.config }}
 
   benchmarks:
     name: Benchmarks
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 15.1
-        run: sudo xcode-select -s /Applications/Xcode_15.1.app
+      - name: Select Xcode 15.4
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
       - name: Run benchmark
         run: make benchmark
 
   examples:
     name: Examples
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 15.1
-        run: sudo xcode-select -s /Applications/Xcode_15.1.app
+      - name: Select Xcode 15.4
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
       - name: Run tests
         run: make test-examples

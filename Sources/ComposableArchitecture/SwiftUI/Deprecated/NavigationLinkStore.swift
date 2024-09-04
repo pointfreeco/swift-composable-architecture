@@ -7,7 +7,7 @@ import SwiftUI
 ///
 /// Typically you use this view by first modeling your features as having a parent feature that
 /// holds onto an optional piece of child state using the ``PresentationState``,
-/// ``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:line:)-4f2at`` tools (see
+/// ``PresentationAction`` and ``Reducer/ifLet(_:action:destination:fileID:filePath:line:column:)-4ub6q`` tools (see
 /// <doc:TreeBasedNavigation> for more information). Then in the view you can construct a
 /// `NavigationLinkStore` by passing a ``Store`` that is focused on the presentation domain:
 ///
@@ -80,8 +80,10 @@ public struct NavigationLinkStore<
     self.store = store
     self.viewStore = ViewStore(
       store.scope(
-        state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
-        action: { $0 }
+        id: nil,
+        state: ToState { $0.wrappedValue.flatMap(toDestinationState) != nil },
+        action: { $0 },
+        isInvalid: nil
       ),
       observe: { $0 }
     )
@@ -129,8 +131,10 @@ public struct NavigationLinkStore<
     self.store = store
     self.viewStore = ViewStore(
       store.scope(
-        state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
-        action: { $0 }
+        id: nil,
+        state: ToState { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
+        action: { $0 },
+        isInvalid: nil
       ),
       observe: { $0 }
     )
@@ -156,8 +160,12 @@ public struct NavigationLinkStore<
     ) {
       IfLetStore(
         self.store.scope(
-          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
-          action: { .presented(self.fromDestinationAction($0)) }
+          id: nil,
+          state: ToState(
+            returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) }
+          ),
+          action: { .presented(self.fromDestinationAction($0)) },
+          isInvalid: nil
         ),
         then: self.destination
       )

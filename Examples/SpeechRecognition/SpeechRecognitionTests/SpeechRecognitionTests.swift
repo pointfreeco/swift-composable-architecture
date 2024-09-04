@@ -3,12 +3,9 @@ import XCTest
 
 @testable import SpeechRecognition
 
-@MainActor
 final class SpeechRecognitionTests: XCTestCase {
-  let recognitionTask = AsyncThrowingStream.makeStream(of: SpeechRecognitionResult.self)
-
   func testDenyAuthorization() async {
-    let store = TestStore(initialState: SpeechRecognition.State()) {
+    let store = await TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.requestAuthorization = { .denied }
@@ -30,7 +27,7 @@ final class SpeechRecognitionTests: XCTestCase {
   }
 
   func testRestrictedAuthorization() async {
-    let store = TestStore(initialState: SpeechRecognition.State()) {
+    let store = await TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.requestAuthorization = { .restricted }
@@ -46,11 +43,12 @@ final class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAllowAndRecord() async {
-    let store = TestStore(initialState: SpeechRecognition.State()) {
+    let recognitionTask = AsyncThrowingStream.makeStream(of: SpeechRecognitionResult.self)
+    let store = await TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
-      $0.speechClient.finishTask = { self.recognitionTask.continuation.finish() }
-      $0.speechClient.startTask = { @Sendable _ in self.recognitionTask.stream }
+      $0.speechClient.finishTask = { recognitionTask.continuation.finish() }
+      $0.speechClient.startTask = { @Sendable _ in recognitionTask.stream }
       $0.speechClient.requestAuthorization = { .authorized }
     }
 
@@ -71,12 +69,12 @@ final class SpeechRecognitionTests: XCTestCase {
 
     await store.receive(\.speechRecognizerAuthorizationStatusResponse)
 
-    self.recognitionTask.continuation.yield(firstResult)
+    recognitionTask.continuation.yield(firstResult)
     await store.receive(\.speech.success) {
       $0.transcribedText = "Hello"
     }
 
-    self.recognitionTask.continuation.yield(secondResult)
+    recognitionTask.continuation.yield(secondResult)
     await store.receive(\.speech.success) {
       $0.transcribedText = "Hello world"
     }
@@ -89,10 +87,11 @@ final class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAudioSessionFailure() async {
-    let store = TestStore(initialState: SpeechRecognition.State()) {
+    let recognitionTask = AsyncThrowingStream.makeStream(of: SpeechRecognitionResult.self)
+    let store = await TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
-      $0.speechClient.startTask = { @Sendable _ in self.recognitionTask.stream }
+      $0.speechClient.startTask = { @Sendable _ in recognitionTask.stream }
       $0.speechClient.requestAuthorization = { .authorized }
     }
 
@@ -109,10 +108,11 @@ final class SpeechRecognitionTests: XCTestCase {
   }
 
   func testAudioEngineFailure() async {
-    let store = TestStore(initialState: SpeechRecognition.State()) {
+    let recognitionTask = AsyncThrowingStream.makeStream(of: SpeechRecognitionResult.self)
+    let store = await TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
-      $0.speechClient.startTask = { @Sendable _ in self.recognitionTask.stream }
+      $0.speechClient.startTask = { @Sendable _ in recognitionTask.stream }
       $0.speechClient.requestAuthorization = { .authorized }
     }
 

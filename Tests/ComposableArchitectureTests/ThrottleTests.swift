@@ -2,12 +2,11 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
-@MainActor
 final class EffectThrottleTests: BaseTCATestCase {
   let mainQueue = DispatchQueue.test
 
   func testThrottleLatest_Publisher() async {
-    let store = TestStore(initialState: ThrottleFeature.State()) {
+    let store = await TestStore(initialState: ThrottleFeature.State()) {
       ThrottleFeature(id: #function, latest: true)
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
@@ -22,21 +21,25 @@ final class EffectThrottleTests: BaseTCATestCase {
     await store.send(.tap(2))
     await self.mainQueue.advance()
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    var count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await self.mainQueue.advance(by: .seconds(0.25))
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await store.send(.tap(3))
     await self.mainQueue.advance(by: .seconds(0.25))
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await store.send(.tap(4))
     await self.mainQueue.advance(by: .seconds(0.25))
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await store.send(.tap(5))
     await self.mainQueue.advance(by: .seconds(0.25))
@@ -46,7 +49,7 @@ final class EffectThrottleTests: BaseTCATestCase {
   }
 
   func testThrottleLatest_Async() async {
-    let store = TestStore(initialState: ThrottleFeature.State()) {
+    let store = await TestStore(initialState: ThrottleFeature.State()) {
       ThrottleFeature(id: #function, latest: true)
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
@@ -61,21 +64,25 @@ final class EffectThrottleTests: BaseTCATestCase {
     await store.send(.tap(2))
     await self.mainQueue.advance()
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    var count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await self.mainQueue.advance(by: .seconds(0.25))
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await store.send(.tap(3))
     await self.mainQueue.advance(by: .seconds(0.25))
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await store.send(.tap(4))
     await self.mainQueue.advance(by: .seconds(0.25))
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await store.send(.tap(5))
     await self.mainQueue.advance(by: .seconds(1))
@@ -85,7 +92,7 @@ final class EffectThrottleTests: BaseTCATestCase {
   }
 
   func testThrottleFirst_Publisher() async {
-    let store = TestStore(initialState: ThrottleFeature.State()) {
+    let store = await TestStore(initialState: ThrottleFeature.State()) {
       ThrottleFeature(id: #function, latest: false)
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
@@ -100,21 +107,25 @@ final class EffectThrottleTests: BaseTCATestCase {
     await store.send(.tap(2))
     await self.mainQueue.advance()
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    var count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await self.mainQueue.advance(by: .seconds(0.25))
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await store.send(.tap(3))
     await self.mainQueue.advance(by: .seconds(0.25))
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await store.send(.tap(4))
     await self.mainQueue.advance(by: .seconds(0.25))
     await store.skipReceivedActions(strict: false)
-    XCTAssertEqual(store.state.count, 1)
+    count = await store.state.count
+    XCTAssertEqual(count, 1)
 
     await store.send(.tap(5))
     await self.mainQueue.advance(by: .seconds(0.25))
@@ -124,7 +135,7 @@ final class EffectThrottleTests: BaseTCATestCase {
   }
 
   func testThrottleAfterInterval_Publisher() async {
-    let store = TestStore(initialState: ThrottleFeature.State()) {
+    let store = await TestStore(initialState: ThrottleFeature.State()) {
       ThrottleFeature(id: #function, latest: true)
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
@@ -145,7 +156,7 @@ final class EffectThrottleTests: BaseTCATestCase {
   }
 
   func testThrottleEmitsFirstValueOnce_Publisher() async {
-    let store = TestStore(initialState: ThrottleFeature.State()) {
+    let store = await TestStore(initialState: ThrottleFeature.State()) {
       ThrottleFeature(id: #function, latest: true)
     } withDependencies: {
       $0.mainQueue = mainQueue.eraseToAnyScheduler()

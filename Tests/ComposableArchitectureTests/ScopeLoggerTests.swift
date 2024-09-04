@@ -3,6 +3,7 @@ import SwiftUI
 import XCTest
 
 class ScopeLoggerTests: XCTestCase {
+  @MainActor
   func testScoping() {
     #if DEBUG
       Logger.shared.isEnabled = true
@@ -38,7 +39,7 @@ struct NavigationTestCaseView {
       var path = StackState<BasicsView.Feature.State>()
     }
     enum Action {
-      case path(StackAction<BasicsView.Feature.State, BasicsView.Feature.Action>)
+      case path(StackActionOf<BasicsView.Feature>)
     }
     var body: some ReducerOf<Self> {
       EmptyReducer()

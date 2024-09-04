@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension View {
-  /// Displays an action sheet when then store's state becomes non-`nil`, and dismisses it when it
+  /// Displays an action sheet when the store's state becomes non-`nil`, and dismisses it when it
   /// becomes `nil`.
   ///
   /// - Parameters:
@@ -29,6 +29,11 @@ extension View {
     deprecated: 100000,
     message: "use 'View.confirmationDialog(store:)' instead."
   )
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func actionSheet<ButtonAction>(
     store: Store<
       PresentationState<ConfirmationDialogState<ButtonAction>>, PresentationAction<ButtonAction>
@@ -37,7 +42,7 @@ extension View {
     self.actionSheet(store: store, state: { $0 }, action: { $0 })
   }
 
-  /// Displays an alert when then store's state becomes non-`nil`, and dismisses it when it becomes
+  /// Displays an alert when the store's state becomes non-`nil`, and dismisses it when it becomes
   /// `nil`.
   ///
   /// - Parameters:
@@ -65,6 +70,11 @@ extension View {
     deprecated: 100000,
     message: "use 'View.confirmationDialog(store:state:action:)' instead."
   )
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
   public func actionSheet<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
@@ -76,7 +86,7 @@ extension View {
       let actionSheetState = store.withState { $0.wrappedValue.flatMap(toDestinationState) }
       self.actionSheet(item: $item) { _ in
         ActionSheet(actionSheetState!) { action in
-          if let action = action {
+          if let action {
             store.send(.presented(fromDestinationAction(action)))
           } else {
             store.send(.dismiss)

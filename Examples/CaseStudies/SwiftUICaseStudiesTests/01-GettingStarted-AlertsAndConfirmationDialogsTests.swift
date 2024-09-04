@@ -3,10 +3,9 @@ import XCTest
 
 @testable import SwiftUICaseStudies
 
-@MainActor
 final class AlertsAndConfirmationDialogsTests: XCTestCase {
   func testAlert() async {
-    let store = TestStore(initialState: AlertAndConfirmationDialog.State()) {
+    let store = await TestStore(initialState: AlertAndConfirmationDialog.State()) {
       AlertAndConfirmationDialog()
     }
 
@@ -24,17 +23,17 @@ final class AlertsAndConfirmationDialogsTests: XCTestCase {
         TextState("This is an alert")
       }
     }
-    await store.send(.alert(.presented(.incrementButtonTapped))) {
+    await store.send(\.alert.incrementButtonTapped) {
       $0.alert = AlertState { TextState("Incremented!") }
       $0.count = 1
     }
-    await store.send(.alert(.dismiss)) {
+    await store.send(\.alert.dismiss) {
       $0.alert = nil
     }
   }
 
   func testConfirmationDialog() async {
-    let store = TestStore(initialState: AlertAndConfirmationDialog.State()) {
+    let store = await TestStore(initialState: AlertAndConfirmationDialog.State()) {
       AlertAndConfirmationDialog()
     }
 
@@ -55,7 +54,7 @@ final class AlertsAndConfirmationDialogsTests: XCTestCase {
         TextState("This is a confirmation dialog.")
       }
     }
-    await store.send(.confirmationDialog(.presented(.incrementButtonTapped))) {
+    await store.send(\.confirmationDialog.incrementButtonTapped) {
       $0.alert = AlertState { TextState("Incremented!") }
       $0.confirmationDialog = nil
       $0.count = 1

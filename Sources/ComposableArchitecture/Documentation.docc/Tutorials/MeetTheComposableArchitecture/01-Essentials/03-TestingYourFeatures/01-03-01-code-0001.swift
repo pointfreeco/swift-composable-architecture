@@ -1,9 +1,10 @@
 import ComposableArchitecture
 import XCTest
 
-@MainActor
+@testable import CounterApp
+
 final class CounterFeatureTests: XCTestCase {
   func testCounter() async {
-
+    
   }
 }

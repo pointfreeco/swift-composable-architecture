@@ -3,11 +3,12 @@ import SwiftUI
 
 @Reducer
 public struct Game: Sendable {
+  @ObservableState
   public struct State: Equatable {
     public var board: Three<Three<Player?>> = .empty
     public var currentPlayer: Player = .x
-    public var oPlayerName: String
-    public var xPlayerName: String
+    public let oPlayerName: String
+    public let xPlayerName: String
 
     public init(oPlayerName: String, xPlayerName: String) {
       self.oPlayerName = oPlayerName
@@ -62,7 +63,7 @@ public struct Game: Sendable {
   }
 }
 
-public enum Player: Equatable {
+public enum Player: Equatable, Sendable {
   case o
   case x
 
@@ -81,7 +82,7 @@ public enum Player: Equatable {
   }
 }
 
-extension Three where Element == Three<Player?> {
+extension Three<Three<Player?>> {
   public static let empty = Self(
     .init(nil, nil, nil),
     .init(nil, nil, nil),

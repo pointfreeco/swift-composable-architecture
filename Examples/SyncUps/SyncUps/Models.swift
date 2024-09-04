@@ -11,7 +11,7 @@ struct SyncUp: Equatable, Identifiable, Codable {
   var title = ""
 
   var durationPerAttendee: Duration {
-    self.duration / self.attendees.count
+    duration / attendees.count
   }
 }
 
@@ -56,9 +56,9 @@ enum Theme: String, CaseIterable, Equatable, Identifiable, Codable {
     }
   }
 
-  var mainColor: Color { Color(self.rawValue) }
+  var mainColor: Color { Color(rawValue) }
 
-  var name: String { self.rawValue.capitalized }
+  var name: String { rawValue.capitalized }
 }
 
 extension SyncUp {
@@ -102,7 +102,7 @@ extension SyncUp {
     title: "Engineering"
   )
 
-  static let designMock = Self(
+  static let productMock = Self(
     id: SyncUp.ID(),
     attendees: [
       Attendee(id: Attendee.ID(), name: "Blob Sr"),
