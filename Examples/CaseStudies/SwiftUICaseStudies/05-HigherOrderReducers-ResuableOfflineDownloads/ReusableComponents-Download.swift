@@ -101,7 +101,7 @@ struct CityMapDetailView: View {
           Text("Download for offline viewing")
         case .downloaded:
           Text("Downloaded")
-        case .downloading(progress: let progress):
+        case .downloading(let progress):
           Text("Downloading \(Int(100 * progress))%")
         case .startingToDownload:
           Text("Downloading…")
