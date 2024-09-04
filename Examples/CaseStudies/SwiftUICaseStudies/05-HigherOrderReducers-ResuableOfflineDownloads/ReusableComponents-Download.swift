@@ -81,22 +81,16 @@ struct CityMapRowView: View {
   let store: StoreOf<CityMap>
 
   var body: some View {
-    HStack {
-      NavigationLink(
-        destination: CityMapDetailView(store: store)
-      ) {
-        HStack {
-          Image(systemName: "map")
-          Text(store.download.title)
-        }
-        .layoutPriority(1)
-
+    NavigationLink(
+      destination: CityMapDetailView(store: store)
+    ) {
+      HStack {
+        Image(systemName: "map")
+        Text(store.download.title)
         Spacer()
-
         DownloadComponentView(
           store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
         )
-        .padding(.trailing, 8)
       }
     }
   }
@@ -106,7 +100,7 @@ struct CityMapDetailView: View {
   let store: StoreOf<CityMap>
 
   var body: some View {
-    VStack(spacing: 32) {
+    Form {
       Text(store.download.blurb)
 
       HStack {
@@ -124,11 +118,8 @@ struct CityMapDetailView: View {
           store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
         )
       }
-
-      Spacer()
     }
     .navigationTitle(store.download.title)
-    .padding()
   }
 }
 
