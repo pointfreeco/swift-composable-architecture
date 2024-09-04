@@ -9,7 +9,7 @@ final class CurrentValueRelay<Output>: Publisher {
   private var subscriptions = ContiguousArray<Subscription>()
 
   var value: Output {
-    get { self.currentValue }
+    get { self.lock.sync { self.currentValue } }
     set { self.send(newValue) }
   }
 
@@ -33,8 +33,10 @@ final class CurrentValueRelay<Output>: Publisher {
   }
 
   func send(_ value: Output) {
-    self.currentValue = value
-    for subscription in self.subscriptions {
+    self.lock.sync {
+      self.currentValue = value
+    }
+    for subscription in self.lock.sync({ self.subscriptions }) {
       subscription.receive(value)
     }
   }

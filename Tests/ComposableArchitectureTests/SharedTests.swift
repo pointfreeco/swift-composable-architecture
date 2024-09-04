@@ -990,6 +990,18 @@ final class SharedTests: XCTestCase {
       ]
     )
   }
+
+  @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+  func testConcurrentPublisherAccess() async {
+    let sharedCount = Shared<Int>(0)
+    await withTaskGroup(of: Void.self) { group in
+      for _ in 0..<1_000 {
+        group.addTask {
+          for await _ in sharedCount.publisher.values.prefix(0) {}
+        }
+      }
+    }
+  }
 }
 
 @Reducer
@@ -1114,8 +1126,8 @@ private struct RowFeature {
         return .none
 
       case .onAppear:
-        return .publisher { [publisher = state.$value.publisher] in
-          publisher
+        return .publisher {
+          state.$value.publisher
             .map(Action.response)
             .prefix(1)
         }
