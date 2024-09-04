@@ -7,7 +7,7 @@ struct DownloadComponent {
   struct State: Equatable {
     @Presents var alert: AlertState<Action.Alert>?
     let id: AnyHashable
-    var mode: Mode
+    var mode: Mode = .notDownloaded
     let url: URL
   }
 
@@ -135,9 +135,23 @@ enum Mode: Equatable {
 }
 
 struct DownloadComponentView: View {
+  @State var isVisible = false
   @Bindable var store: StoreOf<DownloadComponent>
 
   var body: some View {
+    VStack {
+      if isVisible {
+        button
+          .alert($store.scope(state: \.alert, action: \.alert))
+      } else {
+        button
+      }
+    }
+    .onAppear { isVisible = true }
+    .onDisappear { isVisible = false }
+  }
+
+  var button: some View {
     Button {
       store.send(.buttonTapped)
     } label: {
@@ -161,8 +175,8 @@ struct DownloadComponentView: View {
         }
       }
     }
+    .buttonStyle(.borderless)
     .foregroundStyle(.primary)
-    .alert($store.scope(state: \.alert, action: \.alert))
   }
 }
 
