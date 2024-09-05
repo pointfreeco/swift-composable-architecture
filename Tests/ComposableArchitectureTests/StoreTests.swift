@@ -1133,6 +1133,30 @@ final class StoreTests: BaseTCATestCase {
       UUID(1)
     )
   }
+
+  @MainActor
+  func testStorePublisherRemovesSubscriptionOnCancel() {
+    let store = Store<Void, Void>(initialState: ()) {}
+    weak var subscription: AnyObject?
+    let cancellable = store.publisher
+      .handleEvents(receiveSubscription: { subscription = $0 as AnyObject })
+      .sink { _ in }
+    XCTAssertNotNil(subscription)
+    cancellable.cancel()
+    XCTAssertNil(subscription)
+  }
+
+  @MainActor
+  func testSubscriptionOwnsStorePublisher() {
+    var store: Store<Void, Void>? = Store(initialState: ()) {}
+    weak var weakStore = store
+    let cancellable = store!.publisher
+      .sink { _ in }
+    store = nil
+    XCTAssertNotNil(weakStore)
+    cancellable.cancel()
+    XCTAssertNil(weakStore)
+  }
 }
 
 private struct Count: TestDependencyKey {
