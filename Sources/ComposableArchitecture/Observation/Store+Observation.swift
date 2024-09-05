@@ -112,7 +112,7 @@
     /// Scopes the binding of a store to a binding of an optional presentation store.
     ///
     /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
-    /// view modifiers, such as `sheet(item:)`, popover(item:)`, etc.
+    /// view modifiers, such as `sheet(item:)`, `popover(item:)`, etc.
     ///
     ///
     /// For example, suppose your feature can present a child feature in a sheet. Then your feature's
@@ -187,7 +187,7 @@
     /// Scopes the binding of a store to a binding of an optional presentation store.
     ///
     /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
-    /// view modifiers, such as `sheet(item:)`, popover(item:)`, etc.
+    /// view modifiers, such as `sheet(item:)`, `popover(item:)`, etc.
     ///
     ///
     /// For example, suppose your feature can present a child feature in a sheet. Then your
@@ -265,7 +265,7 @@
     /// Scopes the binding of a store to a binding of an optional presentation store.
     ///
     /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
-    /// view modifiers, such as `sheet(item:)`, popover(item:)`, etc.
+    /// view modifiers, such as `sheet(item:)`, `popover(item:)`, etc.
     ///
     ///
     /// For example, suppose your feature can present a child feature in a sheet. Then your
