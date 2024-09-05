@@ -178,7 +178,7 @@
   
    @Section(title: "Deriving child stores") {
     @ContentAndMedia {
-      Now that we have a single composed `AppFeature` that encpasulates all of the logic and 
+      Now that we have a single composed `AppFeature` that encapsulates all of the logic and 
       behavior of the root app and its tabs, we can properly implement the view layer of the 
       application.
     }
