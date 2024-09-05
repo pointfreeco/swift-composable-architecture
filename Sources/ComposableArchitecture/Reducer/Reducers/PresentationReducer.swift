@@ -639,7 +639,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
         destination reducers can handle their actions while their state is still present.
 
         • This action was sent to the store while destination state was "nil". Make sure that \
-        actions for this reducer can only be sent from a view store when state is present, or \
+        actions for this reducer can only be sent from a store when state is present, or \
         from effects that start from this reducer. In SwiftUI applications, use a Composable \
         Architecture view modifier like "sheet(store:…)".
         """,

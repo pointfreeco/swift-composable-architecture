@@ -299,7 +299,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
         before child state becomes "nil", especially if it is a long-living effect.
 
         • This action was sent to the store while state was "nil". Make sure that actions for this \
-        reducer can only be sent from a view store when state is non-"nil". In SwiftUI \
+        reducer can only be sent from a store when state is non-"nil". In SwiftUI \
         applications, use "IfLetStore".
         """,
         fileID: fileID,
