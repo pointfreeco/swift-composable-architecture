@@ -43,6 +43,25 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssertEqual(state.children[0].count, 43)
   }
 
+  func testCopyMutation_WithPerturbation() async {
+    var state = ParentState(children: [ChildState(count: 42)])
+    let countDidChange = self.expectation(description: "count.didChange")
+    var copy = state.children[0]
+    copy.count += 1
+
+    withPerceptionTracking {
+      _ = state.children[0].count
+    } onChange: {
+      countDidChange.fulfill()
+    }
+
+    state.children[0] = copy
+    state.children[0]._$willModify()
+
+    await self.fulfillment(of: [countDidChange], timeout: 0.1)
+    XCTAssertEqual(state.children[0].count, 43)
+  }
+
   func testReplace() async {
     XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
 
