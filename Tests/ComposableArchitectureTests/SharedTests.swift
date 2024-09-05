@@ -992,36 +992,38 @@ final class SharedTests: XCTestCase {
   }
 
   func testReEntrantSharedSubscriptionDependencyResolution() async throws {
-//    for _ in 1...100 {
-//      try await withDependencies {
-//        $0 = DependencyValues()
-//      } operation: {
+    XCTAssertEqual({ Thread.isMainThread }(), false)
+    for _ in 1...100 {
+      try await withDependencies {
+        $0 = DependencyValues()
+      } operation: {
         @Shared(.appStorage("count")) var count = 0
 
         struct Client: TestDependencyKey {
           init() {
+            print("Client.init")
             @Dependency(\.defaultAppStorage) var userDefaults
             userDefaults.set(42, forKey: "count")
           }
           static let testValue = Self()
         }
 
-        await withUnsafeContinuation { continuation in
-          DispatchQueue.global().async {
-            XCTAssertEqual(Thread.isMainThread, false)
+        await withTaskGroup(of: Void.self) { group in
+          group.addTask {
+            XCTAssertEqual({ Thread.isMainThread }(), false)
             @Dependency(Client.self) var client
             _ = client
-            continuation.resume()
           }
-          DispatchQueue.main.async { [sharedCount = $count] in
+          group.addTask { @MainActor [sharedCount = $count] in
+            XCTAssertEqual({ Thread.isMainThread }(), true)
             _ = sharedCount.wrappedValue
           }
         }
 
-        try await Task.sleep(nanoseconds: 1_000_000)
+        try await Task.sleep(nanoseconds: 10_000_000)
         XCTAssertEqual(count, 42)
-//      }
-//    }
+      }
+    }
   }
 }
 
