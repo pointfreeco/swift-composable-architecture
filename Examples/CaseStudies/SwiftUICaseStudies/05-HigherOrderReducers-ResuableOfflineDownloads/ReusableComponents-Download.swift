@@ -16,27 +16,20 @@ private let readMe = """
 
 @Reducer
 struct CityMap {
+  @ObservableState
   struct State: Equatable, Identifiable {
     var download: Download
-    var downloadAlert: AlertState<DownloadComponent.Action.Alert>?
-    var downloadMode: Mode
+    var downloadComponent: DownloadComponent.State
+
+    init(download: Download) {
+      self.download = download
+      self.downloadComponent = DownloadComponent.State(
+        id: download.id,
+        url: download.downloadVideoUrl
+      )
+    }
 
     var id: UUID { download.id }
-
-    var downloadComponent: DownloadComponent.State {
-      get {
-        DownloadComponent.State(
-          alert: downloadAlert,
-          id: download.id,
-          mode: downloadMode,
-          url: download.downloadVideoUrl
-        )
-      }
-      set {
-        downloadAlert = newValue.alert
-        downloadMode = newValue.mode
-      }
-    }
 
     struct Download: Equatable, Identifiable {
       var blurb: String
@@ -80,24 +73,16 @@ struct CityMapRowView: View {
   let store: StoreOf<CityMap>
 
   var body: some View {
-    WithViewStore(store, observe: { $0 }) { viewStore in
+    NavigationLink(
+      destination: CityMapDetailView(store: store)
+    ) {
       HStack {
-        NavigationLink(
-          destination: CityMapDetailView(store: store)
-        ) {
-          HStack {
-            Image(systemName: "map")
-            Text(viewStore.download.title)
-          }
-          .layoutPriority(1)
-
-          Spacer()
-
-          DownloadComponentView(
-            store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
-          )
-          .padding(.trailing, 8)
-        }
+        Image(systemName: "map")
+        Text(store.download.title)
+        Spacer()
+        DownloadComponentView(
+          store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
+        )
       }
     }
   }
@@ -107,36 +92,35 @@ struct CityMapDetailView: View {
   let store: StoreOf<CityMap>
 
   var body: some View {
-    WithViewStore(store, observe: { $0 }) { viewStore in
-      VStack(spacing: 32) {
-        Text(viewStore.download.blurb)
+    Form {
+      Text(store.download.blurb)
 
-        HStack {
-          if viewStore.downloadMode == .notDownloaded {
-            Text("Download for offline viewing")
-          } else if viewStore.downloadMode == .downloaded {
-            Text("Downloaded")
-          } else {
-            Text("Downloading \(Int(100 * viewStore.downloadComponent.mode.progress))%")
-          }
-
-          Spacer()
-
-          DownloadComponentView(
-            store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
-          )
+      HStack {
+        switch store.downloadComponent.mode {
+        case .notDownloaded:
+          Text("Download for offline viewing")
+        case .downloaded:
+          Text("Downloaded")
+        case .downloading(let progress):
+          Text("Downloading \(Int(100 * progress))%")
+        case .startingToDownload:
+          Text("Downloading…")
         }
 
         Spacer()
+
+        DownloadComponentView(
+          store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
+        )
       }
-      .navigationTitle(viewStore.download.title)
-      .padding()
     }
+    .navigationTitle(store.download.title)
   }
 }
 
 @Reducer
 struct MapApp {
+  @ObservableState
   struct State: Equatable {
     var cityMaps: IdentifiedArrayOf<CityMap.State> = .mocks
   }
@@ -160,9 +144,8 @@ struct CitiesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEachStore(store.scope(state: \.cityMaps, action: \.cityMaps)) { cityMapStore in
+      ForEach(store.scope(state: \.cityMaps, action: \.cityMaps)) { cityMapStore in
         CityMapRowView(store: cityMapStore)
-          .buttonStyle(.borderless)
       }
     }
     .navigationTitle("Offline Downloads")
@@ -182,8 +165,7 @@ extension IdentifiedArray where ID == CityMap.State.ID, Element == CityMap.State
         downloadVideoUrl: URL(string: "http://ipv4.download.thinkbroadband.com/50MB.zip")!,
         id: UUID(),
         title: "New York, NY"
-      ),
-      downloadMode: .notDownloaded
+      )
     ),
     CityMap.State(
       download: CityMap.State.Download(
@@ -198,8 +180,7 @@ extension IdentifiedArray where ID == CityMap.State.ID, Element == CityMap.State
         downloadVideoUrl: URL(string: "http://ipv4.download.thinkbroadband.com/50MB.zip")!,
         id: UUID(),
         title: "Los Angeles, LA"
-      ),
-      downloadMode: .notDownloaded
+      )
     ),
     CityMap.State(
       download: CityMap.State.Download(
@@ -212,8 +193,7 @@ extension IdentifiedArray where ID == CityMap.State.ID, Element == CityMap.State
         downloadVideoUrl: URL(string: "http://ipv4.download.thinkbroadband.com/50MB.zip")!,
         id: UUID(),
         title: "Paris, France"
-      ),
-      downloadMode: .notDownloaded
+      )
     ),
     CityMap.State(
       download: CityMap.State.Download(
@@ -227,8 +207,7 @@ extension IdentifiedArray where ID == CityMap.State.ID, Element == CityMap.State
         downloadVideoUrl: URL(string: "http://ipv4.download.thinkbroadband.com/50MB.zip")!,
         id: UUID(),
         title: "Tokyo, Japan"
-      ),
-      downloadMode: .notDownloaded
+      )
     ),
     CityMap.State(
       download: CityMap.State.Download(
@@ -243,8 +222,7 @@ extension IdentifiedArray where ID == CityMap.State.ID, Element == CityMap.State
         downloadVideoUrl: URL(string: "http://ipv4.download.thinkbroadband.com/50MB.zip")!,
         id: UUID(),
         title: "Buenos Aires, Argentina"
-      ),
-      downloadMode: .notDownloaded
+      )
     ),
   ]
 }
