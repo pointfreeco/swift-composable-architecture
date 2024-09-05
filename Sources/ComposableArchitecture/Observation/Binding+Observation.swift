@@ -78,12 +78,81 @@
     }
   }
 
+  private final class BindableActionDebugger<Action>: Sendable {
+    let isInvalidated: @MainActor @Sendable () -> Bool
+    let value: any Sendable
+    let wasCalled = LockIsolated(false)
+    init(
+      value: some Sendable,
+      isInvalidated: @escaping @MainActor @Sendable () -> Bool
+    ) {
+      self.value = value
+      self.isInvalidated = isInvalidated
+    }
+    deinit {
+      let isInvalidated = mainActorNow(execute: isInvalidated)
+      guard !isInvalidated else { return }
+      guard wasCalled.value else {
+        var valueDump: String {
+          var valueDump = ""
+          customDump(self.value, to: &valueDump, maxDepth: 0)
+          return valueDump
+        }
+        reportIssue(
+          """
+          A binding action sent from a store was not handled. …
+
+            Action:
+              \(typeName(Action.self)).binding(.set(_, \(valueDump)))
+
+          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+          """
+        )
+        return
+      }
+    }
+  }
+
   extension BindableAction where State: ObservableState {
+    fileprivate static func set<Value: Equatable & Sendable>(
+      _ keyPath: _WritableKeyPath<State, Value>,
+      _ value: Value,
+      isInvalidated: (@MainActor @Sendable () -> Bool)?
+    ) -> Self {
+      #if DEBUG
+        if let isInvalidated {
+          let debugger = BindableActionDebugger<Self>(
+            value: value,
+            isInvalidated: isInvalidated
+          )
+          return Self.binding(
+            .init(
+              keyPath: keyPath,
+              set: {
+                debugger.wasCalled.setValue(true)
+                $0[keyPath: keyPath] = value
+              },
+              value: value,
+              valueIsEqualTo: { $0 as? Value == value }
+            )
+          )
+        }
+      #endif
+      return Self.binding(
+        .init(
+          keyPath: keyPath,
+          set: { $0[keyPath: keyPath] = value },
+          value: value,
+          valueIsEqualTo: { $0 as? Value == value }
+        )
+      )
+    }
+
     public static func set<Value: Equatable & Sendable>(
       _ keyPath: _WritableKeyPath<State, Value>,
       _ value: Value
     ) -> Self {
-      self.binding(.set(keyPath, value))
+      self.set(keyPath, value, isInvalidated: nil)
     }
   }
 
@@ -94,7 +163,7 @@
       get { self.state[keyPath: keyPath] }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.binding(.set(keyPath, newValue)))
+          self.send(.set(keyPath, newValue, isInvalidated: _isInvalidated))
         }
       }
     }
@@ -111,7 +180,7 @@
       get { self.observableState }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.binding(.set(\.self, newValue)))
+          self.send(.set(\.self, newValue, isInvalidated: _isInvalidated))
         }
       }
     }
@@ -130,7 +199,7 @@
       get { self.state[keyPath: keyPath] }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.view(.binding(.set(keyPath, newValue))))
+          self.send(.view(.set(keyPath, newValue, isInvalidated: _isInvalidated)))
         }
       }
     }
@@ -148,7 +217,7 @@
       get { self.observableState }
       set {
         BindingLocal.$isActive.withValue(true) {
-          self.send(.view(.binding(.set(\.self, newValue))))
+          self.send(.view(.set(\.self, newValue, isInvalidated: _isInvalidated)))
         }
       }
     }
