@@ -90,7 +90,7 @@ struct NavigateAndLoadListView: View {
         ) {
           if let store = store.scope(state: \.selection?.value, action: \.counter) {
             CounterView(store: store)
-          }else {
+          } else {
             ProgressView()
           }
         }
