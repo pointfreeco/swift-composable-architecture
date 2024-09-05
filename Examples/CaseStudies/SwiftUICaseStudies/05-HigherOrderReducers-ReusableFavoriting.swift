@@ -17,8 +17,9 @@ private let readMe = """
   favorite state and rendering an alert.
   """
 
+@ObservableState
 struct FavoritingState<ID: Hashable & Sendable>: Equatable {
-  @PresentationState var alert: AlertState<FavoritingAction.Alert>?
+  @Presents var alert: AlertState<FavoritingAction.Alert>?
   let id: ID
   var isFavorite: Bool
 }
@@ -69,23 +70,22 @@ struct Favoriting<ID: Hashable & Sendable> {
 }
 
 struct FavoriteButton<ID: Hashable & Sendable>: View {
-  let store: Store<FavoritingState<ID>, FavoritingAction>
+  @Bindable var store: Store<FavoritingState<ID>, FavoritingAction>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      Button {
-        viewStore.send(.buttonTapped)
-      } label: {
-        Image(systemName: "heart")
-          .symbolVariant(viewStore.isFavorite ? .fill : .none)
-      }
-      .alert(store: self.store.scope(state: \.$alert, action: \.alert))
+    Button {
+      store.send(.buttonTapped)
+    } label: {
+      Image(systemName: "heart")
+        .symbolVariant(store.isFavorite ? .fill : .none)
     }
+    .alert($store.scope(state: \.alert, action: \.alert))
   }
 }
 
 @Reducer
 struct Episode {
+  @ObservableState
   struct State: Equatable, Identifiable {
     var alert: AlertState<FavoritingAction.Alert>?
     let id: UUID
@@ -115,20 +115,19 @@ struct EpisodeView: View {
   let store: StoreOf<Episode>
 
   var body: some View {
-    WithViewStore(self.store, observe: { $0 }) { viewStore in
-      HStack(alignment: .firstTextBaseline) {
-        Text(viewStore.title)
+    HStack(alignment: .firstTextBaseline) {
+      Text(store.title)
 
-        Spacer()
+      Spacer()
 
-        FavoriteButton(store: self.store.scope(state: \.favorite, action: \.favorite))
-      }
+      FavoriteButton(store: store.scope(state: \.favorite, action: \.favorite))
     }
   }
 }
 
 @Reducer
 struct Episodes {
+  @ObservableState
   struct State: Equatable {
     var episodes: IdentifiedArrayOf<Episode.State> = []
   }
@@ -157,7 +156,8 @@ struct EpisodesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEachStore(self.store.scope(state: \.episodes, action: \.episodes)) { rowStore in
+
+      ForEach(store.scope(state: \.episodes, action: \.episodes)) { rowStore in
         EpisodeView(store: rowStore)
       }
       .buttonStyle(.borderless)
