@@ -14,6 +14,20 @@ func mainActorNow<R: Sendable>(execute block: @MainActor @Sendable () -> R) -> R
   }
 }
 
+func mainActorASAP(execute block: @escaping @MainActor @Sendable () -> Void) {
+  if DispatchQueue.getSpecific(key: key) == value {
+    MainActor._assumeIsolated {
+      block()
+    }
+  } else {
+    DispatchQueue.main.async {
+      MainActor._assumeIsolated {
+        block()
+      }
+    }
+  }
+}
+
 private let key: DispatchSpecificKey<UInt8> = {
   let key = DispatchSpecificKey<UInt8>()
   DispatchQueue.main.setSpecific(key: key, value: value)
