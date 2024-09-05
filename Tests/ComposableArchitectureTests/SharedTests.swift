@@ -992,7 +992,6 @@ final class SharedTests: XCTestCase {
   }
 
   func testReEntrantSharedSubscriptionDependencyResolution() async throws {
-    XCTAssertEqual({ Thread.isMainThread }(), false)
     for _ in 1...100 {
       try await withDependencies {
         $0 = DependencyValues()
@@ -1001,11 +1000,10 @@ final class SharedTests: XCTestCase {
 
         struct Client: TestDependencyKey {
           init() {
-            print("Client.init")
             @Dependency(\.defaultAppStorage) var userDefaults
             userDefaults.set(42, forKey: "count")
           }
-          static let testValue = Self()
+          static var testValue: Self { Self() }
         }
 
         await withTaskGroup(of: Void.self) { group in

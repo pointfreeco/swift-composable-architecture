@@ -78,6 +78,7 @@
     }
   }
 
+#if DEBUG
   private final class BindableActionDebugger<Action>: Sendable {
     let isInvalidated: @MainActor @Sendable () -> Bool
     let value: any Sendable
@@ -112,6 +113,7 @@
       }
     }
   }
+#endif
 
   extension BindableAction where State: ObservableState {
     fileprivate static func set<Value: Equatable & Sendable>(
