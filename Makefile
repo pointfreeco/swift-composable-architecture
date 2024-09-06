@@ -1,4 +1,5 @@
 CONFIG = debug
+PLATFORM = iOS
 PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS 17.5,iPhone \d\+ Pro [^M])
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
@@ -14,15 +15,13 @@ test-all: test-examples
 	$(MAKE) CONFIG=debug test-library
 	$(MAKE) CONFIG=release test-library
 
-build-all-platforms:
-	for platform in "iOS" "macOS" "macOS,variant=Mac Catalyst" "tvOS" "visionOS" "watchOS"; do \
-		xcodebuild \
-			-skipMacroValidation \
-			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
-			-scheme ComposableArchitecture \
-			-destination generic/platform="$$platform" || exit 1; \
-	done;
+build:
+	xcodebuild \
+		-skipMacroValidation \
+		-configuration $(CONFIG) \
+		-workspace .github/package.xcworkspace \
+		-scheme ComposableArchitecture \
+		-destination generic/platform="$$(PLATFORM)" || exit 1; \
 
 test-library:
 	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)"; do \

@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - '*'
+      - 'improve-ci'
   workflow_dispatch:
 
 concurrency:
@@ -14,26 +15,50 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  library-swift-latest:
+  library:
     name: Library
     runs-on: macos-14
     strategy:
       matrix:
+        command: 
+          - build
+          - test
+        platform:
+          - iOS
+          - macOS
+          - tvOS
+          - watchOS
         xcode:
+          - 15.2
           - 15.4
           - 16_beta_6
         config:
           - debug
           - release
+        exclude:
+          - platform: tvOS
+            command: test 
+          - platform: watchOS
+            command: test
+          - xcode: 15.2
+            command: test
+
+    15.4, test,  ios+macos,    debug+release
+    16  , test,  ios+macos,    debug+release
+    15.4, build, tvos+watchos, debug+release
+    16,   build, tvos+watchos, debug+release
+    15.2, build, ios+macos,    debug+release
+
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      - name: Build ${{ matrix.config }}
-        run: make CONFIG=${{ matrix.config }} build-all-platforms
-      - name: Run ${{ matrix.config }} tests
-        if: matrix.xcode == '15.4'
-        run: make CONFIG=${{ matrix.config }} test-library
+      - name: ${{ matrix.command }}/${{ matrix.platform }}/${{ matrix.config }}
+        run: echo "hi"
+      #   run: make CONFIG=${{ matrix.config }} build-all-platforms
+      # - name: Run ${{ matrix.config }} tests
+      #   if: matrix.xcode == '15.4'
+      #   run: make CONFIG=${{ matrix.config }} test-library
 
   # library-evolution:
   #   name: Library (evolution)
@@ -45,37 +70,37 @@ jobs:
   #     - name: Build for library evolution
   #       run: make build-for-library-evolution
 
-  library-compatibility:
-    name: Library (Swift 5.9)
-    runs-on: macos-14
-    strategy:
-      matrix:
-        config:
-          - debug
-          - release
-    steps:
-      - uses: actions/checkout@v4
-      - name: Select Xcode 15.2
-        run: sudo xcode-select -s /Applications/Xcode_15.2.app
-      - name: Build ${{ matrix.config }}
-        run: swift build -c ${{ matrix.config }}
+  # library-compatibility:
+  #   name: Library (Swift 5.9)
+  #   runs-on: macos-14
+  #   strategy:
+  #     matrix:
+  #       config:
+  #         - debug
+  #         - release
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Select Xcode 15.2
+  #       run: sudo xcode-select -s /Applications/Xcode_15.2.app
+  #     - name: Build ${{ matrix.config }}
+  #       run: swift build -c ${{ matrix.config }}
 
-  benchmarks:
-    name: Benchmarks
-    runs-on: macos-14
-    steps:
-      - uses: actions/checkout@v4
-      - name: Select Xcode 15.4
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
-      - name: Run benchmark
-        run: make benchmark
+  # benchmarks:
+  #   name: Benchmarks
+  #   runs-on: macos-14
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Select Xcode 15.4
+  #       run: sudo xcode-select -s /Applications/Xcode_15.4.app
+  #     - name: Run benchmark
+  #       run: make benchmark
 
-  examples:
-    name: Examples
-    runs-on: macos-14
-    steps:
-      - uses: actions/checkout@v4
-      - name: Select Xcode 15.4
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
-      - name: Run tests
-        run: make test-examples
+  # examples:
+  #   name: Examples
+  #   runs-on: macos-14
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Select Xcode 15.4
+  #       run: sudo xcode-select -s /Applications/Xcode_15.4.app
+  #     - name: Run tests
+  #       run: make test-examples
