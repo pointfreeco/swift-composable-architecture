@@ -730,7 +730,7 @@ public struct _PresentedID: Hashable, Sendable {
 
 extension Task<Never, Never> {
   internal static func _cancel(
-    id: some Hashable,
+    id: some Hashable & Sendable,
     navigationID: NavigationIDPath
   ) {
     withDependencies {
@@ -754,7 +754,7 @@ extension Effect {
     }
   }
   internal static func _cancel(
-    id: some Hashable = _PresentedID(),
+    id: some Hashable & Sendable = _PresentedID(),
     navigationID: NavigationIDPath
   ) -> Self {
     withDependencies {

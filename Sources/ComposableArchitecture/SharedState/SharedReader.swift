@@ -47,7 +47,7 @@ public struct SharedReader<Value: Sendable> {
     else { return nil }
     self.init(
       reference: base.reference,
-      keyPath: base.keyPath.appending(path: \Value?.[default: DefaultSubscript(initialValue)])!
+      keyPath: base.keyPath.appending(path: \Value?.[default: SendableDefaultSubscript(initialValue)])!
     )
   }
 
@@ -195,7 +195,7 @@ where
   /// information.
   public var elements: some RandomAccessCollection<SharedReader<Value.Element>> {
     zip(self.wrappedValue.indices, self.wrappedValue).lazy.map { index, element in
-      self[index, default: DefaultSubscript(element)]
+      self[index, default: SendableDefaultSubscript(element)]
     }
   }
 }
