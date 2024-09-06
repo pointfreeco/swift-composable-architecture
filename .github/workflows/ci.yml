@@ -20,9 +20,19 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
-        include:
-          - xcode: 15.4
-            command: [test, build]
+        config: [Debug, Release]
+      matrix:
+        platform: [iOS, macOS]
+        # include:
+        #   - xcode: 15.4
+        #     command: test
+        #     platform: [iOS, macOS]
+        #     config: [Debug, Release]
+        #   - xcode: 16_beta_6
+        #     command: test
+        #     platform: [iOS, macOS]
+        #     config: [Debug, Release]
+        #   - xcode: [15.4, ]
 
 
 #    15.4, test,  ios+macos,    debug+release
