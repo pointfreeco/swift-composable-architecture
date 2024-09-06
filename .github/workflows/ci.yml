@@ -22,39 +22,47 @@ jobs:
       matrix:
         config:
           - debug
-          - release
         include: 
           - xcode: 15.4
             command: test
             platform: iOS
+            config: release
           - xcode: 15.4
             command: test
             platform: macOS
+            config: release
           - xcode: 15.4
             command: build
             platform: tvOS
+            config: release
           - xcode: 15.4
             command: build
             platform: watchOS
+            config: release
           - xcode: 16_beta_6
             command: test
             platform: iOS
+            config: release
           - xcode: 16_beta_6
             command: test
             platform: macOS
+            config: release
           - xcode: 16_beta_6
             command: build
             platform: tvOS
+            config: release
           - xcode: 16_beta_6
             command: build
             platform: watchOS
+            config: release
           - xcode: 15.2
             command: build
             platform: iOS
+            config: release
           - xcode: 15.2
             command: test
             platform: macOS
-
+            config: release
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
