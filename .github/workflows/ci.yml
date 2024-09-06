@@ -20,35 +20,41 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
-        command: 
-          - build
-          - test
-        platform:
-          - iOS
-          - macOS
-          - tvOS
-          - watchOS
-        xcode:
-          - 15.2
-          - 15.4
-          - 16_beta_6
         config:
           - debug
           - release
-        exclude:
-          - platform: tvOS
-            command: test 
-          - platform: watchOS
+        include: 
+          - xcode: 15.4
             command: test
-          - xcode: 15.2
+            platform: iOS
+          - xcode: 15.4
             command: test
-          - xcode: 15.2
+            platform: macOS
+          - xcode: 15.4
             command: build
             platform: tvOS
-          - xcode: 15.2
+          - xcode: 15.4
             command: build
             platform: watchOS
-#
+          - xcode: 16_beta_6
+            command: test
+            platform: iOS
+          - xcode: 16_beta_6
+            command: test
+            platform: macOS
+          - xcode: 16_beta_6
+            command: build
+            platform: tvOS
+          - xcode: 16_beta_6
+            command: build
+            platform: watchOS
+          - xcode: 15.2
+            command: build
+            platform: iOS
+          - xcode: 15.2
+            command: test
+            platform: macOS
+
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
