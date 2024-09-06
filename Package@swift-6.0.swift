@@ -92,6 +92,6 @@ for target in package.targets where target.type == .system || target.type == .te
   target.swiftSettings?.append(contentsOf: [
     .swiftLanguageMode(.v5),
     .enableExperimentalFeature("StrictConcurrency"),
-    .enableUpcomingFeature("InferSendableFromCaptures")
+    .enableUpcomingFeature("InferSendableFromCaptures"),
   ])
 }

@@ -421,7 +421,8 @@ private struct URLLookup: Lookup {
   }
 }
 
-private struct RawRepresentableLookup<Value: RawRepresentable & Sendable, Base: Lookup>: Lookup, Sendable
+private struct RawRepresentableLookup<Value: RawRepresentable & Sendable, Base: Lookup>: Lookup,
+  Sendable
 where Value.RawValue == Base.Value {
   let base: Base
   func loadValue(

@@ -260,7 +260,8 @@ public struct FileStorage: Hashable, Sendable {
   let createDirectory: @Sendable (URL, Bool) throws -> Void
   let fileExists: @Sendable (URL) -> Bool
   let fileSystemSource:
-  @Sendable (URL, DispatchSource.FileSystemEvent, @escaping @Sendable () -> Void) -> AnyCancellable
+    @Sendable (URL, DispatchSource.FileSystemEvent, @escaping @Sendable () -> Void) ->
+      AnyCancellable
   let load: @Sendable (URL) throws -> Data
   @_spi(Internals) public let save: @Sendable (Data, URL) throws -> Void
 
