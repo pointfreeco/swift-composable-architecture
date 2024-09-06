@@ -40,8 +40,8 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
-        config: [Debug, Release]
-        platform: [iOS, macOS, tvOS, watchOS]
+        config: [Debug]
+        platform: [iOS, macOS, tvOS, watchOS, visionOS, 'macOS,variant=Mac Catalyst']
         xcode: [15.2, 15.4]
         exclude: 
           - xcode: 15.4
@@ -69,31 +69,6 @@ jobs:
   #       run: sudo xcode-select -s /Applications/Xcode_15.4.app
   #     - name: Build for library evolution
   #       run: make build-for-library-evolution
-
-  # library-compatibility:
-  #   name: Library (Swift 5.9)
-  #   runs-on: macos-14
-  #   strategy:
-  #     matrix:
-  #       config:
-  #         - debug
-  #         - release
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Select Xcode 15.2
-  #       run: sudo xcode-select -s /Applications/Xcode_15.2.app
-  #     - name: Build ${{ matrix.config }}
-  #       run: swift build -c ${{ matrix.config }}
-
-  # benchmarks:
-  #   name: Benchmarks
-  #   runs-on: macos-14
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Select Xcode 15.4
-  #       run: sudo xcode-select -s /Applications/Xcode_15.4.app
-  #     - name: Run benchmark
-  #       run: make benchmark
 
   # examples:
   #   name: Examples
