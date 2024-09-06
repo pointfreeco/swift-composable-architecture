@@ -29,7 +29,7 @@ jobs:
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Test
-        run: make COMMAND=test CONFIG=${{ matrix.config }} PLATFORM=${{ matrix.platform }} xcodebuild
+        run: make CONFIG=${{ matrix.config }} PLATFORM=${{ matrix.platform }} test-library
 
   build-library:
     name: Build library
@@ -50,7 +50,7 @@ jobs:
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Build
-        run: make CONFIG=${{ matrix.config }} PLATFORM=${{ matrix.platform }} xcodebuild
+        run: make CONFIG=${{ matrix.config }} PLATFORM=${{ matrix.platform }} build-library
 
   library-evolution:
     name: Library (evolution)
