@@ -15,37 +15,40 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  library:
-    name: Library
+  test-library:
+    name: Test library
     runs-on: macos-14
     strategy:
       matrix:
         config: [Debug, Release]
-      # matrix:
-      #   platform: [iOS, macOS]
-        # include:
-        #   - xcode: 15.4
-        #     command: test
-        #     platform: [iOS, macOS]
-        #     config: [Debug, Release]
-        #   - xcode: 16_beta_6
-        #     command: test
-        #     platform: [iOS, macOS]
-        #     config: [Debug, Release]
-        #   - xcode: [15.4, ]
-
-
-#    15.4, test,  ios+macos,    debug+release
-#    16  , test,  ios+macos,    debug+release
-#    15.4, build, tvos+watchos, debug+release
-#    16,   build, tvos+watchos, debug+release
-#    15.2, build, ios+macos,    debug+release
+        platform: [iOS, macOS]
+        xcode: [15.4, 16_beta_6]
 
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      - name: ${{ matrix.command }}
+      - name: Test
+        run: echo "hi"
+      #   run: make CONFIG=${{ matrix.config }} build-all-platforms
+      # - name: Run ${{ matrix.config }} tests
+      #   if: matrix.xcode == '15.4'
+      #   run: make CONFIG=${{ matrix.config }} test-library
+
+  build-library:
+    name: Test library
+    runs-on: macos-14
+    strategy:
+      matrix:
+        config: [Debug, Release]
+        platform: [iOS, macOS]
+        xcode: [15.2]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode ${{ matrix.xcode }}
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      - name: Build
         run: echo "hi"
       #   run: make CONFIG=${{ matrix.config }} build-all-platforms
       # - name: Run ${{ matrix.config }} tests
