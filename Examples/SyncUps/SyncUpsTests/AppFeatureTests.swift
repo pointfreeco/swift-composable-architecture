@@ -5,7 +5,7 @@ import XCTest
 
 final class AppFeatureTests: XCTestCase {
   func testDetailEdit() async throws {
-    var syncUp = SyncUp.mock
+    let syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
     let store = await TestStore(initialState: AppFeature.State()) {
       AppFeature()
@@ -21,8 +21,9 @@ final class AppFeatureTests: XCTestCase {
       $0.path[id: 0]?.modify(\.detail) { $0.destination = .edit(SyncUpForm.State(syncUp: syncUp)) }
     }
 
-    syncUp.title = "Blob"
-    await store.send(\.path[id:0].detail.destination.edit.binding.syncUp, syncUp) {
+    var newSyncUp = syncUp
+    newSyncUp.title = "Blob"
+    await store.send(\.path[id:0].detail.destination.edit.binding.syncUp, newSyncUp) {
       $0.path[id: 0]?.modify(\.detail) {
         $0.destination?.modify(\.edit) { $0.syncUp.title = "Blob" }
       }
