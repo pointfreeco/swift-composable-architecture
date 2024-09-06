@@ -42,6 +42,12 @@ jobs:
             command: test
           - xcode: 15.2
             command: test
+          - xcode: 15.2
+            command: build
+            platform: tvOS
+          - xcode: 15.2
+            command: build
+            platform: watchOS
 #
     steps:
       - uses: actions/checkout@v4
