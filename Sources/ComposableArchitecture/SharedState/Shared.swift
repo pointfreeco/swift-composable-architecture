@@ -66,7 +66,7 @@ public struct Shared<Value: Sendable>: Sendable {
       //     https://github.com/swiftlang/swift/issues/75531
       keyPath: unsafeBitCast(
         (base.keyPath as AnyKeyPath)
-          .appending(path: \Value?.[default:SendableDefaultSubscript(initialValue)])!,
+          .appending(path: \Value?.[default:DefaultSubscript(initialValue)])!,
         to: _AnyKeyPath.self
       )
     )
@@ -386,7 +386,7 @@ where
   /// > like the `$array[id:]` subscript on `IdentifiedArray`.
   public var elements: some RandomAccessCollection<Shared<Value.Element>> {
     zip(self.wrappedValue.ids, self.wrappedValue).lazy.map { id, element in
-      self[id: id, default: SendableDefaultSubscript(element)]
+      self[id: id, default: DefaultSubscript(element)]
     }
   }
 }

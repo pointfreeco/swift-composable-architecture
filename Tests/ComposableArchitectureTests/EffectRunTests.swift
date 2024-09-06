@@ -147,7 +147,7 @@ final class EffectRunTests: BaseTCATestCase {
 
     let queue = DispatchQueue.test
 
-    let store = await Store(initialState: 0) {
+    let store = Store(initialState: 0) {
       Reduce<Int, Action> { _, action in
         switch action {
         case .tap:
