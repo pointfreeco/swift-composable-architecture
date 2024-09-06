@@ -21,7 +21,8 @@ jobs:
     strategy:
       matrix:
         config:
-          - debug
+          - Debug
+          - Release
         include: 
           - xcode: 15.4
             command: test
