@@ -29,11 +29,7 @@ jobs:
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Test
-        run: echo "hi"
-      #   run: make CONFIG=${{ matrix.config }} build-all-platforms
-      # - name: Run ${{ matrix.config }} tests
-      #   if: matrix.xcode == '15.4'
-      #   run: make CONFIG=${{ matrix.config }} test-library
+        run: make COMMAND=test CONFIG=${{ matrix.config }} PLATFORM=${{ matrix.platform }} xcodebuild
 
   build-library:
     name: Build library
@@ -54,28 +50,24 @@ jobs:
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Build
-        run: echo "hi"
-      #   run: make CONFIG=${{ matrix.config }} build-all-platforms
-      # - name: Run ${{ matrix.config }} tests
-      #   if: matrix.xcode == '15.4'
-      #   run: make CONFIG=${{ matrix.config }} test-library
+        run: make COMMAND=build CONFIG=${{ matrix.config }} PLATFORM=${{ matrix.platform }} xcodebuild
 
-  # library-evolution:
-  #   name: Library (evolution)
-  #   runs-on: macos-14
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Select Xcode 15.4
-  #       run: sudo xcode-select -s /Applications/Xcode_15.4.app
-  #     - name: Build for library evolution
-  #       run: make build-for-library-evolution
+  library-evolution:
+    name: Library (evolution)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 15.4
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+      - name: Build for library evolution
+        run: make build-for-library-evolution
 
-  # examples:
-  #   name: Examples
-  #   runs-on: macos-14
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Select Xcode 15.4
-  #       run: sudo xcode-select -s /Applications/Xcode_15.4.app
-  #     - name: Run tests
-  #       run: make test-examples
+  examples:
+    name: Examples
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 15.4
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+      - name: Run tests
+        run: make test-examples

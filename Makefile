@@ -15,23 +15,13 @@ test-all: test-examples
 	$(MAKE) CONFIG=debug test-library
 	$(MAKE) CONFIG=release test-library
 
-build:
-	xcodebuild \
+xcodebuild:
+	xcodebuild $(COMMAND) \
 		-skipMacroValidation \
 		-configuration $(CONFIG) \
 		-workspace .github/package.xcworkspace \
 		-scheme ComposableArchitecture \
 		-destination generic/platform="$$(PLATFORM)" || exit 1; \
-
-test-library:
-	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)"; do \
-		xcodebuild test \
-			-skipMacroValidation \
-			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
-			-scheme ComposableArchitecture \
-			-destination platform="$$platform" || exit 1; \
-	done;
 
 build-for-library-evolution:
 	swift build \
