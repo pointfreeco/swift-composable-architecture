@@ -1002,6 +1002,47 @@ final class SharedTests: XCTestCase {
       }
     }
   }
+
+  func testReEntrantSharedSubscriptionDependencyResolution() async throws {
+    for _ in 1...100 {
+      try await withDependencies {
+        $0 = DependencyValues()
+      } operation: {
+        @Shared(.appStorage("count")) var count = 0
+
+        struct Client: TestDependencyKey {
+          init() {
+            @Dependency(\.defaultAppStorage) var userDefaults
+            userDefaults.set(42, forKey: "count")
+          }
+          static var testValue: Self { Self() }
+        }
+
+        withEscapedDependencies { dependencies in
+          DispatchQueue.global().async {
+            dependencies.yield {
+              XCTAssertEqual({ Thread.isMainThread }(), false)
+              @Dependency(Client.self) var client
+              _ = client
+            }
+          }
+          DispatchQueue.main.async { [sharedCount = $count] in
+            dependencies.yield {
+              XCTAssertEqual({ Thread.isMainThread }(), true)
+              _ = sharedCount.wrappedValue
+            }
+          }
+        }
+
+        try await Task.sleep(nanoseconds: 10_000_000)
+        XCTAssertEqual(count, 42)
+      }
+    }
+  }
+}
+
+@globalActor actor GA: GlobalActor {
+  static let shared = GA()
 }
 
 @Reducer
