@@ -20,76 +20,22 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
-        command: 
-          - build
-          - test
-        platform:
-          - iOS
-          - macOS
-          - tvOS
-          - watchOS
-        xcode:
-          - 15.2
-          - 15.4
-          - 16_beta_6
-        config:
-          - debug
-          - release
-        exclude:
-          - platform: tvOS
-            command: test 
-          - platform: watchOS
-            command: test
-          - xcode: 15.2
-            command: test
-          - xcode: 15.2
-            command: build
-            platform: tvOS
-          - xcode: 15.2
-            command: build
-            platform: watchOS
+        include:
+          - xcode: 15.4
+            command: [test, build]
+
 
 #    15.4, test,  ios+macos,    debug+release
 #    16  , test,  ios+macos,    debug+release
 #    15.4, build, tvos+watchos, debug+release
 #    16,   build, tvos+watchos, debug+release
 #    15.2, build, ios+macos,    debug+release
-        # include: 
-        #   - xcode: 15.4
-        #     command: test
-        #     platform: iOS
-        #   - xcode: 15.4
-        #     command: test
-        #     platform: macOS
-        #   - xcode: 15.4
-        #     command: build
-        #     platform: tvOS
-        #   - xcode: 15.4
-        #     command: build
-        #     platform: watchOS
-        #   - xcode: 16_beta_6
-        #     command: test
-        #     platform: iOS
-        #   - xcode: 16_beta_6
-        #     command: test
-        #     platform: macOS
-        #   - xcode: 16_beta_6
-        #     command: build
-        #     platform: tvOS
-        #   - xcode: 16_beta_6
-        #     command: build
-        #     platform: watchOS
-        #   - xcode: 15.2
-        #     command: build
-        #     platform: iOS
-        #   - xcode: 15.2
-        #     command: test
-        #     platform: macOS
+
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      - name: ${{ matrix.command }}/${{ matrix.platform }}/${{ matrix.config }}
+      - name: ${{ matrix.command }}
         run: echo "hi"
       #   run: make CONFIG=${{ matrix.config }} build-all-platforms
       # - name: Run ${{ matrix.config }} tests
