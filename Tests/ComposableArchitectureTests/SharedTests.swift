@@ -1018,15 +1018,19 @@ final class SharedTests: XCTestCase {
           static var testValue: Self { Self() }
         }
 
-        await withTaskGroup(of: Void.self) { group in
-          group.addTask {
-            XCTAssertEqual({ Thread.isMainThread }(), false)
-            @Dependency(Client.self) var client
-            _ = client
+        withEscapedDependencies { dependencies in
+          DispatchQueue.global().async {
+            dependencies.yield {
+              XCTAssertEqual({ Thread.isMainThread }(), false)
+              @Dependency(Client.self) var client
+              _ = client
+            }
           }
-          group.addTask { @MainActor [sharedCount = $count] in
-            XCTAssertEqual({ Thread.isMainThread }(), true)
-            _ = sharedCount.wrappedValue
+          DispatchQueue.main.async { [sharedCount = $count] in
+            dependencies.yield {
+              XCTAssertEqual({ Thread.isMainThread }(), true)
+              _ = sharedCount.wrappedValue
+            }
           }
         }
 
@@ -1035,6 +1039,10 @@ final class SharedTests: XCTestCase {
       }
     }
   }
+}
+
+@globalActor actor GA: GlobalActor {
+  static let shared = GA()
 }
 
 @Reducer
