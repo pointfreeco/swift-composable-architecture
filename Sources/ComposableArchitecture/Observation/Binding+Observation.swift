@@ -78,42 +78,42 @@
     }
   }
 
-#if DEBUG
-  private final class BindableActionDebugger<Action>: Sendable {
-    let isInvalidated: @MainActor @Sendable () -> Bool
-    let value: any Sendable
-    let wasCalled = LockIsolated(false)
-    init(
-      value: some Sendable,
-      isInvalidated: @escaping @MainActor @Sendable () -> Bool
-    ) {
-      self.value = value
-      self.isInvalidated = isInvalidated
-    }
-    deinit {
-      let isInvalidated = mainActorNow(execute: isInvalidated)
-      guard !isInvalidated else { return }
-      guard wasCalled.value else {
-        var valueDump: String {
-          var valueDump = ""
-          customDump(self.value, to: &valueDump, maxDepth: 0)
-          return valueDump
+  #if DEBUG
+    private final class BindableActionDebugger<Action>: Sendable {
+      let isInvalidated: @MainActor @Sendable () -> Bool
+      let value: any Sendable
+      let wasCalled = LockIsolated(false)
+      init(
+        value: some Sendable,
+        isInvalidated: @escaping @MainActor @Sendable () -> Bool
+      ) {
+        self.value = value
+        self.isInvalidated = isInvalidated
+      }
+      deinit {
+        let isInvalidated = mainActorNow(execute: isInvalidated)
+        guard !isInvalidated else { return }
+        guard wasCalled.value else {
+          var valueDump: String {
+            var valueDump = ""
+            customDump(self.value, to: &valueDump, maxDepth: 0)
+            return valueDump
+          }
+          reportIssue(
+            """
+            A binding action sent from a store was not handled. …
+
+              Action:
+                \(typeName(Action.self)).binding(.set(_, \(valueDump)))
+
+            To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+            """
+          )
+          return
         }
-        reportIssue(
-          """
-          A binding action sent from a store was not handled. …
-
-            Action:
-              \(typeName(Action.self)).binding(.set(_, \(valueDump)))
-
-          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
-          """
-        )
-        return
       }
     }
-  }
-#endif
+  #endif
 
   extension BindableAction where State: ObservableState {
     fileprivate static func set<Value: Equatable & Sendable>(
