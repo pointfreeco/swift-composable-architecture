@@ -21,13 +21,22 @@ extension Reducer {
 
 private let printQueue = DispatchQueue(label: "co.pointfree.swift-composable-architecture.printer")
 
-public struct _ReducerPrinter<State, Action> {
-  private let _printChange: (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void
+public struct _ReducerPrinter<State, Action>: Sendable {
+  private let _printChange:
+    @Sendable (
+      _ receivedAction: Action,
+      _ oldState: State,
+      _ newState: State
+    ) -> Void
   @usableFromInline
   let queue: DispatchQueue
 
   public init(
-    printChange: @escaping (_ receivedAction: Action, _ oldState: State, _ newState: State) -> Void,
+    printChange: @escaping @Sendable (
+      _ receivedAction: Action,
+      _ oldState: State,
+      _ newState: State
+    ) -> Void,
     queue: DispatchQueue? = nil
   ) {
     self._printChange = printChange
@@ -77,17 +86,24 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
     ) -> Effect<Base.Action> {
       if let printer = self.printer {
         return withSharedChangeTracking { changeTracker in
-          let oldState = state
+          let oldState = UncheckedSendable(state)
           let effects = self.base.reduce(into: &state, action: action)
           return withEscapedDependencies { continuation in
             effects.merge(
-              with: .publisher { [newState = state, queue = printer.queue] in
+              with: .publisher {
+                [
+                  newState = UncheckedSendable(state),
+                  action = UncheckedSendable(action),
+                  queue = printer.queue
+                ] in
                 Deferred<Empty<Action, Never>> {
                   queue.async {
                     continuation.yield {
                       changeTracker.assert {
                         printer.printChange(
-                          receivedAction: action, oldState: oldState, newState: newState
+                          receivedAction: action.wrappedValue,
+                          oldState: oldState.wrappedValue,
+                          newState: newState.wrappedValue
                         )
                       }
                     }

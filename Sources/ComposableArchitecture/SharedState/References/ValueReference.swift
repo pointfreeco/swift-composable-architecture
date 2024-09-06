@@ -395,7 +395,7 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
         initialValue: initialValue
       ) { [weak self] value in
         guard let self else { return }
-        mainActorNow {
+        mainActorASAP {
           #if canImport(Perception)
             self._$perceptionRegistrar.willSet(self, keyPath: \.value)
             defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }

@@ -30,6 +30,32 @@
       }
     }
 
+    @ObservableState
+    struct TestObservableBindingUnhandledActionState: Equatable {
+      var count = 0
+    }
+    @MainActor
+    func testObservableBindingUnhandledAction() {
+      typealias State = TestObservableBindingUnhandledActionState
+      enum Action: BindableAction, Equatable {
+        case binding(BindingAction<State>)
+      }
+      let store = Store<State, Action>(initialState: State()) {}
+
+      XCTExpectFailure {
+        store.count = 42
+      } issueMatcher: {
+        $0.compactDescription == """
+          failed - A binding action sent from a store was not handled. …
+
+            Action:
+              RuntimeWarningTests.Action.binding(.set(_, 42))
+
+          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+          """
+      }
+    }
+
     @MainActor
     func testBindingUnhandledAction_BindingState() {
       struct State: Equatable {

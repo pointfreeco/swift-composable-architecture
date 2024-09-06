@@ -211,13 +211,13 @@ class FeatureViewController: UIViewController {
   }
 
   @objc private func incrementButtonTapped() {
-    self.viewStore.send(.incrementButtonTapped)
+    self.store.send(.incrementButtonTapped)
   }
   @objc private func decrementButtonTapped() {
-    self.viewStore.send(.decrementButtonTapped)
+    self.store.send(.decrementButtonTapped)
   }
   @objc private func factButtonTapped() {
-    self.viewStore.send(.numberFactButtonTapped)
+    self.store.send(.numberFactButtonTapped)
   }
 }
 ```

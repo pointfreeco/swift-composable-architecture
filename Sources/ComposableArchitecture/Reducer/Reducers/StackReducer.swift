@@ -538,7 +538,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           associated effect before an element is removed, especially if it is a long-living effect.
 
           • This action was sent to the store while its state contained no element at this ID. To \
-          fix this make sure that actions for this reducer can only be sent from a view store when \
+          fix this make sure that actions for this reducer can only be sent from a store when \
           its state contains an element at this id. In SwiftUI applications, use \
           "NavigationStack.init(path:)" with a binding to a store.
           """,

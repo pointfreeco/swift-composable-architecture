@@ -990,6 +990,59 @@ final class SharedTests: XCTestCase {
       ]
     )
   }
+
+  @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+  func testConcurrentPublisherAccess() async {
+    let sharedCount = Shared<Int>(0)
+    await withTaskGroup(of: Void.self) { group in
+      for _ in 0..<1_000 {
+        group.addTask {
+          for await _ in sharedCount.publisher.values.prefix(0) {}
+        }
+      }
+    }
+  }
+
+  func testReEntrantSharedSubscriptionDependencyResolution() async throws {
+    for _ in 1...100 {
+      try await withDependencies {
+        $0 = DependencyValues()
+      } operation: {
+        @Shared(.appStorage("count")) var count = 0
+
+        struct Client: TestDependencyKey {
+          init() {
+            @Dependency(\.defaultAppStorage) var userDefaults
+            userDefaults.set(42, forKey: "count")
+          }
+          static var testValue: Self { Self() }
+        }
+
+        withEscapedDependencies { dependencies in
+          DispatchQueue.global().async {
+            dependencies.yield {
+              XCTAssertEqual({ Thread.isMainThread }(), false)
+              @Dependency(Client.self) var client
+              _ = client
+            }
+          }
+          DispatchQueue.main.async { [sharedCount = $count] in
+            dependencies.yield {
+              XCTAssertEqual({ Thread.isMainThread }(), true)
+              _ = sharedCount.wrappedValue
+            }
+          }
+        }
+
+        try await Task.sleep(nanoseconds: 10_000_000)
+        XCTAssertEqual(count, 42)
+      }
+    }
+  }
+}
+
+@globalActor actor GA: GlobalActor {
+  static let shared = GA()
 }
 
 @Reducer
@@ -1114,8 +1167,8 @@ private struct RowFeature {
         return .none
 
       case .onAppear:
-        return .publisher { [publisher = state.$value.publisher] in
-          publisher
+        return .publisher {
+          state.$value.publisher
             .map(Action.response)
             .prefix(1)
         }
