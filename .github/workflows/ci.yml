@@ -21,8 +21,8 @@ jobs:
     strategy:
       matrix:
         config: [Debug, Release]
-      matrix:
-        platform: [iOS, macOS]
+      # matrix:
+      #   platform: [iOS, macOS]
         # include:
         #   - xcode: 15.4
         #     command: test
