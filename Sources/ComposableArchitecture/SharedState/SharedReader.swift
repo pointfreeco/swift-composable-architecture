@@ -8,7 +8,7 @@
 /// wrapper, in particular <doc:SharingState#Read-only-shared-state>.
 @dynamicMemberLookup
 @propertyWrapper
-public struct SharedReader<Value> {
+public struct SharedReader<Value: Sendable> {
   fileprivate let reference: any Reference
   fileprivate let keyPath: AnyKeyPath
 
@@ -47,7 +47,7 @@ public struct SharedReader<Value> {
     else { return nil }
     self.init(
       reference: base.reference,
-      keyPath: base.keyPath.appending(path: \Value?.[default:DefaultSubscript(initialValue)])!
+      keyPath: base.keyPath.appending(path: \Value?.[default: DefaultSubscript(initialValue)])!
     )
   }
 
@@ -183,7 +183,11 @@ extension SharedReader: CustomDumpRepresentable {
 }
 
 extension SharedReader
-where Value: RandomAccessCollection & MutableCollection, Value.Index: Hashable & Sendable {
+where
+  Value: RandomAccessCollection & MutableCollection,
+  Value.Index: Hashable & Sendable,
+  Value.Element: Sendable
+{
   /// Derives a collection of read-only shared elements from a read-only shared collection of
   /// elements.
   ///

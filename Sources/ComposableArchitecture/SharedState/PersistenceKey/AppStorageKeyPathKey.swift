@@ -15,7 +15,7 @@ extension PersistenceReaderKey {
   /// - Parameter key: A string key identifying a value to share in memory.
   /// - Returns: A persistence key.
   public static func appStorage<Value>(
-    _ keyPath: ReferenceWritableKeyPath<UserDefaults, Value>
+    _ keyPath: _ReferenceWritableKeyPath<UserDefaults, Value>
   ) -> Self where Self == AppStorageKeyPathKey<Value> {
     AppStorageKeyPathKey(keyPath)
   }
@@ -24,25 +24,25 @@ extension PersistenceReaderKey {
 /// A type defining a user defaults persistence strategy via key path.
 ///
 /// See ``PersistenceReaderKey/appStorage(_:)-5jsie`` to create values of this type.
-public struct AppStorageKeyPathKey<Value> {
-  private let keyPath: ReferenceWritableKeyPath<UserDefaults, Value>
-  private let store: UserDefaults
+public struct AppStorageKeyPathKey<Value: Sendable>: Sendable {
+  private let keyPath: _ReferenceWritableKeyPath<UserDefaults, Value>
+  private let store: UncheckedSendable<UserDefaults>
 
-  public init(_ keyPath: ReferenceWritableKeyPath<UserDefaults, Value>) {
+  public init(_ keyPath: _ReferenceWritableKeyPath<UserDefaults, Value>) {
     @Dependency(\.defaultAppStorage) var store
     self.keyPath = keyPath
-    self.store = store
+    self.store = UncheckedSendable(store)
   }
 }
 
 extension AppStorageKeyPathKey: PersistenceKey, Hashable {
   public func load(initialValue _: Value?) -> Value? {
-    self.store[keyPath: self.keyPath]
+    self.store.wrappedValue[keyPath: self.keyPath]
   }
 
   public func save(_ newValue: Value) {
     SharedAppStorageLocals.$isSetting.withValue(true) {
-      self.store[keyPath: self.keyPath] = newValue
+      self.store.wrappedValue[keyPath: self.keyPath] = newValue
     }
   }
 
@@ -50,7 +50,7 @@ extension AppStorageKeyPathKey: PersistenceKey, Hashable {
     initialValue: Value?,
     didSet: @escaping @Sendable (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
-    let observer = self.store.observe(self.keyPath, options: .new) { _, change in
+    let observer = self.store.wrappedValue.observe(self.keyPath, options: .new) { _, change in
       guard
         !SharedAppStorageLocals.isSetting
       else { return }

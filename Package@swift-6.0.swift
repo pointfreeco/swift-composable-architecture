@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.0
 
 import CompilerPluginSupport
 import PackageDescription
@@ -83,15 +83,15 @@ let package = Package(
         .product(name: "Benchmark", package: "swift-benchmark"),
       ]
     ),
-  ]
+  ],
+  swiftLanguageModes: [.v6]
 )
 
-#if compiler(>=6)
-  for target in package.targets where target.type != .system && target.type != .test {
-    target.swiftSettings = target.swiftSettings ?? []
-    target.swiftSettings?.append(contentsOf: [
-      .enableExperimentalFeature("StrictConcurrency"),
-      .enableUpcomingFeature("InferSendableFromCaptures"),
-    ])
-  }
-#endif
+for target in package.targets where target.type == .system || target.type == .test {
+  target.swiftSettings = target.swiftSettings ?? []
+  target.swiftSettings?.append(contentsOf: [
+    .swiftLanguageMode(.v5),
+    .enableExperimentalFeature("StrictConcurrency"),
+    .enableUpcomingFeature("InferSendableFromCaptures")
+  ])
+}

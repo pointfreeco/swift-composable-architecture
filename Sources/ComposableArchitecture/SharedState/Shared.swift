@@ -12,11 +12,11 @@ import IssueReporting
 /// wrapper.
 @dynamicMemberLookup
 @propertyWrapper
-public struct Shared<Value> {
+public struct Shared<Value: Sendable>: Sendable {
   private let reference: any Reference
-  private let keyPath: AnyKeyPath
+  private let keyPath: _AnyKeyPath
 
-  init(reference: any Reference, keyPath: AnyKeyPath) {
+  init(reference: any Reference, keyPath: _AnyKeyPath) {
     self.reference = reference
     self.keyPath = keyPath
   }
@@ -62,7 +62,13 @@ public struct Shared<Value> {
     else { return nil }
     self.init(
       reference: base.reference,
-      keyPath: base.keyPath.appending(path: \Value?.[default:DefaultSubscript(initialValue)])!
+      // NB: Can get rid of bitcast when this is fixed:
+      //     https://github.com/swiftlang/swift/issues/75531
+      keyPath: unsafeBitCast(
+        (base.keyPath as AnyKeyPath)
+          .appending(path: \Value?.[default:DefaultSubscript(initialValue)])!,
+        to: _AnyKeyPath.self
+      )
     )
   }
 
@@ -170,7 +176,15 @@ public struct Shared<Value> {
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member>
   ) -> Shared<Member> {
-    Shared<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
+    Shared<Member>(
+      reference: self.reference,
+      // NB: Can get rid of bitcast when this is fixed:
+      //     https://github.com/swiftlang/swift/issues/75531
+      keyPath: unsafeBitCast(
+        (self.keyPath as AnyKeyPath).appending(path: keyPath)!,
+        to: _AnyKeyPath.self
+      )
+    )
   }
 
   @_disfavoredOverload
@@ -275,7 +289,7 @@ public struct Shared<Value> {
 
   private var snapshot: Value? {
     get {
-      func open<Root>(_ reference: some Reference<Root>) -> Value? {
+      func open<Root: Sendable>(_ reference: some Reference<Root>) -> Value? {
         @Dependency(\.sharedChangeTracker) var changeTracker
         return changeTracker?[reference]?.snapshot[
           keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
@@ -284,7 +298,7 @@ public struct Shared<Value> {
       return open(self.reference)
     }
     nonmutating set {
-      func open<Root>(_ reference: some Reference<Root>) {
+      func open<Root: Sendable>(_ reference: some Reference<Root>) {
         @Dependency(\.sharedChangeTracker) var changeTracker
         guard let newValue else {
           changeTracker?[reference] = nil
@@ -301,8 +315,6 @@ public struct Shared<Value> {
     }
   }
 }
-
-extension Shared: @unchecked Sendable where Value: Sendable {}
 
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
@@ -344,7 +356,10 @@ extension Shared: _CustomDiffObject {
 }
 
 extension Shared
-where Value: _MutableIdentifiedCollection {
+where
+  Value: _MutableIdentifiedCollection,
+  Value.Element: Sendable
+{
   /// Allows a `ForEach` view to transform a shared collection into shared elements.
   ///
   /// ```swift
@@ -408,11 +423,10 @@ extension Shared: MutableCollection
 where Value: MutableCollection & RandomAccessCollection, Value.Index: Hashable {
   public subscript(position: Value.Index) -> Shared<Value.Element> {
     get {
-      assertionFailure("Conformance of 'Shared<Value>' to 'MutableCollection' is unavailable.")
-      return self[position, default: DefaultSubscript(self.wrappedValue[position])]
+      fatalError("Conformance of 'Shared<Value>' to 'MutableCollection' is unavailable.")
     }
     set {
-      self._wrappedValue[position] = newValue.wrappedValue
+      fatalError("Conformance of 'Shared<Value>' to 'MutableCollection' is unavailable.")
     }
   }
 }
@@ -447,7 +461,12 @@ extension Shared {
   ) -> SharedReader<Member> {
     SharedReader<Member>(
       reference: self.reference,
-      keyPath: self.keyPath.appending(path: keyPath)!
+      // NB: Can get rid of bitcast when this is fixed:
+      //     https://github.com/swiftlang/swift/issues/75531
+      keyPath: unsafeBitCast(
+        (self.keyPath as AnyKeyPath).appending(path: keyPath)!,
+        to: _AnyKeyPath.self
+      )
     )
   }
 

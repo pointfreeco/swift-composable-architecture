@@ -19,16 +19,20 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
+        xcode:
+          - 15.4
+          - 16_beta_6
         config:
           - debug
           - release
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 15.4
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+      - name: Select Xcode ${{ matrix.xcode }}
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Build ${{ matrix.config }}
         run: make CONFIG=${{ matrix.config }} build-all-platforms
       - name: Run ${{ matrix.config }} tests
+        if: matrix.xcode == '15.4'
         run: make CONFIG=${{ matrix.config }} test-library
 
   # library-evolution:
