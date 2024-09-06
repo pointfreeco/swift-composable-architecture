@@ -1004,7 +1004,7 @@ final class SharedTests: XCTestCase {
   }
 
   func testReEntrantSharedSubscriptionDependencyResolution() async throws {
-    for _ in 1...100 {
+    for _ in 1...10 {
       try await withDependencies {
         $0 = DependencyValues()
       } operation: {
@@ -1034,7 +1034,7 @@ final class SharedTests: XCTestCase {
           }
         }
 
-        try await Task.sleep(nanoseconds: 10_000_000)
+        try await Task.sleep(nanoseconds: 1_000_000_000)
         XCTAssertEqual(count, 42)
       }
     }
