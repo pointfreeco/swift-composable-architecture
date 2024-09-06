@@ -36,13 +36,18 @@ jobs:
       #   run: make CONFIG=${{ matrix.config }} test-library
 
   build-library:
-    name: Test library
+    name: Build library
     runs-on: macos-14
     strategy:
       matrix:
         config: [Debug, Release]
-        platform: [iOS, macOS]
-        xcode: [15.2]
+        platform: [iOS, macOS, tvOS, watchOS]
+        xcode: [15.2, 15.4]
+        exclude: 
+          - xcode: 15.4
+            platform: iOS
+          - xcode: 15.4
+            platform: macOS
 
     steps:
       - uses: actions/checkout@v4
