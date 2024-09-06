@@ -35,19 +35,13 @@ jobs:
         config:
           - debug
           - release
-        exclude:
-          - platform: tvOS
-            command: test 
-          - platform: watchOS
-            command: test
-          - xcode: 15.2
-            command: test
-
-    15.4, test,  ios+macos,    debug+release
-    16  , test,  ios+macos,    debug+release
-    15.4, build, tvos+watchos, debug+release
-    16,   build, tvos+watchos, debug+release
-    15.2, build, ios+macos,    debug+release
+        # exclude:
+        #   - platform: tvOS
+        #     command: test 
+        #   - platform: watchOS
+        #     command: test
+        #   - xcode: 15.2
+        #     command: test
 
     steps:
       - uses: actions/checkout@v4
