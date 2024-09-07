@@ -43,11 +43,11 @@ body:
   attributes:
     label: Reproducing project
     description: |
-      Drag and drop a full SPM package or Xcode project into this text field that demonstrates the problem you are seeing. If you cannot reproduce the problem in a standalone project, then provide a detailed explanation of how to reproduce the incorrect behavior.
+      Provide a full SPM package or Xcode project that demonstrates the problem you are seeing. If you cannot reproduce the problem in a standalone project, then provide a detailed explanation of how to reproduce the incorrect behavior.
 
       Note that without a project that reproduces the problem we are likely to close this issue and convert it to a discussion until more details are provided.
     placeholder: |
-      1. ...
+      Drag and drop a full SPM package or Xcode project into this text field that demonstrates the problem you are seeing.
   validations:
     required: false
 - type: input
