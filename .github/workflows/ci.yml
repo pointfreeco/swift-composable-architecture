@@ -23,8 +23,11 @@ jobs:
         config: [Debug, Release]
         platform: [iOS, macOS]
         xcode: [15.4, 16_beta_6]
-
     steps:
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.derivedData
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
@@ -44,8 +47,11 @@ jobs:
             platform: iOS
           - xcode: 15.4
             platform: macOS
-
     steps:
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.derivedData
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app

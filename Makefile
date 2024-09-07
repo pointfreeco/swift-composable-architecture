@@ -16,30 +16,35 @@ test-all: test-examples
 	$(MAKE) CONFIG=release test-library
 
 test-library:
+	mkdir -p ~/.derivedData; \
 	if test "$(PLATFORM)" = "iOS"; \
 		then xcodebuild \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_IOS)"; \
+			-destination platform="$(PLATFORM_IOS)" \
+			-derivedDataPath ~/.derivedData;
 		elif test "$(PLATFORM)" = "macOS"; \
 		then xcodebuild \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_MACOS)"; \
+			-destination platform="$(PLATFORM_MACOS)" \
+			-derivedDataPath ~/.derivedData;
 		else exit 1; \
 		fi;	
 
 build-library:
+	mkdir -p DerivedData; \
 	xcodebuild \
 		-skipMacroValidation \
 		-configuration $(CONFIG) \
 		-workspace .github/package.xcworkspace \
 		-scheme ComposableArchitecture \
-		-destination generic/platform="$(PLATFORM)"
+		-destination generic/platform="$(PLATFORM)" \
+		-derivedDataPath ~/.derivedData;
 
 build-for-library-evolution:
 	swift build \
@@ -66,7 +71,9 @@ test-examples:
 		xcodebuild test \
 			-skipMacroValidation \
 			-scheme "$$scheme" \
-			-destination platform="$(PLATFORM_IOS)" || exit 1; \
+			-destination platform="$(PLATFORM_IOS)" \
+			-derivedDataPath ./ \
+			|| exit 1; \
 	done
 
 test-integration:
