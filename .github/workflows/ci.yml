@@ -46,8 +46,9 @@ jobs:
       - name: Cache derived data
         uses: actions/cache@v3
         with:
-          path: ~/.derivedData-Debug
-          path: ~/.derivedData-Release
+          path: |
+            ~/.derivedData-Debug
+            ~/.derivedData-Release
           key: deriveddata-test-library-${{ matrix.platform }}-${{ matrix.xcode }}
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
