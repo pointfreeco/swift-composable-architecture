@@ -29,7 +29,7 @@ jobs:
           sanitized_platform: matrix.platform | tr -d ', ='
         with:
           path: ~/.derivedData
-          key: deriveddata-test-library-$sanitized_platform-${{ matrix.xcode }}
+          key: deriveddata-test-library-${{ env.sanitized_platform }}-${{ matrix.xcode }}
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
