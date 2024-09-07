@@ -17,53 +17,53 @@ test-all: test-examples
 
 test-library:
 	if test "$(PLATFORM)" = "iOS"; \
-		then xcodebuild \
+		then xcodebuild test \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_IOS)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData-$(CONFIG); \
 		elif test "$(PLATFORM)" = "macOS"; \
-		then xcodebuild \
+		then xcodebuild test \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MACOS)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData-$(CONFIG); \
 		elif test "$(PLATFORM)" = "tvOS"; \
-		then xcodebuild \
+		then xcodebuild test \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_TVOS)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData-$(CONFIG); \
 		elif test "$(PLATFORM)" = "watchOS"; \
-		then xcodebuild \
+		then xcodebuild test \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_WATCHOS)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData-$(CONFIG); \
 		elif test "$(PLATFORM)" = "visionOS"; \
-		then xcodebuild \
+		then xcodebuild test \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_VISIONOS)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData-$(CONFIG); \
 		elif test "$(PLATFORM)" = "macCatalyst"; \
-		then xcodebuild \
+		then xcodebuild test \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MAC_CATALYST)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData-$(CONFIG); \
 		else exit 1; \
 		fi;	
 
