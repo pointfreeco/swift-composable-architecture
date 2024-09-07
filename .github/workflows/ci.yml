@@ -22,6 +22,26 @@ jobs:
       matrix:
         platform: [iOS, macOS, tvOS, watchOS, visionOS, macCatalyst]
         xcode: [15.2, 15.4, 16_beta_6]
+        exclude: 
+          - xcode: 15.2
+            platform: tvOS
+          - xcode: 15.2
+            platform: watchOS
+          - xcode: 15.2
+            platform: visionOS
+          - xcode: 15.2
+            platform: macCatalyst
+          - xcode: 16_beta_6
+            platform: tvOS
+          - xcode: 16_beta_6
+            platform: watchOS
+          - xcode: 16_beta_6
+            platform: visionOS
+          - xcode: 16_beta_6
+            platform: macCatalyst
+        include:
+          - xcode: 15.2
+            skip_release: 1
     steps:
       - name: Cache derived data
         uses: actions/cache@v3
@@ -34,6 +54,7 @@ jobs:
       - name: Test debug
         run: make CONFIG=Debug PLATFORM="${{ matrix.platform }}" test-library
       - name: Test release
+        if: matrix.skip_release != '1'
         run: make CONFIG=Release PLATFORM="${{ matrix.platform }}" test-library
 
   library-evolution:
