@@ -23,7 +23,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_IOS)" \
-			-derivedDataPath ~/.derivedData-$(CONFIG); \
+			-derivedDataPath ~/.derivedData; \
 		elif test "$(PLATFORM)" = "macOS"; \
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
@@ -31,7 +31,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MACOS)" \
-			-derivedDataPath ~/.derivedData-$(CONFIG); \
+			-derivedDataPath ~/.derivedData; \
 		elif test "$(PLATFORM)" = "tvOS"; \
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
@@ -39,7 +39,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_TVOS)" \
-			-derivedDataPath ~/.derivedData-$(CONFIG); \
+			-derivedDataPath ~/.derivedData; \
 		elif test "$(PLATFORM)" = "watchOS"; \
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
@@ -47,7 +47,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_WATCHOS)" \
-			-derivedDataPath ~/.derivedData-$(CONFIG); \
+			-derivedDataPath ~/.derivedData; \
 		elif test "$(PLATFORM)" = "visionOS"; \
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
@@ -55,7 +55,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_VISIONOS)" \
-			-derivedDataPath ~/.derivedData-$(CONFIG); \
+			-derivedDataPath ~/.derivedData; \
 		elif test "$(PLATFORM)" = "macCatalyst"; \
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
@@ -63,7 +63,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MAC_CATALYST)" \
-			-derivedDataPath ~/.derivedData-$(CONFIG); \
+			-derivedDataPath ~/.derivedData; \
 		else exit 1; \
 		fi;	
 
