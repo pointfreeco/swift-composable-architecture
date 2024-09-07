@@ -42,6 +42,10 @@ jobs:
             platform: macCatalyst
           - xcode: 15.2
             command: test
+          - xcode: 15.4
+            command: ''
+          - xcode: 16_beta_6
+            command: ''
         include:
           - xcode: 15.2
             skip_release: 1
@@ -52,7 +56,7 @@ jobs:
           path: |
             ~/.derivedData-Debug
             ~/.derivedData-Release
-          key: deriveddata-test-library-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}
+          key: deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
