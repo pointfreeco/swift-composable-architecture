@@ -91,6 +91,7 @@ let package = Package(
     target.swiftSettings = target.swiftSettings ?? []
     target.swiftSettings?.append(contentsOf: [
       .enableExperimentalFeature("StrictConcurrency"),
+      .enableExperimentalFeature("IsolatedAny")
     ])
   }
 #endif
