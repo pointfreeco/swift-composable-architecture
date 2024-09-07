@@ -20,6 +20,7 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
+        command: [test, '']
         platform: [iOS, macOS, tvOS, watchOS, visionOS, macCatalyst]
         xcode: [15.2, 15.4, 16_beta_6]
         exclude: 
@@ -39,6 +40,8 @@ jobs:
             platform: visionOS
           - xcode: 16_beta_6
             platform: macCatalyst
+          - xcode: 15.2
+            command: test
         include:
           - xcode: 15.2
             skip_release: 1
@@ -49,15 +52,15 @@ jobs:
           path: |
             ~/.derivedData-Debug
             ~/.derivedData-Release
-          key: deriveddata-test-library-${{ matrix.platform }}-${{ matrix.xcode }}
+          key: deriveddata-test-library-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      - name: Test debug
-        run: make CONFIG=Debug PLATFORM="${{ matrix.platform }}" test-library
-      - name: Test release
+      - name: Debug
+        run: make COMMAND="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" test-library
+      - name: Release
         if: matrix.skip_release != '1'
-        run: make CONFIG=Release PLATFORM="${{ matrix.platform }}" test-library
+        run: make COMMAND="${{ matrix.command }}" CONFIG=Release PLATFORM="${{ matrix.platform }}" test-library
 
   library-evolution:
     name: Library (evolution)

@@ -15,9 +15,9 @@ test-all: test-examples
 	$(MAKE) CONFIG=debug test-library
 	$(MAKE) CONFIG=release test-library
 
-test-library:
+xcodebuild:
 	if test "$(PLATFORM)" = "iOS"; \
-		then xcodebuild test \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -25,7 +25,7 @@ test-library:
 			-destination platform="$(PLATFORM_IOS)" \
 			-derivedDataPath ~/.derivedData-$(CONFIG); \
 		elif test "$(PLATFORM)" = "macOS"; \
-		then xcodebuild test \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -33,7 +33,7 @@ test-library:
 			-destination platform="$(PLATFORM_MACOS)" \
 			-derivedDataPath ~/.derivedData-$(CONFIG); \
 		elif test "$(PLATFORM)" = "tvOS"; \
-		then xcodebuild test \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -41,7 +41,7 @@ test-library:
 			-destination platform="$(PLATFORM_TVOS)" \
 			-derivedDataPath ~/.derivedData-$(CONFIG); \
 		elif test "$(PLATFORM)" = "watchOS"; \
-		then xcodebuild test \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -49,7 +49,7 @@ test-library:
 			-destination platform="$(PLATFORM_WATCHOS)" \
 			-derivedDataPath ~/.derivedData-$(CONFIG); \
 		elif test "$(PLATFORM)" = "visionOS"; \
-		then xcodebuild test \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -57,7 +57,7 @@ test-library:
 			-destination platform="$(PLATFORM_VISIONOS)" \
 			-derivedDataPath ~/.derivedData-$(CONFIG); \
 		elif test "$(PLATFORM)" = "macCatalyst"; \
-		then xcodebuild test \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
