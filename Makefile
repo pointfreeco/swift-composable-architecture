@@ -32,17 +32,40 @@ test-library:
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MACOS)" \
 			-derivedDataPath ~/.derivedData; \
+		elif test "$(PLATFORM)" = "tvOS"; \
+		then xcodebuild \
+			-skipMacroValidation \
+			-configuration $(CONFIG) \
+			-workspace .github/package.xcworkspace \
+			-scheme ComposableArchitecture \
+			-destination platform="$(PLATFORM_TVOS)" \
+			-derivedDataPath ~/.derivedData; \
+		elif test "$(PLATFORM)" = "watchOS"; \
+		then xcodebuild \
+			-skipMacroValidation \
+			-configuration $(CONFIG) \
+			-workspace .github/package.xcworkspace \
+			-scheme ComposableArchitecture \
+			-destination platform="$(PLATFORM_WATCHOS)" \
+			-derivedDataPath ~/.derivedData; \
+		elif test "$(PLATFORM)" = "visionOS"; \
+		then xcodebuild \
+			-skipMacroValidation \
+			-configuration $(CONFIG) \
+			-workspace .github/package.xcworkspace \
+			-scheme ComposableArchitecture \
+			-destination platform="$(PLATFORM_VISIONOS)" \
+			-derivedDataPath ~/.derivedData; \
+		elif test "$(PLATFORM)" = "macCatalyst"; \
+		then xcodebuild \
+			-skipMacroValidation \
+			-configuration $(CONFIG) \
+			-workspace .github/package.xcworkspace \
+			-scheme ComposableArchitecture \
+			-destination platform="$(PLATFORM_MAC_CATALYST)" \
+			-derivedDataPath ~/.derivedData; \
 		else exit 1; \
 		fi;	
-
-build-library:
-	xcodebuild \
-		-skipMacroValidation \
-		-configuration $(CONFIG) \
-		-workspace .github/package.xcworkspace \
-		-scheme ComposableArchitecture \
-		-destination generic/platform="$(PLATFORM)" \
-		-derivedDataPath ~/.derivedData;
 
 build-for-library-evolution:
 	swift build \
