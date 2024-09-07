@@ -70,7 +70,7 @@ test-examples:
 			-skipMacroValidation \
 			-scheme "$$scheme" \
 			-destination platform="$(PLATFORM_IOS)" \
-			-derivedDataPath ./ \
+			-derivedDataPath ~/.derivedData \
 			|| exit 1; \
 	done
 
