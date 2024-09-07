@@ -22,14 +22,15 @@ jobs:
       matrix:
         platform: [iOS, macOS, tvOS, watchOS, visionOS, 'macOS,variant=Mac Catalyst']
         xcode: [15.2, 15.4, 16_beta_6]
+        include:
+          - platform: 'macOS,variant=Mac Catalyst'
+            sanitized_platform: macCatalyst
     steps:
       - name: Cache derived data
         uses: actions/cache@v3
-        env:
-          sanitized_platform: matrix.platform | tr -d ', ='
         with:
           path: ~/.derivedData
-          key: deriveddata-test-library-${{ env.sanitized_platform }}-${{ matrix.xcode }}
+          key: deriveddata-test-library-${{ matrix.sanitized_platform }}-${{ matrix.xcode }}
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
