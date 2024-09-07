@@ -20,45 +20,46 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
-        config: [Debug, Release]
-        platform: [iOS, macOS]
-        xcode: [15.4, 16_beta_6]
-    steps:
-      - name: Cache derived data
-        uses: actions/cache@v3
-        with:
-          path: ~/.derivedData
-          key: deriveddata-test-library-${{ matrix.config }}-${{ matrix.platform }}-${{ matrix.xcode }}
-      - uses: actions/checkout@v4
-      - name: Select Xcode ${{ matrix.xcode }}
-        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      - name: Test
-        run: make CONFIG=${{ matrix.config }} PLATFORM=${{ matrix.platform }} test-library
-
-  build-library:
-    name: Build library
-    runs-on: macos-14
-    strategy:
-      matrix:
-        config: [Debug]
         platform: [iOS, macOS, tvOS, watchOS, visionOS, 'macOS,variant=Mac Catalyst']
-        xcode: [15.2, 15.4]
-        exclude: 
-          - xcode: 15.4
-            platform: iOS
-          - xcode: 15.4
-            platform: macOS
+        xcode: [15.2, 15.4, 16_beta_6]
     steps:
       - name: Cache derived data
         uses: actions/cache@v3
         with:
           path: ~/.derivedData
-          key: deriveddata-build-library-${{ matrix.config }}-${{ matrix.platform }}-${{ matrix.xcode }}
+          key: deriveddata-test-library-${{ matrix.platform | tr -d ', =' }}-${{ matrix.xcode }}
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      - name: Build
-        run: make CONFIG=${{ matrix.config }} PLATFORM="${{ matrix.platform }}" build-library
+      - name: Test debug
+        run: make CONFIG=Debug PLATFORM=${{ matrix.platform }} test-library
+      - name: Test release
+        run: make CONFIG=Release PLATFORM=${{ matrix.platform }} test-library
+
+  # build-library:
+  #   name: Build library
+  #   runs-on: macos-14
+  #   strategy:
+  #     matrix:
+  #       config: [Debug]
+  #       platform: [iOS, macOS, tvOS, watchOS, visionOS, 'macOS,variant=Mac Catalyst']
+  #       xcode: [15.2, 15.4]
+  #       exclude: 
+  #         - xcode: 15.4
+  #           platform: iOS
+  #         - xcode: 15.4
+  #           platform: macOS
+  #   steps:
+  #     - name: Cache derived data
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: ~/.derivedData
+  #         key: deriveddata-build-library-${{ matrix.config }}-${{ matrix.platform }}-${{ matrix.xcode }}
+  #     - uses: actions/checkout@v4
+  #     - name: Select Xcode ${{ matrix.xcode }}
+  #       run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+  #     - name: Build
+  #       run: make CONFIG=${{ matrix.config }} PLATFORM="${{ matrix.platform }}" build-library
 
   library-evolution:
     name: Library (evolution)
