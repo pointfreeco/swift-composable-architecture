@@ -72,6 +72,10 @@ jobs:
     name: Examples
     runs-on: macos-14
     steps:
+      - name: Cache derived data
+        uses: actions/cache@v3
+        with:
+          path: ~/.derivedData
       - uses: actions/checkout@v4
       - name: Select Xcode 15.4
         run: sudo xcode-select -s /Applications/Xcode_15.4.app

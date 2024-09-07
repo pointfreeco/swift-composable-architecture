@@ -16,7 +16,6 @@ test-all: test-examples
 	$(MAKE) CONFIG=release test-library
 
 test-library:
-	mkdir -p ~/.derivedData; \
 	if test "$(PLATFORM)" = "iOS"; \
 		then xcodebuild \
 			-skipMacroValidation \
@@ -24,7 +23,7 @@ test-library:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_IOS)" \
-			-derivedDataPath ~/.derivedData;
+			-derivedDataPath ~/.derivedData; \
 		elif test "$(PLATFORM)" = "macOS"; \
 		then xcodebuild \
 			-skipMacroValidation \
@@ -32,12 +31,11 @@ test-library:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MACOS)" \
-			-derivedDataPath ~/.derivedData;
+			-derivedDataPath ~/.derivedData; \
 		else exit 1; \
 		fi;	
 
 build-library:
-	mkdir -p DerivedData; \
 	xcodebuild \
 		-skipMacroValidation \
 		-configuration $(CONFIG) \
