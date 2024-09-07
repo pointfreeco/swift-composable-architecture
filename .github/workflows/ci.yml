@@ -23,6 +23,16 @@ jobs:
         platform: [iOS, macOS, tvOS, watchOS, visionOS, 'macOS,variant=Mac Catalyst']
         xcode: [15.2, 15.4, 16_beta_6]
         include:
+          - platform: iOS
+            sanitized_platform: iOS
+          - platform: macOS
+            sanitized_platform: macOS
+          - platform: tvOS
+            sanitized_platform: tvOS
+          - platform: watchOS
+            sanitized_platform: watchOS
+          - platform: visionOS
+            sanitized_platform: visionOS
           - platform: 'macOS,variant=Mac Catalyst'
             sanitized_platform: macCatalyst
     steps:
