@@ -87,15 +87,13 @@ test-docs:
 		|| (echo "xcodebuild docbuild failed:\n\n$(DOC_WARNINGS)" | tr '\1' '\n' \
 		&& exit 1)
 
-test-examples:
-	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Search SyncUps SpeechRecognition TicTacToe Todos VoiceMemos; do \
-		IgnoreFileSystemDeviceInodeChanges=1 xcodebuild test \
-			-skipMacroValidation \
-			-scheme "$$scheme" \
-			-destination platform="$(PLATFORM_IOS)" \
-			-derivedDataPath ~/.derivedData \
-			|| exit 1; \
-	done
+test-example:
+	IgnoreFileSystemDeviceInodeChanges=1 xcodebuild test \
+		-skipMacroValidation \
+		-scheme "$(SCHEME)" \
+		-destination platform="$(PLATFORM_IOS)" \
+		-derivedDataPath ~/.derivedData \
+		|| exit 1; 
 
 test-integration:
 	xcodebuild test \
