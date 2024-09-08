@@ -17,7 +17,7 @@ test-all: test-examples
 
 xcodebuild:
 	if test "$(PLATFORM)" = "iOS"; \
-		then xcodebuild $(COMMAND) \
+		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -25,7 +25,7 @@ xcodebuild:
 			-destination platform="$(PLATFORM_IOS)" \
 			-derivedDataPath ~/.derivedData; \
 		elif test "$(PLATFORM)" = "macOS"; \
-		then xcodebuild $(COMMAND) \
+		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -33,7 +33,7 @@ xcodebuild:
 			-destination platform="$(PLATFORM_MACOS)" \
 			-derivedDataPath ~/.derivedData; \
 		elif test "$(PLATFORM)" = "tvOS"; \
-		then xcodebuild $(COMMAND) \
+		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -41,7 +41,7 @@ xcodebuild:
 			-destination platform="$(PLATFORM_TVOS)" \
 			-derivedDataPath ~/.derivedData; \
 		elif test "$(PLATFORM)" = "watchOS"; \
-		then xcodebuild $(COMMAND) \
+		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -49,7 +49,7 @@ xcodebuild:
 			-destination platform="$(PLATFORM_WATCHOS)" \
 			-derivedDataPath ~/.derivedData; \
 		elif test "$(PLATFORM)" = "visionOS"; \
-		then xcodebuild $(COMMAND) \
+		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -57,7 +57,7 @@ xcodebuild:
 			-destination platform="$(PLATFORM_VISIONOS)" \
 			-derivedDataPath ~/.derivedData; \
 		elif test "$(PLATFORM)" = "macCatalyst"; \
-		then xcodebuild $(COMMAND) \
+		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -89,7 +89,7 @@ test-docs:
 
 test-examples:
 	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Search SyncUps SpeechRecognition TicTacToe Todos VoiceMemos; do \
-		xcodebuild test \
+		IgnoreFileSystemDeviceInodeChanges=1 xcodebuild test \
 			-skipMacroValidation \
 			-scheme "$$scheme" \
 			-destination platform="$(PLATFORM_IOS)" \
