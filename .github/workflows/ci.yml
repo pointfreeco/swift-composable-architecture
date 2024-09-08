@@ -63,6 +63,8 @@ jobs:
             deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-
       - name: Set IgnoreFileSystemDeviceInodeChanges flag 
         run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
+      - name: Update mtime for incremental builds 
+        uses: chetan/git-restore-mtime-action@v2
       - name: Debug
         run: make COMMAND="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" xcodebuild
       - name: Release
@@ -93,5 +95,7 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_15.4.app
       - name: Set IgnoreFileSystemDeviceInodeChanges flag 
         run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
+      - name: Update mtime for incremental builds 
+        uses: chetan/git-restore-mtime-action@v2
       - name: Run tests
         run: make test-examples
