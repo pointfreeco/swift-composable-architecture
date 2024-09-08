@@ -23,7 +23,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_IOS)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "macOS"; \
 		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
 			-skipMacroValidation \
@@ -31,7 +31,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MACOS)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "tvOS"; \
 		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
 			-skipMacroValidation \
@@ -39,7 +39,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_TVOS)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "watchOS"; \
 		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
 			-skipMacroValidation \
@@ -47,7 +47,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_WATCHOS)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "visionOS"; \
 		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
 			-skipMacroValidation \
@@ -55,7 +55,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_VISIONOS)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "macCatalyst"; \
 		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
 			-skipMacroValidation \
@@ -63,7 +63,7 @@ xcodebuild:
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MAC_CATALYST)" \
-			-derivedDataPath ~/.derivedData; \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		else exit 1; \
 		fi;	
 
