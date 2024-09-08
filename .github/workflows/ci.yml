@@ -61,6 +61,8 @@ jobs:
           key: deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-${{ hashFiles('**/Sources/**/*.swift', '**/Tests/**/*.swift') }}
           restore-keys: |
             deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-
+      - name: Set IgnoreFileSystemDeviceInodeChanges flag 
+        run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
       - name: Debug
         run: make COMMAND="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" xcodebuild
       - name: Release
@@ -81,13 +83,15 @@ jobs:
     name: Examples
     runs-on: macos-14
     steps:
+      - uses: actions/checkout@v4
       - name: Cache derived data
         uses: actions/cache@v3
         with:
           path: ~/.derivedData
           key: deriveddata-examples
-      - uses: actions/checkout@v4
       - name: Select Xcode 15.4
         run: sudo xcode-select -s /Applications/Xcode_15.4.app
+      - name: Set IgnoreFileSystemDeviceInodeChanges flag 
+        run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
       - name: Run tests
         run: make test-examples
