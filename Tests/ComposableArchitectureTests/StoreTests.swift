@@ -1088,6 +1088,7 @@ final class StoreTests: BaseTCATestCase {
     var body: some ReducerOf<Self> { EmptyReducer() }
   }
 
+#if !os(visionOS)
   @MainActor
   func testInvalidatedStoreScope() async throws {
     @Perception.Bindable var store = Store(
@@ -1107,6 +1108,7 @@ final class StoreTests: BaseTCATestCase {
     store.send(.child(.dismiss))
     grandchildStoreBinding.wrappedValue = nil
   }
+  #endif
 
   @MainActor
   func testSurroundingDependencies() {
