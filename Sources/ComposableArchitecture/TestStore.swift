@@ -1476,18 +1476,43 @@ extension TestStore where State: Equatable {
     line: UInt = #line,
     column: UInt = #column
   ) {
+    self._receive(
+      actionCase,
+      value,
+      equals: { $0 == $1 },
+      assert: updateStateToExpectedResult,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  private func _receive<Value>(
+    _ actionCase: AnyCasePath<Action, Value>,
+    _ value: Value,
+    equals: (Value, Value) -> Bool,
+    assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) {
     self.receiveAction(
-      matching: { actionCase.extract(from: $0) == value },
+      matching: {
+        guard let v = actionCase.extract(from: $0) else { return false }
+        return equals(v, value)
+      },
       failureMessage: "Expected to receive an action matching case path, but didn't get one.",
       unexpectedActionDescription: { receivedAction in
         var action = ""
         if actionCase.extract(from: receivedAction) != nil,
-          let difference = diff(actionCase.embed(value), receivedAction, format: .proportional)
+           let difference = diff(actionCase.embed(value), receivedAction, format: .proportional)
         {
           action.append(
             """
             \(difference.indent(by: 2))
-
+            
             (Expected: −, Actual: +)
             """
           )
@@ -1756,6 +1781,85 @@ extension TestStore where State: Equatable {
         self._receive(
           actionCase,
           value,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      }()
+      await Task.megaYield()
+    }
+  }
+
+  /// Asserts an action was received matching a case path with a specific payload, and asserts how
+  /// the state changes.
+  ///
+  /// This method is similar to ``receive(_:timeout:assert:fileID:file:line:column:)-53wic``, except
+  /// it allows you to assert on the value inside the action too.
+  ///
+  /// It can be useful when asserting on delegate actions sent by a child feature:
+  ///
+  /// ```swift
+  /// await store.receive(\.delegate.success, ("Hello!", 1), ==)
+  /// ```
+  ///
+  /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/off``, a grey
+  /// information box will show next to the `store.receive` line in Xcode letting you know what data
+  /// was in the effect that you chose not to assert on.
+  ///
+  /// - Parameters:
+  ///   - actionCase: A case path identifying the case of an action to enum to receive
+  ///   - value: The value to match in the action.
+  ///   - duration: The amount of time to wait for the expected action.
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action
+  ///     to the store. The mutable state sent to this closure must be modified to match the state
+  ///     of the store after processing the given action. Do not provide a closure if no change is
+  ///     expected.
+  @_disfavoredOverload
+  public func receive<Value>(
+    _ actionCase: CaseKeyPath<Action, Value>,
+    _ value: Value,
+    _ equals: (Value, Value) -> Bool,
+    timeout nanoseconds: UInt64? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) async
+  where Action: CasePathable {
+    let actionCase = AnyCasePath(actionCase)
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+      guard !self.reducer.inFlightEffects.isEmpty
+      else {
+        _ = {
+          self._receive(
+            actionCase,
+            value,
+            equals: equals,
+            assert: updateStateToExpectedResult,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+          )
+        }()
+        return
+      }
+      await self.receiveAction(
+        matching: { actionCase.extract(from: $0) != nil },
+        timeout: nanoseconds,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+      _ = {
+        self._receive(
+          actionCase,
+          value,
+          equals: equals,
           assert: updateStateToExpectedResult,
           fileID: fileID,
           filePath: filePath,
