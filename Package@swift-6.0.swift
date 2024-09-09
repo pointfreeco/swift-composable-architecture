@@ -87,8 +87,14 @@ let package = Package(
   swiftLanguageModes: [.v6]
 )
 
-for target in package.targets where target.type == .system || target.type == .test {
+for target in package.targets {
   target.swiftSettings = target.swiftSettings ?? []
+  target.swiftSettings?.append(contentsOf: [
+    .enableUpcomingFeature("ExistentialAny"),
+  ])
+}
+
+for target in package.targets where target.type == .system || target.type == .test {
   target.swiftSettings?.append(contentsOf: [
     .swiftLanguageMode(.v5),
     .enableExperimentalFeature("StrictConcurrency"),
