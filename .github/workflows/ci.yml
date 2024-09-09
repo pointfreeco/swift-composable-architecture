@@ -24,31 +24,19 @@ jobs:
         platform: [iOS, macOS, tvOS, watchOS, visionOS, macCatalyst]
         xcode: [15.2, 15.4, 16_beta_6]
         exclude: 
-          - xcode: 15.2
-            platform: tvOS
-          - xcode: 15.2
-            platform: watchOS
-          - xcode: 15.2
-            platform: visionOS
-          - xcode: 15.2
-            platform: macCatalyst
-          - xcode: 16_beta_6
-            platform: tvOS
-          - xcode: 16_beta_6
-            platform: watchOS
-          - xcode: 16_beta_6
-            platform: visionOS
-          - xcode: 16_beta_6
-            platform: macCatalyst
-          - xcode: 15.2
-            command: test
-          - xcode: 15.4
-            command: ''
-          - xcode: 16_beta_6
-            command: ''
+          - {xcode: 15.2, command: test}
+          - {xcode: 15.4, command: ''}
+          - {xcode: 15.2, platform: macCatalyst}
+          - {xcode: 15.2, platform: tvOS}
+          - {xcode: 15.2, platform: visionOS}
+          - {xcode: 15.2, platform: watchOS}
+          - {xcode: 16_beta_6, command: ''}
+          - {xcode: 16_beta_6, platform: macCatalyst}
+          - {xcode: 16_beta_6, platform: tvOS}
+          - {xcode: 16_beta_6, platform: visionOS}
+          - {xcode: 16_beta_6, platform: watchOS}
         include:
-          - xcode: 15.2
-            skip_release: 1
+          - {xcode: 15.2, skip_release: 1}
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
@@ -58,7 +46,8 @@ jobs:
         with:
           path: |
             ~/.derivedData
-          key: deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-${{ hashFiles('**/Sources/**/*.swift', '**/Tests/**/*.swift') }}
+          key: |
+            deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-${{ hashFiles('**/Sources/**/*.swift', '**/Tests/**/*.swift') }}
           restore-keys: |
             deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-
       - name: Set IgnoreFileSystemDeviceInodeChanges flag 
@@ -90,7 +79,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.derivedData
-          key: deriveddata-examples-${{ hashFiles('**/Sources/**/*.swift', '**/Tests/**/*.swift', '**/Examples/**/*.swift') }}
+          key: |
+            deriveddata-examples-${{ hashFiles('**/Sources/**/*.swift', '**/Tests/**/*.swift', '**/Examples/**/*.swift') }}
           restore-keys: |
             deriveddata-examples-
       - name: Select Xcode 15.4
