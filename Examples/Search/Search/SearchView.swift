@@ -31,10 +31,10 @@ struct Search {
   }
 
   enum Action {
-    case forecastResponse(GeocodingSearch.Result.ID, Result<Forecast, Error>)
+    case forecastResponse(GeocodingSearch.Result.ID, Result<Forecast, any Error>)
     case searchQueryChanged(String)
     case searchQueryChangeDebounced
-    case searchResponse(Result<GeocodingSearch, Error>)
+    case searchResponse(Result<GeocodingSearch, any Error>)
     case searchResultTapped(GeocodingSearch.Result)
   }
 

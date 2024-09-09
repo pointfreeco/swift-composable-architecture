@@ -17,7 +17,7 @@ struct RecordingMemo {
   }
 
   enum Action: Sendable {
-    case audioRecorderDidFinish(Result<Bool, Error>)
+    case audioRecorderDidFinish(Result<Bool, any Error>)
     case delegate(Delegate)
     case finalRecordingTime(TimeInterval)
     case onTask
@@ -26,7 +26,7 @@ struct RecordingMemo {
 
     @CasePathable
     enum Delegate: Sendable {
-      case didFinish(Result<State, Error>)
+      case didFinish(Result<State, any Error>)
     }
   }
 

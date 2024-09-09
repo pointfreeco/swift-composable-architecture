@@ -20,7 +20,7 @@ public struct TwoFactor: Sendable {
 
   public enum Action: Sendable, ViewAction {
     case alert(PresentationAction<Alert>)
-    case twoFactorResponse(Result<AuthenticationResponse, Error>)
+    case twoFactorResponse(Result<AuthenticationResponse, any Error>)
     case view(View)
 
     public enum Alert: Equatable, Sendable {}

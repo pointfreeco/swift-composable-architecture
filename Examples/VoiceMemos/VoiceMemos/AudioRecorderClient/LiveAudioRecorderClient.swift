@@ -37,7 +37,7 @@ private actor AudioRecorder {
   func start(url: URL) async throws -> Bool {
     self.stop()
 
-    let stream = AsyncThrowingStream<Bool, Error> { continuation in
+    let stream = AsyncThrowingStream<Bool, any Error> { continuation in
       do {
         self.delegate = Delegate(
           didFinishRecording: { flag in
@@ -83,11 +83,11 @@ private actor AudioRecorder {
 
 private final class Delegate: NSObject, AVAudioRecorderDelegate, Sendable {
   let didFinishRecording: @Sendable (Bool) -> Void
-  let encodeErrorDidOccur: @Sendable (Error?) -> Void
+  let encodeErrorDidOccur: @Sendable ((any Error)?) -> Void
 
   init(
     didFinishRecording: @escaping @Sendable (Bool) -> Void,
-    encodeErrorDidOccur: @escaping @Sendable (Error?) -> Void
+    encodeErrorDidOccur: @escaping @Sendable ((any Error)?) -> Void
   ) {
     self.didFinishRecording = didFinishRecording
     self.encodeErrorDidOccur = encodeErrorDidOccur
@@ -97,7 +97,7 @@ private final class Delegate: NSObject, AVAudioRecorderDelegate, Sendable {
     self.didFinishRecording(flag)
   }
 
-  func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
+  func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: (any Error)?) {
     self.encodeErrorDidOccur(error)
   }
 }

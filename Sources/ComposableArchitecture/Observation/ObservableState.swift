@@ -154,7 +154,7 @@
     guard !_isPOD(T.self) else { return false }
 
     func openCollection<C: Collection>(_ lhs: C, _ rhs: Any) -> Bool {
-      guard C.Element.self is ObservableState.Type else {
+      guard C.Element.self is any ObservableState.Type else {
         return false
       }
 

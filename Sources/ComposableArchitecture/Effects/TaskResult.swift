@@ -4,7 +4,7 @@
 ///
 /// This type is needed because Swift's concurrency tools can only express untyped errors, such as
 /// `async` functions and `AsyncSequence`, and so their output can realistically only be bridged to
-/// `Result<_, Error>`. However, `Result<_, Error>` is never `Equatable` since `Error` is not
+/// `Result<_, any Error>`. However, `Result<_, any Error>` is never `Equatable` since `Error` is not
 /// `Equatable`, and equatability is very important for testing in the Composable Architecture. By
 /// defining our own type we get the ability to recover equatability in most situations.
 ///
@@ -129,7 +129,7 @@ public enum TaskResult<Success: Sendable>: Sendable {
   case success(Success)
 
   /// A failure, storing an error.
-  case failure(Error)
+  case failure(any Error)
 
   /// Creates a new task result by evaluating an async throwing closure, capturing the returned
   /// value as a success, or any thrown error as a failure.
@@ -226,7 +226,7 @@ extension TaskResult: CasePathable {
       )
     }
 
-    public var failure: AnyCasePath<TaskResult, Error> {
+    public var failure: AnyCasePath<TaskResult, any Error> {
       AnyCasePath(
         embed: { .failure($0) },
         extract: {
@@ -238,7 +238,7 @@ extension TaskResult: CasePathable {
   }
 }
 
-extension Result where Success: Sendable, Failure == Error {
+extension Result where Success: Sendable, Failure == any Error {
   /// Transforms a `TaskResult` into a `Result`.
   ///
   /// - Parameter result: A task result.

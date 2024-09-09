@@ -32,7 +32,7 @@ struct EffectsBasics {
     case decrementDelayResponse
     case incrementButtonTapped
     case numberFactButtonTapped
-    case numberFactResponse(Result<String, Error>)
+    case numberFactResponse(Result<String, any Error>)
   }
 
   @Dependency(\.continuousClock) var clock

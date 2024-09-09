@@ -83,7 +83,7 @@ private struct TransactionPublisher<Upstream: Publisher>: Publisher {
       self.transaction = transaction
     }
 
-    func receive(subscription: Subscription) {
+    func receive(subscription: any Subscription) {
       self.downstream.receive(subscription: subscription)
     }
 

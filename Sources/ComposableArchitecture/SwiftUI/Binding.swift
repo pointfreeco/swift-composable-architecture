@@ -96,7 +96,7 @@ extension BindingState: Hashable where Value: Hashable {
 }
 
 extension BindingState: Decodable where Value: Decodable {
-  public init(from decoder: Decoder) throws {
+  public init(from decoder: any Decoder) throws {
     do {
       let container = try decoder.singleValueContainer()
       self.init(wrappedValue: try container.decode(Value.self))
@@ -107,7 +107,7 @@ extension BindingState: Decodable where Value: Decodable {
 }
 
 extension BindingState: Encodable where Value: Encodable {
-  public func encode(to encoder: Encoder) throws {
+  public func encode(to encoder: any Encoder) throws {
     do {
       var container = encoder.singleValueContainer()
       try container.encode(self.wrappedValue)
