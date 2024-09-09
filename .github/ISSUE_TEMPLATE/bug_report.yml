@@ -41,25 +41,25 @@ body:
     required: false
 - type: textarea
   attributes:
-    label: Steps to reproduce
+    label: Reproducing project
     description: |
-      Explanation of how to reproduce the incorrect behavior. 
-      
-      This could include an attached project or link to code that is exhibiting the issue, and/or a screen recording.
+      Provide a full SPM package or Xcode project that demonstrates the problem you are seeing. If you cannot reproduce the problem in a standalone project, then provide a detailed explanation of how to reproduce the incorrect behavior.
+
+      Note that without a project that reproduces the problem we are likely to close this issue and convert it to a discussion until more details are provided.
     placeholder: |
-      1. ...
+      Drag and drop a full SPM package or Xcode project into this text field that demonstrates the problem you are seeing.
   validations:
     required: false
 - type: input
   attributes:
     label: The Composable Architecture version information
     description: The version of the Composable Architecture used to reproduce this issue.
-    placeholder: "'0.38.0' for example, or a commit hash"
+    placeholder: "'1.14.0' for example, or a commit hash"
 - type: input
   attributes:
     label: Destination operating system
     description: The OS running your TCA application.
-    placeholder: "'iOS 15' for example"
+    placeholder: "'iOS 17' for example"
 - type: input
   attributes:
     label: Xcode version information
