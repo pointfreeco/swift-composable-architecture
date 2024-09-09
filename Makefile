@@ -92,14 +92,13 @@ test-example:
 		-skipMacroValidation \
 		-scheme "$(SCHEME)" \
 		-destination platform="$(PLATFORM_IOS)" \
-		-derivedDataPath ~/.derivedData \
-		|| exit 1; 
+		-derivedDataPath ~/.derivedData
 
 test-integration:
 	xcodebuild test \
 		-skipMacroValidation \
 		-scheme "Integration" \
-		-destination platform="$(PLATFORM_IOS)" || exit 1; 
+		-destination platform="$(PLATFORM_IOS)"
 
 benchmark:
 	swift run --configuration release \
