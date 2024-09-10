@@ -507,7 +507,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
             \.dismiss,
             DismissEffect { @MainActor in
               Task._cancel(
-                id: NavigationDismissID(elementID: StackElementID(generation: 0)),
+                id: NavigationDismissID(elementID: elementID),
                 navigationID: elementNavigationIDPath
               )
             }
