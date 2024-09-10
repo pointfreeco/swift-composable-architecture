@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - '*'
-      - 'improve-ci'
   workflow_dispatch:
 
 concurrency:
