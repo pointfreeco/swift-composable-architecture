@@ -77,8 +77,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-dependencies",
       "state" : {
-        "branch" : "testing-cache-key",
-        "revision" : "22a994c5430e59522e43004179db2db2103f14ac"
+        "branch" : "main",
+        "revision" : "0ef772da095101110ad23f9720d40faed8d28cb6"
       }
     },
     {
