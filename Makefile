@@ -17,7 +17,7 @@ test-all: test-examples
 
 xcodebuild:
 	if test "$(PLATFORM)" = "iOS"; \
-		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -25,7 +25,7 @@ xcodebuild:
 			-destination platform="$(PLATFORM_IOS)" \
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "macOS"; \
-		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -33,7 +33,7 @@ xcodebuild:
 			-destination platform="$(PLATFORM_MACOS)" \
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "tvOS"; \
-		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -41,7 +41,7 @@ xcodebuild:
 			-destination platform="$(PLATFORM_TVOS)" \
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "watchOS"; \
-		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -49,7 +49,7 @@ xcodebuild:
 			-destination platform="$(PLATFORM_WATCHOS)" \
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "visionOS"; \
-		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -57,7 +57,7 @@ xcodebuild:
 			-destination platform="$(PLATFORM_VISIONOS)" \
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "macCatalyst"; \
-		then IgnoreFileSystemDeviceInodeChanges=1 xcodebuild $(COMMAND) \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -88,7 +88,7 @@ test-docs:
 		&& exit 1)
 
 test-example:
-	IgnoreFileSystemDeviceInodeChanges=1 xcodebuild test \
+	xcodebuild test \
 		-skipMacroValidation \
 		-scheme "$(SCHEME)" \
 		-destination platform="$(PLATFORM_IOS)" \
