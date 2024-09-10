@@ -244,11 +244,18 @@ extension Task<Never, Never> {
   let discriminator: ObjectIdentifier
   let id: AnyHashable
   let navigationIDPath: NavigationIDPath
+  let testIdentifier: TestContext.Testing.Test.ID?
 
   init(id: some Hashable, navigationIDPath: NavigationIDPath) {
     self.discriminator = ObjectIdentifier(type(of: id))
     self.id = id
     self.navigationIDPath = navigationIDPath
+    switch TestContext.current {
+    case let .swiftTesting(.some(testing)):
+      self.testIdentifier = testing.test.id
+    default:
+      self.testIdentifier = nil
+    }
   }
 }
 
