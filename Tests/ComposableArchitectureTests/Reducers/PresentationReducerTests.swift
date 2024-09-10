@@ -2618,36 +2618,36 @@ final class PresentationReducerTests: BaseTCATestCase {
   }
 
   #if !os(visionOS)
-  @Reducer
-  struct TestEphemeralBindingDismissalFeature {
-    @ObservableState
-    struct State: Equatable {
-      @Presents var alert: AlertState<Never>?
-    }
-    enum Action: Equatable {
-      case alert(PresentationAction<Never>)
-    }
-    var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        return .none
+    @Reducer
+    struct TestEphemeralBindingDismissalFeature {
+      @ObservableState
+      struct State: Equatable {
+        @Presents var alert: AlertState<Never>?
       }
-      .ifLet(\.$alert, action: /Action.alert)
+      enum Action: Equatable {
+        case alert(PresentationAction<Never>)
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          return .none
+        }
+        .ifLet(\.$alert, action: /Action.alert)
+      }
     }
-  }
-  @MainActor
-  func testEphemeralBindingDismissal() async {
-    @Perception.Bindable var store = Store(
-      initialState: TestEphemeralBindingDismissalFeature.State(
-        alert: AlertState { TextState("Oops!") }
-      )
-    ) {
-      TestEphemeralBindingDismissalFeature()
-    }
+    @MainActor
+    func testEphemeralBindingDismissal() async {
+      @Perception.Bindable var store = Store(
+        initialState: TestEphemeralBindingDismissalFeature.State(
+          alert: AlertState { TextState("Oops!") }
+        )
+      ) {
+        TestEphemeralBindingDismissalFeature()
+      }
 
-    XCTAssertNotNil(store.alert)
-    $store.scope(state: \.alert, action: \.alert).wrappedValue = nil
-    XCTAssertNil(store.alert)
-  }
+      XCTAssertNotNil(store.alert)
+      $store.scope(state: \.alert, action: \.alert).wrappedValue = nil
+      XCTAssertNil(store.alert)
+    }
   #endif
 }
 
