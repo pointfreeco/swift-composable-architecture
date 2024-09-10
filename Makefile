@@ -1,4 +1,5 @@
 CONFIG = debug
+PLATFORM = iOS
 PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS 17.5,iPhone \d\+ Pro [^M])
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
@@ -14,25 +15,57 @@ test-all: test-examples
 	$(MAKE) CONFIG=debug test-library
 	$(MAKE) CONFIG=release test-library
 
-build-all-platforms:
-	for platform in "iOS" "macOS" "macOS,variant=Mac Catalyst" "tvOS" "visionOS" "watchOS"; do \
-		xcodebuild \
+xcodebuild:
+	if test "$(PLATFORM)" = "iOS"; \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
-			-destination generic/platform="$$platform" || exit 1; \
-	done;
-
-test-library:
-	for platform in "$(PLATFORM_IOS)" "$(PLATFORM_MACOS)"; do \
-		xcodebuild test \
+			-destination platform="$(PLATFORM_IOS)" \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		elif test "$(PLATFORM)" = "macOS"; \
+		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
-			-destination platform="$$platform" || exit 1; \
-	done;
+			-destination platform="$(PLATFORM_MACOS)" \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		elif test "$(PLATFORM)" = "tvOS"; \
+		then xcodebuild $(COMMAND) \
+			-skipMacroValidation \
+			-configuration $(CONFIG) \
+			-workspace .github/package.xcworkspace \
+			-scheme ComposableArchitecture \
+			-destination platform="$(PLATFORM_TVOS)" \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		elif test "$(PLATFORM)" = "watchOS"; \
+		then xcodebuild $(COMMAND) \
+			-skipMacroValidation \
+			-configuration $(CONFIG) \
+			-workspace .github/package.xcworkspace \
+			-scheme ComposableArchitecture \
+			-destination platform="$(PLATFORM_WATCHOS)" \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		elif test "$(PLATFORM)" = "visionOS"; \
+		then xcodebuild $(COMMAND) \
+			-skipMacroValidation \
+			-configuration $(CONFIG) \
+			-workspace .github/package.xcworkspace \
+			-scheme ComposableArchitecture \
+			-destination platform="$(PLATFORM_VISIONOS)" \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		elif test "$(PLATFORM)" = "macCatalyst"; \
+		then xcodebuild $(COMMAND) \
+			-skipMacroValidation \
+			-configuration $(CONFIG) \
+			-workspace .github/package.xcworkspace \
+			-scheme ComposableArchitecture \
+			-destination platform="$(PLATFORM_MAC_CATALYST)" \
+			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		else exit 1; \
+		fi;	
 
 build-for-library-evolution:
 	swift build \
@@ -54,19 +87,18 @@ test-docs:
 		|| (echo "xcodebuild docbuild failed:\n\n$(DOC_WARNINGS)" | tr '\1' '\n' \
 		&& exit 1)
 
-test-examples:
-	for scheme in "CaseStudies (SwiftUI)" "CaseStudies (UIKit)" Search SyncUps SpeechRecognition TicTacToe Todos VoiceMemos; do \
-		xcodebuild test \
-			-skipMacroValidation \
-			-scheme "$$scheme" \
-			-destination platform="$(PLATFORM_IOS)" || exit 1; \
-	done
+test-example:
+	xcodebuild test \
+		-skipMacroValidation \
+		-scheme "$(SCHEME)" \
+		-destination platform="$(PLATFORM_IOS)" \
+		-derivedDataPath ~/.derivedData
 
 test-integration:
 	xcodebuild test \
 		-skipMacroValidation \
 		-scheme "Integration" \
-		-destination platform="$(PLATFORM_IOS)" || exit 1; 
+		-destination platform="$(PLATFORM_IOS)"
 
 benchmark:
 	swift run --configuration release \

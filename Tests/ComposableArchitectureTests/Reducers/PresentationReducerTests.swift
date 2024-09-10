@@ -2617,6 +2617,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
+  #if !os(visionOS)
   @Reducer
   struct TestEphemeralBindingDismissalFeature {
     @ObservableState
@@ -2647,6 +2648,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     $store.scope(state: \.alert, action: \.alert).wrappedValue = nil
     XCTAssertNil(store.alert)
   }
+  #endif
 }
 
 @Reducer
