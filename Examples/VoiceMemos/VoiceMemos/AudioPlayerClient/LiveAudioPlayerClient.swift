@@ -3,7 +3,7 @@ import Dependencies
 
 extension AudioPlayerClient: DependencyKey {
   static let liveValue = Self { url in
-    let stream = AsyncThrowingStream<Bool, Error> { continuation in
+    let stream = AsyncThrowingStream<Bool, any Error> { continuation in
       do {
         let delegate = try Delegate(
           url: url,
@@ -48,7 +48,7 @@ private final class Delegate: NSObject, AVAudioPlayerDelegate, Sendable {
     self.didFinishPlaying(flag)
   }
 
-  func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+  func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: (any Error)?) {
     self.decodeErrorDidOccur(error)
   }
 }

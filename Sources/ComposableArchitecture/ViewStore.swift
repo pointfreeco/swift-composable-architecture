@@ -301,7 +301,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   }
   ///   enum Action {
   ///     case pulledToRefresh
-  ///     case receivedResponse(Result<String, Error>)
+  ///     case receivedResponse(Result<String, any Error>)
   ///   }
   ///   @Dependency(\.fetch) var fetch
   ///
@@ -403,7 +403,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     try? await withTaskCancellationHandler {
       try Task.checkCancellation()
       try await withUnsafeThrowingContinuation {
-        (continuation: UnsafeContinuation<Void, Error>) in
+        (continuation: UnsafeContinuation<Void, any Error>) in
         guard !Task.isCancelled else {
           continuation.resume(throwing: CancellationError())
           return

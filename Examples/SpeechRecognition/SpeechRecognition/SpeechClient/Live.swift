@@ -26,7 +26,7 @@ extension SpeechClient: DependencyKey {
 private actor Speech {
   var audioEngine: AVAudioEngine? = nil
   var recognitionTask: SFSpeechRecognitionTask? = nil
-  var recognitionContinuation: AsyncThrowingStream<SpeechRecognitionResult, Error>.Continuation?
+  var recognitionContinuation: AsyncThrowingStream<SpeechRecognitionResult, any Error>.Continuation?
 
   func finishTask() {
     self.audioEngine?.stop()
@@ -37,7 +37,7 @@ private actor Speech {
 
   func startTask(
     request: UncheckedSendable<SFSpeechAudioBufferRecognitionRequest>
-  ) -> AsyncThrowingStream<SpeechRecognitionResult, Error> {
+  ) -> AsyncThrowingStream<SpeechRecognitionResult, any Error> {
     let request = request.wrappedValue
 
     return AsyncThrowingStream { continuation in

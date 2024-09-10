@@ -560,7 +560,7 @@ final class StoreTests: BaseTCATestCase {
   @available(*, deprecated)
   @MainActor
   func testScopeCancellation() async throws {
-    let neverEndingTask = Task<Void, Error> { try await Task.never() }
+    let neverEndingTask = Task<Void, any Error> { try await Task.never() }
 
     let store = Store(initialState: ()) {
       Reduce<Void, Void> { _, _ in

@@ -166,7 +166,7 @@ func debugCaseOutput(
     }
   }
 
-  return (value as? CustomDebugStringConvertible)?.debugDescription
+  return (value as? any CustomDebugStringConvertible)?.debugDescription
     ?? "\(abbreviated ? "" : typeName(type(of: value)))\(debugCaseOutputHelp(value))"
 }
 

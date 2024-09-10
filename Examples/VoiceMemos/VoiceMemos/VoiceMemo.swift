@@ -22,7 +22,7 @@ struct VoiceMemo {
   }
 
   enum Action {
-    case audioPlayerClient(Result<Bool, Error>)
+    case audioPlayerClient(Result<Bool, any Error>)
     case delegate(Delegate)
     case playButtonTapped
     case timerUpdated(TimeInterval)

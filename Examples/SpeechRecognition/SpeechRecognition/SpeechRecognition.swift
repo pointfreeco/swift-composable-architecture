@@ -20,7 +20,7 @@ struct SpeechRecognition {
   enum Action {
     case alert(PresentationAction<Alert>)
     case recordButtonTapped
-    case speech(Result<String, Error>)
+    case speech(Result<String, any Error>)
     case speechRecognizerAuthorizationStatusResponse(SFSpeechRecognizerAuthorizationStatus)
 
     enum Alert: Equatable {}

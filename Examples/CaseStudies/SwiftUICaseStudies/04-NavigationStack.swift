@@ -190,7 +190,7 @@ struct ScreenA {
     case dismissButtonTapped
     case incrementButtonTapped
     case factButtonTapped
-    case factResponse(Result<String, Error>)
+    case factResponse(Result<String, any Error>)
   }
 
   @Dependency(\.dismiss) var dismiss

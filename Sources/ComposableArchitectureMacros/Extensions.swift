@@ -136,7 +136,7 @@ extension TypeSyntax {
         genericParameters[parameter.name.text] = parameter.inheritedType
       }
     }
-    var iterator = self.asProtocol(TypeSyntaxProtocol.self).tokens(viewMode: .sourceAccurate)
+    var iterator = self.asProtocol((any TypeSyntaxProtocol).self).tokens(viewMode: .sourceAccurate)
       .makeIterator()
     guard let base = iterator.next() else {
       return nil

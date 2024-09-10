@@ -28,7 +28,7 @@ struct FavoritingState<ID: Hashable & Sendable>: Equatable {
 enum FavoritingAction {
   case alert(PresentationAction<Alert>)
   case buttonTapped
-  case response(Result<Bool, Error>)
+  case response(Result<Bool, any Error>)
 
   enum Alert: Equatable {}
 }

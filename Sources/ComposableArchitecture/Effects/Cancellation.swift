@@ -172,7 +172,7 @@ extension Effect {
   ) async rethrows -> T {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
-    let (cancellable, task): (AnyCancellable, Task<T, Error>) =
+    let (cancellable, task): (AnyCancellable, Task<T, any Error>) =
       _cancellationCancellables
       .withValue {
         if cancelInFlight {
@@ -191,7 +191,7 @@ extension Effect {
     do {
       return try await task.cancellableValue
     } catch {
-      return try Result<T, Error>.failure(error)._rethrowGet()
+      return try Result<T, any Error>.failure(error)._rethrowGet()
     }
   }
 #else
@@ -203,7 +203,7 @@ extension Effect {
   ) async rethrows -> T {
     @Dependency(\.navigationIDPath) var navigationIDPath
 
-    let (cancellable, task): (AnyCancellable, Task<T, Error>) =
+    let (cancellable, task): (AnyCancellable, Task<T, any Error>) =
       _cancellationCancellables
       .withValue {
         if cancelInFlight {
@@ -222,7 +222,7 @@ extension Effect {
     do {
       return try await task.cancellableValue
     } catch {
-      return try Result<T, Error>.failure(error)._rethrowGet()
+      return try Result<T, any Error>.failure(error)._rethrowGet()
     }
   }
 #endif

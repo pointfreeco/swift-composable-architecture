@@ -14,7 +14,7 @@ struct DownloadComponent {
   enum Action {
     case alert(PresentationAction<Alert>)
     case buttonTapped
-    case downloadClient(Result<DownloadClient.Event, Error>)
+    case downloadClient(Result<DownloadClient.Event, any Error>)
 
     @CasePathable
     enum Alert {

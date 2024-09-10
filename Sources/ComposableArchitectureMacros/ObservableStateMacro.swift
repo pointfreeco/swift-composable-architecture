@@ -230,7 +230,7 @@ extension ObservableStateMacro: MemberMacro {
       return try enumExpansion(of: node, providingMembersOf: declaration, in: context)
     }
 
-    guard let identified = declaration.asProtocol(NamedDeclSyntax.self) else {
+    guard let identified = declaration.asProtocol((any NamedDeclSyntax).self) else {
       return []
     }
 
