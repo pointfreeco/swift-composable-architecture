@@ -25,7 +25,7 @@ struct EffectsCancellation {
     case cancelButtonTapped
     case stepperChanged(Int)
     case factButtonTapped
-    case factResponse(Result<String, Error>)
+    case factResponse(Result<String, any Error>)
   }
 
   @Dependency(\.factClient) var factClient

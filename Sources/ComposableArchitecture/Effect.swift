@@ -83,7 +83,7 @@ extension Effect {
   public static func run(
     priority: TaskPriority? = nil,
     operation: @escaping @Sendable (_ send: Send<Action>) async throws -> Void,
-    catch handler: (@Sendable (_ error: Error, _ send: Send<Action>) async -> Void)? = nil,
+    catch handler: (@Sendable (_ error: any Error, _ send: Send<Action>) async -> Void)? = nil,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,

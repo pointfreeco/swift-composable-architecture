@@ -416,7 +416,7 @@ public final class Store<State, Action> {
           }
       }
 
-      if let stateType = State.self as? ObservableState.Type {
+      if let stateType = State.self as? any ObservableState.Type {
         self.parentCancellable = subscribeToDidSet(stateType)
       }
     #endif

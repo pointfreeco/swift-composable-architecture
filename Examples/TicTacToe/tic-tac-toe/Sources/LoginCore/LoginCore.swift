@@ -19,7 +19,7 @@ public struct Login: Sendable {
 
   public enum Action: Sendable, ViewAction {
     case alert(PresentationAction<Alert>)
-    case loginResponse(Result<AuthenticationResponse, Error>)
+    case loginResponse(Result<AuthenticationResponse, any Error>)
     case twoFactor(PresentationAction<TwoFactor.Action>)
     case view(View)
 

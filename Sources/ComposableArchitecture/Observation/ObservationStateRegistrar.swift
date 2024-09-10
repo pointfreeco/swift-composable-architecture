@@ -16,8 +16,8 @@
   extension ObservationStateRegistrar: Equatable, Hashable, Codable {
     public static func == (_: Self, _: Self) -> Bool { true }
     public func hash(into hasher: inout Hasher) {}
-    public init(from decoder: Decoder) throws { self.init() }
-    public func encode(to encoder: Encoder) throws {}
+    public init(from decoder: any Decoder) throws { self.init() }
+    public func encode(to encoder: any Encoder) throws {}
   }
 
   #if canImport(Observation)

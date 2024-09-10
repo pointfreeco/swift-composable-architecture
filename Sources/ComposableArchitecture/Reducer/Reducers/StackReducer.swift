@@ -210,14 +210,14 @@ extension StackState: Hashable where Element: Hashable {
 extension StackState: Sendable where Element: Sendable {}
 
 extension StackState: Decodable where Element: Decodable {
-  public init(from decoder: Decoder) throws {
+  public init(from decoder: any Decoder) throws {
     let elements = try [Element](from: decoder)
     self.init(elements)
   }
 }
 
 extension StackState: Encodable where Element: Encodable {
-  public func encode(to encoder: Encoder) throws {
+  public func encode(to encoder: any Encoder) throws {
     try [Element](self).encode(to: encoder)
   }
 }

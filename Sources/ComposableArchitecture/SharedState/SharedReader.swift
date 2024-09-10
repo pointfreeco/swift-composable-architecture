@@ -166,7 +166,7 @@ extension SharedReader: Identifiable where Value: Identifiable {
 }
 
 extension SharedReader: Encodable where Value: Encodable {
-  public func encode(to encoder: Encoder) throws {
+  public func encode(to encoder: any Encoder) throws {
     do {
       var container = encoder.singleValueContainer()
       try container.encode(self.wrappedValue)

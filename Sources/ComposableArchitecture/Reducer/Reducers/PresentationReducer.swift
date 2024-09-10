@@ -202,7 +202,7 @@ extension PresentationState: Hashable where State: Hashable {
 extension PresentationState: Sendable where State: Sendable {}
 
 extension PresentationState: Decodable where State: Decodable {
-  public init(from decoder: Decoder) throws {
+  public init(from decoder: any Decoder) throws {
     do {
       self.init(wrappedValue: try decoder.singleValueContainer().decode(State.self))
     } catch {
@@ -212,7 +212,7 @@ extension PresentationState: Decodable where State: Decodable {
 }
 
 extension PresentationState: Encodable where State: Encodable {
-  public func encode(to encoder: Encoder) throws {
+  public func encode(to encoder: any Encoder) throws {
     do {
       var container = encoder.singleValueContainer()
       try container.encode(self.wrappedValue)

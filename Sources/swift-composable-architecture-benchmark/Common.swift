@@ -15,7 +15,7 @@ extension BenchmarkSuite {
 
 struct Benchmarking: AnyBenchmark {
   let name: String
-  let settings: [BenchmarkSetting] = []
+  let settings: [any BenchmarkSetting] = []
   private let _run: () throws -> Void
   private let _setUp: () -> Void
   private let _tearDown: () -> Void

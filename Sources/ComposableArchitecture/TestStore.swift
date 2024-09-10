@@ -131,7 +131,7 @@ import IssueReporting
 ///
 ///   enum Action {
 ///     case queryChanged(String)
-///     case searchResponse(Result<[String], Error>)
+///     case searchResponse(Result<[String], any Error>)
 ///   }
 ///
 ///   @Dependency(\.apiClient) var apiClient

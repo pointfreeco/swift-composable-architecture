@@ -24,7 +24,7 @@ struct SharedStateNotifications {
     @SharedReader(.screenshotCount) var screenshotCount = 0
   }
   enum Action {
-    case factResponse(Result<String, Error>)
+    case factResponse(Result<String, any Error>)
     case onAppear
   }
   @Dependency(\.factClient) var factClient

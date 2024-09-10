@@ -137,11 +137,11 @@ private actor Speech {
   private var audioEngine: AVAudioEngine? = nil
   private var recognitionTask: SFSpeechRecognitionTask? = nil
   private var recognitionContinuation:
-    AsyncThrowingStream<SpeechRecognitionResult, Error>.Continuation?
+    AsyncThrowingStream<SpeechRecognitionResult, any Error>.Continuation?
 
   func startTask(
     request: SFSpeechAudioBufferRecognitionRequest
-  ) -> AsyncThrowingStream<SpeechRecognitionResult, Error> {
+  ) -> AsyncThrowingStream<SpeechRecognitionResult, any Error> {
     AsyncThrowingStream { continuation in
       self.recognitionContinuation = continuation
       let audioSession = AVAudioSession.sharedInstance()

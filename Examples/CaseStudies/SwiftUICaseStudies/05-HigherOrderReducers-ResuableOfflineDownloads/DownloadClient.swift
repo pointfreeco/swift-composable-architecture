@@ -3,7 +3,8 @@ import Foundation
 
 @DependencyClient
 struct DownloadClient {
-  var download: @Sendable (_ url: URL) -> AsyncThrowingStream<Event, Error> = { _ in .finished() }
+  var download: @Sendable (_ url: URL) -> AsyncThrowingStream<Event, any Error> = { _ in .finished()
+  }
 
   @CasePathable
   enum Event: Equatable {

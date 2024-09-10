@@ -23,7 +23,7 @@ struct Refreshable {
   enum Action {
     case cancelButtonTapped
     case decrementButtonTapped
-    case factResponse(Result<String, Error>)
+    case factResponse(Result<String, any Error>)
     case incrementButtonTapped
     case refresh
   }
