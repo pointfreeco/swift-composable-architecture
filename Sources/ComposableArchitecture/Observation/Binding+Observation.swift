@@ -59,7 +59,7 @@
 
   extension BindingAction {
     public static func set<Value: Equatable & Sendable>(
-      _ keyPath: any _WritableKeyPath<Root, Value>,
+      _ keyPath: _WritableKeyPath<Root, Value>,
       _ value: Value
     ) -> Self where Root: ObservableState {
       .init(
@@ -117,7 +117,7 @@
 
   extension BindableAction where State: ObservableState {
     fileprivate static func set<Value: Equatable & Sendable>(
-      _ keyPath: any _WritableKeyPath<State, Value>,
+      _ keyPath: _WritableKeyPath<State, Value>,
       _ value: Value,
       isInvalidated: (@MainActor @Sendable () -> Bool)?
     ) -> Self {
@@ -151,7 +151,7 @@
     }
 
     public static func set<Value: Equatable & Sendable>(
-      _ keyPath: any _WritableKeyPath<State, Value>,
+      _ keyPath: _WritableKeyPath<State, Value>,
       _ value: Value
     ) -> Self {
       self.set(keyPath, value, isInvalidated: nil)
@@ -160,7 +160,7 @@
 
   extension Store where State: ObservableState, Action: BindableAction, Action.State == State {
     public subscript<Value: Equatable & Sendable>(
-      dynamicMember keyPath: any _WritableKeyPath<State, Value>
+      dynamicMember keyPath: _WritableKeyPath<State, Value>
     ) -> Value {
       get { self.state[keyPath: keyPath] }
       set {
@@ -196,7 +196,7 @@
     Action.ViewAction.State == State
   {
     public subscript<Value: Equatable & Sendable>(
-      dynamicMember keyPath: any _WritableKeyPath<State, Value>
+      dynamicMember keyPath: _WritableKeyPath<State, Value>
     ) -> Value {
       get { self.state[keyPath: keyPath] }
       set {

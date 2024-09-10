@@ -14,9 +14,9 @@ import IssueReporting
 @propertyWrapper
 public struct Shared<Value: Sendable>: Sendable {
   private let reference: any Reference
-  private let keyPath: any _AnyKeyPath
+  private let keyPath: _AnyKeyPath
 
-  init(reference: any Reference, keyPath: any _AnyKeyPath) {
+  init(reference: any Reference, keyPath: _AnyKeyPath) {
     self.reference = reference
     self.keyPath = keyPath
   }
@@ -67,7 +67,7 @@ public struct Shared<Value: Sendable>: Sendable {
       keyPath: unsafeBitCast(
         (base.keyPath as AnyKeyPath)
           .appending(path: \Value?.[default:DefaultSubscript(initialValue)])!,
-        to: (any _AnyKeyPath).self
+        to: _AnyKeyPath.self
       )
     )
   }
@@ -182,7 +182,7 @@ public struct Shared<Value: Sendable>: Sendable {
       //     https://github.com/swiftlang/swift/issues/75531
       keyPath: unsafeBitCast(
         (self.keyPath as AnyKeyPath).appending(path: keyPath)!,
-        to: (any _AnyKeyPath).self
+        to: _AnyKeyPath.self
       )
     )
   }
@@ -465,7 +465,7 @@ extension Shared {
       //     https://github.com/swiftlang/swift/issues/75531
       keyPath: unsafeBitCast(
         (self.keyPath as AnyKeyPath).appending(path: keyPath)!,
-        to: (any _AnyKeyPath).self
+        to: _AnyKeyPath.self
       )
     )
   }
