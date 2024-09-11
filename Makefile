@@ -15,6 +15,7 @@ XCODEBUILD = xcodebuild $(COMMAND) \
 			-quiet \
 			-configuration $(CONFIG) \
 			-scheme $(SCHEME) \
+			-workspace ComposableArchitecture.xcworkspace \
 			-derivedDataPath ~/.derivedData/$(CONFIG) \
 			-testPlan $(TEST_PLAN)
 
