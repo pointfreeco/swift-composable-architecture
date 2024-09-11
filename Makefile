@@ -20,6 +20,7 @@ xcodebuild:
 	if test "$(PLATFORM)" = "iOS"; \
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
+			-quiet \
 			-configuration $(CONFIG) \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_IOS)" \
@@ -27,6 +28,7 @@ xcodebuild:
 		elif test "$(PLATFORM)" = "macOS"; \
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
+			-quiet \
 			-configuration $(CONFIG) \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MACOS)" \
@@ -34,6 +36,7 @@ xcodebuild:
 		elif test "$(PLATFORM)" = "tvOS"; \
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
+			-quiet \
 			-configuration $(CONFIG) \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_TVOS)" \
@@ -41,6 +44,7 @@ xcodebuild:
 		elif test "$(PLATFORM)" = "watchOS"; \
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
+			-quiet \
 			-configuration $(CONFIG) \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_WATCHOS)" \
@@ -48,6 +52,7 @@ xcodebuild:
 		elif test "$(PLATFORM)" = "visionOS"; \
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
+			-quiet \
 			-configuration $(CONFIG) \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_VISIONOS)" \
@@ -55,6 +60,7 @@ xcodebuild:
 		elif test "$(PLATFORM)" = "macCatalyst"; \
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
+			-quiet \
 			-configuration $(CONFIG) \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MAC_CATALYST)" \
@@ -93,6 +99,7 @@ xcodebuild-example:
 test-integration:
 	xcodebuild test \
 		-skipMacroValidation \
+		-quiet \
 		-scheme "Integration" \
 		-destination platform="$(PLATFORM_IOS)"
 
