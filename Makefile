@@ -66,16 +66,6 @@ test-docs:
 		|| (echo "xcodebuild docbuild failed:\n\n$(DOC_WARNINGS)" | tr '\1' '\n' \
 		&& exit 1)
 
-xcodebuild-example:
-	xcodebuild $(COMMAND) \
-		-skipMacroValidation \
-		-quiet \
-		-configuration $(CONFIG) \
-		-scheme "$(SCHEME)" \
-		-destination platform="$(PLATFORM_IOS)" \
-		-derivedDataPath ~/.derivedData/"$(SCHEME)" \
-		-testPlan $(TEST_PLAN);
-
 test-integration:
 	xcodebuild test \
 		-skipMacroValidation \
