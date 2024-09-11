@@ -394,6 +394,9 @@
          <TestPlanReference
             reference = "container:Examples/SpeechRecognition.xctestplan">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Examples/ComposableArchitecture.xctestplan">
+         </TestPlanReference>
       </TestPlans>
    </TestAction>
    <LaunchAction

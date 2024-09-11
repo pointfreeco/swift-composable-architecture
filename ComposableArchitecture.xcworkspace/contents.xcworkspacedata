@@ -8,6 +8,9 @@
       location = "group:Examples/VoiceMemos.xctestplan">
    </FileRef>
    <FileRef
+      location = "group:Examples/ComposableArchitecture.xctestplan">
+   </FileRef>
+   <FileRef
       location = "group:Examples/SpeechRecognition.xctestplan">
    </FileRef>
    <FileRef

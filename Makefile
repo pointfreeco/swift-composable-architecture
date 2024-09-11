@@ -1,12 +1,12 @@
 COMMAND = 
 CONFIG = debug
 PLATFORM = iOS
-PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS 17.5,iPhone \d\+ Pro [^M])
+PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS,iPhone \d\+ Pro [^M])
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
-PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS 17.5,TV)
-PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS 1.2,Vision)
-PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS 10.5,Watch)
+PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS,TV)
+PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS,Vision)
+PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS,Watch)
 
 TEST_RUNNER_CI = $(CI)
 
@@ -91,6 +91,8 @@ test-docs:
 xcodebuild-example:
 	xcodebuild $(COMMAND) \
 		-skipMacroValidation \
+		-quiet \
+		-configuration $(CONFIG) \
 		-scheme "$(SCHEME)" \
 		-destination platform="$(PLATFORM_IOS)" \
 		-derivedDataPath ~/.derivedData/"$(SCHEME)" \

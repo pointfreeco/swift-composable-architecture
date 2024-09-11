@@ -1,0 +1,31 @@
+{
+  "configurations" : [
+    {
+      "id" : "76960491-A7C8-45E5-9007-E9317BA42F45",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "ComposableArchitectureMacrosTests",
+        "name" : "ComposableArchitectureMacrosTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "ComposableArchitectureTests",
+        "name" : "ComposableArchitectureTests"
+      }
+    }
+  ],
+  "version" : 1
+}
