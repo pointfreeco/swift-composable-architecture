@@ -48,7 +48,32 @@ xcodebuild:
 		fi;	
 
 xcodebuild-test:
-	$(MAKE) xcodebuild -testPlan "$(TEST_PLAN)"
+	if test "$(PLATFORM)" = "iOS"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
+			-destination platform="$(PLATFORM_IOS)"; \
+		elif test "$(PLATFORM)" = "macOS"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
+			-destination platform="$(PLATFORM_MACOS)"; \
+		elif test "$(PLATFORM)" = "tvOS"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
+			-destination platform="$(PLATFORM_TVOS)"; \
+		elif test "$(PLATFORM)" = "watchOS"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
+			-destination platform="$(PLATFORM_WATCHOS)"; \
+		elif test "$(PLATFORM)" = "visionOS"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
+			-destination platform="$(PLATFORM_VISIONOS)"; \
+		elif test "$(PLATFORM)" = "macCatalyst"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
+			-destination platform="$(PLATFORM_MAC_CATALYST)"; \
+		else exit 1; \
+		fi;	
 
 build-for-library-evolution:
 	swift build \
