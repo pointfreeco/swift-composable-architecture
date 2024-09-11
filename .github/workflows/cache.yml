@@ -37,34 +37,34 @@ jobs:
         uses: chetan/git-restore-mtime-action@v2
 
       - name: Build iOS (Debug)
-        run: make CONFIG=Debug PLATFORM=iOS xcodebuild
+        run: make CONFIG=Debug PLATFORM=iOS TEST_PLAN=ComposableArchitecture xcodebuild
       - name: Build iOS (Release)
-        run: make CONFIG=Release PLATFORM=iOS xcodebuild
+        run: make CONFIG=Release PLATFORM=iOS TEST_PLAN=ComposableArchitecture xcodebuild
 
       - name: Build macOS (Debug)
-        run: make CONFIG=Debug PLATFORM=macOS xcodebuild
+        run: make CONFIG=Debug PLATFORM=macOS TEST_PLAN=ComposableArchitecture xcodebuild
       - name: Build macOS (Release)
-        run: make CONFIG=Release PLATFORM=macOS xcodebuild
+        run: make CONFIG=Release PLATFORM=macOS TEST_PLAN=ComposableArchitecture xcodebuild
 
       - name: Build macCatalyst (Debug)
-        run: make CONFIG=Debug PLATFORM=macCatalyst xcodebuild
+        run: make CONFIG=Debug PLATFORM=macCatalyst TEST_PLAN=ComposableArchitecture xcodebuild
       - name: Build macCatalyst (Release)
-        run: make CONFIG=Release PLATFORM=macCatalyst xcodebuild
+        run: make CONFIG=Release PLATFORM=macCatalyst TEST_PLAN=ComposableArchitecture xcodebuild
 
       - name: Build watchOS (Debug)
-        run: make CONFIG=Debug PLATFORM=watchOS xcodebuild
+        run: make CONFIG=Debug PLATFORM=watchOS TEST_PLAN=ComposableArchitecture xcodebuild
       - name: Build watchOS (Release)
-        run: make CONFIG=Release PLATFORM=watchOS xcodebuild
+        run: make CONFIG=Release PLATFORM=watchOS TEST_PLAN=ComposableArchitecture xcodebuild
 
       - name: Build tvOS (Debug)
-        run: make CONFIG=Debug PLATFORM=tvOS xcodebuild
+        run: make CONFIG=Debug PLATFORM=tvOS TEST_PLAN=ComposableArchitecture xcodebuild
       - name: Build tvOS (Release)
-        run: make CONFIG=Release PLATFORM=tvOS xcodebuild
+        run: make CONFIG=Release PLATFORM=tvOS TEST_PLAN=ComposableArchitecture xcodebuild
 
       - name: Build visionOS (Debug)
-        run: make CONFIG=Debug PLATFORM=visionOS xcodebuild
+        run: make CONFIG=Debug PLATFORM=visionOS TEST_PLAN=ComposableArchitecture xcodebuild
       - name: Build visionOS (Release)
-        run: make CONFIG=Release PLATFORM=visionOS xcodebuild
+        run: make CONFIG=Release PLATFORM=visionOS TEST_PLAN=ComposableArchitecture xcodebuild
 
       - name: Build Todos
         run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=Todos xcodebuild
