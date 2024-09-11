@@ -17,7 +17,8 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
-        xcode: 
+        config: [Debug, Release]
+        xcode:
           #- 15.2
           - 15.4
           #- 16_beta_6
@@ -31,68 +32,32 @@ jobs:
           path: |
             ~/.derivedData
           key: |
-            deriveddata-xcodebuild-${{ matrix.xcode }}-${{ hashFiles('**/*.swift') }}
+            deriveddata-xcodebuild-${{ matrix.xcode }}-${{ matrix.config }}-${{ hashFiles('**/*.swift') }}
           restore-keys: |
-            deriveddata-xcodebuild-${{ matrix.xcode }}-
+            deriveddata-xcodebuild-${{ matrix.xcode }}-${{ matrix.config }}-
       - name: Set IgnoreFileSystemDeviceInodeChanges flag 
         run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
       - name: Update mtime for incremental builds 
         uses: chetan/git-restore-mtime-action@v2
 
-      - name: Build iOS (Debug)
-        run: make CONFIG=Debug PLATFORM=iOS TEST_PLAN=ComposableArchitecture xcodebuild
-      - name: Build iOS (Release)
-        run: make CONFIG=Release PLATFORM=iOS TEST_PLAN=ComposableArchitecture xcodebuild
+      - name: Build iOS (${{ matrix.config }})
+        run: make CONFIG=${{ matrix.config }} PLATFORM=iOS xcodebuild
 
-      - name: Build macOS (Debug)
-        run: make CONFIG=Debug PLATFORM=macOS TEST_PLAN=ComposableArchitecture xcodebuild
-      - name: Build macOS (Release)
-        run: make CONFIG=Release PLATFORM=macOS TEST_PLAN=ComposableArchitecture xcodebuild
+      - name: Build macOS (${{ matrix.config }})
+        run: make CONFIG=${{ matrix.config }} PLATFORM=macOS xcodebuild
 
-      - name: Build macCatalyst (Debug)
-        run: make CONFIG=Debug PLATFORM=macCatalyst TEST_PLAN=ComposableArchitecture xcodebuild
-      - name: Build macCatalyst (Release)
-        run: make CONFIG=Release PLATFORM=macCatalyst TEST_PLAN=ComposableArchitecture xcodebuild
+      - name: Build macCatalyst (${{ matrix.config }})
+        run: make CONFIG=${{ matrix.config }} PLATFORM=macCatalyst xcodebuild
 
-      - name: Build watchOS (Debug)
-        run: make CONFIG=Debug PLATFORM=watchOS TEST_PLAN=ComposableArchitecture xcodebuild
-      - name: Build watchOS (Release)
-        run: make CONFIG=Release PLATFORM=watchOS TEST_PLAN=ComposableArchitecture xcodebuild
+      - name: Build watchOS (${{ matrix.config }})
+        run: make CONFIG=${{ matrix.config }} PLATFORM=watchOS xcodebuild
 
-      - name: Build tvOS (Debug)
-        run: make CONFIG=Debug PLATFORM=tvOS TEST_PLAN=ComposableArchitecture xcodebuild
-      - name: Build tvOS (Release)
-        run: make CONFIG=Release PLATFORM=tvOS TEST_PLAN=ComposableArchitecture xcodebuild
+      - name: Build tvOS (${{ matrix.config }})
+        run: make CONFIG=${{ matrix.config }} PLATFORM=tvOS xcodebuild
 
-      - name: Build visionOS (Debug)
-        run: make CONFIG=Debug PLATFORM=visionOS TEST_PLAN=ComposableArchitecture xcodebuild
-      - name: Build visionOS (Release)
-        run: make CONFIG=Release PLATFORM=visionOS TEST_PLAN=ComposableArchitecture xcodebuild
+      - name: Build visionOS (${{ matrix.config }})
+        run: make CONFIG=${{ matrix.config }} PLATFORM=visionOS xcodebuild
 
-      - name: Build Todos
-        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=Todos xcodebuild
-
-      - name: Build SpeechRecognition
-        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=SpeechRecognition xcodebuild
-
-      - name: Build Search
-        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=Search xcodebuild
-
-      - name: Build SyncUps
-        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=SyncUps xcodebuild
-
-      - name: Build VoiceMemos
-        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=VoiceMemos xcodebuild
-
-
-
-
-
-
-
-
-
-
-
-
-
+      - name: Build examples
+        if: matrix.config == 'Debug'
+        run: make CONFIG=Debug SCHEME=GitHub xcodebuild

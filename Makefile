@@ -9,15 +9,15 @@ PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS,Vision)
 PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS,Watch)
 SCHEME = ComposableArchitecture
 TEST_RUNNER_CI = $(CI)
+WORKSPACE = ComposableArchitecture.xcworkspace
 
 XCODEBUILD = xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-quiet \
 			-configuration "$(CONFIG)" \
 			-scheme "$(SCHEME)" \
-			-workspace ComposableArchitecture.xcworkspace \
-			-derivedDataPath ~/.derivedData/$(CONFIG) \
-			-testPlan "$(TEST_PLAN)"
+			-workspace "$(WORKSPACE)" \
+			-derivedDataPath ~/.derivedData/$(CONFIG)
 
 default: test-all
 
@@ -43,6 +43,34 @@ xcodebuild:
 			-destination platform="$(PLATFORM_VISIONOS)"; \
 		elif test "$(PLATFORM)" = "macCatalyst"; \
 		then $(XCODEBUILD) \
+			-destination platform="$(PLATFORM_MAC_CATALYST)"; \
+		else exit 1; \
+		fi;	
+
+xcodebuild-test:
+	if test "$(PLATFORM)" = "iOS"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
+			-destination platform="$(PLATFORM_IOS)"; \
+		elif test "$(PLATFORM)" = "macOS"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
+			-destination platform="$(PLATFORM_MACOS)"; \
+		elif test "$(PLATFORM)" = "tvOS"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
+			-destination platform="$(PLATFORM_TVOS)"; \
+		elif test "$(PLATFORM)" = "watchOS"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
+			-destination platform="$(PLATFORM_WATCHOS)"; \
+		elif test "$(PLATFORM)" = "visionOS"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
+			-destination platform="$(PLATFORM_VISIONOS)"; \
+		elif test "$(PLATFORM)" = "macCatalyst"; \
+		then $(XCODEBUILD) \
+			-testPlan "$(TEST_PLAN)" \
 			-destination platform="$(PLATFORM_MAC_CATALYST)"; \
 		else exit 1; \
 		fi;	
