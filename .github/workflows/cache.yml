@@ -67,19 +67,19 @@ jobs:
         run: make CONFIG=Release PLATFORM=visionOS xcodebuild
 
       - name: Build Todos
-        run: make COMMAND=test CONFIG=Debug SCHEME=GitHub TEST_PLAN=Todos xcodebuild
+        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=Todos xcodebuild
 
       - name: Build SpeechRecognition
-        run: make COMMAND=test CONFIG=Debug SCHEME=GitHub TEST_PLAN=SpeechRecognition xcodebuild
+        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=SpeechRecognition xcodebuild
 
       - name: Build Search
-        run: make COMMAND=test CONFIG=Debug SCHEME=GitHub TEST_PLAN=Search xcodebuild
+        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=Search xcodebuild
 
       - name: Build SyncUps
-        run: make COMMAND=test CONFIG=Debug SCHEME=GitHub TEST_PLAN=SyncUps xcodebuild
+        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=SyncUps xcodebuild
 
       - name: Build VoiceMemos
-        run: make COMMAND=test CONFIG=Debug SCHEME=GitHub TEST_PLAN=VoiceMemos xcodebuild
+        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=VoiceMemos xcodebuild
 
 
 

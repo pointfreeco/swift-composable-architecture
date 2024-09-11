@@ -1,4 +1,4 @@
-COMMAND = 
+COMMAND = test
 CONFIG = debug
 PLATFORM = iOS
 PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS,iPhone \d\+ Pro [^M])
