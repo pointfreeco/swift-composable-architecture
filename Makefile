@@ -13,11 +13,11 @@ TEST_RUNNER_CI = $(CI)
 XCODEBUILD = xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-quiet \
-			-configuration $(CONFIG) \
-			-scheme $(SCHEME) \
+			-configuration "$(CONFIG)" \
+			-scheme "$(SCHEME)" \
 			-workspace ComposableArchitecture.xcworkspace \
 			-derivedDataPath ~/.derivedData/$(CONFIG) \
-			-testPlan $(TEST_PLAN)
+			-testPlan "$(TEST_PLAN)"
 
 default: test-all
 
