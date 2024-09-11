@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - 
+      - more-ci-improvements
   workflow_dispatch:
 
 concurrency:
