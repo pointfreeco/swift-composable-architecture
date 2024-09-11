@@ -1,0 +1,88 @@
+name: Cache
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-cache:
+    name: build-cache
+    runs-on: macos-14
+    strategy:
+      matrix:
+        xcode: [15.2, 15.4, 16_beta_6]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode ${{ matrix.xcode }}
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      - name: Cache derived data
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.derivedData
+          key: |
+            deriveddata-xcodebuild-${{ matrix.xcode }}-${{ hashFiles('**/*.swift') }}
+          restore-keys: |
+            deriveddata-xcodebuild-${{ matrix.xcode }}-
+      - name: Set IgnoreFileSystemDeviceInodeChanges flag 
+        run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
+      - name: Update mtime for incremental builds 
+        uses: chetan/git-restore-mtime-action@v2
+
+      - name: Build iOS (Debug)
+        run: make CONFIG=Debug PLATFORM=iOS xcodebuild
+      - name: Build iOS (Release)
+        run: make CONFIG=Release PLATFORM=iOS xcodebuild
+
+      - name: Build macOS (Debug)
+        run: make CONFIG=Debug PLATFORM=macOS xcodebuild
+      - name: Build macOS (Release)
+        run: make CONFIG=Release PLATFORM=macOS xcodebuild
+
+      - name: Build macCatalyst (Debug)
+        run: make CONFIG=Debug PLATFORM=macCatalyst xcodebuild
+      - name: Build macCatalyst (Release)
+        run: make CONFIG=Release PLATFORM=macCatalyst xcodebuild
+
+      - name: Build watchOS (Debug)
+        run: make CONFIG=Debug PLATFORM=watchOS xcodebuild
+      - name: Build watchOS (Release)
+        run: make CONFIG=Release PLATFORM=watchOS xcodebuild
+
+      - name: Build tvOS (Debug)
+        run: make CONFIG=Debug PLATFORM=tvOS xcodebuild
+      - name: Build tvOS (Release)
+        run: make CONFIG=Release PLATFORM=tvOS xcodebuild
+
+      - name: Build visionOS (Debug)
+        run: make CONFIG=Debug PLATFORM=visionOS xcodebuild
+      - name: Build visionOS (Release)
+        run: make CONFIG=Release PLATFORM=visionOS xcodebuild
+
+      - name: Build Todos
+        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=Todos xcodebuild-example
+
+      - name: Build SpeechRecognition
+        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=SpeechRecognition xcodebuild-example
+
+      - name: Build SyncUps
+        run: make CONFIG=Debug SCHEME=GitHub TEST_PLAN=SyncUps xcodebuild-example
+
+
+
+
+
+
+
+
+
+
+
+
+

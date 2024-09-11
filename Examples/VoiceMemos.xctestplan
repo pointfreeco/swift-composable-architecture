@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "E3474CDA-A5D0-4589-9EB9-550604612F99",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Examples\/VoiceMemos\/VoiceMemos.xcodeproj",
+        "identifier" : "DC5BDCBF24589179009C65A3",
+        "name" : "VoiceMemosTests"
+      }
+    }
+  ],
+  "version" : 1
+}

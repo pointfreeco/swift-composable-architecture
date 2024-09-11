@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1600"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES"
+      buildArchitectures = "Automatic">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "NewGameSwiftUI"
+               BuildableName = "NewGameSwiftUI"
+               BlueprintName = "NewGameSwiftUI"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "NewGameCore"
+               BuildableName = "NewGameCore"
+               BlueprintName = "NewGameCore"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DC89C41224460F95006900B9"
+               BuildableName = "SwiftUICaseStudies.app"
+               BlueprintName = "SwiftUICaseStudies"
+               ReferencedContainer = "container:Examples/CaseStudies/CaseStudies.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "GameUIKit"
+               BuildableName = "GameUIKit"
+               BlueprintName = "GameUIKit"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CAF88E6F24B8E26D00539345"
+               BuildableName = "tvOSCaseStudies.app"
+               BlueprintName = "tvOSCaseStudies"
+               ReferencedContainer = "container:Examples/CaseStudies/CaseStudies.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "TwoFactorCore"
+               BuildableName = "TwoFactorCore"
+               BlueprintName = "TwoFactorCore"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CA2332092447ACFA00B818EB"
+               BuildableName = "SpeechRecognition.app"
+               BlueprintName = "SpeechRecognition"
+               ReferencedContainer = "container:Examples/SpeechRecognition/SpeechRecognition.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AuthenticationClient"
+               BuildableName = "AuthenticationClient"
+               BlueprintName = "AuthenticationClient"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AuthenticationClientLive"
+               BuildableName = "AuthenticationClientLive"
+               BlueprintName = "AuthenticationClientLive"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "NewGameUIKit"
+               BuildableName = "NewGameUIKit"
+               BlueprintName = "NewGameUIKit"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "LoginSwiftUI"
+               BuildableName = "LoginSwiftUI"
+               BlueprintName = "LoginSwiftUI"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DC5BDCA924589177009C65A3"
+               BuildableName = "VoiceMemos.app"
+               BlueprintName = "VoiceMemos"
+               ReferencedContainer = "container:Examples/VoiceMemos/VoiceMemos.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DC808D6E29E9C3AC0072B4A9"
+               BuildableName = "SyncUps.app"
+               BlueprintName = "SyncUps"
+               ReferencedContainer = "container:Examples/SyncUps/SyncUps.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CA0A5760242AA3A800BA537D"
+               BuildableName = "TicTacToe.app"
+               BlueprintName = "TicTacToe"
+               ReferencedContainer = "container:Examples/TicTacToe/TicTacToe.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "TwoFactorUIKit"
+               BuildableName = "TwoFactorUIKit"
+               BlueprintName = "TwoFactorUIKit"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DCBCB76F24290F6C00DE1F59"
+               BuildableName = "Todos.app"
+               BlueprintName = "Todos"
+               ReferencedContainer = "container:Examples/Todos/Todos.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AppUIKit"
+               BuildableName = "AppUIKit"
+               BlueprintName = "AppUIKit"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DC4C6EA62450DD380066A05D"
+               BuildableName = "UIKitCaseStudies.app"
+               BlueprintName = "UIKitCaseStudies"
+               ReferencedContainer = "container:Examples/CaseStudies/CaseStudies.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "TwoFactorSwiftUI"
+               BuildableName = "TwoFactorSwiftUI"
+               BlueprintName = "TwoFactorSwiftUI"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "GameSwiftUI"
+               BuildableName = "GameSwiftUI"
+               BlueprintName = "GameSwiftUI"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CA86E49624253C2500357AD9"
+               BuildableName = "Search.app"
+               BlueprintName = "Search"
+               ReferencedContainer = "container:Examples/Search/Search.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "GameCore"
+               BuildableName = "GameCore"
+               BlueprintName = "GameCore"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "LoginCore"
+               BuildableName = "LoginCore"
+               BlueprintName = "LoginCore"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AppCore"
+               BuildableName = "AppCore"
+               BlueprintName = "AppCore"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AppSwiftUI"
+               BuildableName = "AppSwiftUI"
+               BlueprintName = "AppSwiftUI"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "LoginUIKit"
+               BuildableName = "LoginUIKit"
+               BlueprintName = "LoginUIKit"
+               ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <TestPlans>
+         <TestPlanReference
+            reference = "container:Examples/SyncUps.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Examples/Todos.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Examples/Search.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Examples/VoiceMemos.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Examples/SpeechRecognition.xctestplan">
+         </TestPlanReference>
+      </TestPlans>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "NewGameSwiftUI"
+            BuildableName = "NewGameSwiftUI"
+            BlueprintName = "NewGameSwiftUI"
+            ReferencedContainer = "container:Examples/TicTacToe/tic-tac-toe">
+         </BuildableReference>
+      </MacroExpansion>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

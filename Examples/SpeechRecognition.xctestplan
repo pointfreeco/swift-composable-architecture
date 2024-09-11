@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "888AA0E1-56FE-4E07-BE60-C12A154574CA",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Examples\/SpeechRecognition\/SpeechRecognition.xcodeproj",
+        "identifier" : "CA23321F2447ACFC00B818EB",
+        "name" : "SpeechRecognitionTests"
+      }
+    }
+  ],
+  "version" : 1
+}

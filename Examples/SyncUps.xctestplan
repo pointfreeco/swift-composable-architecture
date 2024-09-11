@@ -1,0 +1,31 @@
+{
+  "configurations" : [
+    {
+      "id" : "23A09EA7-127A-4C3B-AFD8-289CF1BD456D",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Examples\/SyncUps\/SyncUps.xcodeproj",
+        "identifier" : "DC808D8829E9C3AD0072B4A9",
+        "name" : "SyncUpsUITests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Examples\/SyncUps\/SyncUps.xcodeproj",
+        "identifier" : "DC808D7E29E9C3AD0072B4A9",
+        "name" : "SyncUpsTests"
+      }
+    }
+  ],
+  "version" : 1
+}

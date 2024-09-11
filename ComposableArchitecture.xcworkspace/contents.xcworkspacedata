@@ -2,6 +2,15 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:Examples/Search.xctestplan">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/VoiceMemos.xctestplan">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/SpeechRecognition.xctestplan">
+   </FileRef>
+   <FileRef
       location = "group:">
    </FileRef>
    <FileRef
@@ -27,5 +36,11 @@
    </FileRef>
    <FileRef
       location = "group:Examples/VoiceMemos/VoiceMemos.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/SyncUps.xctestplan">
+   </FileRef>
+   <FileRef
+      location = "group:Examples/Todos.xctestplan">
    </FileRef>
 </Workspace>

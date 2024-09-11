@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "0996B27E-3A1D-47D0-97DC-C76E8099A728",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Examples\/Search\/Search.xcodeproj",
+        "identifier" : "CA86E4AC24253C2700357AD9",
+        "name" : "SearchTests"
+      }
+    }
+  ],
+  "version" : 1
+}

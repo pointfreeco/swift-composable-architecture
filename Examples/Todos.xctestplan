@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "E02D9966-A6B3-4625-943F-A3A71549AA55",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Examples\/Todos\/Todos.xcodeproj",
+        "identifier" : "DCBCB78524290F6D00DE1F59",
+        "name" : "TodosTests"
+      }
+    }
+  ],
+  "version" : 1
+}

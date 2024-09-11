@@ -1,3 +1,4 @@
+COMMAND = 
 CONFIG = debug
 PLATFORM = iOS
 PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS 17.5,iPhone \d\+ Pro [^M])
@@ -20,7 +21,6 @@ xcodebuild:
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_IOS)" \
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
@@ -28,7 +28,6 @@ xcodebuild:
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MACOS)" \
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
@@ -36,7 +35,6 @@ xcodebuild:
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_TVOS)" \
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
@@ -44,7 +42,6 @@ xcodebuild:
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_WATCHOS)" \
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
@@ -52,7 +49,6 @@ xcodebuild:
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_VISIONOS)" \
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
@@ -60,7 +56,6 @@ xcodebuild:
 		then xcodebuild $(COMMAND) \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
 			-scheme ComposableArchitecture \
 			-destination platform="$(PLATFORM_MAC_CATALYST)" \
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
@@ -87,12 +82,13 @@ test-docs:
 		|| (echo "xcodebuild docbuild failed:\n\n$(DOC_WARNINGS)" | tr '\1' '\n' \
 		&& exit 1)
 
-test-example:
-	xcodebuild test \
+xcodebuild-example:
+	xcodebuild $(COMMAND) \
 		-skipMacroValidation \
 		-scheme "$(SCHEME)" \
 		-destination platform="$(PLATFORM_IOS)" \
-		-derivedDataPath ~/.derivedData
+		-derivedDataPath ~/.derivedData/"$(SCHEME)" \
+		-testPlan $(TEST_PLAN);
 
 test-integration:
 	xcodebuild test \
