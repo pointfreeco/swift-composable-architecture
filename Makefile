@@ -7,8 +7,16 @@ PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
 PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS,TV)
 PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS,Vision)
 PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS,Watch)
-
+SCHEME = ComposableArchitecture
 TEST_RUNNER_CI = $(CI)
+
+XCODEBUILD = xcodebuild $(COMMAND) \
+			-skipMacroValidation \
+			-quiet \
+			-configuration $(CONFIG) \
+			-scheme $(SCHEME) \
+			-derivedDataPath ~/.derivedData/$(CONFIG) \
+			-testPlan $(TEST_PLAN)
 
 default: test-all
 
@@ -18,53 +26,23 @@ test-all: test-examples
 
 xcodebuild:
 	if test "$(PLATFORM)" = "iOS"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-quiet \
-			-configuration $(CONFIG) \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_IOS)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		then $(XCODEBUILD) \
+			-destination platform="$(PLATFORM_IOS)"; \
 		elif test "$(PLATFORM)" = "macOS"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-quiet \
-			-configuration $(CONFIG) \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_MACOS)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		then $(XCODEBUILD) \
+			-destination platform="$(PLATFORM_MACOS)"; \
 		elif test "$(PLATFORM)" = "tvOS"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-quiet \
-			-configuration $(CONFIG) \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_TVOS)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		then $(XCODEBUILD) \
+			-destination platform="$(PLATFORM_TVOS)"; \
 		elif test "$(PLATFORM)" = "watchOS"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-quiet \
-			-configuration $(CONFIG) \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_WATCHOS)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		then $(XCODEBUILD) \
+			-destination platform="$(PLATFORM_WATCHOS)"; \
 		elif test "$(PLATFORM)" = "visionOS"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-quiet \
-			-configuration $(CONFIG) \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_VISIONOS)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		then $(XCODEBUILD) \
+			-destination platform="$(PLATFORM_VISIONOS)"; \
 		elif test "$(PLATFORM)" = "macCatalyst"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-quiet \
-			-configuration $(CONFIG) \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_MAC_CATALYST)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
+		then $(XCODEBUILD) \
+			-destination platform="$(PLATFORM_MAC_CATALYST)"; \
 		else exit 1; \
 		fi;	
 

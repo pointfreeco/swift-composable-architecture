@@ -380,7 +380,8 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:Examples/SyncUps.xctestplan">
+            reference = "container:Examples/SyncUps.xctestplan"
+            default = "YES">
          </TestPlanReference>
          <TestPlanReference
             reference = "container:Examples/Todos.xctestplan">
