@@ -17,7 +17,9 @@ jobs:
     runs-on: macos-14
     strategy:
       matrix:
-        config: [Debug, Release]
+        config: 
+          - Debug
+          #- Release
         xcode:
           #- 15.2
           - 15.4
