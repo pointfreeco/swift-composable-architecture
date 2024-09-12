@@ -92,11 +92,8 @@
         Update the `path` variable to hold onto ``ComposableArchitecture/StackState`` of 
         `Path.State`.
         
-        > Important: In order to maintain `State`'s `Equatable`, we must conform `Path` to be
-        > `Equatable` as well. While this would typically be done with an extension, a Swift
-        > compiler bug prevents this, so the ``ComposableArchitecture/Reducer(state:action:)`` macro
-        > can generate this conformance for you by specifying the `state` parameter. See the article 
-        > <doc:Reducer#Circular-reference-errors> for more.
+        > Important: In order to maintain `State`'s `Equatable`, we must conform `Path.State` to be
+        > `Equatable` as well.
 
         @Code(name: "App.swift", file: SyncUpDetailNavigation-01-code-0006.swift)        
       }

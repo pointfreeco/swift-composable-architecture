@@ -368,10 +368,7 @@
         
         > Important: As we have seen it is important for `State` types to be `Equatable` for 
         testing, and so we are proactively making the `State` type generated for the `Destination`
-        reducer equatable via the `state` argument of 
-        ``ComposableArchitecture/Reducer(state:action:)``. See the article 
-        <doc:Reducer#Circular-reference-errors> for more information of why this is the necessary 
-        way to make `State` equatable.
+        reducer equatable _via_ extension.
         
         > Note: We have collapsed the implementation of `SyncUpDetail` and `SyncUpDetailView` in
         > this code snippet.

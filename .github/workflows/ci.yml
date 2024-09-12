@@ -82,11 +82,11 @@ jobs:
             deriveddata-examples-${{ hashFiles('**/Sources/**/*.swift', '**/Tests/**/*.swift', '**/Examples/**/*.swift') }}
           restore-keys: |
             deriveddata-examples-
-      - name: Select Xcode 15.4
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
-      - name: Set IgnoreFileSystemDeviceInodeChanges flag 
+      - name: Select Xcode 16
+        run: sudo xcode-select -s /Applications/Xcode_16_beta_6.app
+      - name: Set IgnoreFileSystemDeviceInodeChanges flag
         run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
-      - name: Update mtime for incremental builds 
+      - name: Update mtime for incremental builds
         uses: chetan/git-restore-mtime-action@v2
       - name: CaseStudies (SwiftUI)
         run: make SCHEME="CaseStudies (SwiftUI)" test-example

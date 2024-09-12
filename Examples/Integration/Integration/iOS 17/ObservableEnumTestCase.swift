@@ -66,7 +66,7 @@ struct ObservableEnumView: View {
 
   @Reducer
   struct Feature {
-    @Reducer(state: .equatable)
+    @Reducer
     enum Destination {
       case feature1(ObservableBasicsView.Feature)
       case feature2(ObservableBasicsView.Feature)
@@ -111,6 +111,7 @@ struct ObservableEnumView: View {
     }
   }
 }
+extension ObservableEnumView.Feature.Destination.State: Equatable {}
 
 #Preview {
   Logger.shared.isEnabled = true

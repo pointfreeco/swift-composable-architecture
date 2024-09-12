@@ -94,7 +94,7 @@ struct ObservablePresentationView: View {
 
   @Reducer
   struct Feature {
-    @Reducer(state: .equatable)
+    @Reducer
     enum Destination {
       case fullScreenCover(ObservableBasicsView.Feature)
       case popover(ObservableBasicsView.Feature)
@@ -146,3 +146,4 @@ struct ObservablePresentationView: View {
     }
   }
 }
+extension ObservablePresentationView.Feature.Destination.State: Equatable {}

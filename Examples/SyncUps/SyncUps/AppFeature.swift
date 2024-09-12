@@ -3,7 +3,7 @@ import SwiftUI
 
 @Reducer
 struct AppFeature {
-  @Reducer(state: .equatable)
+  @Reducer
   enum Path {
     case detail(SyncUpDetail)
     case meeting(Meeting, syncUp: SyncUp)
@@ -47,6 +47,7 @@ struct AppFeature {
     .forEach(\.path, action: \.path)
   }
 }
+extension AppFeature.Path.State: Equatable {}
 
 struct AppView: View {
   @Bindable var store: StoreOf<AppFeature>

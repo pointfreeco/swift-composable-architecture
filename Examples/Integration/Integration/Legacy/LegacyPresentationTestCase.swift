@@ -9,7 +9,7 @@ private enum PresentationTestCase {
       var message = ""
       @PresentationState var destination: Destination.State?
     }
-    enum Action: Equatable, Sendable {
+    enum Action: Sendable {
       case alertButtonTapped
       case customAlertButtonTapped
       case destination(PresentationAction<Destination.Action>)
@@ -21,7 +21,7 @@ private enum PresentationTestCase {
       case sheetButtonTapped
     }
 
-    @Reducer(state: .equatable, action: .equatable)
+    @Reducer
     enum Destination {
       case alert(AlertState<AlertAction>)
       case customAlert
@@ -312,8 +312,8 @@ private enum PresentationTestCase {
       }
     }
   }
-
 }
+extension PresentationTestCase.Feature.Destination.State: Equatable {}
 
 struct PresentationTestCaseView: View {
   private let store: StoreOf<PresentationTestCase.Feature>

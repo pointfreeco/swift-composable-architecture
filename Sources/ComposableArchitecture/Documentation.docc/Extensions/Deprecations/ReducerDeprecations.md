@@ -18,3 +18,7 @@ instead.
 - ``Reducer/forEach(_:action:element:fileID:filePath:line:column:)-1oguc``
 - ``Reducer/forEach(_:action:destination:fileID:filePath:line:column:)-74erx``
 - ``Reducer/onChange(of:removeDuplicates:_:)``
+
+### Enum reducers
+
+- ``_SynthesizedConformance``
