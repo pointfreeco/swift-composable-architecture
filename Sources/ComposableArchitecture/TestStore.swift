@@ -535,9 +535,6 @@ public final class TestStore<State, Action> {
   where State: Equatable, R.State == State, R.Action == Action {
     let sharedChangeTracker = SharedChangeTracker()
     let reducer = Dependencies.withDependencies {
-      if TestContext.current == .swiftTesting {
-        $0.resetCache()
-      }
       prepareDependencies(&$0)
       $0.sharedChangeTrackers.insert(sharedChangeTracker)
     } operation: {

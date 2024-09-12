@@ -11,6 +11,12 @@ final class EffectCancellationTests: BaseTCATestCase {
     self.cancellables.removeAll()
   }
 
+  override func invokeTest() {
+    withMainSerialExecutor {
+      super.invokeTest()
+    }
+  }
+
   func testCancellation() async {
     let values = LockIsolated<[Int]>([])
 
