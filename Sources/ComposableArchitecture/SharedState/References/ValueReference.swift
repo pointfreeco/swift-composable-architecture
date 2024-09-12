@@ -4,9 +4,6 @@ import Foundation
 #if canImport(Combine)
   import Combine
 #endif
-#if canImport(Perception)
-  import Perception
-#endif
 
 extension Shared {
   /// Creates a shared reference to a value using a persistence key.
@@ -342,25 +339,19 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
       self.subject.send(newValue)
     }
   }
-  #if canImport(Perception)
-    private let _$perceptionRegistrar = PerceptionRegistrar(
-      isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
-    )
-  #endif
+  private let _$perceptionRegistrar = PerceptionRegistrar(
+    isPerceptionCheckingEnabled: _isStorePerceptionCheckingEnabled
+  )
   private let fileID: StaticString
   private let line: UInt
   var value: Value {
     get {
-      #if canImport(Perception)
-        self._$perceptionRegistrar.access(self, keyPath: \.value)
-      #endif
+      self._$perceptionRegistrar.access(self, keyPath: \.value)
       return self.lock.withLock { self._value }
     }
     set {
-      #if canImport(Perception)
-        self._$perceptionRegistrar.willSet(self, keyPath: \.value)
-        defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
-      #endif
+      self._$perceptionRegistrar.willSet(self, keyPath: \.value)
+      defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
       self.lock.withLock {
         self._value = newValue
         func open<A>(_ key: some PersistenceKey<A>) {
@@ -396,10 +387,8 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
       ) { [weak self] value in
         guard let self else { return }
         mainActorASAP {
-          #if canImport(Perception)
-            self._$perceptionRegistrar.willSet(self, keyPath: \.value)
-            defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
-          #endif
+          self._$perceptionRegistrar.willSet(self, keyPath: \.value)
+          defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
           self.lock.withLock {
             self._value = value ?? initialValue
           }
@@ -408,15 +397,11 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
     }
   }
   func access() {
-    #if canImport(Perception)
-      _$perceptionRegistrar.access(self, keyPath: \.value)
-    #endif
+    _$perceptionRegistrar.access(self, keyPath: \.value)
   }
   func withMutation<T>(_ mutation: () throws -> T) rethrows -> T {
-    #if canImport(Perception)
-      self._$perceptionRegistrar.willSet(self, keyPath: \.value)
-      defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
-    #endif
+    self._$perceptionRegistrar.willSet(self, keyPath: \.value)
+    defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
     return try mutation()
   }
   var description: String {
@@ -427,9 +412,8 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
 #if canImport(Observation)
   extension ValueReference: Observable {}
 #endif
-#if canImport(Perception)
-  extension ValueReference: Perceptible {}
-#endif
+
+extension ValueReference: Perceptible {}
 
 private enum PersistentReferencesKey: DependencyKey {
   static var liveValue: LockIsolated<[AnyHashable: any Reference]> {

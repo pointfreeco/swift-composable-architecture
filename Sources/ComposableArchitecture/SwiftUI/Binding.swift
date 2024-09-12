@@ -173,16 +173,14 @@ public struct BindingAction<Root>: CasePathable, Equatable, Sendable {
 
   @dynamicMemberLookup
   public struct AllCasePaths {
-    #if canImport(Perception)
-      public subscript<Value: Equatable & Sendable>(
-        dynamicMember keyPath: _WritableKeyPath<Root, Value>
-      ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
-        AnyCasePath(
-          embed: { .set(keyPath, $0) },
-          extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
-        )
-      }
-    #endif
+    public subscript<Value: Equatable & Sendable>(
+      dynamicMember keyPath: _WritableKeyPath<Root, Value>
+    ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
+      AnyCasePath(
+        embed: { .set(keyPath, $0) },
+        extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
+      )
+    }
 
     public subscript<Value: Equatable & Sendable>(
       dynamicMember keyPath: _WritableKeyPath<Root, BindingState<Value>>
