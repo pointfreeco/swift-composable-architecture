@@ -3,7 +3,7 @@ import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
-  @Reducer(state: .equatable)
+  @Reducer
   enum Destination {
     case alert(AlertState<Alert>)
     case edit(SyncUpForm)
@@ -65,6 +65,7 @@ struct SyncUpDetail {
     .ifLet(\.$destination, action: \.destination)
   }
 }
+extension SyncUpDetail.Destination.State: Equatable {}
 
 extension AlertState where Action == SyncUpDetail.Destination.Alert {
   static let deleteSyncUp = Self {

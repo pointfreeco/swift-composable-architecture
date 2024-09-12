@@ -7,7 +7,7 @@ private let readMe = """
 
 @Reducer
 struct NavigationDemo {
-  @Reducer(state: .equatable)
+  @Reducer
   enum Path {
     case screenA(ScreenA)
     case screenB(ScreenB)
@@ -65,6 +65,7 @@ struct NavigationDemo {
     .forEach(\.path, action: \.path)
   }
 }
+extension NavigationDemo.Path.State: Equatable {}
 
 struct NavigationDemoView: View {
   @Bindable var store: StoreOf<NavigationDemo>

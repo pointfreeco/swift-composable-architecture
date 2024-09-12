@@ -2,7 +2,7 @@ import ComposableArchitecture
 import LoginCore
 import NewGameCore
 
-@Reducer(state: .equatable)
+@Reducer
 public enum TicTacToe {
   case login(Login)
   case newGame(NewGame)
@@ -37,3 +37,4 @@ public enum TicTacToe {
     }
   }
 }
+extension TicTacToe.State: Equatable {}

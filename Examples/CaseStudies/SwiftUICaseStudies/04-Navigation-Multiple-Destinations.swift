@@ -8,7 +8,7 @@ private let readMe = """
 
 @Reducer
 struct MultipleDestinations {
-  @Reducer(state: .equatable)
+  @Reducer
   enum Destination {
     case drillDown(Counter)
     case popover(Counter)
@@ -46,6 +46,7 @@ struct MultipleDestinations {
     .ifLet(\.$destination, action: \.destination)
   }
 }
+extension MultipleDestinations.Destination.State: Equatable {}
 
 struct MultipleDestinationsView: View {
   @Bindable var store: StoreOf<MultipleDestinations>

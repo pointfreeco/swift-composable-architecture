@@ -3,11 +3,12 @@ import SwiftUI
 
 @Reducer
 struct SyncUpDetail {
-  @Reducer(state: .equatable)
+  @Reducer
   enum Destination {
   }
   // ...
 }
+extension SyncUpDetail.Destination.State: Equatable {}
 
 struct SyncUpDetailView: View {
   // ...

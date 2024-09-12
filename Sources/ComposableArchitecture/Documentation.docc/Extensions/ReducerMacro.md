@@ -9,4 +9,3 @@
 - ``ReducerCaseIgnored()``
 - ``CaseReducer``
 - ``CaseReducerState``
-- ``_SynthesizedConformance``
