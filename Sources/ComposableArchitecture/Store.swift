@@ -357,22 +357,19 @@ public final class Store<State, Action> {
   private init(core: some Core<State, Action>) {
     defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     self.core = core
-    let didSet = core.didSet
 
-    if State.self is any ObservableState.Type {
-      @Sendable
-      func onChange() {
-        withPerceptionTracking {
-          MainActor.assumeIsolated { _ = core.state }
-        } onChange: { [weak self] in
-          guard let self else { return }
-          MainActor.assumeIsolated {
+    if let stateType = State.self as? any ObservableState.Type {
+      func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
+        core.didSet
+          .compactMap { [weak self] in (self?.currentState as? T)?._$id }
+          .removeDuplicates()
+          .dropFirst()
+          .sink { [weak self] _ in
+            guard let self else { return }
             self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
           }
-          didSet.send(())
-          onChange()
-        }
       }
+      self.parentCancellable = subscribeToDidSet(stateType)
     }
   }
   
