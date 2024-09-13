@@ -21,7 +21,7 @@ jobs:
       matrix:
         command: [test, '']
         platform: [iOS, macOS, tvOS, watchOS, visionOS, macCatalyst]
-        xcode: [15.2, 15.4, 16.0]
+        xcode: [15.2, 15.4, '16.0']
         exclude:
           - {xcode: 15.2, command: test}
           - {xcode: 15.4, command: ''}
@@ -29,11 +29,11 @@ jobs:
           - {xcode: 15.2, platform: tvOS}
           - {xcode: 15.2, platform: visionOS}
           - {xcode: 15.2, platform: watchOS}
-          - {xcode: 16.0, command: ''}
-          - {xcode: 16.0, platform: macCatalyst}
-          - {xcode: 16.0, platform: tvOS}
-          - {xcode: 16.0, platform: visionOS}
-          - {xcode: 16.0, platform: watchOS}
+          - {xcode: '16.0', command: ''}
+          - {xcode: '16.0', platform: macCatalyst}
+          - {xcode: '16.0', platform: tvOS}
+          - {xcode: '16.0', platform: visionOS}
+          - {xcode: '16.0', platform: watchOS}
         include:
           - {xcode: 15.2, skip_release: 1}
     steps:
