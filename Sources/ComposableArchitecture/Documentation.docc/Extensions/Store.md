@@ -35,10 +35,6 @@
 
 - ``StorePublisher``
 
-### UIKit integration
-
-- ``ifLet(then:else:)``
-
 ### Deprecated interfaces
 
 - <doc:StoreDeprecations>
