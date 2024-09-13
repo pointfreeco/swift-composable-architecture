@@ -12,3 +12,7 @@ instead.
 ### Scoping stores
 
 - ``Store/scope(state:action:)-9iai9``
+
+### UIKit integration
+
+- ``ifLet(then:else:)``

@@ -21,19 +21,19 @@ jobs:
       matrix:
         command: [test, '']
         platform: [iOS, macOS, tvOS, watchOS, visionOS, macCatalyst]
-        xcode: [15.2, 15.4, 16_beta_6]
-        exclude: 
+        xcode: [15.2, 15.4, '16.0']
+        exclude:
           - {xcode: 15.2, command: test}
           - {xcode: 15.4, command: ''}
           - {xcode: 15.2, platform: macCatalyst}
           - {xcode: 15.2, platform: tvOS}
           - {xcode: 15.2, platform: visionOS}
           - {xcode: 15.2, platform: watchOS}
-          - {xcode: 16_beta_6, command: ''}
-          - {xcode: 16_beta_6, platform: macCatalyst}
-          - {xcode: 16_beta_6, platform: tvOS}
-          - {xcode: 16_beta_6, platform: visionOS}
-          - {xcode: 16_beta_6, platform: watchOS}
+          - {xcode: '16.0', command: ''}
+          - {xcode: '16.0', platform: macCatalyst}
+          - {xcode: '16.0', platform: tvOS}
+          - {xcode: '16.0', platform: visionOS}
+          - {xcode: '16.0', platform: watchOS}
         include:
           - {xcode: 15.2, skip_release: 1}
     steps:
@@ -83,7 +83,7 @@ jobs:
           restore-keys: |
             deriveddata-examples-
       - name: Select Xcode 16
-        run: sudo xcode-select -s /Applications/Xcode_16_beta_6.app
+        run: sudo xcode-select -s /Applications/Xcode_16.0.app
       - name: Set IgnoreFileSystemDeviceInodeChanges flag
         run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
       - name: Update mtime for incremental builds
