@@ -181,7 +181,7 @@ final class RootCore<Root: Reducer>: Core {
   private actor DefaultIsolation {}
 }
 
-class ScopedCore<Base: Core, State, Action>: Core {
+final class ScopedCore<Base: Core, State, Action>: Core {
   var base: Base
   let stateKeyPath: KeyPath<Base.State, State>
   let actionKeyPath: CaseKeyPath<Base.Action, Action>
@@ -214,11 +214,12 @@ class ScopedCore<Base: Core, State, Action>: Core {
   }
 }
 
-class IfLetCore<Base: Core, State, Action>: Core {
+final class IfLetCore<Base: Core, State, Action>: Core {
   var base: Base
   var cachedState: State
   let stateKeyPath: KeyPath<Base.State, State?>
   let actionKeyPath: CaseKeyPath<Base.Action, Action>
+  var parentCancellable: AnyCancellable?
   init(
     base: Base,
     cachedState: State,
@@ -231,11 +232,13 @@ class IfLetCore<Base: Core, State, Action>: Core {
     self.actionKeyPath = actionKeyPath
   }
   var state: State {
-    base.state[keyPath: stateKeyPath] ?? cachedState
+    let state = base.state[keyPath: stateKeyPath] ?? cachedState
+    cachedState = state
+    return state
   }
   func send(_ action: Action) -> Task<Void, Never>? {
     #if DEBUG
-      if BindingLocal.isActive && base.state[keyPath: stateKeyPath] == nil {
+      if BindingLocal.isActive && isInvalid {
         return nil
       }
     #endif
@@ -255,7 +258,7 @@ class IfLetCore<Base: Core, State, Action>: Core {
   }
 }
 
-class ClosureScopedCore<Base: Core, State, Action>: Core {
+final class ClosureScopedCore<Base: Core, State, Action>: Core {
   var base: Base
   let toState: (Base.State) -> State
   let fromAction: (Action) -> Base.Action
