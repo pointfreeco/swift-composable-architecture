@@ -22,7 +22,7 @@ jobs:
         command: [test, '']
         platform: [iOS, macOS, tvOS, watchOS, visionOS, macCatalyst]
         xcode: [15.2, 15.4, 16.0]
-        exclude: 
+        exclude:
           - {xcode: 15.2, command: test}
           - {xcode: 15.4, command: ''}
           - {xcode: 15.2, platform: macCatalyst}
