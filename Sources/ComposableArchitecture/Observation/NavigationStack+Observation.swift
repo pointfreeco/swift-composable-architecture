@@ -187,29 +187,49 @@ public struct _NavigationDestinationViewModifier<
     content
       .environment(\.navigationDestinationType, State.self)
       .navigationDestination(for: StackState<State>.Component.self) { component in
-        var element = component.element
-        self
-          .destination(
-            self.store.scope(
-              id: self.store.id(
-                state:
-                  \.[
-                    id:component.id,fileID:_HashableStaticString(
-                      rawValue: fileID),filePath:_HashableStaticString(
-                        rawValue: filePath),line:line,column:column
-                  ],
-                action: \.[id:component.id]
-              ),
-              state: ToState {
-                element = $0[id: component.id] ?? element
-                return element
-              },
-              action: { .element(id: component.id, action: $0) },
-              isInvalid: { !$0.ids.contains(component.id) }
-            )
-          )
+        navigationDestination(component: component)
           .environment(\.navigationDestinationType, State.self)
       }
+  }
+
+  private func navigationDestination(component: StackState<State>.Component) -> Destination {
+    let id = store.id(
+      state:
+        \.[
+          id:component.id,
+          fileID:_HashableStaticString(rawValue: fileID),
+          filePath:_HashableStaticString(rawValue: filePath),
+          line:line,
+          column:column
+        ],
+      action: \.[id:component.id]
+    )
+    if let child = store.children[id] as? Store<State, Action> {
+      return destination(child)
+    } else {
+      @MainActor
+      func open(
+        _ core: some Core<StackState<State>, StackAction<State, Action>>
+      ) -> Destination {
+        let child = Store<State, Action>(
+          core: IfLetCore(
+            base: core,
+            cachedState: component.element,
+            stateKeyPath: \.[
+              id:component.id,
+              fileID:_HashableStaticString(rawValue: fileID),
+              filePath:_HashableStaticString(rawValue: filePath),
+              line:line,
+              column:column
+            ],
+            actionKeyPath: \.[id:component.id]
+          )
+        )
+        store.children[id] = child
+        return destination(child)
+      }
+      return open(store.core)
+    }
   }
 }
 

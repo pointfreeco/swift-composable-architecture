@@ -1,7 +1,7 @@
 import Combine
 import Foundation
 
-final class CurrentValueRelay<Output>: Publisher {
+final class CurrentValueRelay<Output>: Publisher, @unchecked Sendable {
   typealias Failure = Never
 
   private var currentValue: Output

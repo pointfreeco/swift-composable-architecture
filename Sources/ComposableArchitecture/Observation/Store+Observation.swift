@@ -73,18 +73,22 @@ extension Store where State: ObservableState {
   /// > observed.
   ///
   /// - Parameters:
-  ///   - state: A key path to optional child state.
-  ///   - action: A case key path to child actions.
+  ///   - stateKeyPath: A key path to optional child state.
+  ///   - actionKeyPath: A case key path to child actions.
+  ///   - fileID: The source `#fileID` associated with the scoping.
+  ///   - filePath: The source `#filePath` associated with the scoping.
+  ///   - line: The source `#line` associated with the scoping.
+  ///   - column: The source `#column` associated with the scoping.
   /// - Returns: An optional store of non-optional child state and actions.
   public func scope<ChildState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, ChildAction>,
+    state stateKeyPath: KeyPath<State, ChildState?>,
+    action actionKeyPath: CaseKeyPath<Action, ChildAction>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) -> Store<ChildState, ChildAction>? {
-    if !self.canCacheChildren {
+    if !canCacheChildren {
       reportIssue(
         uncachedStoreWarning(self),
         fileID: fileID,
@@ -93,17 +97,29 @@ extension Store where State: ObservableState {
         column: column
       )
     }
-    guard var childState = self.state[keyPath: state]
-    else { return nil }
-    return self.scope(
-      id: self.id(state: state.appending(path: \.!), action: action),
-      state: ToState {
-        childState = $0[keyPath: state] ?? childState
-        return childState
-      },
-      action: { action($0) },
-      isInvalid: { $0[keyPath: state] == nil }
-    )
+    let id = ScopeID(state: stateKeyPath, action: actionKeyPath)
+    guard let childState = state[keyPath: stateKeyPath]
+    else {
+      children[id] = nil  // TODO: Eager?
+      return nil
+    }
+    guard let child = children[id] as? Store<ChildState, ChildAction>
+    else {
+      func open(_ core: some Core<State, Action>) -> Store<ChildState, ChildAction> {
+        let child = Store<ChildState, ChildAction>(
+          core: IfLetCore(
+            base: core,
+            cachedState: childState,
+            stateKeyPath: stateKeyPath,
+            actionKeyPath: actionKeyPath
+          )
+        )
+        children[id] = child
+        return child
+      }
+      return open(core)
+    }
+    return child
   }
 }
 

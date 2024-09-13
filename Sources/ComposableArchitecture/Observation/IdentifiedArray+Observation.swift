@@ -119,17 +119,30 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
       else {
         return Store()
       }
-      let id = self.data.ids[position]
-      var element = self.data[position]
-      return self.store.scope(
-        id: self.store.id(state: \.[id:id]!, action: \.[id:id]),
-        state: ToState {
-          element = $0[id: id] ?? element
-          return element
-        },
-        action: { .element(id: id, action: $0) },
-        isInvalid: { !$0.ids.contains(id) }
+      let elementID = self.data.ids[position]
+      let scopeID = ScopeID<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>(
+        state: \.[id:elementID], action: \.[id:elementID]
       )
+      guard let child = self.store.children[scopeID] as? Store<State, Action>
+      else {
+        @MainActor
+        func open(
+          _ core: some Core<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
+        ) -> Store<State, Action> {
+          let child = Store<State, Action>(
+            core: IfLetCore(
+              base: core,
+              cachedState: self.data[position],
+              stateKeyPath: \.[id:elementID],
+              actionKeyPath: \.[id:elementID]
+            )
+          )
+          self.store.children[scopeID] = child
+          return child
+        }
+        return open(self.store.core)
+      }
+      return child
     }
   }
 }

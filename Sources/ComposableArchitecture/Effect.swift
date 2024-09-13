@@ -1,10 +1,10 @@
-import Combine
+@preconcurrency import Combine
 import Foundation
 import SwiftUI
 
-public struct Effect<Action> {
+public struct Effect<Action>: Sendable {
   @usableFromInline
-  enum Operation {
+  enum Operation: Sendable {
     case none
     case publisher(AnyPublisher<Action, Never>)
     case run(TaskPriority? = nil, @Sendable (_ send: Send<Action>) async -> Void)

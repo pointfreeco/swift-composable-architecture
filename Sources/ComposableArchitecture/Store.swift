@@ -1,4 +1,4 @@
-import Combine
+@preconcurrency import Combine
 import Foundation
 import SwiftUI
 
@@ -139,12 +139,10 @@ import SwiftUI
 #endif
 public final class Store<State, Action> {
   var canCacheChildren = true
-  private var children: [ScopeID<State, Action>: AnyObject] = [:]
+  var children: [ScopeID<State, Action>: AnyObject] = [:]
   var _isInvalidated: @MainActor @Sendable () -> Bool = { false }
 
-  @_spi(Internals) public let rootStore: RootStore
-  private let toState: PartialToState<State>
-  private let fromAction: (Action) -> Any
+  let core: any Core<State, Action>
 
   #if !os(visionOS)
     let _$observationRegistrar = PerceptionRegistrar(
@@ -179,9 +177,7 @@ public final class Store<State, Action> {
 
   init() {
     self._isInvalidated = { true }
-    self.rootStore = RootStore(initialState: (), reducer: EmptyReducer<Void, Never>())
-    self.toState = .keyPath(\State.self)
-    self.fromAction = { $0 }
+    self.core = InvalidCore()
   }
 
   deinit {
@@ -227,7 +223,7 @@ public final class Store<State, Action> {
   ///   sending the action.
   @discardableResult
   public func send(_ action: Action) -> StoreTask {
-    .init(rawValue: self.send(action, originatingFrom: nil))
+    .init(rawValue: self.send(action))
   }
 
   /// Sends an action to the store with a given animation.
@@ -252,7 +248,7 @@ public final class Store<State, Action> {
   @discardableResult
   public func send(_ action: Action, transaction: Transaction) -> StoreTask {
     withTransaction(transaction) {
-      .init(rawValue: self.send(action, originatingFrom: nil))
+      .init(rawValue: self.send(action))
     }
   }
 
@@ -300,12 +296,18 @@ public final class Store<State, Action> {
     state: KeyPath<State, ChildState>,
     action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
-    self.scope(
-      id: self.id(state: state, action: action),
-      state: ToState(state),
-      action: { action($0) },
-      isInvalid: nil
-    )
+    let id = ScopeID(state: state, action: action)
+    guard let child = children[id] as? Store<ChildState, ChildAction> else {
+      func open(_ core: some Core<State, Action>) -> Store<ChildState, ChildAction> {
+        let child = Store<ChildState, ChildAction>(
+          core: ScopedCore(base: core, stateKeyPath: state, actionKeyPath: action)
+        )
+        children[id] = child
+        return child
+      }
+      return open(core)
+    }
+    return child
   }
 
   @available(
@@ -317,110 +319,63 @@ public final class Store<State, Action> {
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-    self.scope(
-      id: nil,
-      state: ToState(toChildState),
-      action: fromChildAction,
-      isInvalid: nil
-    )
+    _scope(state: toChildState, action: fromChildAction)
+  }
+
+  func _scope<ChildState, ChildAction>(
+    state toChildState: @escaping (_ state: State) -> ChildState,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction> {
+    func open(_ core: some Core<State, Action>) -> Store<ChildState, ChildAction> {
+      Store<ChildState, ChildAction>(
+        core: ClosureScopedCore(
+          base: core,
+          toState: toChildState,
+          fromAction: fromChildAction
+        )
+      )
+    }
+    return open(core)
   }
 
   @_spi(Internals)
   public var currentState: State {
-    self.toState(self.rootStore.state)
+    core.state
   }
 
   @_spi(Internals)
-  public
-    func scope<ChildState, ChildAction>(
-      id: ScopeID<State, Action>?,
-      state: ToState<State, ChildState>,
-      action fromChildAction: @escaping (ChildAction) -> Action,
-      isInvalid: ((State) -> Bool)?
-    ) -> Store<ChildState, ChildAction>
-  {
-    if self.canCacheChildren,
-      let id = id,
-      let childStore = self.children[id] as? Store<ChildState, ChildAction>
-    {
-      return childStore
-    }
-    let childStore = Store<ChildState, ChildAction>(
-      rootStore: self.rootStore,
-      toState: self.toState.appending(state.base),
-      fromAction: { [fromAction] in fromAction(fromChildAction($0)) }
-    )
-    childStore._isInvalidated =
-      id == nil || !self.canCacheChildren
-      ? { @MainActor @Sendable in
-        isInvalid?(self.currentState) == true || self._isInvalidated()
-      }
-      : { @MainActor @Sendable [weak self] in
-        guard let self else { return true }
-        return isInvalid?(self.currentState) == true || self._isInvalidated()
-      }
-    childStore.canCacheChildren = self.canCacheChildren && id != nil
-    if let id = id, self.canCacheChildren {
-      self.children[id] = childStore
-    }
-    return childStore
+  @_disfavoredOverload
+  public func send(_ action: Action) -> Task<Void, Never>? {
+    core.send(action)
   }
 
-  @_spi(Internals)
-  public func send(
-    _ action: Action,
-    originatingFrom originatingAction: Action?
-  ) -> Task<Void, Never>? {
-    #if DEBUG
-      if BindingLocal.isActive && self._isInvalidated() {
-        return .none
-      }
-    #endif
-    return self.rootStore.send(self.fromAction(action))
-  }
-
-  private init(
-    rootStore: RootStore,
-    toState: PartialToState<State>,
-    fromAction: @escaping (Action) -> Any
-  ) {
+  init(core: some Core<State, Action>) {
     defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
-    self.rootStore = rootStore
-    self.toState = toState
-    self.fromAction = fromAction
+    self.core = core
+    let didSet = core.didSet
 
-    func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
-      let toState = toState as! PartialToState<T>
-      return rootStore.didSet
-        .compactMap { [weak rootStore] in
-          rootStore.map { toState($0.state) }?._$id
-        }
-        .removeDuplicates()
-        .dropFirst()
-        .sink { [weak self] _ in
+    if State.self is any ObservableState.Type {
+      @Sendable
+      func onChange() {
+        withPerceptionTracking {
+          MainActor.assumeIsolated { _ = core.state }
+        } onChange: { [weak self] in
           guard let self else { return }
-          self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+          MainActor.assumeIsolated {
+            self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+          }
+          didSet.send(())
+          onChange()
         }
-    }
-
-    if let stateType = State.self as? any ObservableState.Type {
-      self.parentCancellable = subscribeToDidSet(stateType)
+      }
     }
   }
-
-  convenience init<R: Reducer>(
+  
+  convenience init<R: Reducer<State, Action>>(
     initialState: R.State,
     reducer: R
-  )
-  where
-    R.State == State,
-    R.Action == Action
-  {
-    self.init(
-      rootStore: RootStore(initialState: initialState, reducer: reducer),
-      toState: .keyPath(\State.self),
-      fromAction: { $0 }
-    )
+  ) {
+    self.init(core: RootCore(initialState: initialState, reducer: reducer))
   }
 
   /// A publisher that emits when state changes.
@@ -435,7 +390,7 @@ public final class Store<State, Action> {
   public var publisher: StorePublisher<State> {
     StorePublisher(
       store: self,
-      upstream: self.rootStore.didSet.map { self.currentState }
+      upstream: self.core.didSet.map { self.currentState }
     )
   }
 

@@ -44,26 +44,43 @@
         root: root
       )
       navigationDestination(for: StackState<State>.Component.self) { component in
-        var element = component.element
-        return destination(
-          path.wrappedValue.scope(
-            id: path.wrappedValue.id(
-              state:
-                \.[
-                  id:component.id,fileID:_HashableStaticString(
-                    rawValue: fileID),filePath:_HashableStaticString(
-                      rawValue: filePath),line:line,column:column
-                ],
-              action: \.[id:component.id]
-            ),
-            state: ToState {
-              element = $0[id: component.id] ?? element
-              return element
-            },
-            action: { .element(id: component.id, action: $0) },
-            isInvalid: { !$0.ids.contains(component.id) }
-          )
+        let id = path.wrappedValue.id(
+          state:
+            \.[
+              id:component.id,
+              fileID:_HashableStaticString(rawValue: fileID),
+              filePath:_HashableStaticString(rawValue: filePath),
+              line:line,
+              column:column
+            ],
+          action: \.[id:component.id]
         )
+        guard let child = path.wrappedValue.children[id] as? Store<State, Action>
+        else {
+          @MainActor
+          func open(
+            _ core: some Core<StackState<State>, StackAction<State, Action>>
+          ) -> UIViewController {
+            let child = Store<State, Action>(
+              core: IfLetCore(
+                base: core,
+                cachedState: component.element,
+                stateKeyPath: \.[
+                  id:component.id,
+                  fileID:_HashableStaticString(rawValue: fileID),
+                  filePath:_HashableStaticString(rawValue: filePath),
+                  line:line,
+                  column:column
+                ],
+                actionKeyPath: \.[id:component.id]
+              )
+            )
+            path.wrappedValue.children[id] = child
+            return destination(child)
+          }
+          return open(path.wrappedValue.core)
+        }
+        return destination(child)
       }
     }
   }

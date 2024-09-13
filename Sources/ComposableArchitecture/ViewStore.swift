@@ -155,14 +155,9 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
       self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
       Logger.shared.log("View\(self.storeTypeName).init")
     #endif
-    self.store = store.scope(
-      id: nil,
-      state: ToState(toViewState),
-      action: fromViewAction,
-      isInvalid: nil
-    )
+    self.store = store._scope(state: toViewState, action: fromViewAction)
     self._state = CurrentValueRelay(self.store.withState { $0 })
-    self.viewCancellable = self.store.rootStore.didSet
+    self.viewCancellable = self.store.core.didSet
       .compactMap { [weak self] in self?.store.withState { $0 } }
       .removeDuplicates(by: isDuplicate)
       .dropFirst()

@@ -967,12 +967,11 @@ extension TestStore where State: Equatable {
       let expectedState = self.state
       let previousState = self.reducer.state
       let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
-      let task = self.sharedChangeTracker.track {
+      let task: Task? = self.sharedChangeTracker.track {
         self.store.send(
           .init(
             origin: .send(action), fileID: fileID, filePath: filePath, line: line, column: column
-          ),
-          originatingFrom: nil
+          )
         )
       }
       if uncheckedUseMainSerialExecutor {
@@ -2549,12 +2548,7 @@ extension TestStore {
       store: Store(initialState: self.state) {
         BindingReducer(action: toViewAction.extract(from:))
       }
-      .scope(
-        id: nil,
-        state: ToState(\.self),
-        action: toViewAction.embed,
-        isInvalid: nil
-      )
+      ._scope(state: { $0 }, action: toViewAction.embed)
     )
   }
 }
