@@ -11,6 +11,8 @@ protocol Core<State, Action>: AnyObject, Sendable {
   var canStoreCacheChildren: Bool { get }
   var didSet: CurrentValueRelay<Void> { get }
   var isInvalid: Bool { get }
+
+  var effectCancellables: [UUID: AnyCancellable] { get }
 }
 
 final class InvalidCore<State, Action>: Core {
@@ -23,6 +25,7 @@ final class InvalidCore<State, Action>: Core {
   var canStoreCacheChildren: Bool { false }
   let didSet = CurrentValueRelay<Void>(())
   var isInvalid: Bool { true }
+  var effectCancellables: [UUID: AnyCancellable] { [:] }
 }
 
 final class RootCore<Root: Reducer>: Core {
@@ -38,7 +41,7 @@ final class RootCore<Root: Reducer>: Core {
   var isInvalid: Bool { false }
 
   private var bufferedActions: [Root.Action] = []
-  private var effectCancellables: [UUID: AnyCancellable] = [:]
+  var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   init(
     initialState: Root.State,
@@ -206,6 +209,9 @@ class ScopedCore<Base: Core, State, Action>: Core {
   var isInvalid: Bool {
     base.isInvalid
   }
+  var effectCancellables: [UUID: AnyCancellable] {
+    base.effectCancellables
+  }
 }
 
 class IfLetCore<Base: Core, State, Action>: Core {
@@ -244,6 +250,9 @@ class IfLetCore<Base: Core, State, Action>: Core {
   var isInvalid: Bool {
     base.state[keyPath: stateKeyPath] == nil || base.isInvalid
   }
+  var effectCancellables: [UUID: AnyCancellable] {
+    base.effectCancellables
+  }
 }
 
 class ClosureScopedCore<Base: Core, State, Action>: Core {
@@ -273,5 +282,8 @@ class ClosureScopedCore<Base: Core, State, Action>: Core {
   }
   var isInvalid: Bool {
     base.isInvalid
+  }
+  var effectCancellables: [UUID: AnyCancellable] {
+    base.effectCancellables
   }
 }

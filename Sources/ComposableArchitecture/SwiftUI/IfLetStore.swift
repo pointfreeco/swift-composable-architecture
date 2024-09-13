@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 /// A view that safely unwraps a store of optional state in order to show one of two views.
@@ -315,4 +316,5 @@ private final class _IfLetCore<Base: Core<Wrapped?, Action>, Wrapped, Action>: C
   var canStoreCacheChildren: Bool { base.canStoreCacheChildren }
   var didSet: CurrentValueRelay<Void> { base.didSet }
   var isInvalid: Bool { state == nil || base.isInvalid }
+  var effectCancellables: [UUID: AnyCancellable] { base.effectCancellables }
 }

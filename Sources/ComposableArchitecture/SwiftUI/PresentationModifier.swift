@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 extension View {
@@ -349,6 +350,7 @@ private final class PresentationCore<
   var canStoreCacheChildren: Bool { base.canStoreCacheChildren }
   var didSet: CurrentValueRelay<Void> { base.didSet }
   var isInvalid: Bool { state.wrappedValue.flatMap(toDestinationState) == nil || base.isInvalid }
+  var effectCancellables: [UUID: AnyCancellable] { base.effectCancellables }
 }
 
 @_spi(Presentation)

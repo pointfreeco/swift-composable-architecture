@@ -141,6 +141,7 @@ public final class Store<State, Action> {
   var children: [ScopeID<State, Action>: AnyObject] = [:]
 
   let core: any Core<State, Action>
+  @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] { core.effectCancellables }
 
   #if !os(visionOS)
     let _$observationRegistrar = PerceptionRegistrar(

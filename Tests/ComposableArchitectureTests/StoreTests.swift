@@ -9,11 +9,11 @@ final class StoreTests: BaseTCATestCase {
   func testCancellableIsRemovedOnImmediatelyCompletingEffect() {
     let store = Store<Void, Void>(initialState: ()) {}
 
-    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
+    XCTAssertEqual(store.effectCancellables.count, 0)
 
     store.send(())
 
-    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
+    XCTAssertEqual(store.effectCancellables.count, 0)
   }
 
   @MainActor
@@ -35,15 +35,15 @@ final class StoreTests: BaseTCATestCase {
     })
     let store = Store(initialState: ()) { reducer }
 
-    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
+    XCTAssertEqual(store.effectCancellables.count, 0)
 
     store.send(.start)
 
-    XCTAssertEqual(store.rootStore.effectCancellables.count, 1)
+    XCTAssertEqual(store.effectCancellables.count, 1)
 
     mainQueue.advance(by: 2)
 
-    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
+    XCTAssertEqual(store.effectCancellables.count, 0)
   }
 
   @available(*, deprecated)
@@ -571,12 +571,12 @@ final class StoreTests: BaseTCATestCase {
     }
     let scopedStore = store.scope(state: { $0 }, action: { $0 })
 
-    let sendTask = scopedStore.send((), originatingFrom: nil)
+    let sendTask: Task? = scopedStore.send(())
     await Task.yield()
     neverEndingTask.cancel()
     try await XCTUnwrap(sendTask).value
-    XCTAssertEqual(store.rootStore.effectCancellables.count, 0)
-    XCTAssertEqual(scopedStore.rootStore.effectCancellables.count, 0)
+    XCTAssertEqual(store.effectCancellables.count, 0)
+    XCTAssertEqual(scopedStore.effectCancellables.count, 0)
   }
 
   @Reducer
@@ -692,7 +692,7 @@ final class StoreTests: BaseTCATestCase {
     let store = Store(initialState: Feature_testStoreVsTestStore.State()) {
       Feature_testStoreVsTestStore()
     }
-    await store.send(.tap, originatingFrom: nil)?.value
+    await store.send(.tap)?.value
     XCTAssertEqual(store.withState(\.count), testStore.state.count)
   }
 
@@ -754,7 +754,7 @@ final class StoreTests: BaseTCATestCase {
     let store = Store(initialState: Feature_testStoreVsTestStore_Publisher.State()) {
       Feature_testStoreVsTestStore_Publisher()
     }
-    await store.send(.tap, originatingFrom: nil)?.value
+    await store.send(.tap)?.value
     XCTAssertEqual(store.withState(\.count), testStore.state.count)
   }
 
