@@ -503,10 +503,6 @@ public struct StoreTask: Hashable, Sendable {
   }
 }
 
-private protocol _OptionalProtocol {}
-extension Optional: _OptionalProtocol {}
-extension PresentationState: _OptionalProtocol {}
-
 func storeTypeName<State, Action>(of store: Store<State, Action>) -> String {
   let stateType = typeName(State.self, genericsAbbreviated: false)
   let actionType = typeName(Action.self, genericsAbbreviated: false)
