@@ -88,7 +88,7 @@ extension Store where State: ObservableState {
     line: UInt = #line,
     column: UInt = #column
   ) -> Store<ChildState, ChildAction>? {
-    if !canCacheChildren {
+    if !core.canStoreCacheChildren {
       reportIssue(
         uncachedStoreWarning(self),
         fileID: fileID,
@@ -103,23 +103,15 @@ extension Store where State: ObservableState {
       children[id] = nil  // TODO: Eager?
       return nil
     }
-    guard let child = children[id] as? Store<ChildState, ChildAction>
-    else {
-      func open(_ core: some Core<State, Action>) -> Store<ChildState, ChildAction> {
-        let child = Store<ChildState, ChildAction>(
-          core: IfLetCore(
-            base: core,
-            cachedState: childState,
-            stateKeyPath: stateKeyPath,
-            actionKeyPath: actionKeyPath
-          )
-        )
-        children[id] = child
-        return child
-      }
-      return open(core)
+    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
+      IfLetCore(
+        base: core,
+        cachedState: childState,
+        stateKeyPath: stateKeyPath,
+        actionKeyPath: actionKeyPath
+      )
     }
-    return child
+    return scope(id: id, childCore: open(core))
   }
 }
 

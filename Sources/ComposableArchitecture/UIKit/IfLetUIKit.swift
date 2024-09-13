@@ -55,19 +55,15 @@ extension Store {
       .sink { [weak self] state in
         if let self, let state {
           @MainActor
-          func open(_ core: some Core<State, Action>) -> Store<Wrapped, Action> {
-            Store<Wrapped, Action>(
-              core: IfLetCore(
-                base: core,
-                cachedState: state,
-                stateKeyPath: \.self,
-                actionKeyPath: \.self
-              )
+          func open(_ core: some Core<State, Action>) -> any Core<Wrapped, Action> {
+            IfLetCore(
+              base: core,
+              cachedState: state,
+              stateKeyPath: \.self,
+              actionKeyPath: \.self
             )
           }
-          unwrap(
-            open(self.core)
-          )
+          unwrap(self.scope(id: nil, childCore: open(self.core)))
         } else {
           `else`()
         }

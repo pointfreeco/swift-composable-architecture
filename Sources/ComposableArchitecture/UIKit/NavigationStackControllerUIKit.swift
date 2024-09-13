@@ -55,32 +55,24 @@
             ],
           action: \.[id:component.id]
         )
-        guard let child = path.wrappedValue.children[id] as? Store<State, Action>
-        else {
-          @MainActor
-          func open(
-            _ core: some Core<StackState<State>, StackAction<State, Action>>
-          ) -> UIViewController {
-            let child = Store<State, Action>(
-              core: IfLetCore(
-                base: core,
-                cachedState: component.element,
-                stateKeyPath: \.[
-                  id:component.id,
-                  fileID:_HashableStaticString(rawValue: fileID),
-                  filePath:_HashableStaticString(rawValue: filePath),
-                  line:line,
-                  column:column
-                ],
-                actionKeyPath: \.[id:component.id]
-              )
-            )
-            path.wrappedValue.children[id] = child
-            return destination(child)
-          }
-          return open(path.wrappedValue.core)
+        @MainActor
+        func open(
+          _ core: some Core<StackState<State>, StackAction<State, Action>>
+        ) -> any Core<State, Action> {
+          IfLetCore(
+            base: core,
+            cachedState: component.element,
+            stateKeyPath: \.[
+              id:component.id,
+              fileID:_HashableStaticString(rawValue: fileID),
+              filePath:_HashableStaticString(rawValue: filePath),
+              line:line,
+              column:column
+            ],
+            actionKeyPath: \.[id:component.id]
+          )
         }
-        return destination(child)
+        return destination(path.wrappedValue.scope(id: id, childCore: open(path.wrappedValue.core)))
       }
     }
   }

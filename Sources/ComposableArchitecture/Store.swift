@@ -138,7 +138,6 @@ import SwiftUI
   @preconcurrency@MainActor
 #endif
 public final class Store<State, Action> {
-  var canCacheChildren = true
   var children: [ScopeID<State, Action>: AnyObject] = [:]
 
   let core: any Core<State, Action>
@@ -294,16 +293,26 @@ public final class Store<State, Action> {
     state: KeyPath<State, ChildState>,
     action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
-    let id = ScopeID(state: state, action: action)
-    guard let child = children[id] as? Store<ChildState, ChildAction> else {
-      func open(_ core: some Core<State, Action>) -> Store<ChildState, ChildAction> {
-        let child = Store<ChildState, ChildAction>(
-          core: ScopedCore(base: core, stateKeyPath: state, actionKeyPath: action)
-        )
+    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
+      ScopedCore(base: core, stateKeyPath: state, actionKeyPath: action)
+    }
+    return scope(id: ScopeID(state: state, action: action), childCore: open(core))
+  }
+
+  func scope<ChildState, ChildAction>(
+    id: ScopeID<State, Action>?,
+    childCore: @autoclosure () -> any Core<ChildState, ChildAction>
+  ) -> Store<ChildState, ChildAction> {
+    guard
+      core.canStoreCacheChildren,
+      let id,
+      let child = children[id] as? Store<ChildState, ChildAction>
+    else {
+      let child = Store<ChildState, ChildAction>(core: childCore())
+      if core.canStoreCacheChildren, let id {
         children[id] = child
-        return child
       }
-      return open(core)
+      return child
     }
     return child
   }
@@ -324,16 +333,14 @@ public final class Store<State, Action> {
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-    func open(_ core: some Core<State, Action>) -> Store<ChildState, ChildAction> {
-      Store<ChildState, ChildAction>(
-        core: ClosureScopedCore(
-          base: core,
-          toState: toChildState,
-          fromAction: fromChildAction
-        )
+    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
+      ClosureScopedCore(
+        base: core,
+        toState: toChildState,
+        fromAction: fromChildAction
       )
     }
-    return open(core)
+    return scope(id: nil, childCore: open(core))
   }
 
   @_spi(Internals)
@@ -347,7 +354,7 @@ public final class Store<State, Action> {
     core.send(action)
   }
 
-  init(core: some Core<State, Action>) {
+  private init(core: some Core<State, Action>) {
     defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     self.core = core
     let didSet = core.didSet

@@ -204,32 +204,24 @@ public struct _NavigationDestinationViewModifier<
         ],
       action: \.[id:component.id]
     )
-    if let child = store.children[id] as? Store<State, Action> {
-      return destination(child)
-    } else {
-      @MainActor
-      func open(
-        _ core: some Core<StackState<State>, StackAction<State, Action>>
-      ) -> Destination {
-        let child = Store<State, Action>(
-          core: IfLetCore(
-            base: core,
-            cachedState: component.element,
-            stateKeyPath: \.[
-              id:component.id,
-              fileID:_HashableStaticString(rawValue: fileID),
-              filePath:_HashableStaticString(rawValue: filePath),
-              line:line,
-              column:column
-            ],
-            actionKeyPath: \.[id:component.id]
-          )
-        )
-        store.children[id] = child
-        return destination(child)
-      }
-      return open(store.core)
+    @MainActor
+    func open(
+      _ core: some Core<StackState<State>, StackAction<State, Action>>
+    ) -> any Core<State, Action> {
+      IfLetCore(
+        base: core,
+        cachedState: component.element,
+        stateKeyPath: \.[
+          id:component.id,
+          fileID:_HashableStaticString(rawValue: fileID),
+          filePath:_HashableStaticString(rawValue: filePath),
+          line:line,
+          column:column
+        ],
+        actionKeyPath: \.[id:component.id]
+      )
     }
+    return destination(store.scope(id: id, childCore: open(store.core)))
   }
 }
 

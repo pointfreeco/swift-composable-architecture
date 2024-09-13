@@ -8,6 +8,7 @@ protocol Core<State, Action>: AnyObject, Sendable {
   var state: State { get }
   func send(_ action: Action) -> Task<Void, Never>?
 
+  var canStoreCacheChildren: Bool { get }
   var didSet: CurrentValueRelay<Void> { get }
   var isInvalid: Bool { get }
 }
@@ -19,8 +20,9 @@ final class InvalidCore<State, Action>: Core {
   }
   func send(_ action: Action) -> Task<Void, Never>? { nil }
 
+  var canStoreCacheChildren: Bool { false }
   let didSet = CurrentValueRelay<Void>(())
-  let isInvalid = true
+  var isInvalid: Bool { true }
 }
 
 final class RootCore<Root: Reducer>: Core {
@@ -31,8 +33,9 @@ final class RootCore<Root: Reducer>: Core {
   }
   let reducer: Root
 
+  var canStoreCacheChildren: Bool { true }
   let didSet = CurrentValueRelay(())
-  let isInvalid = false
+  var isInvalid: Bool { false }
 
   private var bufferedActions: [Root.Action] = []
   private var effectCancellables: [UUID: AnyCancellable] = [:]
@@ -194,6 +197,9 @@ class ScopedCore<Base: Core, State, Action>: Core {
   func send(_ action: Action) -> Task<Void, Never>? {
     base.send(actionKeyPath(action))
   }
+  var canStoreCacheChildren: Bool {
+    base.canStoreCacheChildren
+  }
   var didSet: CurrentValueRelay<Void> {
     base.didSet
   }
@@ -229,6 +235,9 @@ class IfLetCore<Base: Core, State, Action>: Core {
     #endif
     return base.send(actionKeyPath(action))
   }
+  var canStoreCacheChildren: Bool {
+    base.canStoreCacheChildren
+  }
   var didSet: CurrentValueRelay<Void> {
     base.didSet
   }
@@ -255,6 +264,9 @@ class ClosureScopedCore<Base: Core, State, Action>: Core {
   }
   func send(_ action: Action) -> Task<Void, Never>? {
     base.send(fromAction(action))
+  }
+  var canStoreCacheChildren: Bool {
+    false
   }
   var didSet: CurrentValueRelay<Void> {
     base.didSet

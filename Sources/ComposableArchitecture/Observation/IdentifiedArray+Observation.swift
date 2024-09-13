@@ -72,7 +72,7 @@ extension Store where State: ObservableState {
     line: UInt = #line,
     column: UInt = #column
   ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
-    if !self.canCacheChildren {
+    if !core.canStoreCacheChildren {
       reportIssue(
         uncachedStoreWarning(self),
         fileID: fileID,
@@ -128,19 +128,15 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
         @MainActor
         func open(
           _ core: some Core<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
-        ) -> Store<State, Action> {
-          let child = Store<State, Action>(
-            core: IfLetCore(
-              base: core,
-              cachedState: self.data[position],
-              stateKeyPath: \.[id:elementID],
-              actionKeyPath: \.[id:elementID]
-            )
+        ) -> any Core<State, Action> {
+          IfLetCore(
+            base: core,
+            cachedState: self.data[position],
+            stateKeyPath: \.[id:elementID],
+            actionKeyPath: \.[id:elementID]
           )
-          self.store.children[scopeID] = child
-          return child
         }
-        return open(self.store.core)
+        return self.store.scope(id: scopeID, childCore: open(self.store.core))
       }
       return child
     }
