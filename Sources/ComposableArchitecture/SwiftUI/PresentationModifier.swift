@@ -326,7 +326,7 @@ public struct PresentationStore<
   }
 }
 
-private final class PresentationCore<
+final class PresentationCore<
   Base: Core<PresentationState<State>, PresentationAction<Action>>,
   State,
   Action,
