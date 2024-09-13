@@ -45,6 +45,10 @@ extension Store {
   ///     goes from non-`nil` to `nil`.
   /// - Returns: A cancellable that maintains a subscription to updates whenever the store's state
   ///   goes from `nil` to non-`nil` and vice versa, so that the caller can react to these changes.
+  @available(iOS, deprecated: 9999, message: "Use 'observe' and 'if let store.scope', instead.")
+  @available(macOS, deprecated: 9999, message: "Use 'observe' and 'if let store.scope', instead.")
+  @available(tvOS, deprecated: 9999, message: "Use 'observe' and 'if let store.scope', instead.")
+  @available(watchOS, deprecated: 9999, message: "Use 'observe' and 'if let store.scope', instead.")
   public func ifLet<Wrapped>(
     then unwrap: @escaping (_ store: Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void = {}
