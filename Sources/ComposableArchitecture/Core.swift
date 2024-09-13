@@ -9,6 +9,7 @@ protocol Core<State, Action>: AnyObject, Sendable {
   func send(_ action: Action) -> Task<Void, Never>?
 
   var didSet: CurrentValueRelay<Void> { get }
+  var isInvalid: Bool { get }
 }
 
 final class InvalidCore<State, Action>: Core {
@@ -19,6 +20,7 @@ final class InvalidCore<State, Action>: Core {
   func send(_ action: Action) -> Task<Void, Never>? { nil }
 
   let didSet = CurrentValueRelay<Void>(())
+  let isInvalid = true
 }
 
 final class RootCore<Root: Reducer>: Core {
@@ -28,9 +30,12 @@ final class RootCore<Root: Reducer>: Core {
     }
   }
   let reducer: Root
-  var bufferedActions: [Root.Action] = []
+
   let didSet = CurrentValueRelay(())
-  var effectCancellables: [UUID: AnyCancellable] = [:]
+  let isInvalid = false
+
+  private var bufferedActions: [Root.Action] = []
+  private var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
   init(
     initialState: Root.State,
@@ -192,6 +197,9 @@ class ScopedCore<Base: Core, State, Action>: Core {
   var didSet: CurrentValueRelay<Void> {
     base.didSet
   }
+  var isInvalid: Bool {
+    base.isInvalid
+  }
 }
 
 class IfLetCore<Base: Core, State, Action>: Core {
@@ -224,6 +232,9 @@ class IfLetCore<Base: Core, State, Action>: Core {
   var didSet: CurrentValueRelay<Void> {
     base.didSet
   }
+  var isInvalid: Bool {
+    base.state[keyPath: stateKeyPath] == nil || base.isInvalid
+  }
 }
 
 class ClosureScopedCore<Base: Core, State, Action>: Core {
@@ -247,5 +258,8 @@ class ClosureScopedCore<Base: Core, State, Action>: Core {
   }
   var didSet: CurrentValueRelay<Void> {
     base.didSet
+  }
+  var isInvalid: Bool {
+    base.isInvalid
   }
 }

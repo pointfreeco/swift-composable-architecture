@@ -412,7 +412,7 @@ extension Store where State: ObservableState {
       if newValue == nil,
         let childState = self.state[keyPath: state],
         id == _identifiableID(childState),
-        !self._isInvalidated()
+        !self.core.isInvalid
       {
         self.send(action(.dismiss))
         if self.state[keyPath: state] != nil {

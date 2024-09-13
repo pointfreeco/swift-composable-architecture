@@ -140,7 +140,6 @@ import SwiftUI
 public final class Store<State, Action> {
   var canCacheChildren = true
   var children: [ScopeID<State, Action>: AnyObject] = [:]
-  var _isInvalidated: @MainActor @Sendable () -> Bool = { false }
 
   let core: any Core<State, Action>
 
@@ -176,7 +175,6 @@ public final class Store<State, Action> {
   }
 
   init() {
-    self._isInvalidated = { true }
     self.core = InvalidCore()
   }
 
