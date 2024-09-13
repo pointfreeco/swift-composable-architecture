@@ -889,7 +889,7 @@ rather than going through ``Store/send(_:)``:
 
 ## Observing for UIKit
 
-### Replacing store.publisher
+### Replacing Store.publisher
 
 Prior to the observation tools one would typically subscribe to changes in the store via a Combine
 publisher in the entry point of a view, such as `viewDidLoad` in a `UIViewController` subclass:
@@ -923,7 +923,7 @@ func viewDidLoad() {
 Be sure to read the documentation for ``ObjectiveC/NSObject/observe(_:)`` to learn how to best 
 wield this tool.
 
-### Replacing store.ifLet
+### Replacing Store.ifLet
 
 Prior to the observation tools one would typically subscribe to optional child stores via a Combine
 operation provided by the library:
