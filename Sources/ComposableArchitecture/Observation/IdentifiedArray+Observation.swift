@@ -120,9 +120,7 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
         return Store()
       }
       let elementID = self.data.ids[position]
-      let scopeID = ScopeID<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>(
-        state: \.[id:elementID], action: \.[id:elementID]
-      )
+      let scopeID = self.store.id(state: \.[id:elementID], action: \.[id:elementID])
       guard let child = self.store.children[scopeID] as? Store<State, Action>
       else {
         @MainActor

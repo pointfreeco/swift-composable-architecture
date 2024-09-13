@@ -296,7 +296,7 @@ public final class Store<State, Action> {
     func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
       ScopedCore(base: core, stateKeyPath: state, actionKeyPath: action)
     }
-    return scope(id: ScopeID(state: state, action: action), childCore: open(core))
+    return scope(id: id(state: state, action: action), childCore: open(core))
   }
 
   func scope<ChildState, ChildAction>(

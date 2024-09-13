@@ -97,7 +97,7 @@ extension Store where State: ObservableState {
         column: column
       )
     }
-    let id = ScopeID(state: stateKeyPath, action: actionKeyPath)
+    let id = id(state: stateKeyPath, action: actionKeyPath)
     guard let childState = state[keyPath: stateKeyPath]
     else {
       children[id] = nil  // TODO: Eager?
