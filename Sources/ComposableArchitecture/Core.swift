@@ -22,9 +22,15 @@ final class InvalidCore<State, Action>: Core {
   }
   func send(_ action: Action) -> Task<Void, Never>? { nil }
 
+  @inlinable
+  @inline(__always)
   var canStoreCacheChildren: Bool { false }
   let didSet = CurrentValueRelay<Void>(())
+  @inlinable
+  @inline(__always)
   var isInvalid: Bool { true }
+  @inlinable
+  @inline(__always)
   var effectCancellables: [UUID: AnyCancellable] { [:] }
 }
 
@@ -36,8 +42,12 @@ final class RootCore<Root: Reducer>: Core {
   }
   let reducer: Root
 
+  @inlinable
+  @inline(__always)
   var canStoreCacheChildren: Bool { true }
   let didSet = CurrentValueRelay(())
+  @inlinable
+  @inline(__always)
   var isInvalid: Bool { false }
 
   private var bufferedActions: [Root.Action] = []
@@ -194,21 +204,33 @@ final class ScopedCore<Base: Core, State, Action>: Core {
     self.stateKeyPath = stateKeyPath
     self.actionKeyPath = actionKeyPath
   }
+  @inlinable
+  @inline(__always)
   var state: State {
     base.state[keyPath: stateKeyPath]
   }
+  @inlinable
+  @inline(__always)
   func send(_ action: Action) -> Task<Void, Never>? {
     base.send(actionKeyPath(action))
   }
+  @inlinable
+  @inline(__always)
   var canStoreCacheChildren: Bool {
     base.canStoreCacheChildren
   }
+  @inlinable
+  @inline(__always)
   var didSet: CurrentValueRelay<Void> {
     base.didSet
   }
+  @inlinable
+  @inline(__always)
   var isInvalid: Bool {
     base.isInvalid
   }
+  @inlinable
+  @inline(__always)
   var effectCancellables: [UUID: AnyCancellable] {
     base.effectCancellables
   }
@@ -231,11 +253,15 @@ final class IfLetCore<Base: Core, State, Action>: Core {
     self.stateKeyPath = stateKeyPath
     self.actionKeyPath = actionKeyPath
   }
+  @inlinable
+  @inline(__always)
   var state: State {
     let state = base.state[keyPath: stateKeyPath] ?? cachedState
     cachedState = state
     return state
   }
+  @inlinable
+  @inline(__always)
   func send(_ action: Action) -> Task<Void, Never>? {
     #if DEBUG
       if BindingLocal.isActive && isInvalid {
@@ -244,15 +270,23 @@ final class IfLetCore<Base: Core, State, Action>: Core {
     #endif
     return base.send(actionKeyPath(action))
   }
+  @inlinable
+  @inline(__always)
   var canStoreCacheChildren: Bool {
     base.canStoreCacheChildren
   }
+  @inlinable
+  @inline(__always)
   var didSet: CurrentValueRelay<Void> {
     base.didSet
   }
+  @inlinable
+  @inline(__always)
   var isInvalid: Bool {
     base.state[keyPath: stateKeyPath] == nil || base.isInvalid
   }
+  @inlinable
+  @inline(__always)
   var effectCancellables: [UUID: AnyCancellable] {
     base.effectCancellables
   }
@@ -271,21 +305,33 @@ final class ClosureScopedCore<Base: Core, State, Action>: Core {
     self.toState = toState
     self.fromAction = fromAction
   }
+  @inlinable
+  @inline(__always)
   var state: State {
     toState(base.state)
   }
+  @inlinable
+  @inline(__always)
   func send(_ action: Action) -> Task<Void, Never>? {
     base.send(fromAction(action))
   }
+  @inlinable
+  @inline(__always)
   var canStoreCacheChildren: Bool {
     false
   }
+  @inlinable
+  @inline(__always)
   var didSet: CurrentValueRelay<Void> {
     base.didSet
   }
+  @inlinable
+  @inline(__always)
   var isInvalid: Bool {
     base.isInvalid
   }
+  @inlinable
+  @inline(__always)
   var effectCancellables: [UUID: AnyCancellable] {
     base.effectCancellables
   }
