@@ -182,7 +182,7 @@ final class RootCore<Root: Reducer>: Core {
 }
 
 final class ScopedCore<Base: Core, State, Action>: Core {
-  var base: Base
+  let base: Base
   let stateKeyPath: KeyPath<Base.State, State>
   let actionKeyPath: CaseKeyPath<Base.Action, Action>
   init(
@@ -215,7 +215,7 @@ final class ScopedCore<Base: Core, State, Action>: Core {
 }
 
 final class IfLetCore<Base: Core, State, Action>: Core {
-  var base: Base
+  let base: Base
   var cachedState: State
   let stateKeyPath: KeyPath<Base.State, State?>
   let actionKeyPath: CaseKeyPath<Base.Action, Action>
@@ -259,7 +259,7 @@ final class IfLetCore<Base: Core, State, Action>: Core {
 }
 
 final class ClosureScopedCore<Base: Core, State, Action>: Core {
-  var base: Base
+  let base: Base
   let toState: (Base.State) -> State
   let fromAction: (Action) -> Base.Action
   init(
