@@ -41,8 +41,8 @@ swiftSettings: [
 ]),
 ```
 
-And you can enable this feature in Xcode by navigating to your project's build settings in Xcode,
-and adding a new "Other Swift Flags" flag:
+And you can [enable this feature in Xcode](https://www.swift.org/blog/using-upcoming-feature-flags/)
+by navigating to your project's build settings in Xcode, and adding a new "Other Swift Flags" flag:
 
 ```
 -enable-upcoming-feature InferSendableFromCaptures
