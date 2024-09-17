@@ -81,37 +81,40 @@ extension Store where State: ObservableState {
   ///   - column: The source `#column` associated with the scoping.
   /// - Returns: An optional store of non-optional child state and actions.
   public func scope<ChildState, ChildAction>(
-    state stateKeyPath: KeyPath<State, ChildState?>,
-    action actionKeyPath: CaseKeyPath<Action, ChildAction>,
+    state stateKeyPath: _KeyPath<State, ChildState?>,
+    action actionKeyPath: _CaseKeyPath<Action, ChildAction>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) -> Store<ChildState, ChildAction>? {
-    if !core.canStoreCacheChildren {
-      reportIssue(
-        uncachedStoreWarning(self),
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
-    }
-    let id = id(state: stateKeyPath, action: actionKeyPath)
-    guard let childState = state[keyPath: stateKeyPath]
-    else {
-      children[id] = nil  // TODO: Eager?
-      return nil
-    }
-    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
-      IfLetCore(
-        base: core,
-        cachedState: childState,
-        stateKeyPath: stateKeyPath,
-        actionKeyPath: actionKeyPath
-      )
-    }
-    return scope(id: id, childCore: open(core))
+    fatalError()
+//    let canStoreCacheChildren = core.assumeIsolated({ $0.canStoreCacheChildren })
+//    if !canStoreCacheChildren {
+//      reportIssue(
+//        uncachedStoreWarning(self),
+//        fileID: fileID,
+//        filePath: filePath,
+//        line: line,
+//        column: column
+//      )
+//    }
+
+//    let id = id(state: stateKeyPath, action: actionKeyPath)
+//    guard let childState = state[keyPath: stateKeyPath]
+//    else {
+//      children[id] = nil  // TODO: Eager?
+//      return nil
+//    }
+//    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
+//      IfLetCore(
+//        base: core,
+//        cachedState: childState,
+//        stateKeyPath: stateKeyPath,
+//        actionKeyPath: actionKeyPath
+//      )
+//    }
+//    return scope(id: id, childCore: open(core))
   }
 }
 
@@ -168,8 +171,8 @@ extension Binding {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: _KeyPath<State, ChildState?>,
+    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #fileID,
     line: UInt = #line,
@@ -243,8 +246,8 @@ extension SwiftUI.Bindable {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: _KeyPath<State, ChildState?>,
+    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #fileID,
     line: UInt = #line,
@@ -316,8 +319,8 @@ extension Perception.Bindable {
   ///   - action: A case key path to presentation child actions.
   /// - Returns: A binding of an optional child store.
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: _KeyPath<State, ChildState?>,
+    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -344,8 +347,8 @@ extension UIBindable {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: _KeyPath<State, ChildState?>,
+    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -369,8 +372,8 @@ extension Store where State: ObservableState {
   @_spi(Internals)
   public subscript<ChildState, ChildAction>(
     id id: AnyHashable?,
-    state state: KeyPath<State, ChildState?>,
-    action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state state: _KeyPath<State, ChildState?>,
+    action action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
     isInViewBody isInViewBody: Bool,
     fileID fileID: _HashableStaticString,
     filePath filePath: _HashableStaticString,
@@ -382,7 +385,10 @@ extension Store where State: ObservableState {
         _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
           self.scope(
             state: state,
-            action: action.appending(path: \.presented),
+            action: unsafeBitCast(
+              action.appending(path: \.presented),
+              to: _CaseKeyPath<Action, ChildAction>.self
+            ) ,
             fileID: fileID.rawValue,
             filePath: filePath.rawValue,
             line: line,
@@ -401,42 +407,47 @@ extension Store where State: ObservableState {
       #endif
     }
     set {
-      if newValue == nil,
-        let childState = self.state[keyPath: state],
-        id == _identifiableID(childState),
-        !self.core.isInvalid
-      {
-        self.send(action(.dismiss))
-        if self.state[keyPath: state] != nil {
-          reportIssue(
-            """
-            A binding at "\(fileID):\(line)" was set to "nil", but the store destination wasn't \
-            nil'd out.
-
-            This usually means an "ifLet" has not been integrated with the reducer powering the \
-            store, and this reducer is responsible for handling presentation actions.
-
-            To fix this, ensure that "ifLet" is invoked from the reducer's "body":
-
-                Reduce { state, action in
-                  // ...
-                }
-                .ifLet(\\.destination, action: \\.destination) {
-                  Destination()
-                }
-
-            And ensure that every parent reducer is integrated into the root reducer that powers \
-            the store.
-            """,
-            fileID: fileID.rawValue,
-            filePath: filePath.rawValue,
-            line: line,
-            column: column
-          )
-          return
-        }
-      }
+//      if newValue == nil,
+//        let childState = self.state[keyPath: state],
+//        id == _identifiableID(childState),
+//        !self.core.assumeIsolated({ $0.isInvalid })
+//      {
+//        self.send(action(.dismiss))
+//        if self.state[keyPath: state] != nil {
+//          reportIssue(
+//            """
+//            A binding at "\(fileID):\(line)" was set to "nil", but the store destination wasn't \
+//            nil'd out.
+//
+//            This usually means an "ifLet" has not been integrated with the reducer powering the \
+//            store, and this reducer is responsible for handling presentation actions.
+//
+//            To fix this, ensure that "ifLet" is invoked from the reducer's "body":
+//
+//                Reduce { state, action in
+//                  // ...
+//                }
+//                .ifLet(\\.destination, action: \\.destination) {
+//                  Destination()
+//                }
+//
+//            And ensure that every parent reducer is integrated into the root reducer that powers \
+//            the store.
+//            """,
+//            fileID: fileID.rawValue,
+//            filePath: filePath.rawValue,
+//            line: line,
+//            column: column
+//          )
+//          return
+//        }
+//      }
     }
+  }
+
+  var isInvalid: Bool {
+    fatalError()
+    //core.assumeIsolated { $0.isInvalid }
   }
 }
 

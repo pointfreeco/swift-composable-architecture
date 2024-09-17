@@ -1,4 +1,4 @@
-public struct _HashableStaticString: RawRepresentable {
+public struct _HashableStaticString: RawRepresentable, Sendable {
   public let rawValue: StaticString
 
   public init(rawValue: StaticString) {

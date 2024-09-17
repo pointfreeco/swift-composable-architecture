@@ -59,7 +59,7 @@ extension Store {
       .sink { [weak self] state in
         if let self, let state {
           @MainActor
-          func open(_ core: some Core<State, Action>) -> any Core<Wrapped, Action> {
+          func open(_ core: some Core<State, Action>, state: sending Wrapped) -> any Core<Wrapped, Action> {
             IfLetCore(
               base: core,
               cachedState: state,
@@ -67,7 +67,7 @@ extension Store {
               actionKeyPath: \.self
             )
           }
-          unwrap(self.scope(id: nil, childCore: open(self.core)))
+          unwrap(self.scope(id: nil, childCore: open(self.core, state: state)))
         } else {
           `else`()
         }

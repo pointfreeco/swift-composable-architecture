@@ -67,11 +67,12 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       )
       @MainActor
       func open(
-        _ core: some Core<StackState<State>, StackAction<State, Action>>
+        _ core: some Core<StackState<State>, StackAction<State, Action>>,
+        element: sending State
       ) -> any Core<State, Action> {
         IfLetCore(
           base: core,
-          cachedState: component.element,
+          cachedState: element,
           stateKeyPath: \.[
             id:component.id,
             fileID:_HashableStaticString(rawValue: fileID),
@@ -82,7 +83,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
           actionKeyPath: \.[id:component.id]
         )
       }
-      return destination(store.scope(id: id, childCore: open(store.core)))
+      return destination(store.scope(id: id, childCore: open(store.core, element: component.element)))
     }
     self.root = root()
     self.destination = navigationDestination(component:)
@@ -132,11 +133,12 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       } else {
         @MainActor
         func open(
-          _ core: some Core<StackState<State>, StackAction<State, Action>>
+          _ core: some Core<StackState<State>, StackAction<State, Action>>,
+          state: sending State
         ) -> any Core<State, Action> {
           IfLetCore(
             base: core,
-            cachedState: component.element,
+            cachedState: state,
             stateKeyPath: \.[
               id:component.id,
               fileID:_HashableStaticString(rawValue: fileID),
@@ -147,7 +149,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
             actionKeyPath: \.[id:component.id]
           )
         }
-        return SwitchStore(store.scope(id: id, childCore: open(store.core)), content: destination)
+        return SwitchStore(store.scope(id: id, childCore: open(store.core, state: component.element)), content: destination)
       }
     }
 

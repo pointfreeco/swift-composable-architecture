@@ -180,12 +180,24 @@ extension Effect {
 /// context.
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
-@MainActor
-public struct Send<Action>: Sendable {
-  let send: @MainActor @Sendable (Action) -> Void
+//@MainActor
 
-  public init(send: @escaping @MainActor @Sendable (Action) -> Void) {
+private actor DefaultIsolation {}
+
+public actor Send<Action>: Sendable {
+  public let isolation: any Actor
+  let send: @Sendable (Action) -> Void
+
+  public init(
+    isolation: isolated (any Actor)? = #isolation,
+    send: @escaping @Sendable (Action) -> Void
+  ) {
+    self.isolation = isolation ?? DefaultIsolation()
     self.send = send
+  }
+
+  public nonisolated var unownedExecutor: UnownedSerialExecutor {
+    isolation.unownedExecutor
   }
 
   /// Sends an action back into the system from an effect.
@@ -210,7 +222,7 @@ public struct Send<Action>: Sendable {
   /// - Parameters:
   ///   - action: An action.
   ///   - transaction: A transaction.
-  public func callAsFunction(_ action: Action, transaction: Transaction) {
+  public func callAsFunction(_ action: sending Action, transaction: Transaction) {
     guard !Task.isCancelled else { return }
     withTransaction(transaction) {
       self(action)
@@ -372,8 +384,10 @@ extension Effect {
           operation: .run(priority) { send in
             await escaped.yield {
               await operation(
-                Send { action in
-                  send(transform(action))
+                Send(isolation: send.isolation) { action in
+                  send.assumeIsolated { [action = UncheckedSendable(action)] in
+                    $0(transform(action.wrappedValue))
+                  }
                 }
               )
             }

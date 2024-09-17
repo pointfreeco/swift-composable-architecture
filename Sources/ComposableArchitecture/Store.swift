@@ -141,7 +141,14 @@ public final class Store<State, Action> {
   var children: [ScopeID<State, Action>: AnyObject] = [:]
 
   let core: any Core<State, Action>
-  @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] { core.effectCancellables }
+  @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] {
+    func open(_ core: some Core<State, Action>) -> [UUID: AnyCancellable] {
+      core.assumeIsolated { core in
+        UncheckedSendable(core.effectCancellables)
+      }.value
+    }
+    return open(core)
+  }
 
   #if !os(visionOS)
     let _$observationRegistrar = PerceptionRegistrar(
@@ -291,8 +298,8 @@ public final class Store<State, Action> {
   ///   - action: A case key path from `Action` to `ChildAction`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state: KeyPath<State, ChildState>,
-    action: CaseKeyPath<Action, ChildAction>
+    state: _KeyPath<State, ChildState>,
+    action: _CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
     func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
       ScopedCore(base: core, stateKeyPath: state, actionKeyPath: action)
@@ -304,18 +311,19 @@ public final class Store<State, Action> {
     id: ScopeID<State, Action>?,
     childCore: @autoclosure () -> any Core<ChildState, ChildAction>
   ) -> Store<ChildState, ChildAction> {
-    guard
-      core.canStoreCacheChildren,
-      let id,
-      let child = children[id] as? Store<ChildState, ChildAction>
-    else {
-      let child = Store<ChildState, ChildAction>(core: childCore())
-      if core.canStoreCacheChildren, let id {
-        children[id] = child
-      }
-      return child
-    }
-    return child
+    fatalError()
+//    guard
+//      core.assumeIsolated({ $0.canStoreCacheChildren }),
+//      let id,
+//      let child = children[id] as? Store<ChildState, ChildAction>
+//    else {
+//      let child = Store<ChildState, ChildAction>(core: childCore())
+//      if core.assumeIsolated({ $0.canStoreCacheChildren }), let id {
+//        children[id] = child
+//      }
+//      return child
+//    }
+//    return child
   }
 
   @available(
@@ -324,15 +332,15 @@ public final class Store<State, Action> {
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (_ state: State) -> ChildState,
-    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+    state toChildState: @escaping @Sendable (_ state: State) -> ChildState,
+    action fromChildAction: @escaping @Sendable (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
     _scope(state: toChildState, action: fromChildAction)
   }
 
   func _scope<ChildState, ChildAction>(
-    state toChildState: @escaping (_ state: State) -> ChildState,
-    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+    state toChildState: @escaping @Sendable (_ state: State) -> ChildState,
+    action fromChildAction: @escaping @Sendable (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
     func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
       ClosureScopedCore(
@@ -346,13 +354,20 @@ public final class Store<State, Action> {
 
   @_spi(Internals)
   public var currentState: State {
-    core.state
+    func open(_ core: some Core<State, Action>) -> State {
+      core.assumeIsolated { core in
+        UncheckedSendable(core.state)
+      }
+      .value
+    }
+    return open(core)
   }
 
   @_spi(Internals)
   @_disfavoredOverload
   public func send(_ action: Action) -> Task<Void, Never>? {
-    core.send(action)
+    fatalError()
+//    core.assumeIsolated { [action = UncheckedSendable(action)] in $0.send(action.wrappedValue) }
   }
 
   private init(core: some Core<State, Action>) {
@@ -361,14 +376,15 @@ public final class Store<State, Action> {
 
     if let stateType = State.self as? any ObservableState.Type {
       func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
-        core.didSet
-          .compactMap { [weak self] in (self?.currentState as? T)?._$id }
-          .removeDuplicates()
-          .dropFirst()
-          .sink { [weak self] _ in
-            guard let self else { return }
-            self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
-          }
+        fatalError()
+//        core.assumeIsolated { $0.didSet }
+//          .compactMap { [weak self] in (self?.currentState as? T)?._$id }
+//          .removeDuplicates()
+//          .dropFirst()
+//          .sink { [weak self] _ in
+//            guard let self else { return }
+//            self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+//          }
       }
       self.parentCancellable = subscribeToDidSet(stateType)
     }
@@ -391,10 +407,11 @@ public final class Store<State, Action> {
   ///   .sink { ... }
   /// ```
   public var publisher: StorePublisher<State> {
-    StorePublisher(
-      store: self,
-      upstream: self.core.didSet.map { self.currentState }
-    )
+    fatalError()
+//    StorePublisher(
+//      store: self,
+//      upstream: core.assumeIsolated { $0.didSet }.map { self.currentState }
+//    )
   }
 
   @_spi(Internals) public func id<ChildState, ChildAction>(

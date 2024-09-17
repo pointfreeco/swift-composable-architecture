@@ -65,23 +65,24 @@ extension Store where State: ObservableState {
   /// - Returns: An collection of stores of child state.
   @_disfavoredOverload
   public func scope<ElementID, ElementState, ElementAction>(
-    state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
-    action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>,
+    state: _KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
+    action: _CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
-    if !core.canStoreCacheChildren {
-      reportIssue(
-        uncachedStoreWarning(self),
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
-    }
-    return _StoreCollection(self.scope(state: state, action: action))
+    return Array()
+//    if !core.assumeIsolated({ $0.canStoreCacheChildren }) {
+//      reportIssue(
+//        uncachedStoreWarning(self),
+//        fileID: fileID,
+//        filePath: filePath,
+//        line: line,
+//        column: column
+//      )
+//    }
+//    return _StoreCollection(self.scope(state: state, action: action))
   }
 }
 
@@ -125,16 +126,17 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
       else {
         @MainActor
         func open(
-          _ core: some Core<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
+          _ core: some Core<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>,
+          state: sending State
         ) -> any Core<State, Action> {
           IfLetCore(
             base: core,
-            cachedState: self.data[position],
+            cachedState: state,
             stateKeyPath: \.[id:elementID],
             actionKeyPath: \.[id:elementID]
           )
         }
-        return self.store.scope(id: scopeID, childCore: open(self.store.core))
+        return self.store.scope(id: scopeID, childCore: open(self.store.core, state: self.data[position]))
       }
       return child
     }

@@ -1,8 +1,8 @@
 import Combine
 import Foundation
 
-@MainActor
-protocol Core<State, Action>: AnyObject, Sendable {
+//@MainActor
+protocol Core<State, Action>: Actor, Sendable {
   associatedtype State
   associatedtype Action
   var state: State { get }
@@ -15,7 +15,7 @@ protocol Core<State, Action>: AnyObject, Sendable {
   var effectCancellables: [UUID: AnyCancellable] { get }
 }
 
-final class InvalidCore<State, Action>: Core {
+final actor InvalidCore<State, Action>: Core, Sendable {
   var state: State {
     get { fatalError() }
     set { fatalError() }
@@ -34,7 +34,7 @@ final class InvalidCore<State, Action>: Core {
   var effectCancellables: [UUID: AnyCancellable] { [:] }
 }
 
-final class RootCore<Root: Reducer>: Core {
+final actor RootCore<Root: Reducer>: Core {
   var state: Root.State {
     didSet {
       didSet.send(())
@@ -53,13 +53,21 @@ final class RootCore<Root: Reducer>: Core {
   private var bufferedActions: [Root.Action] = []
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
+  private let isolation: any Actor
   init(
     initialState: Root.State,
-    reducer: Root
+    reducer: Root,
+    isolation: isolated (any Actor)? = #isolation
   ) {
     self.state = initialState
     self.reducer = reducer
+    self.isolation = isolation ?? DefaultIsolation()
   }
+
+  nonisolated var unownedExecutor: UnownedSerialExecutor {
+    isolation.unownedExecutor
+  }
+
   func send(_ action: Root.Action) -> Task<Void, Never>? {
     _withoutPerceptionChecking {
       send(action, originatingFrom: nil)
@@ -102,30 +110,31 @@ final class RootCore<Root: Reducer>: Core {
         let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
         let uuid = UUID()
         let effectCancellable = withEscapedDependencies { continuation in
-          publisher
-            .receive(on: UIScheduler.shared)
-            .handleEvents(receiveCancel: { [weak self] in self?.effectCancellables[uuid] = nil })
-            .sink(
-              receiveCompletion: { [weak self] _ in
-                boxedTask.wrappedValue?.cancel()
-                didComplete = true
-                self?.effectCancellables[uuid] = nil
-              },
-              receiveValue: { [weak self] effectAction in
-                guard let self else { return }
-                if let task = continuation.yield({
-                  self.send(effectAction, originatingFrom: action)
-                }) {
-                  tasks.withValue { $0.append(task) }
-                }
-              }
-            )
+          AnyCancellable {}
+//          publisher
+//            .receive(on: UIScheduler.shared)
+//            .handleEvents(receiveCancel: { [weak self] in self?.effectCancellables[uuid] = nil })
+//            .sink(
+//              receiveCompletion: { [weak self] _ in
+//                boxedTask.wrappedValue?.cancel()
+//                didComplete = true
+//                self?.effectCancellables[uuid] = nil
+//              },
+//              receiveValue: { [weak self] effectAction in
+//                guard let self else { return }
+//                if let task = continuation.yield({
+//                  self.send(effectAction, originatingFrom: action)
+//                }) {
+//                  tasks.withValue { $0.append(task) }
+//                }
+//              }
+//            )
         }
 
         if !didComplete {
-          let task = Task<Void, Never> { @MainActor in
+          let task = Task<Void, Never> { [effectCancellable = UncheckedSendable(effectCancellable)] in
             for await _ in AsyncStream<Void>.never {}
-            effectCancellable.cancel()
+            effectCancellable.wrappedValue.cancel()
           }
           boxedTask.wrappedValue = task
           tasks.withValue { $0.append(task) }
@@ -133,33 +142,35 @@ final class RootCore<Root: Reducer>: Core {
         }
       case let .run(priority, operation):
         withEscapedDependencies { continuation in
-          let task = Task(priority: priority) { @MainActor in
+          let task = Task(priority: priority) {
             let isCompleted = LockIsolated(false)
             defer { isCompleted.setValue(true) }
             await operation(
-              Send { effectAction in
+              Send(isolation: self) { effectAction in
                 if isCompleted.value {
-                  reportIssue(
-                    """
-                    An action was sent from a completed effect:
-
-                      Action:
-                        \(debugCaseOutput(effectAction))
-
-                      Effect returned from:
-                        \(debugCaseOutput(action))
-
-                    Avoid sending actions using the 'send' argument from 'Effect.run' after \
-                    the effect has completed. This can happen if you escape the 'send' \
-                    argument in an unstructured context.
-
-                    To fix this, make sure that your 'run' closure does not return until \
-                    you're done calling 'send'.
-                    """
-                  )
+//                  reportIssue(
+//                    """
+//                    An action was sent from a completed effect:
+//
+//                      Action:
+//                        \(debugCaseOutput(effectAction))
+//
+//                      Effect returned from:
+//                        \(debugCaseOutput(action))
+//
+//                    Avoid sending actions using the 'send' argument from 'Effect.run' after \
+//                    the effect has completed. This can happen if you escape the 'send' \
+//                    argument in an unstructured context.
+//
+//                    To fix this, make sure that your 'run' closure does not return until \
+//                    you're done calling 'send'.
+//                    """
+//                  )
                 }
                 if let task = continuation.yield({
-                  self.send(effectAction, originatingFrom: action)
+                  self.assumeIsolated { [effectAction = UncheckedSendable(effectAction)] in
+                    $0.send(effectAction.wrappedValue, originatingFrom: nil)
+                  }
                 }) {
                   tasks.withValue { $0.append(task) }
                 }
@@ -191,72 +202,78 @@ final class RootCore<Root: Reducer>: Core {
   private actor DefaultIsolation {}
 }
 
-final class ScopedCore<Base: Core, State, Action>: Core {
+final actor ScopedCore<Base: Core, State, Action>: Core {
   let base: Base
-  let stateKeyPath: KeyPath<Base.State, State>
-  let actionKeyPath: CaseKeyPath<Base.Action, Action>
+  let stateKeyPath: _KeyPath<Base.State, State>
+  let actionKeyPath: _CaseKeyPath<Base.Action, Action>
   init(
     base: Base,
-    stateKeyPath: KeyPath<Base.State, State>,
-    actionKeyPath: CaseKeyPath<Base.Action, Action>
+    stateKeyPath: _KeyPath<Base.State, State>,
+    actionKeyPath: _CaseKeyPath<Base.Action, Action>
   ) {
     self.base = base
     self.stateKeyPath = stateKeyPath
     self.actionKeyPath = actionKeyPath
   }
+  nonisolated var unownedExecutor: UnownedSerialExecutor {
+    base.unownedExecutor
+  }
   @inlinable
   @inline(__always)
   var state: State {
-    base.state[keyPath: stateKeyPath]
+    base.assumeIsolated { UncheckedSendable($0.state[keyPath: stateKeyPath]) }.wrappedValue
   }
   @inlinable
   @inline(__always)
   func send(_ action: Action) -> Task<Void, Never>? {
-    base.send(actionKeyPath(action))
+    base.assumeIsolated { [action = UncheckedSendable(action)] in $0.send(actionKeyPath(action.wrappedValue)) }
   }
   @inlinable
   @inline(__always)
   var canStoreCacheChildren: Bool {
-    base.canStoreCacheChildren
+    base.assumeIsolated { $0.canStoreCacheChildren }
   }
   @inlinable
   @inline(__always)
   var didSet: CurrentValueRelay<Void> {
-    base.didSet
+    base.assumeIsolated { $0.didSet }
   }
   @inlinable
   @inline(__always)
   var isInvalid: Bool {
-    base.isInvalid
+    base.assumeIsolated { $0.isInvalid }
   }
   @inlinable
   @inline(__always)
   var effectCancellables: [UUID: AnyCancellable] {
-    base.effectCancellables
+    base.assumeIsolated { UncheckedSendable($0.effectCancellables) }.wrappedValue
   }
 }
 
-final class IfLetCore<Base: Core, State, Action>: Core {
+final actor IfLetCore<Base: Core, State, Action>: Core {
   let base: Base
   var cachedState: State
-  let stateKeyPath: KeyPath<Base.State, State?>
-  let actionKeyPath: CaseKeyPath<Base.Action, Action>
+  let stateKeyPath: _KeyPath<Base.State, State?>
+  let actionKeyPath: _CaseKeyPath<Base.Action, Action>
   var parentCancellable: AnyCancellable?
   init(
     base: Base,
     cachedState: State,
-    stateKeyPath: KeyPath<Base.State, State?>,
-    actionKeyPath: CaseKeyPath<Base.Action, Action>
+    stateKeyPath: _KeyPath<Base.State, State?>,
+    actionKeyPath: _CaseKeyPath<Base.Action, Action>
   ) {
     self.base = base
     self.cachedState = cachedState
     self.stateKeyPath = stateKeyPath
     self.actionKeyPath = actionKeyPath
   }
+  nonisolated var unownedExecutor: UnownedSerialExecutor {
+    base.unownedExecutor
+  }
   @inlinable
   @inline(__always)
   var state: State {
-    let state = base.state[keyPath: stateKeyPath] ?? cachedState
+    let state = base.assumeIsolated { UncheckedSendable($0.state[keyPath: stateKeyPath]) }.wrappedValue ?? cachedState
     cachedState = state
     return state
   }
@@ -268,31 +285,31 @@ final class IfLetCore<Base: Core, State, Action>: Core {
         return nil
       }
     #endif
-    return base.send(actionKeyPath(action))
+    return base.assumeIsolated { [action = UncheckedSendable(action)] in $0.send(actionKeyPath(action.wrappedValue)) }
   }
   @inlinable
   @inline(__always)
   var canStoreCacheChildren: Bool {
-    base.canStoreCacheChildren
+    base.assumeIsolated { $0.canStoreCacheChildren }
   }
   @inlinable
   @inline(__always)
   var didSet: CurrentValueRelay<Void> {
-    base.didSet
+    base.assumeIsolated { $0.didSet }
   }
   @inlinable
   @inline(__always)
   var isInvalid: Bool {
-    base.state[keyPath: stateKeyPath] == nil || base.isInvalid
+    base.assumeIsolated { $0.state[keyPath: stateKeyPath] == nil || $0.isInvalid }
   }
   @inlinable
   @inline(__always)
   var effectCancellables: [UUID: AnyCancellable] {
-    base.effectCancellables
+    base.assumeIsolated { UncheckedSendable($0.effectCancellables) }.wrappedValue
   }
 }
 
-final class ClosureScopedCore<Base: Core, State, Action>: Core {
+final actor ClosureScopedCore<Base: Core, State, Action>: Core {
   let base: Base
   let toState: (Base.State) -> State
   let fromAction: (Action) -> Base.Action
@@ -305,15 +322,19 @@ final class ClosureScopedCore<Base: Core, State, Action>: Core {
     self.toState = toState
     self.fromAction = fromAction
   }
+  nonisolated var unownedExecutor: UnownedSerialExecutor {
+    base.unownedExecutor
+  }
   @inlinable
   @inline(__always)
   var state: State {
-    toState(base.state)
+    toState(base.assumeIsolated { UncheckedSendable($0.state) }.wrappedValue)
   }
   @inlinable
   @inline(__always)
   func send(_ action: Action) -> Task<Void, Never>? {
-    base.send(fromAction(action))
+    let action = UncheckedSendable(fromAction(action))
+    return base.assumeIsolated { $0.send(action.wrappedValue) }
   }
   @inlinable
   @inline(__always)
@@ -323,16 +344,16 @@ final class ClosureScopedCore<Base: Core, State, Action>: Core {
   @inlinable
   @inline(__always)
   var didSet: CurrentValueRelay<Void> {
-    base.didSet
+    base.assumeIsolated { $0.didSet }
   }
   @inlinable
   @inline(__always)
   var isInvalid: Bool {
-    base.isInvalid
+    base.assumeIsolated { $0.isInvalid }
   }
   @inlinable
   @inline(__always)
   var effectCancellables: [UUID: AnyCancellable] {
-    base.effectCancellables
+    base.assumeIsolated { UncheckedSendable($0.effectCancellables) }.wrappedValue
   }
 }

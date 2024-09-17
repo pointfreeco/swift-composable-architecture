@@ -101,8 +101,8 @@ extension View {
     State, Action, DestinationState, DestinationAction, Destination: View
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination
   ) -> some View {

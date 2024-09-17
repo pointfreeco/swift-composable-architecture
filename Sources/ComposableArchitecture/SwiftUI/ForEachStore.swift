@@ -136,7 +136,7 @@ public struct ForEachStore<
 
     func open(
       _ core: some Core<IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>>,
-      element: EachState,
+      element: sending EachState,
       id: ID
     ) -> any Core<EachState, EachAction> {
       IfLetCore(
@@ -208,7 +208,7 @@ public struct ForEachStore<
 
     func open(
       _ core: some Core<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
-      element: EachState,
+      element: sending EachState,
       id: ID
     ) -> any Core<EachState, EachAction> {
       IfLetCore(

@@ -99,8 +99,8 @@ extension View {
   #endif
   public func popover<State, Action, DestinationState, DestinationAction, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
     arrowEdge: Edge = .top,
     @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) -> Content

@@ -72,14 +72,14 @@ public struct IfLetStore<State, Action, Content: View>: View {
     self.content = { viewStore in
       if let state = viewStore.state {
         @MainActor
-        func open(_ core: some Core<State?, Action>) -> any Core<State, Action> {
+        func open(_ core: some Core<State?, Action>, state: sending State) -> any Core<State, Action> {
           IfLetCore(base: core, cachedState: state, stateKeyPath: \.self, actionKeyPath: \.self)
         }
         return ViewBuilder.buildEither(
           first: ifContent(
             store.scope(
               id: store.id(state: \.!, action: \.self),
-              childCore: open(store.core)
+              childCore: open(store.core, state: state)
             )
           )
         )
@@ -116,13 +116,13 @@ public struct IfLetStore<State, Action, Content: View>: View {
     self.content = { viewStore in
       if let state = viewStore.state {
         @MainActor
-        func open(_ core: some Core<State?, Action>) -> any Core<State, Action> {
+        func open(_ core: some Core<State?, Action>, state: sending State) -> any Core<State, Action> {
           IfLetCore(base: core, cachedState: state, stateKeyPath: \.self, actionKeyPath: \.self)
         }
         return ifContent(
           store.scope(
             id: store.id(state: \.!, action: \.self),
-            childCore: open(store.core)
+            childCore: open(store.core, state: state)
           )
         )
       } else {
@@ -244,8 +244,8 @@ public struct IfLetStore<State, Action, Content: View>: View {
   #endif
   public init<DestinationState, DestinationAction, IfContent, ElseContent>(
     _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
-    state toState: @escaping (_ destinationState: DestinationState) -> State?,
-    action fromAction: @escaping (_ action: Action) -> DestinationAction,
+    state toState: @escaping @Sendable (_ destinationState: DestinationState) -> State?,
+    action fromAction: @escaping @Sendable (_ action: Action) -> DestinationAction,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: @escaping () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
@@ -283,8 +283,8 @@ public struct IfLetStore<State, Action, Content: View>: View {
   #endif
   public init<DestinationState, DestinationAction, IfContent>(
     _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
-    state toState: @escaping (_ destinationState: DestinationState) -> State?,
-    action fromAction: @escaping (_ action: Action) -> DestinationAction,
+    state toState: @escaping @Sendable (_ destinationState: DestinationState) -> State?,
+    action fromAction: @escaping @Sendable (_ action: Action) -> DestinationAction,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
     self.init(
@@ -306,15 +306,25 @@ public struct IfLetStore<State, Action, Content: View>: View {
   }
 }
 
-private final class _IfLetCore<Base: Core<Wrapped?, Action>, Wrapped, Action>: Core {
+private final actor _IfLetCore<Base: Core<Wrapped?, Action>, Wrapped, Action>: Core {
   let base: Base
   init(base: Base) {
     self.base = base
   }
-  var state: Base.State { base.state }
-  func send(_ action: Action) -> Task<Void, Never>? { base.send(action) }
-  var canStoreCacheChildren: Bool { base.canStoreCacheChildren }
-  var didSet: CurrentValueRelay<Void> { base.didSet }
-  var isInvalid: Bool { state == nil || base.isInvalid }
-  var effectCancellables: [UUID: AnyCancellable] { base.effectCancellables }
+  nonisolated var unownedExecutor: UnownedSerialExecutor {
+    base.unownedExecutor
+  }
+  var state: Base.State { base.assumeIsolated { UncheckedSendable($0.state) }.wrappedValue }
+  func send(_ action: Action) -> Task<Void, Never>? {
+    base.assumeIsolated { [action = UncheckedSendable(action)] in $0.send(action.wrappedValue) }
+  }
+  var canStoreCacheChildren: Bool { base.assumeIsolated { $0.canStoreCacheChildren } }
+  var didSet: CurrentValueRelay<Void> { base.assumeIsolated { $0.didSet } }
+  var isInvalid: Bool { state == nil || base.assumeIsolated { $0.isInvalid } }
+  var effectCancellables: [UUID: AnyCancellable] {
+    base.assumeIsolated {
+      UncheckedSendable($0.effectCancellables)
+    }
+    .wrappedValue
+  }
 }

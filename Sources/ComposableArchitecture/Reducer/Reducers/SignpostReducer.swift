@@ -122,11 +122,11 @@ extension Effect {
             actionOutput
           )
           await operation(
-            Send { action in
+            Send(isolation: send.isolation) { action in
               os_signpost(
                 .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
               )
-              send(action)
+              send.assumeIsolated { [action = UncheckedSendable(action)] in $0(action.wrappedValue) }
             }
           )
           if Task.isCancelled {

@@ -304,27 +304,27 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
       send: { value in
-        #if DEBUG
-          let bindingState = self.state[keyPath: keyPath]
-          let debugger = BindableActionViewStoreDebugger(
-            value: value,
-            bindableActionType: ViewAction.self,
-            context: .bindingState,
-            isInvalidated: { [weak self] in self?.store.core.isInvalid ?? true },
-            fileID: bindingState.fileID,
-            filePath: bindingState.filePath,
-            line: bindingState.line,
-            column: bindingState.column
-          )
+//        #if DEBUG
+//          let bindingState = self.state[keyPath: keyPath]
+//          let debugger = BindableActionViewStoreDebugger(
+//            value: value,
+//            bindableActionType: ViewAction.self,
+//            context: .bindingState,
+//            isInvalidated: { [weak self] in self?.store.core.assumeIsolated { $0.isInvalid } ?? true },
+//            fileID: bindingState.fileID,
+//            filePath: bindingState.filePath,
+//            line: bindingState.line,
+//            column: bindingState.column
+//          )
+//          let set: @Sendable (inout ViewState) -> Void = {
+//            $0[keyPath: keyPath].wrappedValue = value
+//            debugger.wasCalled.setValue(true)
+//          }
+//        #else
           let set: @Sendable (inout ViewState) -> Void = {
             $0[keyPath: keyPath].wrappedValue = value
-            debugger.wasCalled.setValue(true)
           }
-        #else
-          let set: @Sendable (inout ViewState) -> Void = {
-            $0[keyPath: keyPath].wrappedValue = value
-          }
-        #endif
+//        #endif
         return .binding(.init(keyPath: keyPath, set: set, value: value))
       }
     )
@@ -455,26 +455,26 @@ public struct BindingViewStore<State> {
       binding: ViewStore(self.store, observe: { $0[keyPath: keyPath].wrappedValue })
         .binding(
           send: { value in
-            #if DEBUG
-              let debugger = BindableActionViewStoreDebugger(
-                value: value,
-                bindableActionType: self.bindableActionType,
-                context: .bindingStore,
-                isInvalidated: { [weak store] in store?.core.isInvalid ?? true },
-                fileID: self.fileID,
-                filePath: self.filePath,
-                line: self.line,
-                column: self.column
-              )
+//            #if DEBUG
+//              let debugger = BindableActionViewStoreDebugger(
+//                value: value,
+//                bindableActionType: self.bindableActionType,
+//                context: .bindingStore,
+//                isInvalidated: { [weak store] in store?.core.assumeIsolated { $0.isInvalid } ?? true },
+//                fileID: self.fileID,
+//                filePath: self.filePath,
+//                line: self.line,
+//                column: self.column
+//              )
+//              let set: @Sendable (inout State) -> Void = {
+//                $0[keyPath: keyPath].wrappedValue = value
+//                debugger.wasCalled.setValue(true)
+//              }
+//            #else
               let set: @Sendable (inout State) -> Void = {
                 $0[keyPath: keyPath].wrappedValue = value
-                debugger.wasCalled.setValue(true)
               }
-            #else
-              let set: @Sendable (inout State) -> Void = {
-                $0[keyPath: keyPath].wrappedValue = value
-              }
-            #endif
+//            #endif
             return .init(keyPath: keyPath, set: set, value: value)
           }
         )
@@ -497,18 +497,23 @@ extension ViewStore {
   ///     are equal, repeat view computations are removed.
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) where ViewAction: BindableAction<State> {
     self.init(
       store,
       observe: { (_: State) in
-        toViewState(
-          BindingViewStore(
-            store: store._scope(state: { $0 }, action: fromViewAction)
+        MainActor.assumeIsolated {
+          UncheckedSendable(
+          toViewState(
+            BindingViewStore(
+              store: store._scope(state: { $0 }, action: fromViewAction)
+            )
           )
-        )
+          )
+        }
+        .value
       },
       send: fromViewAction,
       removeDuplicates: isDuplicate
@@ -529,7 +534,7 @@ extension ViewStore {
   @_disfavoredOverload
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) where ViewAction: BindableAction<State> {
     self.init(
@@ -555,8 +560,8 @@ extension ViewStore where ViewState: Equatable {
   @_disfavoredOverload
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action
   ) where ViewAction: BindableAction<State> {
     self.init(
       store,
@@ -579,11 +584,11 @@ extension ViewStore where ViewState: Equatable {
   @_disfavoredOverload
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState
   ) where ViewAction: BindableAction<State> {
     self.init(
       store,
-      observe: toViewState,
+      observe: { toViewState($0) },
       removeDuplicates: ==
     )
   }
@@ -606,8 +611,8 @@ extension WithViewStore where Content: View {
   @_disfavoredOverload
   public init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
@@ -616,7 +621,12 @@ extension WithViewStore where Content: View {
     self.init(
       store,
       observe: { (_: State) in
-        toViewState(BindingViewStore(store: store._scope(state: { $0 }, action: fromViewAction)))
+        MainActor.assumeIsolated {
+          UncheckedSendable(
+            toViewState(BindingViewStore(store: store._scope(state: { $0 }, action: fromViewAction)))
+          )
+        }
+        .value
       },
       send: fromViewAction,
       removeDuplicates: isDuplicate,
@@ -641,8 +651,8 @@ extension WithViewStore where Content: View {
   @_disfavoredOverload
   public init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
-    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
+    removeDuplicates isDuplicate: @escaping @Sendable (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
@@ -674,8 +684,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   @_disfavoredOverload
   public init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action,
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
@@ -704,15 +714,15 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   @_disfavoredOverload
   public init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
-    @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
+    @ViewBuilder content: @escaping @Sendable (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
   ) where ViewAction: BindableAction<State> {
     self.init(
       store,
       observe: toViewState,
-      removeDuplicates: ==,
+      removeDuplicates: { $0 == $1 },
       content: content,
       file: file,
       line: line

@@ -119,7 +119,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   equal, repeat view computations are removed.
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: State) -> ViewState,
+    observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self.init(
@@ -147,8 +147,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   equal, repeat view computations are removed.
   public init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: State) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     #if DEBUG
@@ -157,14 +157,15 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     #endif
     self.store = store._scope(state: toViewState, action: fromViewAction)
     self._state = CurrentValueRelay(self.store.withState { $0 })
-    self.viewCancellable = self.store.core.didSet
-      .compactMap { [weak self] in self?.store.withState { $0 } }
-      .removeDuplicates(by: isDuplicate)
-      .dropFirst()
-      .sink { [weak self] in
-        self?.objectWillChange.send()
-        self?._state.value = $0
-      }
+    self.viewCancellable = AnyCancellable {}
+//    self.store.core.assumeIsolated({ $0.didSet })
+//      .compactMap { [weak self] in self?.store.withState { $0 } }
+//      .removeDuplicates(by: isDuplicate)
+//      .dropFirst()
+//      .sink { [weak self] in
+//        self?.objectWillChange.send()
+//        self?._state.value = $0
+//      }
   }
 
   init(_ viewStore: ViewStore<ViewState, ViewAction>) {
@@ -596,7 +597,7 @@ extension ViewStore where ViewState: Equatable {
   ///   changes.
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: State) -> ViewState
+    observe toViewState: @escaping @Sendable (_ state: State) -> ViewState
   ) {
     self.init(store, observe: toViewState, removeDuplicates: ==)
   }
@@ -616,8 +617,8 @@ extension ViewStore where ViewState: Equatable {
   ///   - fromViewAction: A transformation of `ViewAction` that describes what actions can be sent.
   public convenience init<State, Action>(
     _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: State) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action
+    observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action
   ) {
     self.init(store, observe: toViewState, send: fromViewAction, removeDuplicates: ==)
   }

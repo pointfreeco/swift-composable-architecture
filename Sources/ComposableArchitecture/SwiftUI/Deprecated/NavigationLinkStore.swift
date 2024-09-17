@@ -40,8 +40,8 @@ public struct NavigationLinkStore<
 >: View {
   let store: Store<PresentationState<State>, PresentationAction<Action>>
   @ObservedObject var viewStore: ViewStore<Bool, PresentationAction<Action>>
-  let toDestinationState: (State) -> DestinationState?
-  let fromDestinationAction: (DestinationAction) -> Action
+  let toDestinationState: @Sendable (State) -> DestinationState?
+  let fromDestinationAction: @Sendable (DestinationAction) -> Action
   let onTap: () -> Void
   let destination: (Store<DestinationState, DestinationAction>) -> Destination
   let label: Label
@@ -65,8 +65,8 @@ public struct NavigationLinkStore<
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
     onTap: @escaping () -> Void,
     @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination,
@@ -102,7 +102,7 @@ public struct NavigationLinkStore<
     onTap: @escaping () -> Void,
     @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
-  ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
+  ) where State == DestinationState, Action == DestinationAction, State: Identifiable, State.ID: Sendable {
     self.init(
       store,
       state: { $0 },
@@ -116,14 +116,14 @@ public struct NavigationLinkStore<
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
     id: DestinationState.ID,
     onTap: @escaping () -> Void,
     @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination,
     @ViewBuilder label: () -> Label
-  ) where DestinationState: Identifiable {
+  ) where DestinationState: Identifiable, DestinationState.ID: Sendable {
     func open(
       _ core: some Core<PresentationState<State>, PresentationAction<Action>>
     ) -> any Core<PresentationState<State>, PresentationAction<Action>> {
@@ -186,7 +186,7 @@ public struct NavigationLinkStore<
   }
 }
 
-private final class NavigationLinkCore<
+private final actor NavigationLinkCore<
   Base: Core<PresentationState<State>, PresentationAction<Action>>,
   State,
   Action,
@@ -204,14 +204,19 @@ private final class NavigationLinkCore<
     self.id = id
     self.toDestinationState = toDestinationState
   }
+  nonisolated var unownedExecutor: UnownedSerialExecutor {
+    base.unownedExecutor
+  }
   var state: Base.State {
-    base.state
+    base.assumeIsolated { UncheckedSendable($0.state) }.wrappedValue
   }
   func send(_ action: Base.Action) -> Task<Void, Never>? {
-    base.send(action)
+    base.assumeIsolated { [action = UncheckedSendable(action)] in $0.send(action.wrappedValue) }
   }
-  var canStoreCacheChildren: Bool { base.canStoreCacheChildren }
-  var didSet: CurrentValueRelay<Void> { base.didSet }
-  var isInvalid: Bool { state.wrappedValue.flatMap(toDestinationState)?.id != id || base.isInvalid }
-  var effectCancellables: [UUID: AnyCancellable] { base.effectCancellables }
+  var canStoreCacheChildren: Bool { base.assumeIsolated { $0.canStoreCacheChildren } }
+  var didSet: CurrentValueRelay<Void> { base.assumeIsolated { $0.didSet } }
+  var isInvalid: Bool { state.wrappedValue.flatMap(toDestinationState)?.id != id || base.assumeIsolated { $0.isInvalid } }
+  var effectCancellables: [UUID: AnyCancellable] {
+    base.assumeIsolated { UncheckedSendable($0.effectCancellables) }.wrappedValue
+  }
 }

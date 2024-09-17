@@ -117,8 +117,8 @@ public struct SwitchStore<State, Action, Content: View>: View {
     "Use 'switch' with a store of observable state, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-SwitchStore-and-CaseLet-with-switch-and-case]"
 )
 public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: View>: View {
-  public let toCaseState: (EnumState) -> CaseState?
-  public let fromCaseAction: (CaseAction) -> EnumAction
+  public let toCaseState: @Sendable (EnumState) -> CaseState?
+  public let fromCaseAction: @Sendable (CaseAction) -> EnumAction
   public let content: (Store<CaseState, CaseAction>) -> Content
 
   private let fileID: StaticString
@@ -138,8 +138,8 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
   ///   - content: A function that is given a store of the given case's state and returns a view
   ///     that is visible only when the switch store's state matches.
   public init(
-    _ toCaseState: @escaping (EnumState) -> CaseState?,
-    action fromCaseAction: @escaping (CaseAction) -> EnumAction,
+    _ toCaseState: @escaping @Sendable (EnumState) -> CaseState?,
+    action fromCaseAction: @escaping @Sendable (CaseAction) -> EnumAction,
     @ViewBuilder then content: @escaping (_ store: Store<CaseState, CaseAction>) -> Content,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
@@ -181,7 +181,7 @@ extension CaseLet where EnumAction == CaseAction {
   ///   - content: A function that is given a store of the given case's state and returns a view
   ///     that is visible only when the switch store's state matches.
   public init(
-    state toCaseState: @escaping (EnumState) -> CaseState?,
+    state toCaseState: @escaping @Sendable (EnumState) -> CaseState?,
     @ViewBuilder then content: @escaping (_ store: Store<CaseState, CaseAction>) -> Content
   ) {
     self.init(

@@ -55,8 +55,8 @@ extension View {
   #endif
   public func alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,
-    action fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
+    state toDestinationState: @escaping @Sendable (_ state: State) -> AlertState<ButtonAction>?,
+    action fromDestinationAction: @escaping @Sendable (_ alertAction: ButtonAction) -> Action
   ) -> some View {
     self._alert(store: store, state: toDestinationState, action: fromDestinationAction)
   }
@@ -68,8 +68,8 @@ extension View {
   #endif
   private func _alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,
-    action fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
+    state toDestinationState: @escaping @Sendable (_ state: State) -> AlertState<ButtonAction>?,
+    action fromDestinationAction: @escaping @Sendable (_ alertAction: ButtonAction) -> Action
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction

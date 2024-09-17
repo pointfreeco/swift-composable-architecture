@@ -47,9 +47,9 @@ extension Effect {
       return Self(
         operation: .run(priority) { send in
           await operation(
-            Send { value in
+            Send(isolation: send.isolation) { value in
               withTransaction(uncheckedTransaction.value) {
-                send(value)
+                send.assumeIsolated { [value = UncheckedSendable(value)] in $0(value.wrappedValue) }
               }
             }
           )

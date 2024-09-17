@@ -66,8 +66,8 @@ extension View {
   #endif
   public func legacyAlert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,
-    action fromDestinationAction: @escaping (_ alertAction: ButtonAction) -> Action
+    state toDestinationState: @escaping @Sendable (_ state: State) -> AlertState<ButtonAction>?,
+    action fromDestinationAction: @escaping @Sendable (_ alertAction: ButtonAction) -> Action
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
