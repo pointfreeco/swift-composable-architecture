@@ -453,3 +453,99 @@ struct ScreenCView: View {
     }
   )
 }
+
+
+
+//@Reducer
+//struct Feature {
+//  struct State {
+//    var childState = 0
+//  }
+//
+////  enum Action {
+////    case `private`(Private_)
+////    case view(View)
+////    case delegate(Delegate)
+////
+////    enum Private {
+////    }
+////    enum View {
+////    }
+////    enum Delegate {
+////    }
+////  }
+//
+//  @CasePathable
+//  enum Action: ViewAction {
+//    //#PrivateAction(Private.self)
+//    case `private`(Private_)
+//    case view(View)
+//
+//    enum Private {
+//      case response(Int)
+//    }
+//    struct Private_ {
+//      fileprivate let action: Private
+//    }
+//    enum View {
+//      case tap
+//    }
+//
+////    @PrivateAction(of: ChildFeature.Action)
+////    struct ProtectedChild {}
+//
+////    #PrivateAction("ProtectedChild", rawValue: ChildFeature.Action.self)
+//
+////    #PrivateAction("ProtectedChild", rawValue: ChildFeature.Action.self)
+//
+//    //@CasePathable
+////    struct ProtectedChild: CasePathable {
+////      static let allCasePaths = AllCasePaths()
+////
+////      struct AllCasePaths: Sendable {
+////        var action: AnyCasePath<ProtectedChild, PrivateAction> {
+////          AnyCasePath.init(embed: { .init(action: $0) }, extract: \.action)
+////        }
+////      }
+////      fileprivate let action: PrivateAction
+////    }
+//  }
+//  var body: some ReducerOf<Self> {
+//    Reduce { state, action in
+//      switch action {
+//      case let .private(action):
+//        switch action.action {
+//        case .response(_):
+//          <#code#>
+//        }
+//      case .view(_):
+//        <#code#>
+//      }
+//    }
+//  }
+//}
+//
+////@Reducer
+////struct ChildFeature {
+////  struct State { }
+////
+////  @CasePathable
+////  enum Action {
+////    case tap
+////  }
+////}
+//
+//struct V: View {
+//  let store: StoreOf<Feature>
+//  var body: some View {
+//    C(
+//      store: store.scope(state: \.childState, action: \.protected.action)
+//    )
+//  }
+//}
+//struct C: View {
+//  let store: StoreOf<ChildFeature>
+//  var body: some View {
+//    Text("")
+//  }
+//}

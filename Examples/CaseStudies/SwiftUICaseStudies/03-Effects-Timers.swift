@@ -9,6 +9,16 @@ private let readMe = """
   dealing with times in asynchronous code.
   """
 
+//struct Root {
+//  struct State {}
+//  enum Action {
+//    case childDelegate(ChildFeature.Action.Delegate)
+//  }
+//}
+
+//             \.self                 \.never
+// store.scope(initialState: State(), delegating: \.childDelegate)
+
 @Reducer
 struct Timers {
   @ObservableState
@@ -17,31 +27,76 @@ struct Timers {
     var secondsElapsed = 0
   }
 
+
+
+  struct Action {
+    fileprivate let action: InnerAction
+    var delegate: Delegate?
+
+    // case let .child(action):
+    //  switch action.delegate {
+
+    enum InnerAction: ViewAction {
+      case child1(Child1.State)
+      case child2(Child2.State)
+      case child3(Child3.State)
+      case delegate(Delegate)
+      case `private`(Private)
+      case view(View)
+    }
+  }
+
+  @_PrivateAction
   enum Action {
+    case child1(Child1.State)
+    case child2(Child2.State)
+    case child3(Child3.State)
+    case delegate(Delegate)
+    case `private`(Private)
+    case view(View)
+
+
     case onDisappear
-    case timerTicked
+    case `private`(Private_)
     case toggleTimerButtonTapped
+    enum Private {
+      case timerTicked
+    }
+    struct Private_ {
+      fileprivate let action: Private
+    }
+    fileprivate static func `private`(_ action: Private) -> Action {
+      .private(.init(action: action))
+    }
   }
 
   @Dependency(\.continuousClock) var clock
   private enum CancelID { case timer }
 
   var body: some Reducer<State, Action> {
-    Reduce { state, action in
+    Reduce {
+      state,
+      action in
       switch action {
       case .onDisappear:
         return .cancel(id: CancelID.timer)
-
-      case .timerTicked:
-        state.secondsElapsed += 1
-        return .none
-
+        
+      case .private(let action):
+        switch action.action {
+        case .timerTicked:
+          state.secondsElapsed += 1
+          return .none
+        }
+        
       case .toggleTimerButtonTapped:
         state.isTimerActive.toggle()
         return .run { [isTimerActive = state.isTimerActive] send in
           guard isTimerActive else { return }
           for await _ in self.clock.timer(interval: .seconds(1)) {
-            await send(.timerTicked, animation: .interpolatingSpring(stiffness: 3000, damping: 40))
+            await send(
+              .private(.timerTicked),
+              animation: .interpolatingSpring(stiffness: 3000, damping: 40)
+            )
           }
         }
         .cancellable(id: CancelID.timer, cancelInFlight: true)
