@@ -56,7 +56,7 @@ extension DependencyValues {
 
 private enum ScreenshotsKey: DependencyKey {
   static let liveValue: @Sendable () async -> AsyncStream<Void> = {
-    await AsyncStream(
+    AsyncStream(
       NotificationCenter.default
         .notifications(named: UIApplication.userDidTakeScreenshotNotification)
         .map { _ in }
