@@ -2907,7 +2907,7 @@ extension TestStore {
 }
 
 // TODO: Move to `swift-issue-reporting`?
-fileprivate func _withIssueContext<R>(
+private func _withIssueContext<R>(
   fileID: StaticString,
   filePath: StaticString,
   line: UInt,

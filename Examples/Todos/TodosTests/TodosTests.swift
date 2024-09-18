@@ -55,7 +55,7 @@ final class TodosTests: XCTestCase {
       Todos()
     }
 
-    await store.send(\.todos[id:UUID(0)].binding.description, "Learn Composable Architecture") {
+    await store.send(\.todos[id: UUID(0)].binding.description, "Learn Composable Architecture") {
       $0.todos[id: UUID(0)]?.description = "Learn Composable Architecture"
     }
   }
@@ -82,7 +82,7 @@ final class TodosTests: XCTestCase {
       $0.continuousClock = clock
     }
 
-    await store.send(\.todos[id:UUID(0)].binding.isComplete, true) {
+    await store.send(\.todos[id: UUID(0)].binding.isComplete, true) {
       $0.todos[id: UUID(0)]?.isComplete = true
     }
     await clock.advance(by: .seconds(1))
@@ -116,11 +116,11 @@ final class TodosTests: XCTestCase {
       $0.continuousClock = clock
     }
 
-    await store.send(\.todos[id:UUID(0)].binding.isComplete, true) {
+    await store.send(\.todos[id: UUID(0)].binding.isComplete, true) {
       $0.todos[id: UUID(0)]?.isComplete = true
     }
     await clock.advance(by: .milliseconds(500))
-    await store.send(\.todos[id:UUID(0)].binding.isComplete, false) {
+    await store.send(\.todos[id: UUID(0)].binding.isComplete, false) {
       $0.todos[id: UUID(0)]?.isComplete = false
     }
     await clock.advance(by: .seconds(1))
@@ -336,7 +336,7 @@ final class TodosTests: XCTestCase {
     await store.send(\.binding.filter, .completed) {
       $0.filter = .completed
     }
-    await store.send(\.todos[id:UUID(1)].binding.description, "Did this already") {
+    await store.send(\.todos[id: UUID(1)].binding.description, "Did this already") {
       $0.todos[id: UUID(1)]?.description = "Did this already"
     }
   }
