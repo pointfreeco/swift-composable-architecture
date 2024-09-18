@@ -29,6 +29,8 @@
 		CAA9ADC824465D950003A984 /* 03-Effects-CancellationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC724465D950003A984 /* 03-Effects-CancellationTests.swift */; };
 		CAA9ADCA2446605B0003A984 /* 03-Effects-LongLiving.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADC92446605B0003A984 /* 03-Effects-LongLiving.swift */; };
 		CAA9ADCC2446615B0003A984 /* 03-Effects-LongLivingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA9ADCB2446615B0003A984 /* 03-Effects-LongLivingTests.swift */; };
+		CABA60852C9B55770002D4F9 /* DetachedElementStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABA60842C9B55770002D4F9 /* DetachedElementStore.swift */; };
+		CABA60872C9B6E920002D4F9 /* DetachedNavigationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABA60862C9B6E920002D4F9 /* DetachedNavigationStore.swift */; };
 		CABC4F3926AEE00C00D5FA2C /* 03-Effects-Refreshable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3826AEE00C00D5FA2C /* 03-Effects-Refreshable.swift */; };
 		CABC4F3B26AEE20200D5FA2C /* 03-Effects-RefreshableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CABC4F3A26AEE20200D5FA2C /* 03-Effects-RefreshableTests.swift */; };
 		CACA7FBC2BC707F2002DF110 /* 02-SharedState-Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACA7FBB2BC707F2002DF110 /* 02-SharedState-Notifications.swift */; };
@@ -175,6 +177,8 @@
 		CAA9ADC724465D950003A984 /* 03-Effects-CancellationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-CancellationTests.swift"; sourceTree = "<group>"; };
 		CAA9ADC92446605B0003A984 /* 03-Effects-LongLiving.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-LongLiving.swift"; sourceTree = "<group>"; };
 		CAA9ADCB2446615B0003A984 /* 03-Effects-LongLivingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-LongLivingTests.swift"; sourceTree = "<group>"; };
+		CABA60842C9B55770002D4F9 /* DetachedElementStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetachedElementStore.swift; sourceTree = "<group>"; };
+		CABA60862C9B6E920002D4F9 /* DetachedNavigationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetachedNavigationStore.swift; sourceTree = "<group>"; };
 		CABC4F3826AEE00C00D5FA2C /* 03-Effects-Refreshable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-Refreshable.swift"; sourceTree = "<group>"; };
 		CABC4F3A26AEE20200D5FA2C /* 03-Effects-RefreshableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-RefreshableTests.swift"; sourceTree = "<group>"; };
 		CACA7FBB2BC707F2002DF110 /* 02-SharedState-Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "02-SharedState-Notifications.swift"; sourceTree = "<group>"; };
@@ -410,6 +414,8 @@
 				CACA7FBB2BC707F2002DF110 /* 02-SharedState-Notifications.swift */,
 				CADECDBF2B5DE7C1009DC881 /* 02-SharedState-Onboarding.swift */,
 				DCD1712A2C9A1CC3009F7F21 /* Encapsulation.swift */,
+				CABA60842C9B55770002D4F9 /* DetachedElementStore.swift */,
+				CABA60862C9B6E920002D4F9 /* DetachedNavigationStore.swift */,
 				CA7BC8ED245CCFE4001FB69F /* 02-SharedState-UserDefaults.swift */,
 				CAA9ADC12446587C0003A984 /* 03-Effects-Basics.swift */,
 				CAA9ADC524465C810003A984 /* 03-Effects-Cancellation.swift */,
@@ -756,6 +762,7 @@
 				CA3E421F26B8337500581ABC /* 01-GettingStarted-FocusState.swift in Sources */,
 				DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */,
 				CA6AC2672451135C00C71CB3 /* DownloadClient.swift in Sources */,
+				CABA60872C9B6E920002D4F9 /* DetachedNavigationStore.swift in Sources */,
 				CADECDB62B5CA228009DC881 /* 02-SharedState-InMemory.swift in Sources */,
 				CAA9ADC624465C810003A984 /* 03-Effects-Cancellation.swift in Sources */,
 				CA5ECF92267A79F0002067FF /* FactClient.swift in Sources */,
@@ -769,6 +776,7 @@
 				DC5B505125C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift in Sources */,
 				CADECDB82B5CA425009DC881 /* 02-SharedState-FileStorage.swift in Sources */,
 				DCD1712B2C9A1CC8009F7F21 /* Encapsulation.swift in Sources */,
+				CABA60852C9B55770002D4F9 /* DetachedElementStore.swift in Sources */,
 				CAA9ADC22446587C0003A984 /* 03-Effects-Basics.swift in Sources */,
 				DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */,
 				DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */,

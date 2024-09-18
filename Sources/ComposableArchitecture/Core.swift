@@ -57,6 +57,7 @@ final class RootCore<Root: Reducer>: Core {
     initialState: Root.State,
     reducer: Root
   ) {
+    //print("RootCore.init", initialState)
     self.state = initialState
     self.reducer = reducer
   }
