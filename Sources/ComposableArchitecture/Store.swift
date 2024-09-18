@@ -405,6 +405,49 @@ public final class Store<State, Action> {
   }
 }
 
+extension Store where State: ObservableState {
+  public func detached<ChildState, ChildAction: CasePathable, ChildDelegateAction>(
+    state toChildInitialState: KeyPath<State, ChildState?>,
+    action toChildDelegateAction: CaseKeyPath<Action, ChildDelegateAction>,
+    delegate: CaseKeyPath<ChildAction, ChildDelegateAction>,
+    reducer: some Reducer<ChildState, ChildAction>
+  ) -> Store<ChildState, ChildAction>? {
+    guard let initialState = state[keyPath: toChildInitialState] else {
+      return nil
+    }
+    return scope(
+      id: id(state: toChildInitialState, action: toChildDelegateAction),
+      childCore: RootCore(initialState: initialState, reducer: CombineReducers {
+        reducer
+        Reduce(internal: { state, action in
+          if let delegateAction = action[case: delegate] {
+            self.send(toChildDelegateAction(delegateAction))
+          }
+          return .none
+        })
+      })
+    )
+  }
+
+  public func detached<ChildAction: CasePathable>(
+    delegate: CaseKeyPath<ChildAction, Action>,
+    @ReducerBuilder<State, ChildAction> reducer: () -> some Reducer<State, ChildAction>
+  ) -> Store<State, ChildAction> {
+    return scope(
+      id: ScopeID<State, Action>(state: \.self, action: \.self),
+      childCore: RootCore(initialState: state, reducer: CombineReducers {
+        reducer()
+        Reduce(internal: { state, action in
+          if let delegateAction = action[case: delegate] {
+            self.send(delegateAction)
+          }
+          return .none
+        })
+      })
+    )
+  }
+}
+
 @_spi(Internals) public struct ScopeID<State, Action>: Hashable {
   let state: PartialKeyPath<State>
   let action: PartialCaseKeyPath<Action>

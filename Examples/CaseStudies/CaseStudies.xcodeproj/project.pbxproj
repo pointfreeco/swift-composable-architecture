@@ -79,6 +79,7 @@
 		DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EDE2447BC810037F998 /* TemplateText.swift */; };
 		DCC68EE12447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */; };
 		DCC68EE32447C8540037F998 /* 05-HigherOrderReducers-ReusableFavoriting.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EE22447C8540037F998 /* 05-HigherOrderReducers-ReusableFavoriting.swift */; };
+		DCD1712B2C9A1CC8009F7F21 /* Encapsulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD1712A2C9A1CC3009F7F21 /* Encapsulation.swift */; };
 		DCD442C6286CA91F008B4EA7 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD442C5286CA91F008B4EA7 /* AboutView.swift */; };
 		DCE63B71245CC0B90080A23D /* 05-HigherOrderReducers-Recursion.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCE63B70245CC0B90080A23D /* 05-HigherOrderReducers-Recursion.swift */; };
 		DCFE1960278DBF0600C14CCF /* CaseStudiesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFE195F278DBF0600C14CCF /* CaseStudiesApp.swift */; };
@@ -233,6 +234,7 @@
 		DCC68EDE2447BC810037F998 /* TemplateText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateText.swift; sourceTree = "<group>"; };
 		DCC68EE02447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Composition-TwoCounters.swift"; sourceTree = "<group>"; };
 		DCC68EE22447C8540037F998 /* 05-HigherOrderReducers-ReusableFavoriting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "05-HigherOrderReducers-ReusableFavoriting.swift"; sourceTree = "<group>"; };
+		DCD1712A2C9A1CC3009F7F21 /* Encapsulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encapsulation.swift; sourceTree = "<group>"; };
 		DCD442C5286CA91F008B4EA7 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		DCE63B70245CC0B90080A23D /* 05-HigherOrderReducers-Recursion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "05-HigherOrderReducers-Recursion.swift"; sourceTree = "<group>"; };
 		DCFE195F278DBF0600C14CCF /* CaseStudiesApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CaseStudiesApp.swift; sourceTree = "<group>"; };
@@ -407,6 +409,7 @@
 				CADECDB52B5CA228009DC881 /* 02-SharedState-InMemory.swift */,
 				CACA7FBB2BC707F2002DF110 /* 02-SharedState-Notifications.swift */,
 				CADECDBF2B5DE7C1009DC881 /* 02-SharedState-Onboarding.swift */,
+				DCD1712A2C9A1CC3009F7F21 /* Encapsulation.swift */,
 				CA7BC8ED245CCFE4001FB69F /* 02-SharedState-UserDefaults.swift */,
 				CAA9ADC12446587C0003A984 /* 03-Effects-Basics.swift */,
 				CAA9ADC524465C810003A984 /* 03-Effects-Cancellation.swift */,
@@ -765,6 +768,7 @@
 				CA6AC2662451135C00C71CB3 /* DownloadComponent.swift in Sources */,
 				DC5B505125C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift in Sources */,
 				CADECDB82B5CA425009DC881 /* 02-SharedState-FileStorage.swift in Sources */,
+				DCD1712B2C9A1CC8009F7F21 /* Encapsulation.swift in Sources */,
 				CAA9ADC22446587C0003A984 /* 03-Effects-Basics.swift in Sources */,
 				DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */,
 				DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */,
