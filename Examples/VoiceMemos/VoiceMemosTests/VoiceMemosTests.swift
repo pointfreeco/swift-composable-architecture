@@ -61,25 +61,25 @@ final class VoiceMemosTests: XCTestCase {
         )
       ]
     }
-    await store.send(\.voiceMemos[id:deadbeefURL].playButtonTapped) {
+    await store.send(\.voiceMemos[id: deadbeefURL].playButtonTapped) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0)
     }
-    await store.receive(\.voiceMemos[id:deadbeefURL].delegate.playbackStarted)
+    await store.receive(\.voiceMemos[id: deadbeefURL].delegate.playbackStarted)
     await clock.run()
 
-    await store.receive(\.voiceMemos[id:deadbeefURL].timerUpdated) {
+    await store.receive(\.voiceMemos[id: deadbeefURL].timerUpdated) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.2)
     }
-    await store.receive(\.voiceMemos[id:deadbeefURL].timerUpdated) {
+    await store.receive(\.voiceMemos[id: deadbeefURL].timerUpdated) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.4)
     }
-    await store.receive(\.voiceMemos[id:deadbeefURL].timerUpdated) {
+    await store.receive(\.voiceMemos[id: deadbeefURL].timerUpdated) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.6)
     }
-    await store.receive(\.voiceMemos[id:deadbeefURL].timerUpdated) {
+    await store.receive(\.voiceMemos[id: deadbeefURL].timerUpdated) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.8)
     }
-    await store.receive(\.voiceMemos[id:deadbeefURL].audioPlayerClient.success) {
+    await store.receive(\.voiceMemos[id: deadbeefURL].audioPlayerClient.success) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .notPlaying
     }
   }
@@ -260,20 +260,20 @@ final class VoiceMemosTests: XCTestCase {
       $0.continuousClock = clock
     }
 
-    await store.send(\.voiceMemos[id:url].playButtonTapped) {
+    await store.send(\.voiceMemos[id: url].playButtonTapped) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
-    await store.receive(\.voiceMemos[id:url].delegate.playbackStarted)
+    await store.receive(\.voiceMemos[id: url].delegate.playbackStarted)
     await clock.advance(by: .milliseconds(500))
-    await store.receive(\.voiceMemos[id:url].timerUpdated) {
+    await store.receive(\.voiceMemos[id: url].timerUpdated) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0.4)
     }
     await clock.advance(by: .milliseconds(500))
-    await store.receive(\.voiceMemos[id:url].timerUpdated) {
+    await store.receive(\.voiceMemos[id: url].timerUpdated) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0.8)
     }
     await clock.advance(by: .milliseconds(250))
-    await store.receive(\.voiceMemos[id:url].audioPlayerClient.success) {
+    await store.receive(\.voiceMemos[id: url].audioPlayerClient.success) {
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
   }
@@ -302,14 +302,14 @@ final class VoiceMemosTests: XCTestCase {
       $0.continuousClock = clock
     }
 
-    let task = await store.send(\.voiceMemos[id:url].playButtonTapped) {
+    let task = await store.send(\.voiceMemos[id: url].playButtonTapped) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
-    await store.receive(\.voiceMemos[id:url].delegate.playbackStarted)
-    await store.receive(\.voiceMemos[id:url].audioPlayerClient.failure) {
+    await store.receive(\.voiceMemos[id: url].delegate.playbackStarted)
+    await store.receive(\.voiceMemos[id: url].audioPlayerClient.failure) {
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
-    await store.receive(\.voiceMemos[id:url].delegate.playbackFailed) {
+    await store.receive(\.voiceMemos[id: url].delegate.playbackFailed) {
       $0.alert = AlertState { TextState("Voice memo playback failed.") }
     }
     await task.cancel()
@@ -333,7 +333,7 @@ final class VoiceMemosTests: XCTestCase {
       VoiceMemos()
     }
 
-    await store.send(\.voiceMemos[id:url].playButtonTapped) {
+    await store.send(\.voiceMemos[id: url].playButtonTapped) {
       $0.voiceMemos[id: url]?.mode = .notPlaying
     }
   }
@@ -435,10 +435,10 @@ final class VoiceMemosTests: XCTestCase {
       $0.continuousClock = clock
     }
 
-    await store.send(\.voiceMemos[id:url].playButtonTapped) {
+    await store.send(\.voiceMemos[id: url].playButtonTapped) {
       $0.voiceMemos[id: url]?.mode = .playing(progress: 0)
     }
-    await store.receive(\.voiceMemos[id:url].delegate.playbackStarted)
+    await store.receive(\.voiceMemos[id: url].delegate.playbackStarted)
     await store.send(.onDelete([0])) {
       $0.voiceMemos = []
     }

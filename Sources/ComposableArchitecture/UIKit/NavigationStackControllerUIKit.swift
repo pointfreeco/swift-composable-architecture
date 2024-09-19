@@ -47,13 +47,13 @@
         let id = path.wrappedValue.id(
           state:
             \.[
-              id:component.id,
-              fileID:_HashableStaticString(rawValue: fileID),
-              filePath:_HashableStaticString(rawValue: filePath),
-              line:line,
-              column:column
+              id: component.id,
+              fileID: _HashableStaticString(rawValue: fileID),
+              filePath: _HashableStaticString(rawValue: filePath),
+              line: line,
+              column: column
             ],
-          action: \.[id:component.id]
+          action: \.[id: component.id]
         )
         @MainActor
         func open(
@@ -63,13 +63,13 @@
             base: core,
             cachedState: component.element,
             stateKeyPath: \.[
-              id:component.id,
-              fileID:_HashableStaticString(rawValue: fileID),
-              filePath:_HashableStaticString(rawValue: filePath),
-              line:line,
-              column:column
+              id: component.id,
+              fileID: _HashableStaticString(rawValue: fileID),
+              filePath: _HashableStaticString(rawValue: filePath),
+              line: line,
+              column: column
             ],
-            actionKeyPath: \.[id:component.id]
+            actionKeyPath: \.[id: component.id]
           )
         }
         return destination(path.wrappedValue.scope(id: id, childCore: open(path.wrappedValue.core)))

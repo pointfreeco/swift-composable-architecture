@@ -156,7 +156,7 @@ public struct ForEachStore<
         let id = element[keyPath: viewStore.state.id]
         content(
           store.scope(
-            id: store.id(state: \.[id:id]!, action: \.[id:id]),
+            id: store.id(state: \.[id: id]!, action: \.[id: id]),
             childCore: open(store.core, element: element, id: id)
           )
         )
@@ -228,7 +228,7 @@ public struct ForEachStore<
         let id = element[keyPath: viewStore.state.id]
         content(
           store.scope(
-            id: store.id(state: \.[id:id]!, action: \.[id:id]),
+            id: store.id(state: \.[id: id]!, action: \.[id: id]),
             childCore: open(store.core, element: element, id: id)
           )
         )

@@ -57,13 +57,13 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       let id = store.id(
         state:
           \.[
-            id:component.id,
-            fileID:_HashableStaticString(rawValue: fileID),
-            filePath:_HashableStaticString(rawValue: filePath),
-            line:line,
-            column:column
+            id :component.id,
+            fileID: _HashableStaticString(rawValue: fileID),
+            filePath: _HashableStaticString(rawValue: filePath),
+            line: line,
+            column: column
           ],
-        action: \.[id:component.id]
+        action: \.[id: component.id]
       )
       @MainActor
       func open(
@@ -73,13 +73,13 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
           base: core,
           cachedState: component.element,
           stateKeyPath: \.[
-            id:component.id,
-            fileID:_HashableStaticString(rawValue: fileID),
-            filePath:_HashableStaticString(rawValue: filePath),
-            line:line,
-            column:column
+            id: component.id,
+            fileID: _HashableStaticString(rawValue: fileID),
+            filePath: _HashableStaticString(rawValue: filePath),
+            line: line,
+            column: column
           ],
-          actionKeyPath: \.[id:component.id]
+          actionKeyPath: \.[id: component.id]
         )
       }
       return destination(store.scope(id: id, childCore: open(store.core)))
@@ -119,13 +119,13 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
       let id = store.id(
         state:
           \.[
-            id:component.id,
-            fileID:_HashableStaticString(rawValue: fileID),
-            filePath:_HashableStaticString(rawValue: filePath),
-            line:line,
-            column:column
+            id: component.id,
+            fileID: _HashableStaticString(rawValue: fileID),
+            filePath: _HashableStaticString(rawValue: filePath),
+            line: line,
+            column: column
           ],
-        action: \.[id:component.id]
+        action: \.[id: component.id]
       )
       if let child = store.children[id] as? Store<State, Action> {
         return SwitchStore(child, content: destination)
@@ -138,13 +138,13 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
             base: core,
             cachedState: component.element,
             stateKeyPath: \.[
-              id:component.id,
-              fileID:_HashableStaticString(rawValue: fileID),
-              filePath:_HashableStaticString(rawValue: filePath),
-              line:line,
-              column:column
+              id: component.id,
+              fileID: _HashableStaticString(rawValue: fileID),
+              filePath: _HashableStaticString(rawValue: filePath),
+              line: line,
+              column: column
             ],
-            actionKeyPath: \.[id:component.id]
+            actionKeyPath: \.[id: component.id]
           )
         }
         return SwitchStore(store.scope(id: id, childCore: open(store.core)), content: destination)

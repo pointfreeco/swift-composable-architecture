@@ -8,7 +8,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
     let store = await TestStore(
       initialState: DownloadComponent.State(
-        id: 1,
+        id: AnyHashableSendable(1),
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
       )
@@ -38,7 +38,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
     let store = await TestStore(
       initialState: DownloadComponent.State(
-        id: 1,
+        id: AnyHashableSendable(1),
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
       )
@@ -80,7 +80,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
     let store = await TestStore(
       initialState: DownloadComponent.State(
-        id: 1,
+        id: AnyHashableSendable(1),
         mode: .notDownloaded,
         url: URL(string: "https://www.pointfree.co")!
       )
@@ -121,7 +121,7 @@ final class ReusableComponentsDownloadComponentTests: XCTestCase {
     let download = AsyncThrowingStream.makeStream(of: DownloadClient.Event.self)
     let store = await TestStore(
       initialState: DownloadComponent.State(
-        id: 1,
+        id: AnyHashableSendable(1),
         mode: .downloaded,
         url: URL(string: "https://www.pointfree.co")!
       )
