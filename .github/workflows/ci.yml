@@ -54,10 +54,22 @@ jobs:
       - name: Update mtime for incremental builds 
         uses: chetan/git-restore-mtime-action@v2
       - name: Debug
-        run: make COMMAND="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" xcodebuild
+        uses: capturecontext/swift-package-action@1.0
+        with:
+          - command: xcodebuild
+          - subcommand: ${{ matrix.command }}
+          - platform: ${{ matrix.platform }}
+          - scheme: ComposableArchitecture
+          - config: Debug
       - name: Release
         if: matrix.skip_release != '1'
-        run: make COMMAND="${{ matrix.command }}" CONFIG=Release PLATFORM="${{ matrix.platform }}" xcodebuild
+        uses: capturecontext/swift-package-action@1.0
+        with:
+          - command: xcodebuild
+          - subcommand: ${{ matrix.command }}
+          - platform: ${{ matrix.platform }}
+          - scheme: ComposableArchitecture
+          - config: Release
 
   library-evolution:
     name: Library (evolution)
@@ -67,7 +79,10 @@ jobs:
       - name: Select Xcode 15.4
         run: sudo xcode-select -s /Applications/Xcode_15.4.app
       - name: Build for library evolution
-        run: make build-for-library-evolution
+        uses: capturecontext/swift-package-action@1.0
+        with:
+          - command: build-for-library-evolution
+          - scheme: ComposableArchitecture
 
   examples:
     name: Examples
@@ -89,18 +104,50 @@ jobs:
       - name: Update mtime for incremental builds
         uses: chetan/git-restore-mtime-action@v2
       - name: CaseStudies (SwiftUI)
-        run: make SCHEME="CaseStudies (SwiftUI)" test-example
+        uses: capturecontext/swift-package-action@1.0
+        with:
+          - command: test-example
+          - scheme: CaseStudies (SwiftUI)
+          - platform: iOS
       - name: CaseStudies (UIKit)
-        run: make SCHEME="CaseStudies (UIKit)" test-example
+        uses: capturecontext/swift-package-action@1.0
+        with:
+          - command: test-example
+          - scheme: CaseStudies (UIKit)
+          - platform: iOS
       - name: Search
-        run: make SCHEME="Search" test-example
+        uses: capturecontext/swift-package-action@1.0
+        with:
+          - command: test-example
+          - scheme: Search
+          - platform: iOS
       - name: SyncUps
-        run: make SCHEME="SyncUps" test-example
+        uses: capturecontext/swift-package-action@1.0
+        with:
+          - command: test-example
+          - scheme: SyncUps
+          - platform: iOS
       - name: SpeechRecognition
-        run: make SCHEME="SpeechRecognition" test-example
+        uses: capturecontext/swift-package-action@1.0
+        with:
+          - command: test-example
+          - scheme: SpeechRecognition
+          - platform: iOS
       - name: TicTacToe
-        run: make SCHEME="TicTacToe" test-example
+        uses: capturecontext/swift-package-action@1.0
+        with:
+          - command: test-example
+          - scheme: TicTacToe
+          - platform: iOS
       - name: Todos
-        run: make SCHEME="Todos" test-example
+        uses: capturecontext/swift-package-action@1.0
+        with:
+          - command: test-example
+          - scheme: Todos
+          - platform: iOS
       - name: VoiceMemos
-        run: make SCHEME="VoiceMemos" test-example
+        uses: capturecontext/swift-package-action@1.0
+        with:
+          - command: test-example
+          - scheme: VoiceMemos
+          - platform: iOS
