@@ -104,3 +104,15 @@ jobs:
         run: make SCHEME="Todos" test-example
       - name: VoiceMemos
         run: make SCHEME="VoiceMemos" test-example
+        
+  check-macro-compatibility:
+    name: Check Macro Compatibility
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run Swift Macro Compatibility Check
+        uses: Matejkob/swift-macro-compatibility-check@v1.0.0
+        with:
+          run-tests: false
+          major-versions-only: false
