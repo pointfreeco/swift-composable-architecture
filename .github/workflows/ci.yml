@@ -115,4 +115,4 @@ jobs:
         uses: Matejkob/swift-macro-compatibility-check@v1.0.0
         with:
           run-tests: false
-          major-versions-only: false
+          major-versions-only: true
