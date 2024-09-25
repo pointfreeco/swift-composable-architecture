@@ -19,6 +19,7 @@
   public typealias _CaseKeyPath<Root, Value> = CaseKeyPath<Root, Value>
 #endif
 
+@_transparent
 func sendableKeyPath(
   _ keyPath: AnyKeyPath
 ) -> _AnyKeyPath {
