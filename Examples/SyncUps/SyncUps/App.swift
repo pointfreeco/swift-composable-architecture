@@ -45,7 +45,7 @@ struct SyncUpsApp: App {
         t.column("transcript", .text)
       }
     }
-    try? migrator.migrate($0.defaultDatabaseQueue)
+    try! migrator.migrate($0.defaultDatabaseQueue)
   }
 
   var body: some Scene {

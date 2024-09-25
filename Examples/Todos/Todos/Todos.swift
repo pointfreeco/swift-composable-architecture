@@ -38,7 +38,7 @@ struct Todos {
     case clearCompletedButtonTapped
     case delete(IndexSet)
     case move(IndexSet, Int)
-    case todoChanged(Todo)
+    case todoChanged(Todo)  // Reuse `binding` here?
   }
 
   @Dependency(\.continuousClock) var clock
@@ -46,7 +46,7 @@ struct Todos {
   @Dependency(\.uuid) var uuid
 
   private enum CancelID {
-    case todoCompletion
+    // case todoCompletion
     case todoDebounce
   }
 
@@ -63,6 +63,7 @@ struct Todos {
 
       case .binding(\.filter):
         let todos = state.todos
+        // Are previous subscriptions killed?
         state.$todos = SharedReader(wrappedValue: todos, .query(TodosRequest(filter: state.filter)))
         return .none
 
