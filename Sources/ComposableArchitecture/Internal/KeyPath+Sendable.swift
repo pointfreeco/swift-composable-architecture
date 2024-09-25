@@ -18,3 +18,9 @@
   public typealias _PartialCaseKeyPath<Root> = PartialCaseKeyPath<Root>
   public typealias _CaseKeyPath<Root, Value> = CaseKeyPath<Root, Value>
 #endif
+
+func sendableKeyPath(
+  _ keyPath: AnyKeyPath
+) -> _AnyKeyPath {
+  unsafeBitCast(keyPath, to: _AnyKeyPath.self)
+}
