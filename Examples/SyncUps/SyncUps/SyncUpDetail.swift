@@ -19,7 +19,18 @@ struct SyncUpDetail {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    @Shared var syncUp: SyncUp
+    @SharedReader var meetings: IdentifiedArrayOf<Meeting>
+    @SharedReader var syncUp: SyncUp
+
+    init(
+      destination: Destination.State? = nil,
+      meetings: IdentifiedArrayOf<Meeting> = [],
+      syncUp: SharedReader<SyncUp>
+    ) {
+      self.destination = destination
+      self._meetings = SharedReader(wrappedValue: meetings, .meetings(syncUpID: syncUp.id))
+      self._syncUp = syncUp
+    }
   }
 
   enum Action: Sendable {
@@ -34,10 +45,11 @@ struct SyncUpDetail {
 
     @CasePathable
     enum Delegate {
-      case startMeeting(Shared<SyncUp>)
+      case startMeeting(SharedReader<SyncUp>)
     }
   }
 
+  @Dependency(\.defaultDatabaseQueue) var databaseQueue
   @Dependency(\.dismiss) var dismiss
   @Dependency(\.openSettings) var openSettings
   @Dependency(\.speechClient.authorizationStatus) var authorizationStatus
@@ -57,15 +69,21 @@ struct SyncUpDetail {
         return .none
 
       case let .deleteMeetings(atOffsets: indices):
-        state.syncUp.meetings.remove(atOffsets: indices)
-        return .none
+        let ids = indices.map { state.meetings[$0].id }
+        return .run { _ in
+          _ = try await databaseQueue.write { db in
+            try Meeting.deleteAll(db, ids: ids)
+          }
+        }
 
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
-          @Shared(.syncUps) var syncUps
-          syncUps.remove(id: state.syncUp.id)
-          return .run { _ in await dismiss() }
+          return .run { [syncUp = state.syncUp] _ in
+            _ = try await databaseQueue.write { db in
+              try syncUp.delete(db)
+            }
+          }
 
         case .continueWithoutRecording:
           return .send(.delegate(.startMeeting(state.$syncUp)))
@@ -80,9 +98,12 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
-        state.syncUp = editState.syncUp
         state.destination = nil
-        return .none
+        return .run { _ in
+          try await databaseQueue.write { db in
+            try editState.syncUp.update(db)
+          }
+        }
 
       case .editButtonTapped:
         state.destination = .edit(SyncUpForm.State(syncUp: state.syncUp))
@@ -143,9 +164,9 @@ struct SyncUpDetailView: View {
         Text("Sync-up Info")
       }
 
-      if !store.syncUp.meetings.isEmpty {
+      if !store.meetings.isEmpty {
         Section {
-          ForEach(store.syncUp.meetings) { meeting in
+          ForEach(store.meetings) { meeting in
             NavigationLink(
               state: AppFeature.Path.State.meeting(meeting, syncUp: store.syncUp)
             ) {
@@ -266,7 +287,7 @@ extension AlertState where Action == SyncUpDetail.Destination.Alert {
 #Preview {
   NavigationStack {
     SyncUpDetailView(
-      store: Store(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
+      store: Store(initialState: SyncUpDetail.State(syncUp: .constant(.mock))) {
         SyncUpDetail()
       }
     )

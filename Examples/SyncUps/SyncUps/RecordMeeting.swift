@@ -9,7 +9,7 @@ struct RecordMeeting {
     @Presents var alert: AlertState<Action.Alert>?
     var secondsElapsed = 0
     var speakerIndex = 0
-    @Shared var syncUp: SyncUp
+    @SharedReader var syncUp: SyncUp
     var transcript = ""
 
     var durationRemaining: Duration {
@@ -34,7 +34,9 @@ struct RecordMeeting {
   }
 
   @Dependency(\.continuousClock) var clock
+  @Dependency(\.defaultDatabaseQueue) var databaseQueue
   @Dependency(\.dismiss) var dismiss
+  @Dependency(\.date.now) var now
   @Dependency(\.speechClient) var speechClient
 
   var body: some ReducerOf<Self> {
@@ -44,8 +46,14 @@ struct RecordMeeting {
         return .run { _ in await dismiss() }
 
       case .alert(.presented(.confirmSave)):
-        state.syncUp.insert(transcript: state.transcript)
-        return .run { _ in await dismiss() }
+        return .run { [syncUpID = state.syncUp.id, transcript = state.transcript] _ in
+          if let syncUpID {
+            try await databaseQueue.write { db in
+              try Meeting(date: now, syncUpID: syncUpID, transcript: transcript).insert(db)
+            }
+          }
+          await dismiss()
+        }
 
       case .alert:
         return .none
@@ -93,8 +101,14 @@ struct RecordMeeting {
         let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.secondsElapsed == state.syncUp.duration.components.seconds {
-            state.syncUp.insert(transcript: state.transcript)
-            return .run { _ in await dismiss() }
+            return .run { [syncUpID = state.syncUp.id, transcript = state.transcript] _ in
+              if let syncUpID {
+                try await databaseQueue.write { db in
+                  try Meeting(date: now, syncUpID: syncUpID, transcript: transcript).insert(db)
+                }
+              }
+              await dismiss()
+            }
           }
           state.speakerIndex += 1
         }
@@ -133,21 +147,6 @@ struct RecordMeeting {
     for await _ in clock.timer(interval: .seconds(1)) {
       await send(.timerTick)
     }
-  }
-}
-
-extension SyncUp {
-  fileprivate mutating func insert(transcript: String) {
-    @Dependency(\.date.now) var now
-    @Dependency(\.uuid) var uuid
-    meetings.insert(
-      Meeting(
-        id: Meeting.ID(uuid()),
-        date: now,
-        transcript: transcript
-      ),
-      at: 0
-    )
   }
 }
 
@@ -385,7 +384,7 @@ struct MeetingFooterView: View {
 #Preview {
   NavigationStack {
     RecordMeetingView(
-      store: Store(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
+      store: Store(initialState: RecordMeeting.State(syncUp: .constant(.mock))) {
         RecordMeeting()
       }
     )

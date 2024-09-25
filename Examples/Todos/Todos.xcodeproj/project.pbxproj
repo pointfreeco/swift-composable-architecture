@@ -13,6 +13,8 @@
 		DCBCB77A24290F6D00DE1F59 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DCBCB77924290F6D00DE1F59 /* Assets.xcassets */; };
 		DCBCB78B24290F6D00DE1F59 /* TodosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB78A24290F6D00DE1F59 /* TodosTests.swift */; };
 		DCBCB79B24290FEB00DE1F59 /* Todos.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBCB79A24290FEB00DE1F59 /* Todos.swift */; };
+		DCFAFBA12CA4733000C86DCE /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = DCFAFBA02CA4733000C86DCE /* GRDB */; };
+		DCFAFBA32CA4733C00C86DCE /* GRDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFAFBA22CA4733A00C86DCE /* GRDB.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +60,7 @@
 		DCBCB78624290F6D00DE1F59 /* TodosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TodosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCBCB78A24290F6D00DE1F59 /* TodosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodosTests.swift; sourceTree = "<group>"; };
 		DCBCB79A24290FEB00DE1F59 /* Todos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Todos.swift; sourceTree = "<group>"; };
+		DCFAFBA22CA4733A00C86DCE /* GRDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRDB.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +69,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC1394322469E57000EE1157 /* ComposableArchitecture in Frameworks */,
+				DCFAFBA12CA4733000C86DCE /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,6 +108,7 @@
 			children = (
 				CA93D05F249BF4D000A6F65D /* Todo.swift */,
 				DCBCB79A24290FEB00DE1F59 /* Todos.swift */,
+				DCFAFBA22CA4733A00C86DCE /* GRDB.swift */,
 				DCBCB77524290F6C00DE1F59 /* TodosApp.swift */,
 				DCBCB77924290F6D00DE1F59 /* Assets.xcassets */,
 			);
@@ -137,6 +142,7 @@
 			name = Todos;
 			packageProductDependencies = (
 				DC1394312469E57000EE1157 /* ComposableArchitecture */,
+				DCFAFBA02CA4733000C86DCE /* GRDB */,
 			);
 			productName = Todos;
 			productReference = DCBCB77024290F6C00DE1F59 /* Todos.app */;
@@ -193,6 +199,7 @@
 			);
 			mainGroup = DCBCB76724290F6C00DE1F59;
 			packageReferences = (
+				DCFAFB9F2CA4733000C86DCE /* XCRemoteSwiftPackageReference "GRDB" */,
 			);
 			productRefGroup = DCBCB77124290F6C00DE1F59 /* Products */;
 			projectDirPath = "";
@@ -227,6 +234,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DCFAFBA32CA4733C00C86DCE /* GRDB.swift in Sources */,
 				DCBCB77624290F6C00DE1F59 /* TodosApp.swift in Sources */,
 				CA93D060249BF4D000A6F65D /* Todo.swift in Sources */,
 				DCBCB79B24290FEB00DE1F59 /* Todos.swift in Sources */,
@@ -394,7 +402,6 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.Todos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -419,7 +426,6 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.Todos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -439,7 +445,6 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.TodosTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Todos.app/Todos";
 			};
@@ -460,7 +465,6 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.TodosTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Todos.app/Todos";
 			};
@@ -498,10 +502,26 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		DCFAFB9F2CA4733000C86DCE /* XCRemoteSwiftPackageReference "GRDB" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.29.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		DC1394312469E57000EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
+		};
+		DCFAFBA02CA4733000C86DCE /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DCFAFB9F2CA4733000C86DCE /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

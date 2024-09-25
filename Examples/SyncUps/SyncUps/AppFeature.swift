@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import GRDB
 import SwiftUI
 
 @Reducer
@@ -21,6 +22,7 @@ struct AppFeature {
     case syncUpsList(SyncUpsList.Action)
   }
 
+  @Dependency(\.defaultDatabaseQueue) var databaseQueue
   @Dependency(\.date.now) var now
   @Dependency(\.uuid) var uuid
 
@@ -39,6 +41,13 @@ struct AppFeature {
 
       case .path:
         return .none
+
+      case let .syncUpsList(.delegate(action)):
+        switch action {
+        case let .goToSyncUp($syncUp):
+          state.path.append(.detail(SyncUpDetail.State(syncUp: $syncUp)))
+          return .none
+        }
 
       case .syncUpsList:
         return .none
@@ -71,7 +80,7 @@ struct AppView: View {
 }
 
 #Preview {
-  @Shared(.syncUps) var syncUps = [
+  @SharedReader(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = [
     .mock,
     .productMock,
     .engineeringMock,

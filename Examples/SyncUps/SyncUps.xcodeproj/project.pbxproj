@@ -27,6 +27,8 @@
 		DC8C2B0C29EB084900C65286 /* RecordMeetingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */; };
 		DC8C2B0E29EB085600C65286 /* SyncUpDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0D29EB085600C65286 /* SyncUpDetailTests.swift */; };
 		DC8C2B1029EB086A00C65286 /* SyncUpsListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8C2B0F29EB086A00C65286 /* SyncUpsListTests.swift */; };
+		DCFAFBA62CA4788000C86DCE /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = DCFAFBA52CA4788000C86DCE /* GRDB */; };
+		DCFAFBA82CA4794E00C86DCE /* GRDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFAFBA72CA4794C00C86DCE /* GRDB.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +72,7 @@
 		DC8C2B0B29EB084900C65286 /* RecordMeetingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMeetingTests.swift; sourceTree = "<group>"; };
 		DC8C2B0D29EB085600C65286 /* SyncUpDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncUpDetailTests.swift; sourceTree = "<group>"; };
 		DC8C2B0F29EB086A00C65286 /* SyncUpsListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncUpsListTests.swift; sourceTree = "<group>"; };
+		DCFAFBA72CA4794C00C86DCE /* GRDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRDB.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DCFAFBA62CA4788000C86DCE /* GRDB in Frameworks */,
 				DC808DB629E9C58F0072B4A9 /* Tagged in Frameworks */,
 				DC808DA329E9C4490072B4A9 /* ComposableArchitecture in Frameworks */,
 			);
@@ -172,6 +176,7 @@
 			isa = PBXGroup;
 			children = (
 				DC808DA429E9C4C70072B4A9 /* OpenSettings.swift */,
+				DCFAFBA72CA4794C00C86DCE /* GRDB.swift */,
 				DC808DA629E9C4D60072B4A9 /* SpeechRecognizer.swift */,
 			);
 			path = Dependencies;
@@ -203,6 +208,7 @@
 			packageProductDependencies = (
 				DC808DA229E9C4490072B4A9 /* ComposableArchitecture */,
 				DC808DB529E9C58F0072B4A9 /* Tagged */,
+				DCFAFBA52CA4788000C86DCE /* GRDB */,
 			);
 			productName = SyncUps;
 			productReference = DC808D6F29E9C3AC0072B4A9 /* SyncUps.app */;
@@ -278,6 +284,7 @@
 			mainGroup = DC808D6629E9C3AC0072B4A9;
 			packageReferences = (
 				DC808DB429E9C58F0072B4A9 /* XCRemoteSwiftPackageReference "swift-tagged" */,
+				DCFAFBA42CA4788000C86DCE /* XCRemoteSwiftPackageReference "GRDB" */,
 			);
 			productRefGroup = DC808D7029E9C3AC0072B4A9 /* Products */;
 			projectDirPath = "";
@@ -325,6 +332,7 @@
 				DC808DA729E9C4D60072B4A9 /* SpeechRecognizer.swift in Sources */,
 				DC80B1E929EDE5D1001CC0CC /* AppFeature.swift in Sources */,
 				DC808DA529E9C4C70072B4A9 /* OpenSettings.swift in Sources */,
+				DCFAFBA82CA4794E00C86DCE /* GRDB.swift in Sources */,
 				DC808DAD29E9C52A0072B4A9 /* Models.swift in Sources */,
 				DC808DB129E9C54A0072B4A9 /* SyncUpDetail.swift in Sources */,
 				DC808D7329E9C3AC0072B4A9 /* App.swift in Sources */,
@@ -428,6 +436,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -482,6 +491,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -510,7 +520,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.SyncUps;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -539,7 +548,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.SyncUps;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -557,7 +565,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.SyncUpsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SyncUps.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SyncUps";
 			};
@@ -576,7 +583,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.SyncUpsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SyncUps.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SyncUps";
 			};
@@ -594,7 +600,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.SyncUpsUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SyncUps;
 			};
@@ -612,7 +617,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = co.pointfree.SyncUpsUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SyncUps;
 			};
@@ -668,6 +672,14 @@
 				minimumVersion = 0.10.0;
 			};
 		};
+		DCFAFBA42CA4788000C86DCE /* XCRemoteSwiftPackageReference "GRDB" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.29.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -679,6 +691,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DC808DB429E9C58F0072B4A9 /* XCRemoteSwiftPackageReference "swift-tagged" */;
 			productName = Tagged;
+		};
+		DCFAFBA52CA4788000C86DCE /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DCFAFBA42CA4788000C86DCE /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

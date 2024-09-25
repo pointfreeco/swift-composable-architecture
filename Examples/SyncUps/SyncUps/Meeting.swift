@@ -24,5 +24,5 @@ struct MeetingView: View {
 }
 
 #Preview {
-  MeetingView(meeting: SyncUp.mock.meetings[0], syncUp: .mock)
+  MeetingView(meeting: .mock, syncUp: .mock)
 }

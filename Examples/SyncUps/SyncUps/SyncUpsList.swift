@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import GRDB
 import SwiftUI
 
 @Reducer
@@ -17,28 +18,32 @@ struct SyncUpsList {
   @ObservableState
   struct State: Equatable {
     @Presents var destination: Destination.State?
-    @Shared(.syncUps) var syncUps
+    @SharedReader(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = []
   }
 
   enum Action {
     case addSyncUpButtonTapped
     case confirmAddSyncUpButtonTapped
+    case delegate(Delegate)
     case destination(PresentationAction<Destination.Action>)
     case dismissAddSyncUpButtonTapped
     case onDelete(IndexSet)
+    case syncUpTapped(SharedReader<SyncUp>)
+
+    @CasePathable
+    enum Delegate {
+      case goToSyncUp(SharedReader<SyncUp>)
+    }
   }
 
+  @Dependency(\.defaultDatabaseQueue) var databaseQueue
   @Dependency(\.uuid) var uuid
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .addSyncUpButtonTapped:
-        state.destination = .add(
-          SyncUpForm.State(
-            syncUp: SyncUp(id: SyncUp.ID(uuid()))
-          )
-        )
+        state.destination = .add(SyncUpForm.State(syncUp: SyncUp()))
         return .none
 
       case .confirmAddSyncUpButtonTapped:
@@ -54,8 +59,14 @@ struct SyncUpsList {
               ?? Attendee(id: Attendee.ID(uuid()))
           )
         }
-        state.syncUps.append(syncUp)
         state.destination = nil
+        return .run { [syncUp] _ in
+          try await databaseQueue.write { db in
+            try syncUp.insert(db)
+          }
+        }
+
+      case .delegate:
         return .none
 
       case .destination:
@@ -66,8 +77,15 @@ struct SyncUpsList {
         return .none
 
       case let .onDelete(indexSet):
-        state.syncUps.remove(atOffsets: indexSet)
-        return .none
+        let ids = indexSet.map { state.syncUps[$0].id }
+        return .run { _ in
+          try await databaseQueue.write { db in
+            _ = try SyncUp.deleteAll(db, ids: ids)
+          }
+        }
+
+      case let .syncUpTapped($syncUp):
+        return .send(.delegate(.goToSyncUp($syncUp)))
       }
     }
     .ifLet(\.$destination, action: \.destination)
@@ -81,7 +99,9 @@ struct SyncUpsListView: View {
   var body: some View {
     List {
       ForEach(store.$syncUps.elements) { $syncUp in
-        NavigationLink(state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: $syncUp))) {
+        Button {
+          store.send(.syncUpTapped($syncUp))
+        } label: {
           CardView(syncUp: syncUp)
         }
         .listRowBackground(syncUp.theme.mainColor)
@@ -143,7 +163,7 @@ struct CardView: View {
 }
 
 struct TrailingIconLabelStyle: LabelStyle {
-  func makeBody(configuration: Configuration) -> some View {
+  func makeBody(configuration: LabelStyleConfiguration) -> some View {
     HStack {
       configuration.title
       configuration.icon
@@ -156,12 +176,12 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 }
 
 #Preview("List") {
-  @Shared(.syncUps) var syncUps = [
+  @SharedReader(.syncUps) var syncUps: IdentifiedArrayOf<SyncUp> = [
     .mock,
     .productMock,
     .engineeringMock,
   ]
-  return NavigationStack {
+  NavigationStack {
     SyncUpsListView(
       store: Store(initialState: SyncUpsList.State()) {
         SyncUpsList()
@@ -173,19 +193,8 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 #Preview("Card") {
   CardView(
     syncUp: SyncUp(
-      id: SyncUp.ID(),
-      duration: .seconds(60),
+      minutes: 1,
       title: "Point-Free Morning Sync"
     )
   )
-}
-
-extension PersistenceReaderKey
-where Self == PersistenceKeyDefault<FileStorageKey<IdentifiedArrayOf<SyncUp>>> {
-  static var syncUps: Self {
-    PersistenceKeyDefault(
-      .fileStorage(.documentsDirectory.appending(component: "sync-ups.json")),
-      []
-    )
-  }
 }
