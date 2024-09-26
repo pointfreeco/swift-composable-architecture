@@ -43,7 +43,7 @@ struct EffectsBasicsTests {
   }
 
   @Test
-  func testDecrement() async {
+  func decrement() async {
     let store = TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
     } withDependencies: {
@@ -59,7 +59,7 @@ struct EffectsBasicsTests {
   }
 
   @Test
-  func testDecrementCancellation() async {
+  func decrementCancellation() async {
     let store = TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
     } withDependencies: {
