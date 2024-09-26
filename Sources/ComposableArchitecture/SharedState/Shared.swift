@@ -14,9 +14,9 @@ import IssueReporting
 @propertyWrapper
 public struct Shared<Value: Sendable>: Sendable {
   private let reference: any Reference
-  private let keyPath: _AnyKeyPath
+  private let keyPath: _SendableAnyKeyPath
 
-  init(reference: any Reference, keyPath: _AnyKeyPath) {
+  init(reference: any Reference, keyPath: _SendableAnyKeyPath) {
     self.reference = reference
     self.keyPath = keyPath
   }

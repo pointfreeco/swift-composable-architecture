@@ -293,7 +293,7 @@ extension PresentationAction: CasePathable {
     }
 
     public subscript<AppendedAction>(
-      dynamicMember keyPath: _CaseKeyPath<Action, AppendedAction>
+      dynamicMember keyPath: _SendableCaseKeyPath<Action, AppendedAction>
     ) -> AnyCasePath<PresentationAction, AppendedAction>
     where Action: CasePathable {
       AnyCasePath<PresentationAction, AppendedAction>(
@@ -307,7 +307,7 @@ extension PresentationAction: CasePathable {
 
     @_disfavoredOverload
     public subscript<AppendedAction>(
-      dynamicMember keyPath: _CaseKeyPath<Action, AppendedAction>
+      dynamicMember keyPath: _SendableCaseKeyPath<Action, AppendedAction>
     ) -> AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>
     where Action: CasePathable {
       AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>(
