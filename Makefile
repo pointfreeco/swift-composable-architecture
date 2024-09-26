@@ -18,6 +18,7 @@ test-all: test-examples
 xcodebuild:
 	if test "$(PLATFORM)" = "iOS"; \
 		then xcodebuild $(COMMAND) \
+			-quiet \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -26,6 +27,7 @@ xcodebuild:
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "macOS"; \
 		then xcodebuild $(COMMAND) \
+			-quiet \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -34,6 +36,7 @@ xcodebuild:
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "tvOS"; \
 		then xcodebuild $(COMMAND) \
+			-quiet \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -42,6 +45,7 @@ xcodebuild:
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "watchOS"; \
 		then xcodebuild $(COMMAND) \
+			-quiet \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -50,6 +54,7 @@ xcodebuild:
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "visionOS"; \
 		then xcodebuild $(COMMAND) \
+			-quiet \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -58,6 +63,7 @@ xcodebuild:
 			-derivedDataPath ~/.derivedData/$(CONFIG); \
 		elif test "$(PLATFORM)" = "macCatalyst"; \
 		then xcodebuild $(COMMAND) \
+			-quiet \
 			-skipMacroValidation \
 			-configuration $(CONFIG) \
 			-workspace .github/package.xcworkspace \
@@ -69,6 +75,7 @@ xcodebuild:
 
 build-for-library-evolution:
 	swift build \
+		-q \
 		-c release \
 		--target ComposableArchitecture \
 		-Xswiftc -emit-module-interface \
@@ -89,6 +96,7 @@ test-docs:
 
 test-example:
 	xcodebuild test \
+		-quiet \
 		-skipMacroValidation \
 		-scheme "$(SCHEME)" \
 		-destination platform="$(PLATFORM_IOS)" \
@@ -96,12 +104,13 @@ test-example:
 
 test-integration:
 	xcodebuild test \
+		-quiet \
 		-skipMacroValidation \
 		-scheme "Integration" \
 		-destination platform="$(PLATFORM_IOS)"
 
 benchmark:
-	swift run --configuration release \
+	swift run -q --configuration release \
 		swift-composable-architecture-benchmark
 
 format:

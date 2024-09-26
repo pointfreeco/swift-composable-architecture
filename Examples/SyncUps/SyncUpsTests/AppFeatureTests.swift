@@ -114,6 +114,7 @@ struct AppFeatureTests {
         #expect($0.path.count == 1)
       }
     }
+    await store.finish()
     store.assert {
       $0.path[id: 0]?.modify(\.detail) {
         $0.syncUp.meetings = [
