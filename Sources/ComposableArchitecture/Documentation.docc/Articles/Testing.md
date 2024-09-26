@@ -44,20 +44,15 @@ struct Feature {
   }
 }
 
-func testBasics() {
+@Test
+func basics() {
   let feature = Feature()
   var currentState = Feature.State(count: 0)
   _ = feature.reduce(into: &currentState, action: .incrementButtonTapped)
-  XCTAssertEqual(
-    currentState,
-    State(count: 1)
-  )
+  #expect(currentState == State(count: 1))
 
   _ = feature.reduce(into: &currentState, action: .decrementButtonTapped)
-  XCTAssertEqual(
-    currentState,
-    State(count: 0)
-  )
+  #expect(currentState == State(count: 0))
 }
 ```
 
@@ -68,9 +63,13 @@ concise. It's called ``TestStore``, and it is constructed similarly to ``Store``
 initial state of the feature and the ``Reducer`` that runs the feature's logic:
 
 ```swift
-class CounterTests: XCTestCase {
-  func testBasics() async {
-    let store = await TestStore(initialState: Feature.State(count: 0)) {
+import Testing
+
+@MainActor
+struct CounterTests {
+  @Test
+  func basics() async {
+    let store = TestStore(initialState: Feature.State(count: 0)) {
       Feature()
     }
   }
@@ -78,7 +77,8 @@ class CounterTests: XCTestCase {
 ```
 
 > Tip: Tests that use ``TestStore`` should be marked as `async` since most assertion helpers on
-> ``TestStore`` can suspend.
+> ``TestStore`` can suspend. And while tests do not _require_ the main actor, ``TestStore`` _is_
+> main actor-isolated, and so we recommend annotating your tests and suites with `@MainActor`.
 
 Test stores have a ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` method, but it behaves differently from
 stores and view stores. You provide an action to send into the system, but then you must also
@@ -232,9 +232,11 @@ To test this we can start off similar to how we did in the [previous section][Te
 when testing state mutations:
 
 ```swift
-class TimerTests: XCTestCase {
-  func testBasics() async {
-    let store = await TestStore(initialState: Feature.State(count: 0)) {
+@MainActor
+struct TimerTests {
+  @Test
+  func basics() async {
+    let store = TestStore(initialState: Feature.State(count: 0)) {
       Feature()
     }
   }
@@ -709,7 +711,8 @@ We'd like to be able to write a test for this by asserting that when the `addBut
 is sent a model is append to the `values` array:
 
 ```swift
-func testAdd() async {
+@Test
+func add() async {
   let store = TestStore(initialState: Feature.State()) {
     Feature()
   } withDependencies: {
@@ -877,13 +880,15 @@ Test stores should always be created in individual tests when possible, rather t
 instance variable on the test class:
 
 ```diff
- final class FeatureTests: XCTestCase {
+ @MainActor
+ struct FeatureTests {
    // 👎 Don't do this:
 -  let store = TestStore(initialState: Feature.State()) {
 -    Feature()
 -  }
 
-   func testBasics() async {
+   @Test
+   func basics() async {
      // 👍 Do this:
 +    let store = TestStore(initialState: Feature.State()) {
 +      Feature()

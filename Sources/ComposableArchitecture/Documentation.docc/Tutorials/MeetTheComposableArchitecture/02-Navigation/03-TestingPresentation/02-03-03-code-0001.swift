@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import ContactsApp
 
-final class ContactsFeatureTests: XCTestCase {
-  func testDeleteContact() async {
-    let store = await TestStore(initialState: ContactsFeature.State()) {
+@MainActor
+struct ContactsFeatureTests {
+  @Test
+  func deleteContact() async {
+    let store = TestStore(initialState: ContactsFeature.State()) {
       ContactsFeature()
     }
   }

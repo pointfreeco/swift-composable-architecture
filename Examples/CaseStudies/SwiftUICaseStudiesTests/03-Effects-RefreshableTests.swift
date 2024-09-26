@@ -4,7 +4,6 @@ import Testing
 @testable import SwiftUICaseStudies
 
 @MainActor
-// TODO: @Suite(.dependency(\.continuousClock, .immediate))
 struct RefreshableTests {
   @Test
   func happyPath() async {

@@ -688,7 +688,8 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
 /// features behave in the stack.
 ///
 /// ```swift
-/// func testBasics() {
+/// @Test
+/// func basics() {
 ///   var path = StackState<Int>()
 ///   path.append(42)
 ///   XCTAssertEqual(path[id: 0], 42)

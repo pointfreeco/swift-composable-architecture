@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import CounterApp
 
-final class AppFeatureTests: XCTestCase {
-  func testIncrementInFirstTab() async {
-    let store = await TestStore(initialState: AppFeature.State()) {
+@MainActor
+struct AppFeatureTests {
+  @Test
+  func incrementInFirstTab() async {
+    let store = TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
     
