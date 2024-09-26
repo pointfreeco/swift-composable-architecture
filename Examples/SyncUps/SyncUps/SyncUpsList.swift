@@ -193,7 +193,7 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
 #Preview("Card") {
   CardView(
     syncUp: SyncUp(
-      minutes: 1,
+      seconds: 60,
       title: "Point-Free Morning Sync"
     )
   )

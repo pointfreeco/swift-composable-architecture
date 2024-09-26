@@ -25,27 +25,7 @@ struct SyncUpsApp: App {
     } else {
       $0.defaultDatabaseQueue = try! DatabaseQueue()
     }
-    var migrator = DatabaseMigrator()
-    migrator.registerMigration("Create sync-ups") { db in
-      try db.create(table: SyncUp.databaseTableName) { t in
-        t.autoIncrementedPrimaryKey("id")
-        t.column("attendees", .jsonText)
-        t.column("meetings", .jsonText)
-        t.column("minutes", .integer)
-        t.column("theme", .text)
-        t.column("title", .text)
-      }
-    }
-    migrator.registerMigration("Create meetings") { db in
-      try db.create(table: Meeting.databaseTableName) { t in
-        t.autoIncrementedPrimaryKey("id")
-        t.column("date", .datetime)
-        t.column("isArchived", .boolean)
-        t.column("syncUpID", .integer)
-        t.column("transcript", .text)
-      }
-    }
-    try! migrator.migrate($0.defaultDatabaseQueue)
+    try! $0.defaultDatabaseQueue.migrate()
   }
 
   var body: some Scene {

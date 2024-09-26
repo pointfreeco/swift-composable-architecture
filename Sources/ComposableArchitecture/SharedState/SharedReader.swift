@@ -51,6 +51,10 @@ public struct SharedReader<Value: Sendable> {
     )
   }
 
+  public init(_ value: Value) {
+    self = .constant(value)
+  }
+
   /// Creates a read-only shared reference from a shared reference.
   ///
   /// - Parameter base: A shared reference.

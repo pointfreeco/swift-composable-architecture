@@ -7,13 +7,13 @@ import Tagged
 struct SyncUp: Equatable, Identifiable, Codable {
   var id: Int?
   var attendees: IdentifiedArrayOf<Attendee> = []
-  var minutes = 5
+  var seconds = 5 * 60
   var theme: Theme = .bubblegum
   var title = ""
 
   var duration: Duration {
-    get { .seconds(60 * minutes) }
-    set { minutes = Int(newValue.components.seconds) / 60 }
+    get { .seconds(seconds) }
+    set { seconds = Int(newValue.components.seconds) }
   }
 
   var durationPerAttendee: Duration {
@@ -80,6 +80,32 @@ struct MeetingsRequest: GRDBQuery {
   }
 }
 
+extension DatabaseQueue {
+  func migrate() throws {
+    var migrator = DatabaseMigrator()
+    migrator.registerMigration("Create sync-ups") { db in
+      try db.create(table: SyncUp.databaseTableName) { t in
+        t.autoIncrementedPrimaryKey("id")
+        t.column("attendees", .jsonText)
+        t.column("meetings", .jsonText)
+        t.column("seconds", .integer)
+        t.column("theme", .text)
+        t.column("title", .text)
+      }
+    }
+    migrator.registerMigration("Create meetings") { db in
+      try db.create(table: Meeting.databaseTableName) { t in
+        t.autoIncrementedPrimaryKey("id")
+        t.column("date", .datetime)
+        t.column("isArchived", .boolean)
+        t.column("syncUpID", .integer)
+        t.column("transcript", .text)
+      }
+    }
+    try migrator.migrate(self)
+  }
+}
+
 enum Theme: String, CaseIterable, Equatable, Identifiable, Codable {
   case bubblegum
   case buttercup
@@ -125,7 +151,7 @@ extension SyncUp {
       Attendee(id: Attendee.ID(), name: "Blob III"),
       Attendee(id: Attendee.ID(), name: "Blob I"),
     ],
-    minutes: 1,
+    seconds: 60,
     theme: .orange,
     title: "Design"
   )
@@ -135,7 +161,7 @@ extension SyncUp {
       Attendee(id: Attendee.ID(), name: "Blob"),
       Attendee(id: Attendee.ID(), name: "Blob Jr"),
     ],
-    minutes: 1,
+    seconds: 60,
     theme: .periwinkle,
     title: "Engineering"
   )
@@ -145,7 +171,7 @@ extension SyncUp {
       Attendee(id: Attendee.ID(), name: "Blob Sr"),
       Attendee(id: Attendee.ID(), name: "Blob Jr"),
     ],
-    minutes: 30,
+    seconds: 30 * 60,
     theme: .poppy,
     title: "Product"
   )

@@ -53,8 +53,7 @@ where Query.Value: Sendable {
     let observation = ValueObservation.tracking { db in
       try query.fetch(db)
     }
-    let cancellable = observation.start(in: defaultDatabaseQueue) { error in
-
+    let cancellable = observation.start(in: defaultDatabaseQueue, scheduling: .immediate) { error in
     } onChange: { newValue in
       didSet(newValue)
     }

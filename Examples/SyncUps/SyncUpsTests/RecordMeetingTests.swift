@@ -1,26 +1,40 @@
 import ComposableArchitecture
+import CustomDump
 import XCTest
+import Testing
 
 @testable import SyncUps
 
-final class RecordMeetingTests: XCTestCase {
-  func testTimer() async {
+@MainActor
+@Suite
+struct RecordMeetingTests2 {
+  @Dependency(\.defaultDatabaseQueue) var databaseQueue
+  @SharedReader([]) var syncUps: IdentifiedArrayOf<SyncUp>
+  @SharedReader([]) var meetings: IdentifiedArrayOf<Meeting>
+
+  init() async throws {
+    try databaseQueue.migrate()
+    _syncUps = try SharedReader(.syncUps)
+    try await databaseQueue.write { db in
+      try SyncUp(
+        attendees: [
+          Attendee(id: Attendee.ID()),
+          Attendee(id: Attendee.ID()),
+          Attendee(id: Attendee.ID()),
+        ],
+        seconds: 6
+      )
+      .insert(db)
+    }
+    _meetings = try SharedReader(.meetings(syncUpID: 1))
+  }
+
+  @Test
+  func timer() async {
     let clock = TestClock()
 
-    let store = await TestStore(
-      initialState: RecordMeeting.State(
-        syncUp: Shared(
-          SyncUp(
-            id: SyncUp.ID(),
-            attendees: [
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-            ],
-            duration: .seconds(6)
-          )
-        )
-      )
+    let store = TestStore(
+      initialState: RecordMeeting.State(syncUp: $syncUps[0])
     ) {
       RecordMeeting()
     } withDependencies: {
@@ -71,151 +85,28 @@ final class RecordMeetingTests: XCTestCase {
     await store.receive(\.timerTick) {
       $0.speakerIndex = 2
       $0.secondsElapsed = 6
-      $0.syncUp.meetings.insert(
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: ""
-        ),
-        at: 0
-      )
       XCTAssertEqual($0.durationRemaining, .seconds(0))
     }
+
+    expectNoDifference(
+      meetings,
+      [
+        Meeting(
+          id: 1,
+          date: Date(timeIntervalSince1970: 1_234_567_890),
+          syncUpID: 1,
+          transcript: ""
+        )
+      ]
+    )
   }
 
-  @MainActor
-  func testRecordTranscript() async {
+  @Test
+  func nextSpeaker() async throws {
     let clock = TestClock()
 
     let store = TestStore(
-      initialState: RecordMeeting.State(
-        syncUp: Shared(
-          SyncUp(
-            id: SyncUp.ID(),
-            attendees: [
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-            ],
-            duration: .seconds(6)
-          )
-        )
-      )
-    ) {
-      RecordMeeting()
-    } withDependencies: {
-      $0.continuousClock = clock
-      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
-      $0.speechClient.authorizationStatus = { .authorized }
-      $0.speechClient.startTask = { @Sendable _ in
-        AsyncThrowingStream { continuation in
-          continuation.yield(
-            SpeechRecognitionResult(
-              bestTranscription: Transcription(formattedString: "I completed the project"),
-              isFinal: true
-            )
-          )
-          continuation.finish()
-        }
-      }
-      $0.uuid = .incrementing
-    }
-
-    await store.send(.onTask)
-
-    await store.receive(\.speechResult) {
-      $0.transcript = "I completed the project"
-    }
-
-    await store.withExhaustivity(.off(showSkippedAssertions: true)) {
-      await clock.advance(by: .seconds(6))
-      await store.receive(\.timerTick)
-      await store.receive(\.timerTick)
-      await store.receive(\.timerTick)
-      await store.receive(\.timerTick)
-      await store.receive(\.timerTick)
-      await store.receive(\.timerTick)
-    }
-
-    await store.assert {
-      $0.syncUp.meetings[0].transcript = "I completed the project"
-    }
-  }
-
-  func testEndMeetingSave() async {
-    let clock = TestClock()
-
-    let store = await TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
-      RecordMeeting()
-    } withDependencies: {
-      $0.continuousClock = clock
-      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
-      $0.speechClient.authorizationStatus = { .denied }
-      $0.uuid = .incrementing
-    }
-
-    await store.send(.onTask)
-
-    await store.send(.endMeetingButtonTapped) {
-      $0.alert = .endMeeting(isDiscardable: true)
-    }
-
-    await clock.advance(by: .seconds(3))
-    await store.receive(\.timerTick)
-    await store.receive(\.timerTick)
-    await store.receive(\.timerTick)
-
-    await store.send(\.alert.confirmSave) {
-      $0.alert = nil
-      $0.syncUp.meetings.insert(
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: ""
-        ),
-        at: 0
-      )
-    }
-  }
-
-  func testEndMeetingDiscard() async {
-    let clock = TestClock()
-
-    let store = await TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
-      RecordMeeting()
-    } withDependencies: {
-      $0.continuousClock = clock
-      $0.speechClient.authorizationStatus = { .denied }
-    }
-
-    await store.send(.onTask)
-
-    await store.send(.endMeetingButtonTapped) {
-      $0.alert = .endMeeting(isDiscardable: true)
-    }
-
-    await store.send(\.alert.confirmDiscard) {
-      $0.alert = nil
-    }
-  }
-
-  func testNextSpeaker() async {
-    let clock = TestClock()
-
-    let store = await TestStore(
-      initialState: RecordMeeting.State(
-        syncUp: Shared(
-          SyncUp(
-            id: SyncUp.ID(),
-            attendees: [
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-            ],
-            duration: .seconds(6)
-          )
-        )
-      )
+      initialState: RecordMeeting.State(syncUp: $syncUps[0])
     ) {
       RecordMeeting()
     } withDependencies: {
@@ -243,34 +134,54 @@ final class RecordMeetingTests: XCTestCase {
 
     await store.send(\.alert.confirmSave) {
       $0.alert = nil
-      $0.syncUp.meetings.insert(
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: ""
-        ),
-        at: 0
-      )
     }
+    .finish()
+
+    // TODO: Should we have SharedReader.assert?
+    expectNoDifference(
+      meetings,
+      [
+        Meeting(
+          id: 1,
+          date: Date(timeIntervalSince1970: 1_234_567_890),
+          syncUpID: syncUps[0].id,
+          transcript: ""
+        )
+      ]
+    )
   }
 
-  func testSpeechRecognitionFailure_Continue() async {
+  @Test
+  func endMeetingDiscard() async {
     let clock = TestClock()
 
-    let store = await TestStore(
-      initialState: RecordMeeting.State(
-        syncUp: Shared(
-          SyncUp(
-            id: SyncUp.ID(),
-            attendees: [
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-              Attendee(id: Attendee.ID()),
-            ],
-            duration: .seconds(6)
-          )
-        )
-      )
+    let store = TestStore(initialState: RecordMeeting.State(syncUp: $syncUps[0])) {
+      RecordMeeting()
+    } withDependencies: {
+      $0.continuousClock = clock
+      $0.speechClient.authorizationStatus = { .denied }
+    }
+
+    await store.send(.onTask)
+
+    await store.send(.endMeetingButtonTapped) {
+      $0.alert = .endMeeting(isDiscardable: true)
+    }
+
+    await store.send(\.alert.confirmDiscard) {
+      $0.alert = nil
+    }
+
+    @SharedReader(.meetings(syncUpID: 1)) var meetings: IdentifiedArrayOf<Meeting> = []
+    #expect(meetings == [])
+  }
+
+  @Test
+  func speechRecognitionFailure_Continue() async {
+    let clock = TestClock()
+
+    let store = TestStore(
+      initialState: RecordMeeting.State(syncUp: $syncUps[0])
     ) {
       RecordMeeting()
     } withDependencies: {
@@ -310,6 +221,46 @@ final class RecordMeetingTests: XCTestCase {
     await clock.advance(by: .seconds(6))
 
     await store.withExhaustivity(.off(showSkippedAssertions: true)) {
+      for _ in 1...6 {
+        await store.receive(\.timerTick)
+      }
+    }
+  }
+
+  @Test
+  func recordTranscript() async {
+    let clock = TestClock()
+
+    let store = TestStore(
+      initialState: RecordMeeting.State(syncUp: $syncUps[0])
+    ) {
+      RecordMeeting()
+    } withDependencies: {
+      $0.continuousClock = clock
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
+      $0.speechClient.authorizationStatus = { .authorized }
+      $0.speechClient.startTask = { @Sendable _ in
+        AsyncThrowingStream { continuation in
+          continuation.yield(
+            SpeechRecognitionResult(
+              bestTranscription: Transcription(formattedString: "I completed the project"),
+              isFinal: true
+            )
+          )
+          continuation.finish()
+        }
+      }
+      $0.uuid = .incrementing
+    }
+
+    await store.send(.onTask)
+
+    await store.receive(\.speechResult) {
+      $0.transcript = "I completed the project"
+    }
+
+    await store.withExhaustivity(.off(showSkippedAssertions: true)) {
+      await clock.advance(by: .seconds(6))
       await store.receive(\.timerTick)
       await store.receive(\.timerTick)
       await store.receive(\.timerTick)
@@ -317,12 +268,63 @@ final class RecordMeetingTests: XCTestCase {
       await store.receive(\.timerTick)
       await store.receive(\.timerTick)
     }
+
+    expectNoDifference(
+      meetings.first?.transcript,
+      "I completed the project"
+    )
   }
 
+  @Test
+  func endMeetingSave() async {
+    let clock = TestClock()
+
+    let store = await TestStore(
+      initialState: RecordMeeting.State(syncUp: $syncUps[0])
+    ) {
+      RecordMeeting()
+    } withDependencies: {
+      $0.continuousClock = clock
+      $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
+      $0.speechClient.authorizationStatus = { .denied }
+      $0.uuid = .incrementing
+    }
+
+    await store.send(.onTask)
+
+    await store.send(.endMeetingButtonTapped) {
+      $0.alert = .endMeeting(isDiscardable: true)
+    }
+
+    await clock.advance(by: .seconds(3))
+    await store.receive(\.timerTick)
+    await store.receive(\.timerTick)
+    await store.receive(\.timerTick)
+
+    await store.send(\.alert.confirmSave) {
+      $0.alert = nil
+    }
+
+    expectNoDifference(
+      meetings,
+      [
+        Meeting(
+          id: 1,
+          date: Date(timeIntervalSince1970: 1_234_567_890),
+          syncUpID: 1,
+          transcript: ""
+        )
+      ]
+    )
+  }
+
+  @Test
   func testSpeechRecognitionFailure_Discard() async {
     let clock = TestClock()
 
-    let store = await TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
+    let store = await TestStore(
+      initialState: RecordMeeting.State(syncUp: $syncUps[0])
+    ) {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock

@@ -381,12 +381,12 @@ struct MeetingFooterView: View {
   }
 }
 
-#Preview {
-  NavigationStack {
-    RecordMeetingView(
-      store: Store(initialState: RecordMeeting.State(syncUp: .constant(.mock))) {
-        RecordMeeting()
-      }
-    )
-  }
-}
+//#Preview {
+//  NavigationStack {
+//    RecordMeetingView(
+//      store: Store(initialState: RecordMeeting.State(syncUp: SharedReader(.mock))) {
+//        RecordMeeting()
+//      }
+//    )
+//  }
+//}
