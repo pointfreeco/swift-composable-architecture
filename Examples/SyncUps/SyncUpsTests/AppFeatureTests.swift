@@ -1,17 +1,20 @@
 import ComposableArchitecture
-import XCTest
+import Foundation
+import Testing
 
 @testable import SyncUps
 
-final class AppFeatureTests: XCTestCase {
-  func testDetailEdit() async throws {
+@MainActor
+struct AppFeatureTests {
+  @Test
+  func detailEdit() async throws {
     let syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
-    let store = await TestStore(initialState: AppFeature.State()) {
+    let store = TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
 
-    let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
+    let sharedSyncUp = try #require(Shared($syncUps[id: syncUp.id]))
 
     await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
@@ -38,14 +41,15 @@ final class AppFeatureTests: XCTestCase {
     .finish()
   }
 
-  func testDelete() async throws {
+  @Test
+  func delete() async throws {
     let syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
-    let store = await TestStore(initialState: AppFeature.State()) {
+    let store = TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
 
-    let sharedSyncUp = try XCTUnwrap(Shared($syncUps[id: syncUp.id]))
+    let sharedSyncUp = try #require(Shared($syncUps[id: syncUp.id]))
 
     await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
@@ -65,8 +69,8 @@ final class AppFeatureTests: XCTestCase {
     }
   }
 
-  @MainActor
-  func testRecording() async {
+  @Test
+  func recording() async {
     let speechResult = SpeechRecognitionResult(
       bestTranscription: Transcription(formattedString: "I completed the project"),
       isFinal: true
@@ -107,10 +111,10 @@ final class AppFeatureTests: XCTestCase {
     await store.withExhaustivity(.off) {
       await store.send(\.path[id: 1].record.onTask)
       await store.receive(\.path.popFrom) {
-        XCTAssertEqual($0.path.count, 1)
+        #expect($0.path.count == 1)
       }
     }
-    await store.assert {
+    store.assert {
       $0.path[id: 0]?.modify(\.detail) {
         $0.syncUp.meetings = [
           Meeting(
