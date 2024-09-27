@@ -81,37 +81,17 @@ extension Store where State: ObservableState {
   ///   - column: The source `#column` associated with the scoping.
   /// - Returns: An optional store of non-optional child state and actions.
   public func scope<ChildState, ChildAction>(
-    state stateKeyPath: KeyPath<State, ChildState?>,
-    action actionKeyPath: CaseKeyPath<Action, ChildAction>,
+    state stateKeyPath: _KeyPath<State, ChildState?>,
+    action actionKeyPath: _CaseKeyPath<Action, ChildAction>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) -> Store<ChildState, ChildAction>? {
-    if !core.canStoreCacheChildren {
-      reportIssue(
-        uncachedStoreWarning(self),
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
+    if let storeActor = storeActor.assumeIsolated({ $0.scope(state: stateKeyPath, action: actionKeyPath, fileID: fileID, filePath: filePath, line: line, column: column) }) {
+      return Store<ChildState, ChildAction>(storeActor: storeActor)
     }
-    let id = id(state: stateKeyPath, action: actionKeyPath)
-    guard let childState = state[keyPath: stateKeyPath]
-    else {
-      children[id] = nil  // TODO: Eager?
-      return nil
-    }
-    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
-      IfLetCore(
-        base: core,
-        cachedState: childState,
-        stateKeyPath: stateKeyPath,
-        actionKeyPath: actionKeyPath
-      )
-    }
-    return scope(id: id, childCore: open(core))
+    return nil
   }
 }
 
