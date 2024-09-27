@@ -1,16 +1,34 @@
 public actor StoreActor<State, Action> {
   let core: any Core<State, Action>
   var children: [ScopeID<State, Action>: AnyObject] = [:]
+  let isolation: any Actor
 
-  init(core: any Core<State, Action>) {
+  init(
+    core: any Core<State, Action>,
+    isolation: any Actor
+  ) {
     self.core = core
+    self.isolation = isolation
   }
 
   public init(
     initialState: State,
-    reducer: some Reducer<State, Action>
+    isolation: isolated (any Actor)? = #isolation,
+    @ReducerBuilder<State, Action> reducer: () -> some Reducer<State, Action>
   ) {
-    self.core = RootCore(initialState: initialState, reducer: reducer)
+    let isolation = isolation ?? DefaultIsolation()
+    self.isolation = isolation
+    self.core = RootCore(
+      initialState: initialState,
+      reducer: reducer(),
+      isolation: isolation
+    )
+  }
+
+  private actor DefaultIsolation {}
+
+  public nonisolated var unownedExecutor: UnownedSerialExecutor {
+    isolation.unownedExecutor
   }
 
   public var state: State {
@@ -78,7 +96,10 @@ public actor StoreActor<State, Action> {
       let id,
       let child = children[id] as? StoreActor<ChildState, ChildAction>
     else {
-      let child = StoreActor<ChildState, ChildAction>(core: childCore())
+      let child = StoreActor<ChildState, ChildAction>(
+        core: childCore(),
+        isolation: isolation
+      )
       if core.canStoreCacheChildren, let id {
         children[id] = child
       }

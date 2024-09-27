@@ -40,6 +40,7 @@ final class RootCore<Root: Reducer>: Core, @unchecked Sendable {
     }
   }
   let reducer: Root
+  let isolation: any Actor
 
   @inlinable
   @inline(__always)
@@ -54,10 +55,12 @@ final class RootCore<Root: Reducer>: Core, @unchecked Sendable {
   private var isSending = false
   init(
     initialState: Root.State,
-    reducer: Root
+    reducer: Root,
+    isolation: any Actor
   ) {
     self.state = initialState
     self.reducer = reducer
+    self.isolation = isolation
   }
   func send(_ action: Root.Action) -> Task<Void, Never>? {
     _withoutPerceptionChecking {
@@ -135,7 +138,7 @@ final class RootCore<Root: Reducer>: Core, @unchecked Sendable {
             let isCompleted = LockIsolated(false)
             defer { isCompleted.setValue(true) }
             await operation(
-              Send(isolation: #isolation) { effectAction in
+              Send(isolation: dump(isolation)) { effectAction in
                 if isCompleted.value {
                   reportIssue(
                     """
@@ -154,10 +157,7 @@ final class RootCore<Root: Reducer>: Core, @unchecked Sendable {
                   )
                 }
                 if let task = dependencies.yield({
-                  nonisolated(unsafe) let effectAction = effectAction
-                  return MainActor.assumeIsolated {
-                    self.send(effectAction)
-                  }
+                  self.send(effectAction)
                 }) {
                   tasks.withValue { $0.append(task) }
                 }
@@ -170,7 +170,7 @@ final class RootCore<Root: Reducer>: Core, @unchecked Sendable {
     }
 
     guard !tasks.isEmpty else { return nil }
-    return Task { @MainActor in
+    return Task { 
       await withTaskCancellationHandler {
         var index = tasks.startIndex
         while index < tasks.endIndex {
@@ -186,7 +186,6 @@ final class RootCore<Root: Reducer>: Core, @unchecked Sendable {
       }
     }
   }
-  private actor DefaultIsolation {}
 }
 
 final class ScopedCore<Base: Core, State, Action>: Core {
