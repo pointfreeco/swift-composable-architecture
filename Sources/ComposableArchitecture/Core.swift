@@ -62,10 +62,10 @@ final class RootCore<Root: Reducer>: Core {
   }
   func send(_ action: Root.Action) -> Task<Void, Never>? {
     _withoutPerceptionChecking {
-      send(action, originatingFrom: nil)
+      _send(action)
     }
   }
-  func send(_ action: Root.Action, originatingFrom originatingAction: Any?) -> Task<Void, Never>? {
+  func _send(_ action: Root.Action) -> Task<Void, Never>? {
     self.bufferedActions.append(action)
     guard !self.isSending else { return nil }
 
@@ -80,8 +80,7 @@ final class RootCore<Root: Reducer>: Core {
       self.isSending = false
       if !self.bufferedActions.isEmpty {
         if let task = self.send(
-          self.bufferedActions.removeLast(),
-          originatingFrom: originatingAction
+          self.bufferedActions.removeLast()
         ) {
           tasks.withValue { $0.append(task) }
         }
@@ -114,7 +113,7 @@ final class RootCore<Root: Reducer>: Core {
               receiveValue: { [weak self] effectAction in
                 guard let self else { return }
                 if let task = continuation.yield({
-                  self.send(effectAction, originatingFrom: action)
+                  self.send(effectAction)
                 }) {
                   tasks.withValue { $0.append(task) }
                 }
@@ -159,7 +158,7 @@ final class RootCore<Root: Reducer>: Core {
                   )
                 }
                 if let task = continuation.yield({
-                  self.send(effectAction, originatingFrom: action)
+                  self.send(effectAction)
                 }) {
                   tasks.withValue { $0.append(task) }
                 }
