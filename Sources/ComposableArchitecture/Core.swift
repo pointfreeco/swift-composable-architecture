@@ -131,7 +131,7 @@ final class RootCore<Root: Reducer>: Core {
           self.effectCancellables[uuid] = effectCancellable
         }
       case let .run(priority, operation):
-        withEscapedDependencies { continuation in
+        withEscapedDependencies { dependencies in
           let task = Task(priority: priority) { @MainActor in
             let isCompleted = LockIsolated(false)
             defer { isCompleted.setValue(true) }
@@ -145,9 +145,6 @@ final class RootCore<Root: Reducer>: Core {
                       Action:
                         \(debugCaseOutput(effectAction))
 
-                      Effect returned from:
-                        \(debugCaseOutput(action))
-
                     Avoid sending actions using the 'send' argument from 'Effect.run' after \
                     the effect has completed. This can happen if you escape the 'send' \
                     argument in an unstructured context.
@@ -157,8 +154,11 @@ final class RootCore<Root: Reducer>: Core {
                     """
                   )
                 }
-                if let task = continuation.yield({
-                  self.send(effectAction)
+                if let task = dependencies.yield({
+                  nonisolated(unsafe) let effectAction = effectAction
+                  return MainActor.assumeIsolated {
+                    self.send(effectAction)
+                  }
                 }) {
                   tasks.withValue { $0.append(task) }
                 }

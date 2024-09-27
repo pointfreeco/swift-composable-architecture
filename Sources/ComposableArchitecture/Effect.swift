@@ -211,6 +211,7 @@ public actor Send<Action> {
   ///   - transaction: A transaction.
   public func callAsFunction(_ action: Action, transaction: Transaction) {
     guard !Task.isCancelled else { return }
+    nonisolated(unsafe) let action = action 
     withTransaction(transaction) {
       self(action)
     }
@@ -376,7 +377,10 @@ extension Effect {
             await escaped.yield {
               await operation(
                 Send { action in
-                  send(transform(action))
+                  nonisolated(unsafe) let action = action
+                  send.assumeIsolated { send in
+                    send(transform(action))
+                  }
                 }
               )
             }
