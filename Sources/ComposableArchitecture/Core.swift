@@ -122,7 +122,7 @@ final class RootCore<Root: Reducer>: Core {
         }
 
         if !didComplete {
-          let task = Task<Void, Never> { @MainActor in
+          let task = Task<Void, Never> {
             for await _ in AsyncStream<Void>.never {}
             effectCancellable.cancel()
           }
@@ -132,11 +132,11 @@ final class RootCore<Root: Reducer>: Core {
         }
       case let .run(priority, operation):
         withEscapedDependencies { dependencies in
-          let task = Task(priority: priority) { @MainActor in
+          let task = Task(priority: priority) {
             let isCompleted = LockIsolated(false)
             defer { isCompleted.setValue(true) }
             await operation(
-              Send { effectAction in
+              Send(isolation: #isolation) { effectAction in
                 if isCompleted.value {
                   reportIssue(
                     """

@@ -34,7 +34,7 @@ public struct _EffectPublisher<Action>: Publisher {
       return .create { subscriber in
         let task = Task(priority: priority) { @MainActor in
           defer { subscriber.send(completion: .finished) }
-          await operation(Send { subscriber.send($0) })
+          await operation(Send(isolation: #isolation) { subscriber.send($0) })
         }
         return AnyCancellable {
           task.cancel()

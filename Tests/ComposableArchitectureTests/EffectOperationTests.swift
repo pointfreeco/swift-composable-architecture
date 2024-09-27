@@ -18,7 +18,7 @@
         .merge(with: .none)
       switch effect.operation {
       case let .run(_, send):
-        await send(.init(send: { XCTAssertEqual($0, 42) }))
+        await send(.init(isolation: #isolation, send: { XCTAssertEqual($0, 42) }))
       default:
         XCTFail()
       }
@@ -27,7 +27,7 @@
         .merge(with: .run { send in await send(42) })
       switch effect.operation {
       case let .run(_, send):
-        await send(.init(send: { XCTAssertEqual($0, 42) }))
+        await send(.init(isolation: #isolation, send: { XCTAssertEqual($0, 42) }))
       default:
         XCTFail()
       }
@@ -36,7 +36,7 @@
         .merge(with: .none)
       switch effect.operation {
       case let .run(_, send):
-        await send(.init(send: { XCTAssertEqual($0, 42) }))
+        await send(.init(isolation: #isolation, send: { XCTAssertEqual($0, 42) }))
       default:
         XCTFail()
       }
@@ -45,7 +45,7 @@
         .merge(with: .run { await $0(42) })
       switch effect.operation {
       case let .run(_, send):
-        await send(.init(send: { XCTAssertEqual($0, 42) }))
+        await send(.init(isolation: #isolation, send: { XCTAssertEqual($0, 42) }))
       default:
         XCTFail()
       }
@@ -65,7 +65,7 @@
         .concatenate(with: .none)
       switch effect.operation {
       case let .run(_, send):
-        await send(.init(send: { XCTAssertEqual($0, 42) }))
+        await send(.init(isolation: #isolation, send: { XCTAssertEqual($0, 42) }))
       default:
         XCTFail()
       }
@@ -74,7 +74,7 @@
         .concatenate(with: .run { send in await send(42) })
       switch effect.operation {
       case let .run(_, send):
-        await send(.init(send: { XCTAssertEqual($0, 42) }))
+        await send(.init(isolation: #isolation, send: { XCTAssertEqual($0, 42) }))
       default:
         XCTFail()
       }
@@ -83,7 +83,7 @@
         .concatenate(with: .none)
       switch effect.operation {
       case let .run(_, send):
-        await send(.init(send: { XCTAssertEqual($0, 42) }))
+        await send(.init(isolation: #isolation, send: { XCTAssertEqual($0, 42) }))
       default:
         XCTFail()
       }
@@ -92,7 +92,7 @@
         .concatenate(with: .run { send in await send(42) })
       switch effect.operation {
       case let .run(_, send):
-        await send(.init(send: { XCTAssertEqual($0, 42) }))
+        await send(.init(isolation: #isolation, send: { XCTAssertEqual($0, 42) }))
       default:
         XCTFail()
       }
@@ -114,7 +114,7 @@
       )
       switch effect.operation {
       case let .run(_, send):
-        await send(.init { values.append($0) })
+        await send(.init(isolation: #isolation) { values.append($0) })
       default:
         XCTFail()
       }
@@ -130,7 +130,7 @@
         .concatenate(with: .run { send in await send(1729) })
       switch effect.operation {
       case let .run(_, send):
-        await send(.init(send: { values.append($0) }))
+        await send(.init(isolation: #isolation, send: { values.append($0) }))
       default:
         XCTFail()
       }
@@ -144,7 +144,7 @@
 
       switch effect.operation {
       case let .run(_, send):
-        await send(.init(send: { XCTAssertEqual($0, "42") }))
+        await send(.init(isolation: #isolation, send: { XCTAssertEqual($0, "42") }))
       default:
         XCTFail()
       }

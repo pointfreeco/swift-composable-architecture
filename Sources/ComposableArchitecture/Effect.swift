@@ -181,10 +181,18 @@ extension Effect {
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 public actor Send<Action> {
+  @usableFromInline
+  let isolation: any Actor
   let send: @Sendable (Action) -> Void
 
-  public init(send: @escaping @Sendable (Action) -> Void) {
+  // TODO: keep backwards compatability with default #isolation
+  // TODO: Can we remove the public?
+  public init(
+    isolation: isolated (any Actor)?,
+    send: @escaping @Sendable (Action) -> Void
+  ) {
     self.send = send
+    self.isolation = isolation ?? MainActor.shared
   }
 
   /// Sends an action back into the system from an effect.
@@ -218,7 +226,7 @@ public actor Send<Action> {
   }
 
   public nonisolated var unownedExecutor: UnownedSerialExecutor {
-    MainActor.shared.unownedExecutor
+    isolation.unownedExecutor
   }
 }
 
@@ -376,7 +384,7 @@ extension Effect {
           operation: .run(priority) { send in
             await escaped.yield {
               await operation(
-                Send { action in
+                Send(isolation: send.isolation) { action in
                   nonisolated(unsafe) let action = action
                   send.assumeIsolated { send in
                     send(transform(action))
