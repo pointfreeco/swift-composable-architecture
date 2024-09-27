@@ -89,21 +89,6 @@ public actor StoreActor<State, Action> {
     return scope(id: id, childCore: childCore)
   }
 
-  func _scope<ChildState, ChildAction>(
-    state toChildState: @escaping (_ state: State) -> ChildState,
-    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
-  ) -> StoreActor<ChildState, ChildAction> {
-    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
-      ClosureScopedCore(
-        base: core,
-        toState: toChildState,
-        fromAction: fromChildAction
-      )
-    }
-    let childCore = open(core)
-    return scope(id: nil, childCore: childCore)
-  }
-
   private func scope<ChildState, ChildAction>(
     id: ScopeID<State, Action>?,
     childCore: @autoclosure () -> any Core<ChildState, ChildAction>

@@ -1,4 +1,4 @@
-@preconcurrency import Combine
+import Combine
 import Foundation
 import SwiftUI
 
@@ -138,10 +138,10 @@ import SwiftUI
   @preconcurrency@MainActor
 #endif
 public final class Store<State, Action> {
-//  var children: [ScopeID<State, Action>: AnyObject] = [:]
+  var children: [ScopeID<State, Action>: AnyObject] = [:]
 
-//  let core: any Core<State, Action>
-//  @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] { core.effectCancellables }
+  let core: any Core<State, Action>
+  @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] { core.effectCancellables }
 
   #if !os(visionOS)
     let _$observationRegistrar = PerceptionRegistrar(
@@ -151,8 +151,6 @@ public final class Store<State, Action> {
     let _$observationRegistrar = ObservationRegistrar()
   #endif
   private var parentCancellable: AnyCancellable?
-
-  let storeActor: StoreActor<State, Action>
 
   /// Initializes a store from an initial state and a reducer.
   ///
@@ -177,7 +175,7 @@ public final class Store<State, Action> {
   }
 
   init() {
-    self.storeActor = StoreActor(core: InvalidCore(), isolation: MainActor.shared)
+    self.core = InvalidCore()
   }
 
   deinit {
@@ -293,14 +291,31 @@ public final class Store<State, Action> {
   ///   - action: A case key path from `Action` to `ChildAction`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state: _KeyPath<State, ChildState>,
-    action: _CaseKeyPath<Action, ChildAction>
+    state: KeyPath<State, ChildState>,
+    action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
-    Store<ChildState, ChildAction>(
-      storeActor: storeActor.assumeIsolated { storeActor in
-        storeActor.scope(state: state, action: action)
+    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
+      ScopedCore(base: core, stateKeyPath: state, actionKeyPath: action)
+    }
+    return scope(id: id(state: state, action: action), childCore: open(core))
+  }
+
+  func scope<ChildState, ChildAction>(
+    id: ScopeID<State, Action>?,
+    childCore: @autoclosure () -> any Core<ChildState, ChildAction>
+  ) -> Store<ChildState, ChildAction> {
+    guard
+      core.canStoreCacheChildren,
+      let id,
+      let child = children[id] as? Store<ChildState, ChildAction>
+    else {
+      let child = Store<ChildState, ChildAction>(core: childCore())
+      if core.canStoreCacheChildren, let id {
+        children[id] = child
       }
-    )
+      return child
+    }
+    return child
   }
 
   @available(
@@ -309,52 +324,53 @@ public final class Store<State, Action> {
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping @Sendable (_ state: State) -> ChildState,
-    action fromChildAction: @escaping @Sendable (_ childAction: ChildAction) -> Action
+    state toChildState: @escaping (_ state: State) -> ChildState,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-    Store<ChildState, ChildAction>(
-      storeActor: storeActor.assumeIsolated { storeActor in
-        storeActor._scope(state: toChildState, action: fromChildAction)
-      }
-    )
+    _scope(state: toChildState, action: fromChildAction)
+  }
+
+  func _scope<ChildState, ChildAction>(
+    state toChildState: @escaping (_ state: State) -> ChildState,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction> {
+    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
+      ClosureScopedCore(
+        base: core,
+        toState: toChildState,
+        fromAction: fromChildAction
+      )
+    }
+    return scope(id: nil, childCore: open(core))
   }
 
   @_spi(Internals)
   public var currentState: State {
-    storeActor.assumeIsolated {
-      UncheckedSendable($0.state)
-    }
-    .wrappedValue
+    core.state
   }
 
   @_spi(Internals)
   @_disfavoredOverload
   public func send(_ action: Action) -> Task<Void, Never>? {
-    nonisolated(unsafe) let action = action
-    return storeActor.assumeIsolated {
-      $0.send(action).rawValue
-    }
+    core.send(action)
   }
 
-  var core: any Core<State, Action> {
-    let tmp = storeActor.assumeIsolated { UncheckedSendable($0.core) }
-    return tmp.wrappedValue
-  }
-
-  init(storeActor: StoreActor<State, Action>) {
+  private init(core: some Core<State, Action>) {
     defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
-    self.storeActor = storeActor
+    self.core = core
 
-    if State.self is any ObservableState.Type {
-      let cancellable = storeActor.assumeIsolated { $0.core.didSet }
-        .compactMap { [weak self] in (self?.currentState as? any ObservableState)?._$id }
-        .removeDuplicates()
-        .dropFirst()
-        .sink { [weak self] _ in
-          guard let self else { return }
-          self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
-        }
-      self.parentCancellable = cancellable
+    if let stateType = State.self as? any ObservableState.Type {
+      func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
+        core.didSet
+          .compactMap { [weak self] in (self?.currentState as? T)?._$id }
+          .removeDuplicates()
+          .dropFirst()
+          .sink { [weak self] _ in
+            guard let self else { return }
+            self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+          }
+      }
+      self.parentCancellable = subscribeToDidSet(stateType)
     }
   }
   
@@ -363,7 +379,11 @@ public final class Store<State, Action> {
     reducer: R
   ) {
     self.init(
-      storeActor: StoreActor(initialState: initialState, reducer: { reducer })
+      core: RootCore(
+        initialState: initialState,
+        reducer: reducer,
+        isolation: MainActor.shared
+      )
     )
   }
 
@@ -379,7 +399,7 @@ public final class Store<State, Action> {
   public var publisher: StorePublisher<State> {
     StorePublisher(
       store: self,
-      upstream: storeActor.assumeIsolated { $0.core.didSet }.map { self.currentState }
+      upstream: self.core.didSet.map { self.currentState }
     )
   }
 
