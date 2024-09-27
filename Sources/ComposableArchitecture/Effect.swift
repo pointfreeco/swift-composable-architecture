@@ -180,11 +180,10 @@ extension Effect {
 /// context.
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
-@MainActor
-public struct Send<Action>: Sendable {
-  let send: @MainActor @Sendable (Action) -> Void
+public actor Send<Action> {
+  let send: @Sendable (Action) -> Void
 
-  public init(send: @escaping @MainActor @Sendable (Action) -> Void) {
+  public init(send: @escaping @Sendable (Action) -> Void) {
     self.send = send
   }
 
@@ -215,6 +214,10 @@ public struct Send<Action>: Sendable {
     withTransaction(transaction) {
       self(action)
     }
+  }
+
+  public nonisolated var unownedExecutor: UnownedSerialExecutor {
+    MainActor.shared.unownedExecutor
   }
 }
 

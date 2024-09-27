@@ -49,7 +49,10 @@ extension Effect {
           await operation(
             Send { value in
               withTransaction(uncheckedTransaction.value) {
-                send(value)
+                nonisolated(unsafe) let value = value
+                send.assumeIsolated { send in
+                  send(value)
+                }
               }
             }
           )
