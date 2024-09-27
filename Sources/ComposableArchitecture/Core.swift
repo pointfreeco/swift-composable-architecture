@@ -1,8 +1,7 @@
 import Combine
 import Foundation
 
-@MainActor
-protocol Core<State, Action>: AnyObject, Sendable {
+protocol Core<State, Action>: AnyObject {
   associatedtype State
   associatedtype Action
   var state: State { get }
@@ -34,7 +33,7 @@ final class InvalidCore<State, Action>: Core {
   var effectCancellables: [UUID: AnyCancellable] { [:] }
 }
 
-final class RootCore<Root: Reducer>: Core {
+final class RootCore<Root: Reducer>: Core, @unchecked Sendable {
   var state: Root.State {
     didSet {
       didSet.send(())
@@ -122,9 +121,9 @@ final class RootCore<Root: Reducer>: Core {
         }
 
         if !didComplete {
-          let task = Task<Void, Never> {
+          let task = Task<Void, Never> { [cancellable = UncheckedSendable(effectCancellable)] in
             for await _ in AsyncStream<Void>.never {}
-            effectCancellable.cancel()
+            cancellable.wrappedValue.cancel()
           }
           boxedTask.wrappedValue = task
           tasks.withValue { $0.append(task) }
