@@ -17,10 +17,12 @@ public actor StoreActor<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> some Reducer<State, Action>
   ) {
     let isolation = isolation ?? DefaultIsolation()
-    self.isolation = isolation
-    self.core = RootCore(
-      initialState: initialState,
-      reducer: reducer(),
+    self.init(
+      core: RootCore(
+        initialState: initialState,
+        reducer: reducer(),
+        isolation: isolation
+      ),
       isolation: isolation
     )
   }

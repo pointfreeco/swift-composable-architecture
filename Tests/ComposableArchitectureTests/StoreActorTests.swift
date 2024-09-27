@@ -26,6 +26,7 @@ final class StoreActorTests: BaseTCATestCase {
 
 @Reducer
 private struct Feature {
+  @ObservableState
   struct State {
     var count = 0
     var isolation: (any Actor)?
