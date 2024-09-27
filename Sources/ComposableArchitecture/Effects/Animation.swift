@@ -47,9 +47,12 @@ extension Effect {
       return Self(
         operation: .run(priority) { send in
           await operation(
-            Send { value in
+            Send(isolation: send.isolation) { value in
               withTransaction(uncheckedTransaction.value) {
-                send(value)
+                nonisolated(unsafe) let value = value
+                send.assumeIsolated { send in
+                  send(value)
+                }
               }
             }
           )

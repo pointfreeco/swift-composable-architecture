@@ -132,9 +132,6 @@ final class EffectRunTests: BaseTCATestCase {
           Action:
             EffectRunTests.Action.response
 
-          Effect returned from:
-            EffectRunTests.Action.tap
-
         Avoid sending actions using the 'send' argument from 'Effect.run' after the effect has \
         completed. This can happen if you escape the 'send' argument in an unstructured context.
 

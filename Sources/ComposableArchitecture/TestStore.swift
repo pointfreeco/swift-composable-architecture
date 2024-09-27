@@ -2507,7 +2507,7 @@ extension TestStore {
   /// - Parameter toViewAction: A case path from action to a bindable view action.
   /// - Returns: A binding view store.
   public func bindings<ViewAction: BindableAction>(
-    action toViewAction: CaseKeyPath<Action, ViewAction>
+    action toViewAction: _CaseKeyPath<Action, ViewAction>
   ) -> BindingViewStore<State> where State == ViewAction.State, Action: CasePathable {
     BindingViewStore(
       store: Store(initialState: self.state) {

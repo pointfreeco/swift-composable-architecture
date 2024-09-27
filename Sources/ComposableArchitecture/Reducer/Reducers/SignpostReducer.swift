@@ -122,11 +122,14 @@ extension Effect {
             actionOutput
           )
           await operation(
-            Send { action in
+            Send(isolation: send.isolation) { action in
               os_signpost(
                 .event, log: log, name: "Effect Output", "%sOutput from %s", prefix, actionOutput
               )
-              send(action)
+              nonisolated(unsafe) let action = action 
+              send.assumeIsolated { send in
+                send(action)
+              }
             }
           )
           if Task.isCancelled {

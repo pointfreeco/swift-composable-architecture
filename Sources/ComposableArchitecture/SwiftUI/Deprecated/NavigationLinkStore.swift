@@ -72,14 +72,10 @@ public struct NavigationLinkStore<
       Destination,
     @ViewBuilder label: () -> Label
   ) {
-    func open(
-      _ core: some Core<PresentationState<State>, PresentationAction<Action>>
-    ) -> any Core<PresentationState<State>, PresentationAction<Action>> {
-      PresentationCore(base: core, toDestinationState: toDestinationState)
-    }
-    let store = store.scope(
-      id: store.id(state: \.self, action: \.self),
-      childCore: open(store.core)
+    let store = Store(
+      storeActor: store.storeActor.assumeIsolated {
+        $0._presentation(state: { $0 })
+      }
     )
     self.store = store
     self.viewStore = ViewStore(
@@ -124,14 +120,11 @@ public struct NavigationLinkStore<
       Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
-    func open(
-      _ core: some Core<PresentationState<State>, PresentationAction<Action>>
-    ) -> any Core<PresentationState<State>, PresentationAction<Action>> {
-      NavigationLinkCore(base: core, id: id, toDestinationState: toDestinationState)
-    }
-    let store = store.scope(
-      id: store.id(state: \.self, action: \.self),
-      childCore: open(store.core)
+    nonisolated(unsafe) let (id, toDestinationState) = (id, toDestinationState)
+    let store = Store(
+      storeActor: store.storeActor.assumeIsolated {
+        $0._navigationLink(id: id, state: toDestinationState)
+      }
     )
     self.store = store
     self.viewStore = ViewStore(
@@ -163,7 +156,9 @@ public struct NavigationLinkStore<
     ) {
       IfLetStore(
         self.store._scope(
-          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
+          state: /* FIXME: returningLastNonNilValue */ {
+            $0.wrappedValue.flatMap(self.toDestinationState)
+          },
           action: { .presented(self.fromDestinationAction($0)) }
         ),
         then: self.destination
@@ -183,6 +178,24 @@ public struct NavigationLinkStore<
     var link = self
     link.isDetailLink = isDetailLink
     return link
+  }
+}
+
+private extension StoreActor {
+  func _navigationLink<S, A, DestinationState: Identifiable>(
+    id: DestinationState.ID,
+    state toDestinationState: @escaping (S) -> DestinationState?
+  ) -> StoreActor
+  where State == PresentationState<S>, Action == PresentationAction<A> {
+    func open(_ core: some Core<State, Action>) -> any Core<State, Action> {
+      NavigationLinkCore(
+        base: core,
+        id: id,
+        toDestinationState: toDestinationState
+      )
+    }
+    let childCore = open(core)
+    return scope(id: ScopeID(state: \.self, action: \.self), childCore: childCore)
   }
 }
 

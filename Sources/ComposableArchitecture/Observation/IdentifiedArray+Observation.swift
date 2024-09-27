@@ -72,7 +72,7 @@ extension Store where State: ObservableState {
     line: UInt = #line,
     column: UInt = #column
   ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
-    if !core.canStoreCacheChildren {
+    if !storeActor.assumeIsolated({ $0.core.canStoreCacheChildren }) {
       reportIssue(
         uncachedStoreWarning(self),
         fileID: fileID,
@@ -116,27 +116,17 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
     return MainActor._assumeIsolated { [uncheckedSelf = UncheckedSendable(self)] in
       let `self` = uncheckedSelf.wrappedValue
       guard self.data.indices.contains(position)
-      else {
-        return Store()
-      }
+      else { return Store() }
       let elementID = self.data.ids[position]
-      let scopeID = self.store.id(state: \.[id: elementID], action: \.[id: elementID])
-      guard let child = self.store.children[scopeID] as? Store<State, Action>
-      else {
-        @MainActor
-        func open(
-          _ core: some Core<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
-        ) -> any Core<State, Action> {
-          IfLetCore(
-            base: core,
-            cachedState: self.data[position],
-            stateKeyPath: \.[id:elementID],
-            actionKeyPath: \.[id:elementID]
+      return Store(
+        storeActor: self.store.storeActor.assumeIsolated {
+          $0.scope(
+            state: \.[id: elementID],
+            action: \.[id: elementID],
+            default: self.data[position]
           )
         }
-        return self.store.scope(id: scopeID, childCore: open(self.store.core))
-      }
-      return child
+      )
     }
   }
 }

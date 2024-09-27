@@ -133,20 +133,6 @@ public struct ForEachStore<
     >
   {
     self.data = store.withState { $0 }
-
-    func open(
-      _ core: some Core<IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>>,
-      element: EachState,
-      id: ID
-    ) -> any Core<EachState, EachAction> {
-      IfLetCore(
-        base: core,
-        cachedState: element,
-        stateKeyPath: \.[id:id],
-        actionKeyPath: \.[id:id]
-      )
-    }
-
     self.content = WithViewStore(
       store,
       observe: { $0 },
@@ -154,10 +140,16 @@ public struct ForEachStore<
     ) { viewStore in
       ForEach(viewStore.state, id: viewStore.state.id) { element in
         let id = element[keyPath: viewStore.state.id]
+        nonisolated(unsafe) let element = element
         content(
-          store.scope(
-            id: store.id(state: \.[id: id]!, action: \.[id: id]),
-            childCore: open(store.core, element: element, id: id)
+          Store(
+            storeActor: store.storeActor.assumeIsolated {
+              $0.scope(
+                state: \.[id: id],
+                action: \.[id: id],
+                default: element
+              )
+            }
           )
         )
       }
@@ -205,20 +197,6 @@ public struct ForEachStore<
     >
   {
     self.data = store.withState { $0 }
-
-    func open(
-      _ core: some Core<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
-      element: EachState,
-      id: ID
-    ) -> any Core<EachState, EachAction> {
-      IfLetCore(
-        base: core,
-        cachedState: element,
-        stateKeyPath: \.[id:id],
-        actionKeyPath: \.[id:id]
-      )
-    }
-
     self.content = WithViewStore(
       store,
       observe: { $0 },
@@ -226,10 +204,16 @@ public struct ForEachStore<
     ) { viewStore in
       ForEach(viewStore.state, id: viewStore.state.id) { element in
         let id = element[keyPath: viewStore.state.id]
+        nonisolated(unsafe) let element = element
         content(
-          store.scope(
-            id: store.id(state: \.[id: id]!, action: \.[id: id]),
-            childCore: open(store.core, element: element, id: id)
+          Store(
+            storeActor: store.storeActor.assumeIsolated {
+              $0.scope(
+                state: \.[id: id],
+                action: \.[id: id],
+                default: element
+              )
+            }
           )
         )
       }

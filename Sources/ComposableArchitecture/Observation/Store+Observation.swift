@@ -88,30 +88,19 @@ extension Store where State: ObservableState {
     line: UInt = #line,
     column: UInt = #column
   ) -> Store<ChildState, ChildAction>? {
-    if !core.canStoreCacheChildren {
-      reportIssue(
-        uncachedStoreWarning(self),
+    nonisolated(unsafe) let (stateKeyPath, actionKeyPath) = (stateKeyPath, actionKeyPath)
+    let childStoreActor = storeActor.assumeIsolated {
+      $0.scope(
+        state: stateKeyPath,
+        action: actionKeyPath,
         fileID: fileID,
-        filePath: filePath,
+        filePath:filePath,
         line: line,
         column: column
       )
     }
-    let id = id(state: stateKeyPath, action: actionKeyPath)
-    guard let childState = state[keyPath: stateKeyPath]
-    else {
-      children[id] = nil  // TODO: Eager?
-      return nil
-    }
-    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
-      IfLetCore(
-        base: core,
-        cachedState: childState,
-        stateKeyPath: stateKeyPath,
-        actionKeyPath: actionKeyPath
-      )
-    }
-    return scope(id: id, childCore: open(core))
+    guard let childStoreActor else { return nil }
+    return Store<ChildState, ChildAction>(storeActor: childStoreActor)
   }
 }
 
@@ -404,7 +393,7 @@ extension Store where State: ObservableState {
       if newValue == nil,
         let childState = self.state[keyPath: state],
         id == _identifiableID(childState),
-        !self.core.isInvalid
+        !storeActor.assumeIsolated({ $0.core.isInvalid })
       {
         self.send(action(.dismiss))
         if self.state[keyPath: state] != nil {

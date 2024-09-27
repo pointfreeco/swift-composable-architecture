@@ -165,7 +165,9 @@ extension Store where State: ObservableState, Action: BindableAction, Action.Sta
     set {
       BindingLocal.$isActive.withValue(true) {
         self.send(
-          .set(keyPath, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+          .set(keyPath, newValue, isInvalidated: { [weak self] in
+            self?.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+          })
         )
       }
     }
@@ -184,7 +186,9 @@ where
     set {
       BindingLocal.$isActive.withValue(true) {
         self.send(
-          .set(\.self, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+          .set(\.self, newValue, isInvalidated: { [weak self] in
+            self?.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+          })
         )
       }
     }
@@ -206,7 +210,9 @@ where
       BindingLocal.$isActive.withValue(true) {
         self.send(
           .view(
-            .set(keyPath, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+            .set(keyPath, newValue, isInvalidated: { [weak self] in
+              self?.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+            })
           )
         )
       }
@@ -228,7 +234,9 @@ where
       BindingLocal.$isActive.withValue(true) {
         self.send(
           .view(
-            .set(\.self, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+            .set(\.self, newValue, isInvalidated: { [weak self] in
+              self?.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+            })
           )
         )
       }

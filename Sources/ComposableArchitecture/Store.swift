@@ -1,4 +1,4 @@
-import Combine
+@preconcurrency import Combine
 import Foundation
 import SwiftUI
 
@@ -138,10 +138,10 @@ import SwiftUI
   @preconcurrency@MainActor
 #endif
 public final class Store<State, Action> {
-  var children: [ScopeID<State, Action>: AnyObject] = [:]
-
-  let core: any Core<State, Action>
-  @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] { core.effectCancellables }
+  let storeActor: StoreActor<State, Action>
+  @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] {
+    storeActor.assumeIsolated { $0.core.effectCancellables }
+  }
 
   #if !os(visionOS)
     let _$observationRegistrar = PerceptionRegistrar(
@@ -159,23 +159,22 @@ public final class Store<State, Action> {
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
   ///     by the reducer.
-  public convenience init<R: Reducer<State, Action>>(
-    initialState: @autoclosure () -> R.State,
-    @ReducerBuilder<State, Action> reducer: () -> R,
+  public convenience init(
+    initialState: @autoclosure () -> State,
+    @ReducerBuilder<State, Action> reducer: () -> some Reducer<State, Action>,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) {
     let (initialState, reducer, dependencies) = withDependencies(prepareDependencies ?? { _ in }) {
       @Dependency(\.self) var dependencies
       return (initialState(), reducer(), dependencies)
     }
-    self.init(
-      initialState: initialState,
-      reducer: reducer.dependency(\.self, dependencies)
-    )
+    self.init(initialState: initialState) {
+      reducer.dependency(\.self, dependencies)
+    }
   }
 
   init() {
-    self.core = InvalidCore()
+    self.storeActor = StoreActor(core: InvalidCore(), isolation: MainActor.shared)
   }
 
   deinit {
@@ -294,28 +293,10 @@ public final class Store<State, Action> {
     state: KeyPath<State, ChildState>,
     action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
-    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
-      ScopedCore(base: core, stateKeyPath: state, actionKeyPath: action)
-    }
-    return scope(id: id(state: state, action: action), childCore: open(core))
-  }
-
-  func scope<ChildState, ChildAction>(
-    id: ScopeID<State, Action>?,
-    childCore: @autoclosure () -> any Core<ChildState, ChildAction>
-  ) -> Store<ChildState, ChildAction> {
-    guard
-      core.canStoreCacheChildren,
-      let id,
-      let child = children[id] as? Store<ChildState, ChildAction>
-    else {
-      let child = Store<ChildState, ChildAction>(core: childCore())
-      if core.canStoreCacheChildren, let id {
-        children[id] = child
-      }
-      return child
-    }
-    return child
+    nonisolated(unsafe) let (state, action) = (state, action)
+    return Store<ChildState, ChildAction>(
+      storeActor: storeActor.assumeIsolated { $0.scope(state: state, action: action) }
+    )
   }
 
   @available(
@@ -334,51 +315,40 @@ public final class Store<State, Action> {
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
-      ClosureScopedCore(
-        base: core,
-        toState: toChildState,
-        fromAction: fromChildAction
-      )
-    }
-    return scope(id: nil, childCore: open(core))
+    nonisolated(unsafe) let (toChildState, fromChildAction) = (toChildState, fromChildAction)
+    return Store<ChildState, ChildAction>(
+      storeActor: storeActor.assumeIsolated {
+        $0._scope(state: toChildState, action: fromChildAction)
+      }
+    )
   }
 
   @_spi(Internals)
   public var currentState: State {
-    core.state
+    storeActor.assumeIsolated { UncheckedSendable($0.state) }.value
   }
 
   @_spi(Internals)
   @_disfavoredOverload
   public func send(_ action: Action) -> Task<Void, Never>? {
-    core.send(action)
+    nonisolated(unsafe) let action = action
+    return storeActor.assumeIsolated { $0.send(action).rawValue }
   }
 
-  private init(core: some Core<State, Action>) {
+  init(storeActor: StoreActor<State, Action>) {
     defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
-    self.core = core
+    self.storeActor = storeActor
 
-    if let stateType = State.self as? any ObservableState.Type {
-      func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
-        core.didSet
-          .compactMap { [weak self] in (self?.currentState as? T)?._$id }
-          .removeDuplicates()
-          .dropFirst()
-          .sink { [weak self] _ in
-            guard let self else { return }
-            self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
-          }
-      }
-      self.parentCancellable = subscribeToDidSet(stateType)
+    if State.self is any ObservableState.Type {
+      self.parentCancellable = storeActor.assumeIsolated { $0.core.didSet }
+        .compactMap { [weak self] in (self?.currentState as? any ObservableState)?._$id }
+        .removeDuplicates()
+        .dropFirst()
+        .sink { [weak self] _ in
+          guard let self else { return }
+          self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+        }
     }
-  }
-  
-  convenience init<R: Reducer<State, Action>>(
-    initialState: R.State,
-    reducer: R
-  ) {
-    self.init(core: RootCore(initialState: initialState, reducer: reducer))
   }
 
   /// A publisher that emits when state changes.
@@ -393,7 +363,7 @@ public final class Store<State, Action> {
   public var publisher: StorePublisher<State> {
     StorePublisher(
       store: self,
-      upstream: self.core.didSet.map { self.currentState }
+      upstream: self.storeActor.assumeIsolated { $0.core.didSet }.map { self.currentState }
     )
   }
 
@@ -403,11 +373,6 @@ public final class Store<State, Action> {
   ) -> ScopeID<State, Action> {
     ScopeID(state: state, action: action)
   }
-}
-
-@_spi(Internals) public struct ScopeID<State, Action>: Hashable {
-  let state: PartialKeyPath<State>
-  let action: PartialCaseKeyPath<Action>
 }
 
 extension Store: CustomDebugStringConvertible {

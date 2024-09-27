@@ -245,14 +245,10 @@ public struct PresentationStore<
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
-    func open(
-      _ core: some Core<PresentationState<State>, PresentationAction<Action>>
-    ) -> any Core<PresentationState<State>, PresentationAction<Action>> {
-      PresentationCore(base: core, toDestinationState: { $0 })
-    }
-    let store = store.scope(
-      id: store.id(state: \.self, action: \.self),
-      childCore: open(store.core)
+    let store = Store(
+      storeActor: store.storeActor.assumeIsolated {
+        $0._presentation(state: { $0 })
+      }
     )
     let viewStore = ViewStore(
       store,
@@ -279,14 +275,11 @@ public struct PresentationStore<
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) {
-    func open(
-      _ core: some Core<PresentationState<State>, PresentationAction<Action>>
-    ) -> any Core<PresentationState<State>, PresentationAction<Action>> {
-      PresentationCore(base: core, toDestinationState: toDestinationState)
-    }
-    let store = store.scope(
-      id: store.id(state: \.self, action: \.self),
-      childCore: open(store.core)
+    nonisolated(unsafe) let toDestinationState = toDestinationState
+    let store = Store(
+      storeActor: store.storeActor.assumeIsolated {
+        $0._presentation(state: toDestinationState)
+      }
     )
     let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
 
@@ -323,6 +316,19 @@ public struct PresentationStore<
       ),
       DestinationContent(store: self.destinationStore)
     )
+  }
+}
+
+extension StoreActor {
+  func _presentation<S, A, DestinationState>(
+    state toDestinationState: @escaping (S) -> DestinationState?
+  ) -> StoreActor
+  where State == PresentationState<S>, Action == PresentationAction<A> {
+    func open(_ core: some Core<State, Action>) -> any Core<State, Action> {
+      PresentationCore(base: core, toDestinationState: toDestinationState)
+    }
+    let childCore = open(core)
+    return scope(id: ScopeID(state: \.self, action: \.self), childCore: childCore)
   }
 }
 

@@ -60,26 +60,18 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
-    func open(_ core: some Core<State?, Action>) -> any Core<State?, Action> {
-      _IfLetCore(base: core)
-    }
-    let store = store.scope(
-      id: store.id(state: \.self, action: \.self),
-      childCore: open(store.core)
-    )
+    let store = Store(storeActor: store.storeActor.assumeIsolated({ $0._ifLet() }))
     self.store = store
     let elseContent = elseContent()
     self.content = { viewStore in
       if let state = viewStore.state {
-        @MainActor
-        func open(_ core: some Core<State?, Action>) -> any Core<State, Action> {
-          IfLetCore(base: core, cachedState: state, stateKeyPath: \.self, actionKeyPath: \.self)
-        }
+        nonisolated(unsafe) let state = state
         return ViewBuilder.buildEither(
           first: ifContent(
-            store.scope(
-              id: store.id(state: \.!, action: \.self),
-              childCore: open(store.core)
+            Store(
+              storeActor: store.storeActor.assumeIsolated {
+                $0.scope(state: \.self, action: \.self, default: state)
+              }
             )
           )
         )
@@ -104,31 +96,8 @@ public struct IfLetStore<State, Action, Content: View>: View {
   public init<IfContent>(
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
-  ) where Content == IfContent? {
-    func open(_ core: some Core<State?, Action>) -> any Core<State?, Action> {
-      _IfLetCore(base: core)
-    }
-    let store = store.scope(
-      id: store.id(state: \.self, action: \.self),
-      childCore: open(store.core)
-    )
-    self.store = store
-    self.content = { viewStore in
-      if let state = viewStore.state {
-        @MainActor
-        func open(_ core: some Core<State?, Action>) -> any Core<State, Action> {
-          IfLetCore(base: core, cachedState: state, stateKeyPath: \.self, actionKeyPath: \.self)
-        }
-        return ifContent(
-          store.scope(
-            id: store.id(state: \.!, action: \.self),
-            childCore: open(store.core)
-          )
-        )
-      } else {
-        return nil
-      }
-    }
+  ) where Content == _ConditionalContent<IfContent, EmptyView> {
+    self.init(store, then: ifContent, else: { EmptyView() })
   }
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of
@@ -211,7 +180,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   public init<IfContent>(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
-  ) where Content == IfContent? {
+  ) where Content == _ConditionalContent<IfContent, EmptyView> {
     self.init(
       store.scope(state: \.wrappedValue, action: \.presented),
       then: ifContent
@@ -286,7 +255,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     state toState: @escaping (_ destinationState: DestinationState) -> State?,
     action fromAction: @escaping (_ action: Action) -> DestinationAction,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
-  ) where Content == IfContent? {
+  ) where Content == _ConditionalContent<IfContent, EmptyView> {
     self.init(
       store.scope(
         state: { $0.wrappedValue.flatMap(toState) },
@@ -303,6 +272,16 @@ public struct IfLetStore<State, Action, Content: View>: View {
       removeDuplicates: { ($0 != nil) == ($1 != nil) },
       content: self.content
     )
+  }
+}
+
+private extension StoreActor {
+  func _ifLet<Wrapped>() -> StoreActor where State == Wrapped? {
+    func open(_ core: some Core<State, Action>) -> any Core<State, Action> {
+      _IfLetCore(base: core)
+    }
+    let childCore = open(core)
+    return scope(id: ScopeID(state: \.self, action: \.self), childCore: childCore)
   }
 }
 

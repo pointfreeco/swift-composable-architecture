@@ -1,8 +1,7 @@
 import Combine
 import Foundation
 
-@MainActor
-protocol Core<State, Action>: AnyObject, Sendable {
+protocol Core<State, Action>: AnyObject {
   associatedtype State
   associatedtype Action
   var state: State { get }
@@ -34,13 +33,14 @@ final class InvalidCore<State, Action>: Core {
   var effectCancellables: [UUID: AnyCancellable] { [:] }
 }
 
-final class RootCore<Root: Reducer>: Core {
+final class RootCore<Root: Reducer>: Core, @unchecked Sendable {
   var state: Root.State {
     didSet {
       didSet.send(())
     }
   }
   let reducer: Root
+  let isolation: any Actor
 
   @inlinable
   @inline(__always)
@@ -55,10 +55,12 @@ final class RootCore<Root: Reducer>: Core {
   private var isSending = false
   init(
     initialState: Root.State,
-    reducer: Root
+    reducer: Root,
+    isolation: any Actor
   ) {
     self.state = initialState
     self.reducer = reducer
+    self.isolation = isolation
   }
   func send(_ action: Root.Action) -> Task<Void, Never>? {
     _withoutPerceptionChecking {
@@ -122,21 +124,21 @@ final class RootCore<Root: Reducer>: Core {
         }
 
         if !didComplete {
-          let task = Task<Void, Never> { @MainActor in
+          let task = Task<Void, Never> { [cancellable = UncheckedSendable(effectCancellable)] in
             for await _ in AsyncStream<Void>.never {}
-            effectCancellable.cancel()
+            cancellable.wrappedValue.cancel()
           }
           boxedTask.wrappedValue = task
           tasks.withValue { $0.append(task) }
           self.effectCancellables[uuid] = effectCancellable
         }
       case let .run(priority, operation):
-        withEscapedDependencies { continuation in
-          let task = Task(priority: priority) { @MainActor in
+        withEscapedDependencies { dependencies in
+          let task = Task(priority: priority) {
             let isCompleted = LockIsolated(false)
             defer { isCompleted.setValue(true) }
             await operation(
-              Send { effectAction in
+              Send(isolation: dump(isolation)) { effectAction in
                 if isCompleted.value {
                   reportIssue(
                     """
@@ -144,9 +146,6 @@ final class RootCore<Root: Reducer>: Core {
 
                       Action:
                         \(debugCaseOutput(effectAction))
-
-                      Effect returned from:
-                        \(debugCaseOutput(action))
 
                     Avoid sending actions using the 'send' argument from 'Effect.run' after \
                     the effect has completed. This can happen if you escape the 'send' \
@@ -157,7 +156,7 @@ final class RootCore<Root: Reducer>: Core {
                     """
                   )
                 }
-                if let task = continuation.yield({
+                if let task = dependencies.yield({
                   self.send(effectAction)
                 }) {
                   tasks.withValue { $0.append(task) }
@@ -171,7 +170,7 @@ final class RootCore<Root: Reducer>: Core {
     }
 
     guard !tasks.isEmpty else { return nil }
-    return Task { @MainActor in
+    return Task { 
       await withTaskCancellationHandler {
         var index = tasks.startIndex
         while index < tasks.endIndex {
@@ -187,7 +186,6 @@ final class RootCore<Root: Reducer>: Core {
       }
     }
   }
-  private actor DefaultIsolation {}
 }
 
 final class ScopedCore<Base: Core, State, Action>: Core {

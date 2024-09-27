@@ -310,7 +310,9 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             value: value,
             bindableActionType: ViewAction.self,
             context: .bindingState,
-            isInvalidated: { [weak self] in self?.store.core.isInvalid ?? true },
+            isInvalidated: { [weak self] in
+              self?.store.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+            },
             fileID: bindingState.fileID,
             filePath: bindingState.filePath,
             line: bindingState.line,
@@ -460,7 +462,9 @@ public struct BindingViewStore<State> {
                 value: value,
                 bindableActionType: self.bindableActionType,
                 context: .bindingStore,
-                isInvalidated: { [weak store] in store?.core.isInvalid ?? true },
+                isInvalidated: {
+                  [weak store] in store?.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+                },
                 fileID: self.fileID,
                 filePath: self.filePath,
                 line: self.line,
@@ -505,9 +509,11 @@ extension ViewStore {
       store,
       observe: { (_: State) in
         toViewState(
-          BindingViewStore(
-            store: store._scope(state: { $0 }, action: fromViewAction)
-          )
+          MainActor._assumeIsolated {
+            BindingViewStore(
+              store: store._scope(state: { $0 }, action: fromViewAction)
+            )
+          }
         )
       },
       send: fromViewAction,
@@ -616,7 +622,11 @@ extension WithViewStore where Content: View {
     self.init(
       store,
       observe: { (_: State) in
-        toViewState(BindingViewStore(store: store._scope(state: { $0 }, action: fromViewAction)))
+        toViewState(
+          MainActor._assumeIsolated {
+            BindingViewStore(store: store._scope(state: { $0 }, action: fromViewAction))
+          }
+        )
       },
       send: fromViewAction,
       removeDuplicates: isDuplicate,
