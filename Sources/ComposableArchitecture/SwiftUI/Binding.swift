@@ -310,7 +310,9 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             value: value,
             bindableActionType: ViewAction.self,
             context: .bindingState,
-            isInvalidated: { [weak self] in self?.store.core.isInvalid ?? true },
+            isInvalidated: { [weak self] in
+              self?.store.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+            },
             fileID: bindingState.fileID,
             filePath: bindingState.filePath,
             line: bindingState.line,

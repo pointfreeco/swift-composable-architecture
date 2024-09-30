@@ -101,7 +101,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   #if DEBUG
     private let storeTypeName: String
   #endif
-  let store: Store<ViewState, ViewAction>
+  let store: _Store<ViewState, ViewAction>
 
   /// Initializes a view store from a store which observes changes to state.
   ///
@@ -118,8 +118,8 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///   equal, repeat view computations are removed.
   public convenience init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: State) -> ViewState,
+    _ store: _Store<State, ViewAction>,
+    observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     self.init(
@@ -146,9 +146,9 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///   equal, repeat view computations are removed.
   public init<State, Action>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: State) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    _ store: _Store<State, Action>,
+    observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
     #if DEBUG
@@ -157,7 +157,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     #endif
     self.store = store._scope(state: toViewState, action: fromViewAction)
     self._state = CurrentValueRelay(self.store.withState { $0 })
-    self.viewCancellable = self.store.core.didSet
+    self.viewCancellable = self.store.storeActor.assumeIsolated({ $0.core.didSet })
       .compactMap { [weak self] in self?.store.withState { $0 } }
       .removeDuplicates(by: isDuplicate)
       .dropFirst()
@@ -595,8 +595,8 @@ extension ViewStore where ViewState: Equatable {
   ///   - toViewState: A transformation of `ViewState` to the state that will be observed for
   ///   changes.
   public convenience init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: State) -> ViewState
+    _ store: _Store<State, ViewAction>,
+    observe toViewState: @escaping @Sendable (_ state: State) -> ViewState
   ) {
     self.init(store, observe: toViewState, removeDuplicates: ==)
   }
@@ -615,11 +615,46 @@ extension ViewStore where ViewState: Equatable {
   ///   changes.
   ///   - fromViewAction: A transformation of `ViewAction` that describes what actions can be sent.
   public convenience init<State, Action>(
+    _ store: _Store<State, Action>,
+    observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action
+  ) {
+    self.init(store, observe: toViewState, send: fromViewAction, removeDuplicates: ==)
+  }
+}
+
+@available(*, deprecated, message: "TODO: Remove")
+extension ViewStore {
+  public convenience init<State, Action>(
+    _ store: Store<State, Action>,
+    observe toViewState: @escaping (_ state: State) -> ViewState,
+    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
+  ) {
+    fatalError()
+  }
+
+  public convenience init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (_ state: State) -> ViewState,
+    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
+  ) {
+    fatalError()
+  }
+
+  public convenience init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (_ state: State) -> ViewState,
     send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action
   ) {
-    self.init(store, observe: toViewState, send: fromViewAction, removeDuplicates: ==)
+    fatalError()
+  }
+
+  public convenience init<State>(
+    _ store: Store<State, ViewAction>,
+    observe toViewState: @escaping (_ state: State) -> ViewState
+  ) where ViewState: Equatable {
+    self.init(store, observe: toViewState, removeDuplicates: ==)
   }
 }
 
