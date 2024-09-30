@@ -120,7 +120,11 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
       let elementID = self.data.ids[position]
       guard
         let elementStoreActor = self.store.storeActor.assumeIsolated({
-          $0.scope(state: \.[id: elementID], action: \.[id: elementID])
+          $0.scope(
+            state: \.[id: elementID],
+            action: \.[id: elementID],
+            default: self.data[position]
+          )
         })
       else { return _Store() }
       return _Store(storeActor: elementStoreActor)

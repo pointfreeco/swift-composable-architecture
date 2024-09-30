@@ -89,6 +89,38 @@ public actor StoreActor<State, Action> {
     return scope(id: id, childCore: childCore)
   }
 
+  func scope<ChildState, ChildAction>(
+    state stateKeyPath: KeyPath<State, ChildState?>,
+    action actionKeyPath: CaseKeyPath<Action, ChildAction>,
+    default: ChildState,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> StoreActor<ChildState, ChildAction>? {
+    if !core.canStoreCacheChildren {
+      reportIssue(
+        // TODO: put full warning
+        "Scoping from uncached store is not compatible with observation.", //uncachedStoreWarning(self),
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+    let id = ScopeID(state: stateKeyPath, action: actionKeyPath)
+    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
+      IfLetCore(
+        base: core,
+        cachedState: state[keyPath: stateKeyPath] ?? `default`,
+        stateKeyPath: stateKeyPath,
+        actionKeyPath: actionKeyPath
+      )
+    }
+    let childCore = open(core)
+    return scope(id: id, childCore: childCore)
+  }
+
   private func scope<ChildState, ChildAction>(
     id: ScopeID<State, Action>?,
     childCore: @autoclosure () -> any Core<ChildState, ChildAction>
