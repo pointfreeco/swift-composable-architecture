@@ -334,7 +334,7 @@ public final class _Store<State, Action> {
     return storeActor.assumeIsolated { $0.send(action).rawValue }
   }
 
-  private init(storeActor: StoreActor<State, Action>) {
+  init(storeActor: StoreActor<State, Action>) {
     defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     self.storeActor = storeActor
 
@@ -446,8 +446,4 @@ func storeTypeName<State, Action>(of store: _Store<State, Action>) -> String {
   //     See https://github.com/tuist/tuist/issues/6320#issuecomment-2148554117
   @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
   extension _Store: Observable {}
-#endif
-
-#if !os(visionOS)
-  extension _Store: Perceptible {}
 #endif
