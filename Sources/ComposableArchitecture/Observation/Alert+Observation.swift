@@ -8,7 +8,7 @@ extension View {
   #else
     @preconcurrency@MainActor
   #endif
-  public func alert<Action>(_ item: Binding<Store<AlertState<Action>, Action>?>) -> some View {
+  public func alert<Action>(_ item: Binding<_Store<AlertState<Action>, Action>?>) -> some View {
     let store = item.wrappedValue
     let alertState = store?.withState { $0 }
     return self.alert(
@@ -46,7 +46,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func confirmationDialog<Action>(
-    _ item: Binding<Store<ConfirmationDialogState<Action>, Action>?>
+    _ item: Binding<_Store<ConfirmationDialogState<Action>, Action>?>
   ) -> some View {
     let store = item.wrappedValue
     let confirmationDialogState = store?.withState { $0 }
