@@ -1,7 +1,7 @@
 import OrderedCollections
 import SwiftUI
 
-extension Store where State: ObservableState {
+extension _Store where State: ObservableState {
   /// Scopes the store of an identified collection to a collection of stores.
   ///
   /// This operator is most often used with SwiftUI's `ForEach` view. For example, suppose you
@@ -65,14 +65,14 @@ extension Store where State: ObservableState {
   /// - Returns: An collection of stores of child state.
   @_disfavoredOverload
   public func scope<ElementID, ElementState, ElementAction>(
-    state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
-    action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>,
+    state: _KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
+    action: _CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
-    if !core.canStoreCacheChildren {
+  ) -> some RandomAccessCollection<_Store<ElementState, ElementAction>> {
+    if !storeActor.assumeIsolated({ $0.core.canStoreCacheChildren }) {
       reportIssue(
         uncachedStoreWarning(self),
         fileID: fileID,
@@ -86,7 +86,7 @@ extension Store where State: ObservableState {
 }
 
 public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAccessCollection {
-  private let store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
+  private let store: _Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
   private let data: IdentifiedArray<ID, State>
 
   #if swift(<5.10)
@@ -94,14 +94,14 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
   #else
     @preconcurrency@MainActor
   #endif
-  fileprivate init(_ store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>) {
+  fileprivate init(_ store: _Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>) {
     self.store = store
     self.data = store.withState { $0 }
   }
 
   public var startIndex: Int { self.data.startIndex }
   public var endIndex: Int { self.data.endIndex }
-  public subscript(position: Int) -> Store<State, Action> {
+  public subscript(position: Int) -> _Store<State, Action> {
     precondition(
       Thread.isMainThread,
       #"""
@@ -116,27 +116,14 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
     return MainActor._assumeIsolated { [uncheckedSelf = UncheckedSendable(self)] in
       let `self` = uncheckedSelf.wrappedValue
       guard self.data.indices.contains(position)
-      else {
-        return Store()
-      }
+      else { return _Store() }
       let elementID = self.data.ids[position]
-      let scopeID = self.store.id(state: \.[id: elementID], action: \.[id: elementID])
-      guard let child = self.store.children[scopeID] as? Store<State, Action>
-      else {
-        @MainActor
-        func open(
-          _ core: some Core<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
-        ) -> any Core<State, Action> {
-          IfLetCore(
-            base: core,
-            cachedState: self.data[position],
-            stateKeyPath: \.[id:elementID],
-            actionKeyPath: \.[id:elementID]
-          )
-        }
-        return self.store.scope(id: scopeID, childCore: open(self.store.core))
-      }
-      return child
+      guard
+        let elementStoreActor = self.store.storeActor.assumeIsolated({
+          $0.scope(state: \.[id: elementID], action: \.[id: elementID])
+        })
+      else { return _Store() }
+      return _Store(storeActor: elementStoreActor)
     }
   }
 }
