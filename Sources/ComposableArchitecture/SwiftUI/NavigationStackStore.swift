@@ -105,7 +105,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ///     present. You can switch over this value and use ``CaseLet`` views to handle each case.
   @_disfavoredOverload
   public init<D: View>(
-    _ store: Store<StackState<State>, StackAction<State, Action>>,
+    _ store: _Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
     @ViewBuilder destination: @escaping (_ initialState: State) -> D,
     fileID: StaticString = #fileID,
@@ -116,39 +116,25 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     func navigationDestination(
       component: StackState<State>.Component
     ) -> Destination {
-      let id = store.id(
-        state:
-          \.[
-            id: component.id,
-            fileID: _HashableStaticString(rawValue: fileID),
-            filePath: _HashableStaticString(rawValue: filePath),
-            line: line,
-            column: column
-          ],
-        action: \.[id: component.id]
+      nonisolated(unsafe) let component = component
+      return SwitchStore(
+        _Store(
+          storeActor: store.storeActor.assumeIsolated {
+            $0.scope(
+              state: \.[
+                id:component.id,
+                fileID:_HashableStaticString(rawValue: fileID),
+                filePath:_HashableStaticString(rawValue: filePath),
+                line:line,
+                column:column
+              ],
+              action: \.[id:component.id],
+              default: component.element
+            )
+          }
+        ),
+        content: destination
       )
-      if let child = store.children[id] as? Store<State, Action> {
-        return SwitchStore(child, content: destination)
-      } else {
-        @MainActor
-        func open(
-          _ core: some Core<StackState<State>, StackAction<State, Action>>
-        ) -> any Core<State, Action> {
-          IfLetCore(
-            base: core,
-            cachedState: component.element,
-            stateKeyPath: \.[
-              id: component.id,
-              fileID: _HashableStaticString(rawValue: fileID),
-              filePath: _HashableStaticString(rawValue: filePath),
-              line: line,
-              column: column
-            ],
-            actionKeyPath: \.[id: component.id]
-          )
-        }
-        return SwitchStore(store.scope(id: id, childCore: open(store.core)), content: destination)
-      }
     }
 
     self.root = root()
