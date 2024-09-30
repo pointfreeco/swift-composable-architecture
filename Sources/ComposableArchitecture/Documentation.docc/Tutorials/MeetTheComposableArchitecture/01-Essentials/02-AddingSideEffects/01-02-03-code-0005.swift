@@ -8,6 +8,7 @@ struct CounterFeature {
     var fact: String?
     var isLoading = false
     var isTimerRunning = false
+    let timerID = UUID()
   }
   
   enum Action {
@@ -19,7 +20,7 @@ struct CounterFeature {
     case toggleTimerButtonTapped
   }
   
-  enum CancelID { case timer }
+  enum CancelID: Hashable { case timer(UUID) }
   
   var body: some ReducerOf<Self> {
     Reduce { state, action in
@@ -56,6 +57,7 @@ struct CounterFeature {
         
       case .toggleTimerButtonTapped:
         state.isTimerRunning.toggle()
+        let cancelID = CancelID.timer(state.timerID)
         if state.isTimerRunning {
           return .run { send in
             while true {
@@ -63,9 +65,9 @@ struct CounterFeature {
               await send(.timerTick)
             }
           }
-          .cancellable(id: CancelID.timer)
+          .cancellable(id: cancelID)
         } else {
-          return .cancel(id: CancelID.timer)
+          return .cancel(id: cancelID)
         }
       }
     }
