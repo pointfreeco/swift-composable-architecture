@@ -97,7 +97,7 @@ public actor StoreActor<State, Action> {
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) -> StoreActor<ChildState, ChildAction>? {
+  ) -> StoreActor<ChildState, ChildAction> {
     if !core.canStoreCacheChildren {
       reportIssue(
         // TODO: put full warning

@@ -62,10 +62,10 @@ extension Binding {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
-    state: KeyPath<State, StackState<ElementState>>,
-    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
-  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
-  where Value == Store<State, Action> {
+    state: _KeyPath<State, StackState<ElementState>>,
+    action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<_Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == _Store<State, Action> {
     self[state: state, action: action]
   }
 }
@@ -82,10 +82,10 @@ extension SwiftUI.Bindable {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
-    state: KeyPath<State, StackState<ElementState>>,
-    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
-  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
-  where Value == Store<State, Action> {
+    state: _KeyPath<State, StackState<ElementState>>,
+    action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<_Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == _Store<State, Action> {
     self[state: state, action: action]
   }
 }
@@ -100,10 +100,10 @@ extension Perception.Bindable {
   /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
   /// information.
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
-    state: KeyPath<State, StackState<ElementState>>,
-    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
-  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
-  where Value == Store<State, Action> {
+    state: _KeyPath<State, StackState<ElementState>>,
+    action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<_Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == _Store<State, Action> {
     self[state: state, action: action]
   }
 }
@@ -119,10 +119,10 @@ extension UIBindable {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
-    state: KeyPath<State, StackState<ElementState>>,
-    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
-  ) -> UIBinding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
-  where Value == Store<State, Action> {
+    state: _KeyPath<State, StackState<ElementState>>,
+    action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> UIBinding<_Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == _Store<State, Action> {
     self[state: state, action: action]
   }
 }
@@ -135,9 +135,9 @@ extension NavigationStack {
   /// navigation tools, and in particular see <doc:StackBasedNavigation> for information on using
   /// this view.
   public init<State, Action, Destination: View, R>(
-    path: Binding<Store<StackState<State>, StackAction<State, Action>>>,
+    path: Binding<_Store<StackState<State>, StackAction<State, Action>>>,
     root: () -> R,
-    @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
+    @ViewBuilder destination: @escaping (_Store<State, Action>) -> Destination,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -176,8 +176,8 @@ public struct _NavigationDestinationViewModifier<
 >:
   ViewModifier
 {
-  @SwiftUI.State var store: Store<StackState<State>, StackAction<State, Action>>
-  fileprivate let destination: (Store<State, Action>) -> Destination
+  @SwiftUI.State var store: _Store<StackState<State>, StackAction<State, Action>>
+  fileprivate let destination: (_Store<State, Action>) -> Destination
   fileprivate let fileID: StaticString
   fileprivate let filePath: StaticString
   fileprivate let line: UInt
@@ -193,35 +193,24 @@ public struct _NavigationDestinationViewModifier<
   }
 
   private func navigationDestination(component: StackState<State>.Component) -> Destination {
-    let id = store.id(
-      state:
-        \.[
-          id:component.id,
-          fileID:_HashableStaticString(rawValue: fileID),
-          filePath:_HashableStaticString(rawValue: filePath),
-          line:line,
-          column:column
-        ],
-      action: \.[id:component.id]
-    )
-    @MainActor
-    func open(
-      _ core: some Core<StackState<State>, StackAction<State, Action>>
-    ) -> any Core<State, Action> {
-      IfLetCore(
-        base: core,
-        cachedState: component.element,
-        stateKeyPath: \.[
-          id:component.id,
-          fileID:_HashableStaticString(rawValue: fileID),
-          filePath:_HashableStaticString(rawValue: filePath),
-          line:line,
-          column:column
-        ],
-        actionKeyPath: \.[id:component.id]
+    nonisolated(unsafe) let component = component
+    return destination(
+      _Store(
+        storeActor: store.storeActor.assumeIsolated {
+          $0.scope(
+            state: \.[
+              id:component.id,
+              fileID:_HashableStaticString(rawValue: fileID),
+              filePath:_HashableStaticString(rawValue: filePath),
+              line:line,
+              column:column
+            ],
+            action: \.[id:component.id],
+            default: component.element
+          )
+        }
       )
-    }
-    return destination(store.scope(id: id, childCore: open(store.core)))
+    )
   }
 }
 
@@ -365,12 +354,12 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
   }
 }
 
-extension Store where State: ObservableState {
+extension _Store where State: ObservableState {
   fileprivate subscript<ElementState, ElementAction>(
-    state state: KeyPath<State, StackState<ElementState>>,
-    action action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>,
+    state state: _KeyPath<State, StackState<ElementState>>,
+    action action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>,
     isInViewBody isInViewBody: Bool = _isInPerceptionTracking
-  ) -> Store<StackState<ElementState>, StackAction<ElementState, ElementAction>> {
+  ) -> _Store<StackState<ElementState>, StackAction<ElementState, ElementAction>> {
     get {
       #if DEBUG && !os(visionOS)
         _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
@@ -384,7 +373,7 @@ extension Store where State: ObservableState {
   }
 }
 
-extension Store {
+extension _Store {
   @_spi(Internals)
   public subscript<ElementState, ElementAction>(
     fileID fileID: _HashableStaticString,
