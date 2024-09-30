@@ -40,7 +40,7 @@ import SwiftUI
 )
 public struct IfLetStore<State, Action, Content: View>: View {
   private let content: (ViewStore<State?, Action>) -> Content
-  private let store: Store<State?, Action>
+  private let store: _Store<State?, Action>
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of optional
   /// state is `nil` or non-`nil`.
@@ -56,30 +56,22 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @preconcurrency@MainActor
   #endif
   public init<IfContent, ElseContent>(
-    _ store: Store<State?, Action>,
-    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
+    _ store: _Store<State?, Action>,
+    @ViewBuilder then ifContent: @escaping (_ store: _Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
-    func open(_ core: some Core<State?, Action>) -> any Core<State?, Action> {
-      _IfLetCore(base: core)
-    }
-    let store = store.scope(
-      id: store.id(state: \.self, action: \.self),
-      childCore: open(store.core)
-    )
+    let store = _Store(storeActor: store.storeActor.assumeIsolated({ $0._ifLet() }))
     self.store = store
     let elseContent = elseContent()
     self.content = { viewStore in
       if let state = viewStore.state {
-        @MainActor
-        func open(_ core: some Core<State?, Action>) -> any Core<State, Action> {
-          IfLetCore(base: core, cachedState: state, stateKeyPath: \.self, actionKeyPath: \.self)
-        }
+        nonisolated(unsafe) let state = state
         return ViewBuilder.buildEither(
           first: ifContent(
-            store.scope(
-              id: store.id(state: \.!, action: \.self),
-              childCore: open(store.core)
+            _Store(
+              storeActor: store.storeActor.assumeIsolated {
+                $0.scope(state: \.self, action: \.self, default: state)
+              }
             )
           )
         )
@@ -87,6 +79,15 @@ public struct IfLetStore<State, Action, Content: View>: View {
         return ViewBuilder.buildEither(second: elseContent)
       }
     }
+  }
+
+  @available(*, deprecated, message: "TODO: Remove")
+  public init<IfContent, ElseContent>(
+    _ store: Store<State?, Action>,
+    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
+    @ViewBuilder else elseContent: () -> ElseContent
+  ) where Content == _ConditionalContent<IfContent, ElseContent> {
+    fatalError()
   }
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of optional
@@ -102,33 +103,18 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @preconcurrency@MainActor
   #endif
   public init<IfContent>(
+    _ store: _Store<State?, Action>,
+    @ViewBuilder then ifContent: @escaping (_ store: _Store<State, Action>) -> IfContent
+  ) where Content == _ConditionalContent<IfContent, EmptyView> {
+    self.init(store, then: ifContent, else: { EmptyView() })
+  }
+
+  @available(*, deprecated, message: "TODO: Remove")
+  public init<IfContent>(
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
-  ) where Content == IfContent? {
-    func open(_ core: some Core<State?, Action>) -> any Core<State?, Action> {
-      _IfLetCore(base: core)
-    }
-    let store = store.scope(
-      id: store.id(state: \.self, action: \.self),
-      childCore: open(store.core)
-    )
-    self.store = store
-    self.content = { viewStore in
-      if let state = viewStore.state {
-        @MainActor
-        func open(_ core: some Core<State?, Action>) -> any Core<State, Action> {
-          IfLetCore(base: core, cachedState: state, stateKeyPath: \.self, actionKeyPath: \.self)
-        }
-        return ifContent(
-          store.scope(
-            id: store.id(state: \.!, action: \.self),
-            childCore: open(store.core)
-          )
-        )
-      } else {
-        return nil
-      }
-    }
+  ) where Content == _ConditionalContent<IfContent, EmptyView> {
+    fatalError()
   }
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of
@@ -165,8 +151,8 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @preconcurrency@MainActor
   #endif
   public init<IfContent, ElseContent>(
-    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
+    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    @ViewBuilder then ifContent: @escaping (_ store: _Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: @escaping () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     self.init(
@@ -209,13 +195,21 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @preconcurrency@MainActor
   #endif
   public init<IfContent>(
-    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
-  ) where Content == IfContent? {
+    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    @ViewBuilder then ifContent: @escaping (_ store: _Store<State, Action>) -> IfContent
+  ) where Content == _ConditionalContent<IfContent, EmptyView> {
     self.init(
       store.scope(state: \.wrappedValue, action: \.presented),
       then: ifContent
     )
+  }
+
+  @available(*, deprecated, message: "TODO: Remove")
+  public init<IfContent>(
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    @ViewBuilder then ifContent: @escaping (_ store: _Store<State, Action>) -> IfContent
+  ) where Content == _ConditionalContent<IfContent, EmptyView> {
+    fatalError()
   }
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of
@@ -243,10 +237,10 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @preconcurrency@MainActor
   #endif
   public init<DestinationState, DestinationAction, IfContent, ElseContent>(
-    _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
-    state toState: @escaping (_ destinationState: DestinationState) -> State?,
-    action fromAction: @escaping (_ action: Action) -> DestinationAction,
-    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
+    _ store: _Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
+    state toState: @escaping @Sendable (_ destinationState: DestinationState) -> State?,
+    action fromAction: @escaping @Sendable (_ action: Action) -> DestinationAction,
+    @ViewBuilder then ifContent: @escaping (_ store: _Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: @escaping () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
     self.init(
@@ -282,11 +276,11 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @preconcurrency@MainActor
   #endif
   public init<DestinationState, DestinationAction, IfContent>(
-    _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
-    state toState: @escaping (_ destinationState: DestinationState) -> State?,
-    action fromAction: @escaping (_ action: Action) -> DestinationAction,
-    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
-  ) where Content == IfContent? {
+    _ store: _Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
+    state toState: @escaping @Sendable (_ destinationState: DestinationState) -> State?,
+    action fromAction: @escaping @Sendable (_ action: Action) -> DestinationAction,
+    @ViewBuilder then ifContent: @escaping (_ store: _Store<State, Action>) -> IfContent
+  ) where Content == _ConditionalContent<IfContent, EmptyView> {
     self.init(
       store.scope(
         state: { $0.wrappedValue.flatMap(toState) },
@@ -297,12 +291,22 @@ public struct IfLetStore<State, Action, Content: View>: View {
   }
 
   public var body: some View {
-    WithViewStore(
+    _WithViewStore(
       self.store,
       observe: { $0 },
       removeDuplicates: { ($0 != nil) == ($1 != nil) },
       content: self.content
     )
+  }
+}
+
+private extension StoreActor {
+  func _ifLet<Wrapped>() -> StoreActor where State == Wrapped? {
+    func open(_ core: some Core<State, Action>) -> any Core<State, Action> {
+      _IfLetCore(base: core)
+    }
+    let childCore = open(core)
+    return scope(id: ScopeID(state: \.self, action: \.self), childCore: childCore)
   }
 }
 

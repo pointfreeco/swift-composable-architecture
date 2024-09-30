@@ -121,7 +121,7 @@ public actor StoreActor<State, Action> {
     return scope(id: id, childCore: childCore)
   }
 
-  private func scope<ChildState, ChildAction>(
+  func scope<ChildState, ChildAction>(
     id: ScopeID<State, Action>?,
     childCore: @autoclosure () -> any Core<ChildState, ChildAction>
   ) -> StoreActor<ChildState, ChildAction> {
