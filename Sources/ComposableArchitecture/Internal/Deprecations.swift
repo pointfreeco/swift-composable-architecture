@@ -51,7 +51,7 @@
         "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
     )
     public convenience init<Action>(
-      store: Store<AlertState<Action>, PresentationAction<Action>>
+      store: _Store<AlertState<Action>, PresentationAction<Action>>
     ) {
       let state = store.currentState
       self.init(
@@ -97,7 +97,7 @@
         "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
     )
     public convenience init<Action>(
-      store: Store<ConfirmationDialogState<Action>, PresentationAction<Action>>
+      store: _Store<ConfirmationDialogState<Action>, PresentationAction<Action>>
     ) {
       let state = store.currentState
       self.init(
