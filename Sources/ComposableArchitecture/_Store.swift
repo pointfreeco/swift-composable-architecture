@@ -404,7 +404,82 @@ extension _Store: CustomDebugStringConvertible {
 /// ```swift
 /// let store: StoreOf<Feature>
 /// ```
-public typealias _StoreOf<R: Reducer> = Store<R.State, R.Action>
+public typealias _StoreOf<R: Reducer> = _Store<R.State, R.Action>
+
+/// The type returned from ``Store/send(_:)`` that represents the lifecycle of the effect
+/// started from sending an action.
+///
+/// You can use this value to tie the effect's lifecycle _and_ cancellation to an asynchronous
+/// context, such as the `task` view modifier.
+///
+/// ```swift
+/// .task { await store.send(.task).finish() }
+/// ```
+///
+/// > Note: Unlike Swift's `Task` type, ``StoreTask`` automatically sets up a cancellation
+/// > handler between the current async context and the task.
+///
+/// See ``TestStoreTask`` for the analog returned from ``TestStore``.
+public struct StoreTask: Hashable, Sendable {
+  internal let rawValue: Task<Void, Never>?
+
+  internal init(rawValue: Task<Void, Never>?) {
+    self.rawValue = rawValue
+  }
+
+  /// Cancels the underlying task.
+  public func cancel() {
+    self.rawValue?.cancel()
+  }
+
+  /// Waits for the task to finish.
+  public func finish() async {
+    await self.rawValue?.cancellableValue
+  }
+
+  /// A Boolean value that indicates whether the task should stop executing.
+  ///
+  /// After the value of this property becomes `true`, it remains `true` indefinitely. There is no
+  /// way to uncancel a task.
+  public var isCancelled: Bool {
+    self.rawValue?.isCancelled ?? true
+  }
+}
+
+/// A publisher of store state.
+@dynamicMemberLookup
+public struct StorePublisher<State>: Publisher {
+  public typealias Output = State
+  public typealias Failure = Never
+
+  let store: Any
+  let upstream: AnyPublisher<State, Never>
+
+  init(store: Any, upstream: some Publisher<Output, Failure>) {
+    self.store = store
+    self.upstream = upstream.eraseToAnyPublisher()
+  }
+
+  public func receive(subscriber: some Subscriber<Output, Failure>) {
+    self.upstream.subscribe(
+      AnySubscriber(
+        receiveSubscription: subscriber.receive(subscription:),
+        receiveValue: subscriber.receive(_:),
+        receiveCompletion: { [store = self.store] in
+          subscriber.receive(completion: $0)
+          _ = store
+        }
+      )
+    )
+  }
+
+  /// Returns the resulting publisher of a given key path.
+  public subscript<Value: Equatable>(
+    dynamicMember keyPath: KeyPath<State, Value>
+  ) -> StorePublisher<Value> {
+    .init(store: self.store, upstream: self.upstream.map(keyPath).removeDuplicates())
+  }
+}
 
 func storeTypeName<State, Action>(of store: _Store<State, Action>) -> String {
   let stateType = typeName(State.self, genericsAbbreviated: false)
@@ -439,6 +514,63 @@ func storeTypeName<State, Action>(of store: _Store<State, Action>) -> String {
     return "Store<\(stateType), \(actionType)>"
   }
 }
+
+// NB: From swift-custom-dump. Consider publicizing interface in some way to keep things in sync.
+@usableFromInline
+func typeName(
+  _ type: Any.Type,
+  qualified: Bool = true,
+  genericsAbbreviated: Bool = true
+) -> String {
+  var name = _typeName(type, qualified: qualified)
+    .replacingOccurrences(
+      of: #"\(unknown context at \$[[:xdigit:]]+\)\."#,
+      with: "",
+      options: .regularExpression
+    )
+  for _ in 1...10 {  // NB: Only handle so much nesting
+    let abbreviated =
+      name
+      .replacingOccurrences(
+        of: #"\bSwift.Optional<([^><]+)>"#,
+        with: "$1?",
+        options: .regularExpression
+      )
+      .replacingOccurrences(
+        of: #"\bSwift.Array<([^><]+)>"#,
+        with: "[$1]",
+        options: .regularExpression
+      )
+      .replacingOccurrences(
+        of: #"\bSwift.Dictionary<([^,<]+), ([^><]+)>"#,
+        with: "[$1: $2]",
+        options: .regularExpression
+      )
+    if abbreviated == name { break }
+    name = abbreviated
+  }
+  name = name.replacingOccurrences(
+    of: #"\w+\.([\w.]+)"#,
+    with: "$1",
+    options: .regularExpression
+  )
+  if genericsAbbreviated {
+    name = name.replacingOccurrences(
+      of: #"<.+>"#,
+      with: "",
+      options: .regularExpression
+    )
+  }
+  return name
+}
+
+let _isStorePerceptionCheckingEnabled: Bool = {
+  if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
+    return false
+  } else {
+    return true
+  }
+}()
 
 #if canImport(Observation)
   // NB: This extension must be placed in the same file as 'class Store' due to either a bug

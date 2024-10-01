@@ -156,3 +156,8 @@ public actor StoreActor<State, Action> {
     return scope(id: nil, childCore: open(core))
   }
 }
+
+@_spi(Internals) public struct ScopeID<State, Action>: Hashable {
+  let state: PartialKeyPath<State>
+  let action: PartialCaseKeyPath<Action>
+}

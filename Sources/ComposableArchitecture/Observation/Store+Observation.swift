@@ -5,10 +5,10 @@ import SwiftUI
 #endif
 
 #if !os(visionOS)
-  extension Store: Perceptible {}
+  extension _Store: Perceptible {}
 #endif
 
-extension Store where State: ObservableState {
+extension _Store where State: ObservableState {
   var observableState: State {
     self._$observationRegistrar.access(self, keyPath: \.currentState)
     return self.currentState
@@ -24,21 +24,21 @@ extension Store where State: ObservableState {
   }
 }
 
-extension Store: Equatable {
-  public static nonisolated func == (lhs: Store, rhs: Store) -> Bool {
+extension _Store: Equatable {
+  public static nonisolated func == (lhs: _Store, rhs: _Store) -> Bool {
     lhs === rhs
   }
 }
 
-extension Store: Hashable {
+extension _Store: Hashable {
   public nonisolated func hash(into hasher: inout Hasher) {
     hasher.combine(ObjectIdentifier(self))
   }
 }
 
-extension Store: Identifiable {}
+extension _Store: Identifiable {}
 
-extension Store where State: ObservableState {
+extension _Store where State: ObservableState {
   /// Scopes the store to optional child state and actions.
   ///
   /// If your feature holds onto a child feature as an optional:
@@ -81,37 +81,25 @@ extension Store where State: ObservableState {
   ///   - column: The source `#column` associated with the scoping.
   /// - Returns: An optional store of non-optional child state and actions.
   public func scope<ChildState, ChildAction>(
-    state stateKeyPath: KeyPath<State, ChildState?>,
-    action actionKeyPath: CaseKeyPath<Action, ChildAction>,
+    state stateKeyPath: _KeyPath<State, ChildState?>,
+    action actionKeyPath: _CaseKeyPath<Action, ChildAction>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) -> Store<ChildState, ChildAction>? {
-    if !core.canStoreCacheChildren {
-      reportIssue(
-        uncachedStoreWarning(self),
+  ) -> _Store<ChildState, ChildAction>? {
+    let childStoreActor = storeActor.assumeIsolated {
+      $0.scope(
+        state: stateKeyPath,
+        action: actionKeyPath,
         fileID: fileID,
-        filePath: filePath,
+        filePath:filePath,
         line: line,
         column: column
       )
     }
-    let id = id(state: stateKeyPath, action: actionKeyPath)
-    guard let childState = state[keyPath: stateKeyPath]
-    else {
-      children[id] = nil  // TODO: Eager?
-      return nil
-    }
-    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
-      IfLetCore(
-        base: core,
-        cachedState: childState,
-        stateKeyPath: stateKeyPath,
-        actionKeyPath: actionKeyPath
-      )
-    }
-    return scope(id: id, childCore: open(core))
+    guard let childStoreActor else { return nil }
+    return _Store<ChildState, ChildAction>(storeActor: childStoreActor)
   }
 }
 
@@ -168,14 +156,14 @@ extension Binding {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: _KeyPath<State, ChildState?>,
+    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #fileID,
     line: UInt = #line,
     column: UInt = #column
-  ) -> Binding<Store<ChildState, ChildAction>?>
-  where Value == Store<State, Action> {
+  ) -> Binding<_Store<ChildState, ChildAction>?>
+  where Value == _Store<State, Action> {
     self[
       id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
       state: state,
@@ -243,14 +231,14 @@ extension SwiftUI.Bindable {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: _KeyPath<State, ChildState?>,
+    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #fileID,
     line: UInt = #line,
     column: UInt = #column
-  ) -> Binding<Store<ChildState, ChildAction>?>
-  where Value == Store<State, Action> {
+  ) -> Binding<_Store<ChildState, ChildAction>?>
+  where Value == _Store<State, Action> {
     self[
       id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
       state: state,
@@ -316,14 +304,14 @@ extension Perception.Bindable {
   ///   - action: A case key path to presentation child actions.
   /// - Returns: A binding of an optional child store.
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: _KeyPath<State, ChildState?>,
+    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) -> Binding<Store<ChildState, ChildAction>?>
-  where Value == Store<State, Action> {
+  ) -> Binding<_Store<ChildState, ChildAction>?>
+  where Value == _Store<State, Action> {
     self[
       id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
       state: state,
@@ -344,14 +332,14 @@ extension UIBindable {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: _KeyPath<State, ChildState?>,
+    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) -> UIBinding<Store<ChildState, ChildAction>?>
-  where Value == Store<State, Action> {
+  ) -> UIBinding<_Store<ChildState, ChildAction>?>
+  where Value == _Store<State, Action> {
     self[
       id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
       state: state,
@@ -365,24 +353,27 @@ extension UIBindable {
   }
 }
 
-extension Store where State: ObservableState {
+extension _Store where State: ObservableState {
   @_spi(Internals)
   public subscript<ChildState, ChildAction>(
     id id: AnyHashable?,
-    state state: KeyPath<State, ChildState?>,
-    action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state state: _KeyPath<State, ChildState?>,
+    action action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
     isInViewBody isInViewBody: Bool,
     fileID fileID: _HashableStaticString,
     filePath filePath: _HashableStaticString,
     line line: UInt,
     column column: UInt
-  ) -> Store<ChildState, ChildAction>? {
+  ) -> _Store<ChildState, ChildAction>? {
     get {
       #if DEBUG && !os(visionOS)
         _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
           self.scope(
             state: state,
-            action: action.appending(path: \.presented),
+            action: unsafeBitCast(
+              action.appending(path: \.presented),
+              to: _CaseKeyPath<Action, ChildAction>.self
+            ),
             fileID: fileID.rawValue,
             filePath: filePath.rawValue,
             line: line,
@@ -404,7 +395,7 @@ extension Store where State: ObservableState {
       if newValue == nil,
         let childState = self.state[keyPath: state],
         id == _identifiableID(childState),
-        !self.core.isInvalid
+        !storeActor.assumeIsolated({ $0.core.isInvalid })
       {
         self.send(action(.dismiss))
         if self.state[keyPath: state] != nil {
@@ -440,7 +431,7 @@ extension Store where State: ObservableState {
   }
 }
 
-func uncachedStoreWarning<State, Action>(_ store: Store<State, Action>) -> String {
+func uncachedStoreWarning<State, Action>(_ store: _Store<State, Action>) -> String {
   """
   Scoping from uncached \(store) is not compatible with observation.
 
