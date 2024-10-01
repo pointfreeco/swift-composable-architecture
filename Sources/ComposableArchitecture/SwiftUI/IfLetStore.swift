@@ -81,15 +81,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
     }
   }
 
-  @available(*, deprecated, message: "TODO: Remove")
-  public init<IfContent, ElseContent>(
-    _ store: Store<State?, Action>,
-    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
-    @ViewBuilder else elseContent: () -> ElseContent
-  ) where Content == _ConditionalContent<IfContent, ElseContent> {
-    fatalError()
-  }
-
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of optional
   /// state is `nil` or non-`nil`.
   ///
@@ -107,14 +98,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @ViewBuilder then ifContent: @escaping (_ store: _Store<State, Action>) -> IfContent
   ) where Content == _ConditionalContent<IfContent, EmptyView> {
     self.init(store, then: ifContent, else: { EmptyView() })
-  }
-
-  @available(*, deprecated, message: "TODO: Remove")
-  public init<IfContent>(
-    _ store: Store<State?, Action>,
-    @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
-  ) where Content == _ConditionalContent<IfContent, EmptyView> {
-    fatalError()
   }
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of
@@ -202,14 +185,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
       store.scope(state: \.wrappedValue, action: \.presented),
       then: ifContent
     )
-  }
-
-  @available(*, deprecated, message: "TODO: Remove")
-  public init<IfContent>(
-    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    @ViewBuilder then ifContent: @escaping (_ store: _Store<State, Action>) -> IfContent
-  ) where Content == _ConditionalContent<IfContent, EmptyView> {
-    fatalError()
   }
 
   /// Initializes an ``IfLetStore`` view that computes content depending on if a store of
