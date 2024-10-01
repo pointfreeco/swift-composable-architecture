@@ -595,7 +595,7 @@ extension ViewStore where ViewState: Equatable {
   }
 }
 
-extension _WithViewStore where Content: View {
+extension WithViewStore where Content: View {
   /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
   /// to compute bindings and views from state.
   ///
@@ -669,7 +669,7 @@ extension _WithViewStore where Content: View {
   }
 }
 
-extension _WithViewStore where ViewState: Equatable, Content: View {
+extension WithViewStore where ViewState: Equatable, Content: View {
   /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
   /// to compute bindings and views from state.
   ///

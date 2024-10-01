@@ -338,7 +338,7 @@ import SwiftUI
   message:
     "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
-public struct _WithViewStore<ViewState, ViewAction, Content: View>: View {
+public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   private let content: (ViewStore<ViewState, ViewAction>) -> Content
   #if DEBUG
     private let file: StaticString
@@ -589,7 +589,7 @@ public struct _WithViewStore<ViewState, ViewAction, Content: View>: View {
   }
 }
 
-extension _WithViewStore where ViewState: Equatable, Content: View {
+extension WithViewStore where ViewState: Equatable, Content: View {
   /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
   /// to compute views from state.
   ///
@@ -766,7 +766,7 @@ extension _WithViewStore where ViewState: Equatable, Content: View {
 }
 
 #if compiler(>=6)
-  extension _WithViewStore: @preconcurrency DynamicViewContent
+  extension WithViewStore: @preconcurrency DynamicViewContent
   where
     ViewState: Collection,
     Content: DynamicViewContent
@@ -777,7 +777,7 @@ extension _WithViewStore where ViewState: Equatable, Content: View {
     }
   }
 #else
-  extension _WithViewStore: DynamicViewContent
+  extension WithViewStore: DynamicViewContent
   where
     ViewState: Collection,
     Content: DynamicViewContent

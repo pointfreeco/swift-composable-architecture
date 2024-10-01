@@ -86,7 +86,7 @@ public struct SwitchStore<State, Action, Content: View>: View {
   }
 
   public var body: some View {
-    _WithViewStore(
+    WithViewStore(
       self.store, observe: { $0 }, removeDuplicates: { enumTag($0) == enumTag($1) }
     ) { viewStore in
       self.content(viewStore.state)

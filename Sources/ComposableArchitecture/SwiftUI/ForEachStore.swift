@@ -127,13 +127,13 @@ public struct ForEachStore<
   )
   where
     Data == IdentifiedArray<ID, EachState>,
-    Content == _WithViewStore<
+    Content == WithViewStore<
       IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>,
       ForEach<IdentifiedArray<ID, EachState>, ID, EachContent>
     >
   {
     self.data = store.withState { $0 }
-    self.content = _WithViewStore(
+    self.content = WithViewStore(
       store,
       observe: { $0 },
       removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }
@@ -191,13 +191,13 @@ public struct ForEachStore<
   )
   where
     Data == IdentifiedArray<ID, EachState>,
-    Content == _WithViewStore<
+    Content == WithViewStore<
       IdentifiedArray<ID, EachState>, (id: ID, action: EachAction),
       ForEach<IdentifiedArray<ID, EachState>, ID, EachContent>
     >
   {
     self.data = store.withState { $0 }
-    self.content = _WithViewStore(
+    self.content = WithViewStore(
       store,
       observe: { $0 },
       removeDuplicates: { areOrderedSetsDuplicates($0.ids, $1.ids) }

@@ -291,7 +291,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   }
 
   public var body: some View {
-    _WithViewStore(
+    WithViewStore(
       self.store,
       observe: { $0 },
       removeDuplicates: { ($0 != nil) == ($1 != nil) },
