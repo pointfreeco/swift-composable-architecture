@@ -95,8 +95,7 @@ extension View {
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
     action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     onDismiss: (() -> Void)? = nil,
-    @ViewBuilder content:
-      @escaping (_ store: Store<DestinationState, DestinationAction>) -> Content
+    @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction

@@ -98,7 +98,7 @@ public struct NavigationLinkStore<
     onTap: @escaping () -> Void,
     @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
-  ) where State == DestinationState, Action == DestinationAction, State: Identifiable, State.ID: Sendable {
+  ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
     self.init(
       store,
       state: { $0 },
@@ -119,8 +119,8 @@ public struct NavigationLinkStore<
     @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination,
     @ViewBuilder label: () -> Label
-  ) where DestinationState: Identifiable, DestinationState.ID: Sendable {
-    nonisolated(unsafe) let toDestinationState = toDestinationState
+  ) where DestinationState: Identifiable {
+    nonisolated(unsafe) let (id, toDestinationState) = (id, toDestinationState)
     let store = Store(
       storeActor: store.storeActor.assumeIsolated {
         $0._navigationLink(id: id, state: toDestinationState)
