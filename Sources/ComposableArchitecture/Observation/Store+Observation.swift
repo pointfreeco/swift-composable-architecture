@@ -81,13 +81,14 @@ extension Store where State: ObservableState {
   ///   - column: The source `#column` associated with the scoping.
   /// - Returns: An optional store of non-optional child state and actions.
   public func scope<ChildState, ChildAction>(
-    state stateKeyPath: _KeyPath<State, ChildState?>,
-    action actionKeyPath: _CaseKeyPath<Action, ChildAction>,
+    state stateKeyPath: KeyPath<State, ChildState?>,
+    action actionKeyPath: CaseKeyPath<Action, ChildAction>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) -> Store<ChildState, ChildAction>? {
+    nonisolated(unsafe) let (stateKeyPath, actionKeyPath) = (stateKeyPath, actionKeyPath)
     let childStoreActor = storeActor.assumeIsolated {
       $0.scope(
         state: stateKeyPath,
@@ -156,8 +157,8 @@ extension Binding {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: _KeyPath<State, ChildState?>,
-    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #fileID,
     line: UInt = #line,
@@ -231,8 +232,8 @@ extension SwiftUI.Bindable {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: _KeyPath<State, ChildState?>,
-    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #fileID,
     line: UInt = #line,
@@ -304,8 +305,8 @@ extension Perception.Bindable {
   ///   - action: A case key path to presentation child actions.
   /// - Returns: A binding of an optional child store.
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: _KeyPath<State, ChildState?>,
-    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -332,8 +333,8 @@ extension UIBindable {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
-    state: _KeyPath<State, ChildState?>,
-    action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -357,8 +358,8 @@ extension Store where State: ObservableState {
   @_spi(Internals)
   public subscript<ChildState, ChildAction>(
     id id: AnyHashable?,
-    state state: _KeyPath<State, ChildState?>,
-    action action: _CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    state state: KeyPath<State, ChildState?>,
+    action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     isInViewBody isInViewBody: Bool,
     fileID fileID: _HashableStaticString,
     filePath filePath: _HashableStaticString,
@@ -370,10 +371,7 @@ extension Store where State: ObservableState {
         _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
           self.scope(
             state: state,
-            action: unsafeBitCast(
-              action.appending(path: \.presented),
-              to: _CaseKeyPath<Action, ChildAction>.self
-            ),
+            action: action.appending(path: \.presented),
             fileID: fileID.rawValue,
             filePath: filePath.rawValue,
             line: line,
