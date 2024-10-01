@@ -404,7 +404,7 @@ extension Store: CustomDebugStringConvertible {
 /// ```swift
 /// let store: StoreOf<Feature>
 /// ```
-public typealias _StoreOf<R: Reducer> = Store<R.State, R.Action>
+public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
 
 /// The type returned from ``Store/send(_:)`` that represents the lifecycle of the effect
 /// started from sending an action.
