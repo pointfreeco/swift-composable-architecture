@@ -407,7 +407,7 @@ where Value: CustomDebugStringConvertible {
   @preconcurrency@MainActor
 #endif
 public struct BindingViewStore<State> {
-  let store: Store<State, BindingAction<State>>
+  let store: _Store<State, BindingAction<State>>
   #if DEBUG
     let bindableActionType: Any.Type
     let fileID: StaticString
@@ -417,7 +417,7 @@ public struct BindingViewStore<State> {
   #endif
 
   init<Action: BindableAction<State>>(
-    store: Store<State, Action>,
+    store: _Store<State, Action>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -462,7 +462,9 @@ public struct BindingViewStore<State> {
                 value: value,
                 bindableActionType: self.bindableActionType,
                 context: .bindingStore,
-                isInvalidated: { [weak store] in store?.core.isInvalid ?? true },
+                isInvalidated: {
+                  [weak store] in store?.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+                },
                 fileID: self.fileID,
                 filePath: self.filePath,
                 line: self.line,
@@ -498,18 +500,20 @@ extension ViewStore {
   ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
   ///     are equal, repeat view computations are removed.
   public convenience init<State, Action>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    _ store: _Store<State, Action>,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) where ViewAction: BindableAction<State> {
     self.init(
       store,
       observe: { (_: State) in
         toViewState(
-          BindingViewStore(
-            store: store._scope(state: { $0 }, action: fromViewAction)
-          )
+          MainActor._assumeIsolated {
+            BindingViewStore(
+              store: store._scope(state: { $0 }, action: fromViewAction)
+            )
+          }
         )
       },
       send: fromViewAction,
@@ -530,8 +534,8 @@ extension ViewStore {
   ///     are equal, repeat view computations are removed.
   @_disfavoredOverload
   public convenience init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
+    _ store: _Store<State, ViewAction>,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) where ViewAction: BindableAction<State> {
     self.init(
@@ -556,9 +560,9 @@ extension ViewStore where ViewState: Equatable {
   ///   - fromViewAction: A function that transforms view actions into store action.
   @_disfavoredOverload
   public convenience init<State, Action>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action
+    _ store: _Store<State, Action>,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action
   ) where ViewAction: BindableAction<State> {
     self.init(
       store,
@@ -580,8 +584,8 @@ extension ViewStore where ViewState: Equatable {
   ///   - content: A function that can generate content from a view store.
   @_disfavoredOverload
   public convenience init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState
+    _ store: _Store<State, ViewAction>,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState
   ) where ViewAction: BindableAction<State> {
     self.init(
       store,
@@ -591,7 +595,7 @@ extension ViewStore where ViewState: Equatable {
   }
 }
 
-extension WithViewStore where Content: View {
+extension _WithViewStore where Content: View {
   /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
   /// to compute bindings and views from state.
   ///
@@ -607,9 +611,9 @@ extension WithViewStore where Content: View {
   ///   - content: A function that can generate content from a view store.
   @_disfavoredOverload
   public init<State, Action>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    _ store: _Store<State, Action>,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
@@ -618,7 +622,11 @@ extension WithViewStore where Content: View {
     self.init(
       store,
       observe: { (_: State) in
-        toViewState(BindingViewStore(store: store._scope(state: { $0 }, action: fromViewAction)))
+        toViewState(
+          MainActor._assumeIsolated {
+            BindingViewStore(store: store._scope(state: { $0 }, action: fromViewAction))
+          }
+        )
       },
       send: fromViewAction,
       removeDuplicates: isDuplicate,
@@ -642,8 +650,8 @@ extension WithViewStore where Content: View {
   ///   - content: A function that can generate content from a view store.
   @_disfavoredOverload
   public init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
+    _ store: _Store<State, ViewAction>,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
@@ -661,7 +669,7 @@ extension WithViewStore where Content: View {
   }
 }
 
-extension WithViewStore where ViewState: Equatable, Content: View {
+extension _WithViewStore where ViewState: Equatable, Content: View {
   /// Initializes a structure that transforms a ``Store`` into an observable ``ViewStore`` in order
   /// to compute bindings and views from state.
   ///
@@ -675,9 +683,9 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///   - content: A function that can generate content from a view store.
   @_disfavoredOverload
   public init<State, Action>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
+    _ store: _Store<State, Action>,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
+    send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action,
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
@@ -705,8 +713,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///   - content: A function that can generate content from a view store.
   @_disfavoredOverload
   public init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: BindingViewStore<State>) -> ViewState,
+    _ store: _Store<State, ViewAction>,
+    observe toViewState: @escaping @Sendable (_ state: BindingViewStore<State>) -> ViewState,
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
     line: UInt = #line
