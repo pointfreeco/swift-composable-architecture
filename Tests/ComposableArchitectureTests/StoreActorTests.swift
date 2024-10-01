@@ -17,7 +17,7 @@ final class StoreActorTests: BaseTCATestCase {
     state = await store.state
     XCTAssertEqual(state.count, 1)
 
-    try await Task.sleep(for: .seconds(0.1))
+    try await Task.sleep(nanoseconds: 100_000_000)
 
     state = await store.state
     XCTAssertEqual(state.count, 0)
