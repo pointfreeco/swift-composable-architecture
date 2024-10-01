@@ -62,8 +62,8 @@ extension Binding {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
-    state: _KeyPath<State, StackState<ElementState>>,
-    action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+    state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
   ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
   where Value == Store<State, Action> {
     self[state: state, action: action]
@@ -82,8 +82,8 @@ extension SwiftUI.Bindable {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
-    state: _KeyPath<State, StackState<ElementState>>,
-    action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+    state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
   ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
   where Value == Store<State, Action> {
     self[state: state, action: action]
@@ -100,8 +100,8 @@ extension Perception.Bindable {
   /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
   /// information.
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
-    state: _KeyPath<State, StackState<ElementState>>,
-    action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+    state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
   ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
   where Value == Store<State, Action> {
     self[state: state, action: action]
@@ -119,8 +119,8 @@ extension UIBindable {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
-    state: _KeyPath<State, StackState<ElementState>>,
-    action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+    state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
   ) -> UIBinding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
   where Value == Store<State, Action> {
     self[state: state, action: action]
@@ -356,8 +356,8 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
 
 extension Store where State: ObservableState {
   fileprivate subscript<ElementState, ElementAction>(
-    state state: _KeyPath<State, StackState<ElementState>>,
-    action action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>,
+    state state: KeyPath<State, StackState<ElementState>>,
+    action action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>,
     isInViewBody isInViewBody: Bool = _isInPerceptionTracking
   ) -> Store<StackState<ElementState>, StackAction<ElementState, ElementAction>> {
     get {

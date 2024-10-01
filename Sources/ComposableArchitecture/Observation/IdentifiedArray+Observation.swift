@@ -65,8 +65,8 @@ extension Store where State: ObservableState {
   /// - Returns: An collection of stores of child state.
   @_disfavoredOverload
   public func scope<ElementID, ElementState, ElementAction>(
-    state: _KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
-    action: _CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>,
+    state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
+    action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
