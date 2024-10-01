@@ -623,41 +623,6 @@ extension ViewStore where ViewState: Equatable {
   }
 }
 
-@available(*, deprecated, message: "TODO: Remove")
-extension ViewStore {
-  public convenience init<State, Action>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: State) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
-    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
-  ) {
-    fatalError()
-  }
-
-  public convenience init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: State) -> ViewState,
-    removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
-  ) {
-    fatalError()
-  }
-
-  public convenience init<State, Action>(
-    _ store: Store<State, Action>,
-    observe toViewState: @escaping (_ state: State) -> ViewState,
-    send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action
-  ) {
-    fatalError()
-  }
-
-  public convenience init<State>(
-    _ store: Store<State, ViewAction>,
-    observe toViewState: @escaping (_ state: State) -> ViewState
-  ) where ViewState: Equatable {
-    self.init(store, observe: toViewState, removeDuplicates: ==)
-  }
-}
-
 private struct HashableWrapper<Value>: Hashable {
   let rawValue: Value
   static func == (lhs: Self, rhs: Self) -> Bool { false }
