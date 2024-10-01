@@ -213,8 +213,8 @@ public struct IfLetStore<State, Action, Content: View>: View {
   #endif
   public init<DestinationState, DestinationAction, IfContent, ElseContent>(
     _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
-    state toState: @escaping @Sendable (_ destinationState: DestinationState) -> State?,
-    action fromAction: @escaping @Sendable (_ action: Action) -> DestinationAction,
+    state toState: @escaping (_ destinationState: DestinationState) -> State?,
+    action fromAction: @escaping (_ action: Action) -> DestinationAction,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: @escaping () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
@@ -252,8 +252,8 @@ public struct IfLetStore<State, Action, Content: View>: View {
   #endif
   public init<DestinationState, DestinationAction, IfContent>(
     _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
-    state toState: @escaping @Sendable (_ destinationState: DestinationState) -> State?,
-    action fromAction: @escaping @Sendable (_ action: Action) -> DestinationAction,
+    state toState: @escaping (_ destinationState: DestinationState) -> State?,
+    action fromAction: @escaping (_ action: Action) -> DestinationAction,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
   ) where Content == _ConditionalContent<IfContent, EmptyView> {
     self.init(

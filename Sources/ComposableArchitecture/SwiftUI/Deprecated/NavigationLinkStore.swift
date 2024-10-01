@@ -40,8 +40,8 @@ public struct NavigationLinkStore<
 >: View {
   let store: Store<PresentationState<State>, PresentationAction<Action>>
   @ObservedObject var viewStore: ViewStore<Bool, PresentationAction<Action>>
-  let toDestinationState: @Sendable (State) -> DestinationState?
-  let fromDestinationAction: @Sendable (DestinationAction) -> Action
+  let toDestinationState: (State) -> DestinationState?
+  let fromDestinationAction: (DestinationAction) -> Action
   let onTap: () -> Void
   let destination: (Store<DestinationState, DestinationAction>) -> Destination
   let label: Label
@@ -65,9 +65,8 @@ public struct NavigationLinkStore<
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
-    action fromDestinationAction:
-      @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     onTap: @escaping () -> Void,
     @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination,
@@ -113,15 +112,15 @@ public struct NavigationLinkStore<
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping @Sendable
-      (_ destinationAction: DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     id: DestinationState.ID,
     onTap: @escaping () -> Void,
     @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable, DestinationState.ID: Sendable {
+    nonisolated(unsafe) let toDestinationState = toDestinationState
     let store = Store(
       storeActor: store.storeActor.assumeIsolated {
         $0._navigationLink(id: id, state: toDestinationState)

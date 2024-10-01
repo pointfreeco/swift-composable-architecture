@@ -89,9 +89,8 @@ import SwiftUI
     )
     public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
       store: Store<PresentationState<State>, PresentationAction<Action>>,
-      state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
-      action fromDestinationAction:
-        @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
+      state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+      action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
       onDismiss: (() -> Void)? = nil,
       @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
         Content

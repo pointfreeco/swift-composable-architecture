@@ -291,10 +291,11 @@ public final class Store<State, Action> {
   ///   - action: A case key path from `Action` to `ChildAction`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state: _KeyPath<State, ChildState>,
-    action: _CaseKeyPath<Action, ChildAction>
+    state: KeyPath<State, ChildState>,
+    action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
-    Store<ChildState, ChildAction>(
+    nonisolated(unsafe) let (state, action) = (state, action)
+    return Store<ChildState, ChildAction>(
       storeActor: storeActor.assumeIsolated { $0.scope(state: state, action: action) }
     )
   }
@@ -305,17 +306,18 @@ public final class Store<State, Action> {
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )
   public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping @Sendable (_ state: State) -> ChildState,
-    action fromChildAction: @escaping @Sendable (_ childAction: ChildAction) -> Action
+    state toChildState: @escaping (_ state: State) -> ChildState,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
     _scope(state: toChildState, action: fromChildAction)
   }
 
   func _scope<ChildState, ChildAction>(
-    state toChildState: @escaping @Sendable (_ state: State) -> ChildState,
-    action fromChildAction: @escaping @Sendable (_ childAction: ChildAction) -> Action
+    state toChildState: @escaping (_ state: State) -> ChildState,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
   ) -> Store<ChildState, ChildAction> {
-    Store<ChildState, ChildAction>(
+    nonisolated(unsafe) let (toChildState, fromChildAction) = (toChildState, fromChildAction)
+    return Store<ChildState, ChildAction>(
       storeActor: storeActor.assumeIsolated {
         $0._scope(state: toChildState, action: fromChildAction)
       }

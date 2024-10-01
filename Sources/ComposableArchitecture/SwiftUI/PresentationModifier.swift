@@ -79,9 +79,8 @@ extension View {
     Content: View
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
-    action fromDestinationAction:
-      @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder body: @escaping (
       _ content: Self,
       _ isPresented: Binding<Bool>,
@@ -110,9 +109,8 @@ extension View {
     Content: View
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
-    action fromDestinationAction:
-      @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder body: @escaping (
       _ content: Self,
       _ item: Binding<AnyIdentifiable?>,
@@ -143,9 +141,9 @@ extension View {
     Content: View
   >(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping @Sendable (State) -> DestinationState?,
+    state toDestinationState: @escaping (State) -> DestinationState?,
     id toID: @escaping (PresentationState<State>) -> AnyHashable?,
-    action fromDestinationAction: @escaping @Sendable (DestinationAction) -> Action,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
     @ViewBuilder body: @escaping (
       Self,
       Binding<AnyIdentifiable?>,
@@ -206,9 +204,8 @@ public struct PresentationStore<
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
-    action fromDestinationAction:
-      @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder content: @escaping (
       _ isPresented: Binding<Bool>,
       _ destination: DestinationContent<DestinationState, DestinationAction>
@@ -224,8 +221,8 @@ public struct PresentationStore<
   @_disfavoredOverload
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
+    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder content: @escaping (
       _ item: Binding<AnyIdentifiable?>,
       _ destination: DestinationContent<DestinationState, DestinationAction>
@@ -270,14 +267,15 @@ public struct PresentationStore<
 
   fileprivate init<ID: Hashable>(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping @Sendable (State) -> DestinationState?,
+    state toDestinationState: @escaping (State) -> DestinationState?,
     id toID: @escaping (PresentationState<State>) -> ID?,
-    action fromDestinationAction: @escaping @Sendable (DestinationAction) -> Action,
+    action fromDestinationAction: @escaping (DestinationAction) -> Action,
     content: @escaping (
       _ item: Binding<AnyIdentifiable?>,
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) {
+    nonisolated(unsafe) let toDestinationState = toDestinationState
     let store = Store(
       storeActor: store.storeActor.assumeIsolated {
         $0._presentation(state: toDestinationState)
