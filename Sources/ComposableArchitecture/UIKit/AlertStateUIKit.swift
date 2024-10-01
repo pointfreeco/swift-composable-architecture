@@ -26,7 +26,7 @@
     /// }
     /// ```
     public convenience init<Action>(
-      store: Store<AlertState<Action>, Action>
+      store: _Store<AlertState<Action>, Action>
     ) {
       let state = store.currentState
       self.init(
@@ -61,7 +61,7 @@
     /// }
     /// ```
     public convenience init<Action>(
-      store: Store<ConfirmationDialogState<Action>, Action>
+      store: _Store<ConfirmationDialogState<Action>, Action>
     ) {
       let state = store.currentState
       self.init(

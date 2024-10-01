@@ -39,9 +39,9 @@ import SwiftUI
         "Pass a binding of a store to 'fullScreenCover(item:)' instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
     )
     public func fullScreenCover<State, Action, Content: View>(
-      store: Store<PresentationState<State>, PresentationAction<Action>>,
+      store: _Store<PresentationState<State>, PresentationAction<Action>>,
       onDismiss: (() -> Void)? = nil,
-      @ViewBuilder content: @escaping (_ store: Store<State, Action>) -> Content
+      @ViewBuilder content: @escaping (_ store: _Store<State, Action>) -> Content
     ) -> some View {
       self.presentation(store: store) { `self`, $item, destination in
         self.fullScreenCover(item: $item, onDismiss: onDismiss) { _ in
@@ -88,11 +88,12 @@ import SwiftUI
         "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
     )
     public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
-      store: Store<PresentationState<State>, PresentationAction<Action>>,
-      state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-      action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+      store: _Store<PresentationState<State>, PresentationAction<Action>>,
+      state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
+      action fromDestinationAction:
+        @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
       onDismiss: (() -> Void)? = nil,
-      @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+      @ViewBuilder content: @escaping (_ store: _Store<DestinationState, DestinationAction>) ->
         Content
     ) -> some View {
       self.presentation(
