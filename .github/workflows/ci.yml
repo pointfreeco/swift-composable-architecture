@@ -16,7 +16,7 @@ concurrency:
 jobs:
   xcodebuild:
     name: xcodebuild
-    runs-on: macos-14
+    runs-on: macos-15
     strategy:
       matrix:
         command: [test, '']
@@ -63,7 +63,7 @@ jobs:
 
   library-evolution:
     name: Library (evolution)
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 15.4
@@ -73,7 +73,7 @@ jobs:
 
   examples:
     name: Examples
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - name: Cache derived data
