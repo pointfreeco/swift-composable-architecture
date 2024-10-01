@@ -42,8 +42,8 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func navigationDestination<State, Action, Destination: View>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
-    @ViewBuilder destination: @escaping (_ store: _Store<State, Action>) -> Destination
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination
   ) -> some View {
     self.presentation(
       store: store,
@@ -100,12 +100,12 @@ extension View {
   public func navigationDestination<
     State, Action, DestinationState, DestinationAction, Destination: View
   >(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
     action fromDestinationAction:
       @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder destination:
-      @escaping (_ store: _Store<DestinationState, DestinationAction>) -> Destination
+      @escaping (_ store: Store<DestinationState, DestinationAction>) -> Destination
   ) -> some View {
     self.presentation(
       store: store,

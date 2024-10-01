@@ -39,9 +39,9 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func sheet<State, Action, Content: View>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     onDismiss: (() -> Void)? = nil,
-    @ViewBuilder content: @escaping (_ store: _Store<State, Action>) -> Content
+    @ViewBuilder content: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
     self.presentation(store: store) { `self`, $item, destination in
       self.sheet(item: $item, onDismiss: onDismiss) { _ in
@@ -91,13 +91,13 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func sheet<State, Action, DestinationState, DestinationAction, Content: View>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
     action fromDestinationAction:
       @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
     onDismiss: (() -> Void)? = nil,
     @ViewBuilder content:
-      @escaping (_ store: _Store<DestinationState, DestinationAction>) -> Content
+      @escaping (_ store: Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction

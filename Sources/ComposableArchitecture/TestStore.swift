@@ -502,7 +502,7 @@ public final class TestStore<State, Action> {
   private let column: UInt
   let reducer: TestReducer<State, Action>
   private let sharedChangeTracker: SharedChangeTracker
-  private let store: _Store<State, TestReducer<State, Action>.TestAction>
+  private let store: Store<State, TestReducer<State, Action>.TestAction>
 
   /// Returns `true` if the store's feature has been dismissed.
   public fileprivate(set) var isDismissed = false
@@ -545,7 +545,7 @@ public final class TestStore<State, Action> {
     self.line = line
     self.column = column
     self.reducer = reducer
-    self.store = _Store(initialState: reducer.state) { reducer }
+    self.store = Store(initialState: reducer.state) { reducer }
     self.timeout = 1 * NSEC_PER_SEC
     self.sharedChangeTracker = sharedChangeTracker
     self.useMainSerialExecutor = true
@@ -2510,7 +2510,7 @@ extension TestStore {
     action toViewAction: _CaseKeyPath<Action, ViewAction>
   ) -> BindingViewStore<State> where State == ViewAction.State, Action: CasePathable {
     BindingViewStore(
-      store: _Store(initialState: self.state) {
+      store: Store(initialState: self.state) {
         BindingReducer(action: toViewAction)
       }
       .scope(state: \.self, action: toViewAction)
@@ -2545,7 +2545,7 @@ extension TestStore {
     action toViewAction: AnyCasePath<Action, ViewAction>
   ) -> BindingViewStore<State> where State == ViewAction.State {
     BindingViewStore(
-      store: _Store(initialState: self.state) {
+      store: Store(initialState: self.state) {
         BindingReducer(action: toViewAction.extract(from:))
       }
       ._scope(state: { $0 }, action: toViewAction.embed)

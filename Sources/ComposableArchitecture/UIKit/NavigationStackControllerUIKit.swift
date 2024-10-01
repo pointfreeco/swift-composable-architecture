@@ -24,9 +24,9 @@
     public convenience init<State, Action>(
       navigationBarClass: AnyClass? = nil,
       toolbarClass: AnyClass? = nil,
-      path: UIBinding<_Store<StackState<State>, StackAction<State, Action>>>,
+      path: UIBinding<Store<StackState<State>, StackAction<State, Action>>>,
       root: () -> UIViewController,
-      destination: @escaping (_Store<State, Action>) -> UIViewController,
+      destination: @escaping (Store<State, Action>) -> UIViewController,
       fileID: StaticString = #fileID,
       filePath: StaticString = #filePath,
       line: UInt = #line,
@@ -46,7 +46,7 @@
       navigationDestination(for: StackState<State>.Component.self) { component in
         nonisolated(unsafe) let component = component
         return destination(
-          _Store(
+          Store(
             storeActor: path.wrappedValue.storeActor.assumeIsolated {
               $0.scope(
                 state: \.[

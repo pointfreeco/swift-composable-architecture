@@ -5,7 +5,7 @@ extension Binding {
   public subscript<State: ObservableState, Action, Member>(
     dynamicMember keyPath: KeyPath<State, Member>
   ) -> _StoreBinding<State, Action, Member>
-  where Value == _Store<State, Action> {
+  where Value == Store<State, Action> {
     _StoreBinding(binding: self, keyPath: keyPath)
   }
 }
@@ -15,7 +15,7 @@ extension UIBinding {
   public subscript<State: ObservableState, Action, Member>(
     dynamicMember keyPath: KeyPath<State, Member>
   ) -> _StoreUIBinding<State, Action, Member>
-  where Value == _Store<State, Action> {
+  where Value == Store<State, Action> {
     _StoreUIBinding(binding: self, keyPath: keyPath)
   }
 }
@@ -26,7 +26,7 @@ extension SwiftUI.Bindable {
   public subscript<State: ObservableState, Action, Member>(
     dynamicMember keyPath: KeyPath<State, Member>
   ) -> _StoreBindable_SwiftUI<State, Action, Member>
-  where Value == _Store<State, Action> {
+  where Value == Store<State, Action> {
     _StoreBindable_SwiftUI(bindable: self, keyPath: keyPath)
   }
 }
@@ -41,7 +41,7 @@ extension Perception.Bindable {
   public subscript<State: ObservableState, Action, Member>(
     dynamicMember keyPath: KeyPath<State, Member>
   ) -> _StoreBindable_Perception<State, Action, Member>
-  where Value == _Store<State, Action> {
+  where Value == Store<State, Action> {
     _StoreBindable_Perception(bindable: self, keyPath: keyPath)
   }
 }
@@ -51,7 +51,7 @@ extension UIBindable {
   public subscript<State: ObservableState, Action, Member>(
     dynamicMember keyPath: KeyPath<State, Member>
   ) -> _StoreUIBindable<State, Action, Member>
-  where Value == _Store<State, Action> {
+  where Value == Store<State, Action> {
     _StoreUIBindable(bindable: self, keyPath: keyPath)
   }
 }
@@ -157,7 +157,7 @@ extension BindableAction where State: ObservableState {
   }
 }
 
-extension _Store where State: ObservableState, Action: BindableAction, Action.State == State {
+extension Store where State: ObservableState, Action: BindableAction, Action.State == State {
   public subscript<Value: Equatable & Sendable>(
     dynamicMember keyPath: _WritableKeyPath<State, Value>
   ) -> Value {
@@ -174,7 +174,7 @@ extension _Store where State: ObservableState, Action: BindableAction, Action.St
   }
 }
 
-extension _Store
+extension Store
 where
   State: Equatable & Sendable,
   State: ObservableState,
@@ -195,7 +195,7 @@ where
   }
 }
 
-extension _Store
+extension Store
 where
   State: ObservableState,
   Action: ViewAction,
@@ -220,7 +220,7 @@ where
   }
 }
 
-extension _Store
+extension Store
 where
   State: Equatable & Sendable,
   State: ObservableState,
@@ -246,7 +246,7 @@ where
 
 @dynamicMemberLookup
 public struct _StoreBinding<State: ObservableState, Action, Value> {
-  fileprivate let binding: Binding<_Store<State, Action>>
+  fileprivate let binding: Binding<Store<State, Action>>
   fileprivate let keyPath: KeyPath<State, Value>
 
   public subscript<Member>(
@@ -274,7 +274,7 @@ public struct _StoreBinding<State: ObservableState, Action, Value> {
 
 @dynamicMemberLookup
 public struct _StoreUIBinding<State: ObservableState, Action, Value> {
-  fileprivate let binding: UIBinding<_Store<State, Action>>
+  fileprivate let binding: UIBinding<Store<State, Action>>
   fileprivate let keyPath: KeyPath<State, Value>
 
   public subscript<Member>(
@@ -299,7 +299,7 @@ public struct _StoreUIBinding<State: ObservableState, Action, Value> {
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 @dynamicMemberLookup
 public struct _StoreBindable_SwiftUI<State: ObservableState, Action, Value> {
-  fileprivate let bindable: SwiftUI.Bindable<_Store<State, Action>>
+  fileprivate let bindable: SwiftUI.Bindable<Store<State, Action>>
   fileprivate let keyPath: KeyPath<State, Value>
 
   public subscript<Member>(
@@ -332,7 +332,7 @@ public struct _StoreBindable_SwiftUI<State: ObservableState, Action, Value> {
 @available(visionOS, unavailable)
 @dynamicMemberLookup
 public struct _StoreBindable_Perception<State: ObservableState, Action, Value> {
-  fileprivate let bindable: Perception.Bindable<_Store<State, Action>>
+  fileprivate let bindable: Perception.Bindable<Store<State, Action>>
   fileprivate let keyPath: KeyPath<State, Value>
 
   public subscript<Member>(
@@ -359,7 +359,7 @@ public struct _StoreBindable_Perception<State: ObservableState, Action, Value> {
 }
 
 public struct _StoreUIBindable<State: ObservableState, Action, Value> {
-  fileprivate let bindable: UIBindable<_Store<State, Action>>
+  fileprivate let bindable: UIBindable<Store<State, Action>>
   fileprivate let keyPath: KeyPath<State, Value>
 
   public subscript<Member>(
@@ -381,7 +381,7 @@ public struct _StoreUIBindable<State: ObservableState, Action, Value> {
   }
 }
 
-extension _Store where State: ObservableState {
+extension Store where State: ObservableState {
   fileprivate subscript<Value>(
     state state: KeyPath<State, Value>,
     action action: CaseKeyPath<Action, Value>

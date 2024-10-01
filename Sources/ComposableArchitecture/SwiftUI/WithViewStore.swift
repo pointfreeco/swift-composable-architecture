@@ -350,7 +350,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   @ObservedObject private var viewStore: ViewStore<ViewState, ViewAction>
 
   init(
-    store: _Store<ViewState, ViewAction>,
+    store: Store<ViewState, ViewAction>,
     removeDuplicates isDuplicate: @escaping (ViewState, ViewState) -> Bool,
     content: @escaping (ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,
@@ -482,7 +482,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ///     are equal, repeat view computations are removed.
   ///   - content: A function that can generate content from a view store.
   public init<State, Action>(
-    _ store: _Store<State, Action>,
+    _ store: Store<State, Action>,
     observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
     send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
@@ -572,7 +572,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ///     are equal, repeat view computations are removed.
   ///   - content: A function that can generate content from a view store.
   public init<State>(
-    _ store: _Store<State, ViewAction>,
+    _ store: Store<State, ViewAction>,
     observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool,
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
@@ -662,7 +662,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///   - fromViewAction: A function that transforms view actions into store action.
   ///   - content: A function that can generate content from a view store.
   public init<State, Action>(
-    _ store: _Store<State, Action>,
+    _ store: Store<State, Action>,
     observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
     send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action,
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
@@ -749,7 +749,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
   ///   - content: A function that can generate content from a view store.
   public init<State>(
-    _ store: _Store<State, ViewAction>,
+    _ store: Store<State, ViewAction>,
     observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
     @ViewBuilder content: @escaping (_ viewStore: ViewStore<ViewState, ViewAction>) -> Content,
     file: StaticString = #fileID,

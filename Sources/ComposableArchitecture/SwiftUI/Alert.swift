@@ -14,7 +14,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func alert<ButtonAction>(
-    store: _Store<PresentationState<AlertState<ButtonAction>>, PresentationAction<ButtonAction>>
+    store: Store<PresentationState<AlertState<ButtonAction>>, PresentationAction<ButtonAction>>
   ) -> some View {
     self._alert(store: store, state: { $0 }, action: { $0 })
   }
@@ -54,7 +54,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func alert<State, Action, ButtonAction>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (_ state: State) -> AlertState<ButtonAction>?,
     action fromDestinationAction: @escaping @Sendable (_ alertAction: ButtonAction) -> Action
   ) -> some View {
@@ -67,7 +67,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   private func _alert<State, Action, ButtonAction>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (_ state: State) -> AlertState<ButtonAction>?,
     action fromDestinationAction: @escaping @Sendable (_ alertAction: ButtonAction) -> Action
   ) -> some View {

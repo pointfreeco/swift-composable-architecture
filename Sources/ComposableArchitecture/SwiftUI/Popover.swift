@@ -43,10 +43,10 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func popover<State, Action, Content: View>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
     arrowEdge: Edge = .top,
-    @ViewBuilder content: @escaping (_ store: _Store<State, Action>) -> Content
+    @ViewBuilder content: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
     self.presentation(store: store) { `self`, $item, destination in
       self.popover(item: $item, attachmentAnchor: attachmentAnchor, arrowEdge: arrowEdge) { _ in
@@ -98,13 +98,13 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func popover<State, Action, DestinationState, DestinationAction, Content: View>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
     action fromDestinationAction:
       @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
     attachmentAnchor: PopoverAttachmentAnchor = .rect(.bounds),
     arrowEdge: Edge = .top,
-    @ViewBuilder content: @escaping (_ store: _Store<DestinationState, DestinationAction>) -> Content
+    @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction

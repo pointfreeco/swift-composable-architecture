@@ -101,7 +101,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   #if DEBUG
     private let storeTypeName: String
   #endif
-  let store: _Store<ViewState, ViewAction>
+  let store: Store<ViewState, ViewAction>
 
   /// Initializes a view store from a store which observes changes to state.
   ///
@@ -118,7 +118,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///   equal, repeat view computations are removed.
   public convenience init<State>(
-    _ store: _Store<State, ViewAction>,
+    _ store: Store<State, ViewAction>,
     observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
@@ -146,7 +146,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   ///   - isDuplicate: A function to determine when two `State` values are equal. When values are
   ///   equal, repeat view computations are removed.
   public init<State, Action>(
-    _ store: _Store<State, Action>,
+    _ store: Store<State, Action>,
     observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
     send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
@@ -595,7 +595,7 @@ extension ViewStore where ViewState: Equatable {
   ///   - toViewState: A transformation of `ViewState` to the state that will be observed for
   ///   changes.
   public convenience init<State>(
-    _ store: _Store<State, ViewAction>,
+    _ store: Store<State, ViewAction>,
     observe toViewState: @escaping @Sendable (_ state: State) -> ViewState
   ) {
     self.init(store, observe: toViewState, removeDuplicates: ==)
@@ -615,7 +615,7 @@ extension ViewStore where ViewState: Equatable {
   ///   changes.
   ///   - fromViewAction: A transformation of `ViewAction` that describes what actions can be sent.
   public convenience init<State, Action>(
-    _ store: _Store<State, Action>,
+    _ store: Store<State, Action>,
     observe toViewState: @escaping @Sendable (_ state: State) -> ViewState,
     send fromViewAction: @escaping @Sendable (_ viewAction: ViewAction) -> Action
   ) {

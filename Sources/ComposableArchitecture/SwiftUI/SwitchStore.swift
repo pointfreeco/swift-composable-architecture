@@ -74,11 +74,11 @@ import SwiftUI
     "Use 'switch' with a store of observable state, instead. For more information, see the following article: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-SwitchStore-and-CaseLet-with-switch-and-case]"
 )
 public struct SwitchStore<State, Action, Content: View>: View {
-  public let store: _Store<State, Action>
+  public let store: Store<State, Action>
   public let content: (State) -> Content
 
   public init(
-    _ store: _Store<State, Action>,
+    _ store: Store<State, Action>,
     @ViewBuilder content: @escaping (_ initialState: State) -> Content
   ) {
     self.store = store
@@ -119,7 +119,7 @@ public struct SwitchStore<State, Action, Content: View>: View {
 public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: View>: View {
   public let toCaseState: @Sendable (EnumState) -> CaseState?
   public let fromCaseAction: @Sendable (CaseAction) -> EnumAction
-  public let content: (_Store<CaseState, CaseAction>) -> Content
+  public let content: (Store<CaseState, CaseAction>) -> Content
 
   private let fileID: StaticString
   private let filePath: StaticString
@@ -140,7 +140,7 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
   public init(
     _ toCaseState: @escaping @Sendable (EnumState) -> CaseState?,
     action fromCaseAction: @escaping @Sendable (CaseAction) -> EnumAction,
-    @ViewBuilder then content: @escaping (_ store: _Store<CaseState, CaseAction>) -> Content,
+    @ViewBuilder then content: @escaping (_ store: Store<CaseState, CaseAction>) -> Content,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -182,7 +182,7 @@ extension CaseLet where EnumAction == CaseAction {
   ///     that is visible only when the switch store's state matches.
   public init(
     state toCaseState: @escaping @Sendable (EnumState) -> CaseState?,
-    @ViewBuilder then content: @escaping (_ store: _Store<CaseState, CaseAction>) -> Content
+    @ViewBuilder then content: @escaping (_ store: Store<CaseState, CaseAction>) -> Content
   ) {
     self.init(
       toCaseState,
@@ -244,9 +244,9 @@ public struct _CaseLetMismatchView<State, Action>: View {
 }
 
 private final class StoreObservableObject<State, Action>: ObservableObject {
-  let wrappedValue: _Store<State, Action>
+  let wrappedValue: Store<State, Action>
 
-  init(store: _Store<State, Action>) {
+  init(store: Store<State, Action>) {
     self.wrappedValue = store
   }
 }

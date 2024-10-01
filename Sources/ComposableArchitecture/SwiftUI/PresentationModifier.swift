@@ -9,7 +9,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func presentation<State, Action, Content: View>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder body: @escaping (
       _ content: Self,
       _ isPresented: Binding<Bool>,
@@ -29,7 +29,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func presentation<State, Action, Content: View>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder body: @escaping (
       _ content: Self,
       _ item: Binding<AnyIdentifiable?>,
@@ -52,7 +52,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func presentation<State, Action, Content: View>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     id toID: @escaping (PresentationState<State>) -> AnyHashable?,
     @ViewBuilder body: @escaping (
       _ content: Self,
@@ -78,7 +78,7 @@ extension View {
     DestinationAction,
     Content: View
   >(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
     action fromDestinationAction:
       @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
@@ -109,7 +109,7 @@ extension View {
     DestinationAction,
     Content: View
   >(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
     action fromDestinationAction:
       @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
@@ -142,7 +142,7 @@ extension View {
     DestinationAction,
     Content: View
   >(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (State) -> DestinationState?,
     id toID: @escaping (PresentationState<State>) -> AnyHashable?,
     action fromDestinationAction: @escaping @Sendable (DestinationAction) -> Action,
@@ -164,11 +164,11 @@ extension View {
 public struct PresentationStore<
   State, Action, DestinationState, DestinationAction, Content: View
 >: View {
-  let store: _Store<PresentationState<State>, PresentationAction<Action>>
+  let store: Store<PresentationState<State>, PresentationAction<Action>>
   let toDestinationState: (State) -> DestinationState?
   let toID: (PresentationState<State>) -> AnyHashable?
   let fromDestinationAction: (DestinationAction) -> Action
-  let destinationStore: _Store<DestinationState?, DestinationAction>
+  let destinationStore: Store<DestinationState?, DestinationAction>
   let content:
     (
       Binding<AnyIdentifiable?>,
@@ -178,7 +178,7 @@ public struct PresentationStore<
   @ObservedObject var viewStore: ViewStore<PresentationState<State>, PresentationAction<Action>>
 
   public init(
-    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder content: @escaping (
       _ isPresented: Binding<Bool>,
       _ destination: DestinationContent<DestinationState, DestinationAction>
@@ -191,7 +191,7 @@ public struct PresentationStore<
 
   @_disfavoredOverload
   public init(
-    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder content: @escaping (
       _ item: Binding<AnyIdentifiable?>,
       _ destination: DestinationContent<DestinationState, DestinationAction>
@@ -205,7 +205,7 @@ public struct PresentationStore<
   }
 
   public init(
-    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
     action fromDestinationAction:
       @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
@@ -223,7 +223,7 @@ public struct PresentationStore<
 
   @_disfavoredOverload
   public init(
-    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
     action fromDestinationAction: @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder content: @escaping (
@@ -241,14 +241,14 @@ public struct PresentationStore<
   }
 
   fileprivate init<ID: Hashable>(
-    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     id toID: @escaping (PresentationState<State>) -> ID?,
     content: @escaping (
       _ item: Binding<AnyIdentifiable?>,
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
-    let store = _Store(
+    let store = Store(
       storeActor: store.storeActor.assumeIsolated {
         $0._presentation(state: { $0 })
       }
@@ -269,7 +269,7 @@ public struct PresentationStore<
   }
 
   fileprivate init<ID: Hashable>(
-    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (State) -> DestinationState?,
     id toID: @escaping (PresentationState<State>) -> ID?,
     action fromDestinationAction: @escaping @Sendable (DestinationAction) -> Action,
@@ -278,7 +278,7 @@ public struct PresentationStore<
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) {
-    let store = _Store(
+    let store = Store(
       storeActor: store.storeActor.assumeIsolated {
         $0._presentation(state: toDestinationState)
       }
@@ -377,10 +377,10 @@ public struct AnyIdentifiable: Identifiable {
 #endif
 @_spi(Presentation)
 public struct DestinationContent<State, Action> {
-  let store: _Store<State?, Action>
+  let store: Store<State?, Action>
 
   public func callAsFunction<Content: View>(
-    @ViewBuilder _ body: @escaping (_ store: _Store<State, Action>) -> Content
+    @ViewBuilder _ body: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
     IfLetStore(self.store, then: body)
   }

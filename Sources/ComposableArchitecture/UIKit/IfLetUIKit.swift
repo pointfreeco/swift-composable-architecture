@@ -1,6 +1,6 @@
 import Combine
 
-extension _Store {
+extension Store {
   /// Calls one of two closures depending on whether a store's optional state is `nil` or not, and
   /// whenever this condition changes for as long as the cancellable lives.
   ///
@@ -50,7 +50,7 @@ extension _Store {
   @available(tvOS, deprecated: 9999, message: "Use 'observe' and 'if let store.scope', instead.")
   @available(watchOS, deprecated: 9999, message: "Use 'observe' and 'if let store.scope', instead.")
   public func ifLet<Wrapped>(
-    then unwrap: @escaping (_ store: _Store<Wrapped, Action>) -> Void,
+    then unwrap: @escaping (_ store: Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void = {}
   ) -> any Cancellable where State == Wrapped? {
     return self
@@ -60,7 +60,7 @@ extension _Store {
         if let self, let state {
           nonisolated(unsafe) let state = state
           unwrap(
-            _Store<Wrapped, Action>(
+            Store<Wrapped, Action>(
               storeActor: self.storeActor.assumeIsolated {
                 $0.scope(state: \.self, action: \.self, default: state)
               }

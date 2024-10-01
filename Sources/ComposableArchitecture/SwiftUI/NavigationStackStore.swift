@@ -43,9 +43,9 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ///     the stack's state. The closure takes one argument, which is a store of the value to
   ///     present.
   public init(
-    _ store: _Store<StackState<State>, StackAction<State, Action>>,
+    _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
-    @ViewBuilder destination: @escaping (_ store: _Store<State, Action>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -56,7 +56,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     ) -> Destination {
       nonisolated(unsafe) let component = component
       return destination(
-        _Store(
+        Store(
           storeActor: store.storeActor.assumeIsolated {
             $0.scope(
               state: \.[
@@ -94,7 +94,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ///     present. You can switch over this value and use ``CaseLet`` views to handle each case.
   @_disfavoredOverload
   public init<D: View>(
-    _ store: _Store<StackState<State>, StackAction<State, Action>>,
+    _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
     @ViewBuilder destination: @escaping (_ initialState: State) -> D,
     fileID: StaticString = #fileID,
@@ -107,7 +107,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     ) -> Destination {
       nonisolated(unsafe) let component = component
       return SwitchStore(
-        _Store(
+        Store(
           storeActor: store.storeActor.assumeIsolated {
             $0.scope(
               state: \.[

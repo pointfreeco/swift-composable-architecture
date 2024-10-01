@@ -122,8 +122,8 @@ public struct ForEachStore<
     @preconcurrency@MainActor
   #endif
   public init<EachContent>(
-    _ store: _Store<IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>>,
-    @ViewBuilder content: @escaping (_ store: _Store<EachState, EachAction>) -> EachContent
+    _ store: Store<IdentifiedArray<ID, EachState>, IdentifiedAction<ID, EachAction>>,
+    @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
   )
   where
     Data == IdentifiedArray<ID, EachState>,
@@ -142,7 +142,7 @@ public struct ForEachStore<
         let id = element[keyPath: viewStore.state.id]
         nonisolated(unsafe) let element = element
         content(
-          _Store(
+          Store(
             storeActor: store.storeActor.assumeIsolated {
               $0.scope(
                 state: \.[id: id],
@@ -186,8 +186,8 @@ public struct ForEachStore<
     @preconcurrency@MainActor
   #endif
   public init<EachContent>(
-    _ store: _Store<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
-    @ViewBuilder content: @escaping (_ store: _Store<EachState, EachAction>) -> EachContent
+    _ store: Store<IdentifiedArray<ID, EachState>, (id: ID, action: EachAction)>,
+    @ViewBuilder content: @escaping (_ store: Store<EachState, EachAction>) -> EachContent
   )
   where
     Data == IdentifiedArray<ID, EachState>,
@@ -206,7 +206,7 @@ public struct ForEachStore<
         let id = element[keyPath: viewStore.state.id]
         nonisolated(unsafe) let element = element
         content(
-          _Store(
+          Store(
             storeActor: store.storeActor.assumeIsolated {
               $0.scope(
                 state: \.[id: id],

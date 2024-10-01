@@ -5,10 +5,10 @@ import SwiftUI
 #endif
 
 #if !os(visionOS)
-  extension _Store: Perceptible {}
+  extension Store: Perceptible {}
 #endif
 
-extension _Store where State: ObservableState {
+extension Store where State: ObservableState {
   var observableState: State {
     self._$observationRegistrar.access(self, keyPath: \.currentState)
     return self.currentState
@@ -24,21 +24,21 @@ extension _Store where State: ObservableState {
   }
 }
 
-extension _Store: Equatable {
-  public static nonisolated func == (lhs: _Store, rhs: _Store) -> Bool {
+extension Store: Equatable {
+  public static nonisolated func == (lhs: Store, rhs: Store) -> Bool {
     lhs === rhs
   }
 }
 
-extension _Store: Hashable {
+extension Store: Hashable {
   public nonisolated func hash(into hasher: inout Hasher) {
     hasher.combine(ObjectIdentifier(self))
   }
 }
 
-extension _Store: Identifiable {}
+extension Store: Identifiable {}
 
-extension _Store where State: ObservableState {
+extension Store where State: ObservableState {
   /// Scopes the store to optional child state and actions.
   ///
   /// If your feature holds onto a child feature as an optional:
@@ -87,7 +87,7 @@ extension _Store where State: ObservableState {
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) -> _Store<ChildState, ChildAction>? {
+  ) -> Store<ChildState, ChildAction>? {
     let childStoreActor = storeActor.assumeIsolated {
       $0.scope(
         state: stateKeyPath,
@@ -99,7 +99,7 @@ extension _Store where State: ObservableState {
       )
     }
     guard let childStoreActor else { return nil }
-    return _Store<ChildState, ChildAction>(storeActor: childStoreActor)
+    return Store<ChildState, ChildAction>(storeActor: childStoreActor)
   }
 }
 
@@ -162,8 +162,8 @@ extension Binding {
     filePath: StaticString = #fileID,
     line: UInt = #line,
     column: UInt = #column
-  ) -> Binding<_Store<ChildState, ChildAction>?>
-  where Value == _Store<State, Action> {
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
     self[
       id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
       state: state,
@@ -237,8 +237,8 @@ extension SwiftUI.Bindable {
     filePath: StaticString = #fileID,
     line: UInt = #line,
     column: UInt = #column
-  ) -> Binding<_Store<ChildState, ChildAction>?>
-  where Value == _Store<State, Action> {
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
     self[
       id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
       state: state,
@@ -310,8 +310,8 @@ extension Perception.Bindable {
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) -> Binding<_Store<ChildState, ChildAction>?>
-  where Value == _Store<State, Action> {
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
     self[
       id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
       state: state,
@@ -338,8 +338,8 @@ extension UIBindable {
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) -> UIBinding<_Store<ChildState, ChildAction>?>
-  where Value == _Store<State, Action> {
+  ) -> UIBinding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
     self[
       id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
       state: state,
@@ -353,7 +353,7 @@ extension UIBindable {
   }
 }
 
-extension _Store where State: ObservableState {
+extension Store where State: ObservableState {
   @_spi(Internals)
   public subscript<ChildState, ChildAction>(
     id id: AnyHashable?,
@@ -364,7 +364,7 @@ extension _Store where State: ObservableState {
     filePath filePath: _HashableStaticString,
     line line: UInt,
     column column: UInt
-  ) -> _Store<ChildState, ChildAction>? {
+  ) -> Store<ChildState, ChildAction>? {
     get {
       #if DEBUG && !os(visionOS)
         _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
@@ -431,7 +431,7 @@ extension _Store where State: ObservableState {
   }
 }
 
-func uncachedStoreWarning<State, Action>(_ store: _Store<State, Action>) -> String {
+func uncachedStoreWarning<State, Action>(_ store: Store<State, Action>) -> String {
   """
   Scoping from uncached \(store) is not compatible with observation.
 

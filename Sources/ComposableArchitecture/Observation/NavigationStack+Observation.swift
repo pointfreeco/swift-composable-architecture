@@ -64,8 +64,8 @@ extension Binding {
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: _KeyPath<State, StackState<ElementState>>,
     action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
-  ) -> Binding<_Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
-  where Value == _Store<State, Action> {
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
     self[state: state, action: action]
   }
 }
@@ -84,8 +84,8 @@ extension SwiftUI.Bindable {
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: _KeyPath<State, StackState<ElementState>>,
     action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
-  ) -> Binding<_Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
-  where Value == _Store<State, Action> {
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
     self[state: state, action: action]
   }
 }
@@ -102,8 +102,8 @@ extension Perception.Bindable {
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: _KeyPath<State, StackState<ElementState>>,
     action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
-  ) -> Binding<_Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
-  where Value == _Store<State, Action> {
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
     self[state: state, action: action]
   }
 }
@@ -121,8 +121,8 @@ extension UIBindable {
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: _KeyPath<State, StackState<ElementState>>,
     action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
-  ) -> UIBinding<_Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
-  where Value == _Store<State, Action> {
+  ) -> UIBinding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
     self[state: state, action: action]
   }
 }
@@ -135,9 +135,9 @@ extension NavigationStack {
   /// navigation tools, and in particular see <doc:StackBasedNavigation> for information on using
   /// this view.
   public init<State, Action, Destination: View, R>(
-    path: Binding<_Store<StackState<State>, StackAction<State, Action>>>,
+    path: Binding<Store<StackState<State>, StackAction<State, Action>>>,
     root: () -> R,
-    @ViewBuilder destination: @escaping (_Store<State, Action>) -> Destination,
+    @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -176,8 +176,8 @@ public struct _NavigationDestinationViewModifier<
 >:
   ViewModifier
 {
-  @SwiftUI.State var store: _Store<StackState<State>, StackAction<State, Action>>
-  fileprivate let destination: (_Store<State, Action>) -> Destination
+  @SwiftUI.State var store: Store<StackState<State>, StackAction<State, Action>>
+  fileprivate let destination: (Store<State, Action>) -> Destination
   fileprivate let fileID: StaticString
   fileprivate let filePath: StaticString
   fileprivate let line: UInt
@@ -195,7 +195,7 @@ public struct _NavigationDestinationViewModifier<
   private func navigationDestination(component: StackState<State>.Component) -> Destination {
     nonisolated(unsafe) let component = component
     return destination(
-      _Store(
+      Store(
         storeActor: store.storeActor.assumeIsolated {
           $0.scope(
             state: \.[
@@ -354,12 +354,12 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
   }
 }
 
-extension _Store where State: ObservableState {
+extension Store where State: ObservableState {
   fileprivate subscript<ElementState, ElementAction>(
     state state: _KeyPath<State, StackState<ElementState>>,
     action action: _CaseKeyPath<Action, StackAction<ElementState, ElementAction>>,
     isInViewBody isInViewBody: Bool = _isInPerceptionTracking
-  ) -> _Store<StackState<ElementState>, StackAction<ElementState, ElementAction>> {
+  ) -> Store<StackState<ElementState>, StackAction<ElementState, ElementAction>> {
     get {
       #if DEBUG && !os(visionOS)
         _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
@@ -373,7 +373,7 @@ extension _Store where State: ObservableState {
   }
 }
 
-extension _Store {
+extension Store {
   @_spi(Internals)
   public subscript<ElementState, ElementAction>(
     fileID fileID: _HashableStaticString,

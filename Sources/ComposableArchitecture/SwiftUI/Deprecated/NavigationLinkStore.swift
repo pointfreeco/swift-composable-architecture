@@ -38,19 +38,19 @@ public struct NavigationLinkStore<
   Destination: View,
   Label: View
 >: View {
-  let store: _Store<PresentationState<State>, PresentationAction<Action>>
+  let store: Store<PresentationState<State>, PresentationAction<Action>>
   @ObservedObject var viewStore: ViewStore<Bool, PresentationAction<Action>>
   let toDestinationState: @Sendable (State) -> DestinationState?
   let fromDestinationAction: @Sendable (DestinationAction) -> Action
   let onTap: () -> Void
-  let destination: (_Store<DestinationState, DestinationAction>) -> Destination
+  let destination: (Store<DestinationState, DestinationAction>) -> Destination
   let label: Label
   var isDetailLink = true
 
   public init(
-    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (_ store: _Store<State, Action>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction {
     self.init(
@@ -64,16 +64,16 @@ public struct NavigationLinkStore<
   }
 
   public init(
-    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
     action fromDestinationAction:
       @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (_ store: _Store<DestinationState, DestinationAction>) ->
+    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination,
     @ViewBuilder label: () -> Label
   ) {
-    let store = _Store(
+    let store = Store(
       storeActor: store.storeActor.assumeIsolated {
         $0._presentation(state: { $0 })
       }
@@ -94,10 +94,10 @@ public struct NavigationLinkStore<
   }
 
   public init(
-    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     id: State.ID,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (_ store: _Store<State, Action>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction, State: Identifiable, State.ID: Sendable {
     self.init(
@@ -112,17 +112,17 @@ public struct NavigationLinkStore<
   }
 
   public init(
-    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
     action fromDestinationAction: @escaping @Sendable
       (_ destinationAction: DestinationAction) -> Action,
     id: DestinationState.ID,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (_ store: _Store<DestinationState, DestinationAction>) ->
+    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable, DestinationState.ID: Sendable {
-    let store = _Store(
+    let store = Store(
       storeActor: store.storeActor.assumeIsolated {
         $0._navigationLink(id: id, state: toDestinationState)
       }

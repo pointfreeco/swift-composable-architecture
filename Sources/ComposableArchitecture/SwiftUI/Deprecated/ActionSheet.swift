@@ -35,7 +35,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func actionSheet<ButtonAction>(
-    store: _Store<
+    store: Store<
       PresentationState<ConfirmationDialogState<ButtonAction>>, PresentationAction<ButtonAction>
     >
   ) -> some View {
@@ -76,7 +76,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func actionSheet<State, Action, ButtonAction>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState:
       @escaping @Sendable (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
     action fromDestinationAction: @escaping @Sendable (_ alertAction: ButtonAction) -> Action

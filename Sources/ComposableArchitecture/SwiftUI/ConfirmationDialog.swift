@@ -14,7 +14,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func confirmationDialog<ButtonAction>(
-    store: _Store<
+    store: Store<
       PresentationState<ConfirmationDialogState<ButtonAction>>,
       PresentationAction<ButtonAction>
     >
@@ -57,7 +57,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   public func confirmationDialog<State, Action, ButtonAction>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState:
       @escaping @Sendable (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
     action fromDestinationAction:
@@ -72,7 +72,7 @@ extension View {
     @preconcurrency@MainActor
   #endif
   private func _confirmationDialog<State, Action, ButtonAction>(
-    store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState:
       @escaping @Sendable (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
     action fromDestinationAction:
