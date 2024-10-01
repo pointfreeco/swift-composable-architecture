@@ -321,7 +321,7 @@ public struct PresentationStore<
   }
 }
 
-private extension StoreActor {
+extension StoreActor {
   func _presentation<S, A, DestinationState>(
     state toDestinationState: @escaping (S) -> DestinationState?
   ) -> StoreActor

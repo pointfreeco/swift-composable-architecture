@@ -38,19 +38,19 @@ public struct NavigationLinkStore<
   Destination: View,
   Label: View
 >: View {
-  let store: Store<PresentationState<State>, PresentationAction<Action>>
+  let store: _Store<PresentationState<State>, PresentationAction<Action>>
   @ObservedObject var viewStore: ViewStore<Bool, PresentationAction<Action>>
-  let toDestinationState: (State) -> DestinationState?
-  let fromDestinationAction: (DestinationAction) -> Action
+  let toDestinationState: @Sendable (State) -> DestinationState?
+  let fromDestinationAction: @Sendable (DestinationAction) -> Action
   let onTap: () -> Void
-  let destination: (Store<DestinationState, DestinationAction>) -> Destination
+  let destination: (_Store<DestinationState, DestinationAction>) -> Destination
   let label: Label
   var isDetailLink = true
 
   public init(
-    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: _Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
   ) where State == DestinationState, Action == DestinationAction {
     self.init(
@@ -64,22 +64,19 @@ public struct NavigationLinkStore<
   }
 
   public init(
-    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
+    action fromDestinationAction:
+      @escaping @Sendable (_ destinationAction: DestinationAction) -> Action,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+    @ViewBuilder destination: @escaping (_ store: _Store<DestinationState, DestinationAction>) ->
       Destination,
     @ViewBuilder label: () -> Label
   ) {
-    func open(
-      _ core: some Core<PresentationState<State>, PresentationAction<Action>>
-    ) -> any Core<PresentationState<State>, PresentationAction<Action>> {
-      PresentationCore(base: core, toDestinationState: toDestinationState)
-    }
-    let store = store.scope(
-      id: store.id(state: \.self, action: \.self),
-      childCore: open(store.core)
+    let store = _Store(
+      storeActor: store.storeActor.assumeIsolated {
+        $0._presentation(state: { $0 })
+      }
     )
     self.store = store
     self.viewStore = ViewStore(
@@ -97,12 +94,12 @@ public struct NavigationLinkStore<
   }
 
   public init(
-    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
+    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
     id: State.ID,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (_ store: Store<State, Action>) -> Destination,
+    @ViewBuilder destination: @escaping (_ store: _Store<State, Action>) -> Destination,
     @ViewBuilder label: () -> Label
-  ) where State == DestinationState, Action == DestinationAction, State: Identifiable {
+  ) where State == DestinationState, Action == DestinationAction, State: Identifiable, State.ID: Sendable {
     self.init(
       store,
       state: { $0 },
@@ -115,23 +112,20 @@ public struct NavigationLinkStore<
   }
 
   public init(
-    _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+    _ store: _Store<PresentationState<State>, PresentationAction<Action>>,
+    state toDestinationState: @escaping @Sendable (_ state: State) -> DestinationState?,
+    action fromDestinationAction: @escaping @Sendable
+      (_ destinationAction: DestinationAction) -> Action,
     id: DestinationState.ID,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+    @ViewBuilder destination: @escaping (_ store: _Store<DestinationState, DestinationAction>) ->
       Destination,
     @ViewBuilder label: () -> Label
-  ) where DestinationState: Identifiable {
-    func open(
-      _ core: some Core<PresentationState<State>, PresentationAction<Action>>
-    ) -> any Core<PresentationState<State>, PresentationAction<Action>> {
-      NavigationLinkCore(base: core, id: id, toDestinationState: toDestinationState)
-    }
-    let store = store.scope(
-      id: store.id(state: \.self, action: \.self),
-      childCore: open(store.core)
+  ) where DestinationState: Identifiable, DestinationState.ID: Sendable {
+    let store = _Store(
+      storeActor: store.storeActor.assumeIsolated {
+        $0._navigationLink(id: id, state: toDestinationState)
+      }
     )
     self.store = store
     self.viewStore = ViewStore(
@@ -163,7 +157,9 @@ public struct NavigationLinkStore<
     ) {
       IfLetStore(
         self.store._scope(
-          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
+          state: /* FIXME: returningLastNonNilValue */ {
+            $0.wrappedValue.flatMap(self.toDestinationState)
+          },
           action: { .presented(self.fromDestinationAction($0)) }
         ),
         then: self.destination
@@ -183,6 +179,24 @@ public struct NavigationLinkStore<
     var link = self
     link.isDetailLink = isDetailLink
     return link
+  }
+}
+
+private extension StoreActor {
+  func _navigationLink<S, A, DestinationState: Identifiable>(
+    id: DestinationState.ID,
+    state toDestinationState: @escaping (S) -> DestinationState?
+  ) -> StoreActor
+  where State == PresentationState<S>, Action == PresentationAction<A> {
+    func open(_ core: some Core<State, Action>) -> any Core<State, Action> {
+      NavigationLinkCore(
+        base: core,
+        id: id,
+        toDestinationState: toDestinationState
+      )
+    }
+    let childCore = open(core)
+    return scope(id: ScopeID(state: \.self, action: \.self), childCore: childCore)
   }
 }
 
