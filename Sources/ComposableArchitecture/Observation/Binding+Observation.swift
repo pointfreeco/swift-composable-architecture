@@ -157,7 +157,7 @@ extension BindableAction where State: ObservableState {
   }
 }
 
-extension Store where State: ObservableState, Action: BindableAction, Action.State == State {
+extension _Store where State: ObservableState, Action: BindableAction, Action.State == State {
   public subscript<Value: Equatable & Sendable>(
     dynamicMember keyPath: _WritableKeyPath<State, Value>
   ) -> Value {
@@ -165,14 +165,16 @@ extension Store where State: ObservableState, Action: BindableAction, Action.Sta
     set {
       BindingLocal.$isActive.withValue(true) {
         self.send(
-          .set(keyPath, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+          .set(keyPath, newValue, isInvalidated: { [weak self] in
+            self?.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+          })
         )
       }
     }
   }
 }
 
-extension Store
+extension _Store
 where
   State: Equatable & Sendable,
   State: ObservableState,
@@ -184,14 +186,16 @@ where
     set {
       BindingLocal.$isActive.withValue(true) {
         self.send(
-          .set(\.self, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+          .set(\.self, newValue, isInvalidated: { [weak self] in
+            self?.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+          })
         )
       }
     }
   }
 }
 
-extension Store
+extension _Store
 where
   State: ObservableState,
   Action: ViewAction,
@@ -206,7 +210,9 @@ where
       BindingLocal.$isActive.withValue(true) {
         self.send(
           .view(
-            .set(keyPath, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+            .set(keyPath, newValue, isInvalidated: { [weak self] in
+              self?.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+            })
           )
         )
       }
@@ -214,7 +220,7 @@ where
   }
 }
 
-extension Store
+extension _Store
 where
   State: Equatable & Sendable,
   State: ObservableState,
@@ -228,7 +234,9 @@ where
       BindingLocal.$isActive.withValue(true) {
         self.send(
           .view(
-            .set(\.self, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+            .set(\.self, newValue, isInvalidated: { [weak self] in
+              self?.storeActor.assumeIsolated { $0.core.isInvalid } ?? true
+            })
           )
         )
       }
