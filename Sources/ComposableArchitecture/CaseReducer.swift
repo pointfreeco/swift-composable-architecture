@@ -17,7 +17,7 @@ where State: CaseReducerState, Body: Reducer, Body.State == State, Body.Action =
   #else
     @preconcurrency@MainActor
   #endif
-  static func scope(_ store: Store<State, Action>) -> CaseScope
+  static func scope(_ store: _Store<State, Action>) -> CaseScope
 }
 
 extension CaseReducer {
@@ -55,7 +55,7 @@ extension Reducer {
   }
 }
 
-extension Store where State: CaseReducerState, State.StateReducer.Action == Action {
+extension _Store where State: CaseReducerState, State.StateReducer.Action == Action {
   /// A destructurable view of a store on a collection of cases.
   public var `case`: State.StateReducer.CaseScope {
     State.StateReducer.scope(self)
