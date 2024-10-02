@@ -1,4 +1,4 @@
-CONFIG = debug
+CONFIG = Debug
 
 DERIVED_DATA_PATH = ~/.derivedData/$(CONFIG)
 
@@ -54,7 +54,7 @@ format:
 		-not -path '*/.*' -print0 \
 		| xargs -0 swift format --ignore-unparsable-files --in-place
 
-.PHONY: format test-all test-swift test-workspace
+.PHONY: build-for-library-evolution format xcodebuild
 
 define udid_for
 $(shell xcrun simctl list devices available '$(1)' | grep '$(2)' | sort -r | head -1 | awk -F '[()]' '{ print $$(NF-3) }')
