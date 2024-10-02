@@ -98,18 +98,18 @@ jobs:
       - name: Update mtime for incremental builds
         uses: chetan/git-restore-mtime-action@v2
       - name: CaseStudies (SwiftUI)
-        run: make SCHEME="CaseStudies (SwiftUI)" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (SwiftUI)" xcodebuild
       - name: CaseStudies (UIKit)
-        run: make SCHEME="CaseStudies (UIKit)" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (UIKit)" xcodebuild
       - name: Search
-        run: make SCHEME="Search" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Search" xcodebuild
       - name: SyncUps
-        run: make SCHEME="SyncUps" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SyncUps" xcodebuild
       - name: SpeechRecognition
-        run: make SCHEME="SpeechRecognition" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SpeechRecognition" xcodebuild
       - name: TicTacToe
-        run: make SCHEME="TicTacToe" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="TicTacToe" xcodebuild
       - name: Todos
-        run: make SCHEME="Todos" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Todos" xcodebuild
       - name: VoiceMemos
-        run: make SCHEME="VoiceMemos" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="VoiceMemos" xcodebuild

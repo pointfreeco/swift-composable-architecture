@@ -1,5 +1,7 @@
 CONFIG = debug
 
+DERIVED_DATA_PATH = ~/.derivedData/$(CONFIG)
+
 PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS,iPhone \d\+ Pro [^M])
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
@@ -18,8 +20,8 @@ XCODEBUILD_ARGUMENT = test
 
 XCODEBUILD_FLAGS = \
 	-configuration $(CONFIG) \
+	-derivedDataPath $(DERIVED_DATA_PATH) \
 	-destination $(DESTINATION) \
-	-derivedDataPath ~/.derivedData/$(CONFIG) \
 	-scheme "$(SCHEME)" \
 	-skipMacroValidation \
 	-workspace $(WORKSPACE)
