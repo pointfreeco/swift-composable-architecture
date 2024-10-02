@@ -27,7 +27,7 @@ XCODEBUILD_FLAGS = \
 XCODEBUILD_COMMAND = xcodebuild $(XCODEBUILD_ARGUMENT) $(XCODEBUILD_FLAGS)
 
 ifneq ($(strip $(shell which xcbeautify)),)
-	XCODEBUILD = set -o pipefail && $(XCODEBUILD_COMMAND) | xcbeautify
+	XCODEBUILD = set -o pipefail && $(XCODEBUILD_COMMAND) | xcbeautify --quiet
 else
 	XCODEBUILD = $(XCODEBUILD_COMMAND)
 endif
