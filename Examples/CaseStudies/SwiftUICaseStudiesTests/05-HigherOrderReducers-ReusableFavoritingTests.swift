@@ -1,10 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Foundation
+import Testing
 
 @testable import SwiftUICaseStudies
 
-final class ReusableComponentsFavoritingTests: XCTestCase {
-  func testHappyPath() async {
+@MainActor
+struct ReusableComponentsFavoritingTests {
+  @Test
+  func happyPath() async {
     let clock = TestClock()
 
     let episodes: IdentifiedArrayOf<Episode.State> = [
@@ -24,7 +27,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
         title: "Functions"
       ),
     ]
-    let store = await TestStore(initialState: Episodes.State(episodes: episodes)) {
+    let store = TestStore(initialState: Episodes.State(episodes: episodes)) {
       Episodes(
         favorite: { _, isFavorite in
           try await clock.sleep(for: .seconds(1))
@@ -49,7 +52,8 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
     await store.receive(\.episodes[id: episodes[1].id].favorite.response.success)
   }
 
-  func testUnhappyPath() async {
+  @Test
+  func unhappyPath() async {
     let episodes: IdentifiedArrayOf<Episode.State> = [
       Episode.State(
         id: UUID(0),
@@ -57,7 +61,7 @@ final class ReusableComponentsFavoritingTests: XCTestCase {
         title: "Functions"
       )
     ]
-    let store = await TestStore(initialState: Episodes.State(episodes: episodes)) {
+    let store = TestStore(initialState: Episodes.State(episodes: episodes)) {
       Episodes(favorite: { _, _ in throw FavoriteError() })
     }
 

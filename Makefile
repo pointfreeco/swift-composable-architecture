@@ -1,5 +1,7 @@
-CONFIG = debug
-PLATFORM = iOS
+CONFIG = Debug
+
+DERIVED_DATA_PATH = ~/.derivedData/$(CONFIG)
+
 PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS,iPhone \d\+ Pro [^M])
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
@@ -7,102 +9,43 @@ PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS,TV)
 PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS,Vision)
 PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS,Watch)
 
+PLATFORM = IOS
+DESTINATION = platform="$(PLATFORM_$(PLATFORM))"
+
+SCHEME = ComposableArchitecture
+
+WORKSPACE = ComposableArchitecture.xcworkspace
+
+XCODEBUILD_ARGUMENT = test
+
+XCODEBUILD_FLAGS = \
+	-configuration $(CONFIG) \
+	-derivedDataPath $(DERIVED_DATA_PATH) \
+	-destination $(DESTINATION) \
+	-scheme "$(SCHEME)" \
+	-skipMacroValidation \
+	-workspace $(WORKSPACE)
+
+XCODEBUILD_COMMAND = xcodebuild $(XCODEBUILD_ARGUMENT) $(XCODEBUILD_FLAGS)
+
+ifneq ($(strip $(shell which xcbeautify)),)
+	XCODEBUILD = set -o pipefail && $(XCODEBUILD_COMMAND) | xcbeautify --quiet
+else
+	XCODEBUILD = $(XCODEBUILD_COMMAND)
+endif
+
 TEST_RUNNER_CI = $(CI)
 
-default: test-all
-
-test-all: test-examples
-	$(MAKE) CONFIG=debug test-library
-	$(MAKE) CONFIG=release test-library
-
 xcodebuild:
-	if test "$(PLATFORM)" = "iOS"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_IOS)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
-		elif test "$(PLATFORM)" = "macOS"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_MACOS)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
-		elif test "$(PLATFORM)" = "tvOS"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_TVOS)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
-		elif test "$(PLATFORM)" = "watchOS"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_WATCHOS)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
-		elif test "$(PLATFORM)" = "visionOS"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_VISIONOS)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
-		elif test "$(PLATFORM)" = "macCatalyst"; \
-		then xcodebuild $(COMMAND) \
-			-skipMacroValidation \
-			-configuration $(CONFIG) \
-			-workspace .github/package.xcworkspace \
-			-scheme ComposableArchitecture \
-			-destination platform="$(PLATFORM_MAC_CATALYST)" \
-			-derivedDataPath ~/.derivedData/$(CONFIG); \
-		else exit 1; \
-		fi;	
+	$(XCODEBUILD)
 
 build-for-library-evolution:
 	swift build \
+		-q \
 		-c release \
 		--target ComposableArchitecture \
 		-Xswiftc -emit-module-interface \
 		-Xswiftc -enable-library-evolution
-
-DOC_WARNINGS = $(shell xcodebuild clean docbuild \
-	-scheme ComposableArchitecture \
-	-destination platform="$(PLATFORM_MACOS)" \
-	-quiet \
-	2>&1 \
-	| grep "couldn't be resolved to known documentation" \
-	| sed 's|$(PWD)|.|g' \
-	| tr '\n' '\1')
-test-docs:
-	@test "$(DOC_WARNINGS)" = "" \
-		|| (echo "xcodebuild docbuild failed:\n\n$(DOC_WARNINGS)" | tr '\1' '\n' \
-		&& exit 1)
-
-test-example:
-	xcodebuild test \
-		-skipMacroValidation \
-		-scheme "$(SCHEME)" \
-		-destination platform="$(PLATFORM_IOS)" \
-		-derivedDataPath ~/.derivedData
-
-test-integration:
-	xcodebuild test \
-		-skipMacroValidation \
-		-scheme "Integration" \
-		-destination platform="$(PLATFORM_IOS)"
-
-benchmark:
-	swift run --configuration release \
-		swift-composable-architecture-benchmark
 
 format:
 	find . \
@@ -111,7 +54,7 @@ format:
 		-not -path '*/.*' -print0 \
 		| xargs -0 swift format --ignore-unparsable-files --in-place
 
-.PHONY: format test-all test-swift test-workspace
+.PHONY: build-for-library-evolution format xcodebuild
 
 define udid_for
 $(shell xcrun simctl list devices available '$(1)' | grep '$(2)' | sort -r | head -1 | awk -F '[()]' '{ print $$(NF-3) }')

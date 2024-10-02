@@ -1,18 +1,22 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SyncUps
 
-class SyncUpsListTests: XCTestCase {
-  func testAddSyncUp_NonExhaustive() async {
+@MainActor
+struct SyncUpsListTests {
+  @Test
+  func addSyncUpNonExhaustive() async {
 
   }
   
-  func testAddSyncUp() async {
+  @Test
+  func addSyncUp() async {
     // ...
   }
 
-  func testDeletion() async {
+  @Test
+  func deletion() async {
     // ...
   }
 }

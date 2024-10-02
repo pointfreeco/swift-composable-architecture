@@ -1,11 +1,11 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.0
 
 import PackageDescription
 
 let package = Package(
   name: "tic-tac-toe",
   platforms: [
-    .iOS(.v17)
+    .iOS(.v18)
   ],
   products: [
     .library(name: "AppCore", targets: ["AppCore"]),
@@ -164,14 +164,6 @@ let package = Package(
       name: "TwoFactorUIKit",
       dependencies: ["TwoFactorCore"]
     ),
-  ]
+  ],
+  swiftLanguageModes: [.v6]
 )
-
-for target in package.targets {
-  target.swiftSettings = [
-    .unsafeFlags([
-      "-Xfrontend", "-enable-actor-data-race-checks",
-      "-Xfrontend", "-warn-concurrency",
-    ])
-  ]
-}
