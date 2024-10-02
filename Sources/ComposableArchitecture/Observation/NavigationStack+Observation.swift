@@ -192,6 +192,7 @@ public struct _NavigationDestinationViewModifier<
       }
   }
 
+  @MainActor
   private func navigationDestination(component: StackState<State>.Component) -> Destination {
     let id = store.id(
       state:
