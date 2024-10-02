@@ -23,7 +23,7 @@ extension Shared {
       reference: {
         @Dependency(\.persistentReferences) var references
         return references.withValue {
-          if let reference = $0[persistenceKey.id] {
+          if let reference = $0[persistenceKey.id] as? any Reference {
             precondition(
               reference.valueType == Value.self,
               """
@@ -32,6 +32,7 @@ extension Shared {
               (key: "\(persistenceKey.id)")
               """
             )
+            reference.count += 1
             return reference
           } else {
             let reference = ValueReference(
@@ -47,6 +48,17 @@ extension Shared {
       }(),
       keyPath: \Value.self
     )
+    self.onDeinit = OnDeinit {
+      @Dependency(\.persistentReferences) var references
+      references.withValue {
+        if let reference = $0[persistenceKey.id] as? any Reference {
+          reference.count -= 1
+          if reference.count == 0 {
+            $0[persistenceKey.id] = nil
+          }
+        }
+      }
+    }
   }
 
   /// Creates a shared reference to an optional value using a persistence key.
@@ -99,7 +111,7 @@ extension Shared {
       reference: {
         @Dependency(\.persistentReferences) var references
         return try references.withValue {
-          if let reference = $0[persistenceKey.id] {
+          if let reference = $0[persistenceKey.id] as? any Reference {
             precondition(
               reference.valueType == Value.self,
               """
@@ -183,7 +195,7 @@ extension SharedReader {
       reference: {
         @Dependency(\.persistentReferences) var references
         return references.withValue {
-          if let reference = $0[persistenceKey.id] {
+          if let reference = $0[persistenceKey.id] as? any Reference {
             precondition(
               reference.valueType == Value.self,
               """
@@ -258,7 +270,7 @@ extension SharedReader {
       reference: {
         @Dependency(\.persistentReferences) var references
         return try references.withValue {
-          if let reference = $0[persistenceKey.id] {
+          if let reference = $0[persistenceKey.id] as? any Reference {
             precondition(
               reference.valueType == Value.self,
               """
@@ -344,6 +356,7 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
   )
   private let fileID: StaticString
   private let line: UInt
+  var count = 1
   var value: Value {
     get {
       self._$perceptionRegistrar.access(self, keyPath: \.value)
@@ -416,17 +429,16 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
 extension ValueReference: Perceptible {}
 
 private enum PersistentReferencesKey: DependencyKey {
-  static var liveValue: LockIsolated<[AnyHashable: any Reference]> {
+  static var liveValue: LockIsolated<[AnyHashable: AnyObject]> {
     LockIsolated([:])
   }
-  static var testValue: LockIsolated<[AnyHashable: any Reference]> {
+  static var testValue: LockIsolated<[AnyHashable: AnyObject]> {
     LockIsolated([:])
   }
 }
 
 extension DependencyValues {
-  var persistentReferences: LockIsolated<[AnyHashable: any Reference]> {
-    get { self[PersistentReferencesKey.self] }
-    set { self[PersistentReferencesKey.self] = newValue }
+  var persistentReferences: LockIsolated<[AnyHashable: AnyObject]> {
+    self[PersistentReferencesKey.self]
   }
 }

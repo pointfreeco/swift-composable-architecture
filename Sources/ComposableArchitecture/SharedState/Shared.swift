@@ -13,8 +13,19 @@ import IssueReporting
 @dynamicMemberLookup
 @propertyWrapper
 public struct Shared<Value: Sendable>: Sendable {
-  private let reference: any Reference
+  let reference: any Reference
   private let keyPath: _AnyKeyPath
+
+  var onDeinit: OnDeinit?
+  final class OnDeinit: @unchecked Sendable {
+    let onDeinit: () -> Void
+    init(onDeinit: @escaping () -> Void) {
+      self.onDeinit = onDeinit
+    }
+    deinit {
+      onDeinit()
+    }
+  }
 
   init(reference: any Reference, keyPath: _AnyKeyPath) {
     self.reference = reference
