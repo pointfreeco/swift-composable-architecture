@@ -396,6 +396,41 @@ extension Store: CustomDebugStringConvertible {
 /// ```
 public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
 
+/// A publisher of store state.
+@dynamicMemberLookup
+public struct StorePublisher<State>: Publisher {
+  public typealias Output = State
+  public typealias Failure = Never
+
+  let store: Any
+  let upstream: AnyPublisher<State, Never>
+
+  init(store: Any, upstream: some Publisher<Output, Failure>) {
+    self.store = store
+    self.upstream = upstream.eraseToAnyPublisher()
+  }
+
+  public func receive(subscriber: some Subscriber<Output, Failure>) {
+    self.upstream.subscribe(
+      AnySubscriber(
+        receiveSubscription: subscriber.receive(subscription:),
+        receiveValue: subscriber.receive(_:),
+        receiveCompletion: { [store = self.store] in
+          subscriber.receive(completion: $0)
+          _ = store
+        }
+      )
+    )
+  }
+
+  /// Returns the resulting publisher of a given key path.
+  public subscript<Value: Equatable>(
+    dynamicMember keyPath: KeyPath<State, Value>
+  ) -> StorePublisher<Value> {
+    .init(store: self.store, upstream: self.upstream.map(keyPath).removeDuplicates())
+  }
+}
+
 /// The type returned from ``Store/send(_:)`` that represents the lifecycle of the effect
 /// started from sending an action.
 ///
@@ -433,41 +468,6 @@ public struct StoreTask: Hashable, Sendable {
   /// way to uncancel a task.
   public var isCancelled: Bool {
     self.rawValue?.isCancelled ?? true
-  }
-}
-
-/// A publisher of store state.
-@dynamicMemberLookup
-public struct StorePublisher<State>: Publisher {
-  public typealias Output = State
-  public typealias Failure = Never
-
-  let store: Any
-  let upstream: AnyPublisher<State, Never>
-
-  init(store: Any, upstream: some Publisher<Output, Failure>) {
-    self.store = store
-    self.upstream = upstream.eraseToAnyPublisher()
-  }
-
-  public func receive(subscriber: some Subscriber<Output, Failure>) {
-    self.upstream.subscribe(
-      AnySubscriber(
-        receiveSubscription: subscriber.receive(subscription:),
-        receiveValue: subscriber.receive(_:),
-        receiveCompletion: { [store = self.store] in
-          subscriber.receive(completion: $0)
-          _ = store
-        }
-      )
-    )
-  }
-
-  /// Returns the resulting publisher of a given key path.
-  public subscript<Value: Equatable>(
-    dynamicMember keyPath: KeyPath<State, Value>
-  ) -> StorePublisher<Value> {
-    .init(store: self.store, upstream: self.upstream.map(keyPath).removeDuplicates())
   }
 }
 
