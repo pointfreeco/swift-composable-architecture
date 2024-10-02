@@ -517,7 +517,8 @@ struct Feature {
 This feature can be tested in exactly the same way as when you are using non-shared state:
 
 ```swift
-func testIncrement() async {
+@Test
+func increment() async {
   let store = TestStore(initialState: Feature.State(count: Shared(0))) {
     Feature()
   }
@@ -533,7 +534,8 @@ This test passes because we have described how the state changes. But even bette
 
 
 ```swift
-func testIncrement() async {
+@Test
+func increment() async {
   let store = TestStore(initialState: Feature.State(count: Shared(0))) {
     Feature()
   }
@@ -581,7 +583,8 @@ However, how does this affect testing? Since the `count` is no longer incremente
 the reducer we can drop the trailing closure from the test store assertion:
 
 ```swift
-func testIncrement() async {
+@Test
+func increment() async {
   let store = TestStore(initialState: SimpleFeature.State(count: Shared(0))) {
     SimpleFeature()
   }
@@ -609,7 +612,8 @@ In order to get this test passing we have to explicitly assert on the shared cou
 the end of the test, which we can do using the ``Shared/assert(_:fileID:file:line:column:)`` method:
 
 ```swift
-func testIncrement() async {
+@Test
+func increment() async {
   let store = TestStore(initialState: SimpleFeature.State(count: Shared(0))) {
     SimpleFeature()
   }
@@ -671,7 +675,8 @@ value of that state for the test. Typically this can be done by declaring the sh
 the beginning of the test so that its default value can be specified:
 
 ```swift
-func testFeature() {
+@Test
+func basics() {
   @Shared(.appStorage("count")) var count = 42
 
   // Shared state will be 42 for all features using it.
@@ -693,7 +698,8 @@ You can also work around this issue by simply setting the shared state again aft
 it:
 
 ```swift
-func testFeature() {
+@Test
+func basics() {
   @Shared(.appStorage("count")) var count = 42
   count = 42  // NB: Set again to override any value set by the app target.
 
@@ -796,7 +802,8 @@ closure:
 
 
 ```swift
-func testIncrement() async {
+@Test
+func increment() async {
   @Shared(.appStorage("count")) var count = 0
   let store = TestStore(initialState: ParentFeature.State()) {
     ParentFeature()

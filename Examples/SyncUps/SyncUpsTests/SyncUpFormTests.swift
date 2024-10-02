@@ -1,11 +1,14 @@
 import ComposableArchitecture
-import XCTest
+import Foundation
+import Testing
 
 @testable import SyncUps
 
-final class SyncUpFormTests: XCTestCase {
-  func testAddAttendee() async {
-    let store = await TestStore(
+@MainActor
+struct SyncUpFormTests {
+  @Test
+  func addAttendee() async {
+    let store = TestStore(
       initialState: SyncUpForm.State(
         syncUp: SyncUp(
           id: SyncUp.ID(),
@@ -19,7 +22,7 @@ final class SyncUpFormTests: XCTestCase {
       $0.uuid = .incrementing
     }
 
-    await store.assert {
+    store.assert {
       $0.syncUp.attendees = [Attendee(id: Attendee.ID(UUID(0)))]
     }
 
@@ -32,8 +35,9 @@ final class SyncUpFormTests: XCTestCase {
     }
   }
 
-  func testFocus_RemoveAttendee() async {
-    let store = await TestStore(
+  @Test
+  func focusAfterRemovingAttendee() async {
+    let store = TestStore(
       initialState: SyncUpForm.State(
         syncUp: SyncUp(
           id: SyncUp.ID(),

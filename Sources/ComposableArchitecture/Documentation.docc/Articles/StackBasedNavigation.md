@@ -425,7 +425,8 @@ feature's count is incremented above 5 it will dismiss itself. To do this we wil
 ``TestStore`` for `Feature` that starts in a state with a single counter already on the stack:
 
 ```swift
-func testDismissal() {
+@Test
+func dismissal() {
   let store = TestStore(
     initialState: Feature.State(
       path: StackState([
@@ -547,7 +548,8 @@ can assert at a high level that when the increment button is tapped twice that e
 a ``StackAction/popFrom(id:)`` action:
 
 ```swift
-func testDismissal() {
+@Test
+func dismissal() {
   let store = TestStore(
     initialState: Feature.State(
       path: StackState([

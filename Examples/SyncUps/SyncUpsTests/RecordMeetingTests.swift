@@ -1,13 +1,16 @@
 import ComposableArchitecture
-import XCTest
+import Foundation
+import Testing
 
 @testable import SyncUps
 
-final class RecordMeetingTests: XCTestCase {
-  func testTimer() async {
+@MainActor
+struct RecordMeetingTests {
+  @Test
+  func timer() async {
     let clock = TestClock()
 
-    let store = await TestStore(
+    let store = TestStore(
       initialState: RecordMeeting.State(
         syncUp: Shared(
           SyncUp(
@@ -36,35 +39,35 @@ final class RecordMeetingTests: XCTestCase {
     await store.receive(\.timerTick) {
       $0.speakerIndex = 0
       $0.secondsElapsed = 1
-      XCTAssertEqual($0.durationRemaining, .seconds(5))
+      #expect($0.durationRemaining == .seconds(5))
     }
 
     await clock.advance(by: .seconds(1))
     await store.receive(\.timerTick) {
       $0.speakerIndex = 1
       $0.secondsElapsed = 2
-      XCTAssertEqual($0.durationRemaining, .seconds(4))
+      #expect($0.durationRemaining == .seconds(4))
     }
 
     await clock.advance(by: .seconds(1))
     await store.receive(\.timerTick) {
       $0.speakerIndex = 1
       $0.secondsElapsed = 3
-      XCTAssertEqual($0.durationRemaining, .seconds(3))
+      #expect($0.durationRemaining == .seconds(3))
     }
 
     await clock.advance(by: .seconds(1))
     await store.receive(\.timerTick) {
       $0.speakerIndex = 2
       $0.secondsElapsed = 4
-      XCTAssertEqual($0.durationRemaining, .seconds(2))
+      #expect($0.durationRemaining == .seconds(2))
     }
 
     await clock.advance(by: .seconds(1))
     await store.receive(\.timerTick) {
       $0.speakerIndex = 2
       $0.secondsElapsed = 5
-      XCTAssertEqual($0.durationRemaining, .seconds(1))
+      #expect($0.durationRemaining == .seconds(1))
     }
 
     await clock.advance(by: .seconds(1))
@@ -79,12 +82,12 @@ final class RecordMeetingTests: XCTestCase {
         ),
         at: 0
       )
-      XCTAssertEqual($0.durationRemaining, .seconds(0))
+      #expect($0.durationRemaining == .seconds(0))
     }
   }
 
-  @MainActor
-  func testRecordTranscript() async {
+  @Test
+  func recordTranscript() async {
     let clock = TestClock()
 
     let store = TestStore(
@@ -137,15 +140,17 @@ final class RecordMeetingTests: XCTestCase {
       await store.receive(\.timerTick)
     }
 
-    await store.assert {
+    await store.finish()
+    store.assert {
       $0.syncUp.meetings[0].transcript = "I completed the project"
     }
   }
 
-  func testEndMeetingSave() async {
+  @Test
+  func endMeetingSave() async {
     let clock = TestClock()
 
-    let store = await TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
+    let store = TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
@@ -178,10 +183,11 @@ final class RecordMeetingTests: XCTestCase {
     }
   }
 
-  func testEndMeetingDiscard() async {
+  @Test
+  func endMeetingDiscard() async {
     let clock = TestClock()
 
-    let store = await TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
+    let store = TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
@@ -199,10 +205,11 @@ final class RecordMeetingTests: XCTestCase {
     }
   }
 
-  func testNextSpeaker() async {
+  @Test
+  func nextSpeaker() async {
     let clock = TestClock()
 
-    let store = await TestStore(
+    let store = TestStore(
       initialState: RecordMeeting.State(
         syncUp: Shared(
           SyncUp(
@@ -254,10 +261,11 @@ final class RecordMeetingTests: XCTestCase {
     }
   }
 
-  func testSpeechRecognitionFailure_Continue() async {
+  @Test
+  func continueAfterSpeechRecognitionFailure() async {
     let clock = TestClock()
 
-    let store = await TestStore(
+    let store = TestStore(
       initialState: RecordMeeting.State(
         syncUp: Shared(
           SyncUp(
@@ -319,10 +327,11 @@ final class RecordMeetingTests: XCTestCase {
     }
   }
 
-  func testSpeechRecognitionFailure_Discard() async {
+  @Test
+  func discardAfterSpeechRecognitionFailure() async {
     let clock = TestClock()
 
-    let store = await TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
+    let store = TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock

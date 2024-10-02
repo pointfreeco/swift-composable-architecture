@@ -581,7 +581,8 @@ feature's count is incremented above 5 it will dismiss itself. To do this we wil
 ``TestStore`` for `Feature` that starts in a state with the count already set to 3:
 
 ```swift
-func testDismissal() {
+@Test
+func dismissal() {
   let store = TestStore(
     initialState: Feature.State(
       counter: CounterFeature.State(count: 3)
@@ -636,7 +637,8 @@ can assert at a high level that when the increment button is tapped twice that e
 a dismiss action:
 
 ```swift
-func testDismissal() {
+@Test
+func dismissal() {
   let store = TestStore(
     initialState: Feature.State(
       counter: CounterFeature.State(count: 3)

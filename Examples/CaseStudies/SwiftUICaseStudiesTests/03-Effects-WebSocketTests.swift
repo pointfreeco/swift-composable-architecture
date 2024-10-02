@@ -1,14 +1,16 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SwiftUICaseStudies
 
-final class WebSocketTests: XCTestCase {
-  func testWebSocketHappyPath() async {
+@MainActor
+struct WebSocketTests {
+  @Test
+  func happyPath() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
     let messages = AsyncStream.makeStream(of: Result<WebSocketClient.Message, any Error>.self)
 
-    let store = await TestStore(initialState: WebSocket.State()) {
+    let store = TestStore(initialState: WebSocket.State()) {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
@@ -55,11 +57,12 @@ final class WebSocketTests: XCTestCase {
     await store.finish()
   }
 
-  func testWebSocketSendFailure() async {
+  @Test
+  func sendFailure() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
     let messages = AsyncStream.makeStream(of: Result<WebSocketClient.Message, any Error>.self)
 
-    let store = await TestStore(initialState: WebSocket.State()) {
+    let store = TestStore(initialState: WebSocket.State()) {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
@@ -101,8 +104,8 @@ final class WebSocketTests: XCTestCase {
     await store.finish()
   }
 
-  @MainActor
-  func testWebSocketPings() async {
+  @Test
+  func pings() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
     let clock = TestClock()
     var pingsCount = 0
@@ -126,9 +129,9 @@ final class WebSocketTests: XCTestCase {
     }
 
     // Wait for ping
-    XCTAssertEqual(pingsCount, 0)
+    #expect(pingsCount == 0)
     await clock.advance(by: .seconds(10))
-    XCTAssertEqual(pingsCount, 1)
+    #expect(pingsCount == 1)
 
     // Disconnect from the socket
     await store.send(.connectButtonTapped) {
@@ -136,10 +139,11 @@ final class WebSocketTests: XCTestCase {
     }
   }
 
-  func testWebSocketConnectError() async {
+  @Test
+  func connectError() async {
     let actions = AsyncStream.makeStream(of: WebSocketClient.Action.self)
 
-    let store = await TestStore(initialState: WebSocket.State()) {
+    let store = TestStore(initialState: WebSocket.State()) {
       WebSocket()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()

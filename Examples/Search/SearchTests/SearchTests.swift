@@ -1,11 +1,14 @@
 import ComposableArchitecture
-import XCTest
+import Foundation
+import Testing
 
 @testable import Search
 
-final class SearchTests: XCTestCase {
-  func testSearchAndClearQuery() async {
-    let store = await TestStore(initialState: Search.State()) {
+@MainActor
+struct SearchTests {
+  @Test
+  func searchAndClearQuery() async {
+    let store = TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
       $0.weatherClient.search = { @Sendable _ in .mock }
@@ -24,8 +27,9 @@ final class SearchTests: XCTestCase {
     }
   }
 
-  func testSearchFailure() async {
-    let store = await TestStore(initialState: Search.State()) {
+  @Test
+  func searchFailure() async {
+    let store = TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
       $0.weatherClient.search = { @Sendable _ in
@@ -41,8 +45,9 @@ final class SearchTests: XCTestCase {
     await store.receive(\.searchResponse.failure)
   }
 
-  func testClearQueryCancelsInFlightSearchRequest() async {
-    let store = await TestStore(initialState: Search.State()) {
+  @Test
+  func clearQueryCancelsInFlightSearchRequest() async {
+    let store = TestStore(initialState: Search.State()) {
       Search()
     } withDependencies: {
       $0.weatherClient.search = { @Sendable _ in .mock }
@@ -57,7 +62,8 @@ final class SearchTests: XCTestCase {
     }
   }
 
-  func testTapOnLocation() async {
+  @Test
+  func tapOnLocation() async {
     let specialResult = GeocodingSearch.Result(
       country: "Special Country",
       latitude: 0,
@@ -69,7 +75,7 @@ final class SearchTests: XCTestCase {
     var results = GeocodingSearch.mock.results
     results.append(specialResult)
 
-    let store = await TestStore(initialState: Search.State(results: results)) {
+    let store = TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
       $0.weatherClient.forecast = { @Sendable _ in .mock }
@@ -109,7 +115,8 @@ final class SearchTests: XCTestCase {
     }
   }
 
-  func testTapOnLocationCancelsInFlightRequest() async {
+  @Test
+  func tapOnLocationCancelsInFlightRequest() async {
     let specialResult = GeocodingSearch.Result(
       country: "Special Country",
       latitude: 0,
@@ -123,7 +130,7 @@ final class SearchTests: XCTestCase {
 
     let clock = TestClock()
 
-    let store = await TestStore(initialState: Search.State(results: results)) {
+    let store = TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
       $0.weatherClient.forecast = { @Sendable _ in
@@ -170,10 +177,11 @@ final class SearchTests: XCTestCase {
     }
   }
 
-  func testTapOnLocationFailure() async {
+  @Test
+  func tapOnLocationFailure() async {
     let results = GeocodingSearch.mock.results
 
-    let store = await TestStore(initialState: Search.State(results: results)) {
+    let store = TestStore(initialState: Search.State(results: results)) {
       Search()
     } withDependencies: {
       $0.weatherClient.forecast = { @Sendable _ in
