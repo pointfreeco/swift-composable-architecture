@@ -63,7 +63,7 @@ final class CountersTableViewController: UITableViewController {
 
   override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     let id = store.counters[indexPath.row].id
-    if let store = store.scope(state: \.counters[id:id], action: \.counters[id:id]) {
+    if let store = store.scope(state: \.counters[id: id], action: \.counters[id: id]) {
       navigationController?.pushViewController(CounterViewController(store: store), animated: true)
     }
   }

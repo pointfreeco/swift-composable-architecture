@@ -24,7 +24,7 @@ struct CityMap {
     init(download: Download) {
       self.download = download
       self.downloadComponent = DownloadComponent.State(
-        id: download.id,
+        id: AnyHashableSendable(download.id),
         url: download.downloadVideoUrl
       )
     }

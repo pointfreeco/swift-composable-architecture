@@ -50,11 +50,13 @@
             id: path.wrappedValue.id(
               state:
                 \.[
-                  id:component.id,fileID:_HashableStaticString(
-                    rawValue: fileID),filePath:_HashableStaticString(
-                      rawValue: filePath),line:line,column:column
+                  id: component.id,
+                  fileID: _HashableStaticString(
+                    rawValue: fileID),
+                  filePath: _HashableStaticString(
+                    rawValue: filePath), line: line, column: column
                 ],
-              action: \.[id:component.id]
+              action: \.[id: component.id]
             ),
             state: ToState {
               element = $0[id: component.id] ?? element

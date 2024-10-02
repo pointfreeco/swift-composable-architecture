@@ -37,8 +37,8 @@ enum FavoritingAction {
 struct Favoriting<ID: Hashable & Sendable> {
   let favorite: @Sendable (ID, Bool) async throws -> Bool
 
-  private struct CancelID: Hashable {
-    let id: AnyHashable
+  private struct CancelID: Hashable, Sendable {
+    let id: AnyHashableSendable
   }
 
   var body: some Reducer<FavoritingState<ID>, FavoritingAction> {
@@ -55,7 +55,7 @@ struct Favoriting<ID: Hashable & Sendable> {
         return .run { [id = state.id, isFavorite = state.isFavorite, favorite] send in
           await send(.response(Result { try await favorite(id, isFavorite) }))
         }
-        .cancellable(id: CancelID(id: state.id), cancelInFlight: true)
+        .cancellable(id: CancelID(id: AnyHashableSendable(state.id)), cancelInFlight: true)
 
       case let .response(.failure(error)):
         state.alert = AlertState { TextState(error.localizedDescription) }

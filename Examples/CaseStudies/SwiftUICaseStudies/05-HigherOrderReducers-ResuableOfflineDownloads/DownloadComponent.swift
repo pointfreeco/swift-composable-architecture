@@ -6,7 +6,7 @@ struct DownloadComponent {
   @ObservableState
   struct State: Equatable {
     @Presents var alert: AlertState<Action.Alert>?
-    let id: AnyHashable
+    let id: AnyHashableSendable
     var mode: Mode = .notDownloaded
     let url: URL
   }
@@ -185,7 +185,7 @@ struct DownloadComponentView: View {
   DownloadComponentView(
     store: Store(
       initialState: DownloadComponent.State(
-        id: "deadbeef",
+        id: AnyHashableSendable("deadbeef"),
         mode: .notDownloaded,
         url: URL(fileURLWithPath: "/")
       )

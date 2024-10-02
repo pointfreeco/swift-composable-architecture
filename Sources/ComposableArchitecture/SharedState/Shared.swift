@@ -66,7 +66,7 @@ public struct Shared<Value: Sendable>: Sendable {
       //     https://github.com/swiftlang/swift/issues/75531
       keyPath: unsafeBitCast(
         (base.keyPath as AnyKeyPath)
-          .appending(path: \Value?.[default:DefaultSubscript(initialValue)])!,
+          .appending(path: \Value?.[default: DefaultSubscript(initialValue)])!,
         to: _AnyKeyPath.self
       )
     )
