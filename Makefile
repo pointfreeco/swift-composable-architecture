@@ -7,8 +7,8 @@ PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS,TV)
 PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS,Vision)
 PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS,Watch)
 
-PLATFORM_DEFAULT = IOS
-PLATFORM = $(PLATFORM_$(PLATFORM_DEFAULT))
+PLATFORM = IOS
+DESTINATION = platform="$(PLATFORM_$(PLATFORM))"
 
 SCHEME = ComposableArchitecture
 
@@ -18,7 +18,7 @@ XCODEBUILD_ARGUMENT = test
 
 XCODEBUILD_FLAGS = \
 	-configuration $(CONFIG) \
-	-destination platform="$(PLATFORM)" \
+	-destination $(DESTINATION) \
 	-derivedDataPath ~/.derivedData/$(CONFIG) \
 	-scheme $(SCHEME) \
 	-skipMacroValidation \
@@ -34,12 +34,6 @@ endif
 
 TEST_RUNNER_CI = $(CI)
 
-default: test-all
-
-test-all: test-examples
-	$(MAKE) CONFIG=debug test-library
-	$(MAKE) CONFIG=release test-library
-
 xcodebuild:
 	$(XCODEBUILD)
 
@@ -50,26 +44,6 @@ build-for-library-evolution:
 		--target ComposableArchitecture \
 		-Xswiftc -emit-module-interface \
 		-Xswiftc -enable-library-evolution
-
-test-example:
-	$(MAKE)  xcodebuild
-	xcodebuild test \
-		-quiet \
-		-skipMacroValidation \
-		-scheme "$(SCHEME)" \
-		-destination platform="$(PLATFORM_IOS)" \
-		-derivedDataPath ~/.derivedData
-
-test-integration:
-	xcodebuild test \
-		-quiet \
-		-skipMacroValidation \
-		-scheme "Integration" \
-		-destination platform="$(PLATFORM_IOS)"
-
-benchmark:
-	swift run -q --configuration release \
-		swift-composable-architecture-benchmark
 
 format:
 	find . \
