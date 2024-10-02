@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         command: [test, '']
-        platform: [iOS, macOS, tvOS, watchOS, visionOS, macCatalyst]
+        platform: [IOS, MAC_CATALYST, MACOS, TVOS, VISIONOS, WATCHOS]
         xcode: [15.2, 15.4, '16.0']
         exclude:
           - {xcode: 15.2, command: test}
