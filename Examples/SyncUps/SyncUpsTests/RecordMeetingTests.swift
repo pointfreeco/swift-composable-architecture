@@ -140,6 +140,7 @@ struct RecordMeetingTests {
       await store.receive(\.timerTick)
     }
 
+    await store.finish()
     store.assert {
       $0.syncUp.meetings[0].transcript = "I completed the project"
     }
