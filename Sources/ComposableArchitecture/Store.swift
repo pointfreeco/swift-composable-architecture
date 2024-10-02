@@ -159,19 +159,18 @@ public final class Store<State, Action> {
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
   ///     by the reducer.
-  public convenience init<R: Reducer<State, Action>>(
-    initialState: @autoclosure () -> R.State,
-    @ReducerBuilder<State, Action> reducer: () -> R,
+  public convenience init(
+    initialState: @autoclosure () -> State,
+    @ReducerBuilder<State, Action> reducer: () -> some Reducer<State, Action>,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) {
     let (initialState, reducer, dependencies) = withDependencies(prepareDependencies ?? { _ in }) {
       @Dependency(\.self) var dependencies
       return (initialState(), reducer(), dependencies)
     }
-    self.init(
-      initialState: initialState,
-      reducer: reducer.dependency(\.self, dependencies)
-    )
+    self.init(initialState: initialState) {
+      reducer.dependency(\.self, dependencies)
+    }
   }
 
   init() {
@@ -350,17 +349,6 @@ public final class Store<State, Action> {
           self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
         }
     }
-  }
-
-  convenience init<R: Reducer<State, Action>>(
-    initialState: R.State,
-    reducer: R
-  ) {
-    self.init(
-      storeActor: StoreActor(initialState: initialState) {
-        reducer
-      }
-    )
   }
 
   /// A publisher that emits when state changes.
