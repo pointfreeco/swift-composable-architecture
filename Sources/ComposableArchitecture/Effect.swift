@@ -185,10 +185,8 @@ public actor Send<Action> {
   let isolation: any Actor
   let send: @Sendable (Action) -> Void
 
-  // TODO: keep backwards compatability with default #isolation
-  // TODO: Can we remove the public?
   public init(
-    isolation: isolated (any Actor)?,
+    isolation: isolated (any Actor)? = #isolation,
     send: @escaping @Sendable (Action) -> Void
   ) {
     self.send = send
