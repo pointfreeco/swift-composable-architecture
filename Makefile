@@ -20,7 +20,7 @@ XCODEBUILD_FLAGS = \
 	-configuration $(CONFIG) \
 	-destination $(DESTINATION) \
 	-derivedDataPath ~/.derivedData/$(CONFIG) \
-	-scheme $(SCHEME) \
+	-scheme "$(SCHEME)" \
 	-skipMacroValidation \
 	-workspace $(WORKSPACE)
 
