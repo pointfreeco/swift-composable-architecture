@@ -20,6 +20,8 @@ private func scopedStore(for nesting: Int, from root: StoreOf<Feature>? = nil) -
 import Foundation
 
 let benchmarks = { @Sendable in
+  Benchmark.defaultConfiguration.maxDuration = .seconds(10)
+
   Benchmark("Store.Scope") { @MainActor benchmark async in
     benchmark.startMeasurement()
     _ = scopedStore(for: 1)
