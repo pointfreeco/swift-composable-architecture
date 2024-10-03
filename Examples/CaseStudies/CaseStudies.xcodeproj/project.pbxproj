@@ -65,6 +65,7 @@
 		DC5B505125C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */; };
 		DC630FDA2451016B00BAECBA /* ListsOfState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC630FD92451016B00BAECBA /* ListsOfState.swift */; };
 		DC634B252448D15B00DAA016 /* 05-HigherOrderReducers-ReusableFavoritingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC634B242448D15B00DAA016 /* 05-HigherOrderReducers-ReusableFavoritingTests.swift */; };
+		DC84A2B52CAF571A00BB3B24 /* PlayerForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC84A2B42CAF571700BB3B24 /* PlayerForm.swift */; };
 		DC85EBC3285A731E00431CF3 /* ResignFirstResponder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC85EBC2285A731E00431CF3 /* ResignFirstResponder.swift */; };
 		DC88D8A6245341EC0077F427 /* 01-GettingStarted-Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC88D8A5245341EC0077F427 /* 01-GettingStarted-Animations.swift */; };
 		DC89C41B24460F95006900B9 /* 00-RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C41A24460F95006900B9 /* 00-RootView.swift */; };
@@ -74,6 +75,11 @@
 		DC89C45324465452006900B9 /* 04-Navigation-Lists-NavigateAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C45224465451006900B9 /* 04-Navigation-Lists-NavigateAndLoad.swift */; };
 		DC89C45524465C44006900B9 /* 03-Effects-Timers.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89C45424465C44006900B9 /* 03-Effects-Timers.swift */; };
 		DC9EB4172450CBD2005F413B /* UIViewRepresented.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */; };
+		DCAD66792CAEFE7500CE8311 /* GRDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAD66782CAEFE7300CE8311 /* GRDB.swift */; };
+		DCAD667C2CAEFEBC00CE8311 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = DCAD667B2CAEFEBC00CE8311 /* GRDB */; };
+		DCAD667E2CAF08C200CE8311 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAD667D2CAF08BE00CE8311 /* Model.swift */; };
+		DCAD66812CAF101100CE8311 /* PlayersList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAD66802CAF101000CE8311 /* PlayersList.swift */; };
+		DCAD66832CAF19F300CE8311 /* PlayersNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAD66822CAF19E100CE8311 /* PlayersNavigation.swift */; };
 		DCC68EAB244666AF0037F998 /* 04-Navigation-Sheet-PresentAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EAA244666AF0037F998 /* 04-Navigation-Sheet-PresentAndLoad.swift */; };
 		DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EDC2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift */; };
 		DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EDE2447BC810037F998 /* TemplateText.swift */; };
@@ -214,6 +220,7 @@
 		DC5B505025C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Bindings-Forms.swift"; sourceTree = "<group>"; };
 		DC630FD92451016B00BAECBA /* ListsOfState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsOfState.swift; sourceTree = "<group>"; };
 		DC634B242448D15B00DAA016 /* 05-HigherOrderReducers-ReusableFavoritingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "05-HigherOrderReducers-ReusableFavoritingTests.swift"; sourceTree = "<group>"; };
+		DC84A2B42CAF571700BB3B24 /* PlayerForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerForm.swift; sourceTree = "<group>"; };
 		DC85EBC2285A731E00431CF3 /* ResignFirstResponder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResignFirstResponder.swift; sourceTree = "<group>"; };
 		DC88D8A5245341EC0077F427 /* 01-GettingStarted-Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-Animations.swift"; sourceTree = "<group>"; };
 		DC89C41324460F95006900B9 /* SwiftUICaseStudies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftUICaseStudies.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -228,6 +235,10 @@
 		DC89C45224465451006900B9 /* 04-Navigation-Lists-NavigateAndLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-Navigation-Lists-NavigateAndLoad.swift"; sourceTree = "<group>"; };
 		DC89C45424465C44006900B9 /* 03-Effects-Timers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "03-Effects-Timers.swift"; sourceTree = "<group>"; };
 		DC9EB4162450CBD2005F413B /* UIViewRepresented.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIViewRepresented.swift; sourceTree = "<group>"; };
+		DCAD66782CAEFE7300CE8311 /* GRDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRDB.swift; sourceTree = "<group>"; };
+		DCAD667D2CAF08BE00CE8311 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
+		DCAD66802CAF101000CE8311 /* PlayersList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayersList.swift; sourceTree = "<group>"; };
+		DCAD66822CAF19E100CE8311 /* PlayersNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayersNavigation.swift; sourceTree = "<group>"; };
 		DCC68EAA244666AF0037F998 /* 04-Navigation-Sheet-PresentAndLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-Navigation-Sheet-PresentAndLoad.swift"; sourceTree = "<group>"; };
 		DCC68EDC2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-OptionalState.swift"; sourceTree = "<group>"; };
 		DCC68EDE2447BC810037F998 /* TemplateText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateText.swift; sourceTree = "<group>"; };
@@ -274,6 +285,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC13940E2469E25C00EE1157 /* ComposableArchitecture in Frameworks */,
+				DCAD667C2CAEFEBC00CE8311 /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -426,6 +438,7 @@
 				CA5ECF91267A79F0002067FF /* FactClient.swift */,
 				DC89C41C24460F96006900B9 /* Assets.xcassets */,
 				CA6AC25F2451131C00C71CB3 /* 05-HigherOrderReducers-ResuableOfflineDownloads */,
+				DCAD667F2CAF0FF800CE8311 /* GRDB */,
 				DC89C44524461416006900B9 /* Internal */,
 			);
 			path = SwiftUICaseStudies;
@@ -463,6 +476,18 @@
 				DCD442C5286CA91F008B4EA7 /* AboutView.swift */,
 			);
 			path = Internal;
+			sourceTree = "<group>";
+		};
+		DCAD667F2CAF0FF800CE8311 /* GRDB */ = {
+			isa = PBXGroup;
+			children = (
+				DCAD66782CAEFE7300CE8311 /* GRDB.swift */,
+				DCAD667D2CAF08BE00CE8311 /* Model.swift */,
+				DCAD66802CAF101000CE8311 /* PlayersList.swift */,
+				DC84A2B42CAF571700BB3B24 /* PlayerForm.swift */,
+				DCAD66822CAF19E100CE8311 /* PlayersNavigation.swift */,
+			);
+			path = GRDB;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -564,6 +589,7 @@
 			name = SwiftUICaseStudies;
 			packageProductDependencies = (
 				DC13940D2469E25C00EE1157 /* ComposableArchitecture */,
+				DCAD667B2CAEFEBC00CE8311 /* GRDB */,
 			);
 			productName = CaseStudies;
 			productReference = DC89C41324460F95006900B9 /* SwiftUICaseStudies.app */;
@@ -633,6 +659,9 @@
 				Base,
 			);
 			mainGroup = DC89C40A24460F95006900B9;
+			packageReferences = (
+				DCAD667A2CAEFEBC00CE8311 /* XCRemoteSwiftPackageReference "GRDB" */,
+			);
 			productRefGroup = DC89C41424460F95006900B9 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -744,6 +773,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DCAD66792CAEFE7500CE8311 /* GRDB.swift in Sources */,
 				DC3C87B029A48C4D004D9104 /* 04-NavigationStack.swift in Sources */,
 				DCC68EE12447C4630037F998 /* 01-GettingStarted-Composition-TwoCounters.swift in Sources */,
 				DC072322244663B1003A8B65 /* 04-Navigation-Sheet-LoadThenPresent.swift in Sources */,
@@ -759,8 +789,10 @@
 				DC9EB4172450CBD2005F413B /* UIViewRepresented.swift in Sources */,
 				CA6AC2652451135C00C71CB3 /* CircularProgressView.swift in Sources */,
 				CA6AC2642451135C00C71CB3 /* ReusableComponents-Download.swift in Sources */,
+				DCAD667E2CAF08C200CE8311 /* Model.swift in Sources */,
 				CADECDC02B5DE7C1009DC881 /* 02-SharedState-Onboarding.swift in Sources */,
 				DCFE1960278DBF0600C14CCF /* CaseStudiesApp.swift in Sources */,
+				DC84A2B52CAF571A00BB3B24 /* PlayerForm.swift in Sources */,
 				DCD442C6286CA91F008B4EA7 /* AboutView.swift in Sources */,
 				CA6AC2662451135C00C71CB3 /* DownloadComponent.swift in Sources */,
 				DC5B505125C86EBC000D8DFD /* 01-GettingStarted-Bindings-Forms.swift in Sources */,
@@ -772,6 +804,8 @@
 				DC85EBC3285A731E00431CF3 /* ResignFirstResponder.swift in Sources */,
 				DCC68EAB244666AF0037F998 /* 04-Navigation-Sheet-PresentAndLoad.swift in Sources */,
 				433B8B762A49C9AF0035DEE4 /* 04-Navigation-Multiple-Destinations.swift in Sources */,
+				DCAD66832CAF19F300CE8311 /* PlayersNavigation.swift in Sources */,
+				DCAD66812CAF101100CE8311 /* PlayersList.swift in Sources */,
 				CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift in Sources */,
 				CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */,
 				DC88D8A6245341EC0077F427 /* 01-GettingStarted-Animations.swift in Sources */,
@@ -1255,6 +1289,17 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		DCAD667A2CAEFEBC00CE8311 /* XCRemoteSwiftPackageReference "GRDB" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = "7.0.0-beta.2";
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		CAF88E9024B8E3AF00539345 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1267,6 +1312,11 @@
 		DC13940F2469E27300EE1157 /* ComposableArchitecture */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableArchitecture;
+		};
+		DCAD667B2CAEFEBC00CE8311 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DCAD667A2CAEFEBC00CE8311 /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
