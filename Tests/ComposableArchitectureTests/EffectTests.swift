@@ -74,37 +74,39 @@ final class EffectTests: BaseTCATestCase {
 
   func testMerge() async {
     if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-      let clock = TestClock()
+      await withMainSerialExecutor {
+        let clock = TestClock()
 
-      let effect = Effect<Int>.merge(
-        (1...3).map { count in
-          .run { send in
-            try await clock.sleep(for: .seconds(count))
-            await send(count)
+        let effect = Effect<Int>.merge(
+          (1...3).map { count in
+              .run { send in
+                try await clock.sleep(for: .seconds(count))
+                await send(count)
+              }
+          }
+        )
+
+        let values = LockIsolated<[Int]>([])
+
+        let task = Task {
+          for await n in effect.actions {
+            values.withValue { $0.append(n) }
           }
         }
-      )
 
-      let values = LockIsolated<[Int]>([])
+        XCTAssertEqual(values.value, [])
 
-      let task = Task {
-        for await n in effect.actions {
-          values.withValue { $0.append(n) }
-        }
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values.value, [1])
+
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values.value, [1, 2])
+
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values.value, [1, 2, 3])
+
+        await task.value
       }
-
-      XCTAssertEqual(values.value, [])
-
-      await clock.advance(by: .seconds(1))
-      XCTAssertEqual(values.value, [1])
-
-      await clock.advance(by: .seconds(1))
-      XCTAssertEqual(values.value, [1, 2])
-
-      await clock.advance(by: .seconds(1))
-      XCTAssertEqual(values.value, [1, 2, 3])
-
-      await task.value
     }
   }
 

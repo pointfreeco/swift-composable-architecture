@@ -1,6 +1,6 @@
 .DS_Store
-/.build
-/.swiftpm
+.build
+.swiftpm
 /Packages
 /*.swiftinterface
 /*.xcodeproj

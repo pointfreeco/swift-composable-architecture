@@ -19,7 +19,6 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
-    .package(url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "1.0.2"),
     .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "1.5.4"),
     .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.1.0"),
@@ -74,13 +73,6 @@ let package = Package(
       dependencies: [
         "ComposableArchitectureMacros",
         .product(name: "MacroTesting", package: "swift-macro-testing"),
-      ]
-    ),
-    .executableTarget(
-      name: "swift-composable-architecture-benchmark",
-      dependencies: [
-        "ComposableArchitecture",
-        .product(name: "Benchmark", package: "swift-benchmark"),
       ]
     ),
   ],
