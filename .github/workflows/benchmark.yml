@@ -1,0 +1,92 @@
+name: Benchmarks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  benchmark-delta:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    permissions:
+        issues: write
+        pull-requests: write
+
+    strategy:
+      matrix:
+        os:
+          - macos-14
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect benchmarks
+        run: |
+          [ -d Benchmarks ] && echo "hasBenchmark=1" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        if: ${{ env.hasBenchmark == '1' }}
+        run: |
+          echo "/opt/homebrew/bin:/usr/local/bin" >> $GITHUB_PATH
+          brew install jemalloc
+
+      - name: Run benchmarks for PR branch
+        if: ${{ env.hasBenchmark == '1' }}
+        run: |
+          swift package --allow-writing-to-directory .benchmarkBaselines/ --package-path Benchmarks/ benchmark baseline update pull_request --no-progress --quiet
+
+      - name: Switch to branch 'main'
+        if: ${{ env.hasBenchmark == '1' }}
+        run: |
+          git stash
+          git checkout main
+
+      - name: Run benchmarks for branch 'main'
+        if: ${{ env.hasBenchmark == '1' }}
+        run: |
+          swift package --allow-writing-to-directory .benchmarkBaselines/ --package-path Benchmarks/ benchmark baseline update main --no-progress --quiet
+
+      - name: Compare PR and main
+        if: ${{ env.hasBenchmark == '1' }}
+        id: benchmark
+        run: |
+          echo '## Summary' >> $GITHUB_STEP_SUMMARY
+          echo $(date) >> $GITHUB_STEP_SUMMARY
+          echo "exitStatus=1" >> $GITHUB_ENV
+          swift package --package-path Benchmarks/ benchmark baseline check main pull_request --format markdown >> $GITHUB_STEP_SUMMARY
+          echo '---' >> $GITHUB_STEP_SUMMARY
+          swift package --package-path Benchmarks/ benchmark baseline compare main pull_request --no-progress --quiet --format markdown >> $GITHUB_STEP_SUMMARY
+          echo "exitStatus=0" >> $GITHUB_ENV
+        continue-on-error: true
+
+      - if: ${{ env.exitStatus == '0' }}
+        name: Pull request comment text success
+        id: prtestsuccess
+        run: |
+          echo 'PRTEST<<EOF' >> $GITHUB_ENV
+          echo "[Pull request benchmark comparison [${{ matrix.os }}] with 'main' run at $(date -Iseconds)](https://github.com/ordo-one/${{ github.event.repository.name }}/actions/runs/${{ github.run_id }})" >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - if: ${{ env.exitStatus == '1' }}
+        name: Pull request comment text failure
+        id: prtestfailure
+        run: |
+          echo 'PRTEST<<EOF' >> $GITHUB_ENV
+          echo "[Pull request benchmark comparison [${{ matrix.os }}] with 'main' run at $(date -Iseconds)](https://github.com/ordo-one/${{ github.event.repository.name }}/actions/runs/${{ github.run_id }})" >> $GITHUB_ENV
+          echo "_Pull request had performance regressions_" >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: Comment PR
+        if: ${{ env.hasBenchmark == '1' }}
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          message: ${{ env.PRTEST }}
+          comment_includes: "Pull request benchmark comparison [${{ matrix.os }}] with"
+
+      - name: Exit with correct status
+        run: |
+          exit ${{ env.exitStatus }}
