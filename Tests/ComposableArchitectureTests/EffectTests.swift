@@ -79,10 +79,10 @@ final class EffectTests: BaseTCATestCase {
 
         let effect = Effect<Int>.merge(
           (1...3).map { count in
-              .run { send in
-                try await clock.sleep(for: .seconds(count))
-                await send(count)
-              }
+            .run { send in
+              try await clock.sleep(for: .seconds(count))
+              await send(count)
+            }
           }
         )
 

@@ -1,5 +1,6 @@
 import Benchmark
 import ComposableArchitecture
+import Foundation
 
 private func initialState(for nesting: Int) -> Feature.State {
   (1..<nesting).reduce(into: Feature.State()) { state, _ in state = Feature.State(child: state) }
@@ -16,8 +17,6 @@ private func scopedStore(for nesting: Int, from root: StoreOf<Feature>? = nil) -
     store = store.scope(state: \.child, action: \.child.presented)!
   }
 }
-
-import Foundation
 
 let benchmarks = { @Sendable in
   Benchmark("Store.Scope") { @MainActor benchmark async in
