@@ -4,9 +4,9 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-#if !canImport(SwiftSyntax600)
-  import SwiftSyntaxMacroExpansion
-#endif
+//#if !canImport(SwiftSyntax600)
+//  import SwiftSyntaxMacroExpansion
+//#endif
 
 public enum ReducerMacro {
 }
