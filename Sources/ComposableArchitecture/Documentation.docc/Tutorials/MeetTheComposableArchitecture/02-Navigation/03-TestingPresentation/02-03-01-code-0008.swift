@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import ContactsApp
 
-final class ContactsFeatureTests: XCTestCase {
-  func testAddFlow() async {
-    let store = await TestStore(initialState: ContactsFeature.State()) {
+@MainActor
+struct ContactsFeatureTests {
+  @Test
+  func addFlow() async {
+    let store = TestStore(initialState: ContactsFeature.State()) {
       ContactsFeature()
     } withDependencies: {
       $0.uuid = .incrementing

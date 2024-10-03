@@ -1,11 +1,13 @@
 import ComposableArchitecture
 import GameCore
 import NewGameCore
-import XCTest
+import Testing
 
-final class NewGameCoreTests: XCTestCase {
-  func testFlow_NewGame_Integration() async {
-    let store = await TestStore(initialState: NewGame.State()) {
+@MainActor
+struct NewGameCoreTests {
+  @Test
+  func integration() async {
+    let store = TestStore(initialState: NewGame.State()) {
       NewGame()
     }
     await store.send(\.binding.oPlayerName, "Blob Sr.") {

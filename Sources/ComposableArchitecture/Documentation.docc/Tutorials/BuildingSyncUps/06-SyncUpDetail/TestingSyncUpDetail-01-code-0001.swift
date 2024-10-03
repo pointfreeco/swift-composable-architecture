@@ -1,9 +1,11 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SyncUps
 
-class SyncUpDetailTests: XCTestCase {
-  func testEdit() async {
+@MainActor
+struct SyncUpDetailTests {
+  @Test
+  func edit() async {
   }
 }

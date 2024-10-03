@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SpeechRecognition
 
-final class SpeechRecognitionTests: XCTestCase {
-  func testDenyAuthorization() async {
-    let store = await TestStore(initialState: SpeechRecognition.State()) {
+@MainActor
+struct SpeechRecognitionTests {
+  @Test
+  func denyAuthorization() async {
+    let store = TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.requestAuthorization = { .denied }
@@ -26,8 +28,9 @@ final class SpeechRecognitionTests: XCTestCase {
     }
   }
 
-  func testRestrictedAuthorization() async {
-    let store = await TestStore(initialState: SpeechRecognition.State()) {
+  @Test
+  func restrictedAuthorization() async {
+    let store = TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.requestAuthorization = { .restricted }
@@ -42,9 +45,10 @@ final class SpeechRecognitionTests: XCTestCase {
     }
   }
 
-  func testAllowAndRecord() async {
+  @Test
+  func allowAndRecord() async {
     let recognitionTask = AsyncThrowingStream.makeStream(of: SpeechRecognitionResult.self)
-    let store = await TestStore(initialState: SpeechRecognition.State()) {
+    let store = TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.finishTask = { recognitionTask.continuation.finish() }
@@ -86,9 +90,10 @@ final class SpeechRecognitionTests: XCTestCase {
     await store.finish()
   }
 
-  func testAudioSessionFailure() async {
+  @Test
+  func audioSessionFailure() async {
     let recognitionTask = AsyncThrowingStream.makeStream(of: SpeechRecognitionResult.self)
-    let store = await TestStore(initialState: SpeechRecognition.State()) {
+    let store = TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.startTask = { @Sendable _ in recognitionTask.stream }
@@ -107,9 +112,10 @@ final class SpeechRecognitionTests: XCTestCase {
     }
   }
 
-  func testAudioEngineFailure() async {
+  @Test
+  func audioEngineFailure() async {
     let recognitionTask = AsyncThrowingStream.makeStream(of: SpeechRecognitionResult.self)
-    let store = await TestStore(initialState: SpeechRecognition.State()) {
+    let store = TestStore(initialState: SpeechRecognition.State()) {
       SpeechRecognition()
     } withDependencies: {
       $0.speechClient.startTask = { @Sendable _ in recognitionTask.stream }

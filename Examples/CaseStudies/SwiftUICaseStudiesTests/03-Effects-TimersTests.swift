@@ -1,13 +1,15 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SwiftUICaseStudies
 
-final class TimersTests: XCTestCase {
-  func testStart() async {
+@MainActor
+struct TimersTests {
+  @Test
+  func basics() async {
     let clock = TestClock()
 
-    let store = await TestStore(initialState: Timers.State()) {
+    let store = TestStore(initialState: Timers.State()) {
       Timers()
     } withDependencies: {
       $0.continuousClock = clock

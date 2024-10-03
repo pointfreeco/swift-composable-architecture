@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Foundation
+import Testing
 
 @testable import SyncUps
 
-final class SyncUpsListTests: XCTestCase {
-  @MainActor
-  func testAdd() async throws {
+@MainActor
+struct SyncUpsListTests {
+  @Test
+  func add() async throws {
     let store = TestStore(initialState: SyncUpsList.State()) {
       SyncUpsList()
     } withDependencies: {
@@ -33,10 +35,11 @@ final class SyncUpsListTests: XCTestCase {
     }
   }
 
-  func testAdd_ValidatedAttendees() async throws {
+  @Test
+  func addAndConfirmValidatesAttendees() async throws {
     @Dependency(\.uuid) var uuid
 
-    let store = await TestStore(
+    let store = TestStore(
       initialState: SyncUpsList.State(
         destination: .add(
           SyncUpForm.State(

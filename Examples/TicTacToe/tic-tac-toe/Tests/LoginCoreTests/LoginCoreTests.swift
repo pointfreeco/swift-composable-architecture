@@ -1,12 +1,14 @@
 import AuthenticationClient
 import ComposableArchitecture
 import LoginCore
+import Testing
 import TwoFactorCore
-import XCTest
 
-final class LoginCoreTests: XCTestCase {
-  func testFlow_Success_TwoFactor_Integration() async {
-    let store = await TestStore(initialState: Login.State()) {
+@MainActor
+struct LoginCoreTests {
+  @Test
+  func twoFactorSuccess() async {
+    let store = TestStore(initialState: Login.State()) {
       Login()
     } withDependencies: {
       $0.authenticationClient.login = { @Sendable _, _ in
@@ -44,8 +46,9 @@ final class LoginCoreTests: XCTestCase {
     await twoFactorPresentationTask.cancel()
   }
 
-  func testFlow_DismissEarly_TwoFactor_Integration() async {
-    let store = await TestStore(initialState: Login.State()) {
+  @Test
+  func twoFactorDismissInFlight() async {
+    let store = TestStore(initialState: Login.State()) {
       Login()
     } withDependencies: {
       $0.authenticationClient.login = { @Sendable _, _ in

@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SwiftUICaseStudies
 
-final class SharedStateUserDefaultsTests: XCTestCase {
-  func testTabSelection() async {
-    let store = await TestStore(initialState: SharedStateUserDefaults.State()) {
+@MainActor
+struct SharedStateUserDefaultsTests {
+  @Test
+  func tabSelection() async {
+    let store = TestStore(initialState: SharedStateUserDefaults.State()) {
       SharedStateUserDefaults()
     }
 
@@ -17,8 +19,9 @@ final class SharedStateUserDefaultsTests: XCTestCase {
     }
   }
 
-  func testSharedCounts() async {
-    let store = await TestStore(initialState: SharedStateUserDefaults.State()) {
+  @Test
+  func sharedCounts() async {
+    let store = TestStore(initialState: SharedStateUserDefaults.State()) {
       SharedStateUserDefaults()
     }
 
@@ -35,8 +38,9 @@ final class SharedStateUserDefaultsTests: XCTestCase {
     }
   }
 
-  func testAlert() async {
-    let store = await TestStore(initialState: SharedStateUserDefaults.State()) {
+  @Test
+  func alert() async {
+    let store = TestStore(initialState: SharedStateUserDefaults.State()) {
       SharedStateUserDefaults()
     }
 
