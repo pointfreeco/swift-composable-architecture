@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import CounterApp
 
-final class CounterFeatureTests: XCTestCase {
-  func testNumberFact() async {
-    let store = await TestStore(initialState: CounterFeature.State()) {
+@MainActor
+struct CounterFeatureTests {
+  @Test
+  func numberFact() async {
+    let store = TestStore(initialState: CounterFeature.State()) {
       CounterFeature()
     }
   }

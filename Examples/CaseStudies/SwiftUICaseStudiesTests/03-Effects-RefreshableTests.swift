@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SwiftUICaseStudies
 
-final class RefreshableTests: XCTestCase {
-  func testHappyPath() async {
-    let store = await TestStore(initialState: Refreshable.State()) {
+@MainActor
+struct RefreshableTests {
+  @Test
+  func happyPath() async {
+    let store = TestStore(initialState: Refreshable.State()) {
       Refreshable()
     } withDependencies: {
       $0.factClient.fetch = { "\($0) is a good number." }
@@ -21,10 +23,11 @@ final class RefreshableTests: XCTestCase {
     }
   }
 
-  func testUnhappyPath() async {
+  @Test
+  func unhappyPath() async {
     struct FactError: Equatable, Error {}
 
-    let store = await TestStore(initialState: Refreshable.State()) {
+    let store = TestStore(initialState: Refreshable.State()) {
       Refreshable()
     } withDependencies: {
       $0.factClient.fetch = { _ in throw FactError() }
@@ -38,8 +41,9 @@ final class RefreshableTests: XCTestCase {
     await store.receive(\.factResponse.failure)
   }
 
-  func testCancellation() async {
-    let store = await TestStore(initialState: Refreshable.State()) {
+  @Test
+  func cancellation() async {
+    let store = TestStore(initialState: Refreshable.State()) {
       Refreshable()
     } withDependencies: {
       $0.factClient.fetch = {

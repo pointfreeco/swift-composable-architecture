@@ -488,10 +488,9 @@
       fulfillment at the end of the test.
       
       @Step {
-        Create an expectation at the top of the test, fulfill it in the 
-        ``ComposableArchitecture/DismissEffect``, and then await its fulfillment at the end
-        of the test.
-        
+        Use the ``TestStore/isDismissed`` property to assert that the feature was dismissed at the
+        end of the test.
+
         @Code(name: "RecordMeetingTests.swift", file: ImplementingTimer-04-code-0017.swift)
       }
       

@@ -3,12 +3,14 @@ import AuthenticationClient
 import ComposableArchitecture
 import LoginCore
 import NewGameCore
+import Testing
 import TwoFactorCore
-import XCTest
 
-final class AppCoreTests: XCTestCase {
-  func testIntegration() async {
-    let store = await TestStore(initialState: TicTacToe.State.login(Login.State())) {
+@MainActor
+struct AppCoreTests {
+  @Test
+  func integration() async {
+    let store = TestStore(initialState: TicTacToe.State.login(Login.State())) {
       TicTacToe.body
     } withDependencies: {
       $0.authenticationClient.login = { @Sendable _, _ in
@@ -39,8 +41,9 @@ final class AppCoreTests: XCTestCase {
     }
   }
 
-  func testIntegration_TwoFactor() async {
-    let store = await TestStore(initialState: TicTacToe.State.login(Login.State())) {
+  @Test
+  func twoFactor() async {
+    let store = TestStore(initialState: TicTacToe.State.login(Login.State())) {
       TicTacToe.body
     } withDependencies: {
       $0.authenticationClient.login = { @Sendable _, _ in

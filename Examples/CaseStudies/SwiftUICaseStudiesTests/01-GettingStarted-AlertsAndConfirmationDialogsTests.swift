@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SwiftUICaseStudies
 
-final class AlertsAndConfirmationDialogsTests: XCTestCase {
-  func testAlert() async {
-    let store = await TestStore(initialState: AlertAndConfirmationDialog.State()) {
+@MainActor
+struct AlertsAndConfirmationDialogsTests {
+  @Test
+  func alert() async {
+    let store = TestStore(initialState: AlertAndConfirmationDialog.State()) {
       AlertAndConfirmationDialog()
     }
 
@@ -32,8 +34,9 @@ final class AlertsAndConfirmationDialogsTests: XCTestCase {
     }
   }
 
-  func testConfirmationDialog() async {
-    let store = await TestStore(initialState: AlertAndConfirmationDialog.State()) {
+  @Test
+  func confirmationDialog() async {
+    let store = TestStore(initialState: AlertAndConfirmationDialog.State()) {
       AlertAndConfirmationDialog()
     }
 

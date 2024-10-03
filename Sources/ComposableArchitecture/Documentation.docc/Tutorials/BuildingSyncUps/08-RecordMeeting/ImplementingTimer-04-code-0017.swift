@@ -1,12 +1,12 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SyncUps
 
-final class RecordMeetingTests: XCTestCase {
-  func testTimerFinishes() async {
-    let dismissed = self.expectation(description: "dismissed")
-    
+@MainActor
+struct RecordMeetingTests {
+  @Test
+  func timerFinishes() async {
     let clock = TestClock()
     let syncUp = SyncUp(
       id: SyncUp.ID(),
@@ -17,7 +17,7 @@ final class RecordMeetingTests: XCTestCase {
       duration: .seconds(4),
       title: "Morning Sync"
     )
-    let store = await TestStore(
+    let store = TestStore(
       initialState: RecordMeeting.State(syncUp: Shared(syncUp))
     ) {
       RecordMeeting()
@@ -25,7 +25,6 @@ final class RecordMeetingTests: XCTestCase {
       $0.continuousClock = clock
       $0.date.now = Date(timeIntervalSince1970: 1234567890)
       $0.uuid = .incrementing
-      $0.dismiss = DismissEffect { dismissed.fulfill() }
     }
 
     let onAppearTask = await store.send(.onAppear)
@@ -59,6 +58,6 @@ final class RecordMeetingTests: XCTestCase {
     }
 
     await onAppearTask.cancel()
-    await self.fulfillment(of: [dismissed], timeout: 0)
+    #expect(store.isDismissed)
   }
 }

@@ -28,7 +28,8 @@
         scaffolding in place for the test.
         
         > Note: We are going to preemptively make the test method `async` because the testing tools
-        > of the Composable Architecture do make use of asynchrony.
+        > of the Composable Architecture do make use of asynchrony, and we are going to make the
+        > test suite `@MainActor` because the tools are main actor-isolated.
         
         @Code(name: "CounterFeatureTests.swift", file: 01-03-01-code-0001.swift)
       }
