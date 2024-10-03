@@ -3,7 +3,7 @@ name: Benchmarks
 on:
   workflow_dispatch:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   benchmark-delta:
@@ -26,6 +26,9 @@ jobs:
       - name: Detect benchmarks
         run: |
           [ -d Benchmarks ] && echo "hasBenchmark=1" >> $GITHUB_ENV
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.0.app
 
       - name: Install dependencies
         if: ${{ env.hasBenchmark == '1' }}
