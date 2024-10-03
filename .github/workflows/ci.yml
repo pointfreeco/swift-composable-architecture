@@ -113,3 +113,15 @@ jobs:
         run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Todos" xcodebuild-raw
       - name: VoiceMemos
         run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="VoiceMemos" xcodebuild-raw
+        
+  check-macro-compatibility:
+    name: Check Macro Compatibility
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run Swift Macro Compatibility Check
+        uses: Matejkob/swift-macro-compatibility-check@v1
+        with:
+          run-tests: false
+          major-versions-only: true
