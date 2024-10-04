@@ -19,52 +19,72 @@ private func scopedStore(for nesting: Int, from root: StoreOf<Feature>? = nil) -
 
 import Foundation
 
-let benchmarks = { @Sendable in
-  Benchmark.defaultConfiguration.maxDuration = .seconds(10)
+extension Benchmark.Configuration {
+  static var configuration: Self {
+    Self(maxDuration: .seconds(10))
+  }
+}
 
-  Benchmark("Store.Scope") { @MainActor benchmark async in
+let benchmarks = { @Sendable in
+  Benchmark(
+    "Store.Scope", configuration: .configuration
+  ) { @MainActor benchmark async in
     benchmark.startMeasurement()
     _ = scopedStore(for: 1)
   }
 
-  Benchmark("Store.Send") { @MainActor benchmark async in
+  Benchmark(
+    "Store.Send", configuration: .configuration
+  ) { @MainActor benchmark async in
     let store = scopedStore(for: 1)
     benchmark.startMeasurement()
     blackHole(store.send(.incrementButtonTapped))
   }
 
-  Benchmark("Store.Access") { @MainActor benchmark async in
+  Benchmark(
+    "Store.Access", configuration: .configuration
+  ) { @MainActor benchmark async in
     let store = scopedStore(for: 1)
     benchmark.startMeasurement()
     blackHole(store.state)
   }
 
-  Benchmark("NestedStore.Scope") { @MainActor benchmark async in
+  Benchmark(
+    "NestedStore.Scope", configuration: .configuration
+  ) { @MainActor benchmark async in
     benchmark.startMeasurement()
     _ = scopedStore(for: 10)
   }
 
-  Benchmark("NestedStore.Send") { @MainActor benchmark async in
+  Benchmark(
+    "NestedStore.Send", configuration: .configuration
+  ) { @MainActor benchmark async in
     let store = scopedStore(for: 10)
     benchmark.startMeasurement()
     blackHole(store.send(.incrementButtonTapped))
   }
 
-  Benchmark("NestedStore.RootSend") { @MainActor benchmark async in
+  Benchmark(
+    "NestedStore.RootSend", configuration: .configuration
+  ) { @MainActor benchmark async in
     let root = rootStore(for: 10)
     let store = scopedStore(for: 10, from: root)
     benchmark.startMeasurement()
     blackHole(root.send(.incrementButtonTapped))
   }
 
-  Benchmark("NestedStore.NestedSend(1)") { @MainActor benchmark async in
+  Benchmark(
+    "NestedStore.NestedSend(1)", configuration: .configuration
+  ) { @MainActor benchmark async in
     let root = rootStore(for: 10)
     let store = scopedStore(for: 10, from: root)
     benchmark.startMeasurement()
     blackHole(root.send(.child(.presented(.incrementButtonTapped))))
   }
 
-  Benchmark("NestedStore.Access") { @MainActor benchmark async in
+  Benchmark(
+    "NestedStore.Access", configuration: .configuration
+  ) { @MainActor benchmark async in
     let store = scopedStore(for: 10)
     benchmark.startMeasurement()
     blackHole(store.state)
