@@ -139,6 +139,34 @@ struct PlayersListView: View {
           .animation(.default, value: store.players)
           .listStyle(.plain)
           .navigationTitle("\(store.players.count) Players")
+          .toolbar {
+            ToolbarItemGroup(placement: .topBarLeading) {
+              Button {
+                store.send(.addPlayerButtonTapped)
+              } label: {
+                Image(systemName: "plus")
+              }
+              EditButton()
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+              Button {
+                store.send(.toggleOrderingButtonTapped)
+              } label: {
+                HStack {
+                  switch store.order {
+                  case .name:
+                    Text("Name")
+                    Image(systemName: "arrowtriangle.up.fill")
+                      .imageScale(.medium)
+                  case .score:
+                    Text("Score")
+                    Image(systemName: "arrowtriangle.down.fill")
+                      .imageScale(.medium)
+                  }
+                }
+              }
+            }
+          }
         }
       }
       .toolbar {
