@@ -1,5 +1,6 @@
 import Benchmark
 import ComposableArchitecture
+import Foundation
 
 private func initialState(for nesting: Int) -> Feature.State {
   (1..<nesting).reduce(into: Feature.State()) { state, _ in state = Feature.State(child: state) }
