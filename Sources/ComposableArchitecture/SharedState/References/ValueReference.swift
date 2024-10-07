@@ -19,46 +19,7 @@ extension Shared {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
-    self.init(
-      reference: {
-        @Dependency(\.persistentReferences) var references
-        return references.withValue {
-          if let reference = $0[persistenceKey.id] as? any Reference {
-            precondition(
-              reference.valueType == Value.self,
-              """
-              "\(typeName(Value.self, genericsAbbreviated: false))" does not match existing \
-              persistent reference "\(typeName(reference.valueType, genericsAbbreviated: false))" \
-              (key: "\(persistenceKey.id)")
-              """
-            )
-            reference.count += 1
-            return reference
-          } else {
-            let reference = ValueReference(
-              initialValue: value(),
-              persistenceKey: persistenceKey,
-              fileID: fileID,
-              line: line
-            )
-            $0[persistenceKey.id] = reference
-            return reference
-          }
-        }
-      }(),
-      keyPath: \Value.self
-    )
-    self.onDeinit = OnDeinit {
-      @Dependency(\.persistentReferences) var references
-      references.withValue {
-        if let reference = $0[persistenceKey.id] as? any Reference {
-          reference.count -= 1
-          if reference.count == 0 {
-            $0[persistenceKey.id] = nil
-          }
-        }
-      }
-    }
+    self.init(throwingValue: value(), persistenceKey, fileID: fileID, line: line)
   }
 
   /// Creates a shared reference to an optional value using a persistence key.
@@ -106,7 +67,7 @@ extension Shared {
     _ persistenceKey: some PersistenceKey<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) throws {
+  ) rethrows {
     try self.init(
       reference: {
         @Dependency(\.persistentReferences) var references
@@ -120,6 +81,7 @@ extension Shared {
               (key: "\(persistenceKey.id)")
               """
             )
+            reference.count += 1
             return reference
           } else {
             let reference = try ValueReference(
@@ -135,6 +97,17 @@ extension Shared {
       }(),
       keyPath: \Value.self
     )
+    self.onDeinit = OnDeinit {
+      @Dependency(\.persistentReferences) var references
+      references.withValue {
+        if let reference = $0[persistenceKey.id] as? any Reference {
+          reference.count -= 1
+          if reference.count == 0 {
+            $0[persistenceKey.id] = nil
+          }
+        }
+      }
+    }
   }
 
   /// Creates a shared reference to a value using a persistence key with a default value.
@@ -192,31 +165,10 @@ extension SharedReader {
     line: UInt = #line
   ) {
     self.init(
-      reference: {
-        @Dependency(\.persistentReferences) var references
-        return references.withValue {
-          if let reference = $0[persistenceKey.id] as? any Reference {
-            precondition(
-              reference.valueType == Value.self,
-              """
-              Type mismatch at persistence key "\(persistenceKey.id)": \
-              \(reference.valueType) != \(Value.self)
-              """
-            )
-            return reference
-          } else {
-            let reference = ValueReference(
-              initialValue: value(),
-              persistenceKey: persistenceKey,
-              fileID: fileID,
-              line: line
-            )
-            $0[persistenceKey.id] = reference
-            return reference
-          }
-        }
-      }(),
-      keyPath: \Value.self
+      throwingValue: value(),
+      persistenceKey,
+      fileID: fileID,
+      line: line
     )
   }
 
@@ -265,7 +217,7 @@ extension SharedReader {
     _ persistenceKey: some PersistenceReaderKey<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) throws {
+  ) rethrows {
     try self.init(
       reference: {
         @Dependency(\.persistentReferences) var references
@@ -278,6 +230,7 @@ extension SharedReader {
               \(reference.valueType) != \(Value.self)
               """
             )
+            reference.count += 1
             return reference
           } else {
             let reference = ValueReference(
@@ -293,6 +246,17 @@ extension SharedReader {
       }(),
       keyPath: \Value.self
     )
+    self.onDeinit = OnDeinit {
+      @Dependency(\.persistentReferences) var references
+      references.withValue {
+        if let reference = $0[persistenceKey.id] as? any Reference {
+          reference.count -= 1
+          if reference.count == 0 {
+            $0[persistenceKey.id] = nil
+          }
+        }
+      }
+    }
   }
 
   /// Creates a shared reference to a read-only value using a persistence key with a default value.

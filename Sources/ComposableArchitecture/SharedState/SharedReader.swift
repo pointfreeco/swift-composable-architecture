@@ -12,6 +12,17 @@ public struct SharedReader<Value: Sendable> {
   fileprivate let reference: any Reference
   fileprivate let keyPath: AnyKeyPath
 
+  var onDeinit: OnDeinit?
+  final class OnDeinit: @unchecked Sendable {
+    let onDeinit: () -> Void
+    init(onDeinit: @escaping () -> Void) {
+      self.onDeinit = onDeinit
+    }
+    deinit {
+      onDeinit()
+    }
+  }
+
   init(reference: any Reference, keyPath: AnyKeyPath) {
     self.reference = reference
     self.keyPath = keyPath

@@ -1040,30 +1040,56 @@ final class SharedTests: XCTestCase {
     }
   }
 
-  func testLifecycle() {
-    final class Count: PersistenceKey, HashableObject {
-      func load(initialValue: Int?) -> Int? { 42 }
-      func save(_ value: Int) {}
-      deinit {
-        XCTFail()
-      }
+  final class DeinitKey<Value: Sendable>: PersistenceKey, HashableObject {
+    let value: Value?
+    let onDeinit: @Sendable () -> Void
+    init(_ value: Value? = nil, onDeinit: @escaping @Sendable () -> Void) {
+      self.value = value
+      self.onDeinit = onDeinit
     }
-
-    do {
-      @Shared(Count()) var count = 0
-      XCTAssertEqual(42, count)
+    deinit {
+      onDeinit()
     }
+    func load(initialValue: Value?) -> Value? { value ?? initialValue }
+    func save(_ value: Value) {}
   }
 
-  func testInMemory() {
-    final class Count: PersistenceKey, HashableObject {
-      func load(initialValue: Int?) -> Int? { 42 }
-      func save(_ value: Int) {}
-      deinit {
-        XCTFail()
-      }
+  func testLifecycle() {
+    let didDeinit = LockIsolated(false)
+    do {
+      @Shared(DeinitKey { didDeinit.setValue(true) }) var count = 0
     }
+    XCTAssertTrue(didDeinit.value)
+  }
 
+  func testLifecycle_derived() {
+    struct Count {
+      var value = 0
+    }
+    var child: Shared<Int>?
+    let didDeinit = LockIsolated(false)
+    do {
+      do {
+        @Shared(DeinitKey { didDeinit.setValue(true) }) var count = Count()
+        child = $count.value
+      }
+      XCTAssertFalse(didDeinit.value)
+      child = nil
+    }
+    XCTAssertNil(child)
+    XCTAssertTrue(didDeinit.value)
+  }
+
+  func testLifecycle_throwing() throws {
+    let didDeinit = LockIsolated(false)
+    do {
+      @Shared var count: Int
+      _count = try Shared(DeinitKey(42) { didDeinit.setValue(true) })
+    }
+    XCTAssertTrue(didDeinit.value)
+  }
+
+  func testLifecycle_InMemoryKey() {
     do {
       @Shared(.inMemory("count")) var count = 0
       count += 1
@@ -1072,7 +1098,7 @@ final class SharedTests: XCTestCase {
 
     do {
       @Shared(.inMemory("count")) var count = 0
-      XCTAssertEqual(0, count)
+      XCTAssertEqual(1, count)
     }
   }
 }
