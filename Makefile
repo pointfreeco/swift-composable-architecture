@@ -39,6 +39,10 @@ TEST_RUNNER_CI = $(CI)
 xcodebuild:
 	$(XCODEBUILD)
 
+# Workaround for debugging Swift Testing tests: https://github.com/cpisciotta/xcbeautify/issues/313
+xcodebuild-raw:
+	$(XCODEBUILD_COMMAND)
+
 build-for-library-evolution:
 	swift build \
 		-q \
