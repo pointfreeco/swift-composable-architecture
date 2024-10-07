@@ -6,7 +6,7 @@ struct CaseStudiesApp: App {
   var body: some Scene {
     WindowGroup {
       // RootView()
-      PlayersNavigationView()
+      PlayersRootView()
     }
   }
 }

@@ -2,7 +2,7 @@ import ComposableArchitecture
 import GRDB
 import SwiftUI
 
-struct PlayersNavigationView: View {
+struct PlayersRootView: View {
   static let store = Store(initialState: PlayersListFeature.State()) {
     PlayersListFeature()
   } withDependencies: {
@@ -28,5 +28,5 @@ struct PlayersNavigationView: View {
 }
 
 #Preview {
-  PlayersNavigationView()
+  PlayersRootView()
 }

@@ -79,7 +79,7 @@
 		DCAD667C2CAEFEBC00CE8311 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = DCAD667B2CAEFEBC00CE8311 /* GRDB */; };
 		DCAD667E2CAF08C200CE8311 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAD667D2CAF08BE00CE8311 /* Model.swift */; };
 		DCAD66812CAF101100CE8311 /* PlayersList.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAD66802CAF101000CE8311 /* PlayersList.swift */; };
-		DCAD66832CAF19F300CE8311 /* PlayersNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAD66822CAF19E100CE8311 /* PlayersNavigation.swift */; };
+		DCAD66832CAF19F300CE8311 /* PlayersRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAD66822CAF19E100CE8311 /* PlayersRoot.swift */; };
 		DCC68EAB244666AF0037F998 /* 04-Navigation-Sheet-PresentAndLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EAA244666AF0037F998 /* 04-Navigation-Sheet-PresentAndLoad.swift */; };
 		DCC68EDD2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EDC2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift */; };
 		DCC68EDF2447BC810037F998 /* TemplateText.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC68EDE2447BC810037F998 /* TemplateText.swift */; };
@@ -238,7 +238,7 @@
 		DCAD66782CAEFE7300CE8311 /* GRDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GRDB.swift; sourceTree = "<group>"; };
 		DCAD667D2CAF08BE00CE8311 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		DCAD66802CAF101000CE8311 /* PlayersList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayersList.swift; sourceTree = "<group>"; };
-		DCAD66822CAF19E100CE8311 /* PlayersNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayersNavigation.swift; sourceTree = "<group>"; };
+		DCAD66822CAF19E100CE8311 /* PlayersRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayersRoot.swift; sourceTree = "<group>"; };
 		DCC68EAA244666AF0037F998 /* 04-Navigation-Sheet-PresentAndLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "04-Navigation-Sheet-PresentAndLoad.swift"; sourceTree = "<group>"; };
 		DCC68EDC2447A5B00037F998 /* 01-GettingStarted-OptionalState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "01-GettingStarted-OptionalState.swift"; sourceTree = "<group>"; };
 		DCC68EDE2447BC810037F998 /* TemplateText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateText.swift; sourceTree = "<group>"; };
@@ -485,7 +485,7 @@
 				DCAD667D2CAF08BE00CE8311 /* Model.swift */,
 				DCAD66802CAF101000CE8311 /* PlayersList.swift */,
 				DC84A2B42CAF571700BB3B24 /* PlayerForm.swift */,
-				DCAD66822CAF19E100CE8311 /* PlayersNavigation.swift */,
+				DCAD66822CAF19E100CE8311 /* PlayersRoot.swift */,
 			);
 			path = GRDB;
 			sourceTree = "<group>";
@@ -804,7 +804,7 @@
 				DC85EBC3285A731E00431CF3 /* ResignFirstResponder.swift in Sources */,
 				DCC68EAB244666AF0037F998 /* 04-Navigation-Sheet-PresentAndLoad.swift in Sources */,
 				433B8B762A49C9AF0035DEE4 /* 04-Navigation-Multiple-Destinations.swift in Sources */,
-				DCAD66832CAF19F300CE8311 /* PlayersNavigation.swift in Sources */,
+				DCAD66832CAF19F300CE8311 /* PlayersRoot.swift in Sources */,
 				DCAD66812CAF101100CE8311 /* PlayersList.swift in Sources */,
 				CAE962FD24A7F7BE00EFC025 /* 01-GettingStarted-AlertsAndConfirmationDialogs.swift in Sources */,
 				CA25E5D224463AD700DA666A /* 01-GettingStarted-Bindings-Basics.swift in Sources */,
