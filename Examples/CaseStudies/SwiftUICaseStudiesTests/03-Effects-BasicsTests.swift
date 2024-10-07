@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SwiftUICaseStudies
 
-final class EffectsBasicsTests: XCTestCase {
-  func testCountDown() async {
-    let store = await TestStore(initialState: EffectsBasics.State()) {
+@MainActor
+struct EffectsBasicsTests {
+  @Test
+  func countDown() async {
+    let store = TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
@@ -19,8 +21,9 @@ final class EffectsBasicsTests: XCTestCase {
     }
   }
 
-  func testNumberFact() async {
-    let store = await TestStore(initialState: EffectsBasics.State()) {
+  @Test
+  func numberFact() async {
+    let store = TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
     } withDependencies: {
       $0.factClient.fetch = { "\($0) is a good number Brent" }
@@ -39,8 +42,9 @@ final class EffectsBasicsTests: XCTestCase {
     }
   }
 
-  func testDecrement() async {
-    let store = await TestStore(initialState: EffectsBasics.State()) {
+  @Test
+  func decrement() async {
+    let store = TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
     } withDependencies: {
       $0.continuousClock = ImmediateClock()
@@ -54,8 +58,9 @@ final class EffectsBasicsTests: XCTestCase {
     }
   }
 
-  func testDecrementCancellation() async {
-    let store = await TestStore(initialState: EffectsBasics.State()) {
+  @Test
+  func decrementCancellation() async {
+    let store = TestStore(initialState: EffectsBasics.State()) {
       EffectsBasics()
     } withDependencies: {
       $0.continuousClock = TestClock()

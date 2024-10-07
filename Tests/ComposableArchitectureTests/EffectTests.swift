@@ -47,43 +47,12 @@ final class EffectTests: BaseTCATestCase {
   }
 
   func testConcatenateOneEffect() async {
-    let values = LockIsolated<[Int]>([])
-
-    let effect = Effect<Int>.concatenate(
-      .publisher { Just(1).delay(for: 1, scheduler: self.mainQueue) }
-    )
-
-    let task = Task {
-      for await n in effect.actions {
-        values.withValue { $0.append(n) }
-      }
-    }
-
-    XCTAssertEqual(values.value, [])
-
-    await self.mainQueue.advance(by: 1)
-    XCTAssertEqual(values.value, [1])
-
-    await self.mainQueue.run()
-    XCTAssertEqual(values.value, [1])
-
-    await task.value
-  }
-
-  func testMerge() async {
-    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-      let clock = TestClock()
-
-      let effect = Effect<Int>.merge(
-        (1...3).map { count in
-          .run { send in
-            try await clock.sleep(for: .seconds(count))
-            await send(count)
-          }
-        }
-      )
-
+    await withMainSerialExecutor {
       let values = LockIsolated<[Int]>([])
+
+      let effect = Effect<Int>.concatenate(
+        .publisher { Just(1).delay(for: 1, scheduler: self.mainQueue) }
+      )
 
       let task = Task {
         for await n in effect.actions {
@@ -93,16 +62,51 @@ final class EffectTests: BaseTCATestCase {
 
       XCTAssertEqual(values.value, [])
 
-      await clock.advance(by: .seconds(1))
+      await self.mainQueue.advance(by: 1)
       XCTAssertEqual(values.value, [1])
 
-      await clock.advance(by: .seconds(1))
-      XCTAssertEqual(values.value, [1, 2])
-
-      await clock.advance(by: .seconds(1))
-      XCTAssertEqual(values.value, [1, 2, 3])
+      await self.mainQueue.run()
+      XCTAssertEqual(values.value, [1])
 
       await task.value
+    }
+  }
+
+  func testMerge() async {
+    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
+      await withMainSerialExecutor {
+        let clock = TestClock()
+
+        let effect = Effect<Int>.merge(
+          (1...3).map { count in
+            .run { send in
+              try await clock.sleep(for: .seconds(count))
+              await send(count)
+            }
+          }
+        )
+
+        let values = LockIsolated<[Int]>([])
+
+        let task = Task {
+          for await n in effect.actions {
+            values.withValue { $0.append(n) }
+          }
+        }
+
+        XCTAssertEqual(values.value, [])
+
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values.value, [1])
+
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values.value, [1, 2])
+
+        await clock.advance(by: .seconds(1))
+        XCTAssertEqual(values.value, [1, 2, 3])
+
+        await task.value
+      }
     }
   }
 

@@ -1,20 +1,23 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SyncUps
 
-class SyncUpDetailTests: XCTestCase {
-  func testDelete() async {
+@MainActor
+struct SyncUpDetailTests {
+  @Test
+  func delete() async {
     let syncUp = SyncUp(
       id: SyncUp.ID(),
       title: "Point-Free Morning Sync"
     )
-    let store = await TestStore(initialState: SyncUpDetail.State(syncUp: Shared(syncUp))) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(syncUp))) {
       SyncUpDetail()
     }
   }
-  
-  func testEdit() async {
+
+  @Test
+  func edit() async {
     // ...
   }
 }
