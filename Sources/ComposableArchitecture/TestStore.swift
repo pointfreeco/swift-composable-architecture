@@ -76,9 +76,11 @@ import IssueReporting
 /// One can assert against its behavior over time:
 ///
 /// ```swift
-/// class CounterTests: XCTestCase {
-///   func testCounter() async {
-///     let store = await TestStore(
+/// @MainActor
+/// struct CounterTests {
+///   @Test
+///   func basics() async {
+///     let store = TestStore(
 ///       // Given: a counter state of 0
 ///       initialState: Counter.State(count: 0),
 ///     ) {
@@ -864,7 +866,8 @@ extension TestStore where State: Equatable {
   /// immediately after awaiting `store.send`:
   ///
   /// ```swift
-  /// func testAnalytics() async {
+  /// @Test
+  /// func analytics() async {
   ///   let events = LockIsolated<[String]>([])
   ///   let analytics = AnalyticsClient(
   ///     track: { event in
@@ -872,7 +875,7 @@ extension TestStore where State: Equatable {
   ///     }
   ///   )
   ///
-  ///   let store = await TestStore(initialState: Feature.State()) {
+  ///   let store = TestStore(initialState: Feature.State()) {
   ///     Feature()
   ///   } withDependencies {
   ///     $0.analytics = analytics

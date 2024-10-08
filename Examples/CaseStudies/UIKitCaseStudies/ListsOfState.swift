@@ -25,7 +25,7 @@ let cellIdentifier = "Cell"
 final class CountersTableViewController: UITableViewController {
   private let store: StoreOf<CounterList>
 
-  var observations: [IndexPath: ObservationToken] = [:]
+  var observations: [IndexPath: ObserveToken] = [:]
 
   init(store: StoreOf<CounterList>) {
     self.store = store

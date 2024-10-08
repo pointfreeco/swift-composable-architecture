@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SwiftUICaseStudies
 
-final class EffectsCancellationTests: XCTestCase {
-  func testTrivia_SuccessfulRequest() async {
-    let store = await TestStore(initialState: EffectsCancellation.State()) {
+@MainActor
+struct EffectsCancellationTests {
+  @Test
+  func successfulRequest() async {
+    let store = TestStore(initialState: EffectsCancellation.State()) {
       EffectsCancellation()
     } withDependencies: {
       $0.factClient.fetch = { "\($0) is a good number Brent" }
@@ -26,9 +28,10 @@ final class EffectsCancellationTests: XCTestCase {
     }
   }
 
-  func testTrivia_FailedRequest() async {
+  @Test
+  func failedRequest() async {
     struct FactError: Equatable, Error {}
-    let store = await TestStore(initialState: EffectsCancellation.State()) {
+    let store = TestStore(initialState: EffectsCancellation.State()) {
       EffectsCancellation()
     } withDependencies: {
       $0.factClient.fetch = { _ in throw FactError() }
@@ -48,8 +51,9 @@ final class EffectsCancellationTests: XCTestCase {
   // in the `.cancelButtonTapped` action of the `effectsCancellationReducer`. This will cause the
   // test to fail, showing that we are exhaustively asserting that the effect truly is canceled and
   // will never emit.
-  func testTrivia_CancelButtonCancelsRequest() async {
-    let store = await TestStore(initialState: EffectsCancellation.State()) {
+  @Test
+  func cancelButtonCancelsRequest() async {
+    let store = TestStore(initialState: EffectsCancellation.State()) {
       EffectsCancellation()
     } withDependencies: {
       $0.factClient.fetch = { _ in try await Task.never() }
@@ -63,8 +67,9 @@ final class EffectsCancellationTests: XCTestCase {
     }
   }
 
-  func testTrivia_PlusMinusButtonsCancelsRequest() async {
-    let store = await TestStore(initialState: EffectsCancellation.State()) {
+  @Test
+  func plusMinusButtonsCancelsRequest() async {
+    let store = TestStore(initialState: EffectsCancellation.State()) {
       EffectsCancellation()
     } withDependencies: {
       $0.factClient.fetch = { _ in try await Task.never() }

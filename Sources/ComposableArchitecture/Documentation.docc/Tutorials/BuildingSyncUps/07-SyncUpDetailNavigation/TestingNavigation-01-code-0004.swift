@@ -1,14 +1,16 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SyncUps
 
-final class AppFeatureTests: XCTestCase {
-  func testDelete() async throws {
+@MainActor
+struct AppFeatureTests {
+  @Test
+  func delete() async throws {
     let syncUp = SyncUp.mock
     @Shared(.syncUps) var syncUps = [syncUp]
 
-    let store = await TestStore(initialState: AppFeature.State()) {
+    let store = TestStore(initialState: AppFeature.State()) {
       AppFeature()
     }
 

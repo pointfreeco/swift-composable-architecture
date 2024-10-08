@@ -1,4 +1,5 @@
 {
+  "originHash" : "56d9c3bb35bdc40e748375720c367811b810b36e68baa234d35a7e72bad5ff39",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -7,24 +8,6 @@
       "state" : {
         "revision" : "9fa31f4403da54855f1e2aeaeff478f4f0e40b13",
         "version" : "1.0.2"
-      }
-    },
-    {
-      "identity" : "swift-argument-parser",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-argument-parser",
-      "state" : {
-        "revision" : "41982a3656a71c768319979febd796c6fd111d5c",
-        "version" : "1.5.0"
-      }
-    },
-    {
-      "identity" : "swift-benchmark",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/google/swift-benchmark",
-      "state" : {
-        "revision" : "8163295f6fe82356b0bcf8e1ab991645de17d096",
-        "version" : "0.1.2"
       }
     },
     {
@@ -163,5 +146,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }

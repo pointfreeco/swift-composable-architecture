@@ -1,11 +1,13 @@
 import ComposableArchitecture
-import XCTest
+import Testing
 
 @testable import SyncUps
 
-class SyncUpFormTests: XCTestCase {
-  func testRemoveAttendee() async {
-    let store = await TestStore(
+@MainActor
+struct SyncUpFormTests {
+  @Test
+  func removeAttendee() async {
+    let store = TestStore(
       initialState: SyncUpForm.State(
         syncUp: SyncUp(
           id: SyncUp.ID(),
