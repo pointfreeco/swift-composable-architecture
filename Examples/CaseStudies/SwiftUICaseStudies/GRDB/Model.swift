@@ -13,35 +13,19 @@ extension Player: Codable, FetchableRecord, MutablePersistableRecord {
   }
 }
 
-extension PersistenceReaderKey where Self == GRDBQueryKey<PlayersRequest> {
-  static func players(order: PlayersRequest.Order) -> Self {
-    .query(PlayersRequest(order: order))
-  }
-}
-
-struct PlayersRequest: GRDBQuery {
-  enum Order {
-    case name
-    case score
-  }
-
-  let order: Order
-
-  func fetch(_ db: Database) throws -> [Player] {
-    let order: [any SQLOrderingTerm] = switch order {
-    case .name:
-      [
-        Column("name").collating(.localizedCaseInsensitiveCompare)
-      ]
-    case .score:
-      [
-        Column("score").desc,
-        Column("name").collating(.localizedCaseInsensitiveCompare)
-      ]
+extension DatabaseWriter {
+  func migrate() throws {
+    var migrator = DatabaseMigrator()
+    #if DEBUG
+      migrator.eraseDatabaseOnSchemaChange = true
+    #endif
+    migrator.registerMigration("v1") { db in
+      try db.create(table: "player") { t in
+        t.autoIncrementedPrimaryKey("id")
+        t.column("name", .text).notNull()
+        t.column("score", .integer).notNull()
+      }
     }
-
-    return try Player.all()
-      .order(order)
-      .fetchAll(db)
+    try migrator.migrate(self)
   }
 }

@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import GRDB
 import SwiftUI
 
 @Reducer
@@ -71,9 +72,11 @@ struct PlayersListFeature {
       case .destination(.dismiss):
         if case let .edit(editState) = state.destination {
           return .run { _ in
-            try database.write { db in
-              var player = editState.player
-              try player.save(db)
+            _ = try database.write { db in
+//              var player = editState.player
+//              try player.save(db)
+//              try player.insert(db)
+              try editState.player.inserted(db)
             }
           }
         }
@@ -106,6 +109,39 @@ struct PlayersListFeature {
 }
 
 extension PlayersListFeature.Destination.State: Equatable {}
+
+extension PersistenceReaderKey where Self == GRDBQueryKey<PlayersRequest> {
+  static func players(order: PlayersRequest.Order) -> Self {
+    .query(PlayersRequest(order: order))
+  }
+}
+
+struct PlayersRequest: GRDBQuery {
+  enum Order {
+    case name
+    case score
+  }
+
+  let order: Order
+
+  func fetch(_ db: Database) throws -> [Player] {
+    let order: [any SQLOrderingTerm] = switch order {
+    case .name:
+      [
+        Column("name").collating(.localizedCaseInsensitiveCompare)
+      ]
+    case .score:
+      [
+        Column("score").desc,
+        Column("name").collating(.localizedCaseInsensitiveCompare)
+      ]
+    }
+
+    return try Player.all()
+      .order(order)
+      .fetchAll(db)
+  }
+}
 
 struct PlayersListView: View {
   @Bindable var store: StoreOf<PlayersListFeature>

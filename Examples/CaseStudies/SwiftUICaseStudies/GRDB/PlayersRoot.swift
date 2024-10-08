@@ -6,20 +6,10 @@ struct PlayersRootView: View {
   static let store = Store(initialState: PlayersListFeature.State()) {
     PlayersListFeature()
   } withDependencies: {
-    let database = try! DatabaseQueue()
-    var migrator = DatabaseMigrator()
-    #if DEBUG
-      migrator.eraseDatabaseOnSchemaChange = true
-    #endif
-    migrator.registerMigration("v1") { db in
-      try db.create(table: "player") { t in
-        t.autoIncrementedPrimaryKey("id")
-        t.column("name", .text).notNull()
-        t.column("score", .integer).notNull()
-      }
-    }
-    try! migrator.migrate(database)
-    $0.defaultDatabase = database
+    $0.defaultDatabase = try! DatabaseQueue(
+      path: URL.documentsDirectory.appendingPathComponent("db.sqlite").path
+    )
+    try! $0.defaultDatabase.migrate()
   }
 
   var body: some View {
@@ -28,5 +18,17 @@ struct PlayersRootView: View {
 }
 
 #Preview {
-  PlayersRootView()
+  PlayersListView(
+    store: Store(initialState: PlayersListFeature.State()) {
+      PlayersListFeature()
+    } withDependencies: {
+      try! $0.defaultDatabase.migrate()
+      for idx in 1...20 {
+        _ = try! $0.defaultDatabase.write { db in
+          try Player(name: "Player \(idx)", score: .random(in: 1...100))
+            .inserted(db)
+        }
+      }
+    }
+  )
 }
