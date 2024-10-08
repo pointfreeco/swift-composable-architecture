@@ -19,7 +19,18 @@ extension Shared {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
-    self.init(throwingValue: value(), persistenceKey, fileID: fileID, line: line)
+    let id = AnyHashableSendable(persistenceKey.id)
+    @Dependency(\.persistentReferences) var references
+    let reference = references[
+      id,
+      default: ValueReference(
+        initialValue: value(),
+        persistenceKey: persistenceKey,
+        fileID: fileID,
+        line: line
+      )
+    ]
+    self.init(reference: reference, keyPath: \Value.self)
   }
 
   /// Creates a shared reference to an optional value using a persistence key.
@@ -67,7 +78,7 @@ extension Shared {
     _ persistenceKey: some PersistenceKey<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) rethrows {
+  ) throws {
     let id = AnyHashableSendable(persistenceKey.id)
     @Dependency(\.persistentReferences) var references
     guard let reference = references[id] else {
@@ -141,12 +152,18 @@ extension SharedReader {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
-    self.init(
-      throwingValue: value(),
-      persistenceKey,
-      fileID: fileID,
-      line: line
-    )
+    let id = AnyHashableSendable(persistenceKey.id)
+    @Dependency(\.persistentReferences) var references
+    let reference = references[
+      id,
+      default: ValueReference(
+        initialValue: value(),
+        persistenceKey: persistenceKey,
+        fileID: fileID,
+        line: line
+      )
+    ]
+    self.init(reference: reference, keyPath: \Value.self)
   }
 
   /// Creates a shared reference to an optional, read-only value using a persistence key.
@@ -194,7 +211,7 @@ extension SharedReader {
     _ persistenceKey: some PersistenceReaderKey<Value>,
     fileID: StaticString = #fileID,
     line: UInt = #line
-  ) rethrows {
+  ) throws {
     let id = AnyHashableSendable(persistenceKey.id)
     @Dependency(\.persistentReferences) var references
     guard let reference = references[id] else {
