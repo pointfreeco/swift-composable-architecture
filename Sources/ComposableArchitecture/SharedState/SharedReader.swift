@@ -9,9 +9,9 @@
 @dynamicMemberLookup
 @propertyWrapper
 public struct SharedReader<Value: Sendable> {
-  fileprivate let _reference: Managed<any Reference>
-  fileprivate var reference: any Reference { _reference.value }
-  fileprivate let keyPath: AnyKeyPath
+  private let _reference: Managed<any Reference>
+  private var reference: any Reference { _reference.value }
+  private let keyPath: AnyKeyPath
 
   var onDeinit: OnDeinit?
   final class OnDeinit: @unchecked Sendable {

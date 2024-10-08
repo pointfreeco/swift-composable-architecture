@@ -13,8 +13,8 @@ import IssueReporting
 @dynamicMemberLookup
 @propertyWrapper
 public struct Shared<Value: Sendable>: Sendable {
-  let _reference: Managed<any Reference>
-  var reference: any Reference { _reference.value }
+  private let _reference: Managed<any Reference>
+  private var reference: any Reference { _reference.value }
   private let keyPath: _AnyKeyPath
 
   var onDeinit: OnDeinit?
