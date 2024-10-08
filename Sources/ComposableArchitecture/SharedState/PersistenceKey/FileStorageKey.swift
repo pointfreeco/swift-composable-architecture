@@ -44,6 +44,8 @@ extension PersistenceReaderKey {
 ///
 /// Use ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` to create values of this type.
 public final class FileStorageKey<Value: Sendable>: PersistenceKey, Sendable {
+  public typealias ID = FileStorageKeyID
+
   private let storage: FileStorage
   private let isSetting = LockIsolated(false)
   private let url: URL
@@ -56,7 +58,7 @@ public final class FileStorageKey<Value: Sendable>: PersistenceKey, Sendable {
     var workItem: DispatchWorkItem?
   }
 
-  public var id: AnyHashable {
+  public var id: ID {
     FileStorageKeyID(url: self.url, storage: self.storage)
   }
 
@@ -206,7 +208,7 @@ public final class FileStorageKey<Value: Sendable>: PersistenceKey, Sendable {
   }
 }
 
-private struct FileStorageKeyID: Hashable {
+public struct FileStorageKeyID: Hashable, Sendable {
   let url: URL
   let storage: FileStorage
 }

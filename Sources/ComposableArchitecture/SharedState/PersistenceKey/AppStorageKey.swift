@@ -159,8 +159,10 @@ public struct AppStorageKey<Value: Sendable>: Sendable {
   private let key: String
   private let store: UncheckedSendable<UserDefaults>
 
-  public var id: AnyHashable {
-    AppStorageKeyID(key: self.key, store: self.store.wrappedValue)
+  public typealias ID = AppStorageKeyID
+
+  public var id: ID {
+    AppStorageKeyID(key: self.key, store: self.store)
   }
 
   fileprivate init(_ key: String) where Value == Bool {
@@ -328,9 +330,9 @@ extension AppStorageKey: PersistenceKey {
   }
 }
 
-private struct AppStorageKeyID: Hashable {
+public struct AppStorageKeyID: Hashable, Sendable {
   let key: String
-  let store: UserDefaults
+  let store: UncheckedSendable<UserDefaults>
 }
 
 extension DependencyValues {

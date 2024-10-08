@@ -31,7 +31,8 @@ public struct InMemoryKey<Value: Sendable>: PersistenceKey, Sendable {
     self.key = key
     self.store = defaultInMemoryStorage
   }
-  public var id: AnyHashable {
+  public typealias ID = InMemoryKeyID
+  public var id: ID {
     InMemoryKeyID(key: self.key, store: self.store)
   }
   public func load(initialValue: Value?) -> Value? {
@@ -54,7 +55,7 @@ public struct InMemoryStorage: Hashable, Sendable {
   }
 }
 
-private struct InMemoryKeyID: Hashable {
+public struct InMemoryKeyID: Hashable, Sendable {
   let key: String
   let store: InMemoryStorage
 }

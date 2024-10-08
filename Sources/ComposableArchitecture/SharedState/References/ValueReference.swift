@@ -68,46 +68,23 @@ extension Shared {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) rethrows {
-    try self.init(
-      reference: {
-        @Dependency(\.persistentReferences) var references
-        return try references.withValue {
-          if let reference = $0[persistenceKey.id] as? any Reference {
-            precondition(
-              reference.valueType == Value.self,
-              """
-              "\(typeName(Value.self, genericsAbbreviated: false))" does not match existing \
-              persistent reference "\(typeName(reference.valueType, genericsAbbreviated: false))" \
-              (key: "\(persistenceKey.id)")
-              """
-            )
-            reference.count += 1
-            return reference
-          } else {
-            let reference = try ValueReference(
-              initialValue: value(),
-              persistenceKey: persistenceKey,
-              fileID: fileID,
-              line: line
-            )
-            $0[persistenceKey.id] = reference
-            return reference
-          }
-        }
-      }(),
-      keyPath: \Value.self
-    )
-    self.onDeinit = OnDeinit {
-      @Dependency(\.persistentReferences) var references
-      references.withValue {
-        if let reference = $0[persistenceKey.id] as? any Reference {
-          reference.count -= 1
-          if reference.count == 0 {
-            $0[persistenceKey.id] = nil
-          }
-        }
-      }
+    let id = AnyHashableSendable(persistenceKey.id)
+    @Dependency(\.persistentReferences) var references
+    guard let reference = references[id] else {
+      let value = try value()
+      let reference = references[
+        id,
+        default: ValueReference(
+          initialValue: value,
+          persistenceKey: persistenceKey,
+          fileID: fileID,
+          line: line
+        )
+      ]
+      self.init(reference: reference, keyPath: \Value.self)
+      return
     }
+    self.init(reference: reference, keyPath: \Value.self)
   }
 
   /// Creates a shared reference to a value using a persistence key with a default value.
@@ -218,45 +195,23 @@ extension SharedReader {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) rethrows {
-    try self.init(
-      reference: {
-        @Dependency(\.persistentReferences) var references
-        return try references.withValue {
-          if let reference = $0[persistenceKey.id] as? any Reference {
-            precondition(
-              reference.valueType == Value.self,
-              """
-              Type mismatch at persistence key "\(persistenceKey.id)": \
-              \(reference.valueType) != \(Value.self)
-              """
-            )
-            reference.count += 1
-            return reference
-          } else {
-            let reference = ValueReference(
-              initialValue: try value(),
-              persistenceKey: persistenceKey,
-              fileID: fileID,
-              line: line
-            )
-            $0[persistenceKey.id] = reference
-            return reference
-          }
-        }
-      }(),
-      keyPath: \Value.self
-    )
-    self.onDeinit = OnDeinit {
-      @Dependency(\.persistentReferences) var references
-      references.withValue {
-        if let reference = $0[persistenceKey.id] as? any Reference {
-          reference.count -= 1
-          if reference.count == 0 {
-            $0[persistenceKey.id] = nil
-          }
-        }
-      }
+    let id = AnyHashableSendable(persistenceKey.id)
+    @Dependency(\.persistentReferences) var references
+    guard let reference = references[id] else {
+      let value = try value()
+      let reference = references[
+        id,
+        default: ValueReference(
+          initialValue: value,
+          persistenceKey: persistenceKey,
+          fileID: fileID,
+          line: line
+        )
+      ]
+      self.init(reference: reference, keyPath: \Value.self)
+      return
     }
+    self.init(reference: reference, keyPath: \Value.self)
   }
 
   /// Creates a shared reference to a read-only value using a persistence key with a default value.
@@ -393,16 +348,138 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
 extension ValueReference: Perceptible {}
 
 private enum PersistentReferencesKey: DependencyKey {
-  static var liveValue: LockIsolated<[AnyHashable: AnyObject]> {
-    LockIsolated([:])
+  static var liveValue: ManagedDictionary<AnyHashableSendable, any Reference> {
+    ManagedDictionary()
   }
-  static var testValue: LockIsolated<[AnyHashable: AnyObject]> {
-    LockIsolated([:])
+  static var testValue: ManagedDictionary<AnyHashableSendable, any Reference> {
+    ManagedDictionary()
   }
 }
 
 extension DependencyValues {
-  var persistentReferences: LockIsolated<[AnyHashable: AnyObject]> {
+  var persistentReferences: ManagedDictionary<AnyHashableSendable, any Reference> {
     self[PersistentReferencesKey.self]
+  }
+}
+
+struct Managed<Value>: Sendable {
+  fileprivate let storage: any ManagedStorage<Value>
+  var value: Value {
+    storage.wrappedValue
+  }
+}
+
+extension Managed where Value: Sendable {
+  init(_ value: Value) {
+    self.init(storage: UnmanagedStorage(wrappedValue: value))
+  }
+}
+
+private struct UnmanagedStorage<Value: Sendable>: ManagedStorage, Sendable {
+  var wrappedValue: Value
+}
+
+private protocol ManagedStorage<Value>: Sendable {
+  associatedtype Value
+  var wrappedValue: Value { get }
+}
+
+struct ManagedDictionary<Key: Hashable & Sendable, Value> {
+  private let storage = Storage()
+
+  subscript(key: Key) -> Managed<Value>? {
+    guard let reference = storage.withLock({ $0[key] }) else { return nil }
+    let storage = ManagedValue(
+      key: key,
+      value: reference.value,
+      storage: storage,
+      counter: reference.counter
+    )
+    return Managed(storage: storage)
+  }
+
+  subscript(key: Key, default value: @autoclosure () -> Value) -> Managed<Value> {
+    let reference = storage.withLock {
+      print($0)
+//      $0[key, default: Reference(value())] // .touch()
+      $0[key] = $0[key] ?? Reference(value())
+      return $0[key]!
+    }
+    print("keys", storage.dictionary.keys)
+    let storage = ManagedValue(
+      key: key,
+      value: reference.value,
+      storage: storage,
+      counter: reference.counter
+    )
+    return Managed(storage: storage)
+  }
+
+  fileprivate final class ReferenceCounter: @unchecked Sendable {
+    private var count = 0
+    private let lock = NSLock()
+    @discardableResult
+    func increment() -> Int {
+      lock.withLock {
+        count += 1
+        return count
+      }
+    }
+    @discardableResult
+    func decrement() -> Int {
+      lock.withLock {
+        count -= 1
+        return count
+      }
+    }
+  }
+
+  fileprivate struct Reference {
+    let counter = ReferenceCounter()
+    let value: Value
+    init(_ value: Value) {
+      self.value = value
+    }
+    mutating func touch() -> Self { self }
+  }
+
+  private final class Storage: @unchecked Sendable {
+    fileprivate var dictionary: [Key: Reference] = [:] {
+      didSet {
+        print("didSet", oldValue, "->", dictionary)
+      }
+    }
+    private let lock = NSLock()
+    func withLock<R>(_ body: (inout [Key: Reference]) -> R) -> R {
+      lock.withLock {
+        body(&dictionary)
+      }
+    }
+  }
+
+  private final class ManagedValue: ManagedStorage, @unchecked Sendable {
+    let key: Key
+    let wrappedValue: Value
+    let counter: ReferenceCounter
+    weak var storage: Storage?
+
+    fileprivate init(
+      key: Key,
+      value: Value,
+      storage: Storage,
+      counter: ReferenceCounter
+    ) {
+      self.key = key
+      self.wrappedValue = value
+      self.storage = storage
+      self.counter = counter
+      let count = counter.increment()
+      precondition(count > 0)
+    }
+
+    deinit {
+      guard let storage, counter.decrement() <= 0 else { return }
+      storage.withLock { $0[key] = nil }
+    }
   }
 }
