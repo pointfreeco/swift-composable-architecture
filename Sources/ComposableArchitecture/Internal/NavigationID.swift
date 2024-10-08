@@ -123,10 +123,3 @@ struct NavigationID: Hashable, @unchecked Sendable {
     hasher.combine(self.tag)
   }
 }
-
-@_spi(Internals) public struct AnyHashableSendable: Hashable, @unchecked Sendable {
-  @_spi(Internals) public let base: AnyHashable
-  init<Base: Hashable & Sendable>(_ base: Base) {
-    self.base = base
-  }
-}
