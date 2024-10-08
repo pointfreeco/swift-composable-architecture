@@ -39,7 +39,7 @@ final class SharedTests: XCTestCase {
     XCTExpectFailure {
       $0.compactDescription == """
         failed - A state change does not match expectation: …
-        
+
               SharedFeature.State(
                 _count: 0,
                 _profile: #1 Profile(…),
@@ -48,7 +48,7 @@ final class SharedTests: XCTestCase {
                 _stats: #1 Stats(count: 0),
                 _isOn: #1 false
               )
-        
+
         (Expected: −, Actual: +)
         """
     }
@@ -77,7 +77,7 @@ final class SharedTests: XCTestCase {
     XCTExpectFailure {
       $0.compactDescription == """
         failed - A state change does not match expectation: …
-        
+
               SharedFeature.State(
                 _count: 0,
                 _profile: #1 Profile(…),
@@ -86,7 +86,7 @@ final class SharedTests: XCTestCase {
                 _stats: #1 Stats(count: 0),
                 _isOn: #1 false
               )
-        
+
         (Expected: −, Actual: +)
         """
     }
@@ -144,7 +144,7 @@ final class SharedTests: XCTestCase {
     XCTExpectFailure {
       $0.compactDescription == """
         failed - A state change does not match expectation: …
-        
+
               SharedFeature.State(
                 _count: 0,
                 _profile: #1 Profile(…),
@@ -153,7 +153,7 @@ final class SharedTests: XCTestCase {
                 _stats: #1 Stats(count: 0),
                 _isOn: #1 false
               )
-        
+
         (Expected: −, Actual: +)
         """
     }
@@ -192,7 +192,7 @@ final class SharedTests: XCTestCase {
     XCTExpectFailure {
       $0.compactDescription == """
         failed - State was not expected to change, but a change occurred: …
-        
+
               SharedFeature.State(
                 _count: 0,
                 _profile: #1 Profile(…),
@@ -201,7 +201,7 @@ final class SharedTests: XCTestCase {
                 _stats: #1 Stats(count: 0),
                 _isOn: #1 false
               )
-        
+
         (Expected: −, Actual: +)
         """
     }
@@ -243,7 +243,7 @@ final class SharedTests: XCTestCase {
     XCTExpectFailure {
       $0.compactDescription == """
         failed - Test store finished before asserting against changes to shared state: …
-        
+
               SharedFeature.State(
                 _count: 0,
                 _profile: #1 Profile(…),
@@ -252,9 +252,9 @@ final class SharedTests: XCTestCase {
                 _stats: #1 Stats(count: 0),
                 _isOn: #1 false
               )
-        
+
         (Expected: −, Actual: +)
-        
+
         Invoke "TestStore.assert" at the end of this test to assert against changes to shared state.
         """
     }
@@ -277,7 +277,7 @@ final class SharedTests: XCTestCase {
     XCTExpectFailure {
       $0.compactDescription == """
         failed - A state change does not match expectation: …
-        
+
               SharedFeature.State(
                 _count: 0,
                 _profile: #1 Profile(…),
@@ -286,7 +286,7 @@ final class SharedTests: XCTestCase {
                 _stats: #1 Stats(count: 0),
                 _isOn: #1 false
               )
-        
+
         (Expected: −, Actual: +)
         """
     }
@@ -429,12 +429,12 @@ final class SharedTests: XCTestCase {
     XCTExpectFailure {
       $0.compactDescription == """
         failed - State was not expected to change, but a change occurred: …
-        
+
               SimpleFeature.State(
             −   _count: #1 0
             +   _count: #1 1
               )
-        
+
         (Expected: −, Actual: +)
         """
     }
@@ -653,7 +653,7 @@ final class SharedTests: XCTestCase {
       '.response' action, which then mutates the shared state. Because the TestStore processes
       actions immediately the shared state mutation must be asserted in `store.send` rather than
       store.receive.
-      
+
       We should update the TestStore so that effects suspend until one does 'store.receive'. That
       would fix this test.
       """
@@ -664,25 +664,25 @@ final class SharedTests: XCTestCase {
     }
   }
 
-#if canImport(UIKit)
-  @MainActor
-  func testObserveWithPrintChanges() async {
-    let store = TestStore(initialState: SimpleFeature.State(count: Shared(0))) {
-      SimpleFeature()._printChanges()
-    }
+  #if canImport(UIKit)
+    @MainActor
+    func testObserveWithPrintChanges() async {
+      let store = TestStore(initialState: SimpleFeature.State(count: Shared(0))) {
+        SimpleFeature()._printChanges()
+      }
 
-    var observations: [Int] = []
-    observe {
-      observations.append(store.state.count)
-    }
+      var observations: [Int] = []
+      observe {
+        observations.append(store.state.count)
+      }
 
-    XCTAssertEqual(observations, [0])
-    await store.send(.incrementInReducer) {
-      $0.count += 1
+      XCTAssertEqual(observations, [0])
+      await store.send(.incrementInReducer) {
+        $0.count += 1
+      }
+      XCTAssertEqual(observations, [0, 1])
     }
-    XCTAssertEqual(observations, [0, 1])
-  }
-#endif
+  #endif
 
   func testSharedDefaults_UseDefault() {
     @Shared(.isOn) var isOn

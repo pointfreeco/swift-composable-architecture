@@ -120,7 +120,9 @@ public struct SharedReader<Value: Sendable> {
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member>
   ) -> SharedReader<Member> {
-    SharedReader<Member>(reference: self._reference, keyPath: self.keyPath.appending(path: keyPath)!)
+    SharedReader<Member>(
+      reference: self._reference, keyPath: self.keyPath.appending(path: keyPath)!
+    )
   }
 
   @_disfavoredOverload
