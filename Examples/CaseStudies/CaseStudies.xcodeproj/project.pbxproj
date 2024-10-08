@@ -1112,7 +1112,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = MNK32XRXN2;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = SwiftUICaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1130,7 +1129,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = MNK32XRXN2;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = SwiftUICaseStudies/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
