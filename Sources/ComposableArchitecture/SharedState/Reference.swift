@@ -5,7 +5,6 @@
 protocol Reference<Value>: AnyObject, CustomStringConvertible, Sendable {
   associatedtype Value: Sendable
   var value: Value { get set }
-  var count: Int { get set }
 
   func access()
   func withMutation<T>(_ mutation: () throws -> T) rethrows -> T

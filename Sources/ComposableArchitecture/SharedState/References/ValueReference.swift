@@ -275,7 +275,6 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
   )
   private let fileID: StaticString
   private let line: UInt
-  var count = 1
   var value: Value {
     get {
       self._$perceptionRegistrar.access(self, keyPath: \.value)
@@ -399,13 +398,7 @@ struct ManagedDictionary<Key: Hashable & Sendable, Value> {
   }
 
   subscript(key: Key, default value: @autoclosure () -> Value) -> Managed<Value> {
-    let reference = storage.withLock {
-      print($0)
-//      $0[key, default: Reference(value())] // .touch()
-      $0[key] = $0[key] ?? Reference(value())
-      return $0[key]!
-    }
-    print("keys", storage.dictionary.keys)
+    let reference = storage.withLock { $0[key, default: Reference(value())].touch() }
     let storage = ManagedValue(
       key: key,
       value: reference.value,
@@ -444,11 +437,7 @@ struct ManagedDictionary<Key: Hashable & Sendable, Value> {
   }
 
   private final class Storage: @unchecked Sendable {
-    fileprivate var dictionary: [Key: Reference] = [:] {
-      didSet {
-        print("didSet", oldValue, "->", dictionary)
-      }
-    }
+    private var dictionary: [Key: Reference] = [:]
     private let lock = NSLock()
     func withLock<R>(_ body: (inout [Key: Reference]) -> R) -> R {
       lock.withLock {
