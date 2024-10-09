@@ -47,11 +47,11 @@ final class EffectTests: BaseTCATestCase {
   }
 
   func testConcatenateOneEffect() async {
-    await withMainSerialExecutor {
+    await withMainSerialExecutor { [mainQueue] in
       let values = LockIsolated<[Int]>([])
 
       let effect = Effect<Int>.concatenate(
-        .publisher { Just(1).delay(for: 1, scheduler: self.mainQueue) }
+        .publisher { Just(1).delay(for: 1, scheduler: mainQueue) }
       )
 
       let task = Task {
@@ -62,10 +62,10 @@ final class EffectTests: BaseTCATestCase {
 
       XCTAssertEqual(values.value, [])
 
-      await self.mainQueue.advance(by: 1)
+      await mainQueue.advance(by: 1)
       XCTAssertEqual(values.value, [1])
 
-      await self.mainQueue.run()
+      await mainQueue.run()
       XCTAssertEqual(values.value, [1])
 
       await task.value

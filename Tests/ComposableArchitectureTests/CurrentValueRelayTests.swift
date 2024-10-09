@@ -15,7 +15,7 @@
 
       await withTaskGroup(of: Void.self) { group in
         for index in 1...1_000 {
-          group.addTask {
+          group.addTask { @Sendable in
             subject.send(index)
           }
         }
