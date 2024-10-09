@@ -125,7 +125,7 @@ final class EffectRunTests: BaseTCATestCase {
 
   @MainActor
   func testRunEscapeFailure() async throws {
-    XCTExpectFailure {
+    XCTExpectFailure(strict: ProcessInfo.processInfo.environment["CI"] == nil) {
       $0.compactDescription == """
         failed - An action was sent from a completed effect:
 
