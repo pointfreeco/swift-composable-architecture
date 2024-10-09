@@ -14,8 +14,8 @@ func mainActorNow<R: Sendable>(execute block: @MainActor @Sendable () -> R) -> R
   }
 }
 
-func mainActorASAP(execute block: @escaping @MainActor @Sendable () -> Void) {
-  if DispatchQueue.getSpecific(key: key) == value {
+func mainActorAsync(execute block: @escaping @MainActor @Sendable () -> Void) {
+  if isTesting {
     MainActor._assumeIsolated {
       block()
     }
