@@ -386,7 +386,8 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
         initialValue: initialValue
       ) { [weak self] value in
         guard let self else { return }
-        mainActorAsync {
+        @Dependency(SchedulerKey.self) var schedule
+        schedule {
           self._$perceptionRegistrar.willSet(self, keyPath: \.value)
           defer { self._$perceptionRegistrar.didSet(self, keyPath: \.value) }
           self.lock.withLock {
@@ -406,6 +407,15 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
   }
   var description: String {
     "Shared<\(Value.self)>@\(self.fileID):\(self.line)"
+  }
+}
+
+fileprivate enum SchedulerKey: DependencyKey {
+  static var liveValue: @Sendable (@escaping () -> Void) -> Void {
+    DispatchQueue.main.schedule
+  }
+  static var testValue: @Sendable (@escaping () -> Void) -> Void {
+    UIScheduler.shared.schedule
   }
 }
 
