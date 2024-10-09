@@ -6,6 +6,8 @@ import Testing
 
 @MainActor
 struct SyncUpFormTests {
+  init() { uncheckedUseMainSerialExecutor = true }
+
   @Test
   func addAttendee() async {
     let store = TestStore(

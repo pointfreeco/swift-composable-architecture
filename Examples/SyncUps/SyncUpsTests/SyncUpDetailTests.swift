@@ -5,6 +5,8 @@ import Testing
 
 @MainActor
 struct SyncUpDetailTests {
+  init() { uncheckedUseMainSerialExecutor = true }
+
   @Test
   func speechRestricted() async {
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
