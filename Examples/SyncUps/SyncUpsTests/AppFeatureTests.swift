@@ -7,7 +7,7 @@ import Testing
 @MainActor
 struct AppFeatureTests {
   init() { uncheckedUseMainSerialExecutor = true }
-  
+
   @Test
   func detailEdit() async throws {
     let syncUp = SyncUp.mock

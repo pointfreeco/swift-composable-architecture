@@ -7,7 +7,7 @@ import Testing
 @MainActor
 struct SyncUpsListTests {
   init() { uncheckedUseMainSerialExecutor = true }
-  
+
   @Test
   func add() async throws {
     let store = TestStore(initialState: SyncUpsList.State()) {
