@@ -388,7 +388,7 @@ final class EffectCancellationTests: BaseTCATestCase {
       }
       uncheckedUseMainSerialExecutor = false
       await Task.yield()
-      XCTAssertTrue(!Thread.isMainThread)
+      XCTAssertTrue(!Thread.isMainThread, "Should not be on main thread")
       let ids = (1...100).map { _ in UUID() }
 
       let areCancelled = await withTaskGroup(of: Bool.self, returning: [Bool].self) { group in
@@ -396,18 +396,22 @@ final class EffectCancellationTests: BaseTCATestCase {
           let id = ids[index.quotientAndRemainder(dividingBy: ids.count).remainder]
           group.addTask {
             await withTaskCancellation(id: id) {
-              nil == (try? await Task.sleep(nanoseconds: 2_000_000_000))
+              nil == (try? await Task.sleep(nanoseconds: 10_000_000_000))
             }
           }
-          Task {
+          group.addTask {
             try? await Task.sleep(nanoseconds: .random(in: 1_000_000...2_000_000))
             Task.cancel(id: id)
+            return true
           }
         }
         return await group.reduce(into: [Bool]()) { $0.append($1) }
       }
 
-      XCTAssertTrue(areCancelled.allSatisfy({ isCancelled in isCancelled }))
+      XCTAssertTrue(
+        areCancelled.allSatisfy({ isCancelled in isCancelled }),
+        "All tasks should be cancelled"
+      )
 
       for id in ids {
         XCTAssertEqual(
