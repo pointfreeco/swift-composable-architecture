@@ -50,7 +50,6 @@ final class EffectTests: BaseTCATestCase {
     await withMainSerialExecutor {
       let values = LockIsolated<[Int]>([])
 
-
       let effect = Effect<Int>.concatenate(
         .publisher { Just(1).delay(for: 1, scheduler: self.mainQueue) }
       )
