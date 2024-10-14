@@ -144,7 +144,7 @@ extension BindingState: Sendable where Value: Sendable {}
 ///
 /// Read <doc:Bindings> for more information.
 public struct BindingAction<Root>: CasePathable, Equatable, Sendable {
-  public let keyPath: _PartialKeyPath<Root>
+  public let keyPath: _SendablePartialKeyPath<Root>
 
   @usableFromInline
   let set: @Sendable (inout Root) -> Void
@@ -152,7 +152,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, Sendable {
   let valueIsEqualTo: @Sendable (Any) -> Bool
 
   init(
-    keyPath: _PartialKeyPath<Root>,
+    keyPath: _SendablePartialKeyPath<Root>,
     set: @escaping @Sendable (inout Root) -> Void,
     value: any Sendable,
     valueIsEqualTo: @escaping @Sendable (Any) -> Bool
@@ -174,7 +174,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, Sendable {
   @dynamicMemberLookup
   public struct AllCasePaths {
     public subscript<Value: Equatable & Sendable>(
-      dynamicMember keyPath: _WritableKeyPath<Root, Value>
+      dynamicMember keyPath: _SendableWritableKeyPath<Root, Value>
     ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
       AnyCasePath(
         embed: { .set(keyPath, $0) },
@@ -183,7 +183,7 @@ public struct BindingAction<Root>: CasePathable, Equatable, Sendable {
     }
 
     public subscript<Value: Equatable & Sendable>(
-      dynamicMember keyPath: _WritableKeyPath<Root, BindingState<Value>>
+      dynamicMember keyPath: _SendableWritableKeyPath<Root, BindingState<Value>>
     ) -> AnyCasePath<BindingAction, Value> {
       AnyCasePath(
         embed: { .set(keyPath, $0) },
@@ -204,7 +204,7 @@ extension BindingAction {
   /// - Returns: An action that describes simple mutations to some root state at a writable key
   ///   path.
   public static func set<Value: Equatable & Sendable>(
-    _ keyPath: _WritableKeyPath<Root, BindingState<Value>>,
+    _ keyPath: _SendableWritableKeyPath<Root, BindingState<Value>>,
     _ value: Value
   ) -> Self {
     return .init(
@@ -234,7 +234,7 @@ extension BindingAction {
   }
 
   init<Value: Equatable & Sendable>(
-    keyPath: _WritableKeyPath<Root, BindingState<Value>>,
+    keyPath: _SendableWritableKeyPath<Root, BindingState<Value>>,
     set: @escaping @Sendable (_ state: inout Root) -> Void,
     value: Value
   ) {
@@ -290,7 +290,7 @@ extension BindableAction {
   ///
   /// - Returns: A binding action.
   public static func set<Value: Equatable & Sendable>(
-    _ keyPath: _WritableKeyPath<State, BindingState<Value>>,
+    _ keyPath: _SendableWritableKeyPath<State, BindingState<Value>>,
     _ value: Value
   ) -> Self {
     self.binding(.set(keyPath, value))
@@ -299,7 +299,7 @@ extension BindableAction {
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   public subscript<Value: Equatable & Sendable>(
-    dynamicMember keyPath: _WritableKeyPath<ViewState, BindingState<Value>>
+    dynamicMember keyPath: _SendableWritableKeyPath<ViewState, BindingState<Value>>
   ) -> Binding<Value> {
     self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
@@ -454,7 +454,7 @@ public struct BindingViewStore<State> {
   }
 
   public subscript<Value: Equatable & Sendable>(
-    dynamicMember keyPath: _WritableKeyPath<State, BindingState<Value>>
+    dynamicMember keyPath: _SendableWritableKeyPath<State, BindingState<Value>>
   ) -> BindingViewState<Value> {
     BindingViewState(
       binding: ViewStore(self.store, observe: { $0[keyPath: keyPath].wrappedValue })
