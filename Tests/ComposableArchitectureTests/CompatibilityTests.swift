@@ -6,6 +6,7 @@ final class CompatibilityTests: BaseTCATestCase {
   // Actions can be re-entrantly sent into the store if an action is sent that holds an object
   // which sends an action on deinit. In order to prevent a simultaneous access exception for this
   // case we need to use `withExtendedLifetime` on the buffered actions when clearing them out.
+  @MainActor
   func testCaseStudy_ActionReentranceFromClearedBufferCausingDeinitAction() {
     let cancelID = UUID()
 
@@ -78,6 +79,7 @@ final class CompatibilityTests: BaseTCATestCase {
   // In particular, this means that in the implementation of `Store.send` we need to flip
   // `isSending` to false _after_ the store's state mutation is made so that re-entrant actions
   // are buffered rather than immediately handled.
+  @MainActor
   func testCaseStudy_ActionReentranceFromStateObservation() {
     var cancellables: Set<AnyCancellable> = []
     defer { _ = cancellables }

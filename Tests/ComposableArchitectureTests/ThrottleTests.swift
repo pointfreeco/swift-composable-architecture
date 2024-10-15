@@ -1,6 +1,6 @@
 import Combine
 import ComposableArchitecture
-import XCTest
+@preconcurrency import XCTest
 
 final class EffectThrottleTests: BaseTCATestCase {
   let mainQueue = DispatchQueue.test
@@ -8,7 +8,7 @@ final class EffectThrottleTests: BaseTCATestCase {
   func testThrottleLatest_Publisher() async {
     let store = await TestStore(initialState: ThrottleFeature.State()) {
       ThrottleFeature(id: #function, latest: true)
-    } withDependencies: {
+    } withDependencies: { [mainQueue] in
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
 
@@ -51,7 +51,7 @@ final class EffectThrottleTests: BaseTCATestCase {
   func testThrottleLatest_Async() async {
     let store = await TestStore(initialState: ThrottleFeature.State()) {
       ThrottleFeature(id: #function, latest: true)
-    } withDependencies: {
+    } withDependencies: { [mainQueue] in
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
 
@@ -94,7 +94,7 @@ final class EffectThrottleTests: BaseTCATestCase {
   func testThrottleFirst_Publisher() async {
     let store = await TestStore(initialState: ThrottleFeature.State()) {
       ThrottleFeature(id: #function, latest: false)
-    } withDependencies: {
+    } withDependencies: { [mainQueue] in
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
 
@@ -137,7 +137,7 @@ final class EffectThrottleTests: BaseTCATestCase {
   func testThrottleAfterInterval_Publisher() async {
     let store = await TestStore(initialState: ThrottleFeature.State()) {
       ThrottleFeature(id: #function, latest: true)
-    } withDependencies: {
+    } withDependencies: { [mainQueue] in
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
 
@@ -158,7 +158,7 @@ final class EffectThrottleTests: BaseTCATestCase {
   func testThrottleEmitsFirstValueOnce_Publisher() async {
     let store = await TestStore(initialState: ThrottleFeature.State()) {
       ThrottleFeature(id: #function, latest: true)
-    } withDependencies: {
+    } withDependencies: { [mainQueue] in
       $0.mainQueue = mainQueue.eraseToAnyScheduler()
     }
 

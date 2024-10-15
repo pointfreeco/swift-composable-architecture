@@ -26,5 +26,9 @@
 func sendableKeyPath(
   _ keyPath: AnyKeyPath
 ) -> _SendableAnyKeyPath {
-  unsafeBitCast(keyPath, to: _SendableAnyKeyPath.self)
+  #if compiler(>=6)
+    unsafeBitCast(keyPath, to: _SendableAnyKeyPath.self)
+  #else
+    keyPath
+  #endif
 }
