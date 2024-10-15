@@ -15,7 +15,7 @@ extension PersistenceReaderKey {
   /// - Parameter key: A string key identifying a value to share in memory.
   /// - Returns: A persistence key.
   public static func appStorage<Value>(
-    _ keyPath: _ReferenceWritableKeyPath<UserDefaults, Value>
+    _ keyPath: _SendableReferenceWritableKeyPath<UserDefaults, Value>
   ) -> Self where Self == AppStorageKeyPathKey<Value> {
     AppStorageKeyPathKey(keyPath)
   }
@@ -25,10 +25,10 @@ extension PersistenceReaderKey {
 ///
 /// See ``PersistenceReaderKey/appStorage(_:)-5jsie`` to create values of this type.
 public struct AppStorageKeyPathKey<Value: Sendable>: Sendable {
-  private let keyPath: _ReferenceWritableKeyPath<UserDefaults, Value>
+  private let keyPath: _SendableReferenceWritableKeyPath<UserDefaults, Value>
   private let store: UncheckedSendable<UserDefaults>
 
-  public init(_ keyPath: _ReferenceWritableKeyPath<UserDefaults, Value>) {
+  public init(_ keyPath: _SendableReferenceWritableKeyPath<UserDefaults, Value>) {
     @Dependency(\.defaultAppStorage) var store
     self.keyPath = keyPath
     self.store = UncheckedSendable(store)
