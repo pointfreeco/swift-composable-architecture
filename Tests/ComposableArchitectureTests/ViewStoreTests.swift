@@ -1,4 +1,4 @@
-import Combine
+@preconcurrency import Combine
 import ComposableArchitecture
 import XCTest
 
@@ -7,10 +7,11 @@ final class ViewStoreTests: BaseTCATestCase {
 
   override func setUpWithError() throws {
     try super.setUpWithError()
-    equalityChecks = 0
-    subEqualityChecks = 0
+    equalityChecks.setValue(0)
+    subEqualityChecks.setValue(0)
   }
 
+  @MainActor
   func testPublisherFirehose() {
     let store = Store<Int, Void>(initialState: 0) {}
     let viewStore = ViewStore(store, observe: { $0 })
@@ -30,6 +31,7 @@ final class ViewStoreTests: BaseTCATestCase {
   }
 
   @available(*, deprecated)
+  @MainActor
   func testEqualityChecks() {
     let store = Store<State, Void>(initialState: State()) {}
 
@@ -52,22 +54,23 @@ final class ViewStoreTests: BaseTCATestCase {
     viewStore3.publisher.substate.sink { _ in }.store(in: &self.cancellables)
     viewStore4.publisher.substate.sink { _ in }.store(in: &self.cancellables)
 
-    XCTAssertEqual(0, equalityChecks)
-    XCTAssertEqual(0, subEqualityChecks)
+    XCTAssertEqual(0, equalityChecks.value)
+    XCTAssertEqual(0, subEqualityChecks.value)
     viewStore4.send(())
-    XCTAssertEqual(4, equalityChecks)
-    XCTAssertEqual(4, subEqualityChecks)
+    XCTAssertEqual(4, equalityChecks.value)
+    XCTAssertEqual(4, subEqualityChecks.value)
     viewStore4.send(())
-    XCTAssertEqual(8, equalityChecks)
-    XCTAssertEqual(8, subEqualityChecks)
+    XCTAssertEqual(8, equalityChecks.value)
+    XCTAssertEqual(8, subEqualityChecks.value)
     viewStore4.send(())
-    XCTAssertEqual(12, equalityChecks)
-    XCTAssertEqual(12, subEqualityChecks)
+    XCTAssertEqual(12, equalityChecks.value)
+    XCTAssertEqual(12, subEqualityChecks.value)
     viewStore4.send(())
-    XCTAssertEqual(16, equalityChecks)
-    XCTAssertEqual(16, subEqualityChecks)
+    XCTAssertEqual(16, equalityChecks.value)
+    XCTAssertEqual(16, subEqualityChecks.value)
   }
 
+  @MainActor
   func testAccessViewStoreStateInPublisherSink() {
     let reducer = Reduce<Int, Void> { count, _ in
       count += 1
@@ -90,6 +93,7 @@ final class ViewStoreTests: BaseTCATestCase {
     XCTAssertEqual([0, 1, 2, 3], results)
   }
 
+  @MainActor
   func testWillSet() {
     let reducer = Reduce<Int, Void> { count, _ in
       count += 1
@@ -114,6 +118,7 @@ final class ViewStoreTests: BaseTCATestCase {
     XCTAssertEqual([0, 1, 2], results)
   }
 
+  @MainActor
   func testPublisherOwnsViewStore() {
     let reducer = Reduce<Int, Void> { count, _ in
       count += 1
@@ -131,6 +136,7 @@ final class ViewStoreTests: BaseTCATestCase {
     XCTAssertEqual(results, [0, 1])
   }
 
+  @MainActor
   func testStorePublisherSubscriptionOrder() {
     let store = Store<Int, Void>(initialState: 0) {
       Reduce { state, _ in
@@ -299,7 +305,7 @@ private struct State: Equatable {
   var substate = Substate()
 
   static func == (lhs: Self, rhs: Self) -> Bool {
-    equalityChecks += 1
+    equalityChecks.withValue { $0 += 1 }
     return lhs.substate == rhs.substate
   }
 }
@@ -308,10 +314,10 @@ private struct Substate: Equatable {
   var name = "Blob"
 
   static func == (lhs: Self, rhs: Self) -> Bool {
-    subEqualityChecks += 1
+    subEqualityChecks.withValue { $0 += 1 }
     return lhs.name == rhs.name
   }
 }
 
-private var equalityChecks = 0
-private var subEqualityChecks = 0
+private let equalityChecks = LockIsolated(0)
+private let subEqualityChecks = LockIsolated(0)

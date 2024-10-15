@@ -47,6 +47,7 @@ final class BindingTests: BaseTCATestCase {
     )
   }
 
+  @MainActor
   func testViewEquality() {
     struct Feature: Reducer {
       struct State: Equatable {
