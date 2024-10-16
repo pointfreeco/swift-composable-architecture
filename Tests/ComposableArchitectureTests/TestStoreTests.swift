@@ -1,4 +1,4 @@
-import Combine
+@preconcurrency import Combine
 import ComposableArchitecture
 import XCTest
 
@@ -396,6 +396,7 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testPrepareDependenciesCalledOnce() {
     var count = 0
     let store = TestStore(initialState: 0) {
@@ -469,6 +470,7 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testSubscribeReceiveCombineScheduler() async {
     let subject = PassthroughSubject<Void, Never>()
     let scheduler = DispatchQueue.test
@@ -482,7 +484,7 @@ final class TestStoreTests: BaseTCATestCase {
       case start
     }
 
-    let store = await TestStore(initialState: State()) {
+    let store = TestStore(initialState: State()) {
       Reduce<State, Action> { state, action in
         switch action {
         case .start:
@@ -659,7 +661,7 @@ final class TestStoreTests: BaseTCATestCase {
 }
 
 private struct Client: DependencyKey {
-  var fetch: () -> Int
+  var fetch: @Sendable () -> Int
   static let liveValue = Client(fetch: { 42 })
 }
 extension DependencyValues {

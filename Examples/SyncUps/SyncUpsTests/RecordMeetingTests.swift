@@ -6,6 +6,8 @@ import Testing
 
 @MainActor
 struct RecordMeetingTests {
+  init() { uncheckedUseMainSerialExecutor = true }
+
   @Test
   func timer() async {
     let clock = TestClock()

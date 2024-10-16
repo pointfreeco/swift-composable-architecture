@@ -30,10 +30,3 @@ extension FactClient: DependencyKey {
   /// to prove do not need the dependency.
   static let testValue = Self()
 }
-
-struct AnyHashableSendable: Hashable, @unchecked Sendable {
-  let base: AnyHashable
-  init<Base: Hashable & Sendable>(_ base: Base) {
-    self.base = base
-  }
-}

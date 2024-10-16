@@ -46,11 +46,11 @@ extension Effect {
 
   /// Wraps an asynchronous unit of work that can emit actions any number of times in an effect.
   ///
-  /// For example, if you had an async stream in a dependency client:
+  /// For example, if you had an async sequence in a dependency client:
   ///
   /// ```swift
   /// struct EventsClient {
-  ///   var events: () -> AsyncStream<Event>
+  ///   var events: () -> any AsyncSequence<Event, Never>
   /// }
   /// ```
   ///

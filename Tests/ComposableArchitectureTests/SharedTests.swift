@@ -96,10 +96,11 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual(store.state.sharedCount, 2)
   }
 
+  @MainActor
   func testMultiSharing() async {
     @Shared(Stats()) var stats
 
-    let store = await TestStore(
+    let store = TestStore(
       initialState: SharedFeature.State(
         profile: Shared(Profile(stats: $stats)),
         sharedCount: Shared(0),
@@ -721,7 +722,7 @@ final class SharedTests: XCTestCase {
 
   func testSharedDefaults_Used() {
     let didAccess = LockIsolated(false)
-    let logDefault: () -> Bool = {
+    let logDefault: @Sendable () -> Bool = {
       didAccess.setValue(true)
       return true
     }
@@ -732,7 +733,7 @@ final class SharedTests: XCTestCase {
 
   func testSharedDefaults_Unused() {
     let didAccess = LockIsolated(false)
-    let logDefault: () -> Bool = {
+    let logDefault: @Sendable () -> Bool = {
       didAccess.setValue(true)
       return true
     }
@@ -761,7 +762,7 @@ final class SharedTests: XCTestCase {
   func testSharedOverrideDefault() {
     let accessedActive1 = LockIsolated(false)
     let accessedDefault = LockIsolated(false)
-    let logDefault: () -> Bool = {
+    let logDefault: @Sendable () -> Bool = {
       accessedDefault.setValue(true)
       return true
     }
@@ -796,7 +797,7 @@ final class SharedTests: XCTestCase {
   func testSharedReaderOverrideDefault() {
     let accessedActive1 = LockIsolated(false)
     let accessedDefault = LockIsolated(false)
-    let logDefault: () -> Bool = {
+    let logDefault: @Sendable () -> Bool = {
       accessedDefault.setValue(true)
       return true
     }
@@ -1141,7 +1142,7 @@ private struct SimpleFeature {
 }
 
 @Perceptible
-class SharedObject {
+class SharedObject: @unchecked Sendable {
   var count = 0
 }
 
@@ -1244,7 +1245,7 @@ extension PersistenceReaderKey where Self == PersistenceKeyDefault<AppStorageKey
     PersistenceKeyDefault(.appStorage("isOn"), false)
   }
 
-  static func isActive(default keyDefault: @escaping () -> Bool) -> Self {
+  static func isActive(default keyDefault: @escaping @Sendable () -> Bool) -> Self {
     PersistenceKeyDefault(.appStorage("isActive"), keyDefault())
   }
 }
