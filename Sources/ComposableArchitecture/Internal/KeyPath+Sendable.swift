@@ -27,6 +27,8 @@ func sendableKeyPath(
   _ keyPath: AnyKeyPath
 ) -> _SendableAnyKeyPath {
   #if compiler(>=6)
+    // NB: Can get rid of bitcast when this is fixed:
+    //     https://github.com/swiftlang/swift/issues/75531
     unsafeBitCast(keyPath, to: _SendableAnyKeyPath.self)
   #else
     keyPath
