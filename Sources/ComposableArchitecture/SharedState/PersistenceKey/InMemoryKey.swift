@@ -31,19 +31,31 @@ public struct InMemoryKey<Value: Sendable>: PersistenceKey, Sendable {
     self.key = key
     self.store = defaultInMemoryStorage
   }
-  public var id: AnyHashable {
+  public typealias ID = InMemoryKeyID
+  public var id: ID {
     InMemoryKeyID(key: self.key, store: self.store)
   }
-  public func load(initialValue: Value?) -> Value? { initialValue }
-  public func save(_ value: Value) {}
+  public func load(initialValue: Value?) -> Value? {
+    store.storage.withValue { $0[key] as? Value } ?? initialValue
+  }
+  public func save(_ value: Value) {
+    store.storage.withValue { $0[key] = value }
+  }
 }
 
 public struct InMemoryStorage: Hashable, Sendable {
-  private let id = UUID()
+  let id = UUID()
+  fileprivate let storage = LockIsolated<[AnyHashable: Any]>([:])
   public init() {}
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.id == rhs.id
+  }
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(id)
+  }
 }
 
-private struct InMemoryKeyID: Hashable {
+public struct InMemoryKeyID: Hashable, Sendable {
   let key: String
   let store: InMemoryStorage
 }
