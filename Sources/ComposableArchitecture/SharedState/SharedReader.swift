@@ -104,14 +104,10 @@ public struct SharedReader<Value: Sendable> {
 
   /// A projection of the read-only shared value that returns a shared reference.
   public var projectedValue: Self {
-    get {
-      reference.access()
-      return self
-    }
+    get { self }
     set {
-      reference.withMutation {
-        self = newValue
-      }
+      reference.touch()
+      self = newValue
     }
   }
 
