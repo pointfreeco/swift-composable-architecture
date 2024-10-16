@@ -6,11 +6,15 @@ protocol Reference<Value>: AnyObject, CustomStringConvertible, Sendable {
   associatedtype Value: Sendable
   var value: Value { get set }
 
-  func access()
-  func withMutation<T>(_ mutation: () throws -> T) rethrows -> T
   #if canImport(Combine)
     var publisher: AnyPublisher<Value, Never> { get }
   #endif
+}
+
+extension Reference {
+  func touch() {
+    value = value
+  }
 }
 
 extension Reference {

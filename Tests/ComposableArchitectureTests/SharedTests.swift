@@ -461,7 +461,7 @@ final class SharedTests: XCTestCase {
     _count = Shared(0)
     let countDidChange = self.expectation(description: "countDidChange")
     withPerceptionTracking {
-      _ = $count
+      _ = $count.wrappedValue
     } onChange: {
       countDidChange.fulfill()
     }

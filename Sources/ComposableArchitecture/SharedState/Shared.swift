@@ -123,14 +123,10 @@ public struct Shared<Value: Sendable>: Sendable {
   ///
   /// See <doc:SharingState#Deriving-shared-state> for more details.
   public var projectedValue: Self {
-    get {
-      reference.access()
-      return self
-    }
+    get { self }
     set {
-      reference.withMutation {
-        self = newValue
-      }
+      reference.touch()
+      self = newValue
     }
   }
 
