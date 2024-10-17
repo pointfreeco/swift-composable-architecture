@@ -51,6 +51,10 @@ extension _ReferenceFromOptional: MutableReference where Base: MutableReference 
       }
     }
   }
+  var snapshot: Value? {
+    get { base.snapshot ?? nil }
+    set { base.snapshot? = newValue }
+  }
 }
 
 final class _ReferenceAppendKeyPath<
@@ -92,5 +96,13 @@ where Base: MutableReference, Path: WritableKeyPath<Base.Value, Value> {
   var value: Value {
     get { base.value[keyPath: keyPath] }
     set { base.value[keyPath: keyPath] = newValue }
+  }
+  var snapshot: Value? {
+    get { base.snapshot?[keyPath: keyPath] }
+    set {
+      if let newValue {
+        base.snapshot?[keyPath: keyPath as WritableKeyPath<Base.Value, Value>] = newValue
+      }
+    }
   }
 }

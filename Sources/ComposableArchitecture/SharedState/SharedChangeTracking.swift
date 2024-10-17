@@ -70,12 +70,12 @@ public final class SharedChangeTracker: Sendable {
     }
     self.resetChanges()
   }
-  func track<Value: Sendable>(_ reference: some Reference<Value>) {
+  func track<Value: Sendable>(_ reference: some MutableReference<Value>) {
     if !self.changes.keys.contains(ObjectIdentifier(reference)) {
       self.changes.withValue { $0[ObjectIdentifier(reference)] = AnyChange(reference) }
     }
   }
-  subscript<Value>(_ reference: some Reference<Value>) -> AnyChange<Value>? {
+  subscript<Value>(_ reference: some MutableReference<Value>) -> AnyChange<Value>? {
     _read { yield self.changes[ObjectIdentifier(reference)] as? AnyChange<Value> }
     _modify {
       var change = self.changes[ObjectIdentifier(reference)] as? AnyChange<Value>

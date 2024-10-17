@@ -328,6 +328,24 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>:
       }
     }
   }
+  var snapshot: Value? {
+    get {
+      @Dependency(\.sharedChangeTracker) var changeTracker
+      return changeTracker?[self]?.snapshot
+    }
+    set {
+      @Dependency(\.sharedChangeTracker) var changeTracker
+      guard let newValue else {
+        changeTracker?[self] = nil
+        return
+      }
+      if changeTracker?[self] == nil {
+        changeTracker?[self] = AnyChange(self)
+      }
+      changeTracker?[self]?.snapshot = newValue
+    }
+  }
+
   #if canImport(Combine)
     var publisher: any Publisher<Value, Never> {
       self.subject.dropFirst()

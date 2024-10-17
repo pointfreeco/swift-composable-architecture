@@ -13,6 +13,7 @@ protocol Reference<Value>: AnyObject, CustomStringConvertible, Sendable, Hashabl
 
 protocol MutableReference<Value>: Reference {
   var value: Value { get set }
+  var snapshot: Value? { get set }
 }
 
 extension MutableReference {
@@ -37,6 +38,10 @@ final class AnyMutableReference<Value: Sendable>: MutableReference {
   var value: Value {
     get { base.value }
     set { base.value = newValue }
+  }
+  var snapshot: Value? {
+    get { base.snapshot }
+    set { base.snapshot = newValue }
   }
   var description: String { base.description }
   var publisher: any Publisher<Value, Never> { base.publisher }

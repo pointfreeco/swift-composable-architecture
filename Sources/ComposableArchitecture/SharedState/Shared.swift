@@ -259,32 +259,8 @@ public struct Shared<Value: Sendable>: Sendable {
   }
 
   private var snapshot: Value? {
-    get {
-      fatalError()
-//      func open<Root: Sendable>(_ reference: some Reference<Root>) -> Value? {
-//        @Dependency(\.sharedChangeTracker) var changeTracker
-//        return changeTracker?[reference]?.snapshot[
-//          keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
-//        ]
-//      }
-//      return open(self.reference)
-    }
-    nonmutating set {
-//      func open<Root: Sendable>(_ reference: some Reference<Root>) {
-//        @Dependency(\.sharedChangeTracker) var changeTracker
-//        guard let newValue else {
-//          changeTracker?[reference] = nil
-//          return
-//        }
-//        if changeTracker?[reference] == nil {
-//          changeTracker?[reference] = AnyChange(reference)
-//        }
-//        changeTracker?[reference]?.snapshot[
-//          keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
-//        ] = newValue
-//      }
-//      return open(self.reference)
-    }
+    get { reference.snapshot }
+    nonmutating set { reference.snapshot = newValue }
   }
 }
 
