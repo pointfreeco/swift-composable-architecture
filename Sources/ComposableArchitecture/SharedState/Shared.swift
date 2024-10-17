@@ -13,12 +13,10 @@ import IssueReporting
 @dynamicMemberLookup
 @propertyWrapper
 public struct Shared<Value: Sendable>: Sendable {
-  private let reference: any Reference
-  private let keyPath: _SendableAnyKeyPath
+  private let reference: any MutableReference<Value>
 
-  init(reference: any Reference, keyPath: _SendableAnyKeyPath) {
+  init(reference: any MutableReference<Value>) {
     self.reference = reference
-    self.keyPath = keyPath
   }
 
   /// Wraps a value in a shared reference.
@@ -31,8 +29,7 @@ public struct Shared<Value: Sendable>: Sendable {
         initialValue: value,
         fileID: fileID,
         line: line
-      ),
-      keyPath: \Value.self
+      )
     )
   }
 
@@ -60,15 +57,10 @@ public struct Shared<Value: Sendable>: Sendable {
   public init?(_ base: Shared<Value?>) {
     guard let initialValue = base.wrappedValue
     else { return nil }
-    self.init(
-      reference: base.reference,
-      // NB: Can get rid of bitcast when this is fixed:
-      //     https://github.com/swiftlang/swift/issues/75531
-      keyPath: sendableKeyPath(
-        (base.keyPath as AnyKeyPath)
-          .appending(path: \Value?.[default: DefaultSubscript(initialValue)])!
-      )
-    )
+    func open(_ location: some MutableReference<Value?>) -> any MutableReference<Value> {
+      _ReferenceFromOptional(initialValue: initialValue, base: location)
+    }
+    self.init(reference: open(base.reference))
   }
 
   /// Perform an operation on shared state with isolated access to the underlying value.
@@ -145,12 +137,10 @@ public struct Shared<Value: Sendable>: Sendable {
     ///   }
     /// ```
     public var publisher: AnyPublisher<Value, Never> {
-      func open<Root>(_ reference: some Reference<Root>) -> AnyPublisher<Value, Never> {
-        reference.publisher
-          .map { $0[keyPath: unsafeDowncast(self.keyPath, to: KeyPath<Root, Value>.self)] }
-          .eraseToAnyPublisher()
+      func open(_ publisher: some Publisher<Value, Never>)  -> AnyPublisher<Value, Never> {
+        publisher.eraseToAnyPublisher()
       }
-      return open(self.reference)
+      return open(reference.publisher)
     }
   #endif
 
@@ -171,14 +161,15 @@ public struct Shared<Value: Sendable>: Sendable {
   public subscript<Member>(
     dynamicMember keyPath: WritableKeyPath<Value, Member>
   ) -> Shared<Member> {
-    Shared<Member>(
-      reference: self.reference,
-      // NB: Can get rid of bitcast when this is fixed:
-      //     https://github.com/swiftlang/swift/issues/75531
-      keyPath: sendableKeyPath(
-        (self.keyPath as AnyKeyPath).appending(path: keyPath)!
+    func open(_ location: some MutableReference<Value>) -> Shared<Member> {
+      Shared<Member>(
+        reference: _ReferenceAppendKeyPath(
+          base: location,
+          keyPath: sendableKeyPath(keyPath)
+        )
       )
-    )
+    }
+    return open(reference)
   }
 
   @_disfavoredOverload
@@ -263,49 +254,36 @@ public struct Shared<Value: Sendable>: Sendable {
   }
 
   private var currentValue: Value {
-    get {
-      func open<Root>(_ reference: some Reference<Root>) -> Value {
-        reference.value[
-          keyPath: unsafeDowncast(self.keyPath, to: KeyPath<Root, Value>.self)
-        ]
-      }
-      return open(self.reference)
-    }
-    nonmutating set {
-      func open<Root>(_ reference: some Reference<Root>) {
-        reference.value[
-          keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
-        ] = newValue
-      }
-      return open(self.reference)
-    }
+    get { reference.value }
+    nonmutating set { reference.value = newValue }
   }
 
   private var snapshot: Value? {
     get {
-      func open<Root: Sendable>(_ reference: some Reference<Root>) -> Value? {
-        @Dependency(\.sharedChangeTracker) var changeTracker
-        return changeTracker?[reference]?.snapshot[
-          keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
-        ]
-      }
-      return open(self.reference)
+      fatalError()
+//      func open<Root: Sendable>(_ reference: some Reference<Root>) -> Value? {
+//        @Dependency(\.sharedChangeTracker) var changeTracker
+//        return changeTracker?[reference]?.snapshot[
+//          keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
+//        ]
+//      }
+//      return open(self.reference)
     }
     nonmutating set {
-      func open<Root: Sendable>(_ reference: some Reference<Root>) {
-        @Dependency(\.sharedChangeTracker) var changeTracker
-        guard let newValue else {
-          changeTracker?[reference] = nil
-          return
-        }
-        if changeTracker?[reference] == nil {
-          changeTracker?[reference] = AnyChange(reference)
-        }
-        changeTracker?[reference]?.snapshot[
-          keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
-        ] = newValue
-      }
-      return open(self.reference)
+//      func open<Root: Sendable>(_ reference: some Reference<Root>) {
+//        @Dependency(\.sharedChangeTracker) var changeTracker
+//        guard let newValue else {
+//          changeTracker?[reference] = nil
+//          return
+//        }
+//        if changeTracker?[reference] == nil {
+//          changeTracker?[reference] = AnyChange(reference)
+//        }
+//        changeTracker?[reference]?.snapshot[
+//          keyPath: unsafeDowncast(self.keyPath, to: WritableKeyPath<Root, Value>.self)
+//        ] = newValue
+//      }
+//      return open(self.reference)
     }
   }
 }
@@ -313,13 +291,7 @@ public struct Shared<Value: Sendable>: Sendable {
 extension Shared: Equatable where Value: Equatable {
   public static func == (lhs: Shared, rhs: Shared) -> Bool {
     @Dependency(\.sharedChangeTracker) var changeTracker
-    if changeTracker != nil, lhs.reference === rhs.reference, lhs.keyPath == rhs.keyPath {
-      if let lhsReference = lhs.reference as? any Equatable {
-        func open<T: Equatable>(_ lhsReference: T) -> Bool {
-          lhsReference == rhs.reference as? T
-        }
-        return open(lhsReference)
-      }
+    if changeTracker != nil, lhs.reference === rhs.reference {
       return lhs.snapshot ?? lhs.currentValue == rhs.currentValue
     } else {
       return lhs.wrappedValue == rhs.wrappedValue
@@ -453,19 +425,20 @@ extension Shared {
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member>
   ) -> SharedReader<Member> {
-    SharedReader<Member>(
-      reference: self.reference,
-      // NB: Can get rid of bitcast when this is fixed:
-      //     https://github.com/swiftlang/swift/issues/75531
-      keyPath: sendableKeyPath(
-        (self.keyPath as AnyKeyPath).appending(path: keyPath)!
+    func open(_ location: some MutableReference<Value>) -> SharedReader<Member> {
+      SharedReader<Member>(
+        reference: _ReferenceAppendKeyPath(
+          base: location,
+          keyPath: sendableKeyPath(keyPath)
+        )
       )
-    )
+    }
+    return open(reference)
   }
 
   /// Constructs a read-only version of the shared value.
   public var reader: SharedReader<Value> {
-    SharedReader(reference: self.reference, keyPath: self.keyPath)
+    SharedReader(reference: reference)
   }
 
   @_disfavoredOverload

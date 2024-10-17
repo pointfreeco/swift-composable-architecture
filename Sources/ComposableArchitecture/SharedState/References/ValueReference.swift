@@ -19,34 +19,24 @@ extension Shared {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
-    self.init(
-      reference: {
-        @Dependency(\.persistentReferences) var references
-        return references.withValue {
-          if let reference = $0[persistenceKey.id] {
-            precondition(
-              reference.valueType == Value.self,
-              """
-              "\(typeName(Value.self, genericsAbbreviated: false))" does not match existing \
-              persistent reference "\(typeName(reference.valueType, genericsAbbreviated: false))" \
-              (key: "\(persistenceKey.id)")
-              """
-            )
-            return reference
-          } else {
-            let reference = ValueReference(
-              initialValue: value(),
-              persistenceKey: persistenceKey,
-              fileID: fileID,
-              line: line
-            )
-            $0[persistenceKey.id] = reference
-            return reference
-          }
-        }
-      }(),
-      keyPath: \Value.self
-    )
+    @Dependency(\.persistentReferences) var references
+    let reference = references.withValue { references in
+      if let reference = references[persistenceKey.id] as? AnyMutableReference<Value> {
+        return reference
+      } else {
+        let reference = AnyMutableReference(
+          ValueReference(
+            initialValue: value(),
+            persistenceKey: persistenceKey,
+            fileID: fileID,
+            line: line
+          )
+        )
+        references[persistenceKey.id] = reference
+        return reference
+      }
+    }
+    self.init(reference: reference)
   }
 
   /// Creates a shared reference to an optional value using a persistence key.
@@ -95,34 +85,24 @@ extension Shared {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) throws {
-    try self.init(
-      reference: {
-        @Dependency(\.persistentReferences) var references
-        return try references.withValue {
-          if let reference = $0[persistenceKey.id] {
-            precondition(
-              reference.valueType == Value.self,
-              """
-              "\(typeName(Value.self, genericsAbbreviated: false))" does not match existing \
-              persistent reference "\(typeName(reference.valueType, genericsAbbreviated: false))" \
-              (key: "\(persistenceKey.id)")
-              """
-            )
-            return reference
-          } else {
-            let reference = try ValueReference(
-              initialValue: value(),
-              persistenceKey: persistenceKey,
-              fileID: fileID,
-              line: line
-            )
-            $0[persistenceKey.id] = reference
-            return reference
-          }
-        }
-      }(),
-      keyPath: \Value.self
-    )
+    @Dependency(\.persistentReferences) var references
+    let reference = try references.withValue { references in
+      if let reference = references[persistenceKey.id] as? AnyMutableReference<Value> {
+        return reference
+      } else {
+        let reference = AnyMutableReference(
+          ValueReference(
+            initialValue: try value(),
+            persistenceKey: persistenceKey,
+            fileID: fileID,
+            line: line
+          )
+        )
+        references[persistenceKey.id] = reference
+        return reference
+      }
+    }
+    self.init(reference: reference)
   }
 
   /// Creates a shared reference to a value using a persistence key with a default value.
@@ -179,33 +159,24 @@ extension SharedReader {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) {
-    self.init(
-      reference: {
-        @Dependency(\.persistentReferences) var references
-        return references.withValue {
-          if let reference = $0[persistenceKey.id] {
-            precondition(
-              reference.valueType == Value.self,
-              """
-              Type mismatch at persistence key "\(persistenceKey.id)": \
-              \(reference.valueType) != \(Value.self)
-              """
-            )
-            return reference
-          } else {
-            let reference = ValueReference(
-              initialValue: value(),
-              persistenceKey: persistenceKey,
-              fileID: fileID,
-              line: line
-            )
-            $0[persistenceKey.id] = reference
-            return reference
-          }
-        }
-      }(),
-      keyPath: \Value.self
-    )
+    @Dependency(\.persistentReferences) var references
+    let reference = references.withValue { references in
+      if let reference = references[persistenceKey.id] as? AnyMutableReference<Value> {
+        return reference
+      } else {
+        let reference = AnyMutableReference(
+          ValueReference(
+            initialValue: value(),
+            persistenceKey: persistenceKey,
+            fileID: fileID,
+            line: line
+          )
+        )
+        references[persistenceKey.id] = reference
+        return reference
+      }
+    }
+    self.init(reference: reference)
   }
 
   /// Creates a shared reference to an optional, read-only value using a persistence key.
@@ -254,33 +225,24 @@ extension SharedReader {
     fileID: StaticString = #fileID,
     line: UInt = #line
   ) throws {
-    try self.init(
-      reference: {
-        @Dependency(\.persistentReferences) var references
-        return try references.withValue {
-          if let reference = $0[persistenceKey.id] {
-            precondition(
-              reference.valueType == Value.self,
-              """
-              Type mismatch at persistence key "\(persistenceKey.id)": \
-              \(reference.valueType) != \(Value.self)
-              """
-            )
-            return reference
-          } else {
-            let reference = ValueReference(
-              initialValue: try value(),
-              persistenceKey: persistenceKey,
-              fileID: fileID,
-              line: line
-            )
-            $0[persistenceKey.id] = reference
-            return reference
-          }
-        }
-      }(),
-      keyPath: \Value.self
-    )
+    @Dependency(\.persistentReferences) var references
+    let reference = try references.withValue { references in
+      if let reference = references[persistenceKey.id] as? AnyMutableReference<Value> {
+        return reference
+      } else {
+        let reference = AnyMutableReference(
+          ValueReference(
+            initialValue: try value(),
+            persistenceKey: persistenceKey,
+            fileID: fileID,
+            line: line
+          )
+        )
+        references[persistenceKey.id] = reference
+        return reference
+      }
+    }
+    self.init(reference: reference)
   }
 
   /// Creates a shared reference to a read-only value using a persistence key with a default value.
@@ -325,10 +287,13 @@ extension SharedReader {
 
 private struct LoadError: Error {}
 
-final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Reference,
+final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>:
+  HashableObject,
+  MutableReference,
   @unchecked Sendable
 {
   private let lock = NSRecursiveLock()
+  private let id = UUID()
   private let persistenceKey: Persistence?
   #if canImport(Combine)
     private let subject: CurrentValueRelay<Value>
@@ -364,8 +329,8 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
     }
   }
   #if canImport(Combine)
-    var publisher: AnyPublisher<Value, Never> {
-      self.subject.dropFirst().eraseToAnyPublisher()
+    var publisher: any Publisher<Value, Never> {
+      self.subject.dropFirst()
     }
   #endif
   init(
@@ -408,16 +373,16 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>: Ref
 extension ValueReference: Perceptible {}
 
 private enum PersistentReferencesKey: DependencyKey {
-  static var liveValue: LockIsolated<[AnyHashable: any Reference]> {
+  static var liveValue: LockIsolated<[AnyHashable: any MutableReference]> {
     LockIsolated([:])
   }
-  static var testValue: LockIsolated<[AnyHashable: any Reference]> {
+  static var testValue: LockIsolated<[AnyHashable: any MutableReference]> {
     LockIsolated([:])
   }
 }
 
 extension DependencyValues {
-  var persistentReferences: LockIsolated<[AnyHashable: any Reference]> {
+  var persistentReferences: LockIsolated<[AnyHashable: any MutableReference]> {
     get { self[PersistentReferencesKey.self] }
     set { self[PersistentReferencesKey.self] = newValue }
   }

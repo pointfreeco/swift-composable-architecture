@@ -9,16 +9,10 @@
 @dynamicMemberLookup
 @propertyWrapper
 public struct SharedReader<Value: Sendable> {
-  fileprivate let reference: any Reference
-  fileprivate let keyPath: AnyKeyPath
+  fileprivate let reference: any Reference<Value>
 
-  init(reference: any Reference, keyPath: AnyKeyPath) {
+  init(reference: any Reference<Value>) {
     self.reference = reference
-    self.keyPath = keyPath
-  }
-
-  init(reference: some Reference<Value>) {
-    self.init(reference: reference, keyPath: \Value.self)
   }
 
   /// Creates a read-only shared reference from another read-only shared reference.
@@ -45,10 +39,10 @@ public struct SharedReader<Value: Sendable> {
   public init?(_ base: SharedReader<Value?>) {
     guard let initialValue = base.wrappedValue
     else { return nil }
-    self.init(
-      reference: base.reference,
-      keyPath: base.keyPath.appending(path: \Value?.[default: DefaultSubscript(initialValue)])!
-    )
+    func open(_ location: some Reference<Value?>) -> any Reference<Value> {
+      _ReferenceFromOptional(initialValue: initialValue, base: location)
+    }
+    self.init(reference: open(base.reference))
   }
 
   /// Creates a read-only shared reference from a shared reference.
@@ -94,12 +88,7 @@ public struct SharedReader<Value: Sendable> {
   /// }
   /// ```
   public var wrappedValue: Value {
-    func open<Root>(_ reference: some Reference<Root>) -> Value {
-      reference.value[
-        keyPath: unsafeDowncast(self.keyPath, to: KeyPath<Root, Value>.self)
-      ]
-    }
-    return open(self.reference)
+    reference.value
   }
 
   /// A projection of the read-only shared value that returns a shared reference.
@@ -115,7 +104,15 @@ public struct SharedReader<Value: Sendable> {
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member>
   ) -> SharedReader<Member> {
-    SharedReader<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
+    func open(_ location: some Reference<Value>) -> SharedReader<Member> {
+      SharedReader<Member>(
+        reference: _ReferenceAppendKeyPath(
+          base: location,
+          keyPath: sendableKeyPath(keyPath)
+        )
+      )
+    }
+    return open(reference)
   }
 
   @_disfavoredOverload
@@ -131,12 +128,10 @@ public struct SharedReader<Value: Sendable> {
   #if canImport(Combine)
     /// Returns a publisher that emits events when the underlying value changes.
     public var publisher: AnyPublisher<Value, Never> {
-      func open<R: Reference>(_ reference: R) -> AnyPublisher<Value, Never> {
-        return reference.publisher
-          .compactMap { $0[keyPath: self.keyPath] as? Value }
-          .eraseToAnyPublisher()
+      func open(_ publisher: some Publisher<Value, Never>) -> AnyPublisher<Value, Never> {
+        publisher.eraseToAnyPublisher()
       }
-      return open(self.reference)
+      return open(self.reference.publisher)
     }
   #endif
 }

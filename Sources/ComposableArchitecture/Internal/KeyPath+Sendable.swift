@@ -32,3 +32,25 @@ func sendableKeyPath(
     keyPath
   #endif
 }
+
+@_transparent
+func sendableKeyPath<Root, Value>(
+  _ keyPath: KeyPath<Root, Value>
+) -> _SendableKeyPath<Root, Value> {
+  #if compiler(>=6)
+    unsafeBitCast(keyPath, to: _SendableKeyPath<Root, Value>.self)
+  #else
+    keyPath
+  #endif
+}
+
+@_transparent
+func sendableKeyPath<Root, Value>(
+  _ keyPath: WritableKeyPath<Root, Value>
+) -> _SendableWritableKeyPath<Root, Value> {
+  #if compiler(>=6)
+    unsafeBitCast(keyPath, to: _SendableWritableKeyPath<Root, Value>.self)
+  #else
+    keyPath
+  #endif
+}
