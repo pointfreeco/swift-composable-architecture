@@ -55,7 +55,7 @@ extension CurrentValueRelay {
     private var demand = Subscribers.Demand.none
 
     private var _downstream: (any Subscriber<Output, Never>)?
-    var downstream: (any Subscriber<Output, Never>)? {
+    private var downstream: (any Subscriber<Output, Never>)? {
       var downstream: (any Subscriber<Output, Never>)?
       self.lock.sync { downstream = _downstream }
       return downstream
