@@ -53,14 +53,21 @@ final class CurrentValueRelay<Output>: Publisher {
 extension CurrentValueRelay {
   fileprivate final class Subscription: Combine.Subscription, Equatable {
     private var demand = Subscribers.Demand.none
-    private var downstream: (any Subscriber<Output, Never>)?
+
+    private var _downstream: (any Subscriber<Output, Never>)?
+    private var downstream: (any Subscriber<Output, Never>)? {
+      var downstream: (any Subscriber<Output, Never>)?
+      self.lock.sync { downstream = _downstream }
+      return downstream
+    }
+
     private let lock: os_unfair_lock_t
     private var receivedLastValue = false
     private var upstream: CurrentValueRelay?
 
     init(upstream: CurrentValueRelay, downstream: any Subscriber<Output, Never>) {
       self.upstream = upstream
-      self.downstream = downstream
+      self._downstream = downstream
       self.lock = os_unfair_lock_t.allocate(capacity: 1)
       self.lock.initialize(to: os_unfair_lock())
     }
@@ -72,7 +79,7 @@ extension CurrentValueRelay {
 
     func cancel() {
       self.lock.sync {
-        self.downstream = nil
+        self._downstream = nil
         self.upstream?.remove(self)
         self.upstream = nil
       }
@@ -81,21 +88,21 @@ extension CurrentValueRelay {
     func receive(_ value: Output) {
       guard let downstream else { return }
 
+      self.lock.lock()
       switch self.demand {
       case .unlimited:
+        self.lock.unlock()
         // NB: Adding to unlimited demand has no effect and can be ignored.
         _ = downstream.receive(value)
 
       case .none:
-        self.lock.sync {
-          self.receivedLastValue = false
-        }
+        self.receivedLastValue = false
+        self.lock.unlock()
 
       default:
-        self.lock.sync {
-          self.receivedLastValue = true
-          self.demand -= 1
-        }
+        self.receivedLastValue = true
+        self.demand -= 1
+        self.lock.unlock()
         let moreDemand = downstream.receive(value)
         self.lock.sync {
           self.demand += moreDemand
@@ -113,7 +120,7 @@ extension CurrentValueRelay {
 
       guard
         !self.receivedLastValue,
-        let value = self.upstream?.currentValue
+        let value = self.upstream?.value
       else {
         self.lock.unlock()
         return
