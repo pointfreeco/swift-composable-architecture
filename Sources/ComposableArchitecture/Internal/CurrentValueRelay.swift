@@ -5,41 +5,45 @@ final class CurrentValueRelay<Output>: Publisher {
   typealias Failure = Never
 
   private var currentValue: Output
-  private let lock: NSRecursiveLock
+  private let lock: NSLock
   private var subscriptions = ContiguousArray<Subscription>()
 
   var value: Output {
-    get { self.lock.sync { self.currentValue } }
+    get { self.lock.withLock { self.currentValue } }
     set { self.send(newValue) }
   }
 
   init(_ value: Output) {
     self.currentValue = value
-    self.lock = NSRecursiveLock()
+    self.lock = NSLock()
   }
 
   func receive(subscriber: some Subscriber<Output, Never>) {
     let subscription = Subscription(upstream: self, downstream: subscriber)
-    self.lock.sync {
+    self.lock.withLock {
       self.subscriptions.append(subscription)
     }
     subscriber.receive(subscription: subscription)
   }
 
   func send(_ value: Output) {
-    self.lock.sync {
+    self.lock.withLock {
       self.currentValue = value
     }
-    for subscription in self.lock.sync(work: { self.subscriptions }) {
+    for subscription in self.lock.withLock({ self.subscriptions }) {
       subscription.receive(value)
     }
   }
 
+  private func _remove(_ subscription: Subscription) {
+    guard let index = self.subscriptions.firstIndex(of: subscription)
+    else { return }
+    self.subscriptions.remove(at: index)
+  }
+
   private func remove(_ subscription: Subscription) {
-    self.lock.sync {
-      guard let index = self.subscriptions.firstIndex(of: subscription)
-      else { return }
-      self.subscriptions.remove(at: index)
+    self.lock.withLock {
+      self._remove(subscription)
     }
   }
 }
@@ -51,11 +55,11 @@ extension CurrentValueRelay {
     private var _downstream: (any Subscriber<Output, Never>)?
     var downstream: (any Subscriber<Output, Never>)? {
       var downstream: (any Subscriber<Output, Never>)?
-      self.lock.sync { downstream = _downstream }
+      self.lock.withLock { downstream = _downstream }
       return downstream
     }
 
-    private let lock: NSRecursiveLock
+    private let lock: NSLock
     private var receivedLastValue = false
     private var upstream: CurrentValueRelay?
 
@@ -66,9 +70,9 @@ extension CurrentValueRelay {
     }
 
     func cancel() {
-      self.lock.sync {
+      self.lock.withLock {
         self._downstream = nil
-        self.upstream?.remove(self)
+        self.upstream?._remove(self)
         self.upstream = nil
       }
     }
@@ -92,7 +96,7 @@ extension CurrentValueRelay {
         self._demand -= 1
         self.lock.unlock()
         let moreDemand = downstream.receive(value)
-        self.lock.sync {
+        self.lock.withLock {
           self._demand += moreDemand
         }
       }
