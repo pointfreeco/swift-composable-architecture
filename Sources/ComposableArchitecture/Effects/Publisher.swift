@@ -21,7 +21,7 @@ public struct _EffectPublisher<Action>: Publisher {
   }
 
   public func receive(subscriber: some Combine.Subscriber<Action, Failure>) {
-    publisher.subscribe(subscriber)
+    publisher.receive(subscriber: subscriber)
   }
 
   private var publisher: AnyPublisher<Action, Failure> {
