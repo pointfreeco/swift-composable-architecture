@@ -4,46 +4,48 @@ import Foundation
 final class CurrentValueRelay<Output>: Publisher {
   typealias Failure = Never
 
-  private var currentValue: Output
-  private let lock: NSLock
+  private var _value: Output
+  private let lock: os_unfair_lock_t
   private var subscriptions = ContiguousArray<Subscription>()
 
   var value: Output {
-    get { self.lock.withLock { self.currentValue } }
+    get { self.lock.sync { self._value } }
     set { self.send(newValue) }
   }
 
   init(_ value: Output) {
-    self.currentValue = value
-    self.lock = NSLock()
+    self._value = value
+    self.lock = os_unfair_lock_t.allocate(capacity: 1)
+    self.lock.initialize(to: os_unfair_lock())
+  }
+
+  deinit {
+    self.lock.deinitialize(count: 1)
+    self.lock.deallocate()
   }
 
   func receive(subscriber: some Subscriber<Output, Never>) {
     let subscription = Subscription(upstream: self, downstream: subscriber)
-    self.lock.withLock {
+    self.lock.sync {
       self.subscriptions.append(subscription)
     }
     subscriber.receive(subscription: subscription)
   }
 
   func send(_ value: Output) {
-    self.lock.withLock {
-      self.currentValue = value
+    self.lock.sync {
+      self._value = value
     }
-    for subscription in self.lock.withLock({ self.subscriptions }) {
+    for subscription in self.lock.sync({ self.subscriptions }) {
       subscription.receive(value)
     }
   }
 
-  private func _remove(_ subscription: Subscription) {
-    guard let index = self.subscriptions.firstIndex(of: subscription)
-    else { return }
-    self.subscriptions.remove(at: index)
-  }
-
   private func remove(_ subscription: Subscription) {
-    self.lock.withLock {
-      self._remove(subscription)
+    self.lock.sync {
+      guard let index = self.subscriptions.firstIndex(of: subscription)
+      else { return }
+      self.subscriptions.remove(at: index)
     }
   }
 }
@@ -55,24 +57,30 @@ extension CurrentValueRelay {
     private var _downstream: (any Subscriber<Output, Never>)?
     var downstream: (any Subscriber<Output, Never>)? {
       var downstream: (any Subscriber<Output, Never>)?
-      self.lock.withLock { downstream = _downstream }
+      self.lock.sync { downstream = _downstream }
       return downstream
     }
 
-    private let lock: NSLock
+    private let lock: os_unfair_lock_t
     private var receivedLastValue = false
     private var upstream: CurrentValueRelay?
 
     init(upstream: CurrentValueRelay, downstream: any Subscriber<Output, Never>) {
       self.upstream = upstream
       self._downstream = downstream
-      self.lock = upstream.lock
+      self.lock = os_unfair_lock_t.allocate(capacity: 1)
+      self.lock.initialize(to: os_unfair_lock())
+    }
+
+    deinit {
+      self.lock.deinitialize(count: 1)
+      self.lock.deallocate()
     }
 
     func cancel() {
-      self.lock.withLock {
+      self.lock.sync {
         self._downstream = nil
-        self.upstream?._remove(self)
+        self.upstream?.remove(self)
         self.upstream = nil
       }
     }
@@ -96,7 +104,7 @@ extension CurrentValueRelay {
         self._demand -= 1
         self.lock.unlock()
         let moreDemand = downstream.receive(value)
-        self.lock.withLock {
+        self.lock.sync {
           self._demand += moreDemand
         }
       }
@@ -112,7 +120,7 @@ extension CurrentValueRelay {
 
       guard
         !self.receivedLastValue,
-        let value = self.upstream?.currentValue
+        let value = self.upstream?.value
       else {
         self.lock.unlock()
         return
