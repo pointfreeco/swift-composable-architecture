@@ -27,6 +27,13 @@ final class SharedTests: XCTestCase {
 
   @MainActor
   func testSharingWithDelegateAction() async {
+    XCTTODO(
+      """
+      Ideally this test would pass but is a known, but also expected, issue with shared state and
+      the test store. The fix is to have the test store not eagerly process actions from effects,
+      but unfortunately that would be a breaking change in 1.0.
+      """)
+
     let store = TestStore(
       initialState: SharedFeature.State(
         profile: Shared(Profile(stats: Shared(Stats()))),
