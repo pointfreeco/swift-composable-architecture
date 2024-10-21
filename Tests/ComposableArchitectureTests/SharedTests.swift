@@ -51,6 +51,25 @@ final class SharedTests: XCTestCase {
   }
 
   @MainActor
+  func testSharingWithDelegateAction_EagerActionProcessing() async {
+    let store = TestStore(
+      initialState: SharedFeature.State(
+        profile: Shared(Profile(stats: Shared(Stats()))),
+        sharedCount: Shared(0),
+        stats: Shared(Stats())
+      )
+    ) {
+      SharedFeature()
+    }
+    await store.send(.incrementSharedInDelegate) {
+      $0.stats.count = 1
+    }
+    await store.receive(\.delegate.didIncrement) {
+      $0.count = 1
+    }
+  }
+
+  @MainActor
   func testSharing_Failure() async {
     let store = TestStore(
       initialState: SharedFeature.State(
