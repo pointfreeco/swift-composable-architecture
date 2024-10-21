@@ -53,21 +53,14 @@ final class CurrentValueRelay<Output>: Publisher {
 extension CurrentValueRelay {
   fileprivate final class Subscription: Combine.Subscription, Equatable {
     private var demand = Subscribers.Demand.none
-
-    private var _downstream: (any Subscriber<Output, Never>)?
-    private var downstream: (any Subscriber<Output, Never>)? {
-      var downstream: (any Subscriber<Output, Never>)?
-      self.lock.sync { downstream = _downstream }
-      return downstream
-    }
-
+    private var downstream: (any Subscriber<Output, Never>)?
     private let lock: os_unfair_lock_t
     private var receivedLastValue = false
     private var upstream: CurrentValueRelay?
 
     init(upstream: CurrentValueRelay, downstream: any Subscriber<Output, Never>) {
       self.upstream = upstream
-      self._downstream = downstream
+      self.downstream = downstream
       self.lock = os_unfair_lock_t.allocate(capacity: 1)
       self.lock.initialize(to: os_unfair_lock())
     }
@@ -79,16 +72,20 @@ extension CurrentValueRelay {
 
     func cancel() {
       self.lock.sync {
-        self._downstream = nil
+        self.downstream = nil
         self.upstream?.remove(self)
         self.upstream = nil
       }
     }
 
     func receive(_ value: Output) {
-      guard let downstream else { return }
-
       self.lock.lock()
+
+      guard let downstream else {
+        self.lock.unlock()
+        return
+      }
+
       switch self.demand {
       case .unlimited:
         self.lock.unlock()
@@ -113,9 +110,13 @@ extension CurrentValueRelay {
     func request(_ demand: Subscribers.Demand) {
       precondition(demand > 0, "Demand must be greater than zero")
 
-      guard let downstream else { return }
-
       self.lock.lock()
+
+      guard let downstream else {
+        self.lock.unlock()
+        return
+      }
+
       self.demand += demand
 
       guard
