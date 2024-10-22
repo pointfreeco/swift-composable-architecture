@@ -62,8 +62,6 @@ public struct Shared<Value: Sendable>: Sendable {
     else { return nil }
     self.init(
       reference: base.reference,
-      // NB: Can get rid of bitcast when this is fixed:
-      //     https://github.com/swiftlang/swift/issues/75531
       keyPath: sendableKeyPath(
         (base.keyPath as AnyKeyPath)
           .appending(path: \Value?.[default: DefaultSubscript(initialValue)])!
@@ -177,11 +175,7 @@ public struct Shared<Value: Sendable>: Sendable {
   ) -> Shared<Member> {
     Shared<Member>(
       reference: self.reference,
-      // NB: Can get rid of bitcast when this is fixed:
-      //     https://github.com/swiftlang/swift/issues/75531
-      keyPath: sendableKeyPath(
-        (self.keyPath as AnyKeyPath).appending(path: keyPath)!
-      )
+      keyPath: sendableKeyPath((self.keyPath as AnyKeyPath).appending(path: keyPath)!)
     )
   }
 
@@ -459,11 +453,7 @@ extension Shared {
   ) -> SharedReader<Member> {
     SharedReader<Member>(
       reference: self.reference,
-      // NB: Can get rid of bitcast when this is fixed:
-      //     https://github.com/swiftlang/swift/issues/75531
-      keyPath: sendableKeyPath(
-        (self.keyPath as AnyKeyPath).appending(path: keyPath)!
-      )
+      keyPath: sendableKeyPath((self.keyPath as AnyKeyPath).appending(path: keyPath)!)
     )
   }
 

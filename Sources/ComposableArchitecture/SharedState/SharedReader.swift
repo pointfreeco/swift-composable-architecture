@@ -8,11 +8,11 @@
 /// wrapper, in particular <doc:SharingState#Read-only-shared-state>.
 @dynamicMemberLookup
 @propertyWrapper
-public struct SharedReader<Value: Sendable> {
+public struct SharedReader<Value: Sendable>: Sendable {
   fileprivate let reference: any Reference
-  fileprivate let keyPath: AnyKeyPath
+  fileprivate let keyPath: _SendableAnyKeyPath
 
-  init(reference: any Reference, keyPath: AnyKeyPath) {
+  init(reference: any Reference, keyPath: _SendableAnyKeyPath) {
     self.reference = reference
     self.keyPath = keyPath
   }
@@ -47,7 +47,10 @@ public struct SharedReader<Value: Sendable> {
     else { return nil }
     self.init(
       reference: base.reference,
-      keyPath: base.keyPath.appending(path: \Value?.[default: DefaultSubscript(initialValue)])!
+      keyPath: sendableKeyPath(
+        (base.keyPath as AnyKeyPath)
+          .appending(path: \Value?.[default: DefaultSubscript(initialValue)])!
+      )
     )
   }
 
@@ -119,7 +122,10 @@ public struct SharedReader<Value: Sendable> {
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member>
   ) -> SharedReader<Member> {
-    SharedReader<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
+    SharedReader<Member>(
+      reference: self.reference,
+      keyPath: sendableKeyPath((self.keyPath as AnyKeyPath).appending(path: keyPath)!)
+    )
   }
 
   @_disfavoredOverload
@@ -137,15 +143,13 @@ public struct SharedReader<Value: Sendable> {
     public var publisher: AnyPublisher<Value, Never> {
       func open<R: Reference>(_ reference: R) -> AnyPublisher<Value, Never> {
         return reference.publisher
-          .compactMap { $0[keyPath: self.keyPath] as? Value }
+          .compactMap { $0[keyPath: self.keyPath as AnyKeyPath] as? Value }
           .eraseToAnyPublisher()
       }
       return open(self.reference)
     }
   #endif
 }
-
-extension SharedReader: @unchecked Sendable where Value: Sendable {}
 
 extension SharedReader: Equatable where Value: Equatable {
   public static func == (lhs: SharedReader, rhs: SharedReader) -> Bool {
