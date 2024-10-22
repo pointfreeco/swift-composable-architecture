@@ -79,23 +79,27 @@ extension CurrentValueRelay {
     }
 
     func receive(_ value: Output) {
-      guard let downstream else { return }
+      self.lock.lock()
+
+      guard let downstream else {
+        self.lock.unlock()
+        return
+      }
 
       switch self.demand {
       case .unlimited:
+        self.lock.unlock()
         // NB: Adding to unlimited demand has no effect and can be ignored.
         _ = downstream.receive(value)
 
       case .none:
-        self.lock.sync {
-          self.receivedLastValue = false
-        }
+        self.receivedLastValue = false
+        self.lock.unlock()
 
       default:
-        self.lock.sync {
-          self.receivedLastValue = true
-          self.demand -= 1
-        }
+        self.receivedLastValue = true
+        self.demand -= 1
+        self.lock.unlock()
         let moreDemand = downstream.receive(value)
         self.lock.sync {
           self.demand += moreDemand
@@ -106,14 +110,18 @@ extension CurrentValueRelay {
     func request(_ demand: Subscribers.Demand) {
       precondition(demand > 0, "Demand must be greater than zero")
 
-      guard let downstream else { return }
-
       self.lock.lock()
+
+      guard let downstream else {
+        self.lock.unlock()
+        return
+      }
+
       self.demand += demand
 
       guard
         !self.receivedLastValue,
-        let value = self.upstream?.currentValue
+        let value = self.upstream?.value
       else {
         self.lock.unlock()
         return
