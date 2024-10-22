@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 /// A view that controls a navigation presentation.
@@ -71,19 +72,20 @@ public struct NavigationLinkStore<
       Destination,
     @ViewBuilder label: () -> Label
   ) {
+    func open(
+      _ core: some Core<PresentationState<State>, PresentationAction<Action>>
+    ) -> any Core<PresentationState<State>, PresentationAction<Action>> {
+      PresentationCore(base: core, toDestinationState: toDestinationState)
+    }
     let store = store.scope(
-      id: nil,
-      state: ToState(\.self),
-      action: { $0 },
-      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
+      id: store.id(state: \.self, action: \.self),
+      childCore: open(store.core)
     )
     self.store = store
     self.viewStore = ViewStore(
-      store.scope(
-        id: nil,
-        state: ToState { $0.wrappedValue.flatMap(toDestinationState) != nil },
-        action: { $0 },
-        isInvalid: nil
+      store._scope(
+        state: { $0.wrappedValue.flatMap(toDestinationState) != nil },
+        action: { $0 }
       ),
       observe: { $0 }
     )
@@ -122,19 +124,20 @@ public struct NavigationLinkStore<
       Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {
+    func open(
+      _ core: some Core<PresentationState<State>, PresentationAction<Action>>
+    ) -> any Core<PresentationState<State>, PresentationAction<Action>> {
+      NavigationLinkCore(base: core, id: id, toDestinationState: toDestinationState)
+    }
     let store = store.scope(
-      id: nil,
-      state: ToState(\.self),
-      action: { $0 },
-      isInvalid: { $0.wrappedValue.flatMap(toDestinationState)?.id != id }
+      id: store.id(state: \.self, action: \.self),
+      childCore: open(store.core)
     )
     self.store = store
     self.viewStore = ViewStore(
-      store.scope(
-        id: nil,
-        state: ToState { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
-        action: { $0 },
-        isInvalid: nil
+      store._scope(
+        state: { $0.wrappedValue.flatMap(toDestinationState)?.id == id },
+        action: { $0 }
       ),
       observe: { $0 }
     )
@@ -159,13 +162,9 @@ public struct NavigationLinkStore<
       )
     ) {
       IfLetStore(
-        self.store.scope(
-          id: nil,
-          state: ToState(
-            returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) }
-          ),
-          action: { .presented(self.fromDestinationAction($0)) },
-          isInvalid: nil
+        self.store._scope(
+          state: returningLastNonNilValue { $0.wrappedValue.flatMap(self.toDestinationState) },
+          action: { .presented(self.fromDestinationAction($0)) }
         ),
         then: self.destination
       )
@@ -185,4 +184,34 @@ public struct NavigationLinkStore<
     link.isDetailLink = isDetailLink
     return link
   }
+}
+
+private final class NavigationLinkCore<
+  Base: Core<PresentationState<State>, PresentationAction<Action>>,
+  State,
+  Action,
+  DestinationState: Identifiable
+>: Core {
+  let base: Base
+  let id: DestinationState.ID
+  let toDestinationState: (State) -> DestinationState?
+  init(
+    base: Base,
+    id: DestinationState.ID,
+    toDestinationState: @escaping (State) -> DestinationState?
+  ) {
+    self.base = base
+    self.id = id
+    self.toDestinationState = toDestinationState
+  }
+  var state: Base.State {
+    base.state
+  }
+  func send(_ action: Base.Action) -> Task<Void, Never>? {
+    base.send(action)
+  }
+  var canStoreCacheChildren: Bool { base.canStoreCacheChildren }
+  var didSet: CurrentValueRelay<Void> { base.didSet }
+  var isInvalid: Bool { state.wrappedValue.flatMap(toDestinationState)?.id != id || base.isInvalid }
+  var effectCancellables: [UUID: AnyCancellable] { base.effectCancellables }
 }
