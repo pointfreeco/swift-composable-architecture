@@ -26,6 +26,50 @@ final class SharedTests: XCTestCase {
   }
 
   @MainActor
+  func testSharingWithDelegateAction() async {
+    XCTTODO(
+      """
+      Ideally this test would pass but is a known, but also expected, issue with shared state and
+      the test store. The fix is to have the test store not eagerly process actions from effects,
+      but unfortunately that would be a breaking change in 1.0.
+      """)
+
+    let store = TestStore(
+      initialState: SharedFeature.State(
+        profile: Shared(Profile(stats: Shared(Stats()))),
+        sharedCount: Shared(0),
+        stats: Shared(Stats())
+      )
+    ) {
+      SharedFeature()
+    }
+    await store.send(.incrementSharedInDelegate)
+    await store.receive(\.delegate.didIncrement) {
+      $0.count = 1
+      $0.stats.count = 1
+    }
+  }
+
+  @MainActor
+  func testSharingWithDelegateAction_EagerActionProcessing() async {
+    let store = TestStore(
+      initialState: SharedFeature.State(
+        profile: Shared(Profile(stats: Shared(Stats()))),
+        sharedCount: Shared(0),
+        stats: Shared(Stats())
+      )
+    ) {
+      SharedFeature()
+    }
+    await store.send(.incrementSharedInDelegate) {
+      $0.stats.count = 1
+    }
+    await store.receive(\.delegate.didIncrement) {
+      $0.count = 1
+    }
+  }
+
+  @MainActor
   func testSharing_Failure() async {
     let store = TestStore(
       initialState: SharedFeature.State(
@@ -1070,18 +1114,28 @@ private struct SharedFeature {
     }
   }
   enum Action {
+    case delegate(Delegate)
     case increment
     case incrementStats
+    case incrementSharedInDelegate
     case longLivingEffect
     case noop
     case request
     case sharedIncrement
     case toggleIsOn
+    @CasePathable
+    enum Delegate {
+      case didIncrement
+    }
   }
   @Dependency(\.mainQueue) var mainQueue
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
+      case .delegate(.didIncrement):
+        state.count += 1
+        state.stats.count += 1
+        return .none
       case .increment:
         state.count += 1
         return .none
@@ -1089,6 +1143,8 @@ private struct SharedFeature {
         state.profile.stats.count += 1
         state.stats.count += 1
         return .none
+      case .incrementSharedInDelegate:
+        return .send(.delegate(.didIncrement))
       case .longLivingEffect:
         return .run { [sharedCount = state.$sharedCount] _ in
           try await self.mainQueue.sleep(for: .seconds(1))
