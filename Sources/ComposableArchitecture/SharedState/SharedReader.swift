@@ -9,16 +9,17 @@
 @dynamicMemberLookup
 @propertyWrapper
 public struct SharedReader<Value: Sendable> {
-  fileprivate let reference: any Reference
-  fileprivate let keyPath: AnyKeyPath
+  private let _reference: Managed<any Reference>
+  private var reference: any Reference { _reference.value }
+  private let keyPath: AnyKeyPath
 
-  init(reference: any Reference, keyPath: AnyKeyPath) {
-    self.reference = reference
+  init(reference: Managed<any Reference>, keyPath: AnyKeyPath) {
+    self._reference = reference
     self.keyPath = keyPath
   }
 
   init(reference: some Reference<Value>) {
-    self.init(reference: reference, keyPath: \Value.self)
+    self.init(reference: Managed(reference), keyPath: \Value.self)
   }
 
   /// Creates a read-only shared reference from another read-only shared reference.
@@ -46,7 +47,7 @@ public struct SharedReader<Value: Sendable> {
     guard let initialValue = base.wrappedValue
     else { return nil }
     self.init(
-      reference: base.reference,
+      reference: base._reference,
       keyPath: base.keyPath.appending(path: \Value?.[default: DefaultSubscript(initialValue)])!
     )
   }
@@ -119,7 +120,9 @@ public struct SharedReader<Value: Sendable> {
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member>
   ) -> SharedReader<Member> {
-    SharedReader<Member>(reference: self.reference, keyPath: self.keyPath.appending(path: keyPath)!)
+    SharedReader<Member>(
+      reference: self._reference, keyPath: self.keyPath.appending(path: keyPath)!
+    )
   }
 
   @_disfavoredOverload

@@ -102,7 +102,7 @@ struct NotificationReaderKey<Value: Sendable>: PersistenceReaderKey {
     }
   }
 
-  var id: some Hashable { self.name }
+  var id: some Hashable & Sendable { self.name }
 
   func load(initialValue: Value?) -> Value? { nil }
 

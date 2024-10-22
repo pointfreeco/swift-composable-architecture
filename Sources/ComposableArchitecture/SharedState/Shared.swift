@@ -13,11 +13,12 @@ import IssueReporting
 @dynamicMemberLookup
 @propertyWrapper
 public struct Shared<Value: Sendable>: Sendable {
-  private let reference: any Reference
+  private let _reference: Managed<any Reference>
+  private var reference: any Reference { _reference.value }
   private let keyPath: _SendableAnyKeyPath
 
-  init(reference: any Reference, keyPath: _SendableAnyKeyPath) {
-    self.reference = reference
+  init(reference: Managed<any Reference>, keyPath: _SendableAnyKeyPath) {
+    self._reference = reference
     self.keyPath = keyPath
   }
 
@@ -27,10 +28,12 @@ public struct Shared<Value: Sendable>: Sendable {
   ///   - value: A value to wrap.
   public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
     self.init(
-      reference: ValueReference<Value, InMemoryKey<Value>>(
-        initialValue: value,
-        fileID: fileID,
-        line: line
+      reference: Managed(
+        ValueReference<Value, InMemoryKey<Value>>(
+          initialValue: value,
+          fileID: fileID,
+          line: line
+        )
       ),
       keyPath: \Value.self
     )
@@ -61,7 +64,7 @@ public struct Shared<Value: Sendable>: Sendable {
     guard let initialValue = base.wrappedValue
     else { return nil }
     self.init(
-      reference: base.reference,
+      reference: base._reference,
       // NB: Can get rid of bitcast when this is fixed:
       //     https://github.com/swiftlang/swift/issues/75531
       keyPath: sendableKeyPath(
@@ -176,7 +179,7 @@ public struct Shared<Value: Sendable>: Sendable {
     dynamicMember keyPath: WritableKeyPath<Value, Member>
   ) -> Shared<Member> {
     Shared<Member>(
-      reference: self.reference,
+      reference: self._reference,
       // NB: Can get rid of bitcast when this is fixed:
       //     https://github.com/swiftlang/swift/issues/75531
       keyPath: sendableKeyPath(
@@ -458,7 +461,7 @@ extension Shared {
     dynamicMember keyPath: KeyPath<Value, Member>
   ) -> SharedReader<Member> {
     SharedReader<Member>(
-      reference: self.reference,
+      reference: self._reference,
       // NB: Can get rid of bitcast when this is fixed:
       //     https://github.com/swiftlang/swift/issues/75531
       keyPath: sendableKeyPath(
@@ -469,7 +472,7 @@ extension Shared {
 
   /// Constructs a read-only version of the shared value.
   public var reader: SharedReader<Value> {
-    SharedReader(reference: self.reference, keyPath: self.keyPath)
+    SharedReader(reference: self._reference, keyPath: self.keyPath)
   }
 
   @_disfavoredOverload

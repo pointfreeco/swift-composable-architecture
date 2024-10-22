@@ -12,7 +12,7 @@ public protocol PersistenceReaderKey<Value>: Sendable {
   associatedtype Value: Sendable
 
   /// A type representing the hashable identity of a persistence key.
-  associatedtype ID: Hashable = Self
+  associatedtype ID: Hashable & Sendable = Self
 
   /// The hashable identity of a persistence key.
   ///

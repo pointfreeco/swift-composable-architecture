@@ -1084,6 +1084,68 @@ final class SharedTests: XCTestCase {
       }
     }
   }
+
+  final class DeinitKey<Value: Sendable>: PersistenceKey, HashableObject {
+    let value: Value?
+    let onDeinit: @Sendable () -> Void
+    init(_ value: Value? = nil, onDeinit: @escaping @Sendable () -> Void) {
+      self.value = value
+      self.onDeinit = onDeinit
+    }
+    deinit {
+      onDeinit()
+    }
+    func load(initialValue: Value?) -> Value? { value ?? initialValue }
+    func save(_ value: Value) {}
+  }
+
+  func testLifecycle() {
+    let didDeinit = LockIsolated(false)
+    do {
+      @Shared(DeinitKey { didDeinit.setValue(true) }) var count = 0
+    }
+    XCTAssertTrue(didDeinit.value)
+  }
+
+  func testLifecycle_derived() {
+    struct Count {
+      var value = 0
+    }
+    var child: Shared<Int>?
+    let didDeinit = LockIsolated(false)
+    do {
+      do {
+        @Shared(DeinitKey { didDeinit.setValue(true) }) var count = Count()
+        child = $count.value
+      }
+      XCTAssertFalse(didDeinit.value)
+      child = nil
+    }
+    XCTAssertNil(child)
+    XCTAssertTrue(didDeinit.value)
+  }
+
+  func testLifecycle_throwing() throws {
+    let didDeinit = LockIsolated(false)
+    do {
+      @Shared var count: Int
+      _count = try Shared(DeinitKey(42) { didDeinit.setValue(true) })
+    }
+    XCTAssertTrue(didDeinit.value)
+  }
+
+  func testLifecycle_InMemoryKey() {
+    do {
+      @Shared(.inMemory("count")) var count = 0
+      count += 1
+      XCTAssertEqual(1, count)
+    }
+
+    do {
+      @Shared(.inMemory("count")) var count = 0
+      XCTAssertEqual(1, count)
+    }
+  }
 }
 
 @globalActor actor GA: GlobalActor {
