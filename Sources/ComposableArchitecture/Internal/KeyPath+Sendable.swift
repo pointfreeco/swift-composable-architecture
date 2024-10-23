@@ -34,7 +34,7 @@ extension _AppendKeyPath {
     #if compiler(>=6)
       unsafeBitCast(self, to: _SendableAnyKeyPath.self)
     #else
-      keyPath
+      self
     #endif
   }
 
@@ -44,7 +44,7 @@ extension _AppendKeyPath {
     #if compiler(>=6)
       unsafeBitCast(self, to: _SendablePartialKeyPath<Root>.self)
     #else
-      keyPath
+      self
     #endif
   }
 
@@ -54,7 +54,7 @@ extension _AppendKeyPath {
     #if compiler(>=6)
       unsafeBitCast(self, to: _SendableKeyPath<Root, Value>.self)
     #else
-      keyPath
+      self
     #endif
   }
 
@@ -64,7 +64,7 @@ extension _AppendKeyPath {
     #if compiler(>=6)
       unsafeBitCast(self, to: _SendableWritableKeyPath<Root, Value>.self)
     #else
-      keyPath
+      self
     #endif
   }
 
@@ -74,7 +74,7 @@ extension _AppendKeyPath {
     #if compiler(>=6)
       unsafeBitCast(self, to: _SendableReferenceWritableKeyPath<Root, Value>.self)
     #else
-      keyPath
+      self
     #endif
   }
 
@@ -84,7 +84,7 @@ extension _AppendKeyPath {
     #if compiler(>=6)
       unsafeBitCast(self, to: _SendableCaseKeyPath<Root, Value>.self)
     #else
-      keyPath
+      self
     #endif
   }
 }
