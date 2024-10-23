@@ -40,7 +40,9 @@ struct RootView: View {
                 AlertAndConfirmationDialog()
               }
             ) { store in
-              AlertAndConfirmationDialogView(store: store)
+              UIViewControllerRepresenting {
+                AlertAndConfirmationDialogViewController(store: store)
+              }
             }
           }
           NavigationLink("Focus State") {
