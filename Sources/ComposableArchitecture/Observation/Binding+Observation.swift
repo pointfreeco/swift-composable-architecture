@@ -159,12 +159,12 @@ extension BindableAction where State: ObservableState {
 
 extension Store where State: ObservableState, Action: BindableAction, Action.State == State {
   public subscript<Value: Equatable & Sendable>(
-    dynamicMember keyPath: _SendableWritableKeyPath<State, Value>
+    dynamicMember keyPath: WritableKeyPath<State, Value>
   ) -> Value {
     get { self.state[keyPath: keyPath] }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.set(keyPath, newValue, isInvalidated: _isInvalidated))
+        self.send(.set(keyPath.unsafeSendable(), newValue, isInvalidated: _isInvalidated))
       }
     }
   }
@@ -195,12 +195,12 @@ where
   Action.ViewAction.State == State
 {
   public subscript<Value: Equatable & Sendable>(
-    dynamicMember keyPath: _SendableWritableKeyPath<State, Value>
+    dynamicMember keyPath: WritableKeyPath<State, Value>
   ) -> Value {
     get { self.state[keyPath: keyPath] }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.view(.set(keyPath, newValue, isInvalidated: _isInvalidated)))
+        self.send(.view(.set(keyPath.unsafeSendable(), newValue, isInvalidated: _isInvalidated)))
       }
     }
   }
