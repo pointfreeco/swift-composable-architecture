@@ -22,13 +22,69 @@
   public typealias _SendableCaseKeyPath<Root, Value> = CaseKeyPath<Root, Value>
 #endif
 
-@_transparent
-func sendableKeyPath(
-  _ keyPath: AnyKeyPath
-) -> _SendableAnyKeyPath {
-  #if compiler(>=6)
-    unsafeBitCast(keyPath, to: _SendableAnyKeyPath.self)
-  #else
-    keyPath
-  #endif
+// NB: Dynamic member lookup does not currently support sendable key paths and even breaks
+//     autocomplete.
+//
+//     * https://github.com/swiftlang/swift/issues/77035
+//     * https://github.com/swiftlang/swift/issues/77105
+extension _AppendKeyPath {
+  @_transparent
+  func unsafeSendable() -> _SendableAnyKeyPath
+  where Self == AnyKeyPath {
+    #if compiler(>=6)
+      unsafeBitCast(self, to: _SendableAnyKeyPath.self)
+    #else
+      self
+    #endif
+  }
+
+  @_transparent
+  func unsafeSendable<Root>() -> _SendablePartialKeyPath<Root>
+  where Self == PartialKeyPath<Root> {
+    #if compiler(>=6)
+      unsafeBitCast(self, to: _SendablePartialKeyPath<Root>.self)
+    #else
+      self
+    #endif
+  }
+
+  @_transparent
+  func unsafeSendable<Root, Value>() -> _SendableKeyPath<Root, Value>
+  where Self == KeyPath<Root, Value> {
+    #if compiler(>=6)
+      unsafeBitCast(self, to: _SendableKeyPath<Root, Value>.self)
+    #else
+      self
+    #endif
+  }
+
+  @_transparent
+  func unsafeSendable<Root, Value>() -> _SendableWritableKeyPath<Root, Value>
+  where Self == WritableKeyPath<Root, Value> {
+    #if compiler(>=6)
+      unsafeBitCast(self, to: _SendableWritableKeyPath<Root, Value>.self)
+    #else
+      self
+    #endif
+  }
+
+  @_transparent
+  func unsafeSendable<Root, Value>() -> _SendableReferenceWritableKeyPath<Root, Value>
+  where Self == ReferenceWritableKeyPath<Root, Value> {
+    #if compiler(>=6)
+      unsafeBitCast(self, to: _SendableReferenceWritableKeyPath<Root, Value>.self)
+    #else
+      self
+    #endif
+  }
+
+  @_transparent
+  func unsafeSendable<Root, Value>() -> _SendableCaseKeyPath<Root, Value>
+  where Self == CaseKeyPath<Root, Value> {
+    #if compiler(>=6)
+      unsafeBitCast(self, to: _SendableCaseKeyPath<Root, Value>.self)
+    #else
+      self
+    #endif
+  }
 }

@@ -64,10 +64,9 @@ public struct Shared<Value: Sendable>: Sendable {
       reference: base.reference,
       // NB: Can get rid of bitcast when this is fixed:
       //     https://github.com/swiftlang/swift/issues/75531
-      keyPath: sendableKeyPath(
-        (base.keyPath as AnyKeyPath)
-          .appending(path: \Value?.[default: DefaultSubscript(initialValue)])!
-      )
+      keyPath: (base.keyPath as AnyKeyPath)
+        .appending(path: \Value?.[default: DefaultSubscript(initialValue)])!
+        .unsafeSendable()
     )
   }
 
@@ -179,9 +178,9 @@ public struct Shared<Value: Sendable>: Sendable {
       reference: self.reference,
       // NB: Can get rid of bitcast when this is fixed:
       //     https://github.com/swiftlang/swift/issues/75531
-      keyPath: sendableKeyPath(
-        (self.keyPath as AnyKeyPath).appending(path: keyPath)!
-      )
+      keyPath: (self.keyPath as AnyKeyPath)
+        .appending(path: keyPath)!
+        .unsafeSendable()
     )
   }
 
@@ -459,11 +458,7 @@ extension Shared {
   ) -> SharedReader<Member> {
     SharedReader<Member>(
       reference: self.reference,
-      // NB: Can get rid of bitcast when this is fixed:
-      //     https://github.com/swiftlang/swift/issues/75531
-      keyPath: sendableKeyPath(
-        (self.keyPath as AnyKeyPath).appending(path: keyPath)!
-      )
+      keyPath: (self.keyPath as AnyKeyPath).appending(path: keyPath)!.unsafeSendable()
     )
   }
 

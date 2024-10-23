@@ -174,18 +174,20 @@ public struct BindingAction<Root>: CasePathable, Equatable, Sendable {
   @dynamicMemberLookup
   public struct AllCasePaths {
     public subscript<Value: Equatable & Sendable>(
-      dynamicMember keyPath: _SendableWritableKeyPath<Root, Value>
+      dynamicMember keyPath: WritableKeyPath<Root, Value>
     ) -> AnyCasePath<BindingAction, Value> where Root: ObservableState {
-      AnyCasePath(
+      let keyPath = keyPath.unsafeSendable()
+      return AnyCasePath(
         embed: { .set(keyPath, $0) },
         extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
       )
     }
 
     public subscript<Value: Equatable & Sendable>(
-      dynamicMember keyPath: _SendableWritableKeyPath<Root, BindingState<Value>>
+      dynamicMember keyPath: WritableKeyPath<Root, BindingState<Value>>
     ) -> AnyCasePath<BindingAction, Value> {
-      AnyCasePath(
+      let keyPath = keyPath.unsafeSendable()
+      return AnyCasePath(
         embed: { .set(keyPath, $0) },
         extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
       )
@@ -299,9 +301,10 @@ extension BindableAction {
 
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   public subscript<Value: Equatable & Sendable>(
-    dynamicMember keyPath: _SendableWritableKeyPath<ViewState, BindingState<Value>>
+    dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
   ) -> Binding<Value> {
-    self.binding(
+    let keyPath = keyPath.unsafeSendable()
+    return self.binding(
       get: { $0[keyPath: keyPath].wrappedValue },
       send: { value in
         #if DEBUG
@@ -454,9 +457,10 @@ public struct BindingViewStore<State> {
   }
 
   public subscript<Value: Equatable & Sendable>(
-    dynamicMember keyPath: _SendableWritableKeyPath<State, BindingState<Value>>
+    dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
   ) -> BindingViewState<Value> {
-    BindingViewState(
+    let keyPath = keyPath.unsafeSendable()
+    return BindingViewState(
       binding: ViewStore(self.store, observe: { $0[keyPath: keyPath].wrappedValue })
         .binding(
           send: { value in
