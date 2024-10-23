@@ -43,7 +43,7 @@
       "location" : "https://github.com/pointfreeco/swift-concurrency-extras",
       "state" : {
         "branch" : "any-hashable-sendable-flexibility",
-        "revision" : "fef766e0711b8946d1fe57308e56e53ac0e89569"
+        "revision" : "b54075c8e59df443485ca509c31ff06af3ec22dd"
       }
     },
     {

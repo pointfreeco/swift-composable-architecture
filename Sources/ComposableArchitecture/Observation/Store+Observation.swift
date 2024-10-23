@@ -46,7 +46,7 @@ extension Store: Identifiable {
     ID(
       objectIdentifier: ObjectIdentifier(self),
       stateIdentifier: Thread.isMainThread
-        ? MainActor.assumeIsolated {
+        ? MainActor._assumeIsolated {
           ((currentState as? any Identifiable)?.id as? any Hashable)
             .map(AnyHashableSendable.init)
         }
