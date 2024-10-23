@@ -293,10 +293,11 @@ extension PresentationAction: CasePathable {
     }
 
     public subscript<AppendedAction>(
-      dynamicMember keyPath: _SendableCaseKeyPath<Action, AppendedAction>
+      dynamicMember keyPath: CaseKeyPath<Action, AppendedAction>
     ) -> AnyCasePath<PresentationAction, AppendedAction>
     where Action: CasePathable {
-      AnyCasePath<PresentationAction, AppendedAction>(
+      let keyPath = keyPath.unsafeSendable()
+      return AnyCasePath<PresentationAction, AppendedAction>(
         embed: { .presented(keyPath($0)) },
         extract: {
           guard case let .presented(action) = $0 else { return nil }
@@ -307,10 +308,11 @@ extension PresentationAction: CasePathable {
 
     @_disfavoredOverload
     public subscript<AppendedAction>(
-      dynamicMember keyPath: _SendableCaseKeyPath<Action, AppendedAction>
+      dynamicMember keyPath: CaseKeyPath<Action, AppendedAction>
     ) -> AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>
     where Action: CasePathable {
-      AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>(
+      let keyPath = keyPath.unsafeSendable()
+      return AnyCasePath<PresentationAction, PresentationAction<AppendedAction>>(
         embed: {
           switch $0 {
           case .dismiss:
