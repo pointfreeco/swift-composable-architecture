@@ -2,9 +2,14 @@
   import Combine
 #endif
 
+public struct ReferenceIdentifier: Hashable, Sendable {
+  let rawValue: ObjectIdentifier
+}
+
 protocol Reference<Value>: AnyObject, CustomStringConvertible, Sendable, Hashable {
   associatedtype Value: Sendable
   var value: Value { get }
+  var id: ReferenceIdentifier { get }
   func touch()
   #if canImport(Combine)
     var publisher: any Publisher<Value, Never> { get }
@@ -35,6 +40,9 @@ final class AnyMutableReference<Value: Sendable>: MutableReference {
     self.base = base
   }
 
+  var id: ReferenceIdentifier {
+    base.id
+  }
   var value: Value {
     get { base.value }
     set { base.value = newValue }

@@ -9,6 +9,9 @@ final class _ReferenceFromOptional<Base: Reference<Value?>, Value>: Reference, S
     self.cachedValue = LockIsolated(initialValue)
     self.base = base
   }
+  var id: ReferenceIdentifier {
+    base.id
+  }
   var value: Value {
     if let value = base.value {
       cachedValue.setValue(value)
@@ -65,6 +68,9 @@ final class _ReferenceAppendKeyPath<
   init(base: Base, keyPath: Path) {
     self.base = base
     self.keyPath = keyPath
+  }
+  var id: ReferenceIdentifier {
+    base.id
   }
   var value: Value {
     base.value[keyPath: keyPath]

@@ -58,7 +58,7 @@ struct AnyChange<Value: Sendable>: Change, Sendable {
 
 @_spi(Internals)
 public final class SharedChangeTracker: Sendable {
-  let changes: LockIsolated<[ObjectIdentifier: any Sendable]> = LockIsolated([:])
+  let changes: LockIsolated<[ReferenceIdentifier: any Sendable]> = LockIsolated([:])
   var hasChanges: Bool { !self.changes.isEmpty }
   @_spi(Internals) public init() {}
   func resetChanges() { self.changes.withValue { $0.removeAll() } }
@@ -71,16 +71,16 @@ public final class SharedChangeTracker: Sendable {
     self.resetChanges()
   }
   func track<Value: Sendable>(_ reference: some MutableReference<Value>) {
-    if !self.changes.keys.contains(ObjectIdentifier(reference)) {
-      self.changes.withValue { $0[ObjectIdentifier(reference)] = AnyChange(reference) }
+    if !self.changes.keys.contains(reference.id) {
+      self.changes.withValue { $0[reference.id] = AnyChange(reference) }
     }
   }
   subscript<Value>(_ reference: some MutableReference<Value>) -> AnyChange<Value>? {
-    _read { yield self.changes[ObjectIdentifier(reference)] as? AnyChange<Value> }
+    _read { yield self.changes[reference.id] as? AnyChange<Value> }
     _modify {
-      var change = self.changes[ObjectIdentifier(reference)] as? AnyChange<Value>
+      var change = self.changes[reference.id] as? AnyChange<Value>
       yield &change
-      self.changes.withValue { [change] in $0[ObjectIdentifier(reference)] = change }
+      self.changes.withValue { [change] in $0[reference.id] = change }
     }
   }
   func track<R>(_ operation: () throws -> R) rethrows -> R {

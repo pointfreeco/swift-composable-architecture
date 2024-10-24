@@ -293,7 +293,6 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>:
   @unchecked Sendable
 {
   private let lock = NSRecursiveLock()
-  private let id = UUID()
   private let persistenceKey: Persistence?
   #if canImport(Combine)
     private let subject: CurrentValueRelay<Value>
@@ -309,6 +308,9 @@ final class ValueReference<Value, Persistence: PersistenceReaderKey<Value>>:
   )
   private let fileID: StaticString
   private let line: UInt
+  var id: ReferenceIdentifier {
+    ReferenceIdentifier(rawValue: ObjectIdentifier(self))
+  }
   var value: Value {
     get {
       self._$perceptionRegistrar.access(self, keyPath: \.value)

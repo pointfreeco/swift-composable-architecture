@@ -193,7 +193,7 @@ public struct Shared<Value: Sendable>: Sendable {
     guard
       let changeTracker =
         changeTrackers
-        .first(where: { $0.changes[ObjectIdentifier(self.reference)] != nil })
+        .first(where: { $0.changes[self.reference.id] != nil })
     else {
       reportIssue(
         "Expected changes, but none occurred.",
