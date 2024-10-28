@@ -47,6 +47,15 @@ extension PersistenceReaderKey {
     AppStorageKey(key)
   }
 
+  /// Creates a persistence key that can read and write to a Date user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<Date> {
+    AppStorageKey(key)
+  }
+
   /// Creates a persistence key that can read and write to a user default as data.
   ///
   /// - Parameter key: The key to read and write the value to in the user defaults store.
@@ -118,6 +127,15 @@ extension PersistenceReaderKey {
   /// - Returns: A user defaults persistence key.
   public static func appStorage(_ key: String) -> Self
   where Self == AppStorageKey<URL?> {
+    AppStorageKey(key)
+  }
+
+  /// Creates a persistence key that can read and write to an optional Date user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<Date?> {
     AppStorageKey(key)
   }
 
@@ -198,6 +216,13 @@ public struct AppStorageKey<Value: Sendable>: Sendable {
     self.store = UncheckedSendable(store)
   }
 
+  fileprivate init(_ key: String) where Value == Date {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = CastableLookup()
+    self.key = key
+    self.store = UncheckedSendable(store)
+  }
+
   fileprivate init(_ key: String) where Value == Data {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
@@ -250,6 +275,13 @@ public struct AppStorageKey<Value: Sendable>: Sendable {
   fileprivate init(_ key: String) where Value == URL? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: URLLookup())
+    self.key = key
+    self.store = UncheckedSendable(store)
+  }
+
+  fileprivate init(_ key: String) where Value == Date? {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = OptionalLookup(base: CastableLookup())
     self.key = key
     self.store = UncheckedSendable(store)
   }
