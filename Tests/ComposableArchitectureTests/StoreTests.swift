@@ -1183,3 +1183,78 @@ extension DependencyValues {
     set { self[Count.self] = newValue }
   }
 }
+
+
+import Testing
+
+@Test
+@MainActor
+func merge() async {
+  await withMainSerialExecutor {
+    let store = await TestStore(initialState: Parent.State()) { Parent() }
+
+    await store.send(.refresh)
+    await store.receive(\.child1.response)
+    await store.receive(\.child2.response)
+    await store.receive(\.child3.response)
+    await store.receive(\.child4.response)
+    await store.receive(\.child5.response)
+  }
+}
+@Reducer
+private struct Child {
+  struct State: Equatable {}
+  enum Action {
+    case reload
+    case response
+  }
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .reload:
+        return .run { await $0(.response) }
+      case .response:
+        return .none
+      }
+    }
+  }
+}
+@Reducer
+private struct Parent {
+  struct State: Equatable {
+    var child1 = Child.State()
+    var child2 = Child.State()
+    var child3 = Child.State()
+    var child4 = Child.State()
+    var child5 = Child.State()
+  }
+  enum Action {
+    case child1(Child.Action)
+    case child2(Child.Action)
+    case child3(Child.Action)
+    case child4(Child.Action)
+    case child5(Child.Action)
+    case refresh
+  }
+  var body: some ReducerOf<Self> {
+    Scope(state: \.child1, action: \.child1) { Child() }
+    Scope(state: \.child2, action: \.child2) { Child() }
+    Scope(state: \.child3, action: \.child3) { Child() }
+    Scope(state: \.child4, action: \.child4) { Child() }
+    Scope(state: \.child5, action: \.child5) { Child() }
+    Reduce { state, action in
+      switch action {
+      case .child1, .child2, .child3, .child4, .child5:
+        return .none
+      case .refresh:
+        return .merge(
+          Child().reduce(into: &state.child1, action: .reload).map(Action.child1),
+          Child().reduce(into: &state.child2, action: .reload).map(Action.child2),
+          Child().reduce(into: &state.child3, action: .reload).map(Action.child3),
+          Child().reduce(into: &state.child4, action: .reload).map(Action.child4),
+          Child().reduce(into: &state.child5, action: .reload).map(Action.child5)
+        )
+      }
+    }
+  }
+}
