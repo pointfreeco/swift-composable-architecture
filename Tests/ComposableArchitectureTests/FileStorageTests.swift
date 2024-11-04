@@ -471,6 +471,29 @@ final class FileStorageTests: XCTestCase {
       await fulfillment(of: [publisherExpectation], timeout: 1)
     }
   }
+
+  @MainActor
+  func testMultipleMutations() async throws {
+    try? FileManager.default.removeItem(at: .documentsDirectory.appending(component: "counts.json"))
+
+    try await withDependencies {
+      $0.defaultFileStorage = .fileSystem
+    } operation: {
+      @Shared(.counts) var counts
+      let delay = 0.5
+      let time = 5.0
+      let limit = Int(time / delay)
+      while counts.count1 < limit {
+        try await Task.sleep(for: .seconds(delay))
+        $counts.withLock { $0.count1 += 1 }
+        $counts.withLock { $0.count2 += 1 }
+        $counts.withLock { $0.count3 += 1 }
+      }
+      XCTAssertEqual(counts.count1, limit)
+      XCTAssertEqual(counts.count2, limit)
+      XCTAssertEqual(counts.count3, limit)
+    }
+  }
 }
 
 extension PersistenceReaderKey
@@ -511,5 +534,21 @@ extension [URL: Data] {
       !data.isEmpty
     else { return nil }
     return try JSONDecoder().decode([User].self, from: data)
+  }
+}
+
+private struct Counts: Equatable, Codable {
+  var count1 = 0
+  var count2 = 0
+  var count3 = 0
+}
+
+extension PersistenceReaderKey
+where Self == PersistenceKeyDefault<FileStorageKey<Counts>> {
+  fileprivate static var counts: Self {
+    PersistenceKeyDefault(
+      .fileStorage(.documentsDirectory.appending(component: "counts.json")),
+      Counts()
+    )
   }
 }
