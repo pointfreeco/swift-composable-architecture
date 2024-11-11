@@ -291,7 +291,7 @@ extension AppStorageKey: PersistenceKey {
   ) -> Shared<Value>.Subscription {
     let previousValue = LockIsolated(initialValue)
     let removeObserver: () -> Void
-    if key.contains(".") {
+    if key.hasPrefix("@") || key.contains(".") {
       let userDefaultsDidChange = NotificationCenter.default.addObserver(
         forName: UserDefaults.didChangeNotification,
         object: store.wrappedValue,
@@ -318,10 +318,10 @@ extension AppStorageKey: PersistenceKey {
       }
       removeObserver = { NotificationCenter.default.removeObserver(userDefaultsDidChange) }
     } else {
-      let observer = Observer { newValue in
+      let observer = Observer {
         guard !SharedAppStorageLocals.isSetting
         else { return }
-        didSet(newValue)
+        didSet(load(initialValue: initialValue))
       }
       store.wrappedValue.addObserver(observer, forKeyPath: key, options: .new, context: nil)
       removeObserver = { store.wrappedValue.removeObserver(observer, forKeyPath: key) }
@@ -343,6 +343,22 @@ extension AppStorageKey: PersistenceKey {
       if let willEnterForeground {
         NotificationCenter.default.removeObserver(willEnterForeground)
       }
+    }
+  }
+
+  private class Observer: NSObject {
+    let didChange: () -> Void
+    init(didChange: @escaping () -> Void) {
+      self.didChange = didChange
+      super.init()
+    }
+    override func observeValue(
+      forKeyPath keyPath: String?,
+      of object: Any?,
+      change: [NSKeyValueChangeKey: Any]?,
+      context: UnsafeMutableRawPointer?
+    ) {
+      self.didChange()
     }
   }
 }
