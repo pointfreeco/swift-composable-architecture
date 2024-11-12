@@ -21,27 +21,23 @@
 // THE SOFTWARE.
 
 @preconcurrency import Combine
-import Darwin
+import Foundation
 
 final class DemandBuffer<S: Subscriber>: @unchecked Sendable {
   private var buffer = [S.Input]()
   private let subscriber: S
   private var completion: Subscribers.Completion<S.Failure>?
   private var demandState = Demand()
-  private let lock: os_unfair_lock_t
+  private let lock = NSRecursiveLock()
 
   init(subscriber: S) {
     self.subscriber = subscriber
-    self.lock = os_unfair_lock_t.allocate(capacity: 1)
-    self.lock.initialize(to: os_unfair_lock())
-  }
-
-  deinit {
-    self.lock.deinitialize(count: 1)
-    self.lock.deallocate()
   }
 
   func buffer(value: S.Input) -> Subscribers.Demand {
+    lock.lock()
+    defer { lock.unlock() }
+
     precondition(
       self.completion == nil, "How could a completed publisher sent values?! Beats me 🤷‍♂️")
 
@@ -55,6 +51,9 @@ final class DemandBuffer<S: Subscriber>: @unchecked Sendable {
   }
 
   func complete(completion: Subscribers.Completion<S.Failure>) {
+    lock.lock()
+    defer { lock.unlock() }
+
     precondition(
       self.completion == nil, "Completion have already occurred, which is quite awkward 🥺")
 
