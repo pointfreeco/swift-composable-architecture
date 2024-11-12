@@ -512,7 +512,7 @@ final class FileStorageTests: XCTestCase {
           group.addTask { [$counts] in
             for _ in 1...10 {
               await $counts.withLock { $0[0, default: 0] += 1 }
-              try? await Task.sleep(for: .seconds(0.001))
+              try? await Task.sleep(for: .seconds(0.2))
             }
           }
         }
