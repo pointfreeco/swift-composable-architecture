@@ -45,7 +45,6 @@ extension PersistenceReaderKey {
 /// Use ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` to create values of this type.
 public final class FileStorageKey<Value: Sendable>: PersistenceKey, Sendable {
   private let storage: FileStorage
-  private let isSetting = LockIsolated(false)
   private let url: URL
   private let decode: @Sendable (Data) throws -> Value
   private let encode: @Sendable (Value) throws -> Data
@@ -83,7 +82,6 @@ public final class FileStorageKey<Value: Sendable>: PersistenceKey, Sendable {
   public func save(_ value: Value) {
     self.state.withValue { state in
       if state.workItem == nil {
-        self.isSetting.setValue(true)
         try? self.storage.save(encode(value), self.url)
         let workItem = DispatchWorkItem { [weak self] in
           guard let self else { return }
@@ -94,7 +92,6 @@ public final class FileStorageKey<Value: Sendable>: PersistenceKey, Sendable {
             }
             guard let value = state.value
             else { return }
-            self.isSetting.setValue(true)
             try? self.storage.save(self.encode(value), self.url)
           }
         }
@@ -125,14 +122,12 @@ public final class FileStorageKey<Value: Sendable>: PersistenceKey, Sendable {
           try? self.storage.save(Data(), self.url)
         }
         let writeCancellable = self.storage.fileSystemSource(self.url, [.write]) {
+          // TODO: Improve this by fingerprinting (by adding extra bytes?) the file we write to the
+          //       file system so that we can early out of this closure.
           self.state.withValue { state in
-            if self.isSetting.value == true {
-              self.isSetting.setValue(false)
-            } else {
-              state.workItem?.cancel()
-              state.workItem = nil
-              didSet(self.load(initialValue: initialValue))
-            }
+            guard state.workItem == nil
+            else { return }
+            didSet(self.load(initialValue: initialValue))
           }
         }
         let deleteCancellable = self.storage.fileSystemSource(self.url, [.delete, .rename]) {
@@ -265,15 +260,6 @@ public struct FileStorage: Hashable, Sendable {
   let load: @Sendable (URL) throws -> Data
   @_spi(Internals) public let save: @Sendable (Data, URL) throws -> Void
 
-  /// File storage that interacts directly with the file system for saving, loading and listening
-  /// for file changes.
-  ///
-  /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency
-  /// that is used by default when running your app in the simulator or on device.
-  public static let fileSystem = fileSystem(
-    queue: DispatchQueue(label: "co.pointfree.ComposableArchitecture.FileStorage")
-  )
-
   /// File storage that emulates a file system without actually writing anything to disk.
   ///
   /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency
@@ -282,32 +268,35 @@ public struct FileStorage: Hashable, Sendable {
     inMemory(fileSystem: LockIsolated([:]))
   }
 
-  @_spi(Internals) public static func fileSystem(queue: DispatchQueue) -> Self {
-    Self(
-      id: AnyHashableSendable(queue),
-      async: { queue.async(execute: $0) },
-      asyncAfter: { queue.asyncAfter(deadline: .now() + $0, execute: $1) },
-      createDirectory: {
-        try FileManager.default.createDirectory(at: $0, withIntermediateDirectories: $1)
-      },
-      fileExists: { FileManager.default.fileExists(atPath: $0.path) },
-      fileSystemSource: {
-        let source = DispatchSource.makeFileSystemObjectSource(
-          fileDescriptor: open($0.path, O_EVTONLY),
-          eventMask: $1,
-          queue: queue
-        )
-        source.setEventHandler(handler: $2)
-        source.resume()
-        return AnyCancellable {
-          source.cancel()
-          close(source.handle)
-        }
-      },
-      load: { try Data(contentsOf: $0) },
-      save: { try $0.write(to: $1) }
-    )
-  }
+  /// File storage that interacts directly with the file system for saving, loading and listening
+  /// for file changes.
+  ///
+  /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency
+  /// that is used by default when running your app in the simulator or on device.
+  public static let fileSystem = Self(
+    id: AnyHashableSendable(DispatchQueue.main),
+    async: { DispatchQueue.main.async(execute: $0) },
+    asyncAfter: { DispatchQueue.main.asyncAfter(deadline: .now() + $0, execute: $1) },
+    createDirectory: {
+      try FileManager.default.createDirectory(at: $0, withIntermediateDirectories: $1)
+    },
+    fileExists: { FileManager.default.fileExists(atPath: $0.path) },
+    fileSystemSource: {
+      let source = DispatchSource.makeFileSystemObjectSource(
+        fileDescriptor: open($0.path, O_EVTONLY),
+        eventMask: $1,
+        queue: .main
+      )
+      source.setEventHandler(handler: $2)
+      source.resume()
+      return AnyCancellable {
+        source.cancel()
+        close(source.handle)
+      }
+    },
+    load: { try Data(contentsOf: $0) },
+    save: { try $0.write(to: $1) }
+  )
 
   @_spi(Internals) public static func inMemory(
     fileSystem: LockIsolated<[URL: Data]>,

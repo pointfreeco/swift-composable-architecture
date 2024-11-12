@@ -163,7 +163,7 @@ final class FileStorageTests: XCTestCase {
     try? FileManager.default.removeItem(at: .fileURL)
 
     try await withDependencies {
-      $0.defaultFileStorage = .fileSystem(queue: .main)
+      $0.defaultFileStorage = .fileSystem
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
 
@@ -201,7 +201,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = .fileSystem(queue: .main)
+        $0.defaultFileStorage = .fileSystem
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         _ = users
@@ -220,7 +220,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = .fileSystem(queue: .main)
+        $0.defaultFileStorage = .fileSystem
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -251,7 +251,7 @@ final class FileStorageTests: XCTestCase {
 
       try fileStorage.save(Data(), .fileURL)
       scheduler.run()
-      expectNoDifference(users, [])
+      expectNoDifference(users, [.blob])
       try expectNoDifference(fileSystem.value.users(for: .fileURL), nil)
     }
   }
@@ -262,7 +262,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = .fileSystem(queue: .main)
+        $0.defaultFileStorage = .fileSystem
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -282,7 +282,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = .fileSystem(queue: .main)
+        $0.defaultFileStorage = .fileSystem
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -306,7 +306,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = .fileSystem(queue: .main)
+        $0.defaultFileStorage = .fileSystem
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -471,6 +471,56 @@ final class FileStorageTests: XCTestCase {
       await fulfillment(of: [publisherExpectation], timeout: 1)
     }
   }
+
+  @MainActor
+  func testMultipleMutations() async throws {
+    try? FileManager.default.removeItem(
+      at: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("counts.json")
+    )
+
+    try await withDependencies {
+      $0.defaultFileStorage = .fileSystem
+    } operation: {
+      @Shared(.counts) var counts
+      for m in 1...1000 {
+        for n in 1...10 {
+          $counts.withLock {
+            $0[n, default: 0] += 1
+          }
+        }
+        expectNoDifference(
+          Dictionary((1...10).map { n in (n, m) }, uniquingKeysWith: { $1 }),
+          counts
+        )
+        try await Task.sleep(for: .seconds(0.001))
+      }
+    }
+  }
+
+  func testMultipleMutationsFromMultipleThreads() async throws {
+    try? FileManager.default.removeItem(
+      at: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("counts.json")
+    )
+
+    await withDependencies {
+      $0.defaultFileStorage = .fileSystem
+    } operation: {
+      @Shared(.counts) var counts
+
+      await withTaskGroup(of: Void.self) { group in
+        for _ in 1...1000 {
+          group.addTask { [$counts] in
+            for _ in 1...10 {
+              await $counts.withLock { $0[0, default: 0] += 1 }
+              try? await Task.sleep(for: .seconds(0.2))
+            }
+          }
+        }
+      }
+
+      XCTAssertEqual(counts[0], 10_000)
+    }
+  }
 }
 
 extension PersistenceReaderKey
@@ -511,5 +561,16 @@ extension [URL: Data] {
       !data.isEmpty
     else { return nil }
     return try JSONDecoder().decode([User].self, from: data)
+  }
+}
+
+extension PersistenceKey where Self == PersistenceKeyDefault<FileStorageKey<[Int: Int]>> {
+  fileprivate static var counts: Self {
+    Self(
+      .fileStorage(
+        URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("counts.json")
+      ),
+      [:]
+    )
   }
 }
