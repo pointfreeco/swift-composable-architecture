@@ -51,6 +51,38 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://example.com"))
   }
 
+  func testDefaultsReadDate() {
+    let expectedDate = Date()
+    @Dependency(\.defaultAppStorage) var defaults
+    defaults.set(expectedDate, forKey: "date")
+    @Shared(.appStorage("date")) var date: Date?
+    XCTAssertEqual(date, expectedDate)
+  }
+
+  func testDefaultsRegistered_Date() {
+    let expectedDate = Date()
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("date")) var date: Date = expectedDate
+    XCTAssertEqual(defaults.object(forKey: "date") as? Date, expectedDate)
+
+    let newDate = Date().addingTimeInterval(60)
+    date = newDate
+    XCTAssertEqual(date, newDate)
+    XCTAssertEqual(defaults.object(forKey: "date") as? Date, newDate)
+  }
+
+  func testDefaultsRegistered_Optional_Date() {
+    let initialDate: Date? = Date()
+    @Dependency(\.defaultAppStorage) var defaults
+    @Shared(.appStorage("date")) var date: Date? = initialDate
+    XCTAssertEqual(defaults.object(forKey: "date") as? Date, initialDate)
+
+    let newDate = Date().addingTimeInterval(60)
+    date = newDate
+    XCTAssertEqual(date, newDate)
+    XCTAssertEqual(defaults.object(forKey: "date") as? Date, newDate)
+  }
+
   func testDefaultsRegistered_Optional() {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage("data")) var data: Data?
@@ -182,6 +214,13 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(url1, nil)
     @Shared(.appStorage("url2")) var url2: URL? = nil
     XCTAssertEqual(url2, nil)
+  }
+
+  func testOptionalInitializers_Date() {
+    @Shared(.appStorage("date1")) var date1: Date?
+    XCTAssertEqual(date1, nil)
+    @Shared(.appStorage("date2")) var date2: Date? = nil
+    XCTAssertEqual(date2, nil)
   }
 
   func testRemoveDuplicates() {

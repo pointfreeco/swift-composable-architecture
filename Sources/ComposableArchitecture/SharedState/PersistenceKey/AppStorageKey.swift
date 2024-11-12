@@ -47,6 +47,15 @@ extension PersistenceReaderKey {
     AppStorageKey(key)
   }
 
+  /// Creates a persistence key that can read and write to a Date user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<Date> {
+    AppStorageKey(key)
+  }
+
   /// Creates a persistence key that can read and write to a user default as data.
   ///
   /// - Parameter key: The key to read and write the value to in the user defaults store.
@@ -118,6 +127,15 @@ extension PersistenceReaderKey {
   /// - Returns: A user defaults persistence key.
   public static func appStorage(_ key: String) -> Self
   where Self == AppStorageKey<URL?> {
+    AppStorageKey(key)
+  }
+
+  /// Creates a persistence key that can read and write to an optional Date user default.
+  ///
+  /// - Parameter key: The key to read and write the value to in the user defaults store.
+  /// - Returns: A user defaults persistence key.
+  public static func appStorage(_ key: String) -> Self
+  where Self == AppStorageKey<Date?> {
     AppStorageKey(key)
   }
 
@@ -198,6 +216,13 @@ public struct AppStorageKey<Value: Sendable>: Sendable {
     self.store = UncheckedSendable(store)
   }
 
+  fileprivate init(_ key: String) where Value == Date {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = CastableLookup()
+    self.key = key
+    self.store = UncheckedSendable(store)
+  }
+
   fileprivate init(_ key: String) where Value == Data {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = CastableLookup()
@@ -254,6 +279,13 @@ public struct AppStorageKey<Value: Sendable>: Sendable {
     self.store = UncheckedSendable(store)
   }
 
+  fileprivate init(_ key: String) where Value == Date? {
+    @Dependency(\.defaultAppStorage) var store
+    self.lookup = OptionalLookup(base: CastableLookup())
+    self.key = key
+    self.store = UncheckedSendable(store)
+  }
+
   fileprivate init(_ key: String) where Value == Data? {
     @Dependency(\.defaultAppStorage) var store
     self.lookup = OptionalLookup(base: CastableLookup())
@@ -290,22 +322,41 @@ extension AppStorageKey: PersistenceKey {
     didSet: @escaping @Sendable (_ newValue: Value?) -> Void
   ) -> Shared<Value>.Subscription {
     let previousValue = LockIsolated(initialValue)
-    let userDefaultsDidChange = NotificationCenter.default.addObserver(
-      forName: UserDefaults.didChangeNotification,
-      object: self.store.wrappedValue,
-      queue: nil
-    ) { _ in
-      let newValue = load(initialValue: initialValue)
-      defer { previousValue.withValue { $0 = newValue } }
-      guard
-        !(_isEqual(newValue as Any, previousValue.value as Any) ?? false)
-          || (_isEqual(newValue as Any, initialValue as Any) ?? true)
-      else {
-        return
+    let removeObserver: () -> Void
+    if key.hasPrefix("@") || key.contains(".") {
+      let userDefaultsDidChange = NotificationCenter.default.addObserver(
+        forName: UserDefaults.didChangeNotification,
+        object: store.wrappedValue,
+        queue: .main
+      ) { _ in
+        let newValue = load(initialValue: initialValue)
+        defer { previousValue.withValue { $0 = newValue } }
+        func isEqual<T>(_ lhs: T, _ rhs: T) -> Bool? {
+          func open<U: Equatable>(_ lhs: U) -> Bool {
+            lhs == rhs as? U
+          }
+          guard let lhs = lhs as? any Equatable else { return nil }
+          return open(lhs)
+        }
+        guard
+          !(isEqual(newValue, previousValue.value) ?? false)
+            || (isEqual(newValue, initialValue) ?? true)
+        else {
+          return
+        }
+        guard !SharedAppStorageLocals.isSetting
+        else { return }
+        didSet(newValue)
       }
-      guard !SharedAppStorageLocals.isSetting
-      else { return }
-      didSet(newValue)
+      removeObserver = { NotificationCenter.default.removeObserver(userDefaultsDidChange) }
+    } else {
+      let observer = Observer {
+        guard !SharedAppStorageLocals.isSetting
+        else { return }
+        didSet(load(initialValue: initialValue))
+      }
+      store.wrappedValue.addObserver(observer, forKeyPath: key, options: .new, context: nil)
+      removeObserver = { store.wrappedValue.removeObserver(observer, forKeyPath: key) }
     }
     let willEnterForeground: (any NSObjectProtocol)?
     if let willEnterForegroundNotificationName {
@@ -320,10 +371,26 @@ extension AppStorageKey: PersistenceKey {
       willEnterForeground = nil
     }
     return Shared.Subscription {
-      NotificationCenter.default.removeObserver(userDefaultsDidChange)
+      removeObserver()
       if let willEnterForeground {
         NotificationCenter.default.removeObserver(willEnterForeground)
       }
+    }
+  }
+
+  private class Observer: NSObject {
+    let didChange: () -> Void
+    init(didChange: @escaping () -> Void) {
+      self.didChange = didChange
+      super.init()
+    }
+    override func observeValue(
+      forKeyPath keyPath: String?,
+      of object: Any?,
+      change: [NSKeyValueChangeKey: Any]?,
+      context: UnsafeMutableRawPointer?
+    ) {
+      self.didChange()
     }
   }
 }
