@@ -274,29 +274,29 @@ public struct FileStorage: Hashable, Sendable {
   /// This is the version of the ``Dependencies/DependencyValues/defaultFileStorage`` dependency
   /// that is used by default when running your app in the simulator or on device.
   public static let fileSystem = Self(
-      id: AnyHashableSendable(DispatchQueue.main),
-      async: { DispatchQueue.main.async(execute: $0) },
-      asyncAfter: { DispatchQueue.main.asyncAfter(deadline: .now() + $0, execute: $1) },
-      createDirectory: {
-        try FileManager.default.createDirectory(at: $0, withIntermediateDirectories: $1)
-      },
-      fileExists: { FileManager.default.fileExists(atPath: $0.path) },
-      fileSystemSource: {
-        let source = DispatchSource.makeFileSystemObjectSource(
-          fileDescriptor: open($0.path, O_EVTONLY),
-          eventMask: $1,
-          queue: .main
-        )
-        source.setEventHandler(handler: $2)
-        source.resume()
-        return AnyCancellable {
-          source.cancel()
-          close(source.handle)
-        }
-      },
-      load: { try Data(contentsOf: $0) },
-      save: { try $0.write(to: $1) }
-    )
+    id: AnyHashableSendable(DispatchQueue.main),
+    async: { DispatchQueue.main.async(execute: $0) },
+    asyncAfter: { DispatchQueue.main.asyncAfter(deadline: .now() + $0, execute: $1) },
+    createDirectory: {
+      try FileManager.default.createDirectory(at: $0, withIntermediateDirectories: $1)
+    },
+    fileExists: { FileManager.default.fileExists(atPath: $0.path) },
+    fileSystemSource: {
+      let source = DispatchSource.makeFileSystemObjectSource(
+        fileDescriptor: open($0.path, O_EVTONLY),
+        eventMask: $1,
+        queue: .main
+      )
+      source.setEventHandler(handler: $2)
+      source.resume()
+      return AnyCancellable {
+        source.cancel()
+        close(source.handle)
+      }
+    },
+    load: { try Data(contentsOf: $0) },
+    save: { try $0.write(to: $1) }
+  )
 
   @_spi(Internals) public static func inMemory(
     fileSystem: LockIsolated<[URL: Data]>,
