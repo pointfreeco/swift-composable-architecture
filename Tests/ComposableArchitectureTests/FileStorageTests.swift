@@ -474,7 +474,9 @@ final class FileStorageTests: XCTestCase {
 
   @MainActor
   func testMultipleMutations() async throws {
-    try? FileManager.default.removeItem(at: .documentsDirectory.appending(component: "counts.json"))
+    try? FileManager.default.removeItem(
+      at: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("counts.json")
+    )
 
     try await withDependencies {
       $0.defaultFileStorage = .fileSystem
@@ -496,7 +498,9 @@ final class FileStorageTests: XCTestCase {
   }
 
   func testMultipleMutationsFromMultipleThreads() async throws {
-    try? FileManager.default.removeItem(at: .documentsDirectory.appending(component: "counts.json"))
+    try? FileManager.default.removeItem(
+      at: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("counts.json")
+    )
 
     await withDependencies {
       $0.defaultFileStorage = .fileSystem
@@ -563,7 +567,9 @@ extension [URL: Data] {
 extension PersistenceKey where Self == PersistenceKeyDefault<FileStorageKey<[Int: Int]>> {
   fileprivate static var counts: Self {
     Self(
-      .fileStorage(.documentsDirectory.appending(component: "counts.json")),
+      .fileStorage(
+        URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("counts.json")
+      ),
       [:]
     )
   }
