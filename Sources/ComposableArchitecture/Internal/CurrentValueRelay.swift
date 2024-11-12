@@ -33,10 +33,11 @@ final class CurrentValueRelay<Output>: Publisher {
   }
 
   func send(_ value: Output) {
-    self.lock.sync {
+    let subscriptions = self.lock.sync {
       self.currentValue = value
+      return self.subscriptions
     }
-    for subscription in self.lock.sync({ self.subscriptions }) {
+    for subscription in subscriptions {
       subscription.receive(value)
     }
   }
