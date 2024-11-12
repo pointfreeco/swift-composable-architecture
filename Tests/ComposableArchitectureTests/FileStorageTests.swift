@@ -163,7 +163,7 @@ final class FileStorageTests: XCTestCase {
     try? FileManager.default.removeItem(at: .fileURL)
 
     try await withDependencies {
-      $0.defaultFileStorage = .fileSystem(queue: .main)
+      $0.defaultFileStorage = .fileSystem
     } operation: {
       @Shared(.fileStorage(.fileURL)) var users = [User]()
 
@@ -201,7 +201,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = .fileSystem(queue: .main)
+        $0.defaultFileStorage = .fileSystem
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         _ = users
@@ -220,7 +220,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = .fileSystem(queue: .main)
+        $0.defaultFileStorage = .fileSystem
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -251,7 +251,7 @@ final class FileStorageTests: XCTestCase {
 
       try fileStorage.save(Data(), .fileURL)
       scheduler.run()
-      expectNoDifference(users, [])
+      expectNoDifference(users, [.blob])
       try expectNoDifference(fileSystem.value.users(for: .fileURL), nil)
     }
   }
@@ -262,7 +262,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = .fileSystem(queue: .main)
+        $0.defaultFileStorage = .fileSystem
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -282,7 +282,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = .fileSystem(queue: .main)
+        $0.defaultFileStorage = .fileSystem
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -306,7 +306,7 @@ final class FileStorageTests: XCTestCase {
       try JSONEncoder().encode([User.blob]).write(to: .fileURL)
 
       try await withDependencies {
-        $0.defaultFileStorage = .fileSystem(queue: .main)
+        $0.defaultFileStorage = .fileSystem
       } operation: {
         @Shared(.fileStorage(.fileURL)) var users = [User]()
         await Task.yield()
@@ -480,18 +480,41 @@ final class FileStorageTests: XCTestCase {
       $0.defaultFileStorage = .fileSystem
     } operation: {
       @Shared(.counts) var counts
-      let delay = 0.5
-      let time = 5.0
-      let limit = Int(time / delay)
-      while counts.count1 < limit {
-        try await Task.sleep(for: .seconds(delay))
-        $counts.withLock { $0.count1 += 1 }
-        $counts.withLock { $0.count2 += 1 }
-        $counts.withLock { $0.count3 += 1 }
+      for m in 1...1000 {
+        for n in 1...10 {
+          $counts.withLock {
+            $0[n, default: 0] += 1
+          }
+        }
+        expectNoDifference(
+          Dictionary((1...10).map { n in (n, m) }, uniquingKeysWith: { $1 }),
+          counts
+        )
+        try await Task.sleep(for: .seconds(0.001))
       }
-      XCTAssertEqual(counts.count1, limit)
-      XCTAssertEqual(counts.count2, limit)
-      XCTAssertEqual(counts.count3, limit)
+    }
+  }
+
+  func testMultipleMutationsFromMultipleThreads() async throws {
+    try? FileManager.default.removeItem(at: .documentsDirectory.appending(component: "counts.json"))
+
+    await withDependencies {
+      $0.defaultFileStorage = .fileSystem
+    } operation: {
+      @Shared(.counts) var counts
+
+      await withTaskGroup(of: Void.self) { group in
+        for _ in 1...1000 {
+          group.addTask { [$counts] in
+            for _ in 1...10 {
+              await $counts.withLock { $0[0, default: 0] += 1 }
+              try? await Task.sleep(for: .seconds(0.001))
+            }
+          }
+        }
+      }
+
+      XCTAssertEqual(counts[0], 10_000)
     }
   }
 }
@@ -537,18 +560,11 @@ extension [URL: Data] {
   }
 }
 
-private struct Counts: Equatable, Codable {
-  var count1 = 0
-  var count2 = 0
-  var count3 = 0
-}
-
-extension PersistenceReaderKey
-where Self == PersistenceKeyDefault<FileStorageKey<Counts>> {
+extension PersistenceKey where Self == PersistenceKeyDefault<FileStorageKey<[Int: Int]>> {
   fileprivate static var counts: Self {
-    PersistenceKeyDefault(
+    Self(
       .fileStorage(.documentsDirectory.appending(component: "counts.json")),
-      Counts()
+      [:]
     )
   }
 }
