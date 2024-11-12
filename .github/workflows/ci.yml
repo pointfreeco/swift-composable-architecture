@@ -14,14 +14,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  xcodebuild-latest:
+    name: xcodebuild (16)
+    runs-on: macos-15
+    strategy:
+      matrix:
+        command: ['']
+        platform: [IOS, MACOS]
+        xcode: ['16.0']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode ${{ matrix.xcode }}
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      - name: List available devices
+        run: xcrun simctl list devices available
+      - name: Cache derived data
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.derivedData
+          key: |
+            deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-${{ hashFiles('**/Sources/**/*.swift', '**/Tests/**/*.swift') }}
+          restore-keys: |
+            deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-
+      - name: Set IgnoreFileSystemDeviceInodeChanges flag
+        run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
+      - name: Update mtime for incremental builds
+        uses: chetan/git-restore-mtime-action@v2
+      - name: Debug
+        run: make XCODEBUILD_ARGUMENT="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" WORKSPACE=.github/package.xcworkspace xcodebuild
+
   xcodebuild:
-    name: xcodebuild
+    name: xcodebuild (15)
     runs-on: macos-14
     strategy:
       matrix:
         command: [test, '']
         platform: [IOS, MAC_CATALYST, MACOS, TVOS, VISIONOS, WATCHOS]
-        xcode: [15.2, 15.4, '16.0']
+        xcode: [15.2, 15.4]
         exclude:
           - {xcode: 15.2, command: test}
           - {xcode: 15.4, command: ''}
@@ -29,11 +59,6 @@ jobs:
           - {xcode: 15.2, platform: TVOS}
           - {xcode: 15.2, platform: VISIONOS}
           - {xcode: 15.2, platform: WATCHOS}
-          - {xcode: '16.0', command: ''}
-          - {xcode: '16.0', platform: MAC_CATALYST}
-          - {xcode: '16.0', platform: TVOS}
-          - {xcode: '16.0', platform: VISIONOS}
-          - {xcode: '16.0', platform: WATCHOS}
         include:
           - {xcode: 15.2, skip_release: 1}
     steps:
@@ -80,7 +105,7 @@ jobs:
 
   examples:
     name: Examples
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - name: Cache derived data
@@ -113,7 +138,7 @@ jobs:
         run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Todos" xcodebuild-raw
       - name: VoiceMemos
         run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="VoiceMemos" xcodebuild-raw
-        
+
   check-macro-compatibility:
     name: Check Macro Compatibility
     runs-on: macos-latest
