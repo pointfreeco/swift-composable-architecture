@@ -60,22 +60,6 @@ extension AppStorageKeyPathKey: PersistenceKey, Hashable {
       observer.invalidate()
     }
   }
-
-  private class Observer: NSObject {
-    let didChange: (Value?) -> Void
-    init(didChange: @escaping (Value?) -> Void) {
-      self.didChange = didChange
-      super.init()
-    }
-    override func observeValue(
-      forKeyPath keyPath: String?,
-      of object: Any?,
-      change: [NSKeyValueChangeKey: Any]?,
-      context: UnsafeMutableRawPointer?
-    ) {
-      self.didChange(change?[.newKey] as? Value)
-    }
-  }
 }
 
 // NB: This is mainly used for tests, where observer notifications can bleed across cases.
