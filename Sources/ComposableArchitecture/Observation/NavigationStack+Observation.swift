@@ -230,6 +230,9 @@ extension NavigationLink where Destination == Never {
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a
   ///     copy of the value. Pass a `nil` value to disable the link.
   ///   - label: A label that describes the view that this link presents.
+  #if compiler(>=6)
+    @MainActor
+  #endif
   public init<P, L: View>(
     state: P?,
     @ViewBuilder label: () -> L,
@@ -266,6 +269,9 @@ extension NavigationLink where Destination == Never {
   ///     presents.
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a
   ///     copy of the value. Pass a `nil` value to disable the link.
+  #if compiler(>=6)
+    @MainActor
+  #endif
   public init<P>(
     _ titleKey: LocalizedStringKey, state: P?, fileID: StaticString = #fileID, line: UInt = #line
   )
@@ -286,6 +292,9 @@ extension NavigationLink where Destination == Never {
   ///   - title: A string that describes the view that this link presents.
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a
   ///     copy of the value. Pass a `nil` value to disable the link.
+  #if compiler(>=6)
+    @MainActor
+  #endif
   @_disfavoredOverload
   public init<S: StringProtocol, P>(
     _ title: S, state: P?, fileID: StaticString = #fileID, line: UInt = #line

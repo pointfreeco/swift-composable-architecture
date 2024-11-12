@@ -124,7 +124,7 @@ final class EffectRunTests: BaseTCATestCase {
   }
 
   @MainActor
-  func testRunEscapeFailure() async {
+  func testRunEscapeFailure() async throws {
     XCTExpectFailure {
       $0.compactDescription == """
         failed - An action was sent from a completed effect:
@@ -163,8 +163,9 @@ final class EffectRunTests: BaseTCATestCase {
       }
     }
 
-    let viewStore = ViewStore(store, observe: { $0 })
-    await viewStore.send(.tap).finish()
+    await store.send(.tap).finish()
     await queue.advance(by: .seconds(1))
+
+    try await Task.sleep(nanoseconds: 100_000_000)
   }
 }

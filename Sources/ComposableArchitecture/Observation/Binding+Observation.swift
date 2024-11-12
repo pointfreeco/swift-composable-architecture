@@ -58,7 +58,7 @@ extension UIBindable {
 
 extension BindingAction {
   public static func set<Value: Equatable & Sendable>(
-    _ keyPath: _WritableKeyPath<Root, Value>,
+    _ keyPath: _SendableWritableKeyPath<Root, Value>,
     _ value: Value
   ) -> Self where Root: ObservableState {
     .init(
@@ -116,7 +116,7 @@ extension BindingAction {
 
 extension BindableAction where State: ObservableState {
   fileprivate static func set<Value: Equatable & Sendable>(
-    _ keyPath: _WritableKeyPath<State, Value>,
+    _ keyPath: _SendableWritableKeyPath<State, Value>,
     _ value: Value,
     isInvalidated: (@MainActor @Sendable () -> Bool)?
   ) -> Self {
@@ -150,7 +150,7 @@ extension BindableAction where State: ObservableState {
   }
 
   public static func set<Value: Equatable & Sendable>(
-    _ keyPath: _WritableKeyPath<State, Value>,
+    _ keyPath: _SendableWritableKeyPath<State, Value>,
     _ value: Value
   ) -> Self {
     self.set(keyPath, value, isInvalidated: nil)
@@ -159,12 +159,12 @@ extension BindableAction where State: ObservableState {
 
 extension Store where State: ObservableState, Action: BindableAction, Action.State == State {
   public subscript<Value: Equatable & Sendable>(
-    dynamicMember keyPath: _WritableKeyPath<State, Value>
+    dynamicMember keyPath: WritableKeyPath<State, Value>
   ) -> Value {
     get { self.state[keyPath: keyPath] }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.set(keyPath, newValue, isInvalidated: _isInvalidated))
+        self.send(.set(keyPath.unsafeSendable(), newValue, isInvalidated: _isInvalidated))
       }
     }
   }
@@ -195,12 +195,12 @@ where
   Action.ViewAction.State == State
 {
   public subscript<Value: Equatable & Sendable>(
-    dynamicMember keyPath: _WritableKeyPath<State, Value>
+    dynamicMember keyPath: WritableKeyPath<State, Value>
   ) -> Value {
     get { self.state[keyPath: keyPath] }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.view(.set(keyPath, newValue, isInvalidated: _isInvalidated)))
+        self.send(.view(.set(keyPath.unsafeSendable(), newValue, isInvalidated: _isInvalidated)))
       }
     }
   }
