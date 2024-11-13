@@ -62,6 +62,10 @@ extension Store where State: ObservableState {
   /// - Parameters:
   ///   - state: A key path to an identified array of child state.
   ///   - action: A case key path to an identified child action.
+  ///   - column: The column.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
   /// - Returns: An collection of stores of child state.
   @_disfavoredOverload
   public func scope<ElementID, ElementState, ElementAction>(

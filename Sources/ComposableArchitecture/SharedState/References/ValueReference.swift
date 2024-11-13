@@ -13,6 +13,8 @@ extension Shared {
   ///     key.
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading and saving the shared reference's value from some external source.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   public init(
     wrappedValue value: @autoclosure @Sendable () -> Value,
     _ persistenceKey: some PersistenceKey<Value>,
@@ -54,6 +56,8 @@ extension Shared {
   /// - Parameters:
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading and saving the shared reference's value from some external source.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   @_disfavoredOverload
   public init<Wrapped>(
     _ persistenceKey: some PersistenceKey<Value>,
@@ -66,11 +70,13 @@ extension Shared {
   /// Creates a shared reference to a value using a persistence key.
   ///
   /// If the given persistence key cannot load a value, an error is thrown. For a non-throwing
-  /// version of this initializer, see ``init(wrappedValue:_:fileID:line:)-512rh``.
+  /// version of this initializer, see ``init(wrappedValue:_:fileID:line:)-9kfmy``.
   ///
   /// - Parameters:
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading and saving the shared reference's value from some external source.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   @_disfavoredOverload
   public init(
     _ persistenceKey: some PersistenceKey<Value>,
@@ -130,6 +136,8 @@ extension Shared {
   /// - Parameters:
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading and saving the shared reference's value from some external source.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   public init<Key: PersistenceKey<Value>>(
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
@@ -150,6 +158,8 @@ extension Shared {
   ///     key.
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading and saving the shared reference's value from some external source.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   public init<Key: PersistenceKey<Value>>(
     wrappedValue value: @autoclosure @Sendable () -> Value,
     _ persistenceKey: PersistenceKeyDefault<Key>,
@@ -173,6 +183,8 @@ extension SharedReader {
   ///     key.
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading the shared reference's value from some external source.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   public init(
     wrappedValue value: @autoclosure @Sendable () -> Value,
     _ persistenceKey: some PersistenceReaderKey<Value>,
@@ -213,6 +225,8 @@ extension SharedReader {
   /// - Parameters:
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading the shared reference's value from some external source.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   @_disfavoredOverload
   public init<Wrapped>(
     _ persistenceKey: some PersistenceReaderKey<Value>,
@@ -225,11 +239,13 @@ extension SharedReader {
   /// Creates a shared reference to a read-only value using a persistence key.
   ///
   /// If the given persistence key cannot load a value, an error is thrown. For a non-throwing
-  /// version of this initializer, see ``init(wrappedValue:_:fileID:line:)-7q52``.
+  /// version of this initializer, see ``init(wrappedValue:_:fileID:line:)-7f68o``.
   ///
   /// - Parameters:
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading the shared reference's value from some external source.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   @_disfavoredOverload
   public init(
     _ persistenceKey: some PersistenceReaderKey<Value>,
@@ -288,6 +304,8 @@ extension SharedReader {
   /// - Parameters:
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading the shared reference's value from some external source.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   public init<Key: PersistenceReaderKey<Value>>(
     _ persistenceKey: PersistenceKeyDefault<Key>,
     fileID: StaticString = #fileID,
@@ -308,6 +326,8 @@ extension SharedReader {
   ///     key.
   ///   - persistenceKey: A persistence key associated with the shared reference. It is responsible
   ///     for loading the shared reference's value from some external source.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   public init<Key: PersistenceReaderKey<Value>>(
     wrappedValue value: @autoclosure @Sendable () -> Value,
     _ persistenceKey: PersistenceKeyDefault<Key>,

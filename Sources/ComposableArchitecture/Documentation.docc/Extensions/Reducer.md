@@ -581,7 +581,7 @@ xcodebuild -skipMacroValidation …
 - ``Scope``
 - ``ifLet(_:action:then:fileID:filePath:line:column:)-2r2pn``
 - ``ifCaseLet(_:action:then:fileID:filePath:line:column:)-7sg8d``
-- ``forEach(_:action:element:fileID:filePath:line:column:)-3dw7i``
+- ``forEach(_:action:element:fileID:filePath:line:column:)-6zye8``
 - <doc:Navigation>
 
 ### Sharing state

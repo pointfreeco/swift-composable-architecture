@@ -904,7 +904,7 @@ func viewDidLoad() {
 }
 ```
 
-This can now be done more simply using the ``ObjectiveC/NSObject/observe(_:)`` method defined on
+This can now be done more simply using the ``ObjectiveC/NSObject/observe(_:)-94oxy`` method defined on
 all `NSObject`s:
 
 ```swift
@@ -920,7 +920,7 @@ func viewDidLoad() {
 }
 ```
 
-Be sure to read the documentation for ``ObjectiveC/NSObject/observe(_:)`` to learn how to best 
+Be sure to read the documentation for ``ObjectiveC/NSObject/observe(_:)-94oxy`` to learn how to best 
 wield this tool.
 
 ### Replacing Store.ifLet
@@ -940,7 +940,7 @@ store
 ```
 
 This can now be done more simply using the `observe` method and
-``Store/scope(state:action:fileID:filePath:line:column:)-2ck1n``:
+``Store/scope(state:action:fileID:filePath:line:column:)-3yvuf``:
 
 ```swift
 observe {

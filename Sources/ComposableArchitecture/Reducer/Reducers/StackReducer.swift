@@ -369,6 +369,10 @@ extension Reducer {
   ///   - toStackAction: A case path from parent action to a stack action.
   ///   - destination: A reducer that will be invoked with destination actions against elements of
   ///     destination state.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.   
   /// - Returns: A reducer that combines the destination reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access

@@ -10,19 +10,22 @@
 
 ### Creating a persisted value
 
-- ``init(wrappedValue:_:fileID:line:)-512rh``
-- ``init(wrappedValue:_:fileID:line:)-7a80y``
+- ``init(wrappedValue:_:fileID:line:)-9kfmy``
+- ``init(wrappedValue:_:fileID:line:)-7ndwc``
 - ``init(_:fileID:line:)-8zcy1``
 - ``init(_:fileID:line:)-8jqg5``
-- ``init(_:fileID:line:)-gluj``
+- ``init(_:fileID:line:)-9d3q``
+- ``init(_:fileID:line:)-1q6ev``
 
 ### Accessing the value
 
 - ``wrappedValue``
 - ``projectedValue``
 - ``reader``
-- ``subscript(dynamicMember:)-6kmzm``
-- ``subscript(dynamicMember:)-22ga9``
+- ``subscript(dynamicMember:)-6dq81``
+- ``subscript(dynamicMember:)-7n9xc``
+- ``subscript(dynamicMember:)-6f2x``
+- ``subscript(dynamicMember:)-9xw64``
 
 ### Isolating the value
 
