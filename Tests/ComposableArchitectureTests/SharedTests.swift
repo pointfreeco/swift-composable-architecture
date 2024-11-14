@@ -1084,6 +1084,22 @@ final class SharedTests: XCTestCase {
       }
     }
   }
+
+  func testPersistenceKeySubscription() async throws {
+    let persistenceKey: AppStorageKey<Int> = .appStorage("shared")
+    let changes = LockIsolated<[Int?]>([])
+    var subscription: Optional = persistenceKey.subscribe(initialValue: nil) { value in
+      changes.withValue { $0.append(value) }
+    }
+    @Dependency(\.defaultAppStorage) var userDefaults
+    userDefaults.set(1, forKey: "shared")
+    userDefaults.set(42, forKey: "shared")
+    subscription?.cancel()
+    userDefaults.set(123, forKey: "shared")
+    subscription = nil
+    XCTAssertEqual([1, 42], changes.value)
+    XCTAssertEqual(123, persistenceKey.load(initialValue: nil))
+  }
 }
 
 @globalActor actor GA: GlobalActor {
