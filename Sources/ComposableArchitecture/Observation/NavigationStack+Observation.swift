@@ -136,7 +136,7 @@ extension NavigationStack {
   /// this view.
   public init<State, Action, Destination: View, R>(
     path: Binding<Store<StackState<State>, StackAction<State, Action>>>,
-    root: () -> R,
+    @ViewBuilder root: () -> R,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
