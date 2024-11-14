@@ -73,7 +73,7 @@ extension Shared {
   /// This object is returned from ``PersistenceReaderKey/subscribe(initialValue:didSet:)``, which
   /// will feed updates from an external system for its lifetime, or till ``cancel()`` is called.
   public class Subscription {
-    let onCancel: () -> Void
+    var onCancel: (() -> Void)?
 
     /// Initializes the subscription with the given cancel closure.
     ///
@@ -88,7 +88,8 @@ extension Shared {
 
     /// Cancels the subscription.
     public func cancel() {
-      self.onCancel()
+      self.onCancel?()
+      self.onCancel = nil
     }
   }
 }
