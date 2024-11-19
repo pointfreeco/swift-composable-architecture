@@ -770,7 +770,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
   ///   - content: A function that can generate content from a view store.
   ///   - file: The file.
-  ///   - line: The line.   
+  ///   - line: The line.
   public init<State>(
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (_ state: State) -> ViewState,

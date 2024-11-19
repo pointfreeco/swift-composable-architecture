@@ -113,7 +113,7 @@ extension Reducer {
   ///   - fileID: The fileID.
   ///   - filePath: The filePath.
   ///   - line: The line.
-  ///   - column: The column.  
+  ///   - column: The column.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access

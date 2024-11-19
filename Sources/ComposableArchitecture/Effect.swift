@@ -82,7 +82,7 @@ extension Effect {
   ///   - fileID: The fileID.
   ///   - filePath: The filePath.
   ///   - line: The line.
-  ///   - column: The column.   
+  ///   - column: The column.
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,

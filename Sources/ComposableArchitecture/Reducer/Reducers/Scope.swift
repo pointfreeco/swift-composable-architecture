@@ -227,7 +227,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   ///   - fileID: The fileID.
   ///   - filePath: The filePath.
   ///   - line: The line.
-  ///   - column: The column.   
+  ///   - column: The column.
   @inlinable
   public init<ChildState, ChildAction>(
     state toChildState: CaseKeyPath<ParentState, ChildState>,

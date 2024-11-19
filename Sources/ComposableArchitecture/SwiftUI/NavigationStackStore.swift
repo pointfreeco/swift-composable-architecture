@@ -45,7 +45,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ///   - fileID: The fileID.
   ///   - filePath: The filePath.
   ///   - line: The line.
-  ///   - column: The column.   
+  ///   - column: The column.
   public init(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
@@ -101,7 +101,7 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   ///   - fileID: The fileID.
   ///   - filePath: The filePath.
   ///   - line: The line.
-  ///   - column: The column.   
+  ///   - column: The column.
   @_disfavoredOverload
   public init<D: View>(
     _ store: Store<StackState<State>, StackAction<State, Action>>,

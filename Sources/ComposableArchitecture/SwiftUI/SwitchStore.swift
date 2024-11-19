@@ -140,7 +140,7 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
   ///   - fileID: The fileID.
   ///   - filePath: The filePath.
   ///   - line: The line.
-  ///   - column: The column.   
+  ///   - column: The column.
   public init(
     _ toCaseState: @escaping (EnumState) -> CaseState?,
     action fromCaseAction: @escaping (CaseAction) -> EnumAction,

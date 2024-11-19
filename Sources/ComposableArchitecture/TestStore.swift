@@ -2726,7 +2726,7 @@ public struct TestStoreTask: Hashable, Sendable {
   ///   - fileID: The fileID.
   ///   - filePath: The filePath.
   ///   - line: The line.
-  ///   - column: The column.   
+  ///   - column: The column.
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func finish(
     timeout duration: Duration,
@@ -2751,7 +2751,7 @@ public struct TestStoreTask: Hashable, Sendable {
   ///   - fileID: The fileID.
   ///   - filePath: The filePath.
   ///   - line: The line.
-  ///   - column: The column.   
+  ///   - column: The column.
   @_disfavoredOverload
   public func finish(
     timeout nanoseconds: UInt64? = nil,

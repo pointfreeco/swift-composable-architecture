@@ -233,7 +233,7 @@ extension NavigationLink where Destination == Never {
   ///   - fileID: The fileID.
   ///   - filePath: The filePath.
   ///   - line: The line.
-  ///   - column: The column.   
+  ///   - column: The column.
   #if compiler(>=6)
     @MainActor
   #endif
