@@ -25,6 +25,8 @@ public struct Shared<Value: Sendable>: Sendable {
   ///
   /// - Parameters:
   ///   - value: A value to wrap.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   public init(_ value: Value, fileID: StaticString = #fileID, line: UInt = #line) {
     self.init(
       reference: ValueReference<Value, InMemoryKey<Value>>(

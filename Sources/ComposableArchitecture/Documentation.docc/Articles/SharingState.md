@@ -318,7 +318,7 @@ should take a plain, non-`Shared` value and you construct the `Shared` value in 
 * You are using a persistence strategy with shared state (_e.g._ 
 ``PersistenceReaderKey/appStorage(_:)-4l5b``, ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``, _etc._),
 then the initializer should take a plain, non-`Shared` value and you construct the `Shared` value in
-the initializer using ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` which takes a
+the initializer using ``Shared/init(wrappedValue:_:fileID:line:)-9kfmy`` which takes a
 ``PersistenceKey`` as the second argument:
 
   ```swift
@@ -338,7 +338,7 @@ the initializer using ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` which t
 
   > Important: The value passed to this initializer is only used if the external storage does not
   > already have a value. If a value exists in the storage then it is not used. In fact, the
-  > `wrappedValue` argument of ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` is an
+  > `wrappedValue` argument of ``Shared/init(wrappedValue:_:fileID:line:)-9kfmy`` is an
   > `@autoclosure` so that it is not even evaluated if not used. For that reason you
   > may prefer to make the argument to the initializer an `@autoclosure` so that it too is evaluated
   > only if actually used:
@@ -436,7 +436,7 @@ responsible for persisting and deriving shared state to pass to the child.
 If your shared state is a collection, and in particular an `IdentifiedArray`, then we have another
 tool for deriving shared state to a particular element of the array. You can subscript into a 
 ``Shared`` collection with the `[id:]` subscript, and that will give a piece of optional shared
-state (thanks to a dynamic member overload ``Shared/subscript(dynamicMember:)-7ibhr``), which you
+state (thanks to a dynamic member overload ``Shared/subscript(dynamicMember:)-9xw64``), which you
 can then unwrap to turn into honest shared state:
 
 ```swift
@@ -1071,7 +1071,7 @@ own implementations of `encode(to:)` and `init(from:)` that do the appropriate t
 For example, if the data type is sharing state with a persistence strategy, you can decode by 
 delegating to the memberwise initializer that implicitly loads the shared value from the property 
 wrapper's persistence strategy, or you can explicitly initialize a shared value via
-``Shared/init(wrappedValue:_:fileID:line:)-512rh``. And for encoding you can often skip encoding 
+``Shared/init(wrappedValue:_:fileID:line:)-9kfmy``. And for encoding you can often skip encoding 
 the shared value:
 
 ```swift
