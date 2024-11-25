@@ -5,6 +5,7 @@ import CustomDump
 @_spi(Beta) import Dependencies
 import Foundation
 import IssueReporting
+@_spi(SharedChangeTracking) import Sharing
 
 /// A testable runtime for a reducer.
 ///
@@ -538,7 +539,7 @@ public final class TestStore<State, Action> {
     let sharedChangeTracker = SharedChangeTracker()
     let reducer = Dependencies.withDependencies {
       prepareDependencies(&$0)
-      $0.sharedChangeTrackers.insert(sharedChangeTracker)
+      sharedChangeTracker.track(&$0)
     } operation: {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }
@@ -719,28 +720,28 @@ public final class TestStore<State, Action> {
   ) {
     // NB: This existential opening can go away if we can constrain 'State: Equatable' at the
     //     'TestStore' level, but for some reason this breaks DocC.
-    if self.sharedChangeTracker.hasChanges, let stateType = State.self as? any Equatable.Type {
-      func open<EquatableState: Equatable>(_: EquatableState.Type) {
-        let store = self as! TestStore<EquatableState, Action>
-        try? store.expectedStateShouldMatch(
-          preamble: "Test store finished before asserting against changes to shared state",
-          postamble: """
-            Invoke "TestStore.assert" at the end of this test to assert against changes to shared \
-            state.
-            """,
-          expected: store.state,
-          actual: store.state,
-          updateStateToExpectedResult: nil,
-          skipUnnecessaryModifyFailure: true,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }
-      open(stateType)
-      self.sharedChangeTracker.resetChanges()
-    }
+//    if self.sharedChangeTracker.hasChanges, let stateType = State.self as? any Equatable.Type {
+//      func open<EquatableState: Equatable>(_: EquatableState.Type) {
+//        let store = self as! TestStore<EquatableState, Action>
+//        try? store.expectedStateShouldMatch(
+//          preamble: "Test store finished before asserting against changes to shared state",
+//          postamble: """
+//            Invoke "TestStore.assert" at the end of this test to assert against changes to shared \
+//            state.
+//            """,
+//          expected: store.state,
+//          actual: store.state,
+//          updateStateToExpectedResult: nil,
+//          skipUnnecessaryModifyFailure: true,
+//          fileID: fileID,
+//          filePath: filePath,
+//          line: line,
+//          column: column
+//        )
+//      }
+//      open(stateType)
+//      self.sharedChangeTracker.resetChanges()
+//    }
   }
 
   /// Overrides the store's dependencies for a given operation.
@@ -970,14 +971,12 @@ extension TestStore where State: Equatable {
       let expectedState = self.state
       let previousState = self.reducer.state
       let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
-      let task = self.sharedChangeTracker.track {
-        self.store.send(
-          .init(
-            origin: .send(action), fileID: fileID, filePath: filePath, line: line, column: column
-          ),
-          originatingFrom: nil
-        )
-      }
+      let task = self.store.send(
+        .init(
+          origin: .send(action), fileID: fileID, filePath: filePath, line: line, column: column
+        ),
+        originatingFrom: nil
+      )
       if uncheckedUseMainSerialExecutor {
         await Task.yield()
       } else {
@@ -1099,7 +1098,7 @@ extension TestStore where State: Equatable {
         skipUnnecessaryModifyFailure
         || self.sharedChangeTracker.hasChanges == true
       if self.exhaustivity != .on {
-        self.sharedChangeTracker.resetChanges()
+        self.sharedChangeTracker.reset()
       }
 
       let current = expected
@@ -1126,9 +1125,10 @@ extension TestStore where State: Equatable {
         if let updateStateToExpectedResult {
           try Dependencies.withDependencies {
             $0 = self.reducer.dependencies
-            $0.sharedChangeTracker = self.sharedChangeTracker
           } operation: {
-            try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
+//            try self.sharedChangeTracker.assert {
+              try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
+//            }
           }
         }
         expected = expectedWhenGivenPreviousState
@@ -1144,9 +1144,10 @@ extension TestStore where State: Equatable {
         if let updateStateToExpectedResult {
           try Dependencies.withDependencies {
             $0 = self.reducer.dependencies
-            $0.sharedChangeTracker = self.sharedChangeTracker
           } operation: {
-            try updateStateToExpectedResult(&expectedWhenGivenActualState)
+            try self.sharedChangeTracker.assert {
+              try updateStateToExpectedResult(&expectedWhenGivenActualState)
+            }
           }
         }
         expected = expectedWhenGivenActualState
@@ -1164,9 +1165,10 @@ extension TestStore where State: Equatable {
               do {
                 try Dependencies.withDependencies {
                   $0 = self.reducer.dependencies
-                  $0.sharedChangeTracker = self.sharedChangeTracker
                 } operation: {
-                  try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
+//                  try self.sharedChangeTracker.assert {
+                    try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
+//                  }
                 }
               } catch {
                 reportIssue(
@@ -1247,7 +1249,7 @@ extension TestStore where State: Equatable {
           column: column
         )
       }
-      self.sharedChangeTracker.resetChanges()
+      self.sharedChangeTracker.reset()
     }
   }
 }

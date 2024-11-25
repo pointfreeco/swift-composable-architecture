@@ -1,7 +1,7 @@
 import Dependencies
 import Foundation
 
-extension PersistenceReaderKey {
+extension SharedReaderKey {
   /// Creates a persistence key for sharing data in user defaults given a key path.
   ///
   /// For example, one could initialize a key with the date and time at which the application was
@@ -35,12 +35,12 @@ public struct AppStorageKeyPathKey<Value: Sendable>: Sendable {
   }
 }
 
-extension AppStorageKeyPathKey: PersistenceKey, Hashable {
+extension AppStorageKeyPathKey: SharedKey, Hashable {
   public func load(initialValue _: Value?) -> Value? {
     self.store.wrappedValue[keyPath: self.keyPath]
   }
 
-  public func save(_ newValue: Value) {
+  public func save(_ newValue: Value, immediately: Bool) {
     SharedAppStorageLocals.$isSetting.withValue(true) {
       self.store.wrappedValue[keyPath: self.keyPath] = newValue
     }
@@ -48,15 +48,15 @@ extension AppStorageKeyPathKey: PersistenceKey, Hashable {
 
   public func subscribe(
     initialValue: Value?,
-    didSet: @escaping @Sendable (_ newValue: Value?) -> Void
-  ) -> Shared<Value>.Subscription {
+    didSet receiveValue: @escaping @Sendable (_ newValue: Value?) -> Void
+  ) -> SharedSubscription {
     let observer = self.store.wrappedValue.observe(self.keyPath, options: .new) { _, change in
       guard
         !SharedAppStorageLocals.isSetting
       else { return }
-      didSet(change.newValue ?? initialValue)
+      receiveValue(change.newValue ?? initialValue)
     }
-    return Shared.Subscription {
+    return SharedSubscription {
       observer.invalidate()
     }
   }

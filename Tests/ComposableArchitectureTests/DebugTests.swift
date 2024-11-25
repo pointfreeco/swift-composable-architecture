@@ -167,9 +167,9 @@
         @Shared var count: Int
       }
 
-      let store = await Store<State, Bool>(initialState: State(count: Shared(0))) {
+      let store = await Store<State, Bool>(initialState: State(count: Shared(value: 0))) {
         Reduce<State, Bool>(internal: { state, action in
-          state.count += action ? 1 : -1
+          state.$count.withLock { $0 += action ? 1 : -1 }
           return .none
         })
         ._printChanges(printer)

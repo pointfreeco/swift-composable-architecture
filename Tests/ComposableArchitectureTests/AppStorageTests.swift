@@ -184,6 +184,7 @@ final class AppStorageTests: XCTestCase {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage("pointfreeco.count")) var count = 0
     defaults.setValue(count + 42, forKey: "pointfreeco.count")
+
     XCTAssertEqual(count, 42)
   }
 
