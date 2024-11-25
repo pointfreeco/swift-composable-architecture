@@ -9,7 +9,7 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(count, 0)
     XCTAssertEqual(defaults.integer(forKey: "count"), 0)
 
-    count += 1
+    $count.withLock { $0 += 1 }
     XCTAssertEqual(count, 1)
     XCTAssertEqual(defaults.integer(forKey: "count"), 1)
   }
@@ -19,7 +19,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("count")) var count = 42
     XCTAssertEqual(defaults.integer(forKey: "count"), 42)
 
-    count += 1
+    $count.withLock { $0 += 1 }
     XCTAssertEqual(count, 43)
     XCTAssertEqual(defaults.integer(forKey: "count"), 43)
   }
@@ -36,7 +36,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("url")) var url: URL = URL(string: "https://pointfree.co")!
     XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://pointfree.co")!)
 
-    url = URL(string: "https://example.com")!
+    $url.withLock { $0 = URL(string: "https://example.com")! }
     XCTAssertEqual(url, URL(string: "https://example.com")!)
     XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://example.com")!)
   }
@@ -46,7 +46,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("url")) var url: URL? = URL(string: "https://pointfree.co")
     XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://pointfree.co"))
 
-    url = URL(string: "https://example.com")!
+    $url.withLock { $0 = URL(string: "https://example.com")! }
     XCTAssertEqual(url, URL(string: "https://example.com"))
     XCTAssertEqual(defaults.url(forKey: "url"), URL(string: "https://example.com"))
   }
@@ -66,7 +66,7 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(defaults.object(forKey: "date") as? Date, expectedDate)
 
     let newDate = Date().addingTimeInterval(60)
-    date = newDate
+    $date.withLock { $0 = newDate }
     XCTAssertEqual(date, newDate)
     XCTAssertEqual(defaults.object(forKey: "date") as? Date, newDate)
   }
@@ -78,7 +78,7 @@ final class AppStorageTests: XCTestCase {
     XCTAssertEqual(defaults.object(forKey: "date") as? Date, initialDate)
 
     let newDate = Date().addingTimeInterval(60)
-    date = newDate
+    $date.withLock { $0 = newDate }
     XCTAssertEqual(date, newDate)
     XCTAssertEqual(defaults.object(forKey: "date") as? Date, newDate)
   }
@@ -88,7 +88,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("data")) var data: Data?
     XCTAssertEqual(defaults.data(forKey: "data"), nil)
 
-    data = Data()
+    $data.withLock { $0 = Data() }
     XCTAssertEqual(data, Data())
     XCTAssertEqual(defaults.data(forKey: "data"), Data())
   }
@@ -101,7 +101,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("direction")) var direction: Direction = .north
     XCTAssertEqual(defaults.string(forKey: "direction"), "north")
 
-    direction = .south
+    $direction.withLock { $0 = .south }
     XCTAssertEqual(defaults.string(forKey: "direction"), "south")
   }
 
@@ -113,7 +113,7 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("direction")) var direction: Direction?
     XCTAssertEqual(defaults.string(forKey: "direction"), nil)
 
-    direction = .south
+    $direction.withLock { $0 = .south }
     XCTAssertEqual(defaults.string(forKey: "direction"), "south")
   }
 
@@ -125,7 +125,7 @@ final class AppStorageTests: XCTestCase {
       $0.defaultAppStorage = defaults
     } operation: {
       @Shared(.appStorage("count")) var count = 0
-      count += 1
+      $count.withLock { $0 += 1 }
       XCTAssertEqual(defaults.integer(forKey: "count"), 1)
     }
 
@@ -142,7 +142,7 @@ final class AppStorageTests: XCTestCase {
     } onChange: {
       countDidChange.fulfill()
     }
-    count += 1
+    $count.withLock { $0 += 1 }
     self.wait(for: [countDidChange], timeout: 0)
   }
 
@@ -185,13 +185,18 @@ final class AppStorageTests: XCTestCase {
     @Shared(.appStorage("pointfreeco.count")) var count = 0
     defaults.setValue(count + 42, forKey: "pointfreeco.count")
 
+    let expectation = self.expectation(description: "count")
+    DispatchQueue.main.async {
+      expectation.fulfill()
+    }
+    wait(for: [expectation], timeout: 1)
     XCTAssertEqual(count, 42)
   }
 
   func testDeleteUserDefault() {
     @Dependency(\.defaultAppStorage) var defaults
     @Shared(.appStorage("count")) var count = 0
-    count = 42
+    $count.withLock { $0 = 42 }
     defaults.removeObject(forKey: "count")
     XCTAssertEqual(count, 0)
   }
@@ -234,7 +239,7 @@ final class AppStorageTests: XCTestCase {
       .sink { count in values.withValue { $0.append(count) } }
     defer { _ = cancellable }
 
-    count += 1
+    $count.withLock { $0 += 1 }
     XCTAssertEqual(values.value, [1])
 
     store.setValue(2, forKey: "other-count")

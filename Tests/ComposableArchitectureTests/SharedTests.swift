@@ -46,7 +46,7 @@ final class SharedTests: XCTestCase {
     await store.send(.incrementSharedInDelegate)
     await store.receive(\.delegate.didIncrement) {
       $0.count = 1
-      $0.stats.count = 1
+      $0.$stats.withLock { $0.count = 1 }
     }
   }
 
@@ -62,7 +62,7 @@ final class SharedTests: XCTestCase {
       SharedFeature()
     }
     await store.send(.incrementSharedInDelegate) {
-      $0.stats.count = 1
+      $0.$stats.withLock { $0.count = 1 }
     }
     await store.receive(\.delegate.didIncrement) {
       $0.count = 1
@@ -171,7 +171,7 @@ final class SharedTests: XCTestCase {
       SharedFeature()
     }
     await store.send(.sharedIncrement) {
-      $0.sharedCount += 1
+      $0.$sharedCount.withLock { $0 += 1 }
     }
   }
 
@@ -581,9 +581,9 @@ final class SharedTests: XCTestCase {
     }
     .store(in: &cancellables)
 
-    sharedCount.wrappedValue += 1
+    sharedCount.withLock { $0 += 1 }
     XCTAssertEqual(counts, [1, 1])
-    sharedCount.wrappedValue += 1
+    sharedCount.withLock { $0 += 1 }
     XCTAssertEqual(counts, [1, 1, 2, 2])
   }
 
@@ -592,18 +592,18 @@ final class SharedTests: XCTestCase {
     var cancellables: Set<AnyCancellable> = []
     defer { _ = cancellables }
 
-    let sharedCount = Shared(0)
+    let sharedCount = Shared(value: 0)
     var counts = [Int]()
     sharedCount.publisher.sink { _ in
     } receiveValue: { count in
       counts.append(count)
       if count == 1 {
-        sharedCount.wrappedValue = 2
+        sharedCount.withLock { $0 = 2 }
       }
     }
     .store(in: &cancellables)
 
-    sharedCount.wrappedValue += 1
+    sharedCount.withLock { $0 += 1 }
     XCTAssertEqual(counts, [1, 2])
   }
 
@@ -1012,7 +1012,7 @@ final class SharedTests: XCTestCase {
       ]
     )
 
-    sharedCollection.swapAt(0, 1)
+    sharedCollection.withLock { $0.swapAt(0, 1) }
     expectNoDifference(first.wrappedValue, User(id: 1, name: "Blob"))
     expectNoDifference(second.wrappedValue, User(id: 2, name: "Blob Jr"))
     expectNoDifference(
@@ -1023,8 +1023,8 @@ final class SharedTests: XCTestCase {
       ]
     )
 
-    first.wrappedValue.name += ", M.D."
-    second.wrappedValue.name += ", Esq."
+    first.withLock { $0.name += ", M.D." }
+    second.withLock { $0.name += ", Esq." }
     expectNoDifference(first.wrappedValue, User(id: 1, name: "Blob, M.D."))
     expectNoDifference(second.wrappedValue, User(id: 2, name: "Blob Jr, Esq."))
     expectNoDifference(
@@ -1036,9 +1036,9 @@ final class SharedTests: XCTestCase {
     )
   }
 
-  @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+  @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
   func testConcurrentPublisherAccess() async {
-    let sharedCount = Shared<Int>(0)
+    let sharedCount = Shared<Int>(value: 0)
     await withTaskGroup(of: Void.self) { group in
       for _ in 0..<1_000 {
         group.addTask {
@@ -1120,7 +1120,7 @@ private struct SharedFeature {
       profile: Shared<Profile>,
       sharedCount: Shared<Int>,
       stats: Shared<Stats>,
-      isOn: Shared<Bool> = Shared(false)
+      isOn: Shared<Bool> = Shared(value: false)
     ) {
       self.count = count
       self._profile = profile
@@ -1150,21 +1150,21 @@ private struct SharedFeature {
       switch action {
       case .delegate(.didIncrement):
         state.count += 1
-        state.stats.count += 1
+        state.$stats.withLock { $0.count += 1 }
         return .none
       case .increment:
         state.count += 1
         return .none
       case .incrementStats:
-        state.profile.stats.count += 1
-        state.stats.count += 1
+        state.profile.$stats.withLock { $0.count += 1 }
+        state.$stats.withLock { $0.count += 1 }
         return .none
       case .incrementSharedInDelegate:
         return .send(.delegate(.didIncrement))
       case .longLivingEffect:
         return .run { [sharedCount = state.$sharedCount] _ in
           try await self.mainQueue.sleep(for: .seconds(1))
-          await sharedCount.withLock { $0 += 1 }
+          sharedCount.withLock { $0 += 1 }
         }
       case .noop:
         return .none
@@ -1173,10 +1173,10 @@ private struct SharedFeature {
           await send(.sharedIncrement)
         }
       case .sharedIncrement:
-        state.sharedCount += 1
+        state.$sharedCount.withLock { $0 += 1 }
         return .none
       case .toggleIsOn:
-        state.isOn.toggle()
+        state.$isOn.withLock { $0.toggle() }
         return .none
       }
     }
@@ -1203,10 +1203,10 @@ private struct SimpleFeature {
       switch action {
       case .incrementInEffect:
         return .run { [count = state.$count] _ in
-          await count.withLock { $0 += 1 }
+          count.withLock { $0 += 1 }
         }
       case .incrementInReducer:
-        state.count += 1
+        state.$count.withLock { $0 += 1 }
         return .none
       }
     }
@@ -1259,7 +1259,7 @@ private struct ListFeature {
 
     init(value: Int = 0) {
       @Dependency(\.uuid) var uuid
-      self._value = Shared(value)
+      self._value = Shared(value: value)
       self.children = [
         .init(id: 0, text: "0", value: _value),
         .init(id: 1, text: "0", value: _value),
@@ -1281,7 +1281,7 @@ private struct ListFeature {
         return .none
 
       case .incrementValue:
-        state.value += 1
+        state.$value.withLock { $0 += 1 }
         return .none
       }
     }
@@ -1305,20 +1305,20 @@ private struct EarlySharedStateMutation {
       case .action:
         return .send(.response)
       case .response:
-        state.count = 42
+        state.$count.withLock { $0 = 42 }
         return .none
       }
     }
   }
 }
 
-extension PersistenceReaderKey where Self == PersistenceKeyDefault<AppStorageKey<Bool>> {
+extension SharedKey where Self == AppStorageKey<Bool>.Default {
   static var isOn: Self {
-    PersistenceKeyDefault(.appStorage("isOn"), false)
+    Self[.appStorage("isOn"), default: false]
   }
 
   static func isActive(default keyDefault: @escaping @Sendable () -> Bool) -> Self {
-    PersistenceKeyDefault(.appStorage("isActive"), keyDefault())
+    Self[.appStorage("isActive"), default: keyDefault()]
   }
 }
 
@@ -1326,13 +1326,13 @@ extension PersistenceReaderKey where Self == PersistenceKeyDefault<AppStorageKey
 struct StateWithOptionalSharedAndDefault {
   @Shared(.optionalValueWithDefault) var optionalValueWithDefault
 }
-extension PersistenceKey where Self == PersistenceKeyDefault<AppStorageKey<Bool?>> {
+extension SharedKey where Self == AppStorageKey<Bool?>.Default {
   fileprivate static var optionalValueWithDefault: Self {
-    return PersistenceKeyDefault(.appStorage("optionalValueWithDefault"), nil)
+    Self[.appStorage("optionalValueWithDefault"), default: nil]
   }
 }
 
-extension PersistenceReaderKey where Self == AppStorageKey<Bool> {
+extension SharedKey where Self == AppStorageKey<Bool> {
   static var noDefaultIsOn: Self {
     appStorage("noDefaultIsOn")
   }

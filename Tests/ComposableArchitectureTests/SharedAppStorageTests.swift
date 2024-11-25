@@ -9,7 +9,7 @@ final class SharedAppStorageTests: XCTestCase {
     }
 
     await store.send(.incrementButtonTapped) {
-      $0.count = 1
+      $0.$count.withLock { $0 = 1 }
     }
   }
 
@@ -19,13 +19,13 @@ final class SharedAppStorageTests: XCTestCase {
     }
 
     await store.send(.incrementButtonTapped) {
-      $0.count = 1
+      $0.$count.withLock { $0 = 1 }
     }
     @Dependency(\.defaultAppStorage) var userDefaults
     userDefaults.setValue(42, forKey: "count")
     await Task.yield()
     await store.send(.incrementButtonTapped) {
-      $0.count = 43
+      $0.$count.withLock { $0 = 43 }
     }
   }
 
@@ -35,19 +35,19 @@ final class SharedAppStorageTests: XCTestCase {
     }
 
     await store.send(.child1(.incrementButtonTapped)) {
-      $0.child1.count = 1
+      $0.child1.$count.withLock { $0 = 1 }
       XCTAssertEqual($0.child2.count, 1)
     }
     await store.send(.child2(.incrementButtonTapped)) {
-      $0.child2.count = 2
+      $0.child2.$count.withLock { $0 = 2 }
       XCTAssertEqual($0.child1.count, 2)
     }
     await store.send(.child1(.incrementButtonTapped)) {
-      $0.child2.count = 3
+      $0.child2.$count.withLock { $0 = 3 }
       XCTAssertEqual($0.child1.count, 3)
     }
     await store.send(.child2(.incrementButtonTapped)) {
-      $0.child1.count = 4
+      $0.child1.$count.withLock { $0 = 4 }
       XCTAssertEqual($0.child2.count, 4)
     }
   }
@@ -116,7 +116,7 @@ private struct Feature {
     Reduce { state, action in
       switch action {
       case .incrementButtonTapped:
-        state.count += 1
+        state.$count.withLock { $0 += 1 }
         return .none
       }
     }
