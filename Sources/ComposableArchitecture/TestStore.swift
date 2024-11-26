@@ -1126,9 +1126,9 @@ extension TestStore where State: Equatable {
           try Dependencies.withDependencies {
             $0 = self.reducer.dependencies
           } operation: {
-//            try self.sharedChangeTracker.assert {
+            try self.sharedChangeTracker.assert {
               try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
-//            }
+            }
           }
         }
         expected = expectedWhenGivenPreviousState
@@ -1166,9 +1166,9 @@ extension TestStore where State: Equatable {
                 try Dependencies.withDependencies {
                   $0 = self.reducer.dependencies
                 } operation: {
-//                  try self.sharedChangeTracker.assert {
+                  try self.sharedChangeTracker.assert {
                     try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
-//                  }
+                  }
                 }
               } catch {
                 reportIssue(
