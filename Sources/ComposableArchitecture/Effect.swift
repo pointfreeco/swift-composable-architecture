@@ -77,8 +77,12 @@ extension Effect {
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
   ///     `Task.currentPriority`.
   ///   - operation: The operation to execute.
-  ///   - catch: An error handler, invoked if the operation throws an error other than
+  ///   - handler: An error handler, invoked if the operation throws an error other than
   ///     `CancellationError`.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,

@@ -49,6 +49,10 @@ extension Reducer {
   ///   - toWrappedAction: A case path from parent action to a case containing child actions.
   ///   - wrapped: A reducer that will be invoked with child actions against non-optional child
   ///     state.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access

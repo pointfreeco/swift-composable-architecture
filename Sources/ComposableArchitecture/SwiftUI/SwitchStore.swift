@@ -137,6 +137,10 @@ public struct CaseLet<EnumState, EnumAction, CaseState, CaseAction, Content: Vie
   ///   - fromCaseAction: A function that can embed a case action in a switch store action.
   ///   - content: A function that is given a store of the given case's state and returns a view
   ///     that is visible only when the switch store's state matches.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   public init(
     _ toCaseState: @escaping (EnumState) -> CaseState?,
     action fromCaseAction: @escaping (CaseAction) -> EnumAction,

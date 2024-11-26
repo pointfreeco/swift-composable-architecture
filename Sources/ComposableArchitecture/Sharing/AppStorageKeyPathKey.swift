@@ -12,7 +12,7 @@ extension SharedReaderKey {
   /// @Shared(.appStorage(\.appLaunchedAt)) var appLaunchedAt = Date()
   /// ```
   ///
-  /// - Parameter key: A string key identifying a value to share in memory.
+  /// - Parameter keyPath: A string key identifying a value to share in memory.
   /// - Returns: A persistence key.
   public static func appStorage<Value>(
     _ keyPath: _SendableReferenceWritableKeyPath<UserDefaults, Value>
@@ -23,7 +23,7 @@ extension SharedReaderKey {
 
 /// A type defining a user defaults persistence strategy via key path.
 ///
-/// See ``PersistenceReaderKey/appStorage(_:)-5jsie`` to create values of this type.
+/// See ``PersistenceReaderKey/appStorage(_:)-69h4r`` to create values of this type.
 public struct AppStorageKeyPathKey<Value: Sendable>: Sendable {
   private let keyPath: _SendableReferenceWritableKeyPath<UserDefaults, Value>
   private let store: UncheckedSendable<UserDefaults>

@@ -11,7 +11,7 @@ integrate into application code written in UIKit.
 
 ### Subscribing to state changes
 
-- ``ObjectiveC/NSObject/observe(_:)``
+- ``ObjectiveC/NSObject/observe(_:)-94oxy``
 - ``ObservationToken``
 
 ### Presenting alerts and action sheets

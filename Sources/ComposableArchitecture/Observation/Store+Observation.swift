@@ -75,6 +75,10 @@ extension Store where State: ObservableState {
   /// - Parameters:
   ///   - state: A key path to optional child state.
   ///   - action: A case key path to child actions.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: An optional store of non-optional child state and actions.
   public func scope<ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
@@ -153,6 +157,10 @@ extension Binding {
   /// - Parameters:
   ///   - state: A key path to optional child state.
   ///   - action: A case key path to presentation child actions.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: A binding of an optional child store.
   #if swift(>=5.10)
     @preconcurrency@MainActor
@@ -228,6 +236,10 @@ extension SwiftUI.Bindable {
   /// - Parameters:
   ///   - state: A key path to optional child state.
   ///   - action: A case key path to presentation child actions.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: A binding of an optional child store.
   #if swift(>=5.10)
     @preconcurrency@MainActor
@@ -306,6 +318,10 @@ extension Perception.Bindable {
   /// - Parameters:
   ///   - state: A key path to optional child state.
   ///   - action: A case key path to presentation child actions.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: A binding of an optional child store.
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,

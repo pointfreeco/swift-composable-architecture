@@ -37,11 +37,15 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   /// Creates a navigation stack with a store of stack state and actions.
   ///
   /// - Parameters:
-  ///   - path: A store of stack state and actions to power this stack.
+  ///   - store: A store of stack state and actions to power this stack.
   ///   - root: The view to display when the stack is empty.
   ///   - destination: A view builder that defines a view to display when an element is appended to
   ///     the stack's state. The closure takes one argument, which is a store of the value to
   ///     present.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   public init(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
@@ -89,11 +93,15 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   /// Creates a navigation stack with a store of stack state and actions.
   ///
   /// - Parameters:
-  ///   - path: A store of stack state and actions to power this stack.
+  ///   - store: A store of stack state and actions to power this stack.
   ///   - root: The view to display when the stack is empty.
   ///   - destination: A view builder that defines a view to display when an element is appended to
   ///     the stack's state. The closure takes one argument, which is the initial enum state to
   ///     present. You can switch over this value and use ``CaseLet`` views to handle each case.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @_disfavoredOverload
   public init<D: View>(
     _ store: Store<StackState<State>, StackAction<State, Action>>,

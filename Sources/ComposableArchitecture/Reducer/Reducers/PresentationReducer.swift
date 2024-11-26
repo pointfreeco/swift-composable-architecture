@@ -400,6 +400,10 @@ extension Reducer {
   ///   - toPresentationAction: A case path from parent action to a case containing child actions.
   ///   - destination: A reducer that will be invoked with child actions against presented child
   ///     state.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @warn_unqualified_access
   @inlinable

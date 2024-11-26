@@ -61,7 +61,7 @@ import SwiftUI
 /// ```
 ///
 /// Enhance its core reducer using
-/// ``Reducer/forEach(_:action:element:fileID:filePath:line:column:)-3dw7i``:
+/// ``Reducer/forEach(_:action:element:fileID:filePath:line:column:)-6zye8``:
 ///
 /// ```swift
 /// var body: some Reducer<State, Action> {
