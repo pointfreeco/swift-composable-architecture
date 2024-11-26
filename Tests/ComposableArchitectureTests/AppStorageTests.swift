@@ -181,16 +181,20 @@ final class AppStorageTests: XCTestCase {
   }
 
   func testChangeUserDefaultsDirectly_KeyWithPeriod() {
-    @Dependency(\.defaultAppStorage) var defaults
-    @Shared(.appStorage("pointfreeco.count")) var count = 0
-    defaults.setValue(count + 42, forKey: "pointfreeco.count")
+    withDependencies {
+      $0.appStorageKeyFormatWarningEnabled = false
+    } operation: {
+      @Dependency(\.defaultAppStorage) var defaults
+      @Shared(.appStorage("pointfreeco.count")) var count = 0
+      defaults.setValue(count + 42, forKey: "pointfreeco.count")
 
-    let expectation = self.expectation(description: "count")
-    DispatchQueue.main.async {
-      expectation.fulfill()
+      let expectation = self.expectation(description: "count")
+      DispatchQueue.main.async {
+        expectation.fulfill()
+      }
+      wait(for: [expectation], timeout: 1)
+      XCTAssertEqual(count, 42)
     }
-    wait(for: [expectation], timeout: 1)
-    XCTAssertEqual(count, 42)
   }
 
   func testDeleteUserDefault() {

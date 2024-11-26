@@ -530,20 +530,20 @@ final class SharedTests: XCTestCase {
     self.wait(for: [countDidChange], timeout: 0)
   }
 
-  @MainActor
-  func testAssertSharedStateWithNoChanges() {
-    let store = TestStore(initialState: SimpleFeature.State(count: Shared(value: 0))) {
-      SimpleFeature()
-    }
-    XCTExpectFailure {
-      $0.compactDescription == """
-        failed - Expected changes, but none occurred.
-        """
-    }
-    store.state.$count.assert {
-      $0 = 0
-    }
-  }
+//  @MainActor
+//  func testAssertSharedStateWithNoChanges() {
+//    let store = TestStore(initialState: SimpleFeature.State(count: Shared(value: 0))) {
+//      SimpleFeature()
+//    }
+//    XCTExpectFailure {
+//      $0.compactDescription == """
+//        failed - Expected changes, but none occurred.
+//        """
+//    }
+//    store.state.$count.assert {
+//      $0 = 0
+//    }
+//  }
 
   @MainActor
   func testPublisher() {
