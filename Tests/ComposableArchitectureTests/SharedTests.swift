@@ -1,6 +1,7 @@
 import Combine
 @_spi(Internals) import ComposableArchitecture
 import CustomDump
+@_spi(SharedChangeTracking) import Sharing
 import XCTest
 
 final class SharedTests: XCTestCase {
@@ -924,74 +925,73 @@ final class SharedTests: XCTestCase {
     XCTAssertEqual($inMemoryCount, count)
   }
 
-//  func testEquatable_DifferentKeyPath() {
-//    struct Settings {
-//      var isOn = false
-//      var hasSeen = false
-//    }
-//    @Shared(.inMemory("settings")) var settings = Settings()
-//    XCTAssertEqual($settings.isOn, $settings.hasSeen)
-//    withSharedChangeTracking { tracker in
-//      settings.isOn.toggle()
-//      XCTAssertNotEqual(settings.isOn, settings.hasSeen)
-//      XCTAssertNotEqual($settings.isOn, $settings.hasSeen)
-//      XCTAssertNotEqual($settings.hasSeen, $settings.isOn)
-//      tracker.assert {
-//        XCTAssertEqual(settings.isOn, settings.hasSeen)
-//        XCTAssertEqual($settings.isOn, $settings.hasSeen)
-//        XCTAssertEqual($settings.hasSeen, $settings.isOn)
-//        settings.hasSeen.toggle()
-//        XCTAssertNotEqual(settings.isOn, settings.hasSeen)
-//        XCTAssertNotEqual($settings.isOn, $settings.hasSeen)
-//        XCTAssertNotEqual($settings.hasSeen, $settings.isOn)
-//      }
-//    }
-//  }
+  func testEquatable_DifferentKeyPath() {
+    struct Settings {
+      var isOn = false
+      var hasSeen = false
+    }
+    @Shared(.inMemory("settings")) var settings = Settings()
+    XCTAssertEqual($settings.isOn, $settings.hasSeen)
+    let tracker = SharedChangeTracker()
+    tracker.track {
+      $settings.withLock { $0.isOn.toggle() }
+      XCTAssertNotEqual(settings.isOn, settings.hasSeen)
+      XCTAssertNotEqual($settings.isOn, $settings.hasSeen)
+      XCTAssertNotEqual($settings.hasSeen, $settings.isOn)
+    }
+    tracker.assert {
+      XCTAssertEqual(settings.isOn, settings.hasSeen)
+      XCTAssertEqual($settings.isOn, $settings.hasSeen)
+      XCTAssertEqual($settings.hasSeen, $settings.isOn)
+      $settings.withLock { $0.hasSeen.toggle() }
+      XCTAssertNotEqual(settings.isOn, settings.hasSeen)
+      XCTAssertNotEqual($settings.isOn, $settings.hasSeen)
+      XCTAssertNotEqual($settings.hasSeen, $settings.isOn)
+    }
+    tracker.reset()
+  }
 
-//  func testSelfEqualityInAnAssertion() {
-//    let count = Shared(0)
-//    withSharedChangeTracking { tracker in
-//      count.wrappedValue += 1
-//      tracker.assert {
-//        XCTAssertNotEqual(count, count)
-//        XCTAssertEqual(count.wrappedValue, count.wrappedValue)
-//      }
-//      XCTAssertEqual(count, count)
-//      XCTAssertEqual(count.wrappedValue, count.wrappedValue)
-//    }
-//    XCTAssertEqual(count, count)
-//    XCTAssertEqual(count.wrappedValue, count.wrappedValue)
-//  }
+  func testSelfEqualityInAnAssertion() {
+    let count = Shared(value: 0)
+    let tracker = SharedChangeTracker()
+    tracker.track {
+      count.withLock { $0 += 1 }
+    }
+    tracker.assert {
+      XCTAssertNotEqual(count, count)
+      XCTAssertEqual(count.wrappedValue, count.wrappedValue)
+    }
+    XCTAssertEqual(count, count)
+    XCTAssertEqual(count.wrappedValue, count.wrappedValue)
+  }
 
-//  func testBasicAssertion() {
-//    let count = Shared(0)
-//    withSharedChangeTracking { tracker in
-//      count.wrappedValue += 1
-//      tracker.assert {
-//        count.wrappedValue += 1
-//        XCTAssertEqual(count, count)
-//        XCTAssertEqual(count.wrappedValue, count.wrappedValue)
-//      }
-//      XCTAssertEqual(count, count)
-//      XCTAssertEqual(count.wrappedValue, count.wrappedValue)
-//    }
-//    XCTAssertEqual(count, count)
-//    XCTAssertEqual(count.wrappedValue, count.wrappedValue)
-//  }
+  func testBasicAssertion() {
+    let count = Shared(value: 0)
+    let tracker = SharedChangeTracker()
+    tracker.track {
+      count.withLock { $0 += 1 }
+    }
+    tracker.assert {
+      count.withLock { $0 += 1 }
+      XCTAssertEqual(count, count)
+      XCTAssertEqual(count.wrappedValue, count.wrappedValue)
+    }
+    XCTAssertEqual(count, count)
+    XCTAssertEqual(count.wrappedValue, count.wrappedValue)
+  }
 
-  // TODO: What is going on here?
-//  func testDefaultVersusValueInExternalStorage() async {
-//    @Dependency(\.defaultAppStorage) var userDefaults
-//    userDefaults.set(true, forKey: "optionalValueWithDefault")
-//
-//    @Shared(.optionalValueWithDefault) var optionalValueWithDefault
-//
-//    XCTAssertNotNil(optionalValueWithDefault)
-//
-//    await $optionalValueWithDefault.withLock { $0 = nil }
-//
-//    XCTAssertNil(optionalValueWithDefault)
-//  }
+  func testDefaultVersusValueInExternalStorage() async {
+    @Dependency(\.defaultAppStorage) var userDefaults
+    userDefaults.set(true, forKey: "optionalValueWithDefault")
+
+    @Shared(.optionalValueWithDefault) var optionalValueWithDefault
+
+    XCTAssertNotNil(optionalValueWithDefault)
+
+    $optionalValueWithDefault.withLock { $0 = nil }
+
+    XCTAssertNil(optionalValueWithDefault)
+  }
 
   func testElements() {
     struct User: Equatable, Identifiable {
