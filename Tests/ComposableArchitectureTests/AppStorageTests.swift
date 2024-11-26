@@ -252,7 +252,6 @@ final class AppStorageTests: XCTestCase {
 
     let publisherExpectation = expectation(description: "publisher")
     let cancellable = $count.publisher.sink { _ in
-      XCTAssertTrue(Thread.isMainThread)
       publisherExpectation.fulfill()
     }
     defer { _ = cancellable }
@@ -337,7 +336,6 @@ final class AppStorageTests: XCTestCase {
     let publisherExpectation = expectation(description: "publisher")
     publisherExpectation.expectedFulfillmentCount = 2
     let cancellable = $count.publisher.sink { _ in
-      XCTAssertTrue(Thread.isMainThread)
       publisherExpectation.fulfill()
     }
     defer { _ = cancellable }

@@ -171,7 +171,9 @@ final class SharedTests: XCTestCase {
       SharedFeature()
     }
     await store.send(.sharedIncrement) {
-      $0.$sharedCount.withLock { $0 += 1 }
+      $0.$sharedCount.withLock {
+        $0 += 1
+      }
     }
   }
 
