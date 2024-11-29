@@ -1,6 +1,8 @@
 import Dependencies
 import Foundation
 
+// TODO: Deprecate? Soft-deprecate?
+
 extension SharedReaderKey {
   /// Creates a persistence key for sharing data in user defaults given a key path.
   ///
