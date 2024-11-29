@@ -48,6 +48,7 @@ let package = Package(
         .product(name: "IssueReporting", package: "xctest-dynamic-overlay"),
         .product(name: "OrderedCollections", package: "swift-collections"),
         .product(name: "Perception", package: "swift-perception"),
+        .product(name: "Sharing", package: "swift-sharing"),
         .product(name: "SwiftUINavigation", package: "swift-navigation"),
         .product(name: "UIKitNavigation", package: "swift-navigation"),
       ],
