@@ -301,10 +301,10 @@ extension WebSocketClient: DependencyKey {
           let task = Task {
             while !Task.isCancelled {
               do {
-                let socketMessage = try await socket.receive()
+                let socketMessage = try await Message(socket.receive())
                 continuation.yield(.success(socketMessage))
               } catch {
-                continuation.yield(with: .failure(error))
+                continuation.yield(.failure(error))
               }
             }
             continuation.finish()
