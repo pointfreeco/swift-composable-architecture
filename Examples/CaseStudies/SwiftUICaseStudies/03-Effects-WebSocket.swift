@@ -300,8 +300,12 @@ extension WebSocketClient: DependencyKey {
         return AsyncStream { continuation in
           let task = Task {
             while !Task.isCancelled {
-              let socketMessage = try await socket.receive()
-              continuation.yield(Result { try Message(socketMessage) })
+              do {
+                let socketMessage = try await socket.receive()
+                continuation.yield(.success(socketMessage))
+              } catch {
+                continuation.yield(with: .failure(error))
+              }
             }
             continuation.finish()
           }
