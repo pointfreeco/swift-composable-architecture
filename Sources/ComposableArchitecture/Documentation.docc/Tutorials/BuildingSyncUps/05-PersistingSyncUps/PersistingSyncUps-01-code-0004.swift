@@ -51,12 +51,8 @@ struct SyncUpsList {
   }
 }
 
-extension PersistenceReaderKey
-where Self == PersistenceKeyDefault<FileStorageKey<IdentifiedArrayOf<SyncUp>>> {
+extension SharedKey where Self == FileStorageKey<IdentifiedArrayOf<SyncUp>>.Default {
   static var syncUps: Self {
-    PersistenceKeyDefault(
-      .fileStorage(.documentsDirectory.appending(component: "sync-ups.json")),
-      []
-    )
+    Self[.fileStorage(.documentsDirectory.appending(component: "sync-ups.json")), default: []]
   }
 }

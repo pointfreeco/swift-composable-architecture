@@ -5,7 +5,7 @@ extension SharedReaderKey {
   /// Creates a persistence key for sharing data in user defaults given a key path.
   ///
   /// For example, one could initialize a key with the date and time at which the application was
-  /// most recently launched, and access this date from anywhere using the ``Shared`` property
+  /// most recently launched, and access this date from anywhere using the `@Shared` property
   /// wrapper:
   ///
   /// ```swift
@@ -24,7 +24,7 @@ extension SharedReaderKey {
 
 /// A type defining a user defaults persistence strategy via key path.
 ///
-/// See ``PersistenceReaderKey/appStorage(_:)-69h4r`` to create values of this type.
+/// See ``Sharing/SharedReaderKey/appStorage(_:)`` to create values of this type.
 @available(*, deprecated, message: "Use an 'AppStorageKey', instead")
 public struct AppStorageKeyPathKey<Value: Sendable>: Sendable {
   private let keyPath: _SendableReferenceWritableKeyPath<UserDefaults, Value>

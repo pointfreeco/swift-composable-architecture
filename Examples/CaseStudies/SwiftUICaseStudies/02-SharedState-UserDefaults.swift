@@ -95,11 +95,11 @@ extension SharedStateUserDefaults {
           return .none
 
         case .decrementButtonTapped:
-          state.count -= 1
+          state.$count.withLock { $0 -= 1 }
           return .none
 
         case .incrementButtonTapped:
-          state.count += 1
+          state.$count.withLock { $0 += 1 }
           return .none
 
         case .isPrimeButtonTapped:
@@ -132,7 +132,7 @@ extension SharedStateUserDefaults {
       Reduce { state, action in
         switch action {
         case .resetStatsButtonTapped:
-          state.count = 0
+          state.$count.withLock { $0 = 0 }
           return .none
         }
       }
@@ -199,7 +199,7 @@ private struct ProfileTabView: View {
   }
 }
 
-extension PersistenceReaderKey where Self == AppStorageKey<Int> {
+extension SharedKey where Self == AppStorageKey<Int> {
   fileprivate static var count: Self {
     appStorage("sharedStateDemoCount")
   }

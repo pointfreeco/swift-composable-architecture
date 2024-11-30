@@ -25,10 +25,10 @@
         Add a `syncUp` field to the `State` struct since we need that data to populate the UI.
         There will be more state in this feature later, but we only need a `SyncUp` for now.
         
-        Further, this field will be annotated with the [`@Shared`](<doc:Shared>) property
-        wrapper in order to indicate that state is shared with another feature, in particular
-        the `SyncUpsList` feature. This will make it possible for this feature to make edits
-        to the state, and for the data to automatically be updated in `SyncUpsList.State`.
+        Further, this field will be annotated with the `@Shared` property wrapper in order to
+        indicate that state is shared with another feature, in particular the `SyncUpsList` feature.
+        This will make it possible for this feature to make edits to the state, and for the data to
+        automatically be updated in `SyncUpsList.State`.
         
         > Note: See the article <doc:SharingState> for more information about sharing state and
         persistence strategies.

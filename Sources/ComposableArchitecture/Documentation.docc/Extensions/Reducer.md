@@ -584,12 +584,6 @@ xcodebuild -skipMacroValidation …
 - ``forEach(_:action:element:fileID:filePath:line:column:)-6zye8``
 - <doc:Navigation>
 
-### Sharing state
-
-- <doc:SharingState>
-- ``Shared``
-- ``PersistenceKey``
-
 ### Supporting reducers
 
 - ``EmptyReducer``

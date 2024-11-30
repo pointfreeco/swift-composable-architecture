@@ -26,15 +26,15 @@ struct SharedStateUserDefaultsTests {
     }
 
     await store.send(.counter(.incrementButtonTapped)) {
-      $0.counter.count = 1
+      $0.counter.$count.withLock { $0 = 1 }
     }
 
     await store.send(.counter(.decrementButtonTapped)) {
-      $0.counter.count = 0
+      $0.counter.$count.withLock { $0 = 0 }
     }
 
     await store.send(.profile(.resetStatsButtonTapped)) {
-      $0.profile.count = 0
+      $0.profile.$count.withLock { $0 = 0 }
     }
   }
 

@@ -26,15 +26,15 @@ struct SharedStateInMemoryTests {
     }
 
     await store.send(.counter(.incrementButtonTapped)) {
-      $0.counter.stats.increment()
+      $0.counter.$stats.withLock { $0.increment() }
     }
 
     await store.send(.counter(.decrementButtonTapped)) {
-      $0.counter.stats.decrement()
+      $0.counter.$stats.withLock { $0.decrement() }
     }
 
     await store.send(.profile(.resetStatsButtonTapped)) {
-      $0.profile.stats = Stats()
+      $0.profile.$stats.withLock { $0 = Stats() }
     }
   }
 

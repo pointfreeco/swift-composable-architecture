@@ -234,13 +234,12 @@
       detail feature can be allowed to make edits to the state have those edits be automatically
       made to `SyncUpsList.State`.
       
-      One can use the projected value of [`@Shared`](<doc:Shared>) along with the 
-      ``ComposableArchitecture/Shared/elements`` property defined on shared collections in order to
-      derive a `Shared` value for each element in the collection.
+      One can use the projected value of `@Shared` in order to derive a `Shared` value for each
+      element in the collection.
       
       @Step {
-        Use the ``ComposableArchitecture/Shared/elements`` property in the `ForEach` to derive a
-        `Shared<SyncUp>` for each element in the `Shared<IdentifiedArrayOf<SyncUp>>`.
+        Pass the shared collection to the `ForEach` to derive a `Shared<SyncUp>` for each element in
+        the `Shared<IdentifiedArrayOf<SyncUp>>`.
         @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0003.swift)
       }
       
