@@ -23,6 +23,6 @@ If you are ready to upgrade to 1.0, then you can follow the
 [1.0 migration guide][1.0-migration] from that package.
 
 [sharing-gh]: https://github.com/pointfreeco/swift-sharing
-[1.0-migration]: todo
+[1.0-migration]: https://swiftpackageindex.com/pointfreeco/swift-sharing/main/documentation/sharing/migratingto1.0
 [0.1-release]: https://github.com/pointfreeco/swift-sharing/releases/0.1.0
 [1.0-release]: https://github.com/pointfreeco/swift-sharing/releases/1.0.0
