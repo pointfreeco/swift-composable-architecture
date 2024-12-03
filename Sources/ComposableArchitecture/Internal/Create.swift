@@ -36,28 +36,25 @@ final class DemandBuffer<S: Subscriber>: @unchecked Sendable {
 
   func buffer(value: S.Input) -> Subscribers.Demand {
     lock.lock()
-    defer { lock.unlock() }
-
     precondition(
-      self.completion == nil, "How could a completed publisher sent values?! Beats me 🤷‍♂️")
+      self.completion == nil, "How could a completed publisher send values?! Beats me 🤷‍♂️")
 
-    switch demandState.requested {
-    case .unlimited:
+    if demandState.requested == .unlimited {
+      lock.unlock()
       return subscriber.receive(value)
-    default:
+    } else {
       buffer.append(value)
+      lock.unlock()
       return flush()
     }
   }
 
   func complete(completion: Subscribers.Completion<S.Failure>) {
     lock.lock()
-    defer { lock.unlock() }
-
     precondition(
-      self.completion == nil, "Completion have already occurred, which is quite awkward 🥺")
-
+      self.completion == nil, "Completion has already occurred, which is quite awkward 🥺")
     self.completion = completion
+    lock.unlock()
     _ = flush()
   }
 
@@ -66,39 +63,53 @@ final class DemandBuffer<S: Subscriber>: @unchecked Sendable {
   }
 
   private func flush(adding newDemand: Subscribers.Demand? = nil) -> Subscribers.Demand {
-    self.lock.sync {
+    var sentDemand = Subscribers.Demand.none
+    var completionToSend: Subscribers.Completion<S.Failure>?
 
-      if let newDemand = newDemand {
-        demandState.requested += newDemand
-      }
+    lock.lock()
+    if let newDemand = newDemand {
+      demandState.requested += newDemand
+    }
+    lock.unlock()
 
-      // If buffer isn't ready for flushing, return immediately
-      guard demandState.requested > 0 || newDemand == Subscribers.Demand.none else { return .none }
+    var loop = true
+    while loop {
+      var valueToSend: S.Input?
 
-      while !buffer.isEmpty && demandState.processed < demandState.requested {
-        demandState.requested += subscriber.receive(buffer.remove(at: 0))
+      lock.lock()
+      if !buffer.isEmpty && demandState.processed < demandState.requested {
+        valueToSend = buffer.remove(at: 0)
         demandState.processed += 1
-      }
-
-      if let completion = completion {
-        // Completion event was already sent
+        sentDemand += 1
+      } else if let completion = completion {
         buffer = []
         demandState = .init()
         self.completion = nil
-        subscriber.receive(completion: completion)
-        return .none
+        completionToSend = completion
+        loop = false
+      } else {
+        loop = false
       }
+      lock.unlock()
 
-      let sentDemand = demandState.requested - demandState.sent
-      demandState.sent += sentDemand
-      return sentDemand
+      if let value = valueToSend {
+        let additionalDemand = subscriber.receive(value)
+        lock.lock()
+        demandState.requested += additionalDemand
+        lock.unlock()
+      }
     }
+
+    if let completion = completionToSend {
+      subscriber.receive(completion: completion)
+    }
+
+    return sentDemand
   }
 
   struct Demand {
     var processed: Subscribers.Demand = .none
     var requested: Subscribers.Demand = .none
-    var sent: Subscribers.Demand = .none
   }
 }
 
