@@ -1,7 +1,7 @@
 # Migrating to 1.17
 
 The `@Shared` property wrapper and related tools have been extracted to their own 
-[library][sharing-gh] so that they can be used in non-Composable Architecture applications. This a 
+library so that they can be used in non-Composable Architecture applications. This a 
 backwards compatible change, but some new deprecations have been introduced.
 
 ## Overview
