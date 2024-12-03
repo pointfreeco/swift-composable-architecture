@@ -686,10 +686,8 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
 /// resorting to positional indices, which can be error prone, especially when dealing with async
 /// effects.
 ///
-/// In production environments (e.g. in Xcode previews, simulators and on devices) the identifier
-/// is backed by a randomly generated UUID, but in tests a deterministic, generational ID is used.
-/// This allows you to predict how IDs will be created and allows you to write tests for how
-/// features behave in the stack.
+/// The identifier is backed by a deterministic, generational ID. This allows you to predict how
+/// IDs will be created and allows you to write tests for how features behave in the stack.
 ///
 /// ```swift
 /// @Test
