@@ -451,7 +451,8 @@ private struct SummaryStep: View {
 #Preview("Personal info") {
   NavigationStack {
     PersonalInfoStep(
-      store: Store(initialState: PersonalInfoFeature.State(signUpData: Shared(value: SignUpData()))) {
+      store: Store(initialState: PersonalInfoFeature.State(signUpData: Shared(value: SignUpData())))
+      {
         PersonalInfoFeature()
       }
     )
