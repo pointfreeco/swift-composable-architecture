@@ -11,7 +11,7 @@ struct SyncUpDetailTests {
       id: SyncUp.ID(),
       title: "Point-Free Morning Sync"
     )
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(syncUp))) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(value: syncUp))) {
       SyncUpDetail()
     } withDependencies: {
     }

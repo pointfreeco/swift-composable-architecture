@@ -250,19 +250,17 @@
       have in state from the collection of sync-ups that is in the `SyncUpsList` feature.
       
       However, remember that in <doc:PersistingSyncUps> we showed how to persist the collection
-      of sync-ups using the [`@Shared`](<doc:Shared>) property wrapper with the
-      ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` persistence strategy. This
-      gives the app _global_ access to that state, and we can make edits to it from anywhere. We can
-      even do it directly inline in the `.confirmButtonTapped` action.
+      of sync-ups using the `@Shared` property wrapper with the `fileStorage` persistence strategy.
+      This gives the app _global_ access to that state, and we can make edits to it from anywhere.
+      We can even do it directly inline in the `.confirmButtonTapped` action.
       
       @Step {
-        Use the ``Shared`` property wrapper with the 
-        ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` persistence strategy to get
-        a reference to the sync-ups loaded from disk.
+        Use the `@Shared` property wrapper with the `fileStorage` persistence strategy to get a
+        reference to the sync-ups loaded from disk.
         
         > Note: This does not actually load data from disk. The data has already been loaded from
-        > disk and cached in the [`@Shared`](<doc:Shared>) reference. This is only giving us access
-        > to that reference.
+        > disk and cached in the `@Shared` reference. This is only giving us access to that
+        > reference.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0010.swift)
       }
@@ -278,7 +276,7 @@
       you that we are reaching out to a seemingly global `syncUps` variable and mutating it. 
       However, this is no different than making an API request to delete data on some external
       server. Typically for that situation we use dependencies to make the API operation testable,
-      but we don't need to do that with [`@Shared`](<doc:Shared>). It is testable by default.
+      but we don't need to do that with `@Shared`. It is testable by default.
       
       If it truly bothers you to access the global `syncUps` state from within the detail feature,
       then you can instead send a "delegate" action from the detail that the parent feature

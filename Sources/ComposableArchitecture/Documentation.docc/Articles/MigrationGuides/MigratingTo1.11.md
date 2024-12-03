@@ -1,7 +1,7 @@
 # Migrating to 1.11
 
-Update your code to use the new ``Shared/withLock(_:)`` method for mutating shared state from
-asynchronous contexts, rather than mutating the underlying wrapped value directly.
+Update your code to use the new `withLock` method for mutating shared state from asynchronous
+contexts, rather than mutating the underlying wrapped value directly.
 
 ## Overview
 
@@ -46,10 +46,10 @@ to it from two different threads. However, allowing direct mutation does make th
 to race conditions. If you were to perform `count += 1` from 1,000 threads, it is possible for
 the final value to not be 1,000.
 
-We wanted the [`@Shared`](<doc:Shared>) type to be as ergonomic as possible, and that is why we make
-it directly mutable, but we should not be allowing these mutations to happen from asynchronous
-contexts. And so now the ``Shared/wrappedValue`` setter has been marked unavailable from
-asynchronous contexts, with a helpful message of how to fix:
+We wanted the `@Shared` type to be as ergonomic as possible, and that is why we make it directly
+mutable, but we should not be allowing these mutations to happen from asynchronous contexts. And so
+now the `wrappedValue` setter has been marked unavailable from asynchronous contexts, with
+a helpful message of how to fix:
 
 ```swift
 case .delayedIncrementButtonTapped:
@@ -59,8 +59,7 @@ case .delayedIncrementButtonTapped:
   }
 ```
 
-To fix this deprecation you can use the new ``Shared/withLock(_:)`` method on the projected value of
-`@Shared`:
+To fix this deprecation you can use the new `withLock` method on the projected value of `@Shared`:
 
 ```swift
 case .delayedIncrementButtonTapped:
@@ -82,14 +81,13 @@ $count.withLock { $0 = currentCount + 1 }
 
 But there is no way to 100% prevent race conditions in code. Even actors are susceptible to problems
 due to re-entrancy. To avoid problems like the above we recommend wrapping as many mutations of the
-shared state as possible in a single ``Shared/withLock(_:)``. That will make sure that the full unit
-of work is guarded by a lock.
+shared state as possible in a single `withLock`. That will make sure that the full unit of work is
+guarded by a lock.
 
 ## Supplying mock read-only state to previews
 
-A new ``SharedReader/constant(_:)`` helper on ``SharedReader`` has been introduced to simplify
-supplying mock data to Xcode previews. It works like SwiftUI's `Binding.constant`, but for shared
-references:
+A new `constant` helper on `SharedReader` has been introduced to simplify supplying mock data to
+Xcode previews. It works like SwiftUI's `Binding.constant`, but for shared references:
 
 ```swift
 #Preview {
@@ -110,13 +108,13 @@ A few bug fixes landed in 1.11.2 that may be source breaking. They are described
 ### `withLock` is now `@MainActor`
 
 In [version 1.11](<doc:MigratingTo1.11>) of the library we deprecated mutating shared state from
-asynchronous contexts, such as effects, and instead recommended using the new 
-``Shared/withLock(_:)`` method. Doing so made it possible to lock all mutations to the shared state
-and prevent race conditions (see the [migration guide](<doc:MigratingTo1.11>) for more info).
+asynchronous contexts, such as effects, and instead recommended using the new `withLock` method.
+Doing so made it possible to lock all mutations to the shared state and prevent race conditions (see
+the [migration guide](<doc:MigratingTo1.11>) for more info).
 
 However, this did leave open the possibility for deadlocks if shared state was read from and written
-to on different threads. To fix this we have now restricted ``Shared/withLock(_:)`` to the
-`@MainActor`, and so you will now need to `await` its usage:
+to on different threads. To fix this we have now restricted `withLock` to the `@MainActor`, and so
+you will now need to `await` its usage:
 
 ```diff
 -sharedCount.withLock { $0 += 1 }
@@ -127,7 +125,7 @@ The compiler should suggest this fix-it for you.
 
 ### Optional dynamic member lookup on `Shared` is deprecated/disfavored
 
-When the ``Shared`` property wrapper was first introduced, its dynamic member lookup was overloaded
+When the `@Shared` property wrapper was first introduced, its dynamic member lookup was overloaded
 to automatically unwrap optionals for ergonomic purposes:
 
 ```swift
@@ -145,12 +143,12 @@ $shared.optionalProperty  // Shared<Value>?, *not* Shared<Value?>
 …and required casting and other tricks to transform shared values into what one might expect.
 
 And so this dynamic member lookup is deprecated and has been disfavored, and will eventually be
-removed entirely. Instead, you can use ``Shared/init(_:)`` to explicitly unwrap a shared optional
+removed entirely. Instead, you can use `Shared.init(_:)` to explicitly unwrap a shared optional
 value.
 
 Disfavoring it does have the consequence of being source breaking in the case of `if let` and
 `guard let` expressions, where Swift does not select the optional overload automatically. To
-migrate, use ``Shared/init(_:)``:
+migrate, use `Shared.init(_:)`:
 
 ```diff
 -if let sharedUnwrappedProperty = $shared.optionalProperty {

@@ -11,7 +11,7 @@ struct SyncUpsListView: View {
 
   var body: some View {
     List {
-      ForEach(store.$syncUps.elements) { $syncUp in
+      ForEach(store.$syncUps) { $syncUp in
         NavigationLink(
           state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: $syncUp))
         ) {

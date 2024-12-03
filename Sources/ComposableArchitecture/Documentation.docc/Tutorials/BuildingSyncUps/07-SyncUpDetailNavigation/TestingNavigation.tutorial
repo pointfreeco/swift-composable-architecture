@@ -26,11 +26,11 @@
       Typically we would start a new test by constructing a ``ComposableArchitecture/TestStore``
       that holds onto the feature's initial state. However, this time the initial state is seeded 
       by shared state, which is also persisted to disk. For this reason it is easier to use the
-      [`@Shared`](<doc:Shared>) property wrapper directly to set the initial state of the sync-ups.
+      `@Shared` property wrapper directly to set the initial state of the sync-ups.
       
       @Step {
-        Use the [`@Shared`](<doc:Shared>) property wrapper with the `.syncUps` persistence strategy
-        we defined earlier to initialize the state with a single sync-up.
+        Use the `@Shared` property wrapper with the `.syncUps` persistence strategy we defined
+        earlier to initialize the state with a single sync-up.
         
         @Code(name: "AppFeatureTests.swift", file: TestingNavigation-01-code-0002.swift)
       }

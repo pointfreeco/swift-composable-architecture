@@ -9,7 +9,7 @@ struct SyncUpDetailTests {
 
   @Test
   func speechRestricted() async {
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(value: .mock))) {
       SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = { .restricted }
@@ -22,7 +22,7 @@ struct SyncUpDetailTests {
 
   @Test
   func speechDenied() async throws {
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(value: .mock))) {
       SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = {
@@ -42,7 +42,7 @@ struct SyncUpDetailTests {
     let store = TestStore(
       initialState: SyncUpDetail.State(
         destination: .alert(.speechRecognitionDenied),
-        syncUp: Shared(.mock)
+        syncUp: Shared(value: .mock)
       )
     ) {
       SyncUpDetail()
@@ -62,7 +62,7 @@ struct SyncUpDetailTests {
     let store = TestStore(
       initialState: SyncUpDetail.State(
         destination: .alert(.speechRecognitionDenied),
-        syncUp: Shared(.mock)
+        syncUp: Shared(value: .mock)
       )
     ) {
       SyncUpDetail()
@@ -79,7 +79,7 @@ struct SyncUpDetailTests {
 
   @Test
   func speechAuthorized() async throws {
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(value: .mock))) {
       SyncUpDetail()
     } withDependencies: {
       $0.speechClient.authorizationStatus = { .authorized }
@@ -93,7 +93,7 @@ struct SyncUpDetailTests {
   @Test
   func edit() async {
     var syncUp = SyncUp.mock
-    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(syncUp))) {
+    let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(value: syncUp))) {
       SyncUpDetail()
     } withDependencies: {
       $0.uuid = .incrementing
@@ -110,7 +110,7 @@ struct SyncUpDetailTests {
 
     await store.send(.doneEditingButtonTapped) {
       $0.destination = nil
-      $0.syncUp.title = "Blob's Meeting"
+      $0.$syncUp.withLock { $0.title = "Blob's Meeting" }
     }
   }
 
