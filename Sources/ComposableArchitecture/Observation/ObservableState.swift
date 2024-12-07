@@ -1,4 +1,5 @@
 import Foundation
+import Sharing
 
 /// A type that emits notifications to observers when underlying data changes.
 ///
@@ -7,12 +8,12 @@ import Foundation
 /// functionality to the type. Instead, always use the ``ObservableState()`` macro when adding
 /// observation support to a type.
 #if !os(visionOS)
-  public protocol ObservableState: Perceptible {
+  public protocol ObservableState: Perceptible, _MutationSkippableSharedValue {
     var _$id: ObservableStateID { get }
     mutating func _$willModify()
   }
 #else
-  public protocol ObservableState: Observable {
+  public protocol ObservableState: Observable, _MutationSkippableSharedValue {
     var _$id: ObservableStateID { get }
     mutating func _$willModify()
   }
@@ -192,4 +193,10 @@ public func _$willModify<T>(_: inout T) {}
 @inlinable
 public func _$willModify<T: ObservableState>(_ value: inout T) {
   value._$willModify()
+}
+
+public extension ObservableState {
+    func shouldCallWithMutation(newValue: Self) -> Bool {
+        !_$isIdentityEqual(self, newValue)
+    }
 }
