@@ -19,7 +19,7 @@ jobs:
     runs-on: macos-15
     strategy:
       matrix:
-        command: ['']
+        command: [test, '']
         platform: [IOS, MACOS]
         xcode: ['16.0']
     steps:
