@@ -86,7 +86,7 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
       into state: inout Base.State, action: Base.Action
     ) -> Effect<Base.Action> {
       if let printer = self.printer {
-        let changeTracker = SharedChangeTracker()
+        let changeTracker = SharedChangeTracker(reportUnassertedChanges: false)
         return changeTracker.track {
           let oldState = UncheckedSendable(state)
           let effects = self.base.reduce(into: &state, action: action)
