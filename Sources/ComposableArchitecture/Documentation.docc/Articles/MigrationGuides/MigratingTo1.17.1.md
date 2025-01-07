@@ -26,5 +26,5 @@ If you are ready to upgrade to 2.0, then you can follow the [2.0 migration guide
 from that package.
 
 [sharing-gh]: https://github.com/pointfreeco/swift-sharing
-[1.0-migration]: https://swiftpackageindex.com/pointfreeco/swift-sharing/main/documentation/sharing/migratingto2.0
+[2.0-migration]: https://swiftpackageindex.com/pointfreeco/swift-sharing/main/documentation/sharing/migratingto2.0
 [2.0-release]: https://github.com/pointfreeco/swift-sharing/releases/2.0.0
