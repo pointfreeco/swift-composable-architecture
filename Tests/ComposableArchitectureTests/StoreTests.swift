@@ -1179,6 +1179,7 @@ final class StoreTests: BaseTCATestCase {
 #if canImport(Testing)
   @Suite
   struct ModernStoreTests {
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     @Reducer
     fileprivate struct TaskTreeFeature {
       let clock: TestClock<Duration>
@@ -1206,6 +1207,7 @@ final class StoreTests: BaseTCATestCase {
       }
     }
 
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     @MainActor
     @Test
     func cancellation() async throws {
