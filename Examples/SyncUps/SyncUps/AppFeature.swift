@@ -76,7 +76,7 @@ struct AppView: View {
     .productMock,
     .engineeringMock,
   ]
-  return AppView(
+  AppView(
     store: Store(initialState: AppFeature.State()) {
       AppFeature()
     }

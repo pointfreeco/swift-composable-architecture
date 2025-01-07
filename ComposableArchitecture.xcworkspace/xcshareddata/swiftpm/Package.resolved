@@ -1,13 +1,13 @@
 {
-  "originHash" : "daf106e4a50354e80d4874c54dee4b63ae0e8650346403e3489835d2a6005ea8",
+  "originHash" : "be743d77a36d5e157b8f2f96e0924c48c1b3fc8eaaf625f6a20688077102dd90",
   "pins" : [
     {
       "identity" : "combine-schedulers",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/combine-schedulers",
       "state" : {
-        "revision" : "9fa31f4403da54855f1e2aeaeff478f4f0e40b13",
-        "version" : "1.0.2"
+        "revision" : "5928286acce13def418ec36d05a001a9641086f2",
+        "version" : "1.0.3"
       }
     },
     {
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-clocks",
       "state" : {
-        "revision" : "b9b24b69e2adda099a1fa381cda1eeec272d5b53",
-        "version" : "1.0.5"
+        "revision" : "cc46202b53476d64e824e0b6612da09d84ffde8e",
+        "version" : "1.0.6"
       }
     },
     {
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-concurrency-extras",
       "state" : {
-        "revision" : "163409ef7dae9d960b87f34b51587b6609a76c1f",
-        "version" : "1.3.0"
+        "revision" : "82a4ae7170d98d8538ec77238b7eb8e7199ef2e8",
+        "version" : "1.3.1"
       }
     },
     {
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-dependencies",
       "state" : {
-        "revision" : "5526c8a27675dc7b18d6fa643abfb64bcb200b77",
-        "version" : "1.6.2"
+        "revision" : "85f89f5d0ce5a18945f65371d40ca997da85a41a",
+        "version" : "1.6.3"
       }
     },
     {
@@ -105,8 +105,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-navigation",
       "state" : {
-        "revision" : "16a27ab7ae0abfefbbcba73581b3e2380b47a579",
-        "version" : "2.2.2"
+        "revision" : "e28911721538fa0c2439e92320bad13e3200866f",
+        "version" : "2.2.3"
       }
     },
     {
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-sharing",
       "state" : {
-        "revision" : "524e1a6868f0c9eebe8002e3f604912865521beb",
-        "version" : "1.0.4"
+        "revision" : "dbcd9d49089c4b0d171bc28244f21f4cf9813b11",
+        "version" : "1.1.2"
       }
     },
     {
@@ -143,6 +143,15 @@
       "state" : {
         "revision" : "0687f71944021d616d34d922343dcef086855920",
         "version" : "600.0.1"
+      }
+    },
+    {
+      "identity" : "swift-tagged",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-tagged.git",
+      "state" : {
+        "revision" : "3907a9438f5b57d317001dc99f3f11b46882272b",
+        "version" : "0.10.0"
       }
     },
     {
