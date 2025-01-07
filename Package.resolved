@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-sharing",
       "state" : {
-        "branch" : "main",
-        "revision" : "c5ea46f0712cd3b639e2c7d6bf3f193116e0ff8d"
+        "revision" : "524e1a6868f0c9eebe8002e3f604912865521beb",
+        "version" : "1.0.4"
       }
     },
     {

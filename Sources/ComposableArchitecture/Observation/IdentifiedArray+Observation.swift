@@ -100,6 +100,7 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
   #endif
   fileprivate init(_ store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>) {
     self.store = store
+    store._$observationRegistrar.access(store, keyPath: \.currentState)
     self.data = store.withState { $0 }
   }
 
