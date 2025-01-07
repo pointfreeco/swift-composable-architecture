@@ -54,7 +54,7 @@ struct SyncUpsList {
               ?? Attendee(id: Attendee.ID(uuid()))
           )
         }
-        state.$syncUps.withLock { $0.append(syncUp) }
+        state.$syncUps.withLock { _ = $0.append(syncUp) }
         state.destination = nil
         return .none
 
@@ -80,7 +80,7 @@ struct SyncUpsListView: View {
 
   var body: some View {
     List {
-      ForEach(store.$syncUps) { $syncUp in
+      ForEach(Array(store.$syncUps)) { $syncUp in
         NavigationLink(state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: $syncUp))) {
           CardView(syncUp: syncUp)
         }
