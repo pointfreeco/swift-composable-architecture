@@ -39,30 +39,57 @@ public struct AppStorageKeyPathKey<Value: Sendable>: Sendable {
 
 @available(*, deprecated, message: "Use an 'AppStorageKey', instead")
 extension AppStorageKeyPathKey: SharedKey, Hashable {
-  public func load(initialValue _: Value?) -> Value? {
-    self.store.wrappedValue[keyPath: self.keyPath]
-  }
+  #if canImport(Sharing2)
+    public func load(context: LoadContext<Value>, continuation: LoadContinuation<Value>) {
+      continuation.resume(returning: self.store.wrappedValue[keyPath: self.keyPath])
+    }
 
-  public func save(_ newValue: Value, immediately: Bool) {
-    SharedAppStorageLocals.$isSetting.withValue(true) {
-      self.store.wrappedValue[keyPath: self.keyPath] = newValue
+    public func subscribe(context: LoadContext<Value>, subscriber: SharedSubscriber<Value>)
+      -> SharedSubscription
+    {
+      let observer = self.store.wrappedValue.observe(self.keyPath, options: .new) { _, change in
+        guard
+          !SharedAppStorageLocals.isSetting
+        else { return }
+        subscriber.yield(with: Result { change.newValue })
+      }
+      return SharedSubscription {
+        observer.invalidate()
+      }
     }
-  }
 
-  public func subscribe(
-    initialValue: Value?,
-    didSet receiveValue: @escaping @Sendable (_ newValue: Value?) -> Void
-  ) -> SharedSubscription {
-    let observer = self.store.wrappedValue.observe(self.keyPath, options: .new) { _, change in
-      guard
-        !SharedAppStorageLocals.isSetting
-      else { return }
-      receiveValue(change.newValue ?? initialValue)
+    public func save(_ value: Value, context: SaveContext, continuation: SaveContinuation) {
+      SharedAppStorageLocals.$isSetting.withValue(true) {
+        self.store.wrappedValue[keyPath: self.keyPath] = value
+      }
+      continuation.resume()
     }
-    return SharedSubscription {
-      observer.invalidate()
+  #else
+    public func load(initialValue _: Value?) -> Value? {
+      self.store.wrappedValue[keyPath: self.keyPath]
     }
-  }
+
+    public func subscribe(
+      initialValue: Value?,
+      didSet receiveValue: @escaping @Sendable (_ newValue: Value?) -> Void
+    ) -> SharedSubscription {
+      let observer = self.store.wrappedValue.observe(self.keyPath, options: .new) { _, change in
+        guard
+          !SharedAppStorageLocals.isSetting
+        else { return }
+        receiveValue(change.newValue ?? initialValue)
+      }
+      return SharedSubscription {
+        observer.invalidate()
+      }
+    }
+
+    public func save(_ newValue: Value, immediately: Bool) {
+      SharedAppStorageLocals.$isSetting.withValue(true) {
+        self.store.wrappedValue[keyPath: self.keyPath] = newValue
+      }
+    }
+  #endif
 }
 
 // NB: This is mainly used for tests, where observer notifications can bleed across cases.
