@@ -161,7 +161,7 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
     .productMock,
     .engineeringMock,
   ]
-  return NavigationStack {
+  NavigationStack {
     SyncUpsListView(
       store: Store(initialState: SyncUpsList.State()) {
         SyncUpsList()
