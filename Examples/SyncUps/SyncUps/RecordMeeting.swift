@@ -72,7 +72,7 @@ struct RecordMeeting {
             ? speechClient.requestAuthorization()
             : speechClient.authorizationStatus()
 
-          await withTaskGroup(of: Void.self) { group in
+          await withDiscardingTaskGroup { group in
             if authorization == .authorized {
               group.addTask {
                 await startSpeechRecognition(send: send)
