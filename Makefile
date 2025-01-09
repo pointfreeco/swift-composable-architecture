@@ -64,7 +64,7 @@ format:
 		-path '*/Documentation.docc' -prune -o \
 		-name '*.swift' \
 		-not -path '*/.*' -print0 \
-		| xargs -0 swift format --ignore-unparsable-files --in-place
+		| xargs -0 xcrun swift-format --ignore-unparsable-files --in-place
 
 .PHONY: build-for-library-evolution format warm-simulator xcodebuild xcodebuild-raw
 
