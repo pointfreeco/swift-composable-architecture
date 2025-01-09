@@ -331,8 +331,7 @@ public final class Store<State, Action> {
   }
 
   @_spi(Internals)
-  public
-    func scope<ChildState, ChildAction>(
+  public func scope<ChildState, ChildAction>(
       id: ScopeID<State, Action>?,
       state: ToState<State, ChildState>,
       action fromChildAction: @escaping (ChildAction) -> Action,
