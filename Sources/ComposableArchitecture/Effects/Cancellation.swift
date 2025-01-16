@@ -178,7 +178,11 @@ extension Effect {
         if cancelInFlight {
           $0.cancel(id: id, path: navigationIDPath)
         }
-        let task = Task { try await operation() }
+        let task = Task {
+          let result = try await operation()
+          try Task.checkCancellation()
+          return result
+        }
         let cancellable = AnyCancellable { task.cancel() }
         $0.insert(cancellable, at: id, path: navigationIDPath)
         return (cancellable, task)
@@ -209,7 +213,11 @@ extension Effect {
         if cancelInFlight {
           $0.cancel(id: id, path: navigationIDPath)
         }
-        let task = Task { try await operation() }
+        let task = Task {
+          let result = try await operation()
+          try Task.checkCancellation()
+          return result
+        }
         let cancellable = AnyCancellable { task.cancel() }
         $0.insert(cancellable, at: id, path: navigationIDPath)
         return (cancellable, task)
