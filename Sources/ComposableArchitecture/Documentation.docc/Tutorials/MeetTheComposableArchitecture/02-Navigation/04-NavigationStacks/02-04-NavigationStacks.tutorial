@@ -101,6 +101,9 @@
         This represents the actions that can happen inside the stack, such as pushing or popping
         an element off the stack, or an action happening inside a particular feature inside the
         stack.
+
+        > Tip: ``ComposableArchitecture/StackActionOf`` is a typealias to avoid having 
+        > to specify both `State` and `Action` (eg: `StackAction<ContactDetailFeature.State, ContactDetailFeature.Action>`)
         
         We will also handle the `.path` case in the reducer and return 
         ``ComposableArchitecture/Effect/none`` for now.
