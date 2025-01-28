@@ -22,7 +22,7 @@ struct ContactsFeatureTests {
       )
     }
     await store.send(\.destination.addContact.setName, "Blob Jr.") {
-      $0.destination?.addContact?.contact.name = "Blob Jr."
+      $0.destination?.modify(\.addContact) { $0.contact.name = "Blob Jr." }
     }
     await store.send(\.destination.addContact.saveButtonTapped)
   }

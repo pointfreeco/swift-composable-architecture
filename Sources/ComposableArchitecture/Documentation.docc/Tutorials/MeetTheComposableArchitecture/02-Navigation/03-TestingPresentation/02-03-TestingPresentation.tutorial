@@ -116,9 +116,9 @@
         To do this we can chain into the `addContact` case name directly and mutate a part of its
         associated value.
         
-        > Tip: To chain into an enum and mutate an associated value, the enum must be annotated with
-        > `@CasePathable` _and_ `@dynamicMemberLookup`. The `@Reducer` macro automatically applies
-        > these annotations to enum-based `State`, but you must manually apply it to other enums.
+        > Tip: To use the `modify` helper on an enum to mutate an associated value, the enum must 
+        > be annotated with `@CasePathable`. The `@Reducer` macro automatically applies
+        > this annotation to enum-based `State`, but you must manually apply it to other enums.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0011.swift)
       }
