@@ -102,8 +102,8 @@
         an element off the stack, or an action happening inside a particular feature inside the
         stack.
 
-        > Tip: ``ComposableArchitecture/StackActionOf`` is a typealias to avoid having 
-        > to specify both `State` and `Action` (eg: `StackAction<ContactDetailFeature.State, ContactDetailFeature.Action>`)
+        > Tip: ``StackAction`` is generic over both state and action of the `Path` domain, and so
+        > you can use the ``StackActionOf`` type alias to simplify the syntax a bit.
         
         We will also handle the `.path` case in the reducer and return 
         ``ComposableArchitecture/Effect/none`` for now.
