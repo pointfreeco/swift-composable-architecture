@@ -173,7 +173,7 @@
     
     @Steps {
       @Step {
-        Add a new test method for testing the "Add sync-up" flow, but this time in an exhaustive 
+        Add a new test method for testing the "Add sync-up" flow, but this time in an non-exhaustive 
         manner.
         
         @Code(name: "SyncUpsListTests.swift", file: TestingSyncUpFormPresentation-02-code-0001.swift, previousFile: TestingSyncUpFormPresentation-02-code-0001-previous.swift)
