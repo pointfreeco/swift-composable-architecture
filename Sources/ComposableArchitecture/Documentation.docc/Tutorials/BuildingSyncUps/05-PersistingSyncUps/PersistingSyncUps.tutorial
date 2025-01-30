@@ -46,22 +46,44 @@
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0003.swift)
       }
 
-      With that change the project should be compiling. It is worth noting that `fileStorage` only
+      If you try to compile the project now, you will see that it still fails where we try to 
+      mutate the `syncUps` shared property with the error `setter for 'syncUps' is unavailable: 
+      Use '$shared.withLock' to modify a shared value with exclusive access.`
+
+      @Step {
+        Shared values are secretly references (that is how data is shared), and it is perfectly 
+        possible to mutate a `Shared` property from inside an effect. 
+        So to make it thread-safe to mutate, we must use the `withLock` method on the projected 
+        value of the `syncUps` shared property when the value is mutated.
+        
+        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0004.swift)
+      }
+
+      It is worth noting that `fileStorage` only
       works with `Codable` data types, and earlier in the tutorial when we added models to
       Models.swift we made them codable from the beginning.
-            
+
       @Step {
         Before moving on, we can still make this better.
         It is possible to provide some type safety between the URL provided and the expected
         type of data to be stored on disk, and make usage more concise. See 
         [type-safe keys](<doc:SharingState#Type-safe-keys>) for more information.
-  
-        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0004.swift)
+        
+        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0005.swift)
       }
             
-      To confirm that persistence works we need to run the app in the simulator, but we haven't done
-      that yet in this tutorial. To do that we need to update the entry point of the app to use the
-      `SyncUpsListView`.
+      @Step {
+        One last error should comes from the preview of the `SyncUpsListView`. Now, we need 
+        to initialize the mock from outside. The `SyncUpsList` feature will then access it 
+        via the sharing mechanism, so we don't need to provide it to the `State` initializer
+        anymore.
+  
+        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0006.swift, previousFile: PersistingSyncUps-01-code-0006-previous.swift)
+      }
+
+      With that last change the project should be compiling. To confirm that persistence works 
+      we need to run the app in the simulator, but we haven't done that yet in this tutorial. 
+      To do that we need to update the entry point of the app to use the `SyncUpsListView`.
       
       @Step {
         Go to SyncUpsApp.swift and update the root view to be a `NavigationStack` wrapping a 
@@ -70,14 +92,14 @@
         > Note: We construct the ``ComposableArchitecture/Store`` as a static so that it is 
         initialized only one time, and so that it is not created while running Xcode previews.
         
-        @Code(name: "SyncUpsApp.swift", file: PersistingSyncUps-01-code-0005.swift)
+        @Code(name: "SyncUpsApp.swift", file: PersistingSyncUps-01-code-0007.swift)
       }
       
       @Step {
         Run the app in the simulator, add a sync-up, and then relaunch the application to see that
         it restores the previously created sync-up. This shows that data is persisting.
         
-        @Video(source: PersistingSyncUps-01-video-0006.mov)
+        @Video(source: PersistingSyncUps-01-video-0008.mov)
       }
     }
   }
