@@ -2,7 +2,7 @@
   @Intro(title: "Testing the sync-up detail") {
     The `SyncUpDetail` feature has slowly become quite complex. It now handles two forms of 
     navigation (an alert and sheet), it models navigation state with a single enum, and it
-    communicates with a parent feature via delegate actions. It's about time we got some test
+    updates the parent feature via a shared property. It's about time we got some test
     coverage on this feature so we can be sure it works as we expect, and so that we can make future
     changes with confidence.
   }
