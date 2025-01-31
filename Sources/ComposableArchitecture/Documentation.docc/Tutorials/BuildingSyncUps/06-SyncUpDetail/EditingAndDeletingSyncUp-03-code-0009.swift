@@ -37,7 +37,7 @@ struct SyncUpDetail {
         @Shared(.syncUps) var syncUps
         $syncUps.withLock { _ = $0.remove(id: state.syncUp.id) }
         return .run { _ in await dismiss() }
-        
+
       case .destination:
         return .none
 
