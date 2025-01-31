@@ -112,15 +112,42 @@
     }
     
     @Steps {
+      Before anything, we need to fix a few compiler errors. We'll start with the initialization
+      of the list of `SyncUp` in the `deletion()` test.
+
+      When using a `Shared` state with a persistence strategie like we did in the `SyncUpList` feature, 
+      we can initialize it from outside.
+
       @Step {
-        Run the test suite to see that everything still passes. 
+        Go to `SyncUpsListTests.swift` and move the initialization of the syncUp we want to delete outside of 
+        the `TestStore` initialization.
+
+        > note: the `fileStorage` persistence strategy uses an internal dependency for changing how files 
+        > are written to the disk and loaded from disk. In tests the dependency will forgo any interaction 
+        > with the file system and instead write data to a `[URL: Data]` dictionary, and load data from that 
+        > dictionary. That emulates how the file system works, but without persisting any data to the global 
+        > file system.
+
+        @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0001.swift, previousFile: PersistingSyncUps-02-code-0001-previous.swift)
+      }
+
+      @Step {
+        Next, we need to update the way we update the shared state by using the `withLock` method on its 
+        projected value.
+
+        @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0002.swift)
+      }
+
+      With that, we should be in compilation order.
+
+      @Step {
+        Now, run the test suite to see that everything still passes. 
       }
       
       @Step {
-        Go to SyncUpsListTests.swift and make a change to the `testAddSyncUp` test to make an
-        incorrect assertion.
+        Make a change to the `addSyncUp` test to make an incorrect assertion.
         
-        @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0001.swift, previousFile: PersistingSyncUps-02-code-0001-previous.swift)
+        @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0003.swift)
       }
       
       @Step {
