@@ -269,10 +269,17 @@
       }
       
       @Step {
+        We can also use the type safe key `.syncUps` we have created earlier to ensure the 
+        type and key are correct and we get a more consise declaration as a bonus.
+        
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0011.swift)
+      }
+
+      @Step {
         Use the `id` of the sync-up held in the detail's state to remove it from the `syncUps`
         collection persisted to disk.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0011.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0012.swift)
       }
       
       That's all it takes to delete the sync-up from the persisted array of sync-ups. It may trouble
@@ -302,7 +309,7 @@
         Add a dependency on ``ComposableArchitecture/DismissEffect`` to the `SyncUpDetail` feature
         by using the `@Dependency` property wrapper.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0012.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0013.swift)
       }
       
       To dismiss a child feature with the ``ComposableArchitecture/DismissEffect`` dependency you
@@ -317,7 +324,7 @@
         Return a `.run` effect to send the delegate action and invoke `dismiss` in one single
         effect.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0013.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0014.swift)
       }
       
       Next we need to integrate the alert into the view layer so that an alert actually shows when
@@ -328,7 +335,7 @@
         modifier that comes with the library. This will cause an alert to be presented when the
         `alert` state is populated.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0014.swift, previousFile: EditingAndDeletingSyncUp-02-code-0014-previous.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0015.swift, previousFile: EditingAndDeletingSyncUp-02-code-0015-previous.swift)
       }
       
       We have now finished the sync-up deletion functionality in the detail screen. Unfortunately we

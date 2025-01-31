@@ -23,14 +23,12 @@ struct SyncUpDetail {
     }
   }
 
-  @Dependency(\.dismiss) var dismiss
-
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .alert(.presented(.confirmButtonTapped)):
-        @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
-        syncUps.remove(id: state.syncUp.id)
+        @Shared(.syncUps) var syncUps
+        $syncUps.withLock { _ = $0.remove(id: state.syncUp.id) }
         return .none
 
       case .alert(.dismiss):
