@@ -318,11 +318,10 @@
       only be invoked inside an effect, and so we must use the
       ``ComposableArchitecture/Effect/run(priority:operation:catch:fileID:filePath:line:column:)`` effect, which
       gives us an asynchronous context to execute the work in, as well as a handle on 
-      ``ComposableArchitecture/Send`` for sending actions back into the system.
+      ``ComposableArchitecture/Send`` for sending actions back into the system if needed.
       
       @Step {
-        Return a `.run` effect to send the delegate action and invoke `dismiss` in one single
-        effect.
+        Return a `.run` effect to invoke the `dismiss` effect.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0014.swift)
       }
