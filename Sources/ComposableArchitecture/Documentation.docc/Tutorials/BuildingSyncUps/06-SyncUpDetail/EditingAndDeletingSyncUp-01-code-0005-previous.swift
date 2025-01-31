@@ -31,7 +31,7 @@ struct SyncUpDetailView: View {
             .padding(4)
             .foregroundColor(store.syncUp.theme.accentColor)
             .background(store.syncUp.theme.mainColor)
-            .cornerRadius(4)
+            .clipShape(.rect(cornerRadius: 4))
         }
       } header: {
         Text("Sync-up Info")
