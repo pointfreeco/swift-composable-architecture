@@ -118,6 +118,9 @@
       @Step {
         Implement the `doneEditingButtonTapped` action by grabbing the latest `syncUp` value from
         the `editSyncUp` state, and replacing `SyncUpDetail`'s state with that value.
+
+        > Note: To update the shared syncUp, we must use the `withLock` method on its projected
+        > value that insures thread safety.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0011.swift)
       }

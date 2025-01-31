@@ -52,7 +52,7 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard let editedSyncUp = state.destination?.edit?.syncUp
         else { return .none }
-        state.syncUp = editedSyncUp
+        state.$syncUp.withLock { $0 = editedSyncUp }
         state.destination = nil
         return .none
 
