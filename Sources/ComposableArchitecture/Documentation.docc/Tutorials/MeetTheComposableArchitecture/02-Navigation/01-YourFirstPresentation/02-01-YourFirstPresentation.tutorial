@@ -258,7 +258,7 @@
       
       > Important: Delegate actions are the most general way of communicating from the child domain
       back to the parent, but there are other techniques. We could have also utilized the 
-      `@Shared` property wrapper for the collection of sync ups, which would allow the
+      `@Shared` property wrapper for the collection of contacts, which would allow the
       `AddContactFeature` to insert a new contact directly into the parent collection without any
       further steps. This can be powerful, but we will use delegate actions for this tutorial. To
       read more about `@Shared` see the <doc:SharingState> article, and see the

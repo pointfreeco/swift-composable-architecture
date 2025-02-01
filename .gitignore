@@ -5,3 +5,4 @@
 /*.swiftinterface
 /*.xcodeproj
 xcuserdata/
+.docc-build/
