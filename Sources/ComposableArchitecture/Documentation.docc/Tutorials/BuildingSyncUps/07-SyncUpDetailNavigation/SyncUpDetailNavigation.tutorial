@@ -240,6 +240,10 @@
       @Step {
         Pass the shared collection to the `ForEach` to derive a `Shared<SyncUp>` for each element in
         the `Shared<IdentifiedArrayOf<SyncUp>>`.
+
+        > Note: We need to further encapsulate the shared collection into an `Array` to avoid that the compiler
+        > complains about `ForEach` requiring conformance to `RandomAccessCollection` for its argument.
+        
         @Code(name: "SyncUpsList.swift", file: SyncUpDetailNavigation-03-code-0003.swift)
       }
       
