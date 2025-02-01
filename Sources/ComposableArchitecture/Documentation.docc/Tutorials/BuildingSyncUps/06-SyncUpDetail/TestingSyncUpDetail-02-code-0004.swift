@@ -11,6 +11,9 @@ struct SyncUpDetailTests {
       id: SyncUp.ID(),
       title: "Point-Free Morning Sync"
     )
+    
+    @Shared(.syncUps) var syncUps = [syncUp]
+
     let store = TestStore(initialState: SyncUpDetail.State(syncUp: Shared(value: syncUp))) {
       SyncUpDetail()
     }
@@ -18,13 +21,9 @@ struct SyncUpDetailTests {
     await store.send(.deleteButtonTapped) {
       $0.destination = .alert(.deleteSyncUp)
     }
-    await store.send(.destination(.presented(.alert(.confirmButtonTapped)))) {
+    await store.send(\.destination.alert.confirmButtonTapped) {
       $0.destination = nil
     }
-    // ❌ The store received 1 unexpected action after this one: …
-    //
-    //      Unhandled actions:
-    //        • .delegate(.deleteSyncUp)
   }
   
   @Test

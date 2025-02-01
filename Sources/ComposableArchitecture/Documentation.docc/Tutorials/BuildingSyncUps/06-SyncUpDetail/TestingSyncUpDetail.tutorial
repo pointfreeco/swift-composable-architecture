@@ -70,4 +70,69 @@
       we did in <doc:PresentingSyncUpForm>, but we will leave that as an exercise for the reader.
     }
   }  
+
+  @Section(title: "Testing the delete flow") {
+    @ContentAndMedia {
+      Let's move on to the next bit of functionality in the feature: the delete flow. We will exercise 
+      the full user flow of tapping the "Delete" button, confirm the deletion, and then committing the 
+      delete in the `SyncUpsList` feature via its shared property.
+    }
+    
+    @Steps {
+      @Step {
+        Add a new test method for testing the flow of deleting the displayed `syncUp`. We can start in an
+        initial state with a simple syncUp.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0001.swift, previousFile: TestingSyncUpDetail-02-code-0001-previous.swift)
+      }
+      
+      @Step {
+        Emulate the user tapping on the "Delete" button and assert that the `destination` state
+        mutates to point to the `.alert` case with the `deleteSyncUp` alert state.
+        
+        Run the test suite to confirm that so far everything passes.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0002.swift)
+      }
+      
+      @Step {
+        Emulate the user is tapping the "Yes" button in the confirm deletion alert by sending a 
+        deeply nested action for the `.destination`, when it's in the `.alert` case, 
+        and then finally a `.confirmButtonTapped` action. We expect the `destination` state to 
+        be `nil`'d out, which will cause the alert to be dismissed
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0003.swift)
+      }
+
+      If you run the test now, you will see that it all passes… But, we didn't test the actual 
+      deletion of the displayed `syncUp` yet?!
+
+      To delete the displayed `SyncUp`, we choose to use the `@Shared` property wrapper with 
+      the `fileStorage` persistence strategy used in the `SyncUpsList` feature. As this property is 
+      not directly referenced in the `SyncUpDetail` state, our exhaustive testing is not catching it.
+      But let's put that right!
+      
+      @Step {
+        Let's create an instance of this `@Shared` property using our `.syncUps` type safe key, and
+        initialize it with the displayed `syncUp`.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0004.swift)
+      }
+      
+      @Step {
+        Now, let's test that our shared `syncUps` property has been correctly updated by testing
+        that it is now empty after the alert is dimissed. 
+
+        > Tip: Instead of the standard `#expect` helper that comes with the `SwiftTesting` library,
+        > we use `expectNoDifference` which is an equivalent that comes with the library and display a 
+        > nice diff when the assertion fails.
+
+        Run the test suite to confirm that the syncUp is effectively deleted in the parent's list.
+        
+        @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-02-code-0005.swift)
+      }
+      
+      We have now tested the full user flow of editing and deleting a sync-up.
+    }
+  }  
 }

@@ -18,7 +18,7 @@ struct SyncUpDetailTests {
     await store.send(.deleteButtonTapped) {
       $0.destination = .alert(.deleteSyncUp)
     }
-    await store.send(.destination(.presented(.alert(.confirmButtonTapped)))) {
+    await store.send(\.destination.alert.confirmButtonTapped) {
       $0.destination = nil
     }
   }
