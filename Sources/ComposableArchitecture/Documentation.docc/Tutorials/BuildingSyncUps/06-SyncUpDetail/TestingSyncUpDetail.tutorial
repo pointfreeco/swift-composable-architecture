@@ -38,7 +38,7 @@
       
       @Step {
         Emulate the user changing the title of the sync-up by sending a deeply nested action for the
-        `.destination`, when it's `.presented`, in the `.edit` case, and then finally a 
+        `.destination`, when it's in the `.edit` case, and then finally a 
         ``ComposableArchitecture/BindableAction/binding-108e1`` action to set the sync-up.
         
         @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-01-code-0004.swift)
