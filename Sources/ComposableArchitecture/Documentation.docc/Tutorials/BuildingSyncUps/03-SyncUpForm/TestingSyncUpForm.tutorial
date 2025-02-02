@@ -43,10 +43,10 @@
       
       @Step {
         Add a new test method for testing what happens when we delete a focused attendee. This time
-        the initial state with start with two attendees, which have been pulled out into variables
+        the initial state will start with two attendees, which have been pulled out into variables
         so that we can reference them. The first attendee will also be focused.
         
-        > Note: We have collapsed the `testRemoveAttendee` method in the code snippet.
+        > Note: We have collapsed the `removeAttendee` test method in the code snippet.
         
         @Code(name: "SyncUpFormTests.swift", file: TestingSyncUpForm-01-code-0004.swift, previousFile: TestingSyncUpForm-01-code-0004-previous.swift)
       }
