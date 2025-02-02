@@ -450,7 +450,7 @@ todo // Shared<Todo>
 
 [mutating-shared-state-article]: https://swiftpackageindex.com/pointfreeco/swift-sharing/main/documentation/sharing/mutatingsharedstate
 
-While the [`@Shared`](<doc:Shared>) property wrapper makes it possible to treat shared state
+While the `@Shared` property wrapper makes it possible to treat shared state
 _mostly_ like regular state, you do have to perform some extra steps to mutate shared state. 
 This is because shared state is technically a reference deep down, even
 though we take extra steps to make it appear value-like. And this means it's possible to mutate the
