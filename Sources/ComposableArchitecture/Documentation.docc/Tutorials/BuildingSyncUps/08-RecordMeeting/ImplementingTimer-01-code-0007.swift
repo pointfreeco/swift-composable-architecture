@@ -74,7 +74,7 @@ struct RecordMeetingView: View {
       }
     }
     .padding()
-    .foregroundColor(store.syncUp.theme.accentColor)
+    .foregroundStyle(store.syncUp.theme.accentColor)
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {
       ToolbarItem(placement: .cancellationAction) {
