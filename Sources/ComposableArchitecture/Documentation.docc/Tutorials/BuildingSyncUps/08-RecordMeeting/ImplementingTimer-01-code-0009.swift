@@ -45,7 +45,7 @@ struct RecordMeeting {
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.secondsElapsed == state.syncUp.duration.components.seconds {
             state.$syncUp.withLock {
-              $0.meetings.insert(
+              _ = $0.meetings.insert(
                 Meeting(id: Meeting.ID(), date: Date(), transcript: state.transcript),
                 at: 0
               )
