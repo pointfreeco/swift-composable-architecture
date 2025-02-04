@@ -431,7 +431,7 @@ import IssueReporting
 #else
   @preconcurrency@MainActor
 #endif
-public final class TestStore<State, Action> {
+public final class TestStore<State: Equatable, Action> {
 
   /// The current dependencies of the test store.
   ///
@@ -703,7 +703,6 @@ public final class TestStore<State, Action> {
   ) {
     if !self.reducer.receivedActions.isEmpty {
       let actions = self.reducer.receivedActions
-        .map(\.action)
         .map { "    • " + debugCaseOutput($0, abbreviated: true) }
         .joined(separator: "\n")
       reportIssueHelper(
@@ -843,140 +842,16 @@ public final class TestStore<State, Action> {
       return try await operation()
     }
   #endif
-}
 
-/// A convenience type alias for referring to a test store of a given reducer's domain.
-///
-/// Instead of specifying two generics:
-///
-/// ```swift
-/// let testStore: TestStore<Feature.State, Feature.Action>
-/// ```
-///
-/// You can specify a single generic:
-///
-/// ```swift
-/// let testStore: TestStoreOf<Feature>
-/// ```
-public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action>
-
-extension TestStore where State: Equatable {
-  /// Sends an action to the store and asserts when state changes.
-  ///
-  /// To assert on how state changes you can provide a trailing closure, and that closure is handed
-  /// a mutable variable that represents the feature's state _before_ the action was sent. You need
-  /// to mutate that variable so that it is equal to the feature's state _after_ the action is sent:
-  ///
-  /// ```swift
-  /// await store.send(.incrementButtonTapped) {
-  ///   $0.count = 1
-  /// }
-  /// await store.send(.decrementButtonTapped) {
-  ///   $0.count = 0
-  /// }
-  /// ```
-  ///
-  /// This method suspends in order to allow any effects to start. For example, if you track an
-  /// analytics event in an effect when an action is sent, you can assert on that behavior
-  /// immediately after awaiting `store.send`:
-  ///
-  /// ```swift
-  /// @Test
-  /// func analytics() async {
-  ///   let events = LockIsolated<[String]>([])
-  ///   let analytics = AnalyticsClient(
-  ///     track: { event in
-  ///       events.withValue { $0.append(event) }
-  ///     }
-  ///   )
-  ///
-  ///   let store = TestStore(initialState: Feature.State()) {
-  ///     Feature()
-  ///   } withDependencies {
-  ///     $0.analytics = analytics
-  ///   }
-  ///
-  ///   await store.send(.buttonTapped)
-  ///
-  ///   events.withValue { XCTAssertEqual($0, ["Button Tapped"]) }
-  /// }
-  /// ```
-  ///
-  /// This method suspends only for the duration until the effect _starts_ from sending the action.
-  /// It does _not_ suspend for the duration of the effect.
-  ///
-  /// In order to suspend for the duration of the effect you can use its return value, a
-  /// ``TestStoreTask``, which represents the lifecycle of the effect started from sending an
-  /// action. You can use this value to suspend until the effect finishes, or to force the
-  /// cancellation of the effect, which is helpful for effects that are tied to a view's lifecycle
-  /// and not torn down when an action is sent, such as actions sent in SwiftUI's `task` view
-  /// modifier.
-  ///
-  /// For example, if your feature kicks off a long-living effect when the view appears by using
-  /// SwiftUI's `task` view modifier, then you can write a test for such a feature by explicitly
-  /// canceling the effect's task after you make all assertions:
-  ///
-  /// ```swift
-  /// let store = TestStore(/* ... */)
-  ///
-  /// // Emulate the view appearing
-  /// let task = await store.send(.task)
-  ///
-  /// // Assertions
-  ///
-  /// // Emulate the view disappearing
-  /// await task.cancel()
-  /// ```
-  ///
-  /// - Parameters:
-  ///   - action: An action.
-  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
-  ///     the store. The mutable state sent to this closure must be modified to match the state of
-  ///     the store after processing the given action. Do not provide a closure if no change is
-  ///     expected.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
-  /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
-  ///   sending the action.
-  @discardableResult
-  public func send(
+  fileprivate func _send(
     _ action: Action,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    fileID: StaticString = #fileID,
-    file filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
+    updateStateToExpectedResult: ((_ state: inout State) throws -> Void)?,
+    fileID: StaticString,
+    filePath: StaticString,
+    line: UInt,
+    column: UInt
   ) async -> TestStoreTask {
     await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
-      guard !self.isDismissed else {
-        reportIssue(
-          "Can't send action to dismissed test store.",
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-        return TestStoreTask(rawValue: nil, timeout: self.timeout)
-      }
-      if !self.reducer.receivedActions.isEmpty {
-        var actions = ""
-        customDump(self.reducer.receivedActions.map(\.action), to: &actions)
-        reportIssueHelper(
-          """
-          Must handle \(self.reducer.receivedActions.count) received \
-          action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
-
-          Unhandled actions: \(actions)
-          """,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }
-
       switch self.exhaustivity {
       case .on:
         break
@@ -987,7 +862,7 @@ extension TestStore where State: Equatable {
       }
 
       let expectedState = self.state
-      let previousState = self.reducer.state
+      let previousState = self.state
       let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
       let task = self.store.send(
         .init(
@@ -1034,72 +909,6 @@ extension TestStore where State: Equatable {
       //     instrument their effects.
       await Task.megaYield(count: 20)
       return .init(rawValue: task, timeout: self.timeout)
-    }
-  }
-
-  /// Assert against the current state of the store.
-  ///
-  /// The trailing closure provided is given a mutable argument that represents the current state,
-  /// and you can provide any mutations you want to the state. If your mutations cause the argument
-  /// to differ from the current state of the test store, a test failure will be triggered.
-  ///
-  /// This tool is most useful in non-exhaustive test stores (see
-  /// <doc:Testing#Non-exhaustive-testing>), which allow you to assert on a subset of the things
-  /// happening inside your features. For example, you can send an action in a child feature
-  /// without asserting on how many changes in the system, and then tell the test store to
-  /// ``finish(timeout:fileID:file:line:column:)-klnc`` by executing all of its effects, and finally
-  /// to ``skipReceivedActions(strict:fileID:file:line:column:)`` to receive all actions. After that
-  /// is done you can assert on the final state of the store:
-  ///
-  /// ```swift
-  /// store.exhaustivity = .off
-  /// await store.send(\.child.closeButtonTapped)
-  /// await store.finish()
-  /// await store.skipReceivedActions()
-  /// store.assert {
-  ///   $0.child = nil
-  /// }
-  /// ```
-  ///
-  /// > Note: This helper is only intended to be used with non-exhaustive test stores. It is not
-  /// needed in exhaustive test stores since any assertion you may make inside the trailing closure
-  /// has already been handled by a previous `send` or `receive`.
-  ///
-  /// - Parameters:
-  ///   - updateStateToExpectedResult: A closure that asserts against the current state of the test
-  ///   store.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
-  public func assert(
-    _ updateStateToExpectedResult: @escaping (_ state: inout State) throws -> Void,
-    fileID: StaticString = #fileID,
-    file filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) {
-    let expectedState = self.state
-    let currentState = self.reducer.state
-    do {
-      try self.expectedStateShouldMatch(
-        expected: expectedState,
-        actual: currentState,
-        updateStateToExpectedResult: updateStateToExpectedResult,
-        skipUnnecessaryModifyFailure: true,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
-    } catch {
-      reportIssue(
-        "Threw error: \(error)",
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
     }
   }
 
@@ -1276,6 +1085,215 @@ extension TestStore where State: Equatable {
   }
 }
 
+/// A convenience type alias for referring to a test store of a given reducer's domain.
+///
+/// Instead of specifying two generics:
+///
+/// ```swift
+/// let testStore: TestStore<Feature.State, Feature.Action>
+/// ```
+///
+/// You can specify a single generic:
+///
+/// ```swift
+/// let testStore: TestStoreOf<Feature>
+/// ```
+public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action> where R.State: Equatable
+
+extension TestStore where State: Equatable {
+  /// Sends an action to the store and asserts when state changes.
+  ///
+  /// To assert on how state changes you can provide a trailing closure, and that closure is handed
+  /// a mutable variable that represents the feature's state _before_ the action was sent. You need
+  /// to mutate that variable so that it is equal to the feature's state _after_ the action is sent:
+  ///
+  /// ```swift
+  /// await store.send(.incrementButtonTapped) {
+  ///   $0.count = 1
+  /// }
+  /// await store.send(.decrementButtonTapped) {
+  ///   $0.count = 0
+  /// }
+  /// ```
+  ///
+  /// This method suspends in order to allow any effects to start. For example, if you track an
+  /// analytics event in an effect when an action is sent, you can assert on that behavior
+  /// immediately after awaiting `store.send`:
+  ///
+  /// ```swift
+  /// @Test
+  /// func analytics() async {
+  ///   let events = LockIsolated<[String]>([])
+  ///   let analytics = AnalyticsClient(
+  ///     track: { event in
+  ///       events.withValue { $0.append(event) }
+  ///     }
+  ///   )
+  ///
+  ///   let store = TestStore(initialState: Feature.State()) {
+  ///     Feature()
+  ///   } withDependencies {
+  ///     $0.analytics = analytics
+  ///   }
+  ///
+  ///   await store.send(.buttonTapped)
+  ///
+  ///   events.withValue { XCTAssertEqual($0, ["Button Tapped"]) }
+  /// }
+  /// ```
+  ///
+  /// This method suspends only for the duration until the effect _starts_ from sending the action.
+  /// It does _not_ suspend for the duration of the effect.
+  ///
+  /// In order to suspend for the duration of the effect you can use its return value, a
+  /// ``TestStoreTask``, which represents the lifecycle of the effect started from sending an
+  /// action. You can use this value to suspend until the effect finishes, or to force the
+  /// cancellation of the effect, which is helpful for effects that are tied to a view's lifecycle
+  /// and not torn down when an action is sent, such as actions sent in SwiftUI's `task` view
+  /// modifier.
+  ///
+  /// For example, if your feature kicks off a long-living effect when the view appears by using
+  /// SwiftUI's `task` view modifier, then you can write a test for such a feature by explicitly
+  /// canceling the effect's task after you make all assertions:
+  ///
+  /// ```swift
+  /// let store = TestStore(/* ... */)
+  ///
+  /// // Emulate the view appearing
+  /// let task = await store.send(.task)
+  ///
+  /// // Assertions
+  ///
+  /// // Emulate the view disappearing
+  /// await task.cancel()
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - action: An action.
+  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
+  ///     the store. The mutable state sent to this closure must be modified to match the state of
+  ///     the store after processing the given action. Do not provide a closure if no change is
+  ///     expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
+  /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
+  ///   sending the action.
+  @discardableResult
+  public func send(
+    _ action: Action,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) async -> TestStoreTask {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+      guard !self.isDismissed else {
+        reportIssue(
+          "Can't send action to dismissed test store.",
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+        return TestStoreTask(rawValue: nil, timeout: self.timeout)
+      }
+      if !self.reducer.receivedActions.isEmpty {
+        var actions = ""
+        customDump(self.reducer.receivedActions, to: &actions)
+        reportIssueHelper(
+          """
+          Must handle \(self.reducer.receivedActions.count) received \
+          action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
+
+          Unhandled actions: \(actions)
+          """,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      }
+      return await self._send(
+        action,
+        updateStateToExpectedResult: updateStateToExpectedResult,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+  }
+
+  /// Assert against the current state of the store.
+  ///
+  /// The trailing closure provided is given a mutable argument that represents the current state,
+  /// and you can provide any mutations you want to the state. If your mutations cause the argument
+  /// to differ from the current state of the test store, a test failure will be triggered.
+  ///
+  /// This tool is most useful in non-exhaustive test stores (see
+  /// <doc:Testing#Non-exhaustive-testing>), which allow you to assert on a subset of the things
+  /// happening inside your features. For example, you can send an action in a child feature
+  /// without asserting on how many changes in the system, and then tell the test store to
+  /// ``finish(timeout:fileID:file:line:column:)-klnc`` by executing all of its effects, and finally
+  /// to ``skipReceivedActions(strict:fileID:file:line:column:)`` to receive all actions. After that
+  /// is done you can assert on the final state of the store:
+  ///
+  /// ```swift
+  /// store.exhaustivity = .off
+  /// await store.send(\.child.closeButtonTapped)
+  /// await store.finish()
+  /// await store.skipReceivedActions()
+  /// store.assert {
+  ///   $0.child = nil
+  /// }
+  /// ```
+  ///
+  /// > Note: This helper is only intended to be used with non-exhaustive test stores. It is not
+  /// needed in exhaustive test stores since any assertion you may make inside the trailing closure
+  /// has already been handled by a previous `send` or `receive`.
+  ///
+  /// - Parameters:
+  ///   - updateStateToExpectedResult: A closure that asserts against the current state of the test
+  ///   store.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
+  public func assert(
+    _ updateStateToExpectedResult: @escaping (_ state: inout State) throws -> Void,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) {
+    let expectedState = self.state
+    let currentState = self.state
+    do {
+      try self.expectedStateShouldMatch(
+        expected: expectedState,
+        actual: currentState,
+        updateStateToExpectedResult: updateStateToExpectedResult,
+        skipUnnecessaryModifyFailure: true,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    } catch {
+      reportIssue(
+        "Threw error: \(error)",
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+  }
+}
+
 extension TestStore where State: Equatable, Action: Equatable {
   private func _receive(
     _ expectedAction: Action,
@@ -1284,10 +1302,10 @@ extension TestStore where State: Equatable, Action: Equatable {
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) {
+  ) async {
     var expectedActionDump = ""
     customDump(expectedAction, to: &expectedActionDump, indent: 2)
-    self.receiveAction(
+    await self.receiveAction(
       matching: { expectedAction == $0 },
       failureMessage: """
         Expected to receive the following action, but didn't: …
@@ -1415,16 +1433,14 @@ extension TestStore where State: Equatable, Action: Equatable {
     await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
-        _ = {
-          self._receive(
-            expectedAction,
-            assert: updateStateToExpectedResult,
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-        }()
+        await self._receive(
+          expectedAction,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
         return
       }
       await self.receiveAction(
@@ -1435,16 +1451,14 @@ extension TestStore where State: Equatable, Action: Equatable {
         line: line,
         column: column
       )
-      _ = {
-        self._receive(
-          expectedAction,
-          assert: updateStateToExpectedResult,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }()
+      await self._receive(
+        expectedAction,
+        assert: updateStateToExpectedResult,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
       await Task.megaYield()
     }
   }
@@ -1458,8 +1472,8 @@ extension TestStore where State: Equatable {
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) {
-    self.receiveAction(
+  ) async {
+    await self.receiveAction(
       matching: isMatching,
       failureMessage: "Expected to receive an action matching predicate, but didn't get one.",
       unexpectedActionDescription: { receivedAction in
@@ -1482,8 +1496,8 @@ extension TestStore where State: Equatable {
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) {
-    self.receiveAction(
+  ) async {
+    await self.receiveAction(
       matching: { actionCase.extract(from: $0) != nil },
       failureMessage: "Expected to receive an action matching case path, but didn't get one.",
       unexpectedActionDescription: { receivedAction in
@@ -1507,8 +1521,8 @@ extension TestStore where State: Equatable {
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) {
-    self.receiveAction(
+  ) async {
+    await self.receiveAction(
       matching: { actionCase.extract(from: $0) == value },
       failureMessage: "Expected to receive an action matching case path, but didn't get one.",
       unexpectedActionDescription: { receivedAction in
@@ -1645,16 +1659,14 @@ extension TestStore where State: Equatable {
     await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
-        _ = {
-          self._receive(
-            isMatching,
-            assert: updateStateToExpectedResult,
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-        }()
+        await self._receive(
+          isMatching,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
         return
       }
       await self.receiveAction(
@@ -1665,16 +1677,14 @@ extension TestStore where State: Equatable {
         line: line,
         column: column
       )
-      _ = {
-        self._receive(
-          isMatching,
-          assert: updateStateToExpectedResult,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }()
+      await self._receive(
+        isMatching,
+        assert: updateStateToExpectedResult,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
       await Task.megaYield()
     }
   }
@@ -1779,17 +1789,15 @@ extension TestStore where State: Equatable {
     await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
-        _ = {
-          self._receive(
-            actionCase,
-            value,
-            assert: updateStateToExpectedResult,
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-        }()
+        await self._receive(
+          actionCase,
+          value,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
         return
       }
       await self.receiveAction(
@@ -1800,17 +1808,15 @@ extension TestStore where State: Equatable {
         line: line,
         column: column
       )
-      _ = {
-        self._receive(
-          actionCase,
-          value,
-          assert: updateStateToExpectedResult,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }()
+      await self._receive(
+        actionCase,
+        value,
+        assert: updateStateToExpectedResult,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
       await Task.megaYield()
     }
   }
@@ -1852,16 +1858,14 @@ extension TestStore where State: Equatable {
     await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
-        _ = {
-          self._receive(
-            actionCase,
-            assert: updateStateToExpectedResult,
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-        }()
+        await self._receive(
+          actionCase,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
         return
       }
       await self.receiveAction(
@@ -1872,16 +1876,14 @@ extension TestStore where State: Equatable {
         line: line,
         column: column
       )
-      _ = {
-        self._receive(
-          actionCase,
-          assert: updateStateToExpectedResult,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }()
+      await self._receive(
+        actionCase,
+        assert: updateStateToExpectedResult,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
       await Task.megaYield()
     }
   }
@@ -2041,16 +2043,14 @@ extension TestStore where State: Equatable {
     await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
       guard !self.reducer.inFlightEffects.isEmpty
       else {
-        _ = {
-          self._receive(
-            actionCase,
-            assert: updateStateToExpectedResult,
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-        }()
+        await self._receive(
+          actionCase,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
         return
       }
       await self.receiveAction(
@@ -2061,16 +2061,14 @@ extension TestStore where State: Equatable {
         line: line,
         column: column
       )
-      _ = {
-        self._receive(
-          actionCase,
-          assert: updateStateToExpectedResult,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }()
+      await self._receive(
+        actionCase,
+        assert: updateStateToExpectedResult,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
       await Task.megaYield()
     }
   }
@@ -2084,7 +2082,7 @@ extension TestStore where State: Equatable {
     filePath: StaticString,
     line: UInt,
     column: UInt
-  ) {
+  ) async {
     let updateStateToExpectedResult = updateStateToExpectedResult.map { original in
       { (state: inout State) in
         try XCTModifyLocals.$isExhaustive.withValue(self.exhaustivity == .on) {
@@ -2105,7 +2103,7 @@ extension TestStore where State: Equatable {
     }
 
     if self.exhaustivity != .on {
-      guard self.reducer.receivedActions.contains(where: { predicate($0.action) }) else {
+      guard self.reducer.receivedActions.contains(where: predicate) else {
         reportIssue(
           failureMessage(),
           fileID: fileID,
@@ -2118,11 +2116,17 @@ extension TestStore where State: Equatable {
 
       var actions: [Action] = []
       while let receivedAction = self.reducer.receivedActions.first,
-        !predicate(receivedAction.action)
+        !predicate(receivedAction)
       {
-        self.reducer.receivedActions.removeFirst()
-        actions.append(receivedAction.action)
-        self.reducer.state = receivedAction.state
+        await self._send(
+          self.reducer.receivedActions.removeFirst(),
+          updateStateToExpectedResult: nil,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+        actions.append(receivedAction)
       }
 
       if !actions.isEmpty {
@@ -2143,10 +2147,21 @@ extension TestStore where State: Equatable {
       }
     }
 
-    let (receivedAction, state) = self.reducer.receivedActions.removeFirst()
+    guard !self.reducer.receivedActions.isEmpty else {
+      reportIssue(
+        failureMessage(),
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+      return
+    }
+
+    let receivedAction = self.reducer.receivedActions.removeFirst()
     if !predicate(receivedAction) {
       let receivedActionLater = self.reducer.receivedActions
-        .contains(where: { action, _ in predicate(receivedAction) })
+        .contains(where: predicate)
       reportIssueHelper(
         """
         Received unexpected action\(receivedActionLater ? " before this one" : ""): …
@@ -2159,11 +2174,9 @@ extension TestStore where State: Equatable {
         column: column
       )
     } else {
-      let expectedState = self.state
       do {
-        try self.expectedStateShouldMatch(
-          expected: expectedState,
-          actual: state,
+        await self._send(
+          receivedAction,
           updateStateToExpectedResult: updateStateToExpectedResult,
           fileID: fileID,
           filePath: filePath,
@@ -2203,7 +2216,7 @@ extension TestStore where State: Equatable {
         guard self.reducer.receivedActions.isEmpty
         else { return }
       case .off:
-        guard !self.reducer.receivedActions.contains(where: { predicate($0.action) })
+        guard !self.reducer.receivedActions.contains(where: predicate)
         else { return }
       }
 
@@ -2386,11 +2399,9 @@ extension TestStore {
     column: UInt = #column
   ) async {
     await Task.megaYield()
-    _ = {
-      self._skipReceivedActions(
-        strict: strict, fileID: fileID, file: filePath, line: line, column: column
-      )
-    }()
+    await self._skipReceivedActions(
+      strict: strict, fileID: fileID, file: filePath, line: line, column: column
+    )
   }
 
   private func _skipReceivedActions(
@@ -2399,7 +2410,7 @@ extension TestStore {
     file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) {
+  ) async {
     if strict && self.reducer.receivedActions.isEmpty {
       reportIssue(
         "There were no received actions to skip.",
@@ -2414,10 +2425,13 @@ extension TestStore {
     else { return }
     var actions = ""
     if self.reducer.receivedActions.count == 1 {
-      customDump(self.reducer.receivedActions[0].action, to: &actions)
+      customDump(self.reducer.receivedActions[0], to: &actions)
     } else {
-      customDump(self.reducer.receivedActions.map { $0.action }, to: &actions)
+      customDump(self.reducer.receivedActions, to: &actions)
     }
+    let exhaustivity = self.exhaustivity == .on
+      ? .off(showSkippedAssertions: true)
+      : self.exhaustivity
     reportIssueHelper(
       """
       \(self.reducer.receivedActions.count) received action\
@@ -2425,15 +2439,25 @@ extension TestStore {
 
       \(actions)
       """,
-      overrideExhaustivity: self.exhaustivity == .on
-        ? .off(showSkippedAssertions: true)
-        : self.exhaustivity,
+      overrideExhaustivity: exhaustivity,
       fileID: fileID,
       filePath: filePath,
       line: line,
       column: column
     )
-    self.reducer.state = self.reducer.receivedActions.last!.state
+    while !self.reducer.receivedActions.isEmpty {
+      await withExhaustivity(exhaustivity) {
+        await self._send(
+          self.reducer.receivedActions.removeFirst(),
+          updateStateToExpectedResult: nil,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      }
+    }
+    // self.reducer.state = self.reducer.receivedActions.last!.state
     self.reducer.receivedActions = []
   }
 
@@ -2814,12 +2838,12 @@ public struct TestStoreTask: Hashable, Sendable {
   }
 }
 
-class TestReducer<State, Action>: Reducer {
+class TestReducer<State: Equatable, Action>: Reducer {
   let base: Reduce<State, Action>
   var dependencies: DependencyValues
   let effectDidSubscribe = AsyncStream.makeStream(of: Void.self)
   var inFlightEffects: Set<LongLivingEffect> = []
-  var receivedActions: [(action: Action, state: State)] = []
+  var receivedActions: [Action] = []
   var state: State
   weak var store: TestStore<State, Action>?
 
@@ -2852,8 +2876,8 @@ class TestReducer<State, Action>: Reducer {
       self.state = state
 
     case let .receive(action):
-      effects = reducer.reduce(into: &state, action: action)
-      self.receivedActions.append((action, state))
+      effects = .none
+      self.receivedActions.append(action)
     }
 
     switch effects.operation {
