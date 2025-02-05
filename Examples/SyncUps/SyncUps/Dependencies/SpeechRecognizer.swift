@@ -48,7 +48,7 @@ extension SpeechClient: DependencyKey {
               officia deserunt mollit anim id est laborum.
               """
             var text = ""
-            while true {
+            while !finalText.isEmpty {
               let word = finalText.prefix { $0 != " " }
               try await Task.sleep(for: .milliseconds(word.count * 50 + .random(in: 0...200)))
               finalText.removeFirst(word.count)
