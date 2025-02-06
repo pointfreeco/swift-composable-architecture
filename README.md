@@ -14,6 +14,7 @@ SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, iPadOS, visionO
 * [Examples](#examples)
 * [Basic usage](#basic-usage)
 * [Documentation](#documentation)
+* [FAQ](#faq)
 * [Community](#community)
 * [Installation](#installation)
 * [Translations](#translations)
@@ -575,6 +576,11 @@ comfortable with the library:
 * [Concurrency][concurrency-article]
 * [Bindings][bindings-article]
 
+## FAQ
+
+We have a [dedicated article][faq-article] for all of the most frequently asked questions and
+comments people have concerning the library.
+
 ## Community
 
 If you want to discuss the Composable Architecture or have a question about how to use it to solve 
@@ -638,11 +644,6 @@ The following translations of this README have been contributed by members of th
 If you'd like to contribute a translation, please [open a
 PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link 
 to a [Gist](https://gist.github.com)!
-
-## FAQ
-
-We have a [dedicated article][faq-article] for all of the most frequently asked questions and 
-comments people have concerning the library.
 
 ## Credits and thanks
 
