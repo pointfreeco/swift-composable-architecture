@@ -33,12 +33,26 @@ struct SyncUpsListTests {
 
     await store.send(.confirmAddButtonTapped) {
       $0.addSyncUp = nil
-      // $0.syncUps = [editedSyncUp]
+      $0.syncUps = [editedSyncUp]
     }
   }
 
   @Test
   func deletion() async {
-    // ...
+    @Shared(.syncUps) var syncUps = [
+      SyncUp(
+        id: SyncUp.ID(),
+        title: "Point-Free Morning Sync"
+      )
+    ]
+    let store = TestStore(
+      initialState: SyncUpsList.State()
+    ) {
+      SyncUpsList()
+    }
+
+    await store.send(.onDelete([0])) {
+      $0.syncUps = []
+    }
   }
 }
