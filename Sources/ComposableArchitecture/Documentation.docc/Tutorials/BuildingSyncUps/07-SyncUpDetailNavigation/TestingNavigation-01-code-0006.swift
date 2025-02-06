@@ -14,14 +14,14 @@ struct AppFeatureTests {
       AppFeature()
     }
 
-    let sharedSyncUp = try #require($syncUps[id: syncUp.id])
+    let sharedSyncUp = try #require(Shared($syncUps[id: syncUp.id]))
 
     await store.send(\.path.push, (id: 0, .detail(SyncUpDetail.State(syncUp: sharedSyncUp)))) {
       $0.path[id: 0] = .detail(SyncUpDetail.State(syncUp: sharedSyncUp))
     }
 
     await store.send(\.path[id:0].detail.deleteButtonTapped) {
-      $0.path[id: 0]?.detail?.destination = .alert(.deleteSyncUp)
+      $0.path[id: 0, case: \.detail]?.destination = .alert(.deleteSyncUp)
     }
   }
 }
