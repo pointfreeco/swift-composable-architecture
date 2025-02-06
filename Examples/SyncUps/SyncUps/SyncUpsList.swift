@@ -54,7 +54,7 @@ struct SyncUpsList {
               ?? Attendee(id: Attendee.ID(uuid()))
           )
         }
-        state.syncUps.append(syncUp)
+        state.$syncUps.withLock { _ = $0.append(syncUp) }
         state.destination = nil
         return .none
 
@@ -66,7 +66,7 @@ struct SyncUpsList {
         return .none
 
       case let .onDelete(indexSet):
-        state.syncUps.remove(atOffsets: indexSet)
+        state.$syncUps.withLock { $0.remove(atOffsets: indexSet) }
         return .none
       }
     }
@@ -80,7 +80,7 @@ struct SyncUpsListView: View {
 
   var body: some View {
     List {
-      ForEach(store.$syncUps.elements) { $syncUp in
+      ForEach(Array(store.$syncUps)) { $syncUp in
         NavigationLink(state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: $syncUp))) {
           CardView(syncUp: syncUp)
         }
@@ -161,7 +161,7 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
     .productMock,
     .engineeringMock,
   ]
-  return NavigationStack {
+  NavigationStack {
     SyncUpsListView(
       store: Store(initialState: SyncUpsList.State()) {
         SyncUpsList()
@@ -180,12 +180,8 @@ extension LabelStyle where Self == TrailingIconLabelStyle {
   )
 }
 
-extension PersistenceReaderKey
-where Self == PersistenceKeyDefault<FileStorageKey<IdentifiedArrayOf<SyncUp>>> {
+extension SharedKey where Self == FileStorageKey<IdentifiedArrayOf<SyncUp>>.Default {
   static var syncUps: Self {
-    PersistenceKeyDefault(
-      .fileStorage(.documentsDirectory.appending(component: "sync-ups.json")),
-      []
-    )
+    Self[.fileStorage(.documentsDirectory.appending(component: "sync-ups.json")), default: []]
   }
 }

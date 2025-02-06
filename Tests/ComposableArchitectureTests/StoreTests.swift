@@ -2,6 +2,10 @@
 @_spi(Internals) import ComposableArchitecture
 import XCTest
 
+#if canImport(Testing)
+  import Testing
+#endif
+
 final class StoreTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
@@ -1171,6 +1175,55 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertNil(weakStore)
   }
 }
+
+#if canImport(Testing)
+  @Suite
+  struct ModernStoreTests {
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    @Reducer
+    fileprivate struct TaskTreeFeature {
+      let clock: TestClock<Duration>
+      @ObservableState
+      struct State { var count = 0 }
+      enum Action { case tap, response1, response2 }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .tap:
+            return Effect.run { send in
+              await send(.response1)
+            }
+          case .response1:
+            state.count = 42
+            return Effect.run { send in
+              try await clock.sleep(for: .seconds(1))
+              await send(.response2)
+            }
+          case .response2:
+            state.count = 1729
+            return .none
+          }
+        }
+      }
+    }
+
+    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+    @MainActor
+    @Test
+    func cancellation() async throws {
+      let clock = TestClock()
+      let store = Store(initialState: TaskTreeFeature.State()) { TaskTreeFeature(clock: clock) }
+      let task = store.send(.tap)
+      try await Task.sleep(for: .seconds(0.1))
+      #expect(store.count == 42)
+      task.cancel()
+      await clock.run()
+      withKnownIssue("Cancelling the root effect should not cancel the child effects.") {
+        #expect(store.count == 1729)
+      }
+    }
+  }
+#endif
 
 private struct Count: TestDependencyKey {
   var value: Int

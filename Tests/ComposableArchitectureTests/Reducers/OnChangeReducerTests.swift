@@ -208,7 +208,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
         Reduce { state, action in
           switch action {
           case .incrementButtonTapped:
-            state.count.value += 1
+            state.$count.withLock { $0.value += 1 }
             return .none
           }
         }
@@ -222,11 +222,11 @@ final class OnChangeReducerTests: BaseTCATestCase {
     }
     let store = await TestStore(initialState: Feature.State()) { Feature() }
     await store.send(.incrementButtonTapped) {
-      $0.count.value = 1
+      $0.$count.withLock { $0.value = 1 }
       $0.description = "old: 0, new: 1"
     }
     await store.send(.incrementButtonTapped) {
-      $0.count.value = 2
+      $0.$count.withLock { $0.value = 2 }
       $0.description = "old: 1, new: 2"
     }
   }

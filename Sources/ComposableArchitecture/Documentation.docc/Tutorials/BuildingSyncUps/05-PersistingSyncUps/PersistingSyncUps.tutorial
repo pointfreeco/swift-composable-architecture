@@ -1,20 +1,20 @@
 @Tutorial(time: 5) {
   @Intro(title: "Persisting sync-ups") {
     Now that we have the ability to add and remove sync-ups from the application, let's add some 
-    persistence. This will involve using the "shared state" tools from the library, such as 
-    [`@Shared`](<doc:Shared>) and ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)``.
+    persistence. This will involve using the "shared state" tools from the library, such as
+    `@Shared` and `fileStorage`.
   }
     
   @Section(title: "Persisting data to disk") {
     @ContentAndMedia {
-      To persist state to an external system you must make use of the [`@Shared`](<doc:Shared>)
-      property wrapper with a persistence strategy.
+      To persist state to an external system you must make use of the `@Shared` property wrapper
+      with a persistence strategy.
     }
       
     @Steps {
       @Step {
-        Go back to the SyncUpsList.swift file, and start by applying the [`@Shared`](<doc:Shared>)
-        property wrapper to the `syncUps` field.
+        Go back to the SyncUpsList.swift file, and start by applying the `@Shared` property wrapper
+        to the `syncUps` field.
         
         > Note: Our changes will not compile right now, but they will soon.
         
@@ -27,30 +27,28 @@
       information on all of the various strategies.
       
       @Step {
-        Further customize the [`@Shared`](<doc:Shared>) property wrapper with a persistence 
-        strategy. The library comes with a few strategies you can use, but the most appropriate here 
-        is ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` since we are trying to
-        save a complex data structure.
+        Further customize the `@Shared` property wrapper with a persistence strategy. The library
+        comes with a few strategies you can use, but the most appropriate here is `fileStorage`
+        since we are trying to save a complex data structure.
         
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0002.swift)
       }
       
-      The ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` persistence strategy saves
-      data to disk anytime the value in [`@Shared`](<doc:Shared>) changes, but it spaces the saves
-      out a bit so as to not thrash the file system with every single change.
+      The `fileStorage` persistence strategy saves data to disk anytime the value in `@Shared`
+      changes, but it spaces the saves out a bit so as to not thrash the file system with every
+      single change.
       
       @Step {
-        The ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` persistence strategy
+        The `fileStorage` persistence strategy
         needs to be provided a URL for where to save the data. Add an extension to `URL` at the
         bottom of the file to define such a URL, and then provide it to the `.fileStorage` value.
         
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0003.swift)
       }
 
-      With that change the project should be compiling. It is worth noting that 
-      ``ComposableArchitecture/PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` only works with `Codable` data
-      types, and earlier in the tutorial when we added models to Models.swift we made them codable from
-      the beginning.
+      With that change the project should be compiling. It is worth noting that `fileStorage` only
+      works with `Codable` data types, and earlier in the tutorial when we added models to
+      Models.swift we made them codable from the beginning.
             
       @Step {
         Before moving on, we can still make this better.
@@ -86,8 +84,8 @@
   
   @Section(title: "Testing persistence") {
     @ContentAndMedia {
-      Testing state that is held in [`@Shared`](<doc:Shared>) with `.fileStorage` persistence works 
-      exactly like regular state without [`@Shared`](<doc:Shared>). The 
+      Testing state that is held in `@Shared` with `.fileStorage` persistence works 
+      exactly like regular state without `@Shared`. The 
       ``ComposableArchitecture/TestStore`` forces you to exhaustively prove how all state changes.
     }
     

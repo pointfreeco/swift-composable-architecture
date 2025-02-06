@@ -63,7 +63,7 @@ private struct SignUpFeature {
 
 struct SignUpFlow: View {
   @Bindable private var store = Store(
-    initialState: SignUpFeature.State(signUpData: Shared(SignUpData()))
+    initialState: SignUpFeature.State(signUpData: Shared(value: SignUpData()))
   ) {
     SignUpFeature()
   }
@@ -441,7 +441,7 @@ private struct SummaryStep: View {
 #Preview("Basics") {
   NavigationStack {
     BasicsStep(
-      store: Store(initialState: BasicsFeature.State(signUpData: Shared(SignUpData()))) {
+      store: Store(initialState: BasicsFeature.State(signUpData: Shared(value: SignUpData()))) {
         BasicsFeature()
       }
     )
@@ -451,7 +451,8 @@ private struct SummaryStep: View {
 #Preview("Personal info") {
   NavigationStack {
     PersonalInfoStep(
-      store: Store(initialState: PersonalInfoFeature.State(signUpData: Shared(SignUpData()))) {
+      store: Store(initialState: PersonalInfoFeature.State(signUpData: Shared(value: SignUpData())))
+      {
         PersonalInfoFeature()
       }
     )
@@ -461,7 +462,7 @@ private struct SummaryStep: View {
 #Preview("Topics") {
   NavigationStack {
     TopicsStep(
-      store: Store(initialState: TopicsFeature.State(topics: Shared([]))) {
+      store: Store(initialState: TopicsFeature.State(topics: Shared(value: []))) {
         TopicsFeature()
       }
     )
@@ -474,7 +475,7 @@ private struct SummaryStep: View {
       store: Store(
         initialState: SummaryFeature.State(
           signUpData: Shared(
-            SignUpData(
+            value: SignUpData(
               email: "blob@pointfree.co",
               firstName: "Blob",
               lastName: "McBlob",

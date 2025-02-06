@@ -56,7 +56,7 @@ struct AnimationTests {
       $0.circleColor = .black
     }
 
-    await clock.run()
+    await clock.run(timeout: .seconds(7))
   }
 
   @Test

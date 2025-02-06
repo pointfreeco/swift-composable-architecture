@@ -7,7 +7,7 @@
 
 The Composable Architecture (TCA, for short) is a library for building applications in a consistent 
 and understandable way, with composition, testing, and ergonomics in mind. It can be used in 
-SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, visionOS, tvOS, and watchOS).
+SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, iPadOS, visionOS, tvOS, and watchOS).
 
 * [What is the Composable Architecture?](#what-is-the-composable-architecture)
 * [Learn more](#learn-more)
@@ -532,13 +532,15 @@ advanced usages.
 The documentation for releases and `main` are available here:
 
 * [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/)
-* [1.15.0](https://pointfreeco.github.io/swift-composable-architecture/1.15.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.15))
+* [1.17.0](https://pointfreeco.github.io/swift-composable-architecture/1.17.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.17))
 
 <details>
   <summary>
   Other versions
   </summary>
 
+  * [1.16.0](https://pointfreeco.github.io/swift-composable-architecture/1.16.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.16))
+  * [1.15.0](https://pointfreeco.github.io/swift-composable-architecture/1.15.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.15))
   * [1.14.0](https://pointfreeco.github.io/swift-composable-architecture/1.14.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.14))
   * [1.13.0](https://pointfreeco.github.io/swift-composable-architecture/1.13.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13))
   * [1.12.0](https://pointfreeco.github.io/swift-composable-architecture/1.12.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.12))

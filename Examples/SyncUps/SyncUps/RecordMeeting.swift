@@ -44,7 +44,7 @@ struct RecordMeeting {
         return .run { _ in await dismiss() }
 
       case .alert(.presented(.confirmSave)):
-        state.syncUp.insert(transcript: state.transcript)
+        state.$syncUp.withLock { $0.insert(transcript: state.transcript) }
         return .run { _ in await dismiss() }
 
       case .alert:
@@ -72,7 +72,7 @@ struct RecordMeeting {
             ? speechClient.requestAuthorization()
             : speechClient.authorizationStatus()
 
-          await withTaskGroup(of: Void.self) { group in
+          await withDiscardingTaskGroup { group in
             if authorization == .authorized {
               group.addTask {
                 await startSpeechRecognition(send: send)
@@ -93,7 +93,7 @@ struct RecordMeeting {
         let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.secondsElapsed == state.syncUp.duration.components.seconds {
-            state.syncUp.insert(transcript: state.transcript)
+            state.$syncUp.withLock { $0.insert(transcript: state.transcript) }
             return .run { _ in await dismiss() }
           }
           state.speakerIndex += 1
@@ -385,7 +385,7 @@ struct MeetingFooterView: View {
 #Preview {
   NavigationStack {
     RecordMeetingView(
-      store: Store(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
+      store: Store(initialState: RecordMeeting.State(syncUp: Shared(value: .mock))) {
         RecordMeeting()
       }
     )

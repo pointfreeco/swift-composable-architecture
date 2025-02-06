@@ -47,8 +47,8 @@ extension Reducer {
   ///     filtering. Return `true` from this closure to indicate that the second element is a
   ///     duplicate of the first.
   ///   - reducer: A reducer builder closure to run when the value changes.
-  ///   - oldValue: The old value that failed the comparison check.
-  ///   - newValue: The new value that failed the comparison check.
+  ///     - oldValue: The old value that failed the comparison check.
+  ///     - newValue: The new value that failed the comparison check.
   /// - Returns: A reducer that performs the logic when the state changes.
   @available(*, deprecated, message: "Use 'onChange(of:)' with and equatable value, instead.")
   @inlinable
@@ -106,8 +106,8 @@ extension Reducer {
   /// - Parameters:
   ///   - toValue: A closure that returns a value from the given state.
   ///   - reducer: A reducer builder closure to run when the value changes.
-  ///   - oldValue: The old value that failed the comparison check.
-  ///   - newValue: The new value that failed the comparison check.
+  ///     - `oldValue`: The old value that failed the comparison check.
+  ///     - `newValue`: The new value that failed the comparison check.
   /// - Returns: A reducer that performs the logic when the state changes.
   @inlinable
   public func onChange<V: Equatable, R: Reducer>(

@@ -33,7 +33,7 @@ struct SyncUpsListTests {
 
     await store.send(.confirmAddSyncUpButtonTapped) {
       $0.destination = nil
-      $0.syncUps = [syncUp]
+      $0.$syncUps.withLock { $0 = [syncUp] }
     }
   }
 
@@ -64,15 +64,17 @@ struct SyncUpsListTests {
 
     await store.send(.confirmAddSyncUpButtonTapped) {
       $0.destination = nil
-      $0.syncUps = [
-        SyncUp(
-          id: SyncUp.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
-          attendees: [
-            Attendee(id: Attendee.ID(UUID(0)))
-          ],
-          title: "Design"
-        )
-      ]
+      $0.$syncUps.withLock {
+        $0 = [
+          SyncUp(
+            id: SyncUp.ID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!,
+            attendees: [
+              Attendee(id: Attendee.ID(UUID(0)))
+            ],
+            title: "Design"
+          )
+        ]
+      }
     }
   }
 }

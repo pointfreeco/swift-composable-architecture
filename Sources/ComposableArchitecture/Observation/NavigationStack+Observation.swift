@@ -136,7 +136,7 @@ extension NavigationStack {
   /// this view.
   public init<State, Action, Destination: View, R>(
     path: Binding<Store<StackState<State>, StackAction<State, Action>>>,
-    root: () -> R,
+    @ViewBuilder root: () -> R,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
@@ -241,6 +241,10 @@ extension NavigationLink where Destination == Never {
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a
   ///     copy of the value. Pass a `nil` value to disable the link.
   ///   - label: A label that describes the view that this link presents.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   #if compiler(>=6)
     @MainActor
   #endif
@@ -280,6 +284,8 @@ extension NavigationLink where Destination == Never {
   ///     presents.
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a
   ///     copy of the value. Pass a `nil` value to disable the link.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   #if compiler(>=6)
     @MainActor
   #endif
@@ -303,6 +309,8 @@ extension NavigationLink where Destination == Never {
   ///   - title: A string that describes the view that this link presents.
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a
   ///     copy of the value. Pass a `nil` value to disable the link.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   #if compiler(>=6)
     @MainActor
   #endif

@@ -15,7 +15,7 @@ struct RecordMeetingTests {
     let store = TestStore(
       initialState: RecordMeeting.State(
         syncUp: Shared(
-          SyncUp(
+          value: SyncUp(
             id: SyncUp.ID(),
             attendees: [
               Attendee(id: Attendee.ID()),
@@ -76,14 +76,16 @@ struct RecordMeetingTests {
     await store.receive(\.timerTick) {
       $0.speakerIndex = 2
       $0.secondsElapsed = 6
-      $0.syncUp.meetings.insert(
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: ""
-        ),
-        at: 0
-      )
+      $0.$syncUp.withLock {
+        _ = $0.meetings.insert(
+          Meeting(
+            id: Meeting.ID(UUID(0)),
+            date: Date(timeIntervalSince1970: 1_234_567_890),
+            transcript: ""
+          ),
+          at: 0
+        )
+      }
       #expect($0.durationRemaining == .seconds(0))
     }
   }
@@ -95,7 +97,7 @@ struct RecordMeetingTests {
     let store = TestStore(
       initialState: RecordMeeting.State(
         syncUp: Shared(
-          SyncUp(
+          value: SyncUp(
             id: SyncUp.ID(),
             attendees: [
               Attendee(id: Attendee.ID()),
@@ -144,7 +146,7 @@ struct RecordMeetingTests {
 
     await store.finish()
     store.assert {
-      $0.syncUp.meetings[0].transcript = "I completed the project"
+      $0.$syncUp.withLock { $0.meetings[0].transcript = "I completed the project" }
     }
   }
 
@@ -152,7 +154,7 @@ struct RecordMeetingTests {
   func endMeetingSave() async {
     let clock = TestClock()
 
-    let store = TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
+    let store = TestStore(initialState: RecordMeeting.State(syncUp: Shared(value: .mock))) {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
@@ -174,14 +176,16 @@ struct RecordMeetingTests {
 
     await store.send(\.alert.confirmSave) {
       $0.alert = nil
-      $0.syncUp.meetings.insert(
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: ""
-        ),
-        at: 0
-      )
+      $0.$syncUp.withLock {
+        _ = $0.meetings.insert(
+          Meeting(
+            id: Meeting.ID(UUID(0)),
+            date: Date(timeIntervalSince1970: 1_234_567_890),
+            transcript: ""
+          ),
+          at: 0
+        )
+      }
     }
   }
 
@@ -189,7 +193,7 @@ struct RecordMeetingTests {
   func endMeetingDiscard() async {
     let clock = TestClock()
 
-    let store = TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
+    let store = TestStore(initialState: RecordMeeting.State(syncUp: Shared(value: .mock))) {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock
@@ -214,7 +218,7 @@ struct RecordMeetingTests {
     let store = TestStore(
       initialState: RecordMeeting.State(
         syncUp: Shared(
-          SyncUp(
+          value: SyncUp(
             id: SyncUp.ID(),
             attendees: [
               Attendee(id: Attendee.ID()),
@@ -252,14 +256,16 @@ struct RecordMeetingTests {
 
     await store.send(\.alert.confirmSave) {
       $0.alert = nil
-      $0.syncUp.meetings.insert(
-        Meeting(
-          id: Meeting.ID(UUID(0)),
-          date: Date(timeIntervalSince1970: 1_234_567_890),
-          transcript: ""
-        ),
-        at: 0
-      )
+      $0.$syncUp.withLock {
+        _ = $0.meetings.insert(
+          Meeting(
+            id: Meeting.ID(UUID(0)),
+            date: Date(timeIntervalSince1970: 1_234_567_890),
+            transcript: ""
+          ),
+          at: 0
+        )
+      }
     }
   }
 
@@ -270,7 +276,7 @@ struct RecordMeetingTests {
     let store = TestStore(
       initialState: RecordMeeting.State(
         syncUp: Shared(
-          SyncUp(
+          value: SyncUp(
             id: SyncUp.ID(),
             attendees: [
               Attendee(id: Attendee.ID()),
@@ -333,7 +339,7 @@ struct RecordMeetingTests {
   func discardAfterSpeechRecognitionFailure() async {
     let clock = TestClock()
 
-    let store = TestStore(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
+    let store = TestStore(initialState: RecordMeeting.State(syncUp: Shared(value: .mock))) {
       RecordMeeting()
     } withDependencies: {
       $0.continuousClock = clock

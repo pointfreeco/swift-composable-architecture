@@ -1,5 +1,6 @@
 import Combine
 import Dispatch
+@_spi(SharedChangeTracking) import Sharing
 
 extension Reducer {
   /// Enhances a reducer with debug logging of received actions and state mutations for the given
@@ -85,7 +86,8 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
       into state: inout Base.State, action: Base.Action
     ) -> Effect<Base.Action> {
       if let printer = self.printer {
-        return withSharedChangeTracking { changeTracker in
+        let changeTracker = SharedChangeTracker(reportUnassertedChanges: false)
+        return changeTracker.track {
           let oldState = UncheckedSendable(state)
           let effects = self.base.reduce(into: &state, action: action)
           return withEscapedDependencies { continuation in

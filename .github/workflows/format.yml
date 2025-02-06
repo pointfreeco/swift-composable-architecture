@@ -12,18 +12,16 @@ concurrency:
 jobs:
   swift_format:
     name: swift-format
-    runs-on: macos-13
+    runs-on: macos-15
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 14.3
-        run: sudo xcode-select -s /Applications/Xcode_14.3.app
-      - name: Install swift-format
-        run: brew install swift-format
+      - name: Select Xcode 16.2
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app
       - name: Format
         run: make format
-      - uses: stefanzweifel/git-auto-commit-action@v4
+      - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Run swift-format
           branch: 'main'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

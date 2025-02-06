@@ -57,14 +57,14 @@ struct SyncUpDetail {
         return .none
 
       case let .deleteMeetings(atOffsets: indices):
-        state.syncUp.meetings.remove(atOffsets: indices)
+        state.$syncUp.withLock { $0.meetings.remove(atOffsets: indices) }
         return .none
 
       case let .destination(.presented(.alert(alertAction))):
         switch alertAction {
         case .confirmDeletion:
           @Shared(.syncUps) var syncUps
-          syncUps.remove(id: state.syncUp.id)
+          $syncUps.withLock { _ = $0.remove(id: state.syncUp.id) }
           return .run { _ in await dismiss() }
 
         case .continueWithoutRecording:
@@ -80,7 +80,7 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard case let .some(.edit(editState)) = state.destination
         else { return .none }
-        state.syncUp = editState.syncUp
+        state.$syncUp.withLock { $0 = editState.syncUp }
         state.destination = nil
         return .none
 
@@ -266,7 +266,7 @@ extension AlertState where Action == SyncUpDetail.Destination.Alert {
 #Preview {
   NavigationStack {
     SyncUpDetailView(
-      store: Store(initialState: SyncUpDetail.State(syncUp: Shared(.mock))) {
+      store: Store(initialState: SyncUpDetail.State(syncUp: Shared(value: .mock))) {
         SyncUpDetail()
       }
     )

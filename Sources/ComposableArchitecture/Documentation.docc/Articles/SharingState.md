@@ -12,11 +12,14 @@ shared. Because the Composable Architecture highly prefers modeling domains with
 than reference types, sharing state can be tricky.
 
 This is why the library comes with a few tools for sharing state with many parts of your
-application. There are two main kinds of shared state in the library: explicitly passed state and
+application. The majority of these tools exist outside of the Composable Architecture, and are in
+a separate library called [Sharing](https://github.com/pointfreeco/swift-sharing). You can refer
+to that library's documentation for more information, but we have also repeated some of the most
+important concepts in this article.
+
+There are two main kinds of shared state in the library: explicitly passed state and
 persisted state. And there are 3 persistence strategies shipped with the library: 
-[in-memory](<doc:PersistenceReaderKey/inMemory(_:)>),
-[user defaults](<doc:PersistenceReaderKey/appStorage(_:)-4l5b>), and
-[file storage](<doc:PersistenceReaderKey/fileStorage(_:decoder:encoder:)>). You can also implement 
+in-memory, user defaults, and file storage. You can also implement 
 your own persistence strategy if you want to use something other than user defaults or the file 
 system, such as SQLite.
 
@@ -30,7 +33,7 @@ system, such as SQLite.
 * [Observing changes to shared state](#Observing-changes-to-shared-state)
 * [Initialization rules](#Initialization-rules)
 * [Deriving shared state](#Deriving-shared-state)
-* [Testing](#Testing)
+* [Testing shared state](#Testing-shared-state)
   * [Testing when using persistence](#Testing-when-using-persistence)
   * [Testing when using custom persistence strategies](#Testing-when-using-custom-persistence-strategies)
   * [Overriding shared state in tests](#Overriding-shared-state-in-tests)
@@ -58,12 +61,13 @@ And second, applications typically do not have a _single_ source of truth. That 
 simplistic. If your application loads data from an API, or from disk, or from user defaults, then
 the "truth" for that data does not lie in your application. It lies externally.
 
-In reality, there are _two_ sources of "truth" in any application. There is the state the 
-application needs to execute its logic and behavior. This is the kind of state that determines if a
-button is enabled or disabled, drives navigation such as sheets and drill-downs, and handles
-validation of forms. Such state only makes sense for the application.
+In reality, there are _two_ sources of "truth" in any application:
 
-Then there is a second source of "truth" in an application, which is the data that lies in some 
+1. There is the state the application needs to execute its logic and behavior. This is the kind of 
+state that determines if a button is enabled or disabled, drives navigation such as sheets and
+drill-downs, and handles validation of forms. Such state only makes sense for the application.
+
+2. Then there is a second source of "truth" in an application, which is the data that lies in some 
 external system and needs to be loaded into the application. Such state is best modeled as a 
 dependency or using the shared state tools discussed in this article.
 
@@ -73,7 +77,7 @@ This is the simplest kind of shared state to get started with. It allows you to 
 many features without any persistence. The data is only held in memory, and will be cleared out the
 next time the application is run.
 
-To share data in this style, use the [`@Shared`](<doc:Shared>) property wrapper with no arguments.
+To share data in this style, use the `@Shared` property wrapper with no arguments.
 For example, suppose you have a feature that holds a count and you want to be able to hand a shared
 reference to that count to other features. You can do so by holding onto a `@Shared` property in
 the feature's state:
@@ -89,10 +93,6 @@ struct ParentFeature {
   // ...
 }
 ```
-
-> Important: It is not possible to provide a default to a `@Shared` value. It must be passed to the
-> feature's state from the outside. See <doc:SharingState#Initialization-rules> for more 
-> information about how to initialize types that use `@Shared`.
 
 Then suppose that this feature can present a child feature that wants access to this shared `count`
 value. It too would hold onto a `@Shared` property to a count:
@@ -110,7 +110,7 @@ struct ChildFeature {
 ```
 
 When the parent features creates the child feature's state, it can pass a _reference_ to the shared
-count rather than the actual count value by using the `$count` ``Shared/projectedValue``:
+count rather than the actual count value by using the `$count` projected value:
 
 ```swift
 case .presentButtonTapped:
@@ -126,7 +126,7 @@ Now any mutation the `ChildFeature` makes to its `count` will be instantly made 
 Explicitly shared state discussed above is a nice, lightweight way to share a piece of data with
 many parts of your application. However, sometimes you want to share state with the entire 
 application without having to pass it around explicitly. One can do this by passing a
-``PersistenceKey`` to the `@Shared` property wrapper, and the library comes with three persistence
+`SharedKey` to the `@Shared` property wrapper, and the library comes with three persistence
 strategies, as well as the ability to create custom persistence strategies.
 
 #### In-memory
@@ -135,7 +135,7 @@ This is the simplest persistence strategy in that it doesn't actually persist at
 the data in memory and makes it available to every part of the application, but when the app is
 relaunched the data will be reset back to its default.
 
-It can be used by passing ``PersistenceReaderKey/inMemory(_:)`` to the `@Shared` property wrapper.
+It can be used by passing `inMemory` to the `@Shared` property wrapper.
 For example, suppose you want to share an integer count value with the entire application so that
 any feature can read from and write to the integer. This can be done like so:
 
@@ -160,7 +160,7 @@ get out of sync.
 #### User defaults
 
 If you would like to persist your shared value across application launches, then you can use the
-``PersistenceReaderKey/appStorage(_:)-4l5b`` strategy with `@Shared` in order to automatically
+`appStorage` strategy with `@Shared` in order to automatically
 persist any changes to the value to user defaults. It works similarly to in-memory sharing discussed
 above. It requires a key to store the value in user defaults, as well as a default value that will
 be used when there is no value in the user defaults:
@@ -175,13 +175,12 @@ automatically loaded the next time the application launches.
 This form of persistence only works for simple data types because that is what works best with
 `UserDefaults`. This includes strings, booleans, integers, doubles, URLs, data, and more. If you
 need to store more complex data, such as custom data types serialized to JSON, then you will want
-to use the [`.fileStorage`](<doc:SharingState#File-storage>) strategy or a 
-[custom persistence](<doc:SharingState#Custom-persistence>) strategy.
+to use the `.fileStorage` strategy or a custom persistence strategy.
 
 #### File storage
 
 If you would like to persist your shared value across application launches, and your value is
-complex (such as a custom data type), then you can use the ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``
+complex (such as a custom data type), then you can use the `fileStorage`
 strategy with `@Shared`. It automatically persists any changes to the file system.
 
 It works similarly to the in-memory sharing discussed above, but it requires a URL to store the data
@@ -198,19 +197,19 @@ when loading from disk. For this reason the value held in `@Shared(.fileStorage(
 #### Custom persistence
 
 It is possible to define all new persistence strategies for the times that user defaults or JSON
-files are not sufficient. To do so, define a type that conforms to the ``PersistenceKey`` protocol:
+files are not sufficient. To do so, define a type that conforms to the `SharedKey` protocol:
 
 ```swift
-public final class CustomPersistenceKey: PersistenceKey {
+public final class CustomSharedKey: SharedKey {
   // ...
 }
 ```
 
-And then define a static function on the ``PersistenceKey`` protocol for creating your new
+And then define a static function on the `SharedKey` protocol for creating your new
 persistence strategy:
 
 ```swift
-extension PersistenceReaderKey {
+extension SharedReaderKey {
   public static func custom<Value>(/*...*/) -> Self
   where Self == CustomPersistence<Value> {
     CustomPersistence(/* ... */)
@@ -219,22 +218,22 @@ extension PersistenceReaderKey {
 ```
 
 With those steps done you can make use of the strategy in the same way one does for 
-``PersistenceReaderKey/appStorage(_:)-4l5b`` and ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``:
+`appStorage` and `fileStorage`:
 
 ```swift
 @Shared(.custom(/* ... */)) var myValue: Value
 ```
 
-The ``PersistenceKey`` protocol represents loading from _and_ saving to some external storage, 
+The `SharedKey` protocol represents loading from _and_ saving to some external storage, 
 such as the file system or user defaults. Sometimes saving is not a valid operation for the external
 system, such as if your server holds onto a remote configuration file that your app uses to 
 customize its appearance or behavior. In those situations you can conform to the 
-``PersistenceReaderKey`` protocol. See <doc:SharingState#Read-only-shared-state> for more 
+`SharedReaderKey` protocol. See <doc:SharingState#Read-only-shared-state> for more 
 information.
 
 ## Observing changes to shared state
 
-The ``Shared`` property wrapper exposes a ``Shared/publisher`` property so that you can observe
+The `@Shared` property wrapper exposes a `publisher` property so that you can observe
 changes to the reference from any part of your application. For example, if some feature in your
 app wants to listen for changes to some shared `count` value, then it can introduce an `onAppear`
 action that kicks off a long-living effect that subscribes to changes of `count`:
@@ -280,7 +279,7 @@ shared state.
 
 It is common to need to provide a custom initializer to your feature's 
 ``Reducer/State`` type, especially when modularizing. When using
-[`@Shared`](<doc:Shared>) in your `State` that can become complicated.
+`@Shared` in your `State` that can become complicated.
 Depending on your exact situation you can do one of the following:
 
 * You are using non-persisted shared state (i.e. no argument is passed to `@Shared`), and the 
@@ -316,10 +315,10 @@ should take a plain, non-`Shared` value and you construct the `Shared` value in 
   ```
 
 * You are using a persistence strategy with shared state (_e.g._ 
-``PersistenceReaderKey/appStorage(_:)-4l5b``, ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``, _etc._),
+`appStorage`, `fileStorage`, _etc._),
 then the initializer should take a plain, non-`Shared` value and you construct the `Shared` value in
-the initializer using ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` which takes a
-``PersistenceKey`` as the second argument:
+the initializer using the initializer which takes a
+`SharedKey` as the second argument:
 
   ```swift
   public struct State {
@@ -338,7 +337,7 @@ the initializer using ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` which t
 
   > Important: The value passed to this initializer is only used if the external storage does not
   > already have a value. If a value exists in the storage then it is not used. In fact, the
-  > `wrappedValue` argument of ``Shared/init(wrappedValue:_:fileID:line:)-512rh`` is an
+  > `wrappedValue` argument of `Shared.init(wrappedValue:)` is an
   > `@autoclosure` so that it is not even evaluated if not used. For that reason you
   > may prefer to make the argument to the initializer an `@autoclosure` so that it too is evaluated
   > only if actually used:
@@ -383,7 +382,7 @@ case .nextButtonTapped:
   )
 ```
 
-Here we are using the ``Shared/projectedValue`` value using `$` syntax, `$signUpData`, and then
+Here we are using the projected value of `@Shared` value using `$` syntax, `$signUpData`, and then
 further dot-chaining onto that projection to derive a `Shared<String>`. This can be a powerful way
 for features to hold onto only the bare minimum of shared state it needs to do its job.
 
@@ -435,57 +434,28 @@ responsible for persisting and deriving shared state to pass to the child.
 
 If your shared state is a collection, and in particular an `IdentifiedArray`, then we have another
 tool for deriving shared state to a particular element of the array. You can subscript into a 
-``Shared`` collection with the `[id:]` subscript, and that will give a piece of optional shared
-state (thanks to a dynamic member overload ``Shared/subscript(dynamicMember:)-7ibhr``), which you
-can then unwrap to turn into honest shared state:
+`Shared` collection with the `[id:]` subscript, and that will give a piece of shared optional
+state, which you can then unwrap to turn into honest shared state using a special `Shared` 
+initializer:
 
 ```swift
 @Shared(.fileStorage(.todos)) var todos: IdentifiedArrayOf<Todo> = []
 
-guard let todo = $todos[id: todoID]
+guard let todo = Shared($todos[id: todoID])
 else { return }
 todo // Shared<Todo>
 ```
 
-There is another tool for deriving shared state, and it is the computed property ``Shared/elements``
-that is defined on shared collections. It derives a collection of shared elements so that you can
-get access to a shared reference of just one particular element in a collection. 
-
-However, it is only appropriate to use this in conjunction with `ForEach` in order to derive a 
-shared reference for each element of a collection:
-
-```swift
-struct State {
-  @Shared(.fileStorage(.todos)) var todos: IdentifiedArrayOf<Todo> = []
-  // ...
-}
-
-// ...
-
-ForEach(store.$todos.elements) { $todo in
-  NavigationLink(
-    // $todo: Shared<Todo>
-    //  todo: Todo
-    state: Path.State.todo(TodoFeature.State(todo: $todo))
-  ) {
-    Text(todo.title)
-  }
-}
-```
-
-> Important: We do not recommend using ``Shared/elements`` outside of using it with `ForEach`, 
-> `List`, and other SwiftUI views that take collections.
-
-## Testing
+## Testing shared state
 
 Shared state behaves quite a bit different from the regular state held in Composable Architecture
 features. It is capable of being changed by any part of the application, not just when an action is
 sent to the store, and it has reference semantics rather than value semantics. Typically references
 cause serious problems with testing, especially exhaustive testing that the library prefers (see
-<doc:Testing>), because references cannot be copied and so one cannot inspect the changes before and
-after an action is sent.
+<doc:Testing>), because references cannot be copied and so one cannot inspect the changes 
+before and after an action is sent.
 
-For this reason, the ``Shared`` property wrapper does extra work during testing to preserve a 
+For this reason, the `@Shared` property wrapper does extra work during testing to preserve a 
 previous snapshot of the state so that one can still exhaustively assert on shared state, even 
 though it is a reference.
 
@@ -557,7 +527,7 @@ func increment() async {
 (Expected: −, Actual: +)
 ```
 
-This works even though the `@Shared` count is a reference type. The ``TestStore`` and ``Shared``
+This works even though the `@Shared` count is a reference type. The ``TestStore`` and `@Shared`
 type work in unison to snapshot the state before and after the action is sent, allowing us to still
 assert in an exhaustive manner.
 
@@ -609,7 +579,8 @@ Call 'Shared<Int>.assert' to exhaustively test these changes, or call 'skipChang
 ```
 
 In order to get this test passing we have to explicitly assert on the shared counter state at
-the end of the test, which we can do using the ``Shared/assert(_:fileID:file:line:column:)`` method:
+the end of the test, which we can do using the ``TestStore/assert(_:fileID:file:line:column:)``
+method:
 
 ```swift
 @Test
@@ -618,8 +589,8 @@ func increment() async {
     SimpleFeature()
   }
   await store.send(.incrementButtonTapped)
-  store.state.$count.assert {
-    $0 = 1
+  store.assert {
+    $0.count = 1
   }
 }
 ```
@@ -632,8 +603,8 @@ to its reference semantics, it is still possible to get exhaustive test coverage
 #### Testing when using persistence
 
 It is also possible to test when using one of the persistence strategies provided by the library, 
-which are ``PersistenceReaderKey/appStorage(_:)-4l5b`` and
-``PersistenceReaderKey/fileStorage(_:decoder:encoder:)``. Typically persistence is difficult to test because the
+which are `appStorage` and
+`fileStorage`. Typically persistence is difficult to test because the
 persisted data bleeds over from test to test, making it difficult to exhaustively prove how each
 test behaves in isolation.
 
@@ -642,8 +613,8 @@ default the `.appStorage` strategy uses a non-persisting user defaults so that c
 actually persisted across test runs. And the `.fileStorage` strategy uses a mock file system so that
 changes to state are not actually persisted to the file system.
 
-This means that if we altered the `SimpleFeature` of the <doc:SharingState#Testing> section above to
-use app storage:
+This means that if we altered the `SimpleFeature` of the <doc:SharingState#Testing-shared-state> 
+section above to use app storage:
 
 ```swift
 struct State: Equatable {
@@ -656,13 +627,13 @@ struct State: Equatable {
 #### Testing when using custom persistence strategies
 
 When creating your own custom persistence strategies you must careful to do so in a style that
-is amenable to testing. For example, the ``PersistenceReaderKey/appStorage(_:)-4l5b`` persistence
-strategy that comes with the library injects a ``Dependencies/DependencyValues/defaultAppStorage``
+is amenable to testing. For example, the `appStorage` persistence
+strategy that comes with the library injects a `defaultAppStorage`
 dependency so that one can inject a custom `UserDefaults` in order to execute in a controlled
-environment. By default ``Dependencies/DependencyValues/defaultAppStorage`` uses a non-persisting
+environment. By default `defaultAppStorage` uses a non-persisting
 user defaults, but you can also customize it to use any kind of defaults.
 
-Similarly the ``PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` persistence strategy uses an internal
+Similarly the `fileStorage` persistence strategy uses an internal
 dependency for changing how files are written to the disk and loaded from disk. In tests the
 dependency will forgo any interaction with the file system and instead write data to a `[URL: Data]`
 dictionary, and load data from that dictionary. That emulates how the file system works, but without
@@ -687,8 +658,8 @@ func basics() {
 However, if your test suite is a part of an app target, then the entry point of the app will execute
 and potentially cause an early access of `@Shared`, thus capturing a different default value than
 what is specified above. This quirk of tests in app targets is documented in
-<doc:Testing#Testing-gotchas> of the <doc:Testing> article, and a similar quirk exists for Xcode
-previews and is discussed below in <doc:SharingState#Gotchas-of-Shared>.
+<doc:Testing#Testing-gotchas> of the <doc:Testing> article, and a similar quirk
+exists for Xcode previews and is discussed below in <doc:SharingState#Gotchas-of-Shared>.
 
 The most robust workaround to this issue is to simply not execute your app's entry point when tests
 are running, which we detail in <doc:Testing#Testing-host-application>. This makes it so that you
@@ -714,8 +685,8 @@ When UI testing your app you must take extra care so that shared state is not pe
 app runs because that can cause one test to bleed over into another test, making it difficult to
 write deterministic tests that always pass. To fix this, you can set an environment value from
 your UI test target, and then if that value is present in the app target you can override the
-``Dependencies/DependencyValues/defaultAppStorage`` and 
-``Dependencies/DependencyValues/defaultFileStorage`` dependencies so that they use in-memory 
+`defaultAppStorage` and 
+`defaultFileStorage` dependencies so that they use in-memory 
 storage, i.e. they do not persist ever:
 
 ```swift
@@ -829,14 +800,14 @@ struct State {
 
 ## Read-only shared state
 
-The [`@Shared`](<doc:Shared>) property wrapper described above gives you access to a piece of shared
+The `@Shared` property wrapper described above gives you access to a piece of shared
 state that is both readable and writable. That is by far the most common use case when it comes to
 shared state, but there are times when one wants to express access to shared state for which you
 are not allowed to write to it, or possibly it doesn't even make sense to write to it.
 
-For those times there is the [`@SharedReader`](<doc:SharedReader>) property wrapper. It represents
+For those times there is the `@SharedReader` property wrapper. It represents
 a reference to some piece of state shared with multiple parts of the application, but you are not
-allowed to write to it. Every persistence strategy discussed above works with ``SharedReader``,
+allowed to write to it. Every persistence strategy discussed above works with `SharedReader`,
 however if you try to mutate the state you will get a compiler error:
 
 ```swift
@@ -845,8 +816,8 @@ isOn = true  // 🛑
 ```
 
 It is also possible to make custom persistence strategies that only have the notion of loading and
-subscribing, but cannot write. To do this you will conform only to the ``PersistenceReaderKey``
-protocol instead of the full ``PersistenceKey`` protocol. 
+subscribing, but cannot write. To do this you will conform only to the `SharedReaderKey`
+protocol instead of the full `SharedKey` protocol. 
 
 For example, you could create a `.remoteConfig` strategy that loads (and subscribes to) a remote
 configuration file held on your server so that it is kept automatically in sync:
@@ -859,7 +830,7 @@ configuration file held on your server so that it is kept automatically in sync:
 
 Due to the nature of persisting data to external systems, you lose some type safety when shuffling
 data from your app to the persistence storage and back. For example, if you are using the
-``PersistenceReaderKey/fileStorage(_:decoder:encoder:)`` strategy to save an array of users to disk you might do so
+`fileStorage` strategy to save an array of users to disk you might do so
 like this:
 
 ```swift
@@ -883,18 +854,18 @@ instead of a plain array:
 But if you forget to convert _all_ shared user arrays to the new identified array your application
 will still compile, but it will be broken. The two types of storage will not share state.
 
-To add some type-safety and reusability to this process you can extend the ``PersistenceReaderKey``
+To add some type-safety and reusability to this process you can extend the `SharedReaderKey`
 protocol to add a static variable for describing the details of your persistence:
 
 ```swift
-extension PersistenceReaderKey where Self == FileStorageKey<IdentifiedArrayOf<User>> {
+extension SharedReaderKey where Self == FileStorageKey<IdentifiedArrayOf<User>> {
   static var users: Self {
     fileStorage(.users)
   }
 }
 ```
 
-Then when using [`@Shared`](<doc:Shared>) you can specify this key directly without `.fileStorage`:
+Then when using `@Shared` you can specify this key directly without `.fileStorage`:
 
 ```swift
 @Shared(.users) var users: IdentifiedArrayOf<User> = []
@@ -913,7 +884,7 @@ This technique works for all types of persistence strategies. For example, a typ
 key can be constructed like so:
 
 ```swift
-extension PersistenceReaderKey where Self == InMemoryKey<IdentifiedArrayOf<User>> {
+extension SharedReaderKey where Self == InMemoryKey<IdentifiedArrayOf<User>> {
   static var users: Self {
     inMemory("users")
   }
@@ -923,7 +894,7 @@ extension PersistenceReaderKey where Self == InMemoryKey<IdentifiedArrayOf<User>
 And a type-safe `.appStorage` key can be constructed like so:
 
 ```swift
-extension PersistenceReaderKey where Self == AppStorageKey<Int> {
+extension SharedReaderKey where Self == AppStorageKey<Int> {
   static var count: Self {
     appStorage("count")
   }
@@ -933,16 +904,12 @@ extension PersistenceReaderKey where Self == AppStorageKey<Int> {
 And this technique also works on [custom persistence](<doc:SharingState#Custom-persistence>)
 strategies.
 
-Further, you can use the ``PersistenceKeyDefault`` type to also provide a default that is used
-with the persistence strategy. For example, to use a default value of `[]` with the `.users`
-persistence strategy described above, we can do the following:
+Further, you can also bake in the default of the shared value into your key by doing the following:
 
 ```swift
-extension PersistenceReaderKey 
-where Self == PersistenceKeyDefault<FileStorageKey<IdentifiedArrayOf<User>>>
-{
+extension SharedReaderKey where Self == FileStorageKey<IdentifiedArrayOf<User>>.Default {
   static var users: Self {
-    PersistenceKeyDefault(.fileStorage(.users), [])
+    Self[.fileStorage(.users), default: []]
   }
 }
 ```
@@ -956,7 +923,7 @@ you can even leave off the type annotation:
 
 ## Shared state in pre-observation apps
 
-It is possible to use [`@Shared`](<doc:Shared>) in features that have not yet been updated with
+It is possible to use `@Shared` in features that have not yet been updated with
 the observation tools released in 1.7, such as the ``ObservableState()`` macro. In the reducer
 you can use `@Shared` regardless of your use of the observation tools. 
 
@@ -1000,16 +967,16 @@ struct FeatureView: View {
 ## Concurrent mutations to shared state
 
 While the [`@Shared`](<doc:Shared>) property wrapper makes it possible to treat shared state
-_mostly_ like regular state, you do have to perform some extra steps to mutate shared state from
-an asynchronous context. This is because shared state is technically a reference deep down, even
+_mostly_ like regular state, you do have to perform some extra steps to mutate shared state. 
+This is because shared state is technically a reference deep down, even
 though we take extra steps to make it appear value-like. And this means it's possible to mutate the
 same piece of shared state from multiple threads, and hence race conditions are possible.
 
-To mutate a piece of shared state in an isolated fashion, use the ``Shared/withLock(_:)`` method
+To mutate a piece of shared state in an isolated fashion, use the `withLock` method
 defined on the `@Shared` projected value:
 
 ```swift
-await state.$count.withLock { $0 += 1 }
+state.$count.withLock { $0 += 1 }
 ```
 
 That locks the entire unit of work of reading the current count, incrementing it, and storing it
@@ -1019,35 +986,13 @@ Technically it is still possible to write code that has race conditions, such as
 
 ```swift
 let currentCount = state.count
-await state.$count.withLock { $0 = currentCount + 1 }
+state.$count.withLock { $0 = currentCount + 1 }
 ```
 
 But there is no way to 100% prevent race conditions in code. Even actors are susceptible to 
 problems due to re-entrancy. To avoid problems like the above we recommend wrapping as many 
-mutations of the shared state as possible in a single ``Shared/withLock(_:)``. That will make
+mutations of the shared state as possible in a single `withLock`. That will make
 sure that the full unit of work is guarded by a lock.
-
-> Note: You may encounter a deprecation warning when simply _accessing_ shared state from an
-> asynchronous context when you chain into a subscript:
->
-> ```swift
-> return .run { _ in
->   @Shared(.posts) var posts
->   let post = posts[id: id]  // ⚠️ Setter is unavailable from asynchronous contexts
->   // ...
-> }
-> ```
->
-> This is a [known issue](https://github.com/apple/swift/issues/74203) in the Swift compiler, but
-> can be worked around using ``Shared/withLock(_:)`` to access the underlying value instead:
->
-> ```swift
-> return .run { _ in
->   @Shared(.posts) var posts
->   let post = await $posts.withLock { $0[id: id] }
->   // ...
-> }
-> ```
 
 ## Gotchas of @Shared
 
@@ -1070,9 +1015,8 @@ own implementations of `encode(to:)` and `init(from:)` that do the appropriate t
 
 For example, if the data type is sharing state with a persistence strategy, you can decode by 
 delegating to the memberwise initializer that implicitly loads the shared value from the property 
-wrapper's persistence strategy, or you can explicitly initialize a shared value via
-``Shared/init(wrappedValue:_:fileID:line:)-512rh``. And for encoding you can often skip encoding 
-the shared value:
+wrapper's persistence strategy, or you can explicitly initialize a shared value. And for encoding 
+you can often skip encoding the shared value:
 
 ```swift
 struct AppState {
@@ -1162,28 +1106,3 @@ Alternatively you can take an extra step to override shared state in your previe
 ```
 
 The second assignment of `isOn` will guarantee that it holds a value of `true`.
-
-## Topics
-
-### Essentials
-
-- ``Shared``
-
-### Persistence strategies
-
-- ``AppStorageKey``
-- ``FileStorageKey``
-- ``InMemoryKey``
-
-### Custom persistence
-
-- ``PersistenceKey``
-
-### Read-only persistence
-
-- ``SharedReader``
-- ``PersistenceReaderKey``
-
-### Default values
-
-- ``PersistenceKeyDefault``
