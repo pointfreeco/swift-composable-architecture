@@ -8,6 +8,18 @@ public struct Effect<Action>: Sendable {
     case none
     case publisher(AnyPublisher<Action, Never>)
     case run(TaskPriority? = nil, @Sendable (_ send: Send<Action>) async -> Void)
+    
+    @usableFromInline
+    var isRun: Bool {
+      if case .run = self { return true }
+      return false
+    }
+    
+    @usableFromInline
+    var isPublisher: Bool {
+      if case .publisher = self { return true }
+      return false
+    }
   }
 
   @usableFromInline
@@ -223,6 +235,7 @@ public struct Send<Action>: Sendable {
 }
 
 // MARK: - Composing Effects
+import ConcurrencyExtras
 
 extension Effect {
   /// Merges a variadic list of effects together into a single effect, which runs the effects at the
@@ -242,7 +255,35 @@ extension Effect {
   /// - Returns: A new effect
   @inlinable
   public static func merge(_ effects: some Sequence<Self>) -> Self {
-    effects.reduce(.none) { $0.merge(with: $1) }
+    let effects = UncheckedSendable(effects) // necesssary to pass the effects sequence to the task group.
+    
+    let allRuns = Self(operation: .run { send in
+      await withTaskGroup(of: Void.self) { group in
+        for effect in effects.value {
+          if case let .run(priority, operation) = effect.operation {
+            group.addTask(priority: priority) {
+              await operation(send)
+            }
+          }
+        }
+      }
+    })
+    
+    let containsPublisherEffects = effects.value.contains(where: \.operation.isPublisher)
+    if !containsPublisherEffects {
+      return allRuns
+    }
+    
+    return Self(
+      operation: .publisher(
+        _EffectPublisher(allRuns).merge(
+          with: Publishers.MergeMany(
+            effects.value.lazy.filter(\.operation.isPublisher).map { _EffectPublisher($0) }
+          )
+        )
+        .eraseToAnyPublisher()
+      )
+    )
   }
 
   /// Merges this effect and another into a single effect that runs both at the same time.
