@@ -16,7 +16,7 @@ struct SyncUpDetailView: View {
         } label: {
           Label("Start Meeting", systemImage: "timer")
             .font(.headline)
-            .foregroundStyle(Color.accentColor)
+            .foregroundColor(.accentColor)
         }
         HStack {
           Label("Length", systemImage: "clock")
@@ -29,9 +29,9 @@ struct SyncUpDetailView: View {
           Spacer()
           Text(store.syncUp.theme.name)
             .padding(4)
-            .foregroundStyle(store.syncUp.theme.accentColor)
+            .foregroundColor(store.syncUp.theme.accentColor)
             .background(store.syncUp.theme.mainColor)
-            .clipShape(.rect(cornerRadius: 4))
+            .cornerRadius(4)
         }
       } header: {
         Text("Sync-up Info")
@@ -63,9 +63,10 @@ struct SyncUpDetailView: View {
       }
 
       Section {
-        Button("Delete", role: .destructive) {
+        Button("Delete") {
           store.send(.deleteButtonTapped)
         }
+        .foregroundColor(.red)
         .frame(maxWidth: .infinity)
       }
     }
@@ -73,6 +74,25 @@ struct SyncUpDetailView: View {
     .toolbar {
       Button("Edit") {
         store.send(.editButtonTapped)
+      }
+    }
+    .alert($store.scope(state: \.alert, action: \.alert))
+    .sheet(item: $store.scope(state: \.editSyncUp, action: \.editSyncUp)) { editSyncUpStore in
+      NavigationStack {
+        SyncUpFormView(store: editSyncUpStore)
+          .navigationTitle(store.syncUp.title)
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              Button("Cancel") {
+                store.send(.cancelEditButtonTapped)
+              }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+              Button("Done") {
+                store.send(.doneEditingButtonTapped)
+              }
+            }
+          }
       }
     }
   }

@@ -27,9 +27,8 @@ struct SyncUpDetail {
     Reduce { state, action in
       switch action {
       case .alert(.presented(.confirmButtonTapped)):
-        @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
-        syncUps.remove(id: state.syncUp.id)
-        return .none
+        // @Shared(.fileStorage(.syncUps)) var syncUps: IdentifiedArrayOf<SyncUp> = []
+        @Shared(.syncUps) var syncUps
 
       case .alert(.dismiss):
         return .none
@@ -45,7 +44,7 @@ struct SyncUpDetail {
       case .doneEditingButtonTapped:
         guard let editedSyncUp = state.editSyncUp?.syncUp
         else { return .none }
-        state.syncUp = editedSyncUp
+        state.$syncUp.withLock { $0 = editedSyncUp }
         state.editSyncUp = nil
         return .none
 
@@ -82,4 +81,3 @@ extension AlertState where Action == SyncUpDetail.Action.Alert {
 struct SyncUpDetailView: View {
   // ...
 }
-
