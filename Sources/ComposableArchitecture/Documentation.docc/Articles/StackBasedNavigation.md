@@ -350,7 +350,7 @@ with the parent.
 ## Testing
 
 A huge benefit of using the tools of this library to model navigation stacks is that testing becomes 
-quite easy. Further, using "non-exhaustive testing" (see <doc:Testing#Non-exhaustive-testing>) can 
+quite easy. Further, using "non-exhaustive testing" (see <doc:TestingTCA#Non-exhaustive-testing>) can 
 be very useful for testing navigation since you often only want to assert on a few high level 
 details and not all state mutations and effects.
 
@@ -537,11 +537,11 @@ other in a navigation stack.
 However, the more complex the features become, the more cumbersome testing their integration can be.
 By default, ``TestStore`` requires us to be exhaustive in our assertions. We must assert on how
 every piece of state changes, how every effect feeds data back into the system, and we must make
-sure that all effects finish by the end of the test (see <doc:Testing> for more info).
+sure that all effects finish by the end of the test (see <doc:TestingTCA> for more info).
 
 But ``TestStore`` also supports a form of testing known as "non-exhaustive testing" that allows you
 to assert on only the parts of the features that you actually care about (see 
-<doc:Testing#Non-exhaustive-testing> for more info).
+<doc:TestingTCA#Non-exhaustive-testing> for more info).
 
 For example, if we turn off exhaustivity on the test store (see ``TestStore/exhaustivity``) then we
 can assert at a high level that when the increment button is tapped twice that eventually we receive

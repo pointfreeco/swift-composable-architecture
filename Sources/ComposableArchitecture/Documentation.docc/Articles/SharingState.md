@@ -452,7 +452,7 @@ Shared state behaves quite a bit different from the regular state held in Compos
 features. It is capable of being changed by any part of the application, not just when an action is
 sent to the store, and it has reference semantics rather than value semantics. Typically references
 cause serious problems with testing, especially exhaustive testing that the library prefers (see
-<doc:Testing>), because references cannot be copied and so one cannot inspect the changes 
+<doc:TestingTCA>), because references cannot be copied and so one cannot inspect the changes 
 before and after an action is sent.
 
 For this reason, the `@Shared` property wrapper does extra work during testing to preserve a 
@@ -658,11 +658,11 @@ func basics() {
 However, if your test suite is a part of an app target, then the entry point of the app will execute
 and potentially cause an early access of `@Shared`, thus capturing a different default value than
 what is specified above. This quirk of tests in app targets is documented in
-<doc:Testing#Testing-gotchas> of the <doc:Testing> article, and a similar quirk
+<doc:TestingTCA#Testing-gotchas> of the <doc:TestingTCA> article, and a similar quirk
 exists for Xcode previews and is discussed below in <doc:SharingState#Gotchas-of-Shared>.
 
 The most robust workaround to this issue is to simply not execute your app's entry point when tests
-are running, which we detail in <doc:Testing#Testing-host-application>. This makes it so that you
+are running, which we detail in <doc:TestingTCA#Testing-host-application>. This makes it so that you
 are not accidentally execute network requests, tracking analytics, etc. while running tests.
 
 You can also work around this issue by simply setting the shared state again after initializing
@@ -1071,7 +1071,7 @@ you cannot override shared state in previews.
 
 The fix is to delay creation of the store until the entry point's `body` is executed. Further, it
 can be a good idea to also not run the `body` when in tests because that can also interfere with
-tests (as documented in <doc:Testing#Testing-gotchas>). Here is one way this can be accomplished:
+tests (as documented in <doc:TestingTCA#Testing-gotchas>). Here is one way this can be accomplished:
 
 ```swift
 import ComposableArchitecture
