@@ -15,7 +15,7 @@ struct Todo {
   }
 
   var body: some Reducer<State, Action> {
-    BindingReducer()
+    BindingReducer(action: \.binding)
   }
 }
 
