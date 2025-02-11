@@ -2,12 +2,12 @@ CONFIG = Debug
 
 DERIVED_DATA_PATH = ~/.derivedData/$(CONFIG)
 
-PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS,iPhone \d\+ Pro [^M])
+PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS 18.2,iPhone \d\+ Pro [^M])
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
-PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS,TV)
-PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS,Vision)
-PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS,Watch)
+PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS 18.2,TV)
+PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS 2.2,Vision)
+PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS 11.2,Watch)
 
 PLATFORM = IOS
 DESTINATION = platform="$(PLATFORM_$(PLATFORM))"
