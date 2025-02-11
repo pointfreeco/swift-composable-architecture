@@ -431,8 +431,7 @@ import IssueReporting
 #else
   @preconcurrency@MainActor
 #endif
-public final class TestStore<State, Action> {
-
+public final class TestStore<State: Equatable, Action> {
   /// The current dependencies of the test store.
   ///
   /// The dependencies define the execution context that your feature runs in. They can be modified
@@ -529,17 +528,15 @@ public final class TestStore<State, Action> {
   ///   - filePath: The filePath.
   ///   - line: The line.
   ///   - column: The column.
-  public init<R: Reducer>(
+  public init(
     initialState: @autoclosure () -> State,
-    reducer: () -> R,
-    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
-    },
+    reducer: () -> some Reducer<State, Action>,
+    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  )
-  where State: Equatable, R.State == State, R.Action == Action {
+  ) {
     let sharedChangeTracker = SharedChangeTracker()
     let reducer = Dependencies.withDependencies {
       prepareDependencies(&$0)
@@ -858,9 +855,9 @@ public final class TestStore<State, Action> {
 /// ```swift
 /// let testStore: TestStoreOf<Feature>
 /// ```
-public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action>
+public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action> where R.State: Equatable
 
-extension TestStore where State: Equatable {
+extension TestStore {
   /// Sends an action to the store and asserts when state changes.
   ///
   /// To assert on how state changes you can provide a trailing closure, and that closure is handed
@@ -1276,7 +1273,7 @@ extension TestStore where State: Equatable {
   }
 }
 
-extension TestStore where State: Equatable, Action: Equatable {
+extension TestStore where Action: Equatable {
   private func _receive(
     _ expectedAction: Action,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
@@ -1450,7 +1447,7 @@ extension TestStore where State: Equatable, Action: Equatable {
   }
 }
 
-extension TestStore where State: Equatable {
+extension TestStore {
   private func _receive(
     _ isMatching: (Action) -> Bool,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
@@ -2250,7 +2247,7 @@ extension TestStore where State: Equatable {
   }
 }
 
-extension TestStore where State: Equatable {
+extension TestStore {
   /// Sends an action to the store and asserts when state changes.
   ///
   /// This method is similar to ``send(_:assert:fileID:file:line:column:)-8f2pl``, except it allows
@@ -2814,7 +2811,7 @@ public struct TestStoreTask: Hashable, Sendable {
   }
 }
 
-class TestReducer<State, Action>: Reducer {
+class TestReducer<State: Equatable, Action>: Reducer {
   let base: Reduce<State, Action>
   var dependencies: DependencyValues
   let effectDidSubscribe = AsyncStream.makeStream(of: Void.self)
