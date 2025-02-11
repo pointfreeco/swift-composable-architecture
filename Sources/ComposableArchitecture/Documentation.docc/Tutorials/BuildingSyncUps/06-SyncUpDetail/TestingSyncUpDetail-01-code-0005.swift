@@ -22,7 +22,7 @@ struct SyncUpDetailTests {
     var editedSyncUp = syncUp
     editedSyncUp.title = "Point-Free Evening Sync"
     await store.send(\.destination.edit.binding.syncUp, editedSyncUp) {
-      $0.destination?.edit?.syncUp = editedSyncUp
+      $0.destination?.modify(\.edit) { $0.syncUp = editedSyncUp }
     }
   }
 }
