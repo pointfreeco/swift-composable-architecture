@@ -260,6 +260,23 @@ extension BindingAction: CustomDumpStringConvertible {
   }
 }
 
+/// A convenience type alias for working with binding actions in a ``Reducer``.
+///
+/// Instead of specifying the state explicitly:
+///
+/// ```swift
+/// case binding(BindingAction<Feature.State>)
+/// ```
+///
+/// You can use this type alias:
+///
+/// ```swift
+/// case binding(BindingActionOf<Feature>)
+/// ```
+///
+/// This helps reduce verbosity and makes the intent clearer when dealing with binding-based state mutations.
+public typealias BindingActionOf<R: Reducer> = BindingAction<R.State>
+
 /// An action type that exposes a `binding` case that holds a ``BindingAction``.
 ///
 /// Used in conjunction with ``BindingState`` to safely eliminate the boilerplate typically

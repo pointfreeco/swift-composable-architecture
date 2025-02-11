@@ -340,6 +340,23 @@ extension PresentationAction: Sendable where Action: Sendable {}
 extension PresentationAction: Decodable where Action: Decodable {}
 extension PresentationAction: Encodable where Action: Encodable {}
 
+/// A convenience type alias for working with presentation actions in a ``Reducer``.
+///
+/// Instead of writing:
+///
+/// ```swift
+/// case destination(PresentationAction<Feature.Action>)
+/// ```
+///
+/// You can use this type alias:
+///
+/// ```swift
+/// case destination(PresentationActionOf<Feature>)
+/// ```
+///
+/// This improves readability and consistency when handling navigation-related actions.
+public typealias PresentationActionOf<R: Reducer> = PresentationAction<R.Action>
+
 extension Reducer {
   /// Embeds a child reducer in a parent domain that works on an optional property of parent state.
   ///
