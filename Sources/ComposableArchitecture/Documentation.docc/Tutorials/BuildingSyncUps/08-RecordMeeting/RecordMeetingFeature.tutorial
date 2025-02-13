@@ -2,8 +2,6 @@
   @Intro(title: "The RecordMeeting feature") {
     Let's get the basics of a new feature into place that we can navigate to, and then we will 
     slowly layer on its complex logic and behavior, such as the timer and speech recognizer.
-    
-<!--    @Image(source: <#file#>, alt: "<#accessible description#>")-->
   }
   
   @Section(title: "Create a new feature") {
@@ -11,8 +9,6 @@
       We will create a brand new feature to hold the logic, behavior and view of the record 
       meeting feature. We won't actually implement any of the logic yet, but we will get the 
       basics of the domain modeling and view into place.
-      
-<!--      @Image(source: <#file#>, alt: "<#accessible description#>")-->
     }
     
     @Steps {

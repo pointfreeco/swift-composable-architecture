@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 import Testing
 
 @testable import SyncUps
@@ -45,14 +46,15 @@ struct RecordMeetingTests {
     await clock.advance(by: .seconds(1))
     await store.receive(\.timerTick) {
       $0.secondsElapsed = 4
-      $0.syncUp.meetings.insert(
-        Meeting(
-          id: UUID(0),
-          date: Date(timeIntervalSince1970: 1234567890),
-          transcript: ""
-        ),
-        at: 0
-      )
+      $0.$syncUp.withLock {
+        $0.meetings = [
+          Meeting(
+            id: UUID(0),
+            date: Date(timeIntervalSince1970: 1234567890),
+            transcript: ""
+          )
+        ]
+      }
     }
     // ❌ An effect returned for this action is still running. It must complete before the end of the test. …
     // ❌ Unimplemented: @Dependency(\.date) …
