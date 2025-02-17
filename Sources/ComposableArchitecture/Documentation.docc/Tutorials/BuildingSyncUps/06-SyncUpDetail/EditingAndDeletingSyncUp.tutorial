@@ -119,9 +119,6 @@
         Implement the `doneEditingButtonTapped` action by grabbing the latest `syncUp` value from
         the `editSyncUp` state, and replacing `SyncUpDetail`'s state with that value.
 
-        > Note: To update the shared syncUp, we must use the `withLock` method on its projected
-        > value that insures thread safety.
-        
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0011.swift)
       }
       
@@ -258,8 +255,8 @@
       We can even do it directly inline in the `.confirmButtonTapped` action.
       
       @Step {
-        Use the `@Shared` property wrapper with the `fileStorage` persistence strategy to get a
-        reference to the sync-ups loaded from disk.
+        Use the `@Shared` property wrapper with the `.syncUps` key to get a reference to the
+        sync-ups loaded from disk.
         
         > Note: This does not actually load data from disk. The data has already been loaded from
         > disk and cached in the `@Shared` reference. This is only giving us access to that
@@ -269,17 +266,10 @@
       }
       
       @Step {
-        We can also use the type safe key `.syncUps` we have created earlier to ensure the 
-        type and key are correct and we get a more consise declaration as a bonus.
-        
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0011.swift)
-      }
-
-      @Step {
         Use the `id` of the sync-up held in the detail's state to remove it from the `syncUps`
         collection persisted to disk.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0012.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0011.swift)
       }
       
       That's all it takes to delete the sync-up from the persisted array of sync-ups. It may trouble
@@ -309,7 +299,7 @@
         Add a dependency on ``ComposableArchitecture/DismissEffect`` to the `SyncUpDetail` feature
         by using the `@Dependency` property wrapper.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0013.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0012.swift)
       }
       
       To dismiss a child feature with the ``ComposableArchitecture/DismissEffect`` dependency you
@@ -323,7 +313,7 @@
       @Step {
         Return a `.run` effect to invoke the `dismiss` effect.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0014.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0013.swift)
       }
       
       Next we need to integrate the alert into the view layer so that an alert actually shows when
@@ -334,7 +324,7 @@
         modifier that comes with the library. This will cause an alert to be presented when the
         `alert` state is populated.
         
-        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0015.swift, previousFile: EditingAndDeletingSyncUp-02-code-0015-previous.swift)
+        @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0014.swift, previousFile: EditingAndDeletingSyncUp-02-code-0014-previous.swift)
       }
       
       We have now finished the sync-up deletion functionality in the detail screen. Unfortunately we
