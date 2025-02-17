@@ -69,8 +69,7 @@
       It is also possible to shorten this test quite a bit by using a non-exhaustive test store, as
       we did in <doc:PresentingSyncUpForm>, but we will leave that as an exercise for the reader.
 
-      As for the delete flow, since it involves its parent feature and some navigation with the dismiss 
-      helper, we'll test it later in the <doc:TestingNavigation>.
+      We'll stop here for now, but will get some coverage on the delete flow later on in <doc:TestingNavigation>.
     }
   }  
 }
