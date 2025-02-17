@@ -33,6 +33,7 @@ system, such as SQLite.
 * [Observing changes to shared state](#Observing-changes-to-shared-state)
 * [Initialization rules](#Initialization-rules)
 * [Deriving shared state](#Deriving-shared-state)
+* [Concurrent mutations to shared state](#Concurrent-mutations-to-shared-state)
 * [Testing shared state](#Testing-shared-state)
   * [Testing when using persistence](#Testing-when-using-persistence)
   * [Testing when using custom persistence strategies](#Testing-when-using-custom-persistence-strategies)
@@ -41,7 +42,6 @@ system, such as SQLite.
   * [Testing tips](#Testing-tips)
 * [Read-only shared state](#Read-only-shared-state)
 * [Type-safe keys](#Type-safe-keys)
-* [Concurrent mutations to shared state](#Concurrent-mutations-to-shared-state)
 * [Shared state in pre-observation apps](#Shared-state-in-pre-observation-apps)
 * [Gotchas of @Shared](#Gotchas-of-Shared)
 
@@ -446,6 +446,39 @@ else { return }
 todo // Shared<Todo>
 ```
 
+## Concurrent mutations to shared state
+
+[mutating-shared-state-article]: https://swiftpackageindex.com/pointfreeco/swift-sharing/main/documentation/sharing/mutatingsharedstate
+
+While the `@Shared` property wrapper makes it possible to treat shared state
+_mostly_ like regular state, you do have to perform some extra steps to mutate shared state. 
+This is because shared state is technically a reference deep down, even
+though we take extra steps to make it appear value-like. And this means it's possible to mutate the
+same piece of shared state from multiple threads, and hence race conditions are possible. See
+[Mutating Shared State][mutating-shared-state-article] for a more in-depth explanation.
+
+To mutate a piece of shared state in an isolated fashion, use the `withLock` method
+defined on the `@Shared` projected value:
+
+```swift
+state.$count.withLock { $0 += 1 }
+```
+
+That locks the entire unit of work of reading the current count, incrementing it, and storing it
+back in the reference.
+
+Technically it is still possible to write code that has race conditions, such as this silly example:
+
+```swift
+let currentCount = state.count
+state.$count.withLock { $0 = currentCount + 1 }
+```
+
+But there is no way to 100% prevent race conditions in code. Even actors are susceptible to 
+problems due to re-entrancy. To avoid problems like the above we recommend wrapping as many 
+mutations of the shared state as possible in a single `withLock`. That will make
+sure that the full unit of work is guarded by a lock.
+
 ## Testing shared state
 
 Shared state behaves quite a bit different from the regular state held in Composable Architecture
@@ -476,7 +509,7 @@ struct Feature {
     Reduce { state, action in
       switch action {
       case .incrementButtonTapped:
-        state.count += 1
+        state.$count.withLock { $0 += 1 }
         return .none
       }
     }
@@ -484,7 +517,7 @@ struct Feature {
 }
 ```
 
-This feature can be tested in exactly the same way as when you are using non-shared state:
+This feature can be tested in a similar same way as when you are using non-shared state:
 
 ```swift
 @Test
@@ -494,7 +527,7 @@ func increment() async {
   }
 
   await store.send(.incrementButtonTapped) {
-    $0.count = 1
+    $0.$count.withLock { $0 = 1 }
   }
 }
 ```
@@ -511,7 +544,7 @@ func increment() async {
   }
 
   await store.send(.incrementButtonTapped) {
-    $0.count = 2
+    $0.$count.withLock { $0 = 2 }
   }
 }
 ```
@@ -590,7 +623,7 @@ func increment() async {
   }
   await store.send(.incrementButtonTapped)
   store.assert {
-    $0.count = 1
+    $0.$count.withLock { $0 = 1 }
   }
 }
 ```
@@ -963,36 +996,6 @@ struct FeatureView: View {
   }
 }
 ```
-
-## Concurrent mutations to shared state
-
-While the [`@Shared`](<doc:Shared>) property wrapper makes it possible to treat shared state
-_mostly_ like regular state, you do have to perform some extra steps to mutate shared state. 
-This is because shared state is technically a reference deep down, even
-though we take extra steps to make it appear value-like. And this means it's possible to mutate the
-same piece of shared state from multiple threads, and hence race conditions are possible.
-
-To mutate a piece of shared state in an isolated fashion, use the `withLock` method
-defined on the `@Shared` projected value:
-
-```swift
-state.$count.withLock { $0 += 1 }
-```
-
-That locks the entire unit of work of reading the current count, incrementing it, and storing it
-back in the reference.
-
-Technically it is still possible to write code that has race conditions, such as this silly example:
-
-```swift
-let currentCount = state.count
-state.$count.withLock { $0 = currentCount + 1 }
-```
-
-But there is no way to 100% prevent race conditions in code. Even actors are susceptible to 
-problems due to re-entrancy. To avoid problems like the above we recommend wrapping as many 
-mutations of the shared state as possible in a single `withLock`. That will make
-sure that the full unit of work is guarded by a lock.
 
 ## Gotchas of @Shared
 
