@@ -46,17 +46,18 @@
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0003.swift)
       }
 
-      If you try to compile the project now, you will see that it still fails where we try to 
-      mutate the `syncUps` shared property with the error `setter for 'syncUps' is unavailable: 
-      Use '$shared.withLock' to modify a shared value with exclusive access.`
+      While the property is now compiling, there are several compiler errors where we were
+      previously mutating the `syncUps` property, each with a diagnostic that tells us the changes
+      we must make, which is to mutate through the projected value's `withLock` method.
 
       @Step {
-        Shared values are secretly references (that is how data is shared), and it is perfectly 
-        possible to mutate a `Shared` property from inside an effect. 
-        So to make it thread-safe to mutate, we must use the `withLock` method on the projected 
-        value of the `syncUps` shared property when the value is mutated.
+        Update each direct mutation to use `withLock` on the projected value of the `syncUps`
+        property, instead.
         
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0004.swift)
+        
+        > Note: For more information on why `withLock` is required, see
+        > [Mutating shared state](https://swiftpackageindex.com/pointfreeco/swift-sharing/main/documentation/sharing/mutatingsharedstate).
       }
 
       It is worth noting that `fileStorage` only
@@ -73,10 +74,9 @@
       }
             
       @Step {
-        One last error should comes from the preview of the `SyncUpsListView`. Now, we need 
-        to initialize the mock from outside. The `SyncUpsList` feature will then access it 
-        via the sharing mechanism, so we don't need to provide it to the `State` initializer
-        anymore.
+        We have one more error in the preview of the `SyncUpsListView`. To prepare its list of
+        sync-ups we can initialize a `@Shared` property to the `.syncUps` persistence strategy and
+        provide a mock.
   
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0006.swift, previousFile: PersistingSyncUps-01-code-0006-previous.swift)
       }
@@ -113,35 +113,36 @@
     
     @Steps {
       Before anything, we need to fix a few compiler errors. We'll start with the initialization
-      of the list of `SyncUp` in the `deletion()` test.
+      of the sync-ups in the `deletion()` test.
 
-      When using a `Shared` state with a persistence strategie like we did in the `SyncUpList` feature, 
-      we can initialize it from outside.
+      To provide a specific shared value to a test, we can do the same as we did in the preview,
+      where we pointed the `@Shared` property wrapper to the `.syncUps` persistence strategy and
+      provided a default.
 
       @Step {
-        Go to `SyncUpsListTests.swift` and move the initialization of the syncUp we want to delete outside of 
-        the `TestStore` initialization.
+        Go to `SyncUpsListTests.swift` and provide a default sync-ups value to the `@Shared`
+        property wrapper that includes the sync-up we will delete.
 
-        > note: the `fileStorage` persistence strategy uses an internal dependency for changing how files 
-        > are written to the disk and loaded from disk. In tests the dependency will forgo any interaction 
-        > with the file system and instead write data to a `[URL: Data]` dictionary, and load data from that 
-        > dictionary. That emulates how the file system works, but without persisting any data to the global 
-        > file system.
+        > Note: The `fileStorage` persistence strategy uses an internal dependency for changing how
+        > files are written to the disk and loaded from disk. In tests the dependency will forgo any
+        > interaction with the file system and instead write data to a `[URL: Data]` dictionary, and
+        > load data from that dictionary. That emulates how the file system works, but without
+        > persisting any data to the global file system.
 
         @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0001.swift, previousFile: PersistingSyncUps-02-code-0001-previous.swift)
       }
 
       @Step {
-        Next, we need to update the way we update the shared state by using the `withLock` method on its 
+        Next, we need to update the way we mutate the sync-ups by using the `withLock` method on its 
         projected value.
 
         @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0002.swift)
       }
 
-      With that, we should be in compilation order.
+      With that, we should be in compiling order.
 
       @Step {
-        Now, run the test suite to see that everything still passes. 
+        Run the test suite to see that everything still passes. 
       }
       
       @Step {
@@ -156,8 +157,9 @@
       }
       
       This shows that the exhaustive testing tools of the Composable Architecture continue to work
-      exactly the same, even when dealing with state that is persisted to disk. Be sure to read the
-      full article <doc:SharingState> for more information about shared state and persistence.
+      exactly the same, even when dealing with globally shared state that is persisted to disk. Be
+      sure to read the full article <doc:SharingState> for more information about shared state and
+      persistence.
     }
   }
 }
