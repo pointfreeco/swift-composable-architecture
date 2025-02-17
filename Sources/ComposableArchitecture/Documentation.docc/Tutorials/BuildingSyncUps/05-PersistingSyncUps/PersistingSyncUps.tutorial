@@ -46,22 +46,44 @@
         @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0003.swift)
       }
 
-      With that change the project should be compiling. It is worth noting that `fileStorage` only
+      While the property is now compiling, there are several compiler errors where we were
+      previously mutating the `syncUps` property, each with a diagnostic that tells us the changes
+      we must make, which is to mutate through the projected value's `withLock` method.
+
+      @Step {
+        Update each direct mutation to use `withLock` on the projected value of the `syncUps`
+        property, instead.
+        
+        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0004.swift)
+        
+        > Note: For more information on why `withLock` is required, see
+        > [Mutating shared state](https://swiftpackageindex.com/pointfreeco/swift-sharing/main/documentation/sharing/mutatingsharedstate).
+      }
+
+      It is worth noting that `fileStorage` only
       works with `Codable` data types, and earlier in the tutorial when we added models to
       Models.swift we made them codable from the beginning.
-            
+
       @Step {
         Before moving on, we can still make this better.
         It is possible to provide some type safety between the URL provided and the expected
         type of data to be stored on disk, and make usage more concise. See 
         [type-safe keys](<doc:SharingState#Type-safe-keys>) for more information.
-  
-        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0004.swift)
+        
+        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0005.swift)
       }
             
-      To confirm that persistence works we need to run the app in the simulator, but we haven't done
-      that yet in this tutorial. To do that we need to update the entry point of the app to use the
-      `SyncUpsListView`.
+      @Step {
+        We have one more error in the preview of the `SyncUpsListView`. To prepare its list of
+        sync-ups we can initialize a `@Shared` property to the `.syncUps` persistence strategy and
+        provide a mock.
+  
+        @Code(name: "SyncUpsList.swift", file: PersistingSyncUps-01-code-0006.swift, previousFile: PersistingSyncUps-01-code-0006-previous.swift)
+      }
+
+      With that last change the project should be compiling. To confirm that persistence works 
+      we need to run the app in the simulator, but we haven't done that yet in this tutorial. 
+      To do that we need to update the entry point of the app to use the `SyncUpsListView`.
       
       @Step {
         Go to SyncUpsApp.swift and update the root view to be a `NavigationStack` wrapping a 
@@ -70,14 +92,14 @@
         > Note: We construct the ``ComposableArchitecture/Store`` as a static so that it is 
         initialized only one time, and so that it is not created while running Xcode previews.
         
-        @Code(name: "SyncUpsApp.swift", file: PersistingSyncUps-01-code-0005.swift)
+        @Code(name: "SyncUpsApp.swift", file: PersistingSyncUps-01-code-0007.swift)
       }
       
       @Step {
         Run the app in the simulator, add a sync-up, and then relaunch the application to see that
         it restores the previously created sync-up. This shows that data is persisting.
         
-        @Video(source: PersistingSyncUps-01-video-0006.mov)
+        @Video(source: PersistingSyncUps-01-video-0008.mov)
       }
     }
   }
@@ -90,15 +112,43 @@
     }
     
     @Steps {
+      Before anything, we need to fix a few compiler errors. We'll start with the initialization
+      of the sync-ups in the `deletion()` test.
+
+      To provide a specific shared value to a test, we can do the same as we did in the preview,
+      where we pointed the `@Shared` property wrapper to the `.syncUps` persistence strategy and
+      provided a default.
+
+      @Step {
+        Go to `SyncUpsListTests.swift` and provide a default sync-ups value to the `@Shared`
+        property wrapper that includes the sync-up we will delete.
+
+        > Note: The `fileStorage` persistence strategy uses an internal dependency for changing how
+        > files are written to the disk and loaded from disk. In tests the dependency will forgo any
+        > interaction with the file system and instead write data to a `[URL: Data]` dictionary, and
+        > load data from that dictionary. That emulates how the file system works, but without
+        > persisting any data to the global file system.
+
+        @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0001.swift, previousFile: PersistingSyncUps-02-code-0001-previous.swift)
+      }
+
+      @Step {
+        Next, we need to update the way we mutate the sync-ups by using the `withLock` method on its 
+        projected value.
+
+        @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0002.swift)
+      }
+
+      With that, we should be in compiling order.
+
       @Step {
         Run the test suite to see that everything still passes. 
       }
       
       @Step {
-        Go to SyncUpsListTests.swift and make a change to the `testAddSyncUp` test to make an
-        incorrect assertion.
+        Make a change to the `addSyncUp` test to make an incorrect assertion.
         
-        @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0001.swift, previousFile: PersistingSyncUps-02-code-0001-previous.swift)
+        @Code(name: "SyncUpsListTests.swift", file: PersistingSyncUps-02-code-0003.swift)
       }
       
       @Step {
@@ -107,8 +157,9 @@
       }
       
       This shows that the exhaustive testing tools of the Composable Architecture continue to work
-      exactly the same, even when dealing with state that is persisted to disk. Be sure to read the
-      full article <doc:SharingState> for more information about shared state and persistence.
+      exactly the same, even when dealing with globally shared state that is persisted to disk. Be
+      sure to read the full article <doc:SharingState> for more information about shared state and
+      persistence.
     }
   }
 }
