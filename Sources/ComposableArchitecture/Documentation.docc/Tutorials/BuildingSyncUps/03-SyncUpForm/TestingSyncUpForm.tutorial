@@ -101,7 +101,7 @@
       }
       
       There are two ways one can fix this test. You can use the library's "non-exhaustive" testing
-      tools (see <doc:Testing#Non-exhaustive-testing> for more info), which allows you to assert
+      tools (see <doc:TestingTCA#Non-exhaustive-testing> for more info), which allows you to assert
       on only the bits of state you care about. That can be handy, but we don't feel it is 
       appropriate in such a simple feature like `SyncUpForm`. We think non-exhaustive testing is 
       best saved for testing the integration of features, and that exhaustive testing is best for

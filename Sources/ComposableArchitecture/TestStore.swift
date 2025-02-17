@@ -14,7 +14,7 @@ import IssueReporting
 /// of the way you must assert exactly how state changed, and how effect emissions were fed back
 /// into the system.
 ///
-/// See the dedicated <doc:Testing> article for detailed information on testing.
+/// See the dedicated <doc:TestingTCA> article for detailed information on testing.
 ///
 /// ## Exhaustive testing
 ///
@@ -511,7 +511,7 @@ public final class TestStore<State: Equatable, Action> {
 
   /// Creates a test store with an initial state and a reducer powering its runtime.
   ///
-  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
+  /// See <doc:TestingTCA> and the documentation of ``TestStore`` for more information on how to best
   /// use a test store.
   ///
   /// - Parameters:
@@ -1041,7 +1041,7 @@ extension TestStore {
   /// to differ from the current state of the test store, a test failure will be triggered.
   ///
   /// This tool is most useful in non-exhaustive test stores (see
-  /// <doc:Testing#Non-exhaustive-testing>), which allow you to assert on a subset of the things
+  /// <doc:TestingTCA#Non-exhaustive-testing>), which allow you to assert on a subset of the things
   /// happening inside your features. For example, you can send an action in a child feature
   /// without asserting on how many changes in the system, and then tell the test store to
   /// ``finish(timeout:fileID:file:line:column:)-klnc`` by executing all of its effects, and finally
