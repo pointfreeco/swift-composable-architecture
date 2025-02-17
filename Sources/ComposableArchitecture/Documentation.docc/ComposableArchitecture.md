@@ -49,7 +49,7 @@ day-to-day when building applications, such as:
 
 - <doc:GettingStarted>
 - <doc:DependencyManagement>
-- <doc:Testing>
+- <doc:TestingTCA>
 - <doc:Navigation>
 - <doc:SharingState>
 - <doc:Performance>
@@ -70,7 +70,7 @@ day-to-day when building applications, such as:
 ### Testing
 
 - ``TestStore``
-- <doc:Testing>
+- <doc:TestingTCA>
 
 ### Integrations
 

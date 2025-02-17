@@ -485,7 +485,7 @@ Shared state behaves quite a bit different from the regular state held in Compos
 features. It is capable of being changed by any part of the application, not just when an action is
 sent to the store, and it has reference semantics rather than value semantics. Typically references
 cause serious problems with testing, especially exhaustive testing that the library prefers (see
-<doc:Testing>), because references cannot be copied and so one cannot inspect the changes 
+<doc:TestingTCA>), because references cannot be copied and so one cannot inspect the changes 
 before and after an action is sent.
 
 For this reason, the `@Shared` property wrapper does extra work during testing to preserve a 
@@ -691,11 +691,11 @@ func basics() {
 However, if your test suite is a part of an app target, then the entry point of the app will execute
 and potentially cause an early access of `@Shared`, thus capturing a different default value than
 what is specified above. This quirk of tests in app targets is documented in
-<doc:Testing#Testing-gotchas> of the <doc:Testing> article, and a similar quirk
+<doc:TestingTCA#Testing-gotchas> of the <doc:TestingTCA> article, and a similar quirk
 exists for Xcode previews and is discussed below in <doc:SharingState#Gotchas-of-Shared>.
 
 The most robust workaround to this issue is to simply not execute your app's entry point when tests
-are running, which we detail in <doc:Testing#Testing-host-application>. This makes it so that you
+are running, which we detail in <doc:TestingTCA#Testing-host-application>. This makes it so that you
 are not accidentally execute network requests, tracking analytics, etc. while running tests.
 
 You can also work around this issue by simply setting the shared state again after initializing
@@ -1050,3 +1050,62 @@ extension AppState: Codable {
   }
 }
 ```
+
+#### Previews
+
+When a preview is run in an app target, the entry point is also created. This means if your entry
+point looks something like this:
+
+```swift
+@main
+struct MainApp: App {
+  let store = Store(…)
+
+  var body: some Scene {
+    …
+  }
+}
+```
+
+…then a store will be created each time you run your preview. This can be problematic with `@Shared`
+and persistence strategies because the first access of a `@Shared` property will use the default
+value provided, and that will cause `@Shared`'s created later to ignore the default. That will mean
+you cannot override shared state in previews.
+
+The fix is to delay creation of the store until the entry point's `body` is executed. Further, it
+can be a good idea to also not run the `body` when in tests because that can also interfere with
+tests (as documented in <doc:TestingTCA#Testing-gotchas>). Here is one way this can be accomplished:
+
+```swift
+import ComposableArchitecture
+import SwiftUI
+
+@main
+struct MainApp: App {
+  @MainActor
+  static let store = Store(…)
+
+  var body: some Scene {
+    WindowGroup {
+      if isTesting {
+        // NB: Don't run application in tests to avoid interference 
+        //     between the app and the test.
+        EmptyView()
+      } else {
+        AppView(store: Self.store)
+      }
+    }
+  }
+}
+```
+
+Alternatively you can take an extra step to override shared state in your previews:
+
+```swift
+#Preview {
+  @Shared(.appStorage("isOn")) var isOn = true
+  isOn = true
+}
+```
+
+The second assignment of `isOn` will guarantee that it holds a value of `true`.
