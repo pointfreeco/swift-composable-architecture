@@ -16,7 +16,12 @@ integrate into application code written in UIKit.
 
 ### Presenting alerts and action sheets
 
-- ``UIKit/UIAlertController/init(store:)``
+- ``UIKit/UIAlertController``
+
+### Stack-based navigation
+
+- ``UIKitNavigation/NavigationStackController``
+- ``UIKitNavigation/UIPushAction``
 
 ### Combine integration
 
