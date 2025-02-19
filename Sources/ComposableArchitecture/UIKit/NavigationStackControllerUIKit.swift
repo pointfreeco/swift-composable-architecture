@@ -72,6 +72,12 @@
   @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
   @MainActor
   extension UIPushAction: Sendable {
+    /// Pushes an element of ``StackState`` onto the current navigation stack.
+    ///
+    /// This is the UIKit equivalent of
+    /// ``SwiftUI/NavigationLink/init(state:label:fileID:filePath:line:column:)``.
+    ///
+    /// - Parameter state: An element of stack state.
     public func callAsFunction<Element: Hashable>(state: Element) {
       @Dependency(\.stackElementID) var stackElementID
       self(value: StackState.Component(id: stackElementID(), element: state))
