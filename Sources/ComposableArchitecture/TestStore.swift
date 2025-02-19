@@ -1100,6 +1100,63 @@ extension TestStore {
     }
   }
 
+  /// Asserts against the current state of the store after allowing pending asynchronous
+  /// effects additional time to yield.
+  ///
+  /// Use this helper when you experience race conditions in your async tests—when the
+  /// asynchronous effects in your feature haven't had enough time to update the store's
+  /// state before you assert against it. This overload awaits several yields (by default, 20)
+  /// to give the concurrency runtime an opportunity to process in-flight effects.
+  ///
+  /// For example, if your reducer subscribes to an async stream that updates shared state,
+  /// without extra yielding the assertion may run before the effect has updated state:
+  ///
+  /// ```swift
+  /// // Without yielding, the update may not be processed yet.
+  /// await store.send(.startMonitoring)
+  /// streamDependency.continuation.yield(["Updated"])
+  /// store.assert {
+  ///   $0.networkInterfaces = ["Updated"] // may be flaky!
+  /// }
+  /// ```
+  ///
+  /// Using `assertWithYield` lets you write:
+  ///
+  /// ```swift
+  /// await store.send(.startMonitoring)
+  /// streamDependency.continuation.yield(["Updated"])
+  /// await store.assertWithYield {
+  ///   $0.networkInterfaces = ["Updated"]
+  /// }
+  /// ```
+  ///
+  /// - Parameters:
+  ///   - updateStateToExpectedResult: A closure that receives the current state and can
+  ///     mutate it to the expected state. If the mutated value differs from the current state,
+  ///     a test failure will be triggered.
+  ///   - fileID: The file ID (default is `#fileID`).
+  ///   - filePath: The file path (default is `#filePath`).
+  ///   - line: The line number (default is `#line`).
+  ///   - column: The column number (default is `#column`).
+  public func assertWithYield(
+    _ updateStateToExpectedResult: @escaping (_ state: inout State) throws -> Void,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) async {
+    // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
+    //     instrument their effects.
+    await Task.megaYield(count: 20)
+    assert(
+        updateStateToExpectedResult,
+        fileID: fileID,
+        file: filePath,
+        line: line,
+        column: column
+    )
+  }
+
   private func expectedStateShouldMatch(
     preamble: String = "",
     postamble: String = "",
