@@ -470,6 +470,67 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
+  @Reducer
+  struct Feature_testAssert_StreamDependencyOnReducerWithSharedState {
+    @Dependency(\.client.stream) var stream
+
+    var body: some Reducer<Shared<Int>, Bool> {
+      Reduce { state, action in
+
+        return .run { [state] send in
+          for await value in stream {
+            state.withLock { $0 = value }
+          }
+        }
+      }
+    }
+  }
+  func testAssert_StreamDependencyOnReducerWithSharedState() async {
+    let sharedInt = Shared(value: 0)
+    let streamDependency = AsyncStream.makeStream(of: Int.self)
+    let store = await TestStore(initialState: sharedInt) {
+      Feature_testAssert_StreamDependencyOnReducerWithSharedState()
+        .dependency(\.client.stream, streamDependency.stream)
+    }
+
+    await store.send(true)
+    streamDependency.continuation.yield(1)
+
+    await store.assertWithYield {
+      $0.withLock { $0 = 1 }
+    }
+
+    await store.skipInFlightEffects()
+  }
+  @MainActor
+  func testAssert_StreamDependencyOnReducerWithSharedState_Failure() async {
+    let sharedInt = Shared(value: 0)
+    let streamDependency = AsyncStream.makeStream(of: Int.self)
+    let store = TestStore(initialState: sharedInt) {
+      Feature_testAssert_StreamDependencyOnReducerWithSharedState()
+        .dependency(\.client.stream, streamDependency.stream)
+    }
+    store.exhaustivity = .off
+    await store.send(true)
+    streamDependency.continuation.yield(1)
+    XCTExpectFailure {
+      store.assert {
+        $0.withLock { $0 = 1 }
+      }
+    } issueMatcher: {
+      $0.compactDescription == """
+        failed - A state change does not match expectation: …
+
+            − #1 1
+            + #1 0
+
+        (Expected: −, Actual: +)
+        """
+    }
+
+    await store.skipInFlightEffects()
+  }
+
   @MainActor
   func testSubscribeReceiveCombineScheduler() async {
     let subject = PassthroughSubject<Void, Never>()
@@ -662,7 +723,8 @@ final class TestStoreTests: BaseTCATestCase {
 
 private struct Client: DependencyKey {
   var fetch: @Sendable () -> Int
-  static let liveValue = Client(fetch: { 42 })
+  var stream: AsyncStream<Int>
+  static let liveValue = Client(fetch: { 42 }, stream: .never)
 }
 extension DependencyValues {
   fileprivate var client: Client {
