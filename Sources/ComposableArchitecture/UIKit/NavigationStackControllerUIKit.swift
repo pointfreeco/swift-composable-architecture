@@ -2,7 +2,6 @@
   import UIKit
 
   extension NavigationStackController {
-
     /// Drives a navigation stack controller with a store.
     ///
     /// See the dedicated article on <doc:Navigation> for more information on the library's
@@ -67,6 +66,15 @@
           )
         )
       }
+    }
+  }
+
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+  @MainActor
+  extension UIPushAction: Sendable {
+    public func callAsFunction<Element: Hashable>(state: Element) {
+      @Dependency(\.stackElementID) var stackElementID
+      self(value: StackState.Component(id: stackElementID(), element: state))
     }
   }
 #endif
