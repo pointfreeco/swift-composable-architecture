@@ -56,19 +56,18 @@ extension Store {
     return self
       .publisher
       .removeDuplicates(by: { ($0 != nil) == ($1 != nil) })
-      .sink { state in
-        if var state = state {
-          unwrap(
-            self.scope(
-              id: self.id(state: \.!, action: \.self),
-              state: ToState {
-                state = $0 ?? state
-                return state
-              },
-              action: { $0 },
-              isInvalid: { $0 == nil }
+      .sink { [weak self] state in
+        if let self, let state {
+          @MainActor
+          func open(_ core: some Core<State, Action>) -> any Core<Wrapped, Action> {
+            IfLetCore(
+              base: core,
+              cachedState: state,
+              stateKeyPath: \.self,
+              actionKeyPath: \.self
             )
-          )
+          }
+          unwrap(self.scope(id: nil, childCore: open(self.core)))
         } else {
           `else`()
         }

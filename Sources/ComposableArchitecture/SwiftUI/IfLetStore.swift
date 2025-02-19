@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 /// A view that safely unwraps a store of optional state in order to show one of two views.
@@ -59,26 +60,26 @@ public struct IfLetStore<State, Action, Content: View>: View {
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
     @ViewBuilder else elseContent: () -> ElseContent
   ) where Content == _ConditionalContent<IfContent, ElseContent> {
+    func open(_ core: some Core<State?, Action>) -> any Core<State?, Action> {
+      _IfLetCore(base: core)
+    }
     let store = store.scope(
       id: store.id(state: \.self, action: \.self),
-      state: ToState(\.self),
-      action: { $0 },
-      isInvalid: { $0 == nil }
+      childCore: open(store.core)
     )
     self.store = store
     let elseContent = elseContent()
     self.content = { viewStore in
-      if var state = viewStore.state {
+      if let state = viewStore.state {
+        @MainActor
+        func open(_ core: some Core<State?, Action>) -> any Core<State, Action> {
+          IfLetCore(base: core, cachedState: state, stateKeyPath: \.self, actionKeyPath: \.self)
+        }
         return ViewBuilder.buildEither(
           first: ifContent(
             store.scope(
               id: store.id(state: \.!, action: \.self),
-              state: ToState {
-                state = $0 ?? state
-                return state
-              },
-              action: { $0 },
-              isInvalid: { $0 == nil }
+              childCore: open(store.core)
             )
           )
         )
@@ -104,24 +105,24 @@ public struct IfLetStore<State, Action, Content: View>: View {
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
   ) where Content == IfContent? {
+    func open(_ core: some Core<State?, Action>) -> any Core<State?, Action> {
+      _IfLetCore(base: core)
+    }
     let store = store.scope(
       id: store.id(state: \.self, action: \.self),
-      state: ToState(\.self),
-      action: { $0 },
-      isInvalid: { $0 == nil }
+      childCore: open(store.core)
     )
     self.store = store
     self.content = { viewStore in
-      if var state = viewStore.state {
+      if let state = viewStore.state {
+        @MainActor
+        func open(_ core: some Core<State?, Action>) -> any Core<State, Action> {
+          IfLetCore(base: core, cachedState: state, stateKeyPath: \.self, actionKeyPath: \.self)
+        }
         return ifContent(
           store.scope(
             id: store.id(state: \.!, action: \.self),
-            state: ToState {
-              state = $0 ?? state
-              return state
-            },
-            action: { $0 },
-            isInvalid: { $0 == nil }
+            childCore: open(store.core)
           )
         )
       } else {
@@ -303,4 +304,17 @@ public struct IfLetStore<State, Action, Content: View>: View {
       content: self.content
     )
   }
+}
+
+private final class _IfLetCore<Base: Core<Wrapped?, Action>, Wrapped, Action>: Core {
+  let base: Base
+  init(base: Base) {
+    self.base = base
+  }
+  var state: Base.State { base.state }
+  func send(_ action: Action) -> Task<Void, Never>? { base.send(action) }
+  var canStoreCacheChildren: Bool { base.canStoreCacheChildren }
+  var didSet: CurrentValueRelay<Void> { base.didSet }
+  var isInvalid: Bool { state == nil || base.isInvalid }
+  var effectCancellables: [UUID: AnyCancellable] { base.effectCancellables }
 }
