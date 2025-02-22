@@ -1051,65 +1051,6 @@ extension AppState: Codable {
 }
 ```
 
-#### Previews
-
-When a preview is run in an app target, the entry point is also created. This means if your entry
-point looks something like this:
-
-```swift
-@main
-struct MainApp: App {
-  let store = Store(…)
-
-  var body: some Scene {
-    …
-  }
-}
-```
-
-…then a store will be created each time you run your preview. This can be problematic with `@Shared`
-and persistence strategies because the first access of a `@Shared` property will use the default
-value provided, and that will cause `@Shared`'s created later to ignore the default. That will mean
-you cannot override shared state in previews.
-
-The fix is to delay creation of the store until the entry point's `body` is executed. Further, it
-can be a good idea to also not run the `body` when in tests because that can also interfere with
-tests (as documented in <doc:TestingTCA#Testing-gotchas>). Here is one way this can be accomplished:
-
-```swift
-import ComposableArchitecture
-import SwiftUI
-
-@main
-struct MainApp: App {
-  @MainActor
-  static let store = Store(…)
-
-  var body: some Scene {
-    WindowGroup {
-      if isTesting {
-        // NB: Don't run application in tests to avoid interference 
-        //     between the app and the test.
-        EmptyView()
-      } else {
-        AppView(store: Self.store)
-      }
-    }
-  }
-}
-```
-
-Alternatively you can take an extra step to override shared state in your previews:
-
-```swift
-#Preview {
-  @Shared(.appStorage("isOn")) var isOn = true
-  isOn = true
-}
-```
-
-The second assignment of `isOn` will guarantee that it holds a value of `true`.
-
 #### Tests
 
 While shared properties are compatible with the Composable Architecture's testing tools, assertions
