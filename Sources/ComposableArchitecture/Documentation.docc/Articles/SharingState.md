@@ -1109,3 +1109,74 @@ Alternatively you can take an extra step to override shared state in your previe
 ```
 
 The second assignment of `isOn` will guarantee that it holds a value of `true`.
+
+#### Tests
+
+While shared properties are compatible with the Composable Architecture's testing tools, assertions
+may not correspond directly to a particular action when several actions are received by effects.
+
+Take this simple example, in which a `tap` action kicks off an effect that returns a `response`,
+which finally mutates some shared state:
+
+```swift
+@Reducer
+struct Feature {
+  struct State: Equatable {
+    @Shared(value: false) var bool
+  }
+  enum Action {
+    case tap
+    case response
+  }
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          await send(.response)
+        }
+      case .response:
+        state.$bool.withLock { $0.toggle() }
+        return .none
+      }
+    }
+  }
+}
+```
+
+We would expect to assert against this mutation when the test store receives the `response` action,
+but this will fail:
+
+```swift
+// ❌ State was not expected to change, but a change occurred: …
+//
+//     Feature.State(
+//   -   _shared: #1 false
+//   +   _shared: #1 true
+//     )
+//
+// (Expected: −, Actual: +)
+await store.send(.tap)
+
+// ❌ Expected state to change, but no change occurred.
+await store.receive(.response) {
+  $0.$shared.withLock { $0 = true }
+}
+```
+
+This is due to an implementation detail of the `TestStore` that predates `@Shared`, in which the
+test store eagerly processes all actions received _before_ you have asserted on them. As such, you
+must always assert against shared state mutations in the first action:
+
+```swift
+await store.send(.tap) {  // ✅
+  $0.$shared.withLock { $0 = true }
+}
+
+// ❌ Expected state to change, but no change occurred.
+await store.receive(.response)  // ✅
+```
+
+In a future major version of the Composable Architecture, we will be able to introduce a breaking
+change that allows you to assert against shared state mutations in the action that performed the
+mutation.
