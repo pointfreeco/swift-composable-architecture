@@ -26,7 +26,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.4.0"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.2.0"),
-    .package(url: "https://github.com/pointfreeco/swift-navigation", from: "2.2.2"),
+    .package(url: "https://github.com/pointfreeco/swift-navigation", from: "2.3.0"),
     .package(url: "https://github.com/pointfreeco/swift-perception", from: "1.3.4"),
     .package(url: "https://github.com/pointfreeco/swift-sharing", "0.1.2"..<"3.0.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.3.0"),
