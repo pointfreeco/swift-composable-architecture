@@ -20,6 +20,20 @@
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "ComposableArchitectureMacrosTests"
+               BuildableName = "ComposableArchitectureMacrosTests"
+               BlueprintName = "ComposableArchitectureMacrosTests"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -36,16 +50,6 @@
                BlueprintIdentifier = "ComposableArchitectureTests"
                BuildableName = "ComposableArchitectureTests"
                BlueprintName = "ComposableArchitectureTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "ComposableArchitectureMacrosTests"
-               BuildableName = "ComposableArchitectureMacrosTests"
-               BlueprintName = "ComposableArchitectureMacrosTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>

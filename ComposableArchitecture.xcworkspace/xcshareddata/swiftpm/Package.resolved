@@ -1,5 +1,5 @@
 {
-  "originHash" : "29c6d6960397f31b6abd70d24a914f46986fc587cb44b11cc5747e8ff1ebbdc4",
+  "originHash" : "d3dc33ba610c92bea50ca24fd984d889ee5e84e71b8145c11c2457e23eb24db8",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -43,7 +43,7 @@
       "location" : "https://github.com/pointfreeco/swift-concurrency-extras",
       "state" : {
         "branch" : "change-mega-yield",
-        "revision" : "8fa4ae7ec1798f8e70ad3dadf4d468b5a2573d2a"
+        "revision" : "252b207142b458b339930103937061c250a132d2"
       }
     },
     {
