@@ -729,30 +729,24 @@ public final class TestStore<State: Equatable, Action> {
     line: UInt,
     column: UInt
   ) {
-    // NB: This existential opening can go away if we can constrain 'State: Equatable' at the
-    //     'TestStore' level, but for some reason this breaks DocC.
-    if self.sharedChangeTracker.hasChanges, let stateType = State.self as? any Equatable.Type {
-      func open<EquatableState: Equatable>(_: EquatableState.Type) {
-        let store = self as! TestStore<EquatableState, Action>
-        try? store.expectedStateShouldMatch(
-          preamble: "Test store finished before asserting against changes to shared state",
-          postamble: """
+    if sharedChangeTracker.hasChanges {
+      try? expectedStateShouldMatch(
+        preamble: "Test store finished before asserting against changes to shared state",
+        postamble: """
             Invoke "TestStore.assert" at the end of this test to assert against changes to shared \
             state.
             """,
-          expected: store.state,
-          actual: store.state,
-          updateStateToExpectedResult: nil,
-          skipUnnecessaryModifyFailure: true,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }
-      open(stateType)
-      self.sharedChangeTracker.reset()
+        expected: state,
+        actual: state,
+        updateStateToExpectedResult: nil,
+        skipUnnecessaryModifyFailure: true,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
     }
+    sharedChangeTracker.reset()
   }
 
   /// Overrides the store's dependencies for a given operation.
