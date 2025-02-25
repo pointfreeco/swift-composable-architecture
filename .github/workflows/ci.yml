@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - change-mega-yield
   pull_request:
     branches:
       - '*'
