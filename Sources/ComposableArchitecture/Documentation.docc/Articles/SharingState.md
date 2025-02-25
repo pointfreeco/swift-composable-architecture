@@ -1051,61 +1051,73 @@ extension AppState: Codable {
 }
 ```
 
-#### Previews
+#### Tests
 
-When a preview is run in an app target, the entry point is also created. This means if your entry
-point looks something like this:
+While shared properties are compatible with the Composable Architecture's testing tools, assertions
+may not correspond directly to a particular action when several actions are received by effects.
+
+Take this simple example, in which a `tap` action kicks off an effect that returns a `response`,
+which finally mutates some shared state:
 
 ```swift
-@main
-struct MainApp: App {
-  let store = Store(…)
-
-  var body: some Scene {
-    …
+@Reducer
+struct Feature {
+  struct State: Equatable {
+    @Shared(value: false) var bool
   }
-}
-```
-
-…then a store will be created each time you run your preview. This can be problematic with `@Shared`
-and persistence strategies because the first access of a `@Shared` property will use the default
-value provided, and that will cause `@Shared`'s created later to ignore the default. That will mean
-you cannot override shared state in previews.
-
-The fix is to delay creation of the store until the entry point's `body` is executed. Further, it
-can be a good idea to also not run the `body` when in tests because that can also interfere with
-tests (as documented in <doc:TestingTCA#Testing-gotchas>). Here is one way this can be accomplished:
-
-```swift
-import ComposableArchitecture
-import SwiftUI
-
-@main
-struct MainApp: App {
-  @MainActor
-  static let store = Store(…)
-
-  var body: some Scene {
-    WindowGroup {
-      if isTesting {
-        // NB: Don't run application in tests to avoid interference 
-        //     between the app and the test.
-        EmptyView()
-      } else {
-        AppView(store: Self.store)
+  enum Action {
+    case tap
+    case response
+  }
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          await send(.response)
+        }
+      case .response:
+        state.$bool.withLock { $0.toggle() }
+        return .none
       }
     }
   }
 }
 ```
 
-Alternatively you can take an extra step to override shared state in your previews:
+We would expect to assert against this mutation when the test store receives the `response` action,
+but this will fail:
 
 ```swift
-#Preview {
-  @Shared(.appStorage("isOn")) var isOn = true
-  isOn = true
+// ❌ State was not expected to change, but a change occurred: …
+//
+//     Feature.State(
+//   -   _shared: #1 false
+//   +   _shared: #1 true
+//     )
+//
+// (Expected: −, Actual: +)
+await store.send(.tap)
+
+// ❌ Expected state to change, but no change occurred.
+await store.receive(.response) {
+  $0.$shared.withLock { $0 = true }
 }
 ```
 
-The second assignment of `isOn` will guarantee that it holds a value of `true`.
+This is due to an implementation detail of the `TestStore` that predates `@Shared`, in which the
+test store eagerly processes all actions received _before_ you have asserted on them. As such, you
+must always assert against shared state mutations in the first action:
+
+```swift
+await store.send(.tap) {  // ✅
+  $0.$shared.withLock { $0 = true }
+}
+
+// ❌ Expected state to change, but no change occurred.
+await store.receive(.response)  // ✅
+```
+
+In a future major version of the Composable Architecture, we will be able to introduce a breaking
+change that allows you to assert against shared state mutations in the action that performed the
+mutation.

@@ -40,10 +40,12 @@ struct RecordMeeting {
         return .run { _ in await dismiss() }
 
       case .alert(.presented(.saveMeeting)):
-        state.syncUp.meetings.insert(
-          Meeting(id: uuid(), date: now, transcript: state.transcript),
-          at: 0
-        )
+        state.$syncUp.withLock {
+          _ = $0.meetings.insert(
+            Meeting(id: uuid(), date: now, transcript: state.transcript),
+            at: 0
+          )
+        }
         return .run { _ in await dismiss() }
 
       case .alert:
@@ -75,10 +77,12 @@ struct RecordMeeting {
         let secondsPerAttendee = Int(state.syncUp.durationPerAttendee.components.seconds)
         if state.secondsElapsed.isMultiple(of: secondsPerAttendee) {
           if state.secondsElapsed == state.syncUp.duration.components.seconds {
-            state.syncUp.meetings.insert(
-              Meeting(id: uuid(), date: now, transcript: state.transcript),
-              at: 0
-            )
+            state.$syncUp.withLock {
+              _ = $0.meetings.insert(
+                Meeting(id: uuid(), date: now, transcript: state.transcript),
+                at: 0
+              )
+            }
             return .run { _ in await dismiss() }
           }
           state.speakerIndex += 1
@@ -138,7 +142,7 @@ struct RecordMeetingView: View {
       }
     }
     .padding()
-    .foregroundColor(store.syncUp.theme.accentColor)
+    .foregroundStyle(store.syncUp.theme.accentColor)
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {
       ToolbarItem(placement: .cancellationAction) {

@@ -11,7 +11,7 @@ struct SyncUpsListView: View {
 
   var body: some View {
     List {
-      ForEach(store.$syncUps) { $syncUp in
+      ForEach(Array(store.$syncUps)) { $syncUp in
         NavigationLink(
           state: AppFeature.Path.State.detail(SyncUpDetail.State(syncUp: <#Shared<SyncUp>#>))
         ) {
@@ -66,7 +66,7 @@ struct CardView: View {
       .font(.caption)
     }
     .padding()
-    .foregroundColor(syncUp.theme.accentColor)
+    .foregroundStyle(syncUp.theme.accentColor)
   }
 }
 

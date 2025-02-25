@@ -639,6 +639,7 @@ The following translations of this README have been contributed by members of th
 * [Russian](https://gist.github.com/SubvertDev/3317d0c3b35ed601be330d6fc0df5aba)
 * [Simplified Chinese](https://gist.github.com/sh3l6orrr/10c8f7c634a892a9c37214f3211242ad)
 * [Spanish](https://gist.github.com/pitt500/f5e32fccb575ce112ffea2827c7bf942)
+* [Turkish](https://gist.github.com/gokhanamal/93001244ef0c1cec58abeb1afc0de37c)
 * [Ukrainian](https://gist.github.com/barabashd/33b64676195ce41f4bb73c327ea512a8)
 
 If you'd like to contribute a translation, please [open a
