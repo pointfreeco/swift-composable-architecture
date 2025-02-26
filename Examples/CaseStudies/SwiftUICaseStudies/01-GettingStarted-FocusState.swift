@@ -26,7 +26,7 @@ struct FocusDemo {
   }
 
   var body: some Reducer<State, Action> {
-    BindingReducer()
+    BindingReducer(action: \.binding)
     Reduce { state, action in
       switch action {
       case .binding:
