@@ -313,7 +313,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             value: value,
             bindableActionType: ViewAction.self,
             context: .bindingState,
-            isInvalidated: self.store._isInvalidated,
+            isInvalidated: { [weak self] in self?.store.core.isInvalid ?? true },
             fileID: bindingState.fileID,
             filePath: bindingState.filePath,
             line: bindingState.line,
@@ -424,12 +424,7 @@ public struct BindingViewStore<State> {
     line: UInt = #line,
     column: UInt = #column
   ) {
-    self.store = store.scope(
-      id: nil,
-      state: ToState(\.self),
-      action: Action.binding,
-      isInvalid: nil
-    )
+    self.store = store._scope(state: { $0 }, action: { .binding($0) })
     #if DEBUG
       self.bindableActionType = type(of: Action.self)
       self.fileID = fileID
@@ -469,7 +464,7 @@ public struct BindingViewStore<State> {
                 value: value,
                 bindableActionType: self.bindableActionType,
                 context: .bindingStore,
-                isInvalidated: self.store._isInvalidated,
+                isInvalidated: { [weak store] in store?.core.isInvalid ?? true },
                 fileID: self.fileID,
                 filePath: self.filePath,
                 line: self.line,
@@ -515,12 +510,7 @@ extension ViewStore {
       observe: { (_: State) in
         toViewState(
           BindingViewStore(
-            store: store.scope(
-              id: nil,
-              state: ToState(\.self),
-              action: fromViewAction,
-              isInvalid: nil
-            )
+            store: store._scope(state: { $0 }, action: fromViewAction)
           )
         )
       },
@@ -631,16 +621,7 @@ extension WithViewStore where Content: View {
     self.init(
       store,
       observe: { (_: State) in
-        toViewState(
-          BindingViewStore(
-            store: store.scope(
-              id: nil,
-              state: ToState(\.self),
-              action: fromViewAction,
-              isInvalid: nil
-            )
-          )
-        )
+        toViewState(BindingViewStore(store: store._scope(state: { $0 }, action: fromViewAction)))
       },
       send: fromViewAction,
       removeDuplicates: isDuplicate,

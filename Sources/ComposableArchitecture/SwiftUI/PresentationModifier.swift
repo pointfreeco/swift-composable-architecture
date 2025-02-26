@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 extension View {
@@ -244,11 +245,14 @@ public struct PresentationStore<
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
+    func open(
+      _ core: some Core<PresentationState<State>, PresentationAction<Action>>
+    ) -> any Core<PresentationState<State>, PresentationAction<Action>> {
+      PresentationCore(base: core, toDestinationState: { $0 })
+    }
     let store = store.scope(
       id: store.id(state: \.self, action: \.self),
-      state: ToState(\.self),
-      action: { $0 },
-      isInvalid: { $0.wrappedValue == nil }
+      childCore: open(store.core)
     )
     let viewStore = ViewStore(
       store,
@@ -260,12 +264,7 @@ public struct PresentationStore<
     self.toDestinationState = { $0 }
     self.toID = toID
     self.fromDestinationAction = { $0 }
-    self.destinationStore = store.scope(
-      id: store.id(state: \.wrappedValue, action: \.presented),
-      state: ToState(\.wrappedValue),
-      action: { .presented($0) },
-      isInvalid: nil
-    )
+    self.destinationStore = store.scope(state: \.wrappedValue, action: \.presented)
     self.content = content
     self.viewStore = viewStore
   }
@@ -280,11 +279,14 @@ public struct PresentationStore<
       _ destination: DestinationContent<DestinationState, DestinationAction>
     ) -> Content
   ) {
+    func open(
+      _ core: some Core<PresentationState<State>, PresentationAction<Action>>
+    ) -> any Core<PresentationState<State>, PresentationAction<Action>> {
+      PresentationCore(base: core, toDestinationState: toDestinationState)
+    }
     let store = store.scope(
-      id: nil,
-      state: ToState(\.self),
-      action: { $0 },
-      isInvalid: { $0.wrappedValue.flatMap(toDestinationState) == nil }
+      id: store.id(state: \.self, action: \.self),
+      childCore: open(store.core)
     )
     let viewStore = ViewStore(store, observe: { $0 }, removeDuplicates: { toID($0) == toID($1) })
 
@@ -292,11 +294,9 @@ public struct PresentationStore<
     self.toDestinationState = toDestinationState
     self.toID = toID
     self.fromDestinationAction = fromDestinationAction
-    self.destinationStore = store.scope(
-      id: nil,
-      state: ToState { $0.wrappedValue.flatMap(toDestinationState) },
-      action: { .presented(fromDestinationAction($0)) },
-      isInvalid: nil
+    self.destinationStore = store._scope(
+      state: { $0.wrappedValue.flatMap(toDestinationState) },
+      action: { .presented(fromDestinationAction($0)) }
     )
     self.content = content
     self.viewStore = viewStore
@@ -326,6 +326,33 @@ public struct PresentationStore<
   }
 }
 
+final class PresentationCore<
+  Base: Core<PresentationState<State>, PresentationAction<Action>>,
+  State,
+  Action,
+  DestinationState
+>: Core {
+  let base: Base
+  let toDestinationState: (State) -> DestinationState?
+  init(
+    base: Base,
+    toDestinationState: @escaping (State) -> DestinationState?
+  ) {
+    self.base = base
+    self.toDestinationState = toDestinationState
+  }
+  var state: Base.State {
+    base.state
+  }
+  func send(_ action: Base.Action) -> Task<Void, Never>? {
+    base.send(action)
+  }
+  var canStoreCacheChildren: Bool { base.canStoreCacheChildren }
+  var didSet: CurrentValueRelay<Void> { base.didSet }
+  var isInvalid: Bool { state.wrappedValue.flatMap(toDestinationState) == nil || base.isInvalid }
+  var effectCancellables: [UUID: AnyCancellable] { base.effectCancellables }
+}
+
 @_spi(Presentation)
 public struct AnyIdentifiable: Identifiable {
   public let id: AnyHashable
@@ -347,14 +374,6 @@ public struct DestinationContent<State, Action> {
   public func callAsFunction<Content: View>(
     @ViewBuilder _ body: @escaping (_ store: Store<State, Action>) -> Content
   ) -> some View {
-    IfLetStore(
-      self.store.scope(
-        id: self.store.id(state: \.self, action: \.self),
-        state: ToState(returningLastNonNilValue { $0 }),
-        action: { $0 },
-        isInvalid: nil
-      ),
-      then: body
-    )
+    IfLetStore(self.store, then: body)
   }
 }
