@@ -733,9 +733,9 @@ public final class TestStore<State: Equatable, Action> {
       try? expectedStateShouldMatch(
         preamble: "Test store finished before asserting against changes to shared state",
         postamble: """
-            Invoke "TestStore.assert" at the end of this test to assert against changes to shared \
-            state.
-            """,
+          Invoke "TestStore.assert" at the end of this test to assert against changes to shared \
+          state.
+          """,
         expected: state,
         actual: state,
         updateStateToExpectedResult: nil,
