@@ -126,6 +126,7 @@ final class StoreLifetimeTests: BaseTCATestCase {
 
   @MainActor
   @available(*, deprecated)
+  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   func testUnCachedStores() async {
     Logger.shared.isEnabled = true
     let clock = TestClock()
