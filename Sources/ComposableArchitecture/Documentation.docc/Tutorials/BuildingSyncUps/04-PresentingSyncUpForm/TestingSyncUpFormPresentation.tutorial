@@ -211,7 +211,7 @@
       This means in non-exhaustive test stores you do not have make any mutations in the trailing
       closure if you do not want to. And anything you _do_ set in the trailing closure must match
       what was already there in order for the test to pass. See the dedicated article 
-      <doc:Testing#Non-exhaustive-testing> for more information.
+      <doc:TestingTCA#Non-exhaustive-testing> for more information.
       
       @Step {
         Emulate the user making edits to the sync-up, but again do not provide a trailing closure.

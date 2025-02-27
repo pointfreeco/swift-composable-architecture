@@ -66,7 +66,7 @@ struct CardView: View {
       .font(.caption)
     }
     .padding()
-    .foregroundColor(syncUp.theme.accentColor)
+    .foregroundStyle(syncUp.theme.accentColor)
   }
 }
 

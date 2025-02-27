@@ -1174,6 +1174,45 @@ final class StoreTests: BaseTCATestCase {
     cancellable.cancel()
     XCTAssertNil(weakStore)
   }
+
+  @MainActor
+  func testSharedMutation() async {
+    XCTTODO(
+      """
+      Ideally this will pass in 2.0 but it's a breaking change for test stores to not eagerly \
+      process all received actions.
+      """
+    )
+
+    let store = TestStore(initialState: TestSharedMutation.State()) {
+      TestSharedMutation()
+    }
+    await store.send(.tap)
+    await store.receive(.response) {
+      $0.$bool.withLock { $0 = true }
+    }
+  }
+  @Reducer
+  struct TestSharedMutation {
+    struct State: Equatable {
+      @Shared(value: false) var bool
+    }
+    enum Action {
+      case tap
+      case response
+    }
+    var body: some ReducerOf<Self> {
+      Reduce { state, action in
+        switch action {
+        case .tap:
+          return .send(.response)
+        case .response:
+          state.$bool.withLock { $0.toggle() }
+          return .none
+        }
+      }
+    }
+  }
 }
 
 #if canImport(Testing)

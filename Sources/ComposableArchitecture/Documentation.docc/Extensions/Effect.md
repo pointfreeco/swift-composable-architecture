@@ -14,7 +14,7 @@
 
 - ``cancellable(id:cancelInFlight:)``
 - ``cancel(id:)``
-- ``withTaskCancellation(id:cancelInFlight:operation:)``
+- ``ComposableArchitecture/withTaskCancellation(id:cancelInFlight:isolation:operation:)``
 - ``_Concurrency/Task/cancel(id:)``
 
 ### Composition

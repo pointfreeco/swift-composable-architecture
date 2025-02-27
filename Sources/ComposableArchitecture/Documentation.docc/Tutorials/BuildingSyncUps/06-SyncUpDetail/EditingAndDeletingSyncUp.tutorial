@@ -118,7 +118,7 @@
       @Step {
         Implement the `doneEditingButtonTapped` action by grabbing the latest `syncUp` value from
         the `editSyncUp` state, and replacing `SyncUpDetail`'s state with that value.
-        
+
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-01-code-0011.swift)
       }
       
@@ -255,8 +255,8 @@
       We can even do it directly inline in the `.confirmButtonTapped` action.
       
       @Step {
-        Use the `@Shared` property wrapper with the `fileStorage` persistence strategy to get a
-        reference to the sync-ups loaded from disk.
+        Use the `@Shared` property wrapper with the `.syncUps` key to get a reference to the
+        sync-ups loaded from disk.
         
         > Note: This does not actually load data from disk. The data has already been loaded from
         > disk and cached in the `@Shared` reference. This is only giving us access to that
@@ -308,11 +308,10 @@
       only be invoked inside an effect, and so we must use the
       ``ComposableArchitecture/Effect/run(priority:operation:catch:fileID:filePath:line:column:)`` effect, which
       gives us an asynchronous context to execute the work in, as well as a handle on 
-      ``ComposableArchitecture/Send`` for sending actions back into the system.
+      ``ComposableArchitecture/Send`` for sending actions back into the system if needed.
       
       @Step {
-        Return a `.run` effect to send the delegate action and invoke `dismiss` in one single
-        effect.
+        Return a `.run` effect to invoke the `dismiss` effect.
         
         @Code(name: "SyncUpDetail.swift", file: EditingAndDeletingSyncUp-02-code-0013.swift)
       }

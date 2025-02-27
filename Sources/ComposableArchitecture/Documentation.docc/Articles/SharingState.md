@@ -33,6 +33,7 @@ system, such as SQLite.
 * [Observing changes to shared state](#Observing-changes-to-shared-state)
 * [Initialization rules](#Initialization-rules)
 * [Deriving shared state](#Deriving-shared-state)
+* [Concurrent mutations to shared state](#Concurrent-mutations-to-shared-state)
 * [Testing shared state](#Testing-shared-state)
   * [Testing when using persistence](#Testing-when-using-persistence)
   * [Testing when using custom persistence strategies](#Testing-when-using-custom-persistence-strategies)
@@ -41,7 +42,6 @@ system, such as SQLite.
   * [Testing tips](#Testing-tips)
 * [Read-only shared state](#Read-only-shared-state)
 * [Type-safe keys](#Type-safe-keys)
-* [Concurrent mutations to shared state](#Concurrent-mutations-to-shared-state)
 * [Shared state in pre-observation apps](#Shared-state-in-pre-observation-apps)
 * [Gotchas of @Shared](#Gotchas-of-Shared)
 
@@ -446,13 +446,46 @@ else { return }
 todo // Shared<Todo>
 ```
 
+## Concurrent mutations to shared state
+
+[mutating-shared-state-article]: https://swiftpackageindex.com/pointfreeco/swift-sharing/main/documentation/sharing/mutatingsharedstate
+
+While the `@Shared` property wrapper makes it possible to treat shared state
+_mostly_ like regular state, you do have to perform some extra steps to mutate shared state. 
+This is because shared state is technically a reference deep down, even
+though we take extra steps to make it appear value-like. And this means it's possible to mutate the
+same piece of shared state from multiple threads, and hence race conditions are possible. See
+[Mutating Shared State][mutating-shared-state-article] for a more in-depth explanation.
+
+To mutate a piece of shared state in an isolated fashion, use the `withLock` method
+defined on the `@Shared` projected value:
+
+```swift
+state.$count.withLock { $0 += 1 }
+```
+
+That locks the entire unit of work of reading the current count, incrementing it, and storing it
+back in the reference.
+
+Technically it is still possible to write code that has race conditions, such as this silly example:
+
+```swift
+let currentCount = state.count
+state.$count.withLock { $0 = currentCount + 1 }
+```
+
+But there is no way to 100% prevent race conditions in code. Even actors are susceptible to 
+problems due to re-entrancy. To avoid problems like the above we recommend wrapping as many 
+mutations of the shared state as possible in a single `withLock`. That will make
+sure that the full unit of work is guarded by a lock.
+
 ## Testing shared state
 
 Shared state behaves quite a bit different from the regular state held in Composable Architecture
 features. It is capable of being changed by any part of the application, not just when an action is
 sent to the store, and it has reference semantics rather than value semantics. Typically references
 cause serious problems with testing, especially exhaustive testing that the library prefers (see
-<doc:Testing>), because references cannot be copied and so one cannot inspect the changes 
+<doc:TestingTCA>), because references cannot be copied and so one cannot inspect the changes 
 before and after an action is sent.
 
 For this reason, the `@Shared` property wrapper does extra work during testing to preserve a 
@@ -476,7 +509,7 @@ struct Feature {
     Reduce { state, action in
       switch action {
       case .incrementButtonTapped:
-        state.count += 1
+        state.$count.withLock { $0 += 1 }
         return .none
       }
     }
@@ -484,7 +517,7 @@ struct Feature {
 }
 ```
 
-This feature can be tested in exactly the same way as when you are using non-shared state:
+This feature can be tested in a similar same way as when you are using non-shared state:
 
 ```swift
 @Test
@@ -494,7 +527,7 @@ func increment() async {
   }
 
   await store.send(.incrementButtonTapped) {
-    $0.count = 1
+    $0.$count.withLock { $0 = 1 }
   }
 }
 ```
@@ -511,7 +544,7 @@ func increment() async {
   }
 
   await store.send(.incrementButtonTapped) {
-    $0.count = 2
+    $0.$count.withLock { $0 = 2 }
   }
 }
 ```
@@ -590,7 +623,7 @@ func increment() async {
   }
   await store.send(.incrementButtonTapped)
   store.assert {
-    $0.count = 1
+    $0.$count.withLock { $0 = 1 }
   }
 }
 ```
@@ -658,11 +691,11 @@ func basics() {
 However, if your test suite is a part of an app target, then the entry point of the app will execute
 and potentially cause an early access of `@Shared`, thus capturing a different default value than
 what is specified above. This quirk of tests in app targets is documented in
-<doc:Testing#Testing-gotchas> of the <doc:Testing> article, and a similar quirk
+<doc:TestingTCA#Testing-gotchas> of the <doc:TestingTCA> article, and a similar quirk
 exists for Xcode previews and is discussed below in <doc:SharingState#Gotchas-of-Shared>.
 
 The most robust workaround to this issue is to simply not execute your app's entry point when tests
-are running, which we detail in <doc:Testing#Testing-host-application>. This makes it so that you
+are running, which we detail in <doc:TestingTCA#Testing-host-application>. This makes it so that you
 are not accidentally execute network requests, tracking analytics, etc. while running tests.
 
 You can also work around this issue by simply setting the shared state again after initializing
@@ -964,36 +997,6 @@ struct FeatureView: View {
 }
 ```
 
-## Concurrent mutations to shared state
-
-While the [`@Shared`](<doc:Shared>) property wrapper makes it possible to treat shared state
-_mostly_ like regular state, you do have to perform some extra steps to mutate shared state. 
-This is because shared state is technically a reference deep down, even
-though we take extra steps to make it appear value-like. And this means it's possible to mutate the
-same piece of shared state from multiple threads, and hence race conditions are possible.
-
-To mutate a piece of shared state in an isolated fashion, use the `withLock` method
-defined on the `@Shared` projected value:
-
-```swift
-state.$count.withLock { $0 += 1 }
-```
-
-That locks the entire unit of work of reading the current count, incrementing it, and storing it
-back in the reference.
-
-Technically it is still possible to write code that has race conditions, such as this silly example:
-
-```swift
-let currentCount = state.count
-state.$count.withLock { $0 = currentCount + 1 }
-```
-
-But there is no way to 100% prevent race conditions in code. Even actors are susceptible to 
-problems due to re-entrancy. To avoid problems like the above we recommend wrapping as many 
-mutations of the shared state as possible in a single `withLock`. That will make
-sure that the full unit of work is guarded by a lock.
-
 ## Gotchas of @Shared
 
 There are a few gotchas to be aware of when using shared state in the Composable Architecture.
@@ -1048,61 +1051,73 @@ extension AppState: Codable {
 }
 ```
 
-#### Previews
+#### Tests
 
-When a preview is run in an app target, the entry point is also created. This means if your entry
-point looks something like this:
+While shared properties are compatible with the Composable Architecture's testing tools, assertions
+may not correspond directly to a particular action when several actions are received by effects.
+
+Take this simple example, in which a `tap` action kicks off an effect that returns a `response`,
+which finally mutates some shared state:
 
 ```swift
-@main
-struct MainApp: App {
-  let store = Store(…)
-
-  var body: some Scene {
-    …
+@Reducer
+struct Feature {
+  struct State: Equatable {
+    @Shared(value: false) var bool
   }
-}
-```
-
-…then a store will be created each time you run your preview. This can be problematic with `@Shared`
-and persistence strategies because the first access of a `@Shared` property will use the default
-value provided, and that will cause `@Shared`'s created later to ignore the default. That will mean
-you cannot override shared state in previews.
-
-The fix is to delay creation of the store until the entry point's `body` is executed. Further, it
-can be a good idea to also not run the `body` when in tests because that can also interfere with
-tests (as documented in <doc:Testing#Testing-gotchas>). Here is one way this can be accomplished:
-
-```swift
-import ComposableArchitecture
-import SwiftUI
-
-@main
-struct MainApp: App {
-  @MainActor
-  static let store = Store(…)
-
-  var body: some Scene {
-    WindowGroup {
-      if isTesting {
-        // NB: Don't run application in tests to avoid interference 
-        //     between the app and the test.
-        EmptyView()
-      } else {
-        AppView(store: Self.store)
+  enum Action {
+    case tap
+    case response
+  }
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .tap:
+        return .run { send in
+          await send(.response)
+        }
+      case .response:
+        state.$bool.withLock { $0.toggle() }
+        return .none
       }
     }
   }
 }
 ```
 
-Alternatively you can take an extra step to override shared state in your previews:
+We would expect to assert against this mutation when the test store receives the `response` action,
+but this will fail:
 
 ```swift
-#Preview {
-  @Shared(.appStorage("isOn")) var isOn = true
-  isOn = true
+// ❌ State was not expected to change, but a change occurred: …
+//
+//     Feature.State(
+//   -   _shared: #1 false
+//   +   _shared: #1 true
+//     )
+//
+// (Expected: −, Actual: +)
+await store.send(.tap)
+
+// ❌ Expected state to change, but no change occurred.
+await store.receive(.response) {
+  $0.$shared.withLock { $0 = true }
 }
 ```
 
-The second assignment of `isOn` will guarantee that it holds a value of `true`.
+This is due to an implementation detail of the `TestStore` that predates `@Shared`, in which the
+test store eagerly processes all actions received _before_ you have asserted on them. As such, you
+must always assert against shared state mutations in the first action:
+
+```swift
+await store.send(.tap) {  // ✅
+  $0.$shared.withLock { $0 = true }
+}
+
+// ❌ Expected state to change, but no change occurred.
+await store.receive(.response)  // ✅
+```
+
+In a future major version of the Composable Architecture, we will be able to introduce a breaking
+change that allows you to assert against shared state mutations in the action that performed the
+mutation.

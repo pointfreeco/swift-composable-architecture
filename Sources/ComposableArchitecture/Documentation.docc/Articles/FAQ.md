@@ -217,7 +217,7 @@ However, one does not need to have any prior experience with these concepts. The
 [dependency-management-article]: <doc:DependencyManagement>
 [sharing-state-article]: <doc:SharingState>
 [navigation-article]: <doc:Navigation>
-[testing-article]: <doc:Testing>
+[testing-article]: <doc:TestingTCA>
 [migration-1.7-article]: <doc:MigratingTo1.7>
 [migration-1.10-article]: <doc:MigratingTo1.10>
 [sync-ups-tutorial]: <doc:BuildingSyncUps>
