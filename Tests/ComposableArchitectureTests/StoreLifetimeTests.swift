@@ -178,6 +178,7 @@ private struct Child {
 }
 
 @Reducer
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 private struct Parent {
   struct State: Equatable {
     var child = Child.State()
@@ -193,6 +194,7 @@ private struct Parent {
 }
 
 @Reducer
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 private struct Grandparent {
   struct State: Equatable {
     var child = Parent.State()
