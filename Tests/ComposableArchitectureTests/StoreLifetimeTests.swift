@@ -129,6 +129,25 @@ final class StoreLifetimeTests: BaseTCATestCase {
       await self.fulfillment(of: [effectFinished], timeout: 0.5)
     }
   #endif
+
+  @MainActor
+  @available(*, deprecated)
+  func testUnCachedStores() async {
+    Logger.shared.isEnabled = true
+    let clock = TestClock()
+    let store = Store(initialState: Parent.State()) {
+      Parent()
+    } withDependencies: {
+      $0.continuousClock = clock
+    }
+    do {
+      let child = store.scope(state: { $0.child }, action: { .child($0) })
+      child.send(.start)
+      XCTAssertEqual(store.withState(\.child.count), 1)
+    }
+    await clock.run()
+    XCTAssertEqual(store.withState(\.child.count), 2)
+  }
 }
 
 @Reducer
@@ -138,11 +157,23 @@ private struct Child {
   }
   enum Action {
     case tap
+    case start
+    case response
   }
+  @Dependency(\.continuousClock) var clock
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .tap:
+        state.count += 1
+        return .none
+      case .start:
+        state.count += 1
+        return .run { send in
+          try await clock.sleep(for: .seconds(0))
+          await send(.response)
+        }
+      case .response:
         state.count += 1
         return .none
       }
