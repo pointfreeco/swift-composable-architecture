@@ -2,6 +2,7 @@ import Combine
 @_spi(Logging) import ComposableArchitecture
 import XCTest
 
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 final class StoreLifetimeTests: BaseTCATestCase {
   @available(*, deprecated)
   @MainActor
@@ -69,9 +70,6 @@ final class StoreLifetimeTests: BaseTCATestCase {
 
     @MainActor
     func testStoreDeinit_RunningEffect() async {
-      XCTTODO(
-        "We would like for this to pass, but it requires full deprecation of uncached child stores"
-      )
       Logger.shared.isEnabled = true
       let effectFinished = self.expectation(description: "Effect finished")
       do {
@@ -99,9 +97,6 @@ final class StoreLifetimeTests: BaseTCATestCase {
 
     @MainActor
     func testStoreDeinit_RunningCombineEffect() async {
-      XCTTODO(
-        "We would like for this to pass, but it requires full deprecation of uncached child stores"
-      )
       Logger.shared.isEnabled = true
       let effectFinished = self.expectation(description: "Effect finished")
       do {
@@ -129,20 +124,52 @@ final class StoreLifetimeTests: BaseTCATestCase {
       await self.fulfillment(of: [effectFinished], timeout: 0.5)
     }
   #endif
+
+  @MainActor
+  @available(*, deprecated)
+  func testUnCachedStores() async {
+    Logger.shared.isEnabled = true
+    let clock = TestClock()
+    let store = Store(initialState: Parent.State()) {
+      Parent()
+    } withDependencies: {
+      $0.continuousClock = clock
+    }
+    do {
+      let child = store.scope(state: { $0.child }, action: { .child($0) })
+      child.send(.start)
+      XCTAssertEqual(store.withState(\.child.count), 1)
+    }
+    await clock.run()
+    XCTAssertEqual(store.withState(\.child.count), 2)
+  }
 }
 
 @Reducer
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 private struct Child {
   struct State: Equatable {
     var count = 0
   }
   enum Action {
     case tap
+    case start
+    case response
   }
+  @Dependency(\.continuousClock) var clock
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .tap:
+        state.count += 1
+        return .none
+      case .start:
+        state.count += 1
+        return .run { send in
+          try await clock.sleep(for: .seconds(0))
+          await send(.response)
+        }
+      case .response:
         state.count += 1
         return .none
       }
@@ -151,6 +178,7 @@ private struct Child {
 }
 
 @Reducer
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 private struct Parent {
   struct State: Equatable {
     var child = Child.State()
@@ -166,6 +194,7 @@ private struct Parent {
 }
 
 @Reducer
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 private struct Grandparent {
   struct State: Equatable {
     var child = Parent.State()
