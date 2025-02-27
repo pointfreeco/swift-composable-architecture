@@ -2,6 +2,7 @@ import Combine
 @_spi(Logging) import ComposableArchitecture
 import XCTest
 
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 final class StoreLifetimeTests: BaseTCATestCase {
   @available(*, deprecated)
   @MainActor
@@ -126,7 +127,6 @@ final class StoreLifetimeTests: BaseTCATestCase {
 
   @MainActor
   @available(*, deprecated)
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   func testUnCachedStores() async {
     Logger.shared.isEnabled = true
     let clock = TestClock()
@@ -146,6 +146,7 @@ final class StoreLifetimeTests: BaseTCATestCase {
 }
 
 @Reducer
+@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 private struct Child {
   struct State: Equatable {
     var count = 0
