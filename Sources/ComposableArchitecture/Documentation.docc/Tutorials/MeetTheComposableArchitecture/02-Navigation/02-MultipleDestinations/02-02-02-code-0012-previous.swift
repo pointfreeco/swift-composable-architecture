@@ -12,7 +12,7 @@ struct ContactsView: View {
               store.send(.deleteButtonTapped(id: contact.id))
             } label: {
               Image(systemName: "trash")
-                .foregroundColor(.red)
+                .foregroundStyle(.red)
             }
           }
         }

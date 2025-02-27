@@ -7,13 +7,14 @@
 
 The Composable Architecture (TCA, for short) is a library for building applications in a consistent 
 and understandable way, with composition, testing, and ergonomics in mind. It can be used in 
-SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, visionOS, tvOS, and watchOS).
+SwiftUI, UIKit, and more, and on any Apple platform (iOS, macOS, iPadOS, visionOS, tvOS, and watchOS).
 
 * [What is the Composable Architecture?](#what-is-the-composable-architecture)
 * [Learn more](#learn-more)
 * [Examples](#examples)
 * [Basic usage](#basic-usage)
 * [Documentation](#documentation)
+* [FAQ](#faq)
 * [Community](#community)
 * [Installation](#installation)
 * [Translations](#translations)
@@ -575,6 +576,11 @@ comfortable with the library:
 * [Concurrency][concurrency-article]
 * [Bindings][bindings-article]
 
+## FAQ
+
+We have a [dedicated article][faq-article] for all of the most frequently asked questions and
+comments people have concerning the library.
+
 ## Community
 
 If you want to discuss the Composable Architecture or have a question about how to use it to solve 
@@ -633,16 +639,12 @@ The following translations of this README have been contributed by members of th
 * [Russian](https://gist.github.com/SubvertDev/3317d0c3b35ed601be330d6fc0df5aba)
 * [Simplified Chinese](https://gist.github.com/sh3l6orrr/10c8f7c634a892a9c37214f3211242ad)
 * [Spanish](https://gist.github.com/pitt500/f5e32fccb575ce112ffea2827c7bf942)
+* [Turkish](https://gist.github.com/gokhanamal/93001244ef0c1cec58abeb1afc0de37c)
 * [Ukrainian](https://gist.github.com/barabashd/33b64676195ce41f4bb73c327ea512a8)
 
 If you'd like to contribute a translation, please [open a
 PR](https://github.com/pointfreeco/swift-composable-architecture/edit/main/README.md) with a link 
 to a [Gist](https://gist.github.com)!
-
-## FAQ
-
-We have a [dedicated article][faq-article] for all of the most frequently asked questions and 
-comments people have concerning the library.
 
 ## Credits and thanks
 

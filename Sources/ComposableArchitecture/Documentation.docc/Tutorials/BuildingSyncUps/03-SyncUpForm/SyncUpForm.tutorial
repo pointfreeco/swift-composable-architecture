@@ -254,7 +254,7 @@
       
       @Step {
         Implement the logic of focusing a new added attendee. Now that we have immediate access
-        to the reducer's logic we no longer to do any force unwrapping or defensive programming
+        to the reducer's logic we no longer have to do any force unwrapping or defensive programming
         with `guard`s.
         
         @Code(name: "SyncUpForm.swift", file: SyncUpForm-03-code-0002.swift)

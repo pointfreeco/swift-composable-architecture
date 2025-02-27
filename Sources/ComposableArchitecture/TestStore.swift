@@ -14,7 +14,7 @@ import IssueReporting
 /// of the way you must assert exactly how state changed, and how effect emissions were fed back
 /// into the system.
 ///
-/// See the dedicated <doc:Testing> article for detailed information on testing.
+/// See the dedicated <doc:TestingTCA> article for detailed information on testing.
 ///
 /// ## Exhaustive testing
 ///
@@ -431,8 +431,7 @@ import IssueReporting
 #else
   @preconcurrency@MainActor
 #endif
-public final class TestStore<State, Action> {
-
+public final class TestStore<State: Equatable, Action> {
   /// The current dependencies of the test store.
   ///
   /// The dependencies define the execution context that your feature runs in. They can be modified
@@ -512,7 +511,7 @@ public final class TestStore<State, Action> {
 
   /// Creates a test store with an initial state and a reducer powering its runtime.
   ///
-  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
+  /// See <doc:TestingTCA> and the documentation of ``TestStore`` for more information on how to best
   /// use a test store.
   ///
   /// - Parameters:
@@ -529,17 +528,15 @@ public final class TestStore<State, Action> {
   ///   - filePath: The filePath.
   ///   - line: The line.
   ///   - column: The column.
-  public init<R: Reducer>(
+  public init(
     initialState: @autoclosure () -> State,
-    reducer: () -> R,
-    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
-    },
+    reducer: () -> some Reducer<State, Action>,
+    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  )
-  where State: Equatable, R.State == State, R.Action == Action {
+  ) {
     let sharedChangeTracker = SharedChangeTracker()
     let reducer = Dependencies.withDependencies {
       prepareDependencies(&$0)
@@ -732,30 +729,24 @@ public final class TestStore<State, Action> {
     line: UInt,
     column: UInt
   ) {
-    // NB: This existential opening can go away if we can constrain 'State: Equatable' at the
-    //     'TestStore' level, but for some reason this breaks DocC.
-    if self.sharedChangeTracker.hasChanges, let stateType = State.self as? any Equatable.Type {
-      func open<EquatableState: Equatable>(_: EquatableState.Type) {
-        let store = self as! TestStore<EquatableState, Action>
-        try? store.expectedStateShouldMatch(
-          preamble: "Test store finished before asserting against changes to shared state",
-          postamble: """
-            Invoke "TestStore.assert" at the end of this test to assert against changes to shared \
-            state.
-            """,
-          expected: store.state,
-          actual: store.state,
-          updateStateToExpectedResult: nil,
-          skipUnnecessaryModifyFailure: true,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }
-      open(stateType)
-      self.sharedChangeTracker.reset()
+    if sharedChangeTracker.hasChanges {
+      try? expectedStateShouldMatch(
+        preamble: "Test store finished before asserting against changes to shared state",
+        postamble: """
+          Invoke "TestStore.assert" at the end of this test to assert against changes to shared \
+          state.
+          """,
+        expected: state,
+        actual: state,
+        updateStateToExpectedResult: nil,
+        skipUnnecessaryModifyFailure: true,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
     }
+    sharedChangeTracker.reset()
   }
 
   /// Overrides the store's dependencies for a given operation.
@@ -858,9 +849,9 @@ public final class TestStore<State, Action> {
 /// ```swift
 /// let testStore: TestStoreOf<Feature>
 /// ```
-public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action>
+public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action> where R.State: Equatable
 
-extension TestStore where State: Equatable {
+extension TestStore {
   /// Sends an action to the store and asserts when state changes.
   ///
   /// To assert on how state changes you can provide a trailing closure, and that closure is handed
@@ -1044,7 +1035,7 @@ extension TestStore where State: Equatable {
   /// to differ from the current state of the test store, a test failure will be triggered.
   ///
   /// This tool is most useful in non-exhaustive test stores (see
-  /// <doc:Testing#Non-exhaustive-testing>), which allow you to assert on a subset of the things
+  /// <doc:TestingTCA#Non-exhaustive-testing>), which allow you to assert on a subset of the things
   /// happening inside your features. For example, you can send an action in a child feature
   /// without asserting on how many changes in the system, and then tell the test store to
   /// ``finish(timeout:fileID:file:line:column:)-klnc`` by executing all of its effects, and finally
@@ -1276,7 +1267,7 @@ extension TestStore where State: Equatable {
   }
 }
 
-extension TestStore where State: Equatable, Action: Equatable {
+extension TestStore where Action: Equatable {
   private func _receive(
     _ expectedAction: Action,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
@@ -1450,7 +1441,7 @@ extension TestStore where State: Equatable, Action: Equatable {
   }
 }
 
-extension TestStore where State: Equatable {
+extension TestStore {
   private func _receive(
     _ isMatching: (Action) -> Bool,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
@@ -2250,7 +2241,7 @@ extension TestStore where State: Equatable {
   }
 }
 
-extension TestStore where State: Equatable {
+extension TestStore {
   /// Sends an action to the store and asserts when state changes.
   ///
   /// This method is similar to ``send(_:assert:fileID:file:line:column:)-8f2pl``, except it allows
@@ -2814,7 +2805,7 @@ public struct TestStoreTask: Hashable, Sendable {
   }
 }
 
-class TestReducer<State, Action>: Reducer {
+class TestReducer<State: Equatable, Action>: Reducer {
   let base: Reduce<State, Action>
   var dependencies: DependencyValues
   let effectDidSubscribe = AsyncStream.makeStream(of: Void.self)
