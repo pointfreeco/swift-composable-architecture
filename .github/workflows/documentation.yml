@@ -41,10 +41,10 @@ jobs:
 
           for tag in $(echo "main"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
           do
-            if [ -d "docs-out/$tag/data/documentation/composablearchitecture" ] 
-            then 
+            if [ -d "docs-out/$tag/data/documentation/composablearchitecture" ]
+            then
               echo "✅ Documentation for "$tag" already exists.";
-            else 
+            else
               echo "⏳ Generating documentation for ComposableArchitecture @ "$tag" release.";
               rm -rf "docs-out/$tag";
 

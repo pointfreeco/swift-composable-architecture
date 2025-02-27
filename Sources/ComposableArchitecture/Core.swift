@@ -92,6 +92,7 @@ final class RootCore<Root: Reducer>: Core {
       defer { index += 1 }
       let action = self.bufferedActions[index]
       let effect = reducer.reduce(into: &currentState, action: action)
+      let uuid = UUID()
 
       switch effect.operation {
       case .none:
@@ -99,7 +100,6 @@ final class RootCore<Root: Reducer>: Core {
       case let .publisher(publisher):
         var didComplete = false
         let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
-        let uuid = UUID()
         let effectCancellable = withEscapedDependencies { continuation in
           publisher
             .receive(on: UIScheduler.shared)
@@ -128,11 +128,13 @@ final class RootCore<Root: Reducer>: Core {
           }
           boxedTask.wrappedValue = task
           tasks.withValue { $0.append(task) }
-          self.effectCancellables[uuid] = effectCancellable
+          self.effectCancellables[uuid] = AnyCancellable {
+            task.cancel()
+          }
         }
       case let .run(priority, operation):
         withEscapedDependencies { continuation in
-          let task = Task(priority: priority) { @MainActor in
+          let task = Task(priority: priority) { @MainActor [weak self] in
             let isCompleted = LockIsolated(false)
             defer { isCompleted.setValue(true) }
             await operation(
@@ -158,14 +160,18 @@ final class RootCore<Root: Reducer>: Core {
                   )
                 }
                 if let task = continuation.yield({
-                  self.send(effectAction)
+                  self?.send(effectAction)
                 }) {
                   tasks.withValue { $0.append(task) }
                 }
               }
             )
+            self?.effectCancellables[uuid] = nil
           }
           tasks.withValue { $0.append(task) }
+          self.effectCancellables[uuid] = AnyCancellable {
+            task.cancel()
+          }
         }
       }
     }
