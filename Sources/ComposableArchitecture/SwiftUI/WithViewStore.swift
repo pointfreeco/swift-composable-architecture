@@ -493,12 +493,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
     line: UInt = #line
   ) {
     self.init(
-      store: store.scope(
-        id: nil,
-        state: ToState(toViewState),
-        action: fromViewAction,
-        isInvalid: nil
-      ),
+      store: store._scope(state: toViewState, action: fromViewAction),
       removeDuplicates: isDuplicate,
       content: content,
       file: file,
@@ -589,12 +584,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
     line: UInt = #line
   ) {
     self.init(
-      store: store.scope(
-        id: nil,
-        state: ToState(toViewState),
-        action: { $0 },
-        isInvalid: nil
-      ),
+      store: store._scope(state: toViewState, action: { $0 }),
       removeDuplicates: isDuplicate,
       content: content,
       file: file,
@@ -686,12 +676,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     line: UInt = #line
   ) {
     self.init(
-      store: store.scope(
-        id: nil,
-        state: ToState(toViewState),
-        action: fromViewAction,
-        isInvalid: nil
-      ),
+      store: store._scope(state: toViewState, action: fromViewAction),
       removeDuplicates: ==,
       content: content,
       file: file,
@@ -779,12 +764,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     line: UInt = #line
   ) {
     self.init(
-      store: store.scope(
-        id: nil,
-        state: ToState(toViewState),
-        action: { $0 },
-        isInvalid: nil
-      ),
+      store: store._scope(state: toViewState, action: { $0 }),
       removeDuplicates: ==,
       content: content,
       file: file,
