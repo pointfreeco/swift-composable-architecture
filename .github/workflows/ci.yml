@@ -21,7 +21,7 @@ jobs:
       matrix:
         command: [test, '']
         platform: [IOS, MACOS]
-        xcode: ['16.0']
+        xcode: ['16.2']
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
@@ -117,27 +117,27 @@ jobs:
           restore-keys: |
             deriveddata-examples-
       - name: Select Xcode 16
-        run: sudo xcode-select -s /Applications/Xcode_16.0.app
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app
       - name: Set IgnoreFileSystemDeviceInodeChanges flag
         run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
       - name: Update mtime for incremental builds
         uses: chetan/git-restore-mtime-action@v2
       - name: CaseStudies (SwiftUI)
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (SwiftUI)" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (SwiftUI)" xcodebuild
       - name: CaseStudies (UIKit)
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (UIKit)" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (UIKit)" xcodebuild
       - name: Search
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Search" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Search" xcodebuild
       - name: SyncUps
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SyncUps" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SyncUps" xcodebuild
       - name: SpeechRecognition
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SpeechRecognition" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SpeechRecognition" xcodebuild
       - name: TicTacToe
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="TicTacToe" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="TicTacToe" xcodebuild
       - name: Todos
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Todos" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Todos" xcodebuild
       - name: VoiceMemos
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="VoiceMemos" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="VoiceMemos" xcodebuild
 
   check-macro-compatibility:
     name: Check Macro Compatibility

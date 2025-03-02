@@ -2,7 +2,6 @@
   import UIKit
 
   extension NavigationStackController {
-
     /// Drives a navigation stack controller with a store.
     ///
     /// See the dedicated article on <doc:Navigation> for more information on the library's
@@ -67,6 +66,38 @@
           )
         )
       }
+    }
+  }
+
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
+  @MainActor
+  extension UIPushAction {
+    /// Pushes an element of ``StackState`` onto the current navigation stack.
+    ///
+    /// This is the UIKit equivalent of
+    /// ``SwiftUI/NavigationLink/init(state:label:fileID:filePath:line:column:)``.
+    ///
+    /// - Parameters:
+    ///   - state: An element of stack state.
+    ///   - fileID: The source `#fileID` associated with the push.
+    ///   - filePath: The source `#filePath` associated with the push.
+    ///   - line: The source `#line` associated with the push.
+    ///   - column: The source `#column` associated with the push.
+    public func callAsFunction<Element: Hashable>(
+      state: Element,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) {
+      @Dependency(\.stackElementID) var stackElementID
+      self(
+        value: StackState.Component(id: stackElementID(), element: state),
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
     }
   }
 #endif

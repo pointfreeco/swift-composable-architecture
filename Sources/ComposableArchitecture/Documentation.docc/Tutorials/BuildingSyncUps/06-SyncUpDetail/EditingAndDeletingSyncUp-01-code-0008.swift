@@ -16,7 +16,7 @@ struct SyncUpDetailView: View {
         } label: {
           Label("Start Meeting", systemImage: "timer")
             .font(.headline)
-            .foregroundColor(.accentColor)
+            .foregroundStyle(Color.accentColor)
         }
         HStack {
           Label("Length", systemImage: "clock")
@@ -29,9 +29,9 @@ struct SyncUpDetailView: View {
           Spacer()
           Text(store.syncUp.theme.name)
             .padding(4)
-            .foregroundColor(store.syncUp.theme.accentColor)
+            .foregroundStyle(store.syncUp.theme.accentColor)
             .background(store.syncUp.theme.mainColor)
-            .cornerRadius(4)
+            .clipShape(.rect(cornerRadius: 4))
         }
       } header: {
         Text("Sync-up Info")
@@ -63,10 +63,9 @@ struct SyncUpDetailView: View {
       }
 
       Section {
-        Button("Delete") {
+        Button("Delete", role: .destructive) {
           store.send(.deleteButtonTapped)
         }
-        .foregroundColor(.red)
         .frame(maxWidth: .infinity)
       }
     }
@@ -93,6 +92,7 @@ struct SyncUpDetailView: View {
             }
           }
       }
+    }
   }
 }
 

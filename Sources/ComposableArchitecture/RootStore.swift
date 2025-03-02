@@ -52,6 +52,7 @@ public final class RootStore {
         defer { index += 1 }
         let action = self.bufferedActions[index] as! Action
         let effect = reducer.reduce(into: &currentState, action: action)
+        let uuid = UUID()
 
         switch effect.operation {
         case .none:
@@ -59,7 +60,6 @@ public final class RootStore {
         case let .publisher(publisher):
           var didComplete = false
           let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
-          let uuid = UUID()
           let effectCancellable = withEscapedDependencies { continuation in
             publisher
               .receive(on: UIScheduler.shared)
@@ -88,11 +88,13 @@ public final class RootStore {
             }
             boxedTask.wrappedValue = task
             tasks.withValue { $0.append(task) }
-            self.effectCancellables[uuid] = effectCancellable
+            self.effectCancellables[uuid] = AnyCancellable {
+              task.cancel()
+            }
           }
         case let .run(priority, operation):
           withEscapedDependencies { continuation in
-            let task = Task(priority: priority) { @MainActor in
+            let task = Task(priority: priority) { @MainActor [weak self] in
               let isCompleted = LockIsolated(false)
               defer { isCompleted.setValue(true) }
               await operation(
@@ -118,14 +120,18 @@ public final class RootStore {
                     )
                   }
                   if let task = continuation.yield({
-                    self.send(effectAction, originatingFrom: action)
+                    self?.send(effectAction, originatingFrom: action)
                   }) {
                     tasks.withValue { $0.append(task) }
                   }
                 }
               )
+              self?.effectCancellables[uuid] = nil
             }
             tasks.withValue { $0.append(task) }
+            self.effectCancellables[uuid] = AnyCancellable {
+              task.cancel()
+            }
           }
         }
       }

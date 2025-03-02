@@ -2,14 +2,14 @@
   @Intro(title: "Testing the sync-up detail") {
     The `SyncUpDetail` feature has slowly become quite complex. It now handles two forms of 
     navigation (an alert and sheet), it models navigation state with a single enum, and it
-    communicates with a parent feature via delegate actions. It's about time we got some test
+    updates the parent feature via a shared property. It's about time we got some test
     coverage on this feature so we can be sure it works as we expect, and so that we can make future
     changes with confidence.
   }
   
   @Section(title: "Testing the edit flow") {
     @ContentAndMedia {
-      Let's start by testing the edit flow. We will exercise the full user flow of tapping the
+      Let's write a test for the edit flow. We will exercise the full user flow of tapping the
       "Edit" button, making some edits, and then committing the edits to the parent features.
     }
     
@@ -38,7 +38,7 @@
       
       @Step {
         Emulate the user changing the title of the sync-up by sending a deeply nested action for the
-        `.destination`, when it's `.presented`, in the `.edit` case, and then finally a 
+        `.destination`, when it's in the `.edit` case, and then finally a 
         ``ComposableArchitecture/BindableAction/binding-108e1`` action to set the sync-up.
         
         @Code(name: "SyncUpDetailTests.swift", file: TestingSyncUpDetail-01-code-0004.swift)
@@ -68,6 +68,8 @@
       
       It is also possible to shorten this test quite a bit by using a non-exhaustive test store, as
       we did in <doc:PresentingSyncUpForm>, but we will leave that as an exercise for the reader.
+
+      We'll stop here for now, but will get some coverage on the delete flow later on in <doc:TestingNavigation>.
     }
   }  
 }
