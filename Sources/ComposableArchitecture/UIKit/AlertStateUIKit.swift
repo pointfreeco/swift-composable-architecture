@@ -65,7 +65,7 @@
     ) {
       let state = store.currentState
       self.init(
-        title: String(state: state.title),
+        title: state.effectiveTitle,
         message: state.message.map { String(state: $0) },
         preferredStyle: .actionSheet
       )
@@ -76,6 +76,19 @@
         addAction(UIAlertAction(title: "OK", style: .cancel))
       }
     }
+  }
 
+  private extension ConfirmationDialogState {
+    var effectiveTitle: String? {
+      switch titleVisibility {
+      case .automatic:
+        let title = String(state: self.title)
+        return title.isEmpty ? nil : title
+      case .hidden:
+        return nil
+      case .visible:
+        return String(state: title)
+      }
+    }
   }
 #endif
