@@ -3,13 +3,20 @@ import SwiftUI
 
 @main
 struct VoiceMemosApp: App {
+  
+  @MainActor
+  static let store = Store(initialState: VoiceMemos.State()) {
+    VoiceMemos()
+      ._printChanges()
+  }
+  
   var body: some Scene {
     WindowGroup {
-      VoiceMemosView(
-        store: Store(initialState: VoiceMemos.State()) {
-          VoiceMemos()._printChanges()
-        }
-      )
+      if isTesting {
+        EmptyView()
+      } else {
+        VoiceMemosView(store: Self.store)
+      }
     }
   }
 }
