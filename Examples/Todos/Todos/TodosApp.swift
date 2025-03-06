@@ -3,13 +3,22 @@ import SwiftUI
 
 @main
 struct TodosApp: App {
+  
+  @MainActor
+  static let store = Store(initialState: Todos.State()) {
+    Todos()
+      ._printChange()
+  }
+  
   var body: some Scene {
     WindowGroup {
-      AppView(
-        store: Store(initialState: Todos.State()) {
-          Todos()
-        }
-      )
+      if isTesting {
+        EmptyView()
+      } else {
+        AppView(store: Self.store)
+      }
     }
   }
 }
+
+
