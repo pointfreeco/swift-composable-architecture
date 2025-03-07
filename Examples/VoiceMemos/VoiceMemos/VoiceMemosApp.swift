@@ -3,7 +3,6 @@ import SwiftUI
 
 @main
 struct VoiceMemosApp: App {
-  
   static let store = Store(initialState: VoiceMemos.State()) {
     VoiceMemos()
       ._printChanges()
