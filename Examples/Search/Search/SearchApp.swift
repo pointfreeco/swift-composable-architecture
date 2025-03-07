@@ -4,7 +4,6 @@ import SwiftUI
 @main
 struct SearchApp: App {
   
-  @MainActor
   static let store = Store(initialState: Search.State()) {
     Search()
       ._printChanges()
@@ -12,11 +11,7 @@ struct SearchApp: App {
   
   var body: some Scene {
     WindowGroup {
-      if isTesting {
-        EmptyView()
-      } else {
-        SearchView(store: Self.store)
-      }
+      SearchView(store: Self.store)
     }
   }
 }

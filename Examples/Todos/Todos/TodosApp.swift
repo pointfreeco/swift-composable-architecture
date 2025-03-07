@@ -4,7 +4,6 @@ import SwiftUI
 @main
 struct TodosApp: App {
   
-  @MainActor
   static let store = Store(initialState: Todos.State()) {
     Todos()
       ._printChange()
@@ -12,13 +11,7 @@ struct TodosApp: App {
   
   var body: some Scene {
     WindowGroup {
-      if isTesting {
-        EmptyView()
-      } else {
-        AppView(store: Self.store)
-      }
+      AppView(store: Self.store)
     }
   }
 }
-
-
