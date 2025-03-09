@@ -5,7 +5,7 @@ import SwiftUI
 struct TodosApp: App {
   static let store = Store(initialState: Todos.State()) {
     Todos()
-      ._printChange()
+      ._printChanges()
   }
   
   var body: some Scene {
