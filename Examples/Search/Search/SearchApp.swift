@@ -7,7 +7,7 @@ struct SearchApp: App {
     Search()
       ._printChanges()
   }
-  
+
   var body: some Scene {
     WindowGroup {
       SearchView(store: Self.store)

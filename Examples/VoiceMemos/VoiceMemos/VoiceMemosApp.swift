@@ -7,7 +7,7 @@ struct VoiceMemosApp: App {
     VoiceMemos()
       ._printChanges()
   }
-  
+
   var body: some Scene {
     WindowGroup {
       VoiceMemosView(store: Self.store)

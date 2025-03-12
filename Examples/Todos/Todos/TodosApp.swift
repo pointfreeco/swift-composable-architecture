@@ -7,7 +7,7 @@ struct TodosApp: App {
     Todos()
       ._printChanges()
   }
-  
+
   var body: some Scene {
     WindowGroup {
       AppView(store: Self.store)

@@ -7,7 +7,7 @@ struct SpeechRecognitionApp: App {
     SpeechRecognition()
       ._printChanges()
   }
-  
+
   var body: some Scene {
     WindowGroup {
       SpeechRecognitionView(store: Self.store)
