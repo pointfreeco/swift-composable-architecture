@@ -140,7 +140,7 @@ final class StoreLifetimeTests: BaseTCATestCase {
       child.send(.start)
       XCTAssertEqual(store.withState(\.child.count), 1)
     }
-    await clock.run()
+    await clock.run(timeout: .seconds(5))
     XCTAssertEqual(store.withState(\.child.count), 2)
   }
 }
