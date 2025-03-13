@@ -67,34 +67,7 @@ extension Store where State: ObservableState {
   ///   - filePath: The filePath.
   ///   - line: The line.
   /// - Returns: An collection of stores of child state.
-  public func scope<ElementID, ElementState, ElementAction>(
-    state: WritableKeyPath<State, IdentifiedArray<ElementID, ElementState>>,
-    action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
-    if !core.canStoreCacheChildren {
-      reportIssue(
-        uncachedStoreWarning(self),
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
-    }
-    return _StoreCollection(self.scope(state: state, action: action))
-  }
-
-  @available(
-    *,
-    deprecated,
-    message: """
-      Scoped 'state' must be a writable key path. For more information on this change, see the migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19#TODO
-      """
-  )
-  @_documentation(visibility: private)
+  @_disfavoredOverload
   public func scope<ElementID, ElementState, ElementAction>(
     state: KeyPath<State, IdentifiedArray<ElementID, ElementState>>,
     action: CaseKeyPath<Action, IdentifiedAction<ElementID, ElementAction>>,
@@ -123,7 +96,7 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency @MainActor
+    @preconcurrency@MainActor
   #endif
   fileprivate init(_ store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>) {
     self.store = store
@@ -162,8 +135,8 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
           IfLetCore(
             base: core,
             cachedState: self.data[position],
-            stateKeyPath: \.[id: elementID],
-            actionKeyPath: \.[id: elementID]
+            stateKeyPath: \.[id:elementID],
+            actionKeyPath: \.[id:elementID]
           )
         }
         return self.store.scope(id: scopeID, childCore: open(self.store.core))

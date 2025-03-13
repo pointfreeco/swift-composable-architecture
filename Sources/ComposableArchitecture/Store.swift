@@ -291,24 +291,6 @@ public final class Store<State, Action> {
   ///   - action: A case key path from `Action` to `ChildAction`.
   /// - Returns: A new store with its domain (state and action) transformed.
   public func scope<ChildState, ChildAction>(
-    state: WritableKeyPath<State, ChildState>,
-    action: CaseKeyPath<Action, ChildAction>
-  ) -> Store<ChildState, ChildAction> {
-    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
-      ScopedCore(base: core, stateKeyPath: state, actionKeyPath: action)
-    }
-    return scope(id: id(state: state, action: action), childCore: open(core))
-  }
-
-  @available(
-    *,
-    deprecated,
-    message: """
-      Scoped 'state' must be a writable key path. For more information on this change, see the migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19#TODO
-      """
-  )
-  @_documentation(visibility: private)
-  public func scope<ChildState, ChildAction>(
     state: KeyPath<State, ChildState>,
     action: CaseKeyPath<Action, ChildAction>
   ) -> Store<ChildState, ChildAction> {
