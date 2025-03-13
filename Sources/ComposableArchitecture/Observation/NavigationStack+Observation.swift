@@ -62,6 +62,27 @@ extension Binding {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    state: WritableKeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
+    self[state: state, action: action]
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Scoped 'state' must be a writable key path. For more information on this change, see the migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19#TODO
+      """
+  )
+  @_documentation(visibility: private)
+  #if swift(>=5.10)
+    @preconcurrency@MainActor
+  #else
+    @MainActor(unsafe)
+  #endif
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
   ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
@@ -76,6 +97,27 @@ extension SwiftUI.Bindable {
   ///
   /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
   /// information.
+  #if swift(>=5.10)
+    @preconcurrency@MainActor
+  #else
+    @MainActor(unsafe)
+  #endif
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    state: WritableKeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
+    self[state: state, action: action]
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Scoped 'state' must be a writable key path. For more information on this change, see the migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19#TODO
+      """
+  )
+  @_documentation(visibility: private)
   #if swift(>=5.10)
     @preconcurrency@MainActor
   #else
@@ -100,6 +142,22 @@ extension Perception.Bindable {
   /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
   /// information.
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    state: WritableKeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
+    self[state: state, action: action]
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Scoped 'state' must be a writable key path. For more information on this change, see the migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19#TODO
+      """
+  )
+  @_documentation(visibility: private)
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
   ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
@@ -113,6 +171,27 @@ extension UIBindable {
   ///
   /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
   /// information.
+  #if swift(>=5.10)
+    @preconcurrency@MainActor
+  #else
+    @MainActor(unsafe)
+  #endif
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    state: WritableKeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> UIBinding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
+    self[state: state, action: action]
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Scoped 'state' must be a writable key path. For more information on this change, see the migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19#TODO
+      """
+  )
+  @_documentation(visibility: private)
   #if swift(>=5.10)
     @preconcurrency@MainActor
   #else
@@ -384,6 +463,24 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
 }
 
 extension Store where State: ObservableState {
+  fileprivate subscript<ElementState, ElementAction>(
+    state state: WritableKeyPath<State, StackState<ElementState>>,
+    action action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>,
+    isInViewBody isInViewBody: Bool = _isInPerceptionTracking
+  ) -> Store<StackState<ElementState>, StackAction<ElementState, ElementAction>> {
+    get {
+      #if DEBUG && !os(visionOS)
+        _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+          self.scope(state: state, action: action)
+        }
+      #else
+        self.scope(state: state, action: action)
+      #endif
+    }
+    set {}
+  }
+
+  @available(*, deprecated)
   fileprivate subscript<ElementState, ElementAction>(
     state state: KeyPath<State, StackState<ElementState>>,
     action action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>,

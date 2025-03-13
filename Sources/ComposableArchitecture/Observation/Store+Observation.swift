@@ -81,6 +81,48 @@ extension Store where State: ObservableState {
   ///   - column: The source `#column` associated with the scoping.
   /// - Returns: An optional store of non-optional child state and actions.
   public func scope<ChildState, ChildAction>(
+    state stateKeyPath: WritableKeyPath<State, ChildState?>,
+    action actionKeyPath: CaseKeyPath<Action, ChildAction>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Store<ChildState, ChildAction>? {
+    if !core.canStoreCacheChildren {
+      reportIssue(
+        uncachedStoreWarning(self),
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+    let id = id(state: stateKeyPath, action: actionKeyPath)
+    guard let childState = state[keyPath: stateKeyPath]
+    else {
+      children[id] = nil  // TODO: Eager?
+      return nil
+    }
+    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
+      IfLetCore(
+        base: core,
+        cachedState: childState,
+        stateKeyPath: stateKeyPath,
+        actionKeyPath: actionKeyPath
+      )
+    }
+    return scope(id: id, childCore: open(core))
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Scoped 'state' must be a writable key path. For more information on this change, see the migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19#TODO
+      """
+  )
+  @_documentation(visibility: private)
+  public func scope<ChildState, ChildAction>(
     state stateKeyPath: KeyPath<State, ChildState?>,
     action actionKeyPath: CaseKeyPath<Action, ChildAction>,
     fileID: StaticString = #fileID,
@@ -172,6 +214,40 @@ extension Binding {
     @MainActor(unsafe)
   #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state: WritableKeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #fileID,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
+    self[
+      id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
+      state: state,
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Scoped 'state' must be a writable key path. For more information on this change, see the migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19#TODO
+      """
+  )
+  @_documentation(visibility: private)
+  #if swift(>=5.10)
+    @preconcurrency@MainActor
+  #else
+    @MainActor(unsafe)
+  #endif
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
@@ -245,6 +321,40 @@ extension SwiftUI.Bindable {
   ///   - line: The line.
   ///   - column: The column.
   /// - Returns: A binding of an optional child store.
+  #if swift(>=5.10)
+    @preconcurrency@MainActor
+  #else
+    @MainActor(unsafe)
+  #endif
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state: WritableKeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #fileID,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
+    self[
+      id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
+      state: state,
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Scoped 'state' must be a writable key path. For more information on this change, see the migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19#TODO
+      """
+  )
+  @_documentation(visibility: private)
   #if swift(>=5.10)
     @preconcurrency@MainActor
   #else
@@ -328,6 +438,35 @@ extension Perception.Bindable {
   ///   - column: The column.
   /// - Returns: A binding of an optional child store.
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state: WritableKeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
+    self[
+      id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
+      state: state,
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Scoped 'state' must be a writable key path. For more information on this change, see the migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19#TODO
+      """
+  )
+  @_documentation(visibility: private)
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
@@ -350,6 +489,40 @@ extension Perception.Bindable {
 }
 
 extension UIBindable {
+  #if swift(>=5.10)
+    @preconcurrency@MainActor
+  #else
+    @MainActor(unsafe)
+  #endif
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state: WritableKeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> UIBinding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
+    self[
+      id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
+      state: state,
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
+
+  @available(
+    *,
+    deprecated,
+    message: """
+      Scoped 'state' must be a writable key path. For more information on this change, see the migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19#TODO
+      """
+  )
+  @_documentation(visibility: private)
   #if swift(>=5.10)
     @preconcurrency@MainActor
   #else
@@ -379,6 +552,80 @@ extension UIBindable {
 
 extension Store where State: ObservableState {
   @_spi(Internals)
+  public subscript<ChildState, ChildAction>(
+    id id: AnyHashable?,
+    state state: WritableKeyPath<State, ChildState?>,
+    action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    isInViewBody isInViewBody: Bool,
+    fileID fileID: _HashableStaticString,
+    filePath filePath: _HashableStaticString,
+    line line: UInt,
+    column column: UInt
+  ) -> Store<ChildState, ChildAction>? {
+    get {
+      #if DEBUG && !os(visionOS)
+        _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+          self.scope(
+            state: state,
+            action: action.appending(path: \.presented),
+            fileID: fileID.rawValue,
+            filePath: filePath.rawValue,
+            line: line,
+            column: column
+          )
+        }
+      #else
+        self.scope(
+          state: state,
+          action: action.appending(path: \.presented),
+          fileID: fileID.rawValue,
+          filePath: filePath.rawValue,
+          line: line,
+          column: column
+        )
+      #endif
+    }
+    set {
+      if newValue == nil,
+        let childState = self.state[keyPath: state],
+        id == _identifiableID(childState),
+        !self.core.isInvalid
+      {
+        self.send(action(.dismiss))
+        if self.state[keyPath: state] != nil {
+          reportIssue(
+            """
+            A binding at "\(fileID):\(line)" was set to "nil", but the store destination wasn't \
+            nil'd out.
+
+            This usually means an "ifLet" has not been integrated with the reducer powering the \
+            store, and this reducer is responsible for handling presentation actions.
+
+            To fix this, ensure that "ifLet" is invoked from the reducer's "body":
+
+                Reduce { state, action in
+                  // ...
+                }
+                .ifLet(\\.destination, action: \\.destination) {
+                  Destination()
+                }
+
+            And ensure that every parent reducer is integrated into the root reducer that powers \
+            the store.
+            """,
+            fileID: fileID.rawValue,
+            filePath: filePath.rawValue,
+            line: line,
+            column: column
+          )
+          return
+        }
+      }
+    }
+  }
+
+  @_spi(Internals)
+  @available(*, deprecated)
   public subscript<ChildState, ChildAction>(
     id id: AnyHashable?,
     state state: KeyPath<State, ChildState?>,
