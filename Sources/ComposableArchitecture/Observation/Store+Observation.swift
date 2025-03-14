@@ -189,6 +189,44 @@ extension Binding {
   }
 }
 
+extension ObservedObject.Wrapper {
+  #if swift(>=5.10)
+    @preconcurrency@MainActor
+  #else
+    @MainActor(unsafe)
+  #endif
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #fileID,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where ObjectType == Store<State, Action> {
+    self[
+      dynamicMember:
+        \.[
+          id: self[dynamicMember: \.__currentState].wrappedValue[keyPath: state]
+            .flatMap(_identifiableID),
+          state: state,
+          action: action,
+          isInViewBody: _isInPerceptionTracking,
+          fileID: _HashableStaticString(rawValue: fileID),
+          filePath: _HashableStaticString(rawValue: filePath),
+          line: line,
+          column: column
+        ]
+    ]
+  }
+}
+extension Store {
+  fileprivate var __currentState: State {
+    get { currentState }
+    set {}
+  }
+}
+
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension SwiftUI.Bindable {
   /// Scopes the binding of a store to a binding of an optional presentation store.

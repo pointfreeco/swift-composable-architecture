@@ -70,6 +70,21 @@ extension Binding {
   }
 }
 
+extension ObservedObject.Wrapper {
+#if swift(>=5.10)
+  @preconcurrency@MainActor
+#else
+  @MainActor(unsafe)
+#endif
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where ObjectType == Store<State, Action> {
+    self[state: state, action: action]
+  }
+}
+
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension SwiftUI.Bindable {
   /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.

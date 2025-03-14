@@ -208,3 +208,30 @@ public macro ViewAction<R: Reducer>(for: R.Type) =
   #externalMacro(
     module: "ComposableArchitectureMacros", type: "ViewActionMacro"
   ) where R.Action: ViewAction
+
+
+@Reducer struct Feature {
+  @ObservableState
+  struct State {
+    @Presents var child: Feature.State?
+  }
+  enum Action {
+    case child(PresentationAction<Feature.Action>)
+  }
+}
+import SwiftUI
+extension Store: ObservableObject {}
+
+
+
+@available(macOS 11.0, *)
+struct V: View {
+  @StateObject var store = Store(initialState: Feature.State()) { Feature() }
+  @State var s2 = Store(initialState: Feature.State()) { Feature() }
+  var body: some View {
+    let s = \Feature.State.self
+    let s22 = $s2
+    let tmp = $store.scope(state: \.child, action: \.child)
+    EmptyView()
+  }
+}
