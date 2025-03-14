@@ -164,8 +164,8 @@ public final class Store<State, Action> {
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
   ///     by the reducer.
   public convenience init<R: Reducer<State, Action>>(
-    initialState: @autoclosure () -> State,
-    initialAction: @autoclosure () -> Action? = nil,
+    initialState: @autoclosure () -> R.State,
+    initialAction: @autoclosure () -> R.Action? = nil,
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) {
