@@ -1213,6 +1213,17 @@ final class StoreTests: BaseTCATestCase {
       }
     }
   }
+
+  @MainActor
+  func testInitialAction() async {
+    let store = Store(initialState: 0, initialAction: ()) {
+      Reduce { state, _ in
+        state += 1
+        return .none
+      }
+    }
+    XCTAssertEqual(store.currentState, 1)
+  }
 }
 
 #if canImport(Testing)

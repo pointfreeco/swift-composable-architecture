@@ -159,11 +159,13 @@ public final class Store<State, Action> {
   ///
   /// - Parameters:
   ///   - initialState: The state to start the application in.
+  ///   - initialAction: An action to send the store when it is created.
   ///   - reducer: The reducer that powers the business logic of the application.
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
   ///     by the reducer.
   public convenience init<R: Reducer<State, Action>>(
-    initialState: @autoclosure () -> R.State,
+    initialState: @autoclosure () -> State,
+    initialAction: @autoclosure () -> Action? = nil,
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) {
@@ -175,6 +177,9 @@ public final class Store<State, Action> {
       initialState: initialState,
       reducer: reducer.dependency(\.self, dependencies)
     )
+    if let initialAction = initialAction() {
+      send(initialAction)
+    }
   }
 
   init() {
