@@ -207,7 +207,7 @@ extension ObservedObject.Wrapper {
     self[
       dynamicMember:
         \.[
-          id: self[dynamicMember: \.__currentState].wrappedValue[keyPath: state]
+          id: self[dynamicMember: \._currentState].wrappedValue[keyPath: state]
             .flatMap(_identifiableID),
           state: state,
           action: action,
@@ -220,8 +220,9 @@ extension ObservedObject.Wrapper {
     ]
   }
 }
+
 extension Store {
-  fileprivate var __currentState: State {
+  fileprivate var _currentState: State {
     get { currentState }
     set {}
   }
