@@ -120,6 +120,40 @@
         """
       }
     }
+    
+    func testBindableStore_WithPreprocessorMacro() {
+      assertMacro {
+        """
+        @ViewAction(for: Feature.self)
+        struct FeatureView: View {
+          #if canImport(AppKit)
+          @Perception.Bindable var store: StoreOf<Feature>
+          #else
+          @Bindable var store: StoreOf<Feature>
+          #endif
+          var body: some View {
+            EmptyView()
+          }
+        }
+        """
+      } expansion: {
+        """
+        struct FeatureView: View {
+          #if canImport(AppKit)
+          @Perception.Bindable var store: StoreOf<Feature>
+          #else
+          @Bindable var store: StoreOf<Feature>
+          #endif
+          var body: some View {
+            EmptyView()
+          }
+        }
+
+        extension FeatureView: ComposableArchitecture.ViewActionSending {
+        }
+        """
+      }
+    }
 
     func testNoStore() {
       assertMacro {
