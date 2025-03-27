@@ -95,23 +95,23 @@ final class StoreLifetimeTests: BaseTCATestCase {
       await self.fulfillment(of: [effectFinished], timeout: 0.5)
     }
 
-  func testStoreDeinit_RunningEffect() async {
-    let effectFinished = self.expectation(description: "Effect finished")
-    do {
-      let store = await Store<Void, Void>(initialState: ()) {
-        Reduce { state, _ in
-          .run { _ in
-            try? await Task.never()
-            effectFinished.fulfill()
+    func testStoreDeinit_RunningEffect() async {
+      let effectFinished = self.expectation(description: "Effect finished")
+      do {
+        let store = await Store<Void, Void>(initialState: ()) {
+          Reduce { state, _ in
+            .run { _ in
+              try? await Task.never()
+              effectFinished.fulfill()
+            }
           }
         }
+        await store.send(())
+        _ = store
       }
-      await store.send(())
-      _ = store
-    }
 
-    await self.fulfillment(of: [effectFinished], timeout: 0.5)
-  }
+      await self.fulfillment(of: [effectFinished], timeout: 0.5)
+    }
 
     @MainActor
     func testStoreDeinit_RunningCombineEffect() async {
