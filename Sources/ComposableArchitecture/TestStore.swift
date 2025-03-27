@@ -983,8 +983,7 @@ extension TestStore {
       let task = self.store.send(
         .init(
           origin: .send(action), fileID: fileID, filePath: filePath, line: line, column: column
-        ),
-        originatingFrom: nil
+        )
       )
       if uncheckedUseMainSerialExecutor {
         await Task.yield()
@@ -1024,7 +1023,7 @@ extension TestStore {
       // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
       //     instrument their effects.
       await Task.megaYield(count: 20)
-      return .init(rawValue: task, timeout: self.timeout)
+      return .init(rawValue: task.rawValue, timeout: self.timeout)
     }
   }
 
@@ -2617,12 +2616,7 @@ extension TestStore {
       store: Store(initialState: self.state) {
         BindingReducer(action: toViewAction.extract(from:))
       }
-      .scope(
-        id: nil,
-        state: ToState(\.self),
-        action: toViewAction.embed,
-        isInvalid: nil
-      )
+      ._scope(state: { $0 }, action: toViewAction.embed)
     )
   }
 }
