@@ -128,9 +128,7 @@ final class RootCore<Root: Reducer>: Core {
           }
           boxedTask.wrappedValue = task
           tasks.withValue { $0.append(task) }
-          self.effectCancellables[uuid] = AnyCancellable {
-            task.cancel()
-          }
+          self.effectCancellables[uuid] = self.effectCancellable(task: task)
         }
       case let .run(priority, operation):
         withEscapedDependencies { continuation in
@@ -169,9 +167,7 @@ final class RootCore<Root: Reducer>: Core {
             self?.effectCancellables[uuid] = nil
           }
           tasks.withValue { $0.append(task) }
-          self.effectCancellables[uuid] = AnyCancellable {
-            task.cancel()
-          }
+          self.effectCancellables[uuid] = self.effectCancellable(task: task)
         }
       }
     }
@@ -193,6 +189,11 @@ final class RootCore<Root: Reducer>: Core {
       }
     }
   }
+
+  nonisolated private func effectCancellable<Success, Failure>(task: Task<Success, Failure>) -> AnyCancellable {
+    AnyCancellable { task.cancel() }
+  }
+
   private actor DefaultIsolation {}
 }
 
