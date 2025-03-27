@@ -128,7 +128,7 @@ final class RootCore<Root: Reducer>: Core {
           }
           boxedTask.wrappedValue = task
           tasks.withValue { $0.append(task) }
-          self.effectCancellables[uuid] = AnyCancellable {
+          self.effectCancellables[uuid] = AnyCancellable { @Sendable in
             task.cancel()
           }
         }
@@ -169,7 +169,7 @@ final class RootCore<Root: Reducer>: Core {
             self?.effectCancellables[uuid] = nil
           }
           tasks.withValue { $0.append(task) }
-          self.effectCancellables[uuid] = AnyCancellable {
+          self.effectCancellables[uuid] = AnyCancellable { @Sendable in
             task.cancel()
           }
         }
