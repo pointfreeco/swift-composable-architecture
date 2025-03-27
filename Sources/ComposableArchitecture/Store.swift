@@ -373,7 +373,7 @@ public final class Store<State, Action> {
       self.parentCancellable = subscribeToDidSet(stateType)
     }
   }
-  
+
   convenience init<R: Reducer<State, Action>>(
     initialState: R.State,
     reducer: R

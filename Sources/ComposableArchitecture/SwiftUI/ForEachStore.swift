@@ -142,8 +142,8 @@ public struct ForEachStore<
       IfLetCore(
         base: core,
         cachedState: element,
-        stateKeyPath: \.[id:id],
-        actionKeyPath: \.[id:id]
+        stateKeyPath: \.[id: id],
+        actionKeyPath: \.[id: id]
       )
     }
 
@@ -214,8 +214,8 @@ public struct ForEachStore<
       IfLetCore(
         base: core,
         cachedState: element,
-        stateKeyPath: \.[id:id],
-        actionKeyPath: \.[id:id]
+        stateKeyPath: \.[id: id],
+        actionKeyPath: \.[id: id]
       )
     }
 

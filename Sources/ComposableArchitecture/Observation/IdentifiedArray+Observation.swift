@@ -135,8 +135,8 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
           IfLetCore(
             base: core,
             cachedState: self.data[position],
-            stateKeyPath: \.[id:elementID],
-            actionKeyPath: \.[id:elementID]
+            stateKeyPath: \.[id: elementID],
+            actionKeyPath: \.[id: elementID]
           )
         }
         return self.store.scope(id: scopeID, childCore: open(self.store.core))
