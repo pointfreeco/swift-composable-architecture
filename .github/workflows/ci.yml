@@ -125,7 +125,7 @@ jobs:
       - name: Select Xcode 16
         run: sudo xcode-select -s /Applications/Xcode_16.2.app
       - name: Update xcbeautify
-        run: brew update && upgrade xcbeautify
+        run: brew update && brew upgrade xcbeautify
       - name: Set IgnoreFileSystemDeviceInodeChanges flag
         run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
       - name: Update mtime for incremental builds
