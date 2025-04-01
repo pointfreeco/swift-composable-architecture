@@ -131,6 +131,16 @@ import SwiftUI
 /// to run only on the main thread, and so a check is executed immediately to make sure that is the
 /// case. Further, all actions sent to the store and all scopes (see ``scope(state:action:)-90255``)
 /// of the store are also checked to make sure that work is performed on the main thread.
+///
+/// ### ObservableObject conformance
+///
+/// The store conforms to `ObservableObject` but is _not_ observable via the `@ObservedObject`
+/// property wrapper. This conformance is completely inert and its sole purpose is to allow stores
+/// to be held in SwiftUI's `@StateObject` property wrapper.
+///
+/// Instead, stores should be observed through Swift's Observation framework (or the Perception
+/// package when targeting iOS <17) by applying the ``ObservableState()`` macro to your feature's
+/// state.
 @dynamicMemberLookup
 #if swift(<5.10)
   @MainActor(unsafe)
@@ -415,6 +425,8 @@ extension Store: CustomDebugStringConvertible {
     storeTypeName(of: self)
   }
 }
+
+extension Store: ObservableObject {}
 
 /// A convenience type alias for referring to a store of a given reducer's domain.
 ///
