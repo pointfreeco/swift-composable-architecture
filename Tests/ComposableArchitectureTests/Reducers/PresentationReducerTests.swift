@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import SwiftUI
 import XCTest
 
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
@@ -2636,7 +2637,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
     @MainActor
     func testEphemeralBindingDismissal() async {
-      @Perception.Bindable var store = Store(
+      @Bindable var store = Store(
         initialState: TestEphemeralBindingDismissalFeature.State(
           alert: AlertState { TextState("Oops!") }
         )

@@ -1,5 +1,6 @@
 @preconcurrency import Combine
 @_spi(Internals) import ComposableArchitecture
+import SwiftUI
 import XCTest
 
 #if canImport(Testing)
@@ -1106,7 +1107,7 @@ final class StoreTests: BaseTCATestCase {
   #if !os(visionOS)
     @MainActor
     func testInvalidatedStoreScope() async throws {
-      @Perception.Bindable var store = Store(
+      @Bindable var store = Store(
         initialState: InvalidatedStoreScopeParentFeature.State(
           child: InvalidatedStoreScopeChildFeature.State(
             grandchild: InvalidatedStoreScopeGrandchildFeature.State()
@@ -1117,7 +1118,7 @@ final class StoreTests: BaseTCATestCase {
       }
       store.send(.tap)
 
-      @Perception.Bindable var childStore = store.scope(state: \.child, action: \.child)!
+      @Bindable var childStore = store.scope(state: \.child, action: \.child)!
       let grandchildStoreBinding = $childStore.scope(state: \.grandchild, action: \.grandchild)
 
       store.send(.child(.dismiss))

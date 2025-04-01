@@ -4,7 +4,8 @@ import XCTest
 class BaseTCATestCase: XCTestCase {
   override func tearDown() async throws {
     try await super.tearDown()
-    _cancellationCancellables.withValue { [description = "\(self)"] in
+    let description = "\(self)"
+    _cancellationCancellables.withValue {
       XCTAssertEqual($0.count, 0, description)
       $0.removeAll()
     }

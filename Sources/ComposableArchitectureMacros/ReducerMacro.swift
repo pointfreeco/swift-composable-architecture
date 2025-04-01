@@ -627,7 +627,7 @@ private enum ReducerCase {
       {
         return """
           case .\(name):
-          return .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
+          return { .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!) }()
           """
       } else if let parameters = element.parameterClause?.parameters {
         let bindingNames = (0..<parameters.count).map { "v\($0)" }.joined(separator: ", ")
@@ -636,12 +636,12 @@ private enum ReducerCase {
           .joined(separator: ", ")
         return """
           case let .\(name)(\(bindingNames)):
-          return .\(name)(\(returnNames))
+          return { .\(name)(\(returnNames)) }()
           """
       } else {
         return """
           case .\(name):
-          return .\(name)
+          return { .\(name) }()
           """
       }
     case let .ifConfig(configs):
