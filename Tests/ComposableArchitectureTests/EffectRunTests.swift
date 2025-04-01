@@ -166,6 +166,6 @@ final class EffectRunTests: BaseTCATestCase {
     await store.send(.tap).finish()
     await queue.advance(by: .seconds(1))
 
-    try await Task.sleep(nanoseconds: 100_000_000)
+    try await Task.sleep(nanoseconds: 1_000_000_000)
   }
 }

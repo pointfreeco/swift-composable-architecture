@@ -268,11 +268,9 @@ final class IfLetCore<Base: Core, State, Action>: Core {
   @inlinable
   @inline(__always)
   func send(_ action: Action) -> Task<Void, Never>? {
-    #if DEBUG
-      if BindingLocal.isActive && isInvalid {
-        return nil
-      }
-    #endif
+    if BindingLocal.isActive && isInvalid {
+      return nil
+    }
     return base.send(actionKeyPath(action))
   }
   @inlinable
