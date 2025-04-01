@@ -43,28 +43,36 @@
         root: root
       )
       navigationDestination(for: StackState<State>.Component.self) { component in
-        var element = component.element
-        return destination(
-          path.wrappedValue.scope(
-            id: path.wrappedValue.id(
-              state:
-                \.[
-                  id: component.id,
-                  fileID: _HashableStaticString(
-                    rawValue: fileID),
-                  filePath: _HashableStaticString(
-                    rawValue: filePath), line: line, column: column
-                ],
-              action: \.[id: component.id]
-            ),
-            state: ToState {
-              element = $0[id: component.id] ?? element
-              return element
-            },
-            action: { .element(id: component.id, action: $0) },
-            isInvalid: { !$0.ids.contains(component.id) }
-          )
+        let id = path.wrappedValue.id(
+          state:
+            \.[
+              id: component.id,
+              fileID: _HashableStaticString(rawValue: fileID),
+              filePath: _HashableStaticString(rawValue: filePath),
+              line: line,
+              column: column
+            ],
+          action: \.[id: component.id]
         )
+        @MainActor
+        func open(
+          _ core: some Core<StackState<State>, StackAction<State, Action>>
+        ) -> any Core<State, Action> {
+          IfLetCore(
+            base: core,
+            cachedState: component.element,
+            stateKeyPath:
+              \.[
+                id: component.id,
+                fileID: _HashableStaticString(rawValue: fileID),
+                filePath: _HashableStaticString(rawValue: filePath),
+                line: line,
+                column: column
+              ],
+            actionKeyPath: \.[id: component.id]
+          )
+        }
+        return destination(path.wrappedValue.scope(id: id, childCore: open(path.wrappedValue.core)))
       }
     }
   }

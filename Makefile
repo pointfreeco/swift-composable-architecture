@@ -30,8 +30,10 @@ XCODEBUILD_FLAGS = \
 
 XCODEBUILD_COMMAND = xcodebuild $(XCODEBUILD_ARGUMENT) $(XCODEBUILD_FLAGS)
 
+# TODO: Prefer 'xcbeautify --quiet' when this is fixed:
+# https://github.com/cpisciotta/xcbeautify/issues/339
 ifneq ($(strip $(shell which xcbeautify)),)
-	XCODEBUILD = set -o pipefail && $(XCODEBUILD_COMMAND) | xcbeautify --quiet
+	XCODEBUILD = set -o pipefail && $(XCODEBUILD_COMMAND) | xcbeautify
 else
 	XCODEBUILD = $(XCODEBUILD_COMMAND)
 endif
