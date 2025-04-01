@@ -59,6 +59,7 @@ jobs:
           - TVOS
           # - VISIONOS  # Unfortunately, visionOS on CI is too flakey
           - WATCHOS
+        skip_release: 1
         xcode: [15.2, 15.4]
         exclude:
           - {xcode: 15.2, command: test}
@@ -67,8 +68,6 @@ jobs:
           - {xcode: 15.2, platform: TVOS}
           # - {xcode: 15.2, platform: VISIONOS}
           - {xcode: 15.2, platform: WATCHOS}
-        include:
-          - {xcode: 15.2, skip_release: 1}
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
