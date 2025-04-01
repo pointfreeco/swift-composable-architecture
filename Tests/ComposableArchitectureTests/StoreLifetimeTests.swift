@@ -145,20 +145,19 @@ final class StoreLifetimeTests: BaseTCATestCase {
 
   @MainActor
   @available(*, deprecated)
-  func testUnCachedStores() async {
+  func testUnCachedStores() async throws {
     Logger.shared.isEnabled = true
-    let clock = TestClock()
     let store = Store(initialState: Parent.State()) {
       Parent()
     } withDependencies: {
-      $0.continuousClock = clock
+      $0.continuousClock = ContinuousClock()
     }
     do {
       let child = store.scope(state: { $0.child }, action: { .child($0) })
       child.send(.start)
       XCTAssertEqual(store.withState(\.child.count), 1)
     }
-    await clock.run(timeout: .seconds(5))
+    try await Task.sleep(nanoseconds: 1_000_000_000)
     XCTAssertEqual(store.withState(\.child.count), 2)
   }
 }
