@@ -174,7 +174,13 @@ extension Store where State: ObservableState, Action: BindableAction, Action.Sta
     get { self.state[keyPath: keyPath] }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.set(keyPath.unsafeSendable(), newValue, isInvalidated: _isInvalidated))
+        self.send(
+          .set(
+            keyPath.unsafeSendable(),
+            newValue,
+            isInvalidated: { [weak self] in self?.core.isInvalid ?? true }
+          )
+        )
       }
     }
   }
@@ -191,7 +197,9 @@ where
     get { self.observableState }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.set(\.self, newValue, isInvalidated: _isInvalidated))
+        self.send(
+          .set(\.self, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+        )
       }
     }
   }
@@ -210,7 +218,15 @@ where
     get { self.state[keyPath: keyPath] }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.view(.set(keyPath.unsafeSendable(), newValue, isInvalidated: _isInvalidated)))
+        self.send(
+          .view(
+            .set(
+              keyPath.unsafeSendable(),
+              newValue,
+              isInvalidated: { [weak self] in self?.core.isInvalid ?? true }
+            )
+          )
+        )
       }
     }
   }
@@ -228,7 +244,11 @@ where
     get { self.observableState }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.view(.set(\.self, newValue, isInvalidated: _isInvalidated)))
+        self.send(
+          .view(
+            .set(\.self, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+          )
+        )
       }
     }
   }
