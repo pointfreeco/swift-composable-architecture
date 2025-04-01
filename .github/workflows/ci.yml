@@ -52,14 +52,20 @@ jobs:
     strategy:
       matrix:
         command: [test, '']
-        platform: [IOS, MAC_CATALYST, MACOS, TVOS, VISIONOS, WATCHOS]
+        platform:
+          - IOS
+          - MAC_CATALYST
+          - MACOS
+          - TVOS
+          # - VISIONOS  # Unfortunately, visionOS on CI is too flakey
+          - WATCHOS
         xcode: [15.2, 15.4]
         exclude:
           - {xcode: 15.2, command: test}
           - {xcode: 15.4, command: ''}
           - {xcode: 15.2, platform: MAC_CATALYST}
           - {xcode: 15.2, platform: TVOS}
-          - {xcode: 15.2, platform: VISIONOS}
+          # - {xcode: 15.2, platform: VISIONOS}
           - {xcode: 15.2, platform: WATCHOS}
         include:
           - {xcode: 15.2, skip_release: 1}
