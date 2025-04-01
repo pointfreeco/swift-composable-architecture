@@ -59,7 +59,6 @@ jobs:
           - TVOS
           # - VISIONOS  # Unfortunately, visionOS on CI is too flakey
           - WATCHOS
-        skip_release: '1'
         xcode: [15.2, 15.4]
         exclude:
           - {xcode: 15.2, command: test}
@@ -98,9 +97,6 @@ jobs:
         uses: chetan/git-restore-mtime-action@v2
       - name: Debug
         run: make XCODEBUILD_ARGUMENT="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" WORKSPACE=.github/package.xcworkspace xcodebuild
-      - name: Release
-        if: matrix.skip_release != '1'
-        run: make XCODEBUILD_ARGUMENT="${{ matrix.command }}" CONFIG=Release PLATFORM="${{ matrix.platform }}" WORKSPACE=.github/package.xcworkspace xcodebuild
 
   library-evolution:
     name: Library (evolution)
