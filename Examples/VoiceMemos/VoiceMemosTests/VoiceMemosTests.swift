@@ -70,7 +70,7 @@ struct VoiceMemosTests {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0)
     }
     await store.receive(\.voiceMemos[id: deadbeefURL].delegate.playbackStarted)
-    try await Task.sleep(nanoseconds: 3_000_000_000)
+    try await Task.sleep(for: .seconds(3))
 
     await store.receive(\.voiceMemos[id: deadbeefURL].timerUpdated) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.2)
