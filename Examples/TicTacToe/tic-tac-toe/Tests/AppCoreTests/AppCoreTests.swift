@@ -87,6 +87,7 @@ struct AppCoreTests {
         $0.twoFactor?.isTwoFactorRequestInFlight = true
       }
     }
+    .finish()
     await store.receive(\.login.twoFactor.twoFactorResponse.success) {
       $0 = .newGame(NewGame.State())
     }

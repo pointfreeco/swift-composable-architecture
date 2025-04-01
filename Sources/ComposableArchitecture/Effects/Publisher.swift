@@ -36,7 +36,7 @@ public struct _EffectPublisher<Action>: Publisher {
           defer { subscriber.send(completion: .finished) }
           await operation(Send { subscriber.send($0) })
         }
-        return AnyCancellable {
+        return AnyCancellable { @Sendable in
           task.cancel()
         }
       }

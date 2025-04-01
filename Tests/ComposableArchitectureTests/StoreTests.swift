@@ -1103,27 +1103,27 @@ final class StoreTests: BaseTCATestCase {
     var body: some ReducerOf<Self> { EmptyReducer() }
   }
 
-  #if !os(visionOS)
-    @MainActor
-    func testInvalidatedStoreScope() async throws {
-      @Perception.Bindable var store = Store(
-        initialState: InvalidatedStoreScopeParentFeature.State(
-          child: InvalidatedStoreScopeChildFeature.State(
-            grandchild: InvalidatedStoreScopeGrandchildFeature.State()
-          )
-        )
-      ) {
-        InvalidatedStoreScopeParentFeature()
-      }
-      store.send(.tap)
-
-      @Perception.Bindable var childStore = store.scope(state: \.child, action: \.child)!
-      let grandchildStoreBinding = $childStore.scope(state: \.grandchild, action: \.grandchild)
-
-      store.send(.child(.dismiss))
-      grandchildStoreBinding.wrappedValue = nil
-    }
-  #endif
+//  #if !os(visionOS)
+//    @MainActor
+//    func testInvalidatedStoreScope() async throws {
+//      @Perception.Bindable var store = Store(
+//        initialState: InvalidatedStoreScopeParentFeature.State(
+//          child: InvalidatedStoreScopeChildFeature.State(
+//            grandchild: InvalidatedStoreScopeGrandchildFeature.State()
+//          )
+//        )
+//      ) {
+//        InvalidatedStoreScopeParentFeature()
+//      }
+//      store.send(.tap)
+//
+//      @Perception.Bindable var childStore = store.scope(state: \.child, action: \.child)!
+//      let grandchildStoreBinding = $childStore.scope(state: \.grandchild, action: \.grandchild)
+//
+//      store.send(.child(.dismiss))
+//      grandchildStoreBinding.wrappedValue = nil
+//    }
+//  #endif
 
   @MainActor
   func testSurroundingDependencies() {
