@@ -12,12 +12,14 @@ struct VoiceMemosTests {
   @Test
   func recordAndPlayback() async throws {
     let didFinish = AsyncThrowingStream.makeStream(of: Bool.self)
-    let clock = TestClock()
+    // NB: We would prefer to use a test clock here, but due to testing async still being unreliable
+    //     in Swift, we will use a real clock and sleep, instead.
+    // let clock = TestClock()
     let store = TestStore(initialState: VoiceMemos.State()) {
       VoiceMemos()
     } withDependencies: {
       $0.audioPlayer.play = { @Sendable _ in
-        try await clock.sleep(for: .milliseconds(2_500))
+        try await Task.sleep(for: .milliseconds(2_500))
         return true
       }
       $0.audioRecorder.currentTime = { 2.5 }
@@ -30,7 +32,7 @@ struct VoiceMemosTests {
         didFinish.continuation.finish()
       }
       $0.date = .constant(Date(timeIntervalSinceReferenceDate: 0))
-      $0.continuousClock = clock
+      $0.continuousClock = ContinuousClock()
       $0.temporaryDirectory = { URL(fileURLWithPath: "/tmp") }
       $0.uuid = .constant(deadbeefID)
     }
@@ -68,7 +70,7 @@ struct VoiceMemosTests {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0)
     }
     await store.receive(\.voiceMemos[id: deadbeefURL].delegate.playbackStarted)
-    await clock.run()
+    try await Task.sleep(for: .seconds(3))
 
     await store.receive(\.voiceMemos[id: deadbeefURL].timerUpdated) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.2)
@@ -81,6 +83,9 @@ struct VoiceMemosTests {
     }
     await store.receive(\.voiceMemos[id: deadbeefURL].timerUpdated) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 0.8)
+    }
+    await store.receive(\.voiceMemos[id: deadbeefURL].timerUpdated) {
+      $0.voiceMemos[id: deadbeefURL]?.mode = .playing(progress: 1.0)
     }
     await store.receive(\.voiceMemos[id: deadbeefURL].audioPlayerClient.success) {
       $0.voiceMemos[id: deadbeefURL]?.mode = .notPlaying
