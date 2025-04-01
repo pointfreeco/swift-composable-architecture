@@ -131,21 +131,21 @@ jobs:
       - name: Update mtime for incremental builds
         uses: chetan/git-restore-mtime-action@v2
       - name: CaseStudies (SwiftUI)
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (SwiftUI)" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (SwiftUI)" xcodebuild
       - name: CaseStudies (UIKit)
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (UIKit)" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (UIKit)" xcodebuild
       - name: Search
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Search" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Search" xcodebuild
       - name: SyncUps
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SyncUps" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SyncUps" xcodebuild
       - name: SpeechRecognition
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SpeechRecognition" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SpeechRecognition" xcodebuild
       - name: TicTacToe
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="TicTacToe" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="TicTacToe" xcodebuild
       - name: Todos
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Todos" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Todos" xcodebuild
       - name: VoiceMemos
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="VoiceMemos" xcodebuild-raw
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="VoiceMemos" xcodebuild
 
   check-macro-compatibility:
     name: Check Macro Compatibility
