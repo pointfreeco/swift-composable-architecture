@@ -71,11 +71,11 @@ extension Binding {
 }
 
 extension ObservedObject.Wrapper {
-#if swift(>=5.10)
-  @preconcurrency@MainActor
-#else
-  @MainActor(unsafe)
-#endif
+  #if swift(>=5.10)
+    @preconcurrency@MainActor
+  #else
+    @MainActor(unsafe)
+  #endif
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
