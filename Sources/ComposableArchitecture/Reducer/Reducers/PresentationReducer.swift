@@ -646,8 +646,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
 
         • This action was sent to the store while destination state was "nil". Make sure that \
         actions for this reducer can only be sent from a store when state is present, or \
-        from effects that start from this reducer. In SwiftUI applications, use a Composable \
-        Architecture view modifier like "sheet(store:…)".
+        from effects that start from this reducer.
         """,
         fileID: fileID,
         filePath: filePath,
