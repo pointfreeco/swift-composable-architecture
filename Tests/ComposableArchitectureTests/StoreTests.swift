@@ -525,7 +525,8 @@ final class StoreTests: BaseTCATestCase {
       [
         .button,
         .child(2),
-      ])
+      ]
+    )
   }
 
   func testCascadingTaskCancellation() async {
@@ -936,7 +937,8 @@ final class StoreTests: BaseTCATestCase {
   func testPresentationScope() async {
     let store = Store(
       initialState: Feature_testPresentationScope.State(
-        child: .init(child: .init()))
+        child: .init(child: .init())
+      )
     ) {
       Feature_testPresentationScope()
     }
@@ -1104,10 +1106,10 @@ final class StoreTests: BaseTCATestCase {
     var body: some ReducerOf<Self> { EmptyReducer() }
   }
 
-  #if !os(visionOS)
+  #if !os(visionOS) && compiler(<6.1)
     @MainActor
     func testInvalidatedStoreScope() async throws {
-      @Bindable var store = Store(
+      @Perception.Bindable var store = Store(
         initialState: InvalidatedStoreScopeParentFeature.State(
           child: InvalidatedStoreScopeChildFeature.State(
             grandchild: InvalidatedStoreScopeGrandchildFeature.State()

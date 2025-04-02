@@ -2109,7 +2109,8 @@ final class PresentationReducerTests: BaseTCATestCase {
                 ConfirmationDialogState {
                   TextState("Hello!")
                 } actions: {
-                })
+                }
+              )
               return .none
             case .destination(.presented(.dialog(.showAlert))):
               state.destination = .alert(AlertState { TextState("Hello!") })
@@ -2155,7 +2156,8 @@ final class PresentationReducerTests: BaseTCATestCase {
           ConfirmationDialogState {
             TextState("Hello!")
           } actions: {
-          })
+          }
+        )
       }
       await store.send(.destination(.dismiss)) {
         $0.destination = nil
@@ -2618,7 +2620,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
   }
 
-  #if !os(visionOS)
+  #if !os(visionOS) && compiler(<6.1)
     @Reducer
     struct TestEphemeralBindingDismissalFeature {
       @ObservableState
