@@ -1120,7 +1120,7 @@ final class StoreTests: BaseTCATestCase {
       }
       store.send(.tap)
 
-      @Bindable var childStore = store.scope(state: \.child, action: \.child)!
+      @Perception.Bindable var childStore = store.scope(state: \.child, action: \.child)!
       let grandchildStoreBinding = $childStore.scope(state: \.grandchild, action: \.grandchild)
 
       store.send(.child(.dismiss))
