@@ -46,15 +46,3 @@ struct FeatureView: View {
 > Important: The store's `ObservableObject` conformance does not have any impact on the actual
 > observability of the store. You should continue to rely on the ``ObservableState()`` macro for
 > observation.
-
-## Initial actions
-
-A new `initialAction` has been introduced to the `Store` that will immediately kick off an initial
-action when the store is created. This is an alternative to waiting for an `onAppear` or `task`
-view modifier to evaluate.
-
-```swift
-Store(initialState: Feature.State(), initialAction: .initialize) {
-  Feature()
-}
-```
