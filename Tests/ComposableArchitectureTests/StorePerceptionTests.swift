@@ -4,6 +4,10 @@ import XCTest
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 final class StorePerceptionTests: BaseTCATestCase {
+  override func setUpWithError() throws {
+    try checkAvailability()
+  }
+
   @MainActor
   func testPerceptionCheck_SkipWhenOutsideView() {
     let store = Store(initialState: Feature.State()) {
@@ -29,25 +33,30 @@ final class StorePerceptionTests: BaseTCATestCase {
 
   @MainActor
   func testPerceptionCheck_AccessStateWithoutTracking() {
-    if #unavailable(iOS 17, macOS 14, tvOS 17, watchOS 10) {
-      @MainActor
-      struct FeatureView: View {
-        let store = Store(initialState: Feature.State()) {
-          Feature()
-        }
-        var body: some View {
-          Text(store.count.description)
-        }
+    @MainActor
+    struct FeatureView: View {
+      let store = Store(initialState: Feature.State()) {
+        Feature()
       }
+      var body: some View {
+        Text(store.count.description)
+      }
+    }
+    #if DEBUG && !os(visionOS)
+      let previous = Perception.isPerceptionCheckingEnabled
+      Perception.isPerceptionCheckingEnabled = true
+      defer { Perception.isPerceptionCheckingEnabled = previous }
       XCTExpectFailure {
         render(FeatureView())
       } issueMatcher: {
         $0.compactDescription == """
-          Perceptible state was accessed but is not being tracked. Track changes to state by \
-          wrapping your view in a 'WithPerceptionTracking' view.
+          failed - Perceptible state was accessed but is not being tracked. Track changes to state by \
+          wrapping your view in a 'WithPerceptionTracking' view. This must also be done for any \
+          escaping, trailing closures, such as 'GeometryReader', `LazyVStack` (and all lazy \
+          views), navigation APIs ('sheet', 'popover', 'fullScreenCover', etc.), and others.
           """
       }
-    }
+    #endif
   }
 
   @MainActor
@@ -85,5 +94,12 @@ private struct Feature {
       state.count += 1
       return .none
     }
+  }
+}
+
+// NB: Workaround to XCTest ignoring `@available(...)` attributes.
+private func checkAvailability() throws {
+  guard #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) else {
+    throw XCTSkip("Requires iOS 16, macOS 13, tvOS 16, or watchOS 9")
   }
 }

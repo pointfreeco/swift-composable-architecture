@@ -3,13 +3,14 @@ import SwiftUI
 
 @main
 struct TodosApp: App {
+  static let store = Store(initialState: Todos.State()) {
+    Todos()
+      ._printChanges()
+  }
+
   var body: some Scene {
     WindowGroup {
-      AppView(
-        store: Store(initialState: Todos.State()) {
-          Todos()
-        }
-      )
+      AppView(store: Self.store)
     }
   }
 }

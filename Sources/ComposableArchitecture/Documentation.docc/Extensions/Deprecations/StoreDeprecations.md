@@ -15,4 +15,4 @@ instead.
 
 ### UIKit integration
 
-- ``ifLet(then:else:)``
+- ``Store/ifLet(then:else:)``

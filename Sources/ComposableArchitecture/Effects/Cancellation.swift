@@ -58,7 +58,7 @@ extension Effect {
 
               let cancellable = LockIsolated<AnyCancellable?>(nil)
               cancellable.setValue(
-                AnyCancellable {
+                AnyCancellable { @Sendable in
                   _cancellationCancellables.withValue {
                     cancellationSubject.send(())
                     cancellationSubject.send(completion: .finished)
@@ -179,7 +179,7 @@ extension Effect {
           $0.cancel(id: id, path: navigationIDPath)
         }
         let task = Task { try await operation() }
-        let cancellable = AnyCancellable { task.cancel() }
+        let cancellable = AnyCancellable { @Sendable in task.cancel() }
         $0.insert(cancellable, at: id, path: navigationIDPath)
         return (cancellable, task)
       }

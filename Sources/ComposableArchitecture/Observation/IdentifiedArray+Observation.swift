@@ -62,6 +62,10 @@ extension Store where State: ObservableState {
   /// - Parameters:
   ///   - state: A key path to an identified array of child state.
   ///   - action: A case key path to an identified child action.
+  ///   - column: The column.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
   /// - Returns: An collection of stores of child state.
   @_disfavoredOverload
   public func scope<ElementID, ElementState, ElementAction>(
@@ -72,7 +76,7 @@ extension Store where State: ObservableState {
     line: UInt = #line,
     column: UInt = #column
   ) -> some RandomAccessCollection<Store<ElementState, ElementAction>> {
-    if !self.canCacheChildren {
+    if !core.canStoreCacheChildren {
       reportIssue(
         uncachedStoreWarning(self),
         fileID: fileID,
@@ -96,6 +100,7 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
   #endif
   fileprivate init(_ store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>) {
     self.store = store
+    store._$observationRegistrar.access(store, keyPath: \.currentState)
     self.data = store.withState { $0 }
   }
 
@@ -119,17 +124,24 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
       else {
         return Store()
       }
-      let id = self.data.ids[position]
-      var element = self.data[position]
-      return self.store.scope(
-        id: self.store.id(state: \.[id: id]!, action: \.[id: id]),
-        state: ToState {
-          element = $0[id: id] ?? element
-          return element
-        },
-        action: { .element(id: id, action: $0) },
-        isInvalid: { !$0.ids.contains(id) }
-      )
+      let elementID = self.data.ids[position]
+      let scopeID = self.store.id(state: \.[id: elementID], action: \.[id: elementID])
+      guard let child = self.store.children[scopeID] as? Store<State, Action>
+      else {
+        @MainActor
+        func open(
+          _ core: some Core<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
+        ) -> any Core<State, Action> {
+          IfLetCore(
+            base: core,
+            cachedState: self.data[position],
+            stateKeyPath: \.[id: elementID],
+            actionKeyPath: \.[id: elementID]
+          )
+        }
+        return self.store.scope(id: scopeID, childCore: open(self.store.core))
+      }
+      return child
     }
   }
 }

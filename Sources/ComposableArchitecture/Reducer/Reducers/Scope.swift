@@ -60,8 +60,8 @@
 /// ## Enum state
 ///
 /// The ``Scope`` reducer also works when state is modeled as an enum, not just a struct. In that
-/// case you can use ``init(state:action:child:fileID:filePath:line:column:)`` to specify a case
-/// path that identifies the case of state you want to scope to.
+/// case you can use ``init(state:action:child:fileID:filePath:line:column:)-9g44g`` to specify a
+/// case path that identifies the case of state you want to scope to.
 ///
 /// For example, if your state was modeled as an enum for unloaded/loading/loaded, you could
 /// scope to the loaded case to run a reduce on only that case:
@@ -97,7 +97,7 @@
 /// bugs, and so we show a runtime warning in that case, and cause test failures.
 ///
 /// For an alternative to using ``Scope`` with state case paths that enforces the order, check out
-/// the ``ifCaseLet(_:action:then:fileID:line:)-7zcm0`` operator.
+/// the ``ifCaseLet(_:action:then:fileID:filePath:line:column:)-rdrb`` operator.
 public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   @usableFromInline
   enum StatePath {
@@ -204,7 +204,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   /// > ```
   /// >
   /// > If the parent domain contains additional logic for switching between cases of child state,
-  /// > prefer ``Reducer/ifCaseLet(_:action:then:fileID:line:)-3k4yb``, which better ensures that
+  /// > prefer ``Reducer/ifCaseLet(_:action:then:fileID:filePath:line:column:)-7sg8d``, which better ensures that
   /// > child logic runs _before_ any parent logic can replace child state:
   /// >
   /// > ```swift
@@ -224,6 +224,10 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   ///   - toChildState: A case path from parent state to a case containing child state.
   ///   - toChildAction: A case path from parent action to a case containing child actions.
   ///   - child: A reducer that will be invoked with child actions against child state.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @inlinable
   public init<ChildState, ChildAction>(
     state toChildState: CaseKeyPath<ParentState, ChildState>,

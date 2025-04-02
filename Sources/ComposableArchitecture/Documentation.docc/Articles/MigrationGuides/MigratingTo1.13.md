@@ -107,7 +107,7 @@ class AppController: NavigationStackController {
       }
     }
 
-    self.model = model
+    self.store = store
   }
 }
 ```

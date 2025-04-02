@@ -70,6 +70,21 @@ extension Binding {
   }
 }
 
+extension ObservedObject.Wrapper {
+  #if swift(>=5.10)
+    @preconcurrency@MainActor
+  #else
+    @MainActor(unsafe)
+  #endif
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where ObjectType == Store<State, Action> {
+    self[state: state, action: action]
+  }
+}
+
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension SwiftUI.Bindable {
   /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
@@ -136,7 +151,7 @@ extension NavigationStack {
   /// this view.
   public init<State, Action, Destination: View, R>(
     path: Binding<Store<StackState<State>, StackAction<State, Action>>>,
-    root: () -> R,
+    @ViewBuilder root: () -> R,
     @ViewBuilder destination: @escaping (Store<State, Action>) -> Destination,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
@@ -187,31 +202,43 @@ public struct _NavigationDestinationViewModifier<
     content
       .environment(\.navigationDestinationType, State.self)
       .navigationDestination(for: StackState<State>.Component.self) { component in
-        var element = component.element
-        self
-          .destination(
-            self.store.scope(
-              id: self.store.id(
-                state:
-                  \.[
-                    id: component.id,
-                    fileID: _HashableStaticString(
-                      rawValue: fileID),
-                    filePath: _HashableStaticString(
-                      rawValue: filePath), line: line, column: column
-                  ],
-                action: \.[id: component.id]
-              ),
-              state: ToState {
-                element = $0[id: component.id] ?? element
-                return element
-              },
-              action: { .element(id: component.id, action: $0) },
-              isInvalid: { !$0.ids.contains(component.id) }
-            )
-          )
+        navigationDestination(component: component)
           .environment(\.navigationDestinationType, State.self)
       }
+  }
+
+  @MainActor
+  private func navigationDestination(component: StackState<State>.Component) -> Destination {
+    let id = store.id(
+      state:
+        \.[
+          id: component.id,
+          fileID: _HashableStaticString(rawValue: fileID),
+          filePath: _HashableStaticString(rawValue: filePath),
+          line: line,
+          column: column
+        ],
+      action: \.[id: component.id]
+    )
+    @MainActor
+    func open(
+      _ core: some Core<StackState<State>, StackAction<State, Action>>
+    ) -> any Core<State, Action> {
+      IfLetCore(
+        base: core,
+        cachedState: component.element,
+        stateKeyPath:
+          \.[
+            id: component.id,
+            fileID: _HashableStaticString(rawValue: fileID),
+            filePath: _HashableStaticString(rawValue: filePath),
+            line: line,
+            column: column
+          ],
+        actionKeyPath: \.[id: component.id]
+      )
+    }
+    return destination(store.scope(id: id, childCore: open(store.core)))
   }
 }
 
@@ -230,6 +257,10 @@ extension NavigationLink where Destination == Never {
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a
   ///     copy of the value. Pass a `nil` value to disable the link.
   ///   - label: A label that describes the view that this link presents.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   #if compiler(>=6)
     @MainActor
   #endif
@@ -269,6 +300,8 @@ extension NavigationLink where Destination == Never {
   ///     presents.
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a
   ///     copy of the value. Pass a `nil` value to disable the link.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   #if compiler(>=6)
     @MainActor
   #endif
@@ -292,6 +325,8 @@ extension NavigationLink where Destination == Never {
   ///   - title: A string that describes the view that this link presents.
   ///   - state: An optional value to present. When the user selects the link, SwiftUI stores a
   ///     copy of the value. Pass a `nil` value to disable the link.
+  ///   - fileID: The fileID.
+  ///   - line: The line.
   #if compiler(>=6)
     @MainActor
   #endif

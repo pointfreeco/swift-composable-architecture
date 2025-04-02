@@ -5,6 +5,7 @@ import CustomDump
 @_spi(Beta) import Dependencies
 import Foundation
 import IssueReporting
+@_spi(SharedChangeTracking) import Sharing
 
 /// A testable runtime for a reducer.
 ///
@@ -13,7 +14,7 @@ import IssueReporting
 /// of the way you must assert exactly how state changed, and how effect emissions were fed back
 /// into the system.
 ///
-/// See the dedicated <doc:Testing> article for detailed information on testing.
+/// See the dedicated <doc:TestingTCA> article for detailed information on testing.
 ///
 /// ## Exhaustive testing
 ///
@@ -430,8 +431,7 @@ import IssueReporting
 #else
   @preconcurrency@MainActor
 #endif
-public final class TestStore<State, Action> {
-
+public final class TestStore<State: Equatable, Action> {
   /// The current dependencies of the test store.
   ///
   /// The dependencies define the execution context that your feature runs in. They can be modified
@@ -511,7 +511,7 @@ public final class TestStore<State, Action> {
 
   /// Creates a test store with an initial state and a reducer powering its runtime.
   ///
-  /// See <doc:Testing> and the documentation of ``TestStore`` for more information on how to best
+  /// See <doc:TestingTCA> and the documentation of ``TestStore`` for more information on how to best
   /// use a test store.
   ///
   /// - Parameters:
@@ -524,21 +524,23 @@ public final class TestStore<State, Action> {
   ///   - prepareDependencies: A closure that can be used to override dependencies that will be
   ///     accessed during the test. These dependencies will be used when producing the initial
   ///     state.
-  public init<R: Reducer>(
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
+  public init(
     initialState: @autoclosure () -> State,
-    reducer: () -> R,
-    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in
-    },
+    reducer: () -> some Reducer<State, Action>,
+    withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  )
-  where State: Equatable, R.State == State, R.Action == Action {
+  ) {
     let sharedChangeTracker = SharedChangeTracker()
     let reducer = Dependencies.withDependencies {
       prepareDependencies(&$0)
-      $0.sharedChangeTrackers.insert(sharedChangeTracker)
+      sharedChangeTracker.track(&$0)
     } operation: {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }
@@ -558,7 +560,12 @@ public final class TestStore<State, Action> {
   ///
   /// Can be used to assert that all effects have finished.
   ///
-  /// - Parameter duration: The amount of time to wait before asserting.
+  /// - Parameters:
+  ///   - duration: The amount of time to wait before asserting.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func finish(
     timeout duration: Duration,
@@ -579,7 +586,12 @@ public final class TestStore<State, Action> {
   /// > Important: `TestStore.finish()` should only be called once per test store, at the end of the
   /// > test. Interacting with a finished test store is undefined.
   ///
-  /// - Parameter nanoseconds: The amount of time to wait before asserting.
+  /// - Parameters:
+  ///   - nanoseconds: The amount of time to wait before asserting.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @_disfavoredOverload
   public func finish(
     timeout nanoseconds: UInt64? = nil,
@@ -717,30 +729,24 @@ public final class TestStore<State, Action> {
     line: UInt,
     column: UInt
   ) {
-    // NB: This existential opening can go away if we can constrain 'State: Equatable' at the
-    //     'TestStore' level, but for some reason this breaks DocC.
-    if self.sharedChangeTracker.hasChanges, let stateType = State.self as? any Equatable.Type {
-      func open<EquatableState: Equatable>(_: EquatableState.Type) {
-        let store = self as! TestStore<EquatableState, Action>
-        try? store.expectedStateShouldMatch(
-          preamble: "Test store finished before asserting against changes to shared state",
-          postamble: """
-            Invoke "TestStore.assert" at the end of this test to assert against changes to shared \
-            state.
-            """,
-          expected: store.state,
-          actual: store.state,
-          updateStateToExpectedResult: nil,
-          skipUnnecessaryModifyFailure: true,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }
-      open(stateType)
-      self.sharedChangeTracker.resetChanges()
+    if sharedChangeTracker.hasChanges {
+      try? expectedStateShouldMatch(
+        preamble: "Test store finished before asserting against changes to shared state",
+        postamble: """
+          Invoke "TestStore.assert" at the end of this test to assert against changes to shared \
+          state.
+          """,
+        expected: state,
+        actual: state,
+        updateStateToExpectedResult: nil,
+        skipUnnecessaryModifyFailure: true,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
     }
+    sharedChangeTracker.reset()
   }
 
   /// Overrides the store's dependencies for a given operation.
@@ -843,9 +849,9 @@ public final class TestStore<State, Action> {
 /// ```swift
 /// let testStore: TestStoreOf<Feature>
 /// ```
-public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action>
+public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action> where R.State: Equatable
 
-extension TestStore where State: Equatable {
+extension TestStore {
   /// Sends an action to the store and asserts when state changes.
   ///
   /// To assert on how state changes you can provide a trailing closure, and that closure is handed
@@ -919,6 +925,10 @@ extension TestStore where State: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
   @discardableResult
@@ -970,14 +980,11 @@ extension TestStore where State: Equatable {
       let expectedState = self.state
       let previousState = self.reducer.state
       let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
-      let task = self.sharedChangeTracker.track {
-        self.store.send(
-          .init(
-            origin: .send(action), fileID: fileID, filePath: filePath, line: line, column: column
-          ),
-          originatingFrom: nil
+      let task = self.store.send(
+        .init(
+          origin: .send(action), fileID: fileID, filePath: filePath, line: line, column: column
         )
-      }
+      )
       if uncheckedUseMainSerialExecutor {
         await Task.yield()
       } else {
@@ -1016,7 +1023,7 @@ extension TestStore where State: Equatable {
       // NB: Give concurrency runtime more time to kick off effects so users don't need to manually
       //     instrument their effects.
       await Task.megaYield(count: 20)
-      return .init(rawValue: task, timeout: self.timeout)
+      return .init(rawValue: task.rawValue, timeout: self.timeout)
     }
   }
 
@@ -1027,7 +1034,7 @@ extension TestStore where State: Equatable {
   /// to differ from the current state of the test store, a test failure will be triggered.
   ///
   /// This tool is most useful in non-exhaustive test stores (see
-  /// <doc:Testing#Non-exhaustive-testing>), which allow you to assert on a subset of the things
+  /// <doc:TestingTCA#Non-exhaustive-testing>), which allow you to assert on a subset of the things
   /// happening inside your features. For example, you can send an action in a child feature
   /// without asserting on how many changes in the system, and then tell the test store to
   /// ``finish(timeout:fileID:file:line:column:)-klnc`` by executing all of its effects, and finally
@@ -1051,6 +1058,10 @@ extension TestStore where State: Equatable {
   /// - Parameters:
   ///   - updateStateToExpectedResult: A closure that asserts against the current state of the test
   ///   store.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   public func assert(
     _ updateStateToExpectedResult: @escaping (_ state: inout State) throws -> Void,
     fileID: StaticString = #fileID,
@@ -1099,7 +1110,7 @@ extension TestStore where State: Equatable {
         skipUnnecessaryModifyFailure
         || self.sharedChangeTracker.hasChanges == true
       if self.exhaustivity != .on {
-        self.sharedChangeTracker.resetChanges()
+        self.sharedChangeTracker.reset()
       }
 
       let current = expected
@@ -1126,9 +1137,10 @@ extension TestStore where State: Equatable {
         if let updateStateToExpectedResult {
           try Dependencies.withDependencies {
             $0 = self.reducer.dependencies
-            $0.sharedChangeTracker = self.sharedChangeTracker
           } operation: {
-            try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
+            try self.sharedChangeTracker.assert {
+              try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
+            }
           }
         }
         expected = expectedWhenGivenPreviousState
@@ -1144,9 +1156,10 @@ extension TestStore where State: Equatable {
         if let updateStateToExpectedResult {
           try Dependencies.withDependencies {
             $0 = self.reducer.dependencies
-            $0.sharedChangeTracker = self.sharedChangeTracker
           } operation: {
-            try updateStateToExpectedResult(&expectedWhenGivenActualState)
+            try self.sharedChangeTracker.assert {
+              try updateStateToExpectedResult(&expectedWhenGivenActualState)
+            }
           }
         }
         expected = expectedWhenGivenActualState
@@ -1164,9 +1177,10 @@ extension TestStore where State: Equatable {
               do {
                 try Dependencies.withDependencies {
                   $0 = self.reducer.dependencies
-                  $0.sharedChangeTracker = self.sharedChangeTracker
                 } operation: {
-                  try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
+                  try self.sharedChangeTracker.assert {
+                    try updateStateToExpectedResult(&expectedWhenGivenPreviousState)
+                  }
                 }
               } catch {
                 reportIssue(
@@ -1247,12 +1261,12 @@ extension TestStore where State: Equatable {
           column: column
         )
       }
-      self.sharedChangeTracker.resetChanges()
+      self.sharedChangeTracker.reset()
     }
   }
 }
 
-extension TestStore where State: Equatable, Action: Equatable {
+extension TestStore where Action: Equatable {
   private func _receive(
     _ expectedAction: Action,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
@@ -1320,6 +1334,10 @@ extension TestStore where State: Equatable, Action: Equatable {
   ///     to the store. The mutable state sent to this closure must be modified to match the state
   ///     of the store after processing the given action. Do not provide a closure if no change
   ///     is expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive(
     _ expectedAction: Action,
@@ -1370,6 +1388,10 @@ extension TestStore where State: Equatable, Action: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @_disfavoredOverload
   public func receive(
     _ expectedAction: Action,
@@ -1418,7 +1440,7 @@ extension TestStore where State: Equatable, Action: Equatable {
   }
 }
 
-extension TestStore where State: Equatable {
+extension TestStore {
   private func _receive(
     _ isMatching: (Action) -> Bool,
     assert updateStateToExpectedResult: ((inout State) throws -> Void)? = nil,
@@ -1537,6 +1559,10 @@ extension TestStore where State: Equatable {
   ///     to the store. The mutable state sent to this closure must be modified to match the state
   ///     of the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @_disfavoredOverload
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive(
@@ -1592,6 +1618,10 @@ extension TestStore where State: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @_disfavoredOverload
   public func receive(
     _ isMatching: (_ action: Action) -> Bool,
@@ -1670,6 +1700,10 @@ extension TestStore where State: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @_disfavoredOverload
   public func receive<Value>(
     _ actionCase: CaseKeyPath<Action, Value>,
@@ -1710,11 +1744,15 @@ extension TestStore where State: Equatable {
   /// - Parameters:
   ///   - actionCase: A case path identifying the case of an action to enum to receive
   ///   - value: The value to match in the action.
-  ///   - duration: The amount of time to wait for the expected action.
+  ///   - nanoseconds: The amount of time to wait for the expected action.
   ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action
   ///     to the store. The mutable state sent to this closure must be modified to match the state
   ///     of the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @_disfavoredOverload
   public func receive<Value: Equatable>(
     _ actionCase: CaseKeyPath<Action, Value>,
@@ -1869,6 +1907,10 @@ extension TestStore where State: Equatable {
   ///     to the store. The mutable state sent to this closure must be modified to match the state
   ///     of the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @_disfavoredOverload
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive<Value>(
@@ -1915,6 +1957,10 @@ extension TestStore where State: Equatable {
   ///     to the store. The mutable state sent to this closure must be modified to match the state
   ///     of the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @_disfavoredOverload
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive<Value: Equatable & Sendable>(
@@ -2194,7 +2240,7 @@ extension TestStore where State: Equatable {
   }
 }
 
-extension TestStore where State: Equatable {
+extension TestStore {
   /// Sends an action to the store and asserts when state changes.
   ///
   /// This method is similar to ``send(_:assert:fileID:file:line:column:)-8f2pl``, except it allows
@@ -2217,6 +2263,10 @@ extension TestStore where State: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
   @_disfavoredOverload
@@ -2263,6 +2313,10 @@ extension TestStore where State: Equatable {
   ///     the store. The mutable state sent to this closure must be modified to match the state of
   ///     the store after processing the given action. Do not provide a closure if no change is
   ///     expected.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: A ``TestStoreTask`` that represents the lifecycle of the effect executed when
   ///   sending the action.
   @_disfavoredOverload
@@ -2307,8 +2361,13 @@ extension TestStore {
   /// await store.skipReceivedActions()
   /// ```
   ///
-  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
-  ///   will be reported.
+  /// - Parameters:
+  ///   - strict: When `true` and there are no in-flight actions to cancel, a test failure
+  ///     will be reported.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   public func skipReceivedActions(
     strict: Bool = true,
     fileID: StaticString = #fileID,
@@ -2387,8 +2446,13 @@ extension TestStore {
   /// await store.skipInFlightEffects()
   /// ```
   ///
-  /// - Parameter strict: When `true` and there are no in-flight actions to cancel, a test failure
+  /// - Parameters:
+  ///   - strict: When `true` and there are no in-flight actions to cancel, a test failure
   ///   will be reported.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   public func skipInFlightEffects(
     strict: Bool = true,
     fileID: StaticString = #fileID,
@@ -2552,12 +2616,7 @@ extension TestStore {
       store: Store(initialState: self.state) {
         BindingReducer(action: toViewAction.extract(from:))
       }
-      .scope(
-        id: nil,
-        state: ToState(\.self),
-        action: toViewAction.embed,
-        isInvalid: nil
-      )
+      ._scope(state: { $0 }, action: toViewAction.embed)
     )
   }
 }
@@ -2649,7 +2708,12 @@ public struct TestStoreTask: Hashable, Sendable {
 
   /// Asserts the underlying task finished.
   ///
-  /// - Parameter duration: The amount of time to wait before asserting.
+  /// - Parameters:
+  ///   - duration: The amount of time to wait before asserting.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func finish(
     timeout duration: Duration,
@@ -2669,7 +2733,12 @@ public struct TestStoreTask: Hashable, Sendable {
 
   /// Asserts the underlying task finished.
   ///
-  /// - Parameter nanoseconds: The amount of time to wait before asserting.
+  /// - Parameters:
+  ///   - nanoseconds: The amount of time to wait before asserting.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @_disfavoredOverload
   public func finish(
     timeout nanoseconds: UInt64? = nil,
@@ -2730,7 +2799,7 @@ public struct TestStoreTask: Hashable, Sendable {
   }
 }
 
-class TestReducer<State, Action>: Reducer {
+class TestReducer<State: Equatable, Action>: Reducer {
   let base: Reduce<State, Action>
   var dependencies: DependencyValues
   let effectDidSubscribe = AsyncStream.makeStream(of: Void.self)

@@ -3,7 +3,7 @@ import OrderedCollections
 /// A wrapper type for actions that can be presented in a list.
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
-/// ``Reducer/forEach(_:action:element:fileID:filePath:line:column:)-3dw7i``.
+/// ``Reducer/forEach(_:action:element:fileID:filePath:line:column:)-6zye8``.
 public enum IdentifiedAction<ID: Hashable & Sendable, Action>: CasePathable {
   /// An action sent to the element at a given identifier.
   case element(id: ID, action: Action)
@@ -110,6 +110,10 @@ extension Reducer {
   ///     actions.
   ///   - element: A reducer that will be invoked with child actions against elements of child
   ///     state.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: A reducer that combines the child reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access

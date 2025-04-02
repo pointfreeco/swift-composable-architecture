@@ -481,6 +481,8 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
   ///     are equal, repeat view computations are removed.
   ///   - content: A function that can generate content from a view store.
+  ///   - file: The file.
+  ///   - line: The line.
   public init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (_ state: State) -> ViewState,
@@ -491,12 +493,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
     line: UInt = #line
   ) {
     self.init(
-      store: store.scope(
-        id: nil,
-        state: ToState(toViewState),
-        action: fromViewAction,
-        isInvalid: nil
-      ),
+      store: store._scope(state: toViewState, action: fromViewAction),
       removeDuplicates: isDuplicate,
       content: content,
       file: file,
@@ -576,6 +573,8 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
   ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
   ///     are equal, repeat view computations are removed.
   ///   - content: A function that can generate content from a view store.
+  ///   - file: The file.
+  ///   - line: The line.
   public init<State>(
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (_ state: State) -> ViewState,
@@ -585,12 +584,7 @@ public struct WithViewStore<ViewState, ViewAction, Content: View>: View {
     line: UInt = #line
   ) {
     self.init(
-      store: store.scope(
-        id: nil,
-        state: ToState(toViewState),
-        action: { $0 },
-        isInvalid: nil
-      ),
+      store: store._scope(state: toViewState, action: { $0 }),
       removeDuplicates: isDuplicate,
       content: content,
       file: file,
@@ -671,6 +665,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
   ///   - fromViewAction: A function that transforms view actions into store action.
   ///   - content: A function that can generate content from a view store.
+  ///   - file: The file.
+  ///   - line: The line.
   public init<State, Action>(
     _ store: Store<State, Action>,
     observe toViewState: @escaping (_ state: State) -> ViewState,
@@ -680,12 +676,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     line: UInt = #line
   ) {
     self.init(
-      store: store.scope(
-        id: nil,
-        state: ToState(toViewState),
-        action: fromViewAction,
-        isInvalid: nil
-      ),
+      store: store._scope(state: toViewState, action: fromViewAction),
       removeDuplicates: ==,
       content: content,
       file: file,
@@ -763,6 +754,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///   - toViewState: A function that transforms store state into observable view state. All
   ///   changes to the view state will cause the `WithViewStore` to re-compute its view.
   ///   - content: A function that can generate content from a view store.
+  ///   - file: The file.
+  ///   - line: The line.
   public init<State>(
     _ store: Store<State, ViewAction>,
     observe toViewState: @escaping (_ state: State) -> ViewState,
@@ -771,12 +764,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     line: UInt = #line
   ) {
     self.init(
-      store: store.scope(
-        id: nil,
-        state: ToState(toViewState),
-        action: { $0 },
-        isInvalid: nil
-      ),
+      store: store._scope(state: toViewState, action: { $0 }),
       removeDuplicates: ==,
       content: content,
       file: file,

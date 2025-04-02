@@ -25,7 +25,7 @@
         as the reducer that is being tested.
         
         > Note: See <doc:01-03-TestingYourFeature> for a tutorial on testing, as well as the article
-        <doc:Testing> for more detailed information.
+        <doc:TestingTCA> for more detailed information.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0001.swift)
       }
@@ -116,9 +116,9 @@
         To do this we can chain into the `addContact` case name directly and mutate a part of its
         associated value.
         
-        > Tip: To chain into an enum and mutate an associated value, the enum must be annotated with
-        > `@CasePathable` _and_ `@dynamicMemberLookup`. The `@Reducer` macro automatically applies
-        > these annotations to enum-based `State`, but you must manually apply it to other enums.
+        > Tip: To use the `modify` helper on an enum to mutate an associated value, the enum must 
+        > be annotated with `@CasePathable`. The `@Reducer` macro automatically applies
+        > this annotation to enum-based `State`, but you must manually apply it to other enums.
         
         @Code(name: "ContactsFeatureTests.swift", file: 02-03-01-code-0011.swift)
       }
@@ -146,7 +146,7 @@
       }
       
       @Step {
-        To further assert that when the `saveContact` delegate action was received, you must
+        To further assert that the `saveContact` delegate action was received, you must
         annotate `AddContactFeature.Action.Delegate` with the `@CasePathable` macro.
         
         @Code(name: "ContactsFeature.swift", file: 02-03-01-code-0015.swift, previousFile: 02-03-01-code-0015-previous.swift)
@@ -183,7 +183,7 @@
       manner, especially when testing the integration of many features, such as is the case with
       features performing navigation.
       
-      See <doc:Testing#Non-exhaustive-testing> for more information on non-exhaustive testing
+      See <doc:TestingTCA#Non-exhaustive-testing> for more information on non-exhaustive testing
       techniques.
     }
     
@@ -308,6 +308,9 @@
       @Step {
         Make use of the new `deleteConfirmation` static alert function in the `ContactsFeature` 
         reducer, rather than building `AlertState` from scratch.
+
+        Also to further assert that the `confirmDeletion` action was received, 
+        annotate `ContactsFeature.Action.Alert` with the `@CasePathable` macro. 
         
         @Code(name: "ContactsFeature.swift", file: 02-03-03-code-0007.swift, previousFile: 02-03-03-code-0007-previous.swift)
       }

@@ -105,7 +105,7 @@ struct SyncUpDetailView: View {
     SyncUpDetailView(
       store: Store(
         initialState: SyncUpDetail.State(
-          syncUp: Shared(.mock)
+          syncUp: Shared(value: .mock)
         )
       ) {
         SyncUpDetail()

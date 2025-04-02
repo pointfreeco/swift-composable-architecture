@@ -18,7 +18,7 @@ struct RecordMeetingTests {
       title: "Morning Sync"
     )
     let store = TestStore(
-      initialState: RecordMeeting.State(syncUp: Shared(syncUp))
+      initialState: RecordMeeting.State(syncUp: Shared(value: syncUp))
     ) {
       RecordMeeting()
     } withDependencies: {

@@ -131,7 +131,7 @@
       @Step {
         Add a case for for the "Add contact" feature. Note that we are holding onto the actual
         `AddContactFeature` reducer in the case, not the state. The
-        ``ComposableArchitecture/Reducer()`` will fill in all the requirements for the reducer
+        ``ComposableArchitecture/Reducer()`` macro will fill in all the requirements for the reducer
         protocol for us automatically.
         
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0001.swift)

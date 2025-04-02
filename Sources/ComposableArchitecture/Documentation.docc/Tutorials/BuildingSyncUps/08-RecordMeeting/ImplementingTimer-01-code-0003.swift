@@ -65,7 +65,7 @@ struct RecordMeetingView: View {
       }
     }
     .padding()
-    .foregroundColor(store.syncUp.theme.accentColor)
+    .foregroundStyle(store.syncUp.theme.accentColor)
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {
       ToolbarItem(placement: .cancellationAction) {
@@ -230,7 +230,7 @@ struct MeetingFooterView: View {
 #Preview {
   NavigationStack {
     RecordMeetingView(
-      store: Store(initialState: RecordMeeting.State(syncUp: Shared(.mock))) {
+      store: Store(initialState: RecordMeeting.State(syncUp: Shared(value: .mock))) {
         RecordMeeting()
       }
     )

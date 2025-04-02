@@ -313,7 +313,7 @@ extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewSt
             value: value,
             bindableActionType: ViewAction.self,
             context: .bindingState,
-            isInvalidated: self.store._isInvalidated,
+            isInvalidated: { [weak self] in self?.store.core.isInvalid ?? true },
             fileID: bindingState.fileID,
             filePath: bindingState.filePath,
             line: bindingState.line,
@@ -424,12 +424,7 @@ public struct BindingViewStore<State> {
     line: UInt = #line,
     column: UInt = #column
   ) {
-    self.store = store.scope(
-      id: nil,
-      state: ToState(\.self),
-      action: Action.binding,
-      isInvalid: nil
-    )
+    self.store = store._scope(state: { $0 }, action: { .binding($0) })
     #if DEBUG
       self.bindableActionType = type(of: Action.self)
       self.fileID = fileID
@@ -469,7 +464,7 @@ public struct BindingViewStore<State> {
                 value: value,
                 bindableActionType: self.bindableActionType,
                 context: .bindingStore,
-                isInvalidated: self.store._isInvalidated,
+                isInvalidated: { [weak store] in store?.core.isInvalid ?? true },
                 fileID: self.fileID,
                 filePath: self.filePath,
                 line: self.line,
@@ -515,12 +510,7 @@ extension ViewStore {
       observe: { (_: State) in
         toViewState(
           BindingViewStore(
-            store: store.scope(
-              id: nil,
-              state: ToState(\.self),
-              action: fromViewAction,
-              isInvalid: nil
-            )
+            store: store._scope(state: { $0 }, action: fromViewAction)
           )
         )
       },
@@ -589,7 +579,6 @@ extension ViewStore where ViewState: Equatable {
   ///   - store: A store.
   ///   - toViewState: A function that transforms binding store state into observable view state.
   ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
-  ///   - content: A function that can generate content from a view store.
   @_disfavoredOverload
   public convenience init<State>(
     _ store: Store<State, ViewAction>,
@@ -617,6 +606,8 @@ extension WithViewStore where Content: View {
   ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
   ///     are equal, repeat view computations are removed.
   ///   - content: A function that can generate content from a view store.
+  ///   - file: The file.
+  ///   - line: The line.
   @_disfavoredOverload
   public init<State, Action>(
     _ store: Store<State, Action>,
@@ -630,16 +621,7 @@ extension WithViewStore where Content: View {
     self.init(
       store,
       observe: { (_: State) in
-        toViewState(
-          BindingViewStore(
-            store: store.scope(
-              id: nil,
-              state: ToState(\.self),
-              action: fromViewAction,
-              isInvalid: nil
-            )
-          )
-        )
+        toViewState(BindingViewStore(store: store._scope(state: { $0 }, action: fromViewAction)))
       },
       send: fromViewAction,
       removeDuplicates: isDuplicate,
@@ -661,6 +643,8 @@ extension WithViewStore where Content: View {
   ///   - isDuplicate: A function to determine when two `ViewState` values are equal. When values
   ///     are equal, repeat view computations are removed.
   ///   - content: A function that can generate content from a view store.
+  ///   - file: The file.
+  ///   - line: The line.
   @_disfavoredOverload
   public init<State>(
     _ store: Store<State, ViewAction>,
@@ -694,6 +678,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
   ///   - fromViewAction: A function that transforms view actions into store action.
   ///   - content: A function that can generate content from a view store.
+  ///   - file: The file.
+  ///   - line: The line.
   @_disfavoredOverload
   public init<State, Action>(
     _ store: Store<State, Action>,
@@ -724,6 +710,8 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   ///   - toViewState: A function that transforms binding store state into observable view state.
   ///     All changes to the view state will cause the `WithViewStore` to re-compute its view.
   ///   - content: A function that can generate content from a view store.
+  ///   - file: The file.
+  ///   - line: The line.
   @_disfavoredOverload
   public init<State>(
     _ store: Store<State, ViewAction>,

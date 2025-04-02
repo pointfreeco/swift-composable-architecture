@@ -98,11 +98,11 @@ extension SharedStateInMemory {
           return .none
 
         case .decrementButtonTapped:
-          state.stats.decrement()
+          state.$stats.withLock { $0.decrement() }
           return .none
 
         case .incrementButtonTapped:
-          state.stats.increment()
+          state.$stats.withLock { $0.increment() }
           return .none
 
         case .isPrimeButtonTapped:
@@ -135,7 +135,7 @@ extension SharedStateInMemory {
       Reduce { state, action in
         switch action {
         case .resetStatsButtonTapped:
-          state.stats = Stats()
+          state.$stats.withLock { $0 = Stats() }
           return .none
         }
       }
@@ -211,7 +211,7 @@ private struct ProfileTabView: View {
   )
 }
 
-extension PersistenceReaderKey where Self == InMemoryKey<Stats> {
+extension SharedKey where Self == InMemoryKey<Stats> {
   fileprivate static var stats: Self {
     inMemory("stats")
   }

@@ -37,11 +37,15 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   /// Creates a navigation stack with a store of stack state and actions.
   ///
   /// - Parameters:
-  ///   - path: A store of stack state and actions to power this stack.
+  ///   - store: A store of stack state and actions to power this stack.
   ///   - root: The view to display when the stack is empty.
   ///   - destination: A view builder that defines a view to display when an element is appended to
   ///     the stack's state. The closure takes one argument, which is a store of the value to
   ///     present.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   public init(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
     @ViewBuilder root: () -> Root,
@@ -51,32 +55,42 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     line: UInt = #line,
     column: UInt = #column
   ) {
-    self.root = root()
-    self.destination = { component in
-      var element = component.element
-      return destination(
-        store
-          .scope(
-            id: store.id(
-              state:
-                \.[
-                  id: component.id,
-                  fileID: _HashableStaticString(
-                    rawValue: fileID),
-                  filePath: _HashableStaticString(
-                    rawValue: filePath), line: line, column: column
-                ]!,
-              action: \.[id: component.id]
-            ),
-            state: ToState {
-              element = $0[id: component.id] ?? element
-              return element
-            },
-            action: { .element(id: component.id, action: $0) },
-            isInvalid: { !$0.ids.contains(component.id) }
-          )
+    func navigationDestination(
+      component: StackState<State>.Component
+    ) -> Destination {
+      let id = store.id(
+        state:
+          \.[
+            id: component.id,
+            fileID: _HashableStaticString(rawValue: fileID),
+            filePath: _HashableStaticString(rawValue: filePath),
+            line: line,
+            column: column
+          ],
+        action: \.[id: component.id]
       )
+      @MainActor
+      func open(
+        _ core: some Core<StackState<State>, StackAction<State, Action>>
+      ) -> any Core<State, Action> {
+        IfLetCore(
+          base: core,
+          cachedState: component.element,
+          stateKeyPath:
+            \.[
+              id: component.id,
+              fileID: _HashableStaticString(rawValue: fileID),
+              filePath: _HashableStaticString(rawValue: filePath),
+              line: line,
+              column: column
+            ],
+          actionKeyPath: \.[id: component.id]
+        )
+      }
+      return destination(store.scope(id: id, childCore: open(store.core)))
     }
+    self.root = root()
+    self.destination = navigationDestination(component:)
     self._viewStore = ObservedObject(
       wrappedValue: ViewStore(
         store,
@@ -89,11 +103,15 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
   /// Creates a navigation stack with a store of stack state and actions.
   ///
   /// - Parameters:
-  ///   - path: A store of stack state and actions to power this stack.
+  ///   - store: A store of stack state and actions to power this stack.
   ///   - root: The view to display when the stack is empty.
   ///   - destination: A view builder that defines a view to display when an element is appended to
   ///     the stack's state. The closure takes one argument, which is the initial enum state to
   ///     present. You can switch over this value and use ``CaseLet`` views to handle each case.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   @_disfavoredOverload
   public init<D: View>(
     _ store: Store<StackState<State>, StackAction<State, Action>>,
@@ -104,34 +122,47 @@ public struct NavigationStackStore<State, Action, Root: View, Destination: View>
     line: UInt = #line,
     column: UInt = #column
   ) where Destination == SwitchStore<State, Action, D> {
-    self.root = root()
-    self.destination = { component in
-      var element = component.element
-      return SwitchStore(
-        store
-          .scope(
-            id: store.id(
-              state:
-                \.[
-                  id: component.id,
-                  fileID: _HashableStaticString(
-                    rawValue: fileID),
-                  filePath: _HashableStaticString(
-                    rawValue: filePath), line: line, column: column
-                ]!,
-              action: \.[id: component.id]
-            ),
-            state: ToState {
-              element = $0[id: component.id] ?? element
-              return element
-            },
-            action: { .element(id: component.id, action: $0) },
-            isInvalid: { !$0.ids.contains(component.id) }
+    func navigationDestination(
+      component: StackState<State>.Component
+    ) -> Destination {
+      let id = store.id(
+        state:
+          \.[
+            id: component.id,
+            fileID: _HashableStaticString(rawValue: fileID),
+            filePath: _HashableStaticString(rawValue: filePath),
+            line: line,
+            column: column
+          ],
+        action: \.[id: component.id]
+      )
+      if let child = store.children[id] as? Store<State, Action> {
+        return SwitchStore(child, content: destination)
+      } else {
+        @MainActor
+        func open(
+          _ core: some Core<StackState<State>, StackAction<State, Action>>
+        ) -> any Core<State, Action> {
+          IfLetCore(
+            base: core,
+            cachedState: component.element,
+            stateKeyPath:
+              \.[
+                id: component.id,
+                fileID: _HashableStaticString(rawValue: fileID),
+                filePath: _HashableStaticString(rawValue: filePath),
+                line: line,
+                column: column
+              ],
+            actionKeyPath: \.[id: component.id]
           )
-      ) { _ in
-        destination(component.element)
+        }
+        return SwitchStore(store.scope(id: id, childCore: open(store.core)), content: destination)
       }
     }
+
+    self.root = root()
+    self.destination = navigationDestination(component:)
     self._viewStore = ObservedObject(
       wrappedValue: ViewStore(
         store,

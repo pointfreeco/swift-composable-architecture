@@ -63,7 +63,7 @@ struct ThemePicker: View {
           Label(theme.name, systemImage: "paintpalette")
             .padding(4)
         }
-        .foregroundColor(theme.accentColor)
+        .foregroundStyle(theme.accentColor)
         .fixedSize(horizontal: false, vertical: true)
         .tag(theme)
       }

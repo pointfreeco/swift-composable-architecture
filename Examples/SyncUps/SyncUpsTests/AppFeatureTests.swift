@@ -37,7 +37,7 @@ struct AppFeatureTests {
     await store.send(\.path[id: 0].detail.doneEditingButtonTapped) {
       $0.path[id: 0]?.modify(\.detail) {
         $0.destination = nil
-        $0.syncUp.title = "Blob"
+        $0.$syncUp.withLock { $0.title = "Blob" }
       }
     }
     .finish()
@@ -63,7 +63,7 @@ struct AppFeatureTests {
 
     await store.send(\.path[id: 0].detail.destination.alert.confirmDeletion) {
       $0.path[id: 0]?.modify(\.detail) { $0.destination = nil }
-      $0.syncUpsList.syncUps = []
+      $0.syncUpsList.$syncUps.withLock { $0 = [] }
     }
 
     await store.receive(\.path.popFrom) {
@@ -87,7 +87,7 @@ struct AppFeatureTests {
       duration: .seconds(6)
     )
 
-    let sharedSyncUp = Shared(syncUp)
+    let sharedSyncUp = Shared(value: syncUp)
     let store = TestStore(
       initialState: AppFeature.State(
         path: StackState([
@@ -119,13 +119,15 @@ struct AppFeatureTests {
     await store.finish()
     store.assert {
       $0.path[id: 0]?.modify(\.detail) {
-        $0.syncUp.meetings = [
-          Meeting(
-            id: Meeting.ID(UUID(0)),
-            date: Date(timeIntervalSince1970: 1_234_567_890),
-            transcript: "I completed the project"
-          )
-        ]
+        $0.$syncUp.withLock {
+          $0.meetings = [
+            Meeting(
+              id: Meeting.ID(UUID(0)),
+              date: Date(timeIntervalSince1970: 1_234_567_890),
+              transcript: "I completed the project"
+            )
+          ]
+        }
       }
     }
   }

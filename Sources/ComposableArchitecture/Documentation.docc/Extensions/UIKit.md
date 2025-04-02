@@ -11,12 +11,17 @@ integrate into application code written in UIKit.
 
 ### Subscribing to state changes
 
-- ``ObjectiveC/NSObject/observe(_:)``
+- ``ObjectiveC/NSObject/observe(_:)-94oxy``
 - ``ObservationToken``
 
 ### Presenting alerts and action sheets
 
-- ``UIKit/UIAlertController/init(store:)``
+- ``UIKit/UIAlertController``
+
+### Stack-based navigation
+
+- ``UIKitNavigation/NavigationStackController``
+- ``UIKitNavigation/UIPushAction``
 
 ### Combine integration
 

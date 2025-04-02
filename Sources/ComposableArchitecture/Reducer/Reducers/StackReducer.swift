@@ -369,6 +369,10 @@ extension Reducer {
   ///   - toStackAction: A case path from parent action to a stack action.
   ///   - destination: A reducer that will be invoked with destination actions against elements of
   ///     destination state.
+  ///   - fileID: The fileID.
+  ///   - filePath: The filePath.
+  ///   - line: The line.
+  ///   - column: The column.
   /// - Returns: A reducer that combines the destination reducer with the parent reducer.
   @inlinable
   @warn_unqualified_access
@@ -682,10 +686,8 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
 /// resorting to positional indices, which can be error prone, especially when dealing with async
 /// effects.
 ///
-/// In production environments (e.g. in Xcode previews, simulators and on devices) the identifier
-/// is backed by a randomly generated UUID, but in tests a deterministic, generational ID is used.
-/// This allows you to predict how IDs will be created and allows you to write tests for how
-/// features behave in the stack.
+/// The identifier is backed by a deterministic, generational ID. This allows you to predict how
+/// IDs will be created and allows you to write tests for how features behave in the stack.
 ///
 /// ```swift
 /// @Test

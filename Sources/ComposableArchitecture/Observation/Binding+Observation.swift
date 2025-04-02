@@ -10,6 +10,16 @@ extension Binding {
   }
 }
 
+extension ObservedObject.Wrapper {
+  @_disfavoredOverload
+  public subscript<State: ObservableState, Action, Member>(
+    dynamicMember keyPath: KeyPath<State, Member>
+  ) -> _StoreObservedObject<State, Action, Member>
+  where ObjectType == Store<State, Action> {
+    _StoreObservedObject(wrapper: self, keyPath: keyPath)
+  }
+}
+
 extension UIBinding {
   @_disfavoredOverload
   public subscript<State: ObservableState, Action, Member>(
@@ -164,7 +174,13 @@ extension Store where State: ObservableState, Action: BindableAction, Action.Sta
     get { self.state[keyPath: keyPath] }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.set(keyPath.unsafeSendable(), newValue, isInvalidated: _isInvalidated))
+        self.send(
+          .set(
+            keyPath.unsafeSendable(),
+            newValue,
+            isInvalidated: { [weak self] in self?.core.isInvalid ?? true }
+          )
+        )
       }
     }
   }
@@ -181,7 +197,9 @@ where
     get { self.observableState }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.set(\.self, newValue, isInvalidated: _isInvalidated))
+        self.send(
+          .set(\.self, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+        )
       }
     }
   }
@@ -200,7 +218,15 @@ where
     get { self.state[keyPath: keyPath] }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.view(.set(keyPath.unsafeSendable(), newValue, isInvalidated: _isInvalidated)))
+        self.send(
+          .view(
+            .set(
+              keyPath.unsafeSendable(),
+              newValue,
+              isInvalidated: { [weak self] in self?.core.isInvalid ?? true }
+            )
+          )
+        )
       }
     }
   }
@@ -218,7 +244,11 @@ where
     get { self.observableState }
     set {
       BindingLocal.$isActive.withValue(true) {
-        self.send(.view(.set(\.self, newValue, isInvalidated: _isInvalidated)))
+        self.send(
+          .view(
+            .set(\.self, newValue, isInvalidated: { [weak self] in self?.core.isInvalid ?? true })
+          )
+        )
       }
     }
   }
@@ -249,6 +279,34 @@ public struct _StoreBinding<State: ObservableState, Action, Value> {
   #endif
   public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
     self.binding[state: self.keyPath, action: action]
+  }
+}
+
+@dynamicMemberLookup
+public struct _StoreObservedObject<State: ObservableState, Action, Value> {
+  fileprivate let wrapper: ObservedObject<Store<State, Action>>.Wrapper
+  fileprivate let keyPath: KeyPath<State, Value>
+
+  public subscript<Member>(
+    dynamicMember keyPath: KeyPath<Value, Member>
+  ) -> _StoreObservedObject<State, Action, Member> {
+    _StoreObservedObject<State, Action, Member>(
+      wrapper: wrapper,
+      keyPath: self.keyPath.appending(path: keyPath)
+    )
+  }
+
+  /// Creates a binding to the value by sending new values through the given action.
+  ///
+  /// - Parameter action: An action for the binding to send values through.
+  /// - Returns: A binding.
+  #if swift(<5.10)
+    @MainActor(unsafe)
+  #else
+    @preconcurrency@MainActor
+  #endif
+  public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
+    self.wrapper[state: self.keyPath, action: action]
   }
 }
 
