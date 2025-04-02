@@ -2639,7 +2639,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
     @MainActor
     func testEphemeralBindingDismissal() async {
-      @Bindable var store = Store(
+      @Perception.Bindable var store = Store(
         initialState: TestEphemeralBindingDismissalFeature.State(
           alert: AlertState { TextState("Oops!") }
         )

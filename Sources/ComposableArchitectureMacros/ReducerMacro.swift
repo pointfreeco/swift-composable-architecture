@@ -386,6 +386,9 @@ extension ReducerMacro: MemberMacro {
           \(access)static func scope(\
           _ store: ComposableArchitecture.Store<Self.State, Self.Action>\
           ) -> CaseScope {
+          // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+          //     bug that can cause large switch statements to blow the stack.
+          //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
           switch store.state {
           \(raw: storeScopes.joined(separator: "\n"))
           }

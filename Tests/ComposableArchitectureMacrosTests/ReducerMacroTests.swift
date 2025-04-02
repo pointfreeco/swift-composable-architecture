@@ -242,6 +242,9 @@
 
             }
             static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+                // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+                //     bug that can cause large switch statements to blow the stack.
+                //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
                 switch store.state {
 
                 }
@@ -321,6 +324,9 @@
             case alert(AlertState<Alert>)
           }
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+            //     bug that can cause large switch statements to blow the stack.
+            //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
             switch store.state {
             case .activity:
               return {
@@ -393,6 +399,9 @@
             case meeting(ComposableArchitecture.StoreOf<Meeting>)
           }
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+            //     bug that can cause large switch statements to blow the stack.
+            //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
             switch store.state {
             case .timeline:
               return {
@@ -445,6 +454,9 @@
 
             }
             static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+                // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+                //     bug that can cause large switch statements to blow the stack.
+                //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
                 switch store.state {
 
                 }
@@ -495,6 +507,9 @@
             }
 
             package static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+                // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+                //     bug that can cause large switch statements to blow the stack.
+                //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
                 switch store.state {
 
                 }
@@ -545,6 +560,9 @@
             }
 
             public static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+                // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+                //     bug that can cause large switch statements to blow the stack.
+                //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
                 switch store.state {
 
                 }
@@ -593,6 +611,9 @@
             case alert(AlertState<Never>)
           }
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+            //     bug that can cause large switch statements to blow the stack.
+            //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
             switch store.state {
             case let .alert(v0):
               return {
@@ -653,6 +674,9 @@
             case timeline(ComposableArchitecture.StoreOf<Timeline>)
           }
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+            //     bug that can cause large switch statements to blow the stack.
+            //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
             switch store.state {
             case .activity:
               return {
@@ -716,6 +740,9 @@
             case meeting(Meeting)
           }
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+            //     bug that can cause large switch statements to blow the stack.
+            //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
             switch store.state {
             case .timeline:
               return {
@@ -783,6 +810,9 @@
             case meeting(Meeting, syncUp: SyncUp)
           }
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+            //     bug that can cause large switch statements to blow the stack.
+            //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
             switch store.state {
             case let .alert(v0):
               return {
@@ -859,6 +889,9 @@
             case sheet(ComposableArchitecture.StoreOf<Counter>)
           }
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+            //     bug that can cause large switch statements to blow the stack.
+            //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
             switch store.state {
             case .drillDown:
               return {
@@ -919,6 +952,9 @@
             case feature(ComposableArchitecture.StoreOf<Nested.Feature>)
           }
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+            //     bug that can cause large switch statements to blow the stack.
+            //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
             switch store.state {
             case .feature:
               return {
@@ -1283,6 +1319,9 @@
 
           }
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            // NB: We are using immediately invoked closures in each case of this switch to work around a Swift
+            //     bug that can cause large switch statements to blow the stack.
+            //     https://forums.swift.org/t/struct-and-enum-accessors-take-a-large-amount-of-stack-space/63251/12
             switch store.state {
             case .child:
               return {
