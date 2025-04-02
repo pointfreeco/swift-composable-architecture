@@ -31,7 +31,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-sharing", "0.1.2"..<"3.0.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.3.0"),
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.0.0"),
-    .package(url: "https://github.com/swiftlang/swift-syntax", "509.0.0"..<"601.0.0"),
+    .package(url: "https://github.com/swiftlang/swift-syntax", "509.0.0"..<"602.0.0"),
   ],
   targets: [
     .target(

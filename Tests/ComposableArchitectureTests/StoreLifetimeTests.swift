@@ -69,7 +69,7 @@ final class StoreLifetimeTests: BaseTCATestCase {
     }
 
     @MainActor
-    func testStoreDeinit_RunningEffect() async {
+    func testStoreDeinit_RunningEffect_MainActor() async {
       Logger.shared.isEnabled = true
       let effectFinished = self.expectation(description: "Effect finished")
       do {
@@ -92,6 +92,24 @@ final class StoreLifetimeTests: BaseTCATestCase {
           "Store<(), ()>.deinit",
         ]
       )
+      await self.fulfillment(of: [effectFinished], timeout: 0.5)
+    }
+
+    func testStoreDeinit_RunningEffect() async {
+      let effectFinished = self.expectation(description: "Effect finished")
+      do {
+        let store = await Store<Void, Void>(initialState: ()) {
+          Reduce { state, _ in
+            .run { _ in
+              try? await Task.never()
+              effectFinished.fulfill()
+            }
+          }
+        }
+        await store.send(())
+        _ = store
+      }
+
       await self.fulfillment(of: [effectFinished], timeout: 0.5)
     }
 
@@ -127,20 +145,19 @@ final class StoreLifetimeTests: BaseTCATestCase {
 
   @MainActor
   @available(*, deprecated)
-  func testUnCachedStores() async {
+  func testUnCachedStores() async throws {
     Logger.shared.isEnabled = true
-    let clock = TestClock()
     let store = Store(initialState: Parent.State()) {
       Parent()
     } withDependencies: {
-      $0.continuousClock = clock
+      $0.continuousClock = ContinuousClock()
     }
     do {
       let child = store.scope(state: { $0.child }, action: { .child($0) })
       child.send(.start)
       XCTAssertEqual(store.withState(\.child.count), 1)
     }
-    await clock.run()
+    try await Task.sleep(nanoseconds: 1_000_000_000)
     XCTAssertEqual(store.withState(\.child.count), 2)
   }
 }

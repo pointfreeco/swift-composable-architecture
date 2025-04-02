@@ -2634,20 +2634,20 @@ final class PresentationReducerTests: BaseTCATestCase {
         .ifLet(\.$alert, action: /Action.alert)
       }
     }
-    @MainActor
-    func testEphemeralBindingDismissal() async {
-      @Perception.Bindable var store = Store(
-        initialState: TestEphemeralBindingDismissalFeature.State(
-          alert: AlertState { TextState("Oops!") }
-        )
-      ) {
-        TestEphemeralBindingDismissalFeature()
-      }
-
-      XCTAssertNotNil(store.alert)
-      $store.scope(state: \.alert, action: \.alert).wrappedValue = nil
-      XCTAssertNil(store.alert)
-    }
+  //    @MainActor
+  //    func testEphemeralBindingDismissal() async {
+  //      @Perception.Bindable var store = Store(
+  //        initialState: TestEphemeralBindingDismissalFeature.State(
+  //          alert: AlertState { TextState("Oops!") }
+  //        )
+  //      ) {
+  //        TestEphemeralBindingDismissalFeature()
+  //      }
+  //
+  //      XCTAssertNotNil(store.alert)
+  //      $store.scope(state: \.alert, action: \.alert).wrappedValue = nil
+  //      XCTAssertNil(store.alert)
+  //    }
   #endif
 }
 

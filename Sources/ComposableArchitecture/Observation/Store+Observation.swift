@@ -73,22 +73,22 @@ extension Store where State: ObservableState {
   /// > observed.
   ///
   /// - Parameters:
-  ///   - state: A key path to optional child state.
-  ///   - action: A case key path to child actions.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
+  ///   - stateKeyPath: A key path to optional child state.
+  ///   - actionKeyPath: A case key path to child actions.
+  ///   - fileID: The source `#fileID` associated with the scoping.
+  ///   - filePath: The source `#filePath` associated with the scoping.
+  ///   - line: The source `#line` associated with the scoping.
+  ///   - column: The source `#column` associated with the scoping.
   /// - Returns: An optional store of non-optional child state and actions.
   public func scope<ChildState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, ChildAction>,
+    state stateKeyPath: KeyPath<State, ChildState?>,
+    action actionKeyPath: CaseKeyPath<Action, ChildAction>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) -> Store<ChildState, ChildAction>? {
-    if !self.canCacheChildren {
+    if !core.canStoreCacheChildren {
       reportIssue(
         uncachedStoreWarning(self),
         fileID: fileID,
@@ -97,17 +97,21 @@ extension Store where State: ObservableState {
         column: column
       )
     }
-    guard var childState = self.state[keyPath: state]
-    else { return nil }
-    return self.scope(
-      id: self.id(state: state.appending(path: \.!), action: action),
-      state: ToState {
-        childState = $0[keyPath: state] ?? childState
-        return childState
-      },
-      action: { action($0) },
-      isInvalid: { $0[keyPath: state] == nil }
-    )
+    let id = id(state: stateKeyPath, action: actionKeyPath)
+    guard let childState = state[keyPath: stateKeyPath]
+    else {
+      children[id] = nil  // TODO: Eager?
+      return nil
+    }
+    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
+      IfLetCore(
+        base: core,
+        cachedState: childState,
+        stateKeyPath: stateKeyPath,
+        actionKeyPath: actionKeyPath
+      )
+    }
+    return scope(id: id, childCore: open(core))
   }
 }
 
@@ -186,6 +190,45 @@ extension Binding {
       line: line,
       column: column
     ]
+  }
+}
+
+extension ObservedObject.Wrapper {
+  #if swift(>=5.10)
+    @preconcurrency@MainActor
+  #else
+    @MainActor(unsafe)
+  #endif
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #fileID,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where ObjectType == Store<State, Action> {
+    self[
+      dynamicMember:
+        \.[
+          id: self[dynamicMember: \._currentState].wrappedValue[keyPath: state]
+            .flatMap(_identifiableID),
+          state: state,
+          action: action,
+          isInViewBody: _isInPerceptionTracking,
+          fileID: _HashableStaticString(rawValue: fileID),
+          filePath: _HashableStaticString(rawValue: filePath),
+          line: line,
+          column: column
+        ]
+    ]
+  }
+}
+
+extension Store {
+  fileprivate var _currentState: State {
+    get { currentState }
+    set {}
   }
 }
 
@@ -412,7 +455,7 @@ extension Store where State: ObservableState {
       if newValue == nil,
         let childState = self.state[keyPath: state],
         id == _identifiableID(childState),
-        !self._isInvalidated()
+        !self.core.isInvalid
       {
         self.send(action(.dismiss))
         if self.state[keyPath: state] != nil {

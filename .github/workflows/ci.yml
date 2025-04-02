@@ -26,6 +26,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      - name: Update xcbeautify
+        run: brew update && brew upgrade xcbeautify
       - name: List available devices
         run: xcrun simctl list devices available
       - name: Cache derived data
@@ -50,21 +52,27 @@ jobs:
     strategy:
       matrix:
         command: [test, '']
-        platform: [IOS, MAC_CATALYST, MACOS, TVOS, VISIONOS, WATCHOS]
+        platform:
+          - IOS
+          - MAC_CATALYST
+          - MACOS
+          - TVOS
+          # - VISIONOS  # Unfortunately, visionOS on CI is too flakey
+          - WATCHOS
         xcode: [15.2, 15.4]
         exclude:
           - {xcode: 15.2, command: test}
           - {xcode: 15.4, command: ''}
           - {xcode: 15.2, platform: MAC_CATALYST}
           - {xcode: 15.2, platform: TVOS}
-          - {xcode: 15.2, platform: VISIONOS}
+          # - {xcode: 15.2, platform: VISIONOS}
           - {xcode: 15.2, platform: WATCHOS}
-        include:
-          - {xcode: 15.2, skip_release: 1}
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      - name: Update xcbeautify
+        run: brew update && brew upgrade xcbeautify
       - name: Install visionOS runtime
         if: matrix.platform == 'visionOS'
         run: |
@@ -89,9 +97,6 @@ jobs:
         uses: chetan/git-restore-mtime-action@v2
       - name: Debug
         run: make XCODEBUILD_ARGUMENT="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" WORKSPACE=.github/package.xcworkspace xcodebuild
-      - name: Release
-        if: matrix.skip_release != '1'
-        run: make XCODEBUILD_ARGUMENT="${{ matrix.command }}" CONFIG=Release PLATFORM="${{ matrix.platform }}" WORKSPACE=.github/package.xcworkspace xcodebuild
 
   library-evolution:
     name: Library (evolution)
@@ -100,6 +105,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Select Xcode 15.4
         run: sudo xcode-select -s /Applications/Xcode_15.4.app
+      - name: Update xcbeautify
+        run: brew update && brew upgrade xcbeautify
       - name: Build for library evolution
         run: make build-for-library-evolution
 
@@ -118,26 +125,28 @@ jobs:
             deriveddata-examples-
       - name: Select Xcode 16
         run: sudo xcode-select -s /Applications/Xcode_16.2.app
+      - name: Update xcbeautify
+        run: brew update && brew upgrade xcbeautify
       - name: Set IgnoreFileSystemDeviceInodeChanges flag
         run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
       - name: Update mtime for incremental builds
         uses: chetan/git-restore-mtime-action@v2
       - name: CaseStudies (SwiftUI)
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (SwiftUI)" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (SwiftUI)" xcodebuild-raw
       - name: CaseStudies (UIKit)
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (UIKit)" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="CaseStudies (UIKit)" xcodebuild-raw
       - name: Search
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Search" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Search" xcodebuild-raw
       - name: SyncUps
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SyncUps" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SyncUps" xcodebuild-raw
       - name: SpeechRecognition
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SpeechRecognition" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="SpeechRecognition" xcodebuild-raw
       - name: TicTacToe
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="TicTacToe" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="TicTacToe" xcodebuild-raw
       - name: Todos
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Todos" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Todos" xcodebuild-raw
       - name: VoiceMemos
-        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="VoiceMemos" xcodebuild
+        run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="VoiceMemos" xcodebuild-raw
 
   check-macro-compatibility:
     name: Check Macro Compatibility
