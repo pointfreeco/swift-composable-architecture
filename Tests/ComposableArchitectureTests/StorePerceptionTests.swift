@@ -32,6 +32,7 @@ final class StorePerceptionTests: BaseTCATestCase {
   }
 
   @MainActor
+  @available(*, deprecated)
   func testPerceptionCheck_AccessStateWithoutTracking() {
     @MainActor
     struct FeatureView: View {

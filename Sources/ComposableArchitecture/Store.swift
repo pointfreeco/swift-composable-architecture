@@ -371,8 +371,13 @@ public final class Store<State, Action> {
 
     if let stateType = State.self as? any ObservableState.Type {
       func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
-        core.didSet
-          .compactMap { [weak self] in (self?.currentState as? T)?._$id }
+        return core.didSet
+          .prefix { [weak self] _ in
+            self?.core.isInvalid != true
+          }
+          .compactMap { [weak self] in
+            (self?.currentState as? T)?._$id
+          }
           .removeDuplicates()
           .dropFirst()
           .sink { [weak self] _ in
