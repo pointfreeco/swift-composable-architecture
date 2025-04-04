@@ -112,12 +112,12 @@ private struct Feature {
           defaults.removeObject(forKey: "isOn")
         }
       case .resetButtonTapped:
-        state.isAppStorageOn1 = false
-        state.isAppStorageOn2 = false
-        state.fileStorage1.isOn = false
-        state.fileStorage2.isOn = false
-        state.isInMemoryOn1 = false
-        state.isInMemoryOn2 = false
+        state.$isAppStorageOn1.withLock { $0 = false }
+        state.$isAppStorageOn2.withLock { $0 = false }
+        state.$fileStorage1.withLock { $0.isOn = false }
+        state.$fileStorage2.withLock { $0.isOn = false }
+        state.$isInMemoryOn1.withLock { $0 = false }
+        state.$isInMemoryOn2.withLock { $0 = false }
         return .none
       case .writeToFileStorageButtonTapped:
         return .run { [isOn = state.fileStorage1.isOn] _ in
