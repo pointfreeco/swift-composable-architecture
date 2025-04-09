@@ -1,3 +1,4 @@
+import Foundation
 import SwiftDiagnostics
 import SwiftOperators
 import SwiftSyntax
