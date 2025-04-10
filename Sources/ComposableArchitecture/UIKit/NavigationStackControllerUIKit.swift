@@ -91,7 +91,7 @@
     ///   - filePath: The source `#filePath` associated with the push.
     ///   - line: The source `#line` associated with the push.
     ///   - column: The source `#column` associated with the push.
-    public func callAsFunction<Element: Hashable>(
+    public func callAsFunction<Element>(
       state: Element,
       fileID: StaticString = #fileID,
       filePath: StaticString = #filePath,
