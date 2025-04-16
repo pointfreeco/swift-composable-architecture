@@ -202,21 +202,25 @@ public struct _NavigationDestinationViewModifier<
     content
       .environment(\.navigationDestinationType, State.self)
       .navigationDestination(for: StackState<State>.Component.self) { component in
-        destination(store.scope(component: component, fileID: fileID, filePath: filePath, line: line, column: column))
-          .environment(\.navigationDestinationType, State.self)
+        destination(
+          store.scope(
+            component: component, fileID: fileID, filePath: filePath, line: line, column: column)
+        )
+        .environment(\.navigationDestinationType, State.self)
       }
   }
 }
 
 @_spi(Internals)
-public extension Store {
-  func scope<ChildState, ChildAction>(
+extension Store {
+  public func scope<ChildState, ChildAction>(
     component: StackState<ChildState>.Component,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
-  ) -> Store<ChildState, ChildAction> where State == StackState<ChildState>, Action == StackAction<ChildState, ChildAction> {
+  ) -> Store<ChildState, ChildAction>
+  where State == StackState<ChildState>, Action == StackAction<ChildState, ChildAction> {
     let id = self.id(
       state:
         \.[
