@@ -1235,6 +1235,30 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(store1.count, 42)
     XCTAssertEqual(store2.count, 0)
   }
+
+  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+  @MainActor func testRootStoreCancellationIsolation_TestStore() async throws {
+    let clock = TestClock()
+    let store1 = TestStore(initialState: RootStoreCancellationIsolation.State()) {
+      RootStoreCancellationIsolation()
+    } withDependencies: {
+      $0.continuousClock = clock
+    }
+    let store2 = TestStore(initialState: RootStoreCancellationIsolation.State()) {
+      RootStoreCancellationIsolation()
+    } withDependencies: {
+      $0.continuousClock = clock
+    }
+    await store1.send(.tap)
+    await store2.send(.tap)
+    try await Task.sleep(nanoseconds: 100_000_000)
+    await store2.send(.cancelButtonTapped)
+    await clock.run()
+    await store1.receive(\.response) {
+      $0.count = 42
+    }
+  }
+
   @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   @Reducer struct RootStoreCancellationIsolation {
     @ObservableState struct State: Equatable {

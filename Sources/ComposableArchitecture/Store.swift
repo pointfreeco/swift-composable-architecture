@@ -174,19 +174,11 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) {
-    let prepDeps: (inout DependencyValues) -> Void = {
-      $0.navigationIDPath = NavigationIDPath(path: [
-        NavigationID(
-          kind: .keyPath(\State.self),
-          identifier: UUID(),
-          tag: nil
-        )
-      ])
-      prepareDependencies?(&$0)
-    }
-    let (initialState, reducer, dependencies) = withDependencies(prepDeps) {
+    let (initialState, reducer, dependencies) = withDependencies(prepareDependencies ?? { _ in }) {
       @Dependency(\.self) var dependencies
-      return (initialState(), reducer(), dependencies)
+      var updatedDependencies = dependencies
+      updatedDependencies.navigationIDPath = NavigationIDPath(path: [NavigationID()])
+      return (initialState(), reducer(), updatedDependencies)
     }
     self.init(
       initialState: initialState,
