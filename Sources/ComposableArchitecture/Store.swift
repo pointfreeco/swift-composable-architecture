@@ -177,7 +177,7 @@ public final class Store<State, Action> {
     let (initialState, reducer, dependencies) = withDependencies(prepareDependencies ?? { _ in }) {
       @Dependency(\.self) var dependencies
       var updatedDependencies = dependencies
-      updatedDependencies.navigationIDPath = NavigationIDPath(path: [NavigationID()])
+      updatedDependencies.navigationIDPath.append(NavigationID())
       return (initialState(), reducer(), updatedDependencies)
     }
     self.init(

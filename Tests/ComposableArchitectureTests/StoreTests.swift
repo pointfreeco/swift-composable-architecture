@@ -1251,7 +1251,6 @@ final class StoreTests: BaseTCATestCase {
     }
     await store1.send(.tap)
     await store2.send(.tap)
-    try await Task.sleep(nanoseconds: 100_000_000)
     await store2.send(.cancelButtonTapped)
     await clock.run()
     await store1.receive(\.response) {
