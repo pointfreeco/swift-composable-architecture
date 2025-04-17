@@ -174,7 +174,17 @@ public final class Store<State, Action> {
     @ReducerBuilder<State, Action> reducer: () -> R,
     withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
   ) {
-    let (initialState, reducer, dependencies) = withDependencies(prepareDependencies ?? { _ in }) {
+    let prepDeps: (inout DependencyValues) -> Void = {
+      $0.navigationIDPath = NavigationIDPath(path: [
+        NavigationID(
+          kind: .keyPath(\State.self),
+          identifier: UUID(),
+          tag: nil
+        )
+      ])
+      prepareDependencies?(&$0)
+    }
+    let (initialState, reducer, dependencies) = withDependencies(prepDeps) {
       @Dependency(\.self) var dependencies
       return (initialState(), reducer(), dependencies)
     }
@@ -329,7 +339,8 @@ public final class Store<State, Action> {
   }
 
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )
@@ -389,7 +400,9 @@ public final class Store<State, Action> {
     initialState: R.State,
     reducer: R
   ) {
-    self.init(core: RootCore(initialState: initialState, reducer: reducer))
+    self.init(
+      core: RootCore(initialState: initialState, reducer: reducer)
+    )
   }
 
   /// A publisher that emits when state changes.

@@ -1213,6 +1213,58 @@ final class StoreTests: BaseTCATestCase {
       }
     }
   }
+
+  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+  @MainActor func testRootStoreCancellationIsolation() async throws {
+    let clock = TestClock()
+    let store1 = Store(initialState: RootStoreCancellationIsolation.State()) {
+      RootStoreCancellationIsolation()
+    } withDependencies: {
+      $0.continuousClock = clock
+    }
+    let store2 = Store(initialState: RootStoreCancellationIsolation.State()) {
+      RootStoreCancellationIsolation()
+    } withDependencies: {
+      $0.continuousClock = clock
+    }
+    store1.send(.tap)
+    store2.send(.tap)
+    try await Task.sleep(nanoseconds: 100_000_000)
+    store2.send(.cancelButtonTapped)
+    await clock.run()
+    XCTAssertEqual(store1.count, 42)
+    XCTAssertEqual(store2.count, 0)
+  }
+  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+  @Reducer struct RootStoreCancellationIsolation {
+    @ObservableState struct State: Equatable {
+      var count = 0
+    }
+    enum Action {
+      case cancelButtonTapped
+      case response(Int)
+      case tap
+    }
+    @Dependency(\.continuousClock) var clock
+    enum CancelID { case effect }
+    var body: some ReducerOf<Self> {
+      Reduce<State, Action> { state, action in
+        switch action {
+        case .cancelButtonTapped:
+          return .cancel(id: CancelID.effect)
+        case .response(let value):
+          state.count = value
+          return .none
+        case .tap:
+          return .run { send in
+            try await clock.sleep(for: .seconds(1))
+            await send(.response(42))
+          }
+          .cancellable(id: CancelID.effect)
+        }
+      }
+    }
+  }
 }
 
 #if canImport(Testing)

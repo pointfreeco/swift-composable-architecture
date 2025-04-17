@@ -38,6 +38,8 @@ struct NavigationID: Hashable, @unchecked Sendable {
   private let identifier: AnyHashable?
   private let tag: UInt32?
 
+
+
   enum Kind: Hashable {
     case casePath(root: Any.Type, value: Any.Type)
     case keyPath(AnyKeyPath)
@@ -109,6 +111,12 @@ struct NavigationID: Hashable, @unchecked Sendable {
     } else {
       self.identifier = nil
     }
+  }
+
+  init(kind: Kind, identifier: AnyHashable?, tag: UInt32?) {
+    self.kind = kind
+    self.identifier = identifier
+    self.tag = tag
   }
 
   static func == (lhs: Self, rhs: Self) -> Bool {
