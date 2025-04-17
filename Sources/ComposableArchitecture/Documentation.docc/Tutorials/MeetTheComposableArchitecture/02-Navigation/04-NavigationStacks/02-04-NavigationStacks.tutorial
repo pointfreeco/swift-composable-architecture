@@ -157,6 +157,12 @@
       }
       
       @Step {
+        Navigation is performed using NavigationLink, and the delete function is not used in this file, so `deleteButtonTapped(id:)` action is deleted.
+        
+        @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0006.swift, previousFile: 02-04-02-code-0006-previous.swift)
+      }
+      
+      @Step {
         Run the application to see that we can now drill down one level, for each contact.
         
         @Video(source: ch02-sub04-sec01-video-0000) 

@@ -8,6 +8,7 @@ struct ContactsFeature {
   }
   enum Action {
     case addButtonTapped
+    case deleteButtonTapped(id: Contact.ID)
     case destination(PresentationAction<Destination.Action>)
     case path(StackActionOf<ContactDetailFeature>)
     @CasePathable
@@ -36,6 +37,10 @@ struct ContactsFeature {
         return .none
 
       case .destination:
+        return .none
+
+      case let .deleteButtonTapped(id: id):
+        state.destination = .alert(.deleteConfirmation(id: id))
         return .none
 
       case .path:

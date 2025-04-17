@@ -1,5 +1,3 @@
-import ComposableArchitecture
-
 @Reducer
 struct ContactsFeature {
   @ObservableState
@@ -10,6 +8,7 @@ struct ContactsFeature {
   }
   enum Action {
     case addButtonTapped
+    // case deleteButtonTapped(id: Contact.ID)
     case destination(PresentationAction<Destination.Action>)
     case path(StackActionOf<ContactDetailFeature>)
     @CasePathable
@@ -28,24 +27,22 @@ struct ContactsFeature {
           )
         )
         return .none
-        
+
       case let .destination(.presented(.addContact(.delegate(.saveContact(contact))))):
         state.contacts.append(contact)
         return .none
-        
+
       case let .destination(.presented(.alert(.confirmDeletion(id: id)))):
         state.contacts.remove(id: id)
         return .none
-        
+
       case .destination:
         return .none
 
-      case let .path(.element(id: id, action: .delegate(.confirmDeletion))):
-        guard let detailState = state.path[id: id]
-        else { return .none }
-        state.contacts.remove(id: detailState.contact.id)
-        return .none
-        
+      //  case let .deleteButtonTapped(id: id):
+      //    state.destination = .alert(.deleteConfirmation(id: id))
+      //    return .none
+
       case .path:
         return .none
       }
@@ -56,3 +53,4 @@ struct ContactsFeature {
     }
   }
 }
+
