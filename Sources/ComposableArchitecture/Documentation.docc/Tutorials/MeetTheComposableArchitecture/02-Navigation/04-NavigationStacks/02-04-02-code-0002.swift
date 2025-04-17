@@ -49,9 +49,7 @@ struct ContactsFeature {
         return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination()
-    }
+    .ifLet(\.$destination, action: \.destination)
     .forEach(\.path, action: \.path) {
       ContactDetailFeature()
     }
