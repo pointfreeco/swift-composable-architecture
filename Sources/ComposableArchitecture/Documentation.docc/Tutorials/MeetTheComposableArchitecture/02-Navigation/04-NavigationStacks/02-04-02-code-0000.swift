@@ -22,7 +22,7 @@ struct ContactsFeature {
     Reduce { state, action in
       switch action {
       case .addButtonTapped:
-        state.destination = .addContact(
+        state.destination = ContactsFeature.Destination.State.addContact(
           AddContactFeature.State(
             contact: Contact(id: self.uuid(), name: "")
           )
