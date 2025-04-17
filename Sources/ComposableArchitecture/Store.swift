@@ -400,9 +400,7 @@ public final class Store<State, Action> {
     initialState: R.State,
     reducer: R
   ) {
-    self.init(
-      core: RootCore(initialState: initialState, reducer: reducer)
-    )
+    self.init(core: RootCore(initialState: initialState, reducer: reducer))
   }
 
   /// A publisher that emits when state changes.

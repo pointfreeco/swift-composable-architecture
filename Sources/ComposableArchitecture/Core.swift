@@ -53,21 +53,12 @@ final class RootCore<Root: Reducer>: Core {
   private var bufferedActions: [Root.Action] = []
   var effectCancellables: [UUID: AnyCancellable] = [:]
   private var isSending = false
-  init<Other: Reducer<Root.State, Root.Action>>(
+  init(
     initialState: Root.State,
-    reducer: Other
-  ) where Root == _DependencyKeyWritingReducer<Other> {
+    reducer: Root
+  ) {
     self.state = initialState
-    self.reducer = reducer.dependency(
-      \.navigationIDPath,
-       NavigationIDPath.init(path: [
-        NavigationID.init(
-          kind: .keyPath(\State.self),
-          identifier: UUID(),
-          tag: nil
-        )
-       ])
-    )
+    self.reducer = reducer
   }
   func send(_ action: Root.Action) -> Task<Void, Never>? {
     _withoutPerceptionChecking {
