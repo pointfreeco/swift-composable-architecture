@@ -222,10 +222,10 @@ extension BindingAction {
   /// action directly to do further work:
   ///
   /// ```swift
-  /// case .binding(\.$displayName): // Invokes the `~=` operator.
+  /// case .binding(\.displayName): // Invokes the `~=` operator.
   ///   // Validate display name
   ///
-  /// case .binding(\.$enableNotifications):
+  /// case .binding(\.enableNotifications):
   ///   // Return an authorization request effect
   /// ```
   public static func ~= <Value>(
