@@ -541,6 +541,7 @@ public final class TestStore<State: Equatable, Action> {
     let reducer = Dependencies.withDependencies {
       prepareDependencies(&$0)
       sharedChangeTracker.track(&$0)
+      $0.navigationIDPath.append(NavigationID())
     } operation: {
       TestReducer(Reduce(reducer()), initialState: initialState())
     }

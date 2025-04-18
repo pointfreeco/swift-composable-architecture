@@ -76,7 +76,9 @@ extension Reducer {
     //     specialization defined below from being called, which fuses chained calls.
     -> _DependencyKeyWritingReducer<Self>
   {
-    _DependencyKeyWritingReducer(base: self) { $0[keyPath: keyPath] = value }
+    _DependencyKeyWritingReducer(base: self) {
+      $0[keyPath: keyPath] = value
+    }
   }
 
   /// Places a value in the reducer's dependencies.
@@ -144,7 +146,9 @@ extension Reducer {
     //     specialization defined below from being called, which fuses chained calls.
     -> _DependencyKeyWritingReducer<Self>
   {
-    _DependencyKeyWritingReducer(base: self) { transform(&$0[keyPath: keyPath]) }
+    _DependencyKeyWritingReducer(base: self) {
+      transform(&$0[keyPath: keyPath])
+    }
   }
 }
 
