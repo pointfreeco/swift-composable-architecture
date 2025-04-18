@@ -10,7 +10,7 @@ struct ContactsView: View {
               Text(contact.name)
               Spacer()
               Image(systemName: "trash")
-                .ForegroundStyle(.red)
+                .foregroundStyle(Color.red)
             }
           }
           .buttonStyle(.borderless)
