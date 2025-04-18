@@ -1229,9 +1229,9 @@ final class StoreTests: BaseTCATestCase {
     }
     store1.send(.tap)
     store2.send(.tap)
-    try await Task.sleep(nanoseconds: 100_000_000)
+    try await Task.sleep(for: .seconds(1))
     store2.send(.cancelButtonTapped)
-    await clock.run()
+    await clock.run(timeout: .seconds(1))
     XCTAssertEqual(store1.count, 42)
     XCTAssertEqual(store2.count, 0)
   }
