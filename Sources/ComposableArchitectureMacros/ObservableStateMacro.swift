@@ -448,7 +448,7 @@ extension ObservableStateMacro: MemberAttributeMacro {
     )
 
     if property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
-        || knownSupportedPropertyWrappers.contains(where: property.hasMacroApplication)
+      || knownSupportedPropertyWrappers.contains(where: property.hasMacroApplication)
     {
       return [
         AttributeSyntax(
@@ -625,5 +625,5 @@ public struct ObservationStateIgnoredMacro: AccessorMacro {
 }
 
 private let knownSupportedPropertyWrappers = [
-  "Shared", "SharedReader", "Fetch", "FetchAll", "FetchOne"
+  "Shared", "SharedReader", "Fetch", "FetchAll", "FetchOne",
 ]
