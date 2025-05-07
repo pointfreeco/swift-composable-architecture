@@ -61,9 +61,9 @@ final class RootCore<Root: Reducer>: Core {
     self.reducer = reducer
   }
   func send(_ action: Root.Action) -> Task<Void, Never>? {
-      _withoutPerceptionChecking {
-        _send(action)
-      }
+    _withoutPerceptionChecking {
+      _send(action)
+    }
   }
   private func _send(_ action: Root.Action) -> Task<Void, Never>? {
     self.bufferedActions.append(action)

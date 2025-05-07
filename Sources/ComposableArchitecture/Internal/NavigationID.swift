@@ -1,5 +1,5 @@
-import Foundation
 @_spi(Reflection) import CasePaths
+import Foundation
 
 extension DependencyValues {
   var navigationIDPath: NavigationIDPath {
