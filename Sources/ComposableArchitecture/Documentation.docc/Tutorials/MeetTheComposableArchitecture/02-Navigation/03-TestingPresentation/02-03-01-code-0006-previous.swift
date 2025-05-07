@@ -49,7 +49,7 @@ struct ContactsFeature {
       }
     }
     .ifLet(\.$destination, action: \.destination) {
-      Destination()
+      Destination.body
     }
   }
 }
