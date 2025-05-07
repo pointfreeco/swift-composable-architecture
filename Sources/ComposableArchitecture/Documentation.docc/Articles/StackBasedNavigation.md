@@ -404,10 +404,10 @@ struct Feature {
 
   @Reducer  
   struct Path {
-    enum State: Equatable { case counter(Counter.State) }
-    enum Action { case counter(Counter.Action) }
+    enum State: Equatable { case counter(CounterFeature.State) }
+    enum Action { case counter(CounterFeature.Action) }
     var body: some ReducerOf<Self> {
-      Scope(state: \.counter, action: \.counter) { Counter() }
+      Scope(state: \.counter, action: \.counter) { CounterFeature() }
     }
   }
 
