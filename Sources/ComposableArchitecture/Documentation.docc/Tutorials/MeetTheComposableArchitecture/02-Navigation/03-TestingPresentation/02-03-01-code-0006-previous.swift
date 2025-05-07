@@ -48,6 +48,8 @@ struct ContactsFeature {
         return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination)
+    .ifLet(\.$destination, action: \.destination) {
+      Destination.body
+    }
   }
 }

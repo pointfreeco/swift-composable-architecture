@@ -157,7 +157,8 @@
       }
       
       @Step {
-        Navigation is performed using NavigationLink, and the delete function is not used in this file, so `deleteButtonTapped(id:)` action is deleted.
+        Navigation is performed using a `NavigationLink` and so the `deleteButtonTapped` action is 
+        no longer needed.
         
         @Code(name: "ContactsFeature.swift", file: 02-04-02-code-0006.swift, previousFile: 02-04-02-code-0006-previous.swift)
       }
