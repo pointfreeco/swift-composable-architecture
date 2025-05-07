@@ -1109,7 +1109,7 @@ final class PresentationReducerTests: BaseTCATestCase {
     await presentationTask.cancel()
   }
 
-  func testNavigation_cancelID_parentCancellation() async {
+  func testNavigation_cancelID_parentCancellation() async throws {
     struct Grandchild: Reducer {
       struct State: Equatable {}
       enum Action: Equatable {
@@ -1193,17 +1193,15 @@ final class PresentationReducerTests: BaseTCATestCase {
     let store = await TestStore(initialState: Parent.State()) {
       Parent()
     }
-    let childPresentationTask = await store.send(.presentChild) {
+    await store.send(.presentChild) {
       $0.child = Child.State()
     }
-    let grandchildPresentationTask = await store.send(.child(.presented(.presentGrandchild))) {
+    await store.send(.child(.presented(.presentGrandchild))) {
       $0.child?.grandchild = Grandchild.State()
     }
     await store.send(.child(.presented(.startButtonTapped)))
     await store.send(.child(.presented(.grandchild(.presented(.startButtonTapped)))))
     await store.send(.stopButtonTapped)
-    await grandchildPresentationTask.cancel()
-    await childPresentationTask.cancel()
   }
 
   func testNavigation_cancelID_parentCancelTwoChildren() async {

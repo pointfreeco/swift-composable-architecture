@@ -176,7 +176,9 @@ public final class Store<State, Action> {
   ) {
     let (initialState, reducer, dependencies) = withDependencies(prepareDependencies ?? { _ in }) {
       @Dependency(\.self) var dependencies
-      return (initialState(), reducer(), dependencies)
+      var updatedDependencies = dependencies
+      updatedDependencies.navigationIDPath.append(NavigationID())
+      return (initialState(), reducer(), updatedDependencies)
     }
     self.init(
       initialState: initialState,
@@ -329,7 +331,8 @@ public final class Store<State, Action> {
   }
 
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )
