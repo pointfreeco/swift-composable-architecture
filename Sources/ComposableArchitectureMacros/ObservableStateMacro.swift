@@ -49,8 +49,6 @@ public struct ObservableStateMacro {
   static let ignoredMacroName = "ObservationStateIgnored"
   static let presentsMacroName = "Presents"
   static let presentationStatePropertyWrapperName = "PresentationState"
-  static let sharedPropertyWrapperName = "Shared"
-  static let sharedReaderPropertyWrapperName = "SharedReader"
 
   static let registrarVariableName = "_$observationRegistrar"
 
@@ -450,8 +448,7 @@ extension ObservableStateMacro: MemberAttributeMacro {
     )
 
     if property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
-      || property.hasMacroApplication(ObservableStateMacro.sharedReaderPropertyWrapperName)
+      || knownSupportedPropertyWrappers.contains(where: property.hasMacroApplication)
     {
       return [
         AttributeSyntax(
@@ -543,7 +540,7 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
       || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
+      || knownSupportedPropertyWrappers.contains(where: property.hasMacroApplication)
     {
       return []
     }
@@ -602,7 +599,7 @@ extension ObservationStateTrackedMacro: PeerMacro {
     if property.hasMacroApplication(ObservableStateMacro.ignoredMacroName)
       || property.hasMacroApplication(ObservableStateMacro.presentationStatePropertyWrapperName)
       || property.hasMacroApplication(ObservableStateMacro.presentsMacroName)
-      || property.hasMacroApplication(ObservableStateMacro.sharedPropertyWrapperName)
+      || knownSupportedPropertyWrappers.contains(where: property.hasMacroApplication)
       || property.hasMacroApplication(ObservableStateMacro.trackedMacroName)
     {
       return []
@@ -626,3 +623,7 @@ public struct ObservationStateIgnoredMacro: AccessorMacro {
     return []
   }
 }
+
+private let knownSupportedPropertyWrappers = [
+  "Shared", "SharedReader", "Fetch", "FetchAll", "FetchOne",
+]
