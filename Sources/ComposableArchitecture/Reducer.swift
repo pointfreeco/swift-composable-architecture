@@ -82,6 +82,7 @@ extension Reducer where Body == Never {
 extension Reducer where Body: Reducer<State, Action> {
   /// Invokes the ``Body-40qdd``'s implementation of ``reduce(into:action:)-1t2ri``.
   @inlinable
+  @_optimize(none)
   public func reduce(
     into state: inout Body.State, action: Body.Action
   ) -> Effect<Body.Action> {
