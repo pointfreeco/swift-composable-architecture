@@ -50,7 +50,7 @@ day-to-day when building applications, such as:
 ## Learn More
 
 The Composable Architecture was designed over the course of many episodes on 
-[Point-Free][pointfreeco], a video series exploring functional programming and the Swift language, 
+[Point-Free][pointfreeco], a video series exploring advanced programming topics in the Swift language, 
 hosted by [Brandon Williams][mbrandonw] and [Stephen Celis][stephencelis].
 
 You can watch all of the episodes [here][tca-episode-collection], as well as a dedicated, [multipart
