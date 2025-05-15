@@ -232,25 +232,39 @@ extension Store {
         ],
       action: \.[id: component.id]
     )
+    return scope(
+      cachedState: component.element,
+      scopeId: id,
+      stateKeyPath:
+        \.[
+          id: component.id,
+          fileID: _HashableStaticString(rawValue: fileID),
+          filePath: _HashableStaticString(rawValue: filePath),
+          line: line,
+          column: column
+        ],
+      actionKeyPath: \.[id: component.id]
+    )
+  }
+  
+  public func scope<ChildState, ChildAction>(
+    cachedState: ChildState,
+    scopeId: ScopeID<State, Action>,
+    stateKeyPath: KeyPath<State, ChildState?>,
+    actionKeyPath: CaseKeyPath<Action, ChildAction>
+  ) -> Store<ChildState, ChildAction> {
     @MainActor
     func open(
-      _ core: some Core<StackState<ChildState>, StackAction<ChildState, ChildAction>>
+      _ core: some Core<State, Action>
     ) -> any Core<ChildState, ChildAction> {
       IfLetCore(
         base: core,
-        cachedState: component.element,
-        stateKeyPath:
-          \.[
-            id: component.id,
-            fileID: _HashableStaticString(rawValue: fileID),
-            filePath: _HashableStaticString(rawValue: filePath),
-            line: line,
-            column: column
-          ],
-        actionKeyPath: \.[id: component.id]
+        cachedState: cachedState,
+        stateKeyPath: stateKeyPath,
+        actionKeyPath: actionKeyPath
       )
     }
-    return self.scope(id: id, childCore: open(self.core))
+    return self.scope(id: scopeId, childCore: open(self.core))
   }
 }
 
