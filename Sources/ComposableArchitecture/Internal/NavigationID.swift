@@ -1,4 +1,5 @@
 @_spi(Reflection) import CasePaths
+import Foundation
 
 extension DependencyValues {
   var navigationIDPath: NavigationIDPath {
@@ -22,12 +23,16 @@ struct NavigationIDPath: Hashable, Sendable {
 
   var prefixes: [NavigationIDPath] {
     (0...self.path.count).map { index in
-      NavigationIDPath(path: Array(self.path.dropFirst(index)))
+      NavigationIDPath(path: Array(self.path.prefix(self.path.count - index)))
     }
   }
 
   func appending(_ element: NavigationID) -> Self {
     .init(path: self.path + [element])
+  }
+
+  mutating func append(_ element: NavigationID) {
+    self.path.append(element)
   }
 
   public var id: Self { self }
@@ -109,6 +114,12 @@ struct NavigationID: Hashable, @unchecked Sendable {
     } else {
       self.identifier = nil
     }
+  }
+
+  init() {
+    self.kind = .keyPath(\Void.self)
+    self.identifier = UUID()
+    self.tag = nil
   }
 
   static func == (lhs: Self, rhs: Self) -> Bool {

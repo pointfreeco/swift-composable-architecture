@@ -202,14 +202,26 @@ public struct _NavigationDestinationViewModifier<
     content
       .environment(\.navigationDestinationType, State.self)
       .navigationDestination(for: StackState<State>.Component.self) { component in
-        navigationDestination(component: component)
-          .environment(\.navigationDestinationType, State.self)
+        destination(
+          store.scope(
+            component: component, fileID: fileID, filePath: filePath, line: line, column: column)
+        )
+        .environment(\.navigationDestinationType, State.self)
       }
   }
+}
 
-  @MainActor
-  private func navigationDestination(component: StackState<State>.Component) -> Destination {
-    let id = store.id(
+@_spi(Internals)
+extension Store {
+  public func scope<ChildState, ChildAction>(
+    component: StackState<ChildState>.Component,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Store<ChildState, ChildAction>
+  where State == StackState<ChildState>, Action == StackAction<ChildState, ChildAction> {
+    let id = self.id(
       state:
         \.[
           id: component.id,
@@ -222,8 +234,8 @@ public struct _NavigationDestinationViewModifier<
     )
     @MainActor
     func open(
-      _ core: some Core<StackState<State>, StackAction<State, Action>>
-    ) -> any Core<State, Action> {
+      _ core: some Core<StackState<ChildState>, StackAction<ChildState, ChildAction>>
+    ) -> any Core<ChildState, ChildAction> {
       IfLetCore(
         base: core,
         cachedState: component.element,
@@ -238,7 +250,7 @@ public struct _NavigationDestinationViewModifier<
         actionKeyPath: \.[id: component.id]
       )
     }
-    return destination(store.scope(id: id, childCore: open(store.core)))
+    return self.scope(id: id, childCore: open(self.core))
   }
 }
 

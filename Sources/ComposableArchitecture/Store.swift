@@ -176,7 +176,9 @@ public final class Store<State, Action> {
   ) {
     let (initialState, reducer, dependencies) = withDependencies(prepareDependencies ?? { _ in }) {
       @Dependency(\.self) var dependencies
-      return (initialState(), reducer(), dependencies)
+      var updatedDependencies = dependencies
+      updatedDependencies.navigationIDPath.append(NavigationID())
+      return (initialState(), reducer(), updatedDependencies)
     }
     self.init(
       initialState: initialState,
@@ -329,7 +331,8 @@ public final class Store<State, Action> {
   }
 
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )
@@ -371,7 +374,8 @@ public final class Store<State, Action> {
 
     if let stateType = State.self as? any ObservableState.Type {
       func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
-        core.didSet
+        return core.didSet
+          .prefix { [weak self] _ in self?.core.isInvalid != true }
           .compactMap { [weak self] in (self?.currentState as? T)?._$id }
           .removeDuplicates()
           .dropFirst()

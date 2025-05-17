@@ -637,5 +637,45 @@
         """
       }
     }
+
+    func testKnownSupportedPropertyWrappers() {
+      assertMacro {
+        """
+        @ObservableState
+        struct State {
+          @Shared var shared: Int
+          @SharedReader var sharedReader: Int
+          @Fetch var fetch: Int 
+          @FetchAll var fetchAll: Int 
+          @FetchOne var fetchOne: Int
+        }
+        """
+      } expansion: {
+        """
+        struct State {
+          @Shared
+          var shared: Int
+          @SharedReader
+          var sharedReader: Int
+          @Fetch
+          var fetch: Int 
+          @FetchAll
+          var fetchAll: Int 
+          @FetchOne
+          var fetchOne: Int
+
+          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+
+          public var _$id: ComposableArchitecture.ObservableStateID {
+            _$observationRegistrar.id
+          }
+
+          public mutating func _$willModify() {
+            _$observationRegistrar._$willModify()
+          }
+        }
+        """
+      }
+    }
   }
 #endif

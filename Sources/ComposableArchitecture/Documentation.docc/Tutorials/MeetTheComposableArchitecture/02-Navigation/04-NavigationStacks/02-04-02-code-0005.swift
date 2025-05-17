@@ -9,12 +9,8 @@ struct ContactsView: View {
             HStack {
               Text(contact.name)
               Spacer()
-              Button {
-                store.send(.deleteButtonTapped(id: contact.id))
-              } label: {
-                Image(systemName: "trash")
-                  .foregroundColor(.red)
-              }
+              Image(systemName: "trash")
+                .foregroundStyle(Color.red)
             }
           }
           .buttonStyle(.borderless)

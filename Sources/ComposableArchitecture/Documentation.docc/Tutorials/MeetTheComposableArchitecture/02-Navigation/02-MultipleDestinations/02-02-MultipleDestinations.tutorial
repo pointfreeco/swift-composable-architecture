@@ -129,7 +129,7 @@
       }
       
       @Step {
-        Add a case for for the "Add contact" feature. Note that we are holding onto the actual
+        Add a case for the "Add contact" feature. Note that we are holding onto the actual
         `AddContactFeature` reducer in the case, not the state. The
         ``ComposableArchitecture/Reducer()`` macro will fill in all the requirements for the reducer
         protocol for us automatically.
