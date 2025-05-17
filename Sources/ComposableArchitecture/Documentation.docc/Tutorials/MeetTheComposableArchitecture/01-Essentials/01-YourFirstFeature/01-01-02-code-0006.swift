@@ -1,6 +1,6 @@
 #Preview {
   CounterView(
-    store: Store(initialState: CounterFeature.State()) {
+    store: StoreOf<CounterFeature>(initialState: CounterFeature.State()) {
       // CounterFeature()
     }
   )

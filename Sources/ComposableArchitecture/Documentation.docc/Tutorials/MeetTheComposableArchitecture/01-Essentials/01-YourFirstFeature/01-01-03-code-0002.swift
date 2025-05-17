@@ -6,7 +6,7 @@ struct MyApp: App {
   var body: some Scene {
     WindowGroup {
       CounterView(
-        store: Store(initialState: CounterFeature.State()) {
+        store: StoreOf<CounterFeature>(initialState: CounterFeature.State()) {
           CounterFeature()
         }
       )
