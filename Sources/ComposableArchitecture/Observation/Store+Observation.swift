@@ -36,7 +36,24 @@ extension Store: Hashable {
   }
 }
 
-extension Store: Identifiable {}
+extension Store: Identifiable {
+  public struct ID: Hashable {
+    fileprivate let objectIdentifier: ObjectIdentifier
+    fileprivate let stateIdentifier: AnyHashableSendable?
+  }
+
+  public nonisolated var id: ID {
+    ID(
+      objectIdentifier: ObjectIdentifier(self),
+      stateIdentifier: Thread.isMainThread
+        ? MainActor._assumeIsolated {
+          ((currentState as? any Identifiable)?.id as? any Hashable)
+            .map(AnyHashableSendable.init)
+        }
+        : nil
+    )
+  }
+}
 
 extension Store where State: ObservableState {
   /// Scopes the store to optional child state and actions.
@@ -454,7 +471,7 @@ extension Store where State: ObservableState {
     set {
       if newValue == nil,
         let childState = self.state[keyPath: state],
-        id == _identifiableID(childState),
+        id == nil || id == _identifiableID(childState),
         !self.core.isInvalid
       {
         self.send(action(.dismiss))
