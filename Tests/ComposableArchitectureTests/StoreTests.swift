@@ -1227,11 +1227,13 @@ final class StoreTests: BaseTCATestCase {
     } withDependencies: {
       $0.continuousClock = clock
     }
-    store1.send(.tap)
-    store2.send(.tap)
+    let task1 = store1.send(.tap)
+    let task2 = store2.send(.tap)
     try await Task.sleep(for: .seconds(1))
     store2.send(.cancelButtonTapped)
-    await clock.run(timeout: .seconds(1))
+    await clock.advance()
+    await task1.finish()
+    await task2.finish()
     XCTAssertEqual(store1.count, 42)
     XCTAssertEqual(store2.count, 0)
   }
@@ -1252,7 +1254,7 @@ final class StoreTests: BaseTCATestCase {
     await store1.send(.tap)
     await store2.send(.tap)
     await store2.send(.cancelButtonTapped)
-    await clock.run()
+    await clock.advance()
     await store1.receive(\.response) {
       $0.count = 42
     }
@@ -1280,7 +1282,7 @@ final class StoreTests: BaseTCATestCase {
           return .none
         case .tap:
           return .run { send in
-            try await clock.sleep(for: .seconds(1))
+            try await clock.sleep(for: .seconds(0))
             await send(.response(42))
           }
           .cancellable(id: CancelID.effect)
