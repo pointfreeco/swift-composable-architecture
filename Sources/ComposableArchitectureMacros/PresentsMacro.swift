@@ -219,7 +219,7 @@ extension TypeSyntax {
       genericArgumentClause: GenericArgumentClauseSyntax(
         arguments: [
           GenericArgumentSyntax(
-            argument: self
+            argument: GenericArgumentSyntax.Argument(self)
           )
         ]
       )
