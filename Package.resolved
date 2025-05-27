@@ -1,5 +1,5 @@
 {
-  "originHash" : "4cc63b23e996f494117d890d6db8517dfc65a86023208ff4ad39d9c2b09ee033",
+  "originHash" : "92f2ded678a41ef5d8bc6b77a6f478ed09039d89ffc674e73012e9f30791ecb5",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "revision" : "bc92c4b27f9a84bfb498cdbfdf35d5a357e9161f",
-        "version" : "1.5.6"
+        "revision" : "41b89b8b68d8c56c622dbb7132258f1a3e638b25",
+        "version" : "1.7.0"
       }
     },
     {
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-dependencies",
       "state" : {
-        "revision" : "85f89f5d0ce5a18945f65371d40ca997da85a41a",
-        "version" : "1.6.3"
+        "revision" : "4c90d6b2b9bf0911af87b103bb40f41771891596",
+        "version" : "1.9.2"
       }
     },
     {
@@ -96,8 +96,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-macro-testing",
       "state" : {
-        "revision" : "20c1a8f3b624fb5d1503eadcaa84743050c350f4",
-        "version" : "0.5.2"
+        "revision" : "2de00af725ff4c43c9a90d7893835de312653169",
+        "version" : "0.6.3"
       }
     },
     {
@@ -114,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-perception",
       "state" : {
-        "revision" : "8d52279b9809ef27eabe7d5420f03734528f19da",
-        "version" : "1.4.1"
+        "revision" : "d924c62a70fca5f43872f286dbd7cef0957f1c01",
+        "version" : "1.6.0"
       }
     },
     {
@@ -132,8 +132,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
       "state" : {
-        "revision" : "42a086182681cf661f5c47c9b7dc3931de18c6d7",
-        "version" : "1.17.6"
+        "revision" : "37230a37e83f1b7023be08e1b1a2603fcb1567fb",
+        "version" : "1.18.4"
       }
     },
     {
@@ -141,8 +141,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-syntax",
       "state" : {
-        "revision" : "0687f71944021d616d34d922343dcef086855920",
-        "version" : "600.0.1"
+        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
+        "version" : "601.0.1"
       }
     },
     {

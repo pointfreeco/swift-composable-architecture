@@ -189,10 +189,28 @@ extension IdentifierTypeSyntax {
 }
 
 extension ReducerMacro: MemberMacro {
+  public static func expansion(
+    of node: AttributeSyntax,
+    providingMembersOf declaration: some DeclGroupSyntax,
+    conformingTo protocols: [TypeSyntax],
+    in context: some MacroExpansionContext
+  ) throws -> [DeclSyntax] {
+    try _expansion(of: node, providingMembersOf: declaration, conformingTo: protocols, in: context)
+  }
+
   public static func expansion<D: DeclGroupSyntax, C: MacroExpansionContext>(
     of node: AttributeSyntax,
     providingMembersOf declaration: D,
     in context: C
+  ) throws -> [DeclSyntax] {
+    try _expansion(of: node, providingMembersOf: declaration, conformingTo: [], in: context)
+  }
+
+  private static func _expansion(
+    of node: AttributeSyntax,
+    providingMembersOf declaration: some DeclGroupSyntax,
+    conformingTo protocols: [TypeSyntax],
+    in context: some MacroExpansionContext
   ) throws -> [DeclSyntax] {
     let access = declaration.modifiers.first {
       [.keyword(.public), .keyword(.package)].contains($0.name.tokenKind)

@@ -5,7 +5,7 @@
 
   final class CurrentValueRelayTests: BaseTCATestCase {
     func testConcurrentSend() async {
-      nonisolated(unsafe) let subject = CurrentValueRelay(0)
+      let subject = CurrentValueRelay(0)
       let values = LockIsolated<Set<Int>>([])
       let cancellable = subject.sink { (value: Int) in
         values.withValue {
@@ -28,7 +28,7 @@
 
     @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
     func testConcurrentSendAndReceive() async {
-      nonisolated(unsafe) let subject = CurrentValueRelay(0)
+      let subject = CurrentValueRelay(0)
       let values = LockIsolated<Set<Int>>([])
       let cancellable = subject.sink { (value: Int) in
         values.withValue {

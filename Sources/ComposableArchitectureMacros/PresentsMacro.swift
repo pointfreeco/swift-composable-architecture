@@ -99,7 +99,8 @@ extension VariableDeclSyntax {
       attributes: newAttributes,
       modifiers: modifiers.privatePrefixed("_"),
       bindingSpecifier: TokenSyntax(
-        bindingSpecifier.tokenKind, trailingTrivia: .space,
+        bindingSpecifier.tokenKind,
+        trailingTrivia: .space,
         presence: .present
       ),
       bindings: bindings.privateWrapped,
@@ -112,7 +113,8 @@ extension VariableDeclSyntax {
       leadingTrivia: leadingTrivia,
       modifiers: modifiers,
       bindingSpecifier: TokenSyntax(
-        bindingSpecifier.tokenKind, trailingTrivia: .space,
+        bindingSpecifier.tokenKind,
+        trailingTrivia: .space,
         presence: .present
       ),
       bindings: bindings.projected,
@@ -211,18 +213,34 @@ extension PatternBindingListSyntax {
 
 extension TypeSyntax {
   fileprivate var presentationWrapped: GenericSpecializationExprSyntax {
-    GenericSpecializationExprSyntax(
-      expression: MemberAccessExprSyntax(
-        base: DeclReferenceExprSyntax(baseName: "ComposableArchitecture"),
-        name: "PresentationState"
-      ),
-      genericArgumentClause: GenericArgumentClauseSyntax(
-        arguments: [
-          GenericArgumentSyntax(
-            argument: self
-          )
-        ]
+    #if canImport(SwiftSyntax601)
+      GenericSpecializationExprSyntax(
+        expression: MemberAccessExprSyntax(
+          base: DeclReferenceExprSyntax(baseName: "ComposableArchitecture"),
+          name: "PresentationState"
+        ),
+        genericArgumentClause: GenericArgumentClauseSyntax(
+          arguments: [
+            GenericArgumentSyntax(
+              argument: GenericArgumentSyntax.Argument(self)
+            )
+          ]
+        )
       )
-    )
+    #else
+      GenericSpecializationExprSyntax(
+        expression: MemberAccessExprSyntax(
+          base: DeclReferenceExprSyntax(baseName: "ComposableArchitecture"),
+          name: "PresentationState"
+        ),
+        genericArgumentClause: GenericArgumentClauseSyntax(
+          arguments: [
+            GenericArgumentSyntax(
+              argument: self
+            )
+          ]
+        )
+      )
+    #endif
   }
 }
