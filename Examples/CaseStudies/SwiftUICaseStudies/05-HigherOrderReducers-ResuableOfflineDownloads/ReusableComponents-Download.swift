@@ -43,10 +43,6 @@ struct CityMap {
     case downloadComponent(DownloadComponent.Action)
   }
 
-  struct CityMapEnvironment {
-    var downloadClient: DownloadClient
-  }
-
   var body: some Reducer<State, Action> {
     Scope(state: \.downloadComponent, action: \.downloadComponent) {
       DownloadComponent()
