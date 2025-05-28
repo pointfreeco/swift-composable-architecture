@@ -167,14 +167,14 @@ public final class Store<State, Action> {
   /// - Parameters:
   ///   - initialState: The state to start the application in.
   ///   - reducer: The reducer that powers the business logic of the application.
-  ///   - prepareDependencies: A closure that can be used to override dependencies that will be accessed
+  ///   - prepare: A closure that can be used to override dependencies that will be accessed
   ///     by the reducer.
   public convenience init<R: Reducer<State, Action>>(
     initialState: @autoclosure () -> R.State,
     @ReducerBuilder<State, Action> reducer: () -> R,
-    withDependencies prepareDependencies: ((inout DependencyValues) -> Void)? = nil
+    withDependencies prepare: ((inout DependencyValues) -> Void)? = nil
   ) {
-    let (initialState, reducer, dependencies) = withDependencies(prepareDependencies ?? { _ in }) {
+    let (initialState, reducer, dependencies) = withDependencies(prepare ?? { _ in }) {
       @Dependency(\.self) var dependencies
       var updatedDependencies = dependencies
       updatedDependencies.navigationIDPath.append(NavigationID())
