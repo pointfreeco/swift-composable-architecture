@@ -47,7 +47,7 @@ struct CounterView: View {
 This will make sure that the view subscribes to any fields accessed in the `@Perceptible` model so
 that changes to those fields invalidate the view and cause it to re-render.
 
-If a field of a `@Percetible` model is accessed in a view while _not_ inside
+If a field of a `@Perceptible` model is accessed in a view while _not_ inside
 `WithPerceptionTracking`, then a runtime warning will be triggered:
 
 > 🟣 Runtime Warning: Perceptible state was accessed but is not being tracked. Track changes to
