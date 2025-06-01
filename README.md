@@ -264,7 +264,7 @@ the store. The code is a bit longer than the SwiftUI version, so we have collaps
         guard let self 
         else { return }
         
-        countLabel.text = "\(self.store.text)"
+        countLabel.text = "\(self.store.count)"
         factLabel.text = self.store.numberFact
       }
     }

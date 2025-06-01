@@ -205,7 +205,7 @@ class FeatureViewController: UIViewController {
       guard let self 
       else { return }
       
-      countLabel.text = "\(self.store.text)"
+      countLabel.text = "\(self.store.count)"
       factLabel.text = self.store.numberFact
     }
   }
