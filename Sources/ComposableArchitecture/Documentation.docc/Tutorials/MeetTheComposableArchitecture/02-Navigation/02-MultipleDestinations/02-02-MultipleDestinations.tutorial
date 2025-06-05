@@ -144,6 +144,16 @@
         @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0002.swift)
       }
       
+      Since the ``ComposableArchitecture/Reducer()`` macro generates the `State` and `Action` 
+      types for you, you cannot directly apply protocols to them when declaring `Destination`.
+      Instead you can separately extend those types with protocol conformances.
+      
+      @Step {
+        Create an extension of the `State` type in `Destination` to make it conform to `Equatable`.
+        
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0003.swift)
+      }
+      
       That is all it takes to define a single reducer that combines multiple mutually exclusive
       reducers together. You can expand the macro code in Xcode to see all the code that is
       being written for you. And if in the future this feature can navigate to another feature,
@@ -153,7 +163,7 @@
         Replace the two pieces of optional ``ComposableArchitecture/Presents()`` with a single
         optional pointed at `Destination.State`.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0003.swift, previousFile: 02-02-02-code-0003-previous.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0004.swift, previousFile: 02-02-02-code-0004-previous.swift)
       }
       
       Note that this now creates a compilation error letting you know that `ContactsFeature.State`
@@ -163,14 +173,14 @@
       @Step {
         Extend the macro-generated `Destination.State` to apply an `Equatable` conformance.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0004.swift, previousFile: 02-02-02-code-0004-previous.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0005.swift, previousFile: 02-02-02-code-0005-previous.swift)
       }
 
       @Step {
         Replace the two action cases that held onto ``ComposableArchitecture/PresentationAction``
         with a single case that holds onto `Destination.Action`.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0005.swift, previousFile: 02-02-02-code-0005-previous.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0006.swift, previousFile: 02-02-02-code-0006-previous.swift)
       }
       
       Now our model is more concisely defined, and we have compile time guarantees that only 
@@ -181,7 +191,7 @@
         Instead of populating a piece of `addContact` optional state in order to drive navigation
         to that feature, we will now mutate `destination` to point it to the `addContact` case.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0006.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0007.swift)
       }
       
       @Step {
@@ -189,27 +199,27 @@
         `.destination(.presented(_))` case, such as when the "Add Contact" feature tells us to 
         save the contact.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0007.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0008.swift)
       }
       
       @Step {
         And when the alert confirms deletion of the contact.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0008.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0009.swift)
       }
       
       @Step {
         We can handle all other destination actions by simply returning a `.none` effect to 
         represent there is no other work to perform.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0009.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0010.swift)
       }
       
       @Step {
         Update the state mutation for showing an alert to instead point the `destination` to the
         `alert` case.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0010.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0011.swift)
       }
       
       @Step {
@@ -218,7 +228,7 @@
         `Destination` type in this expression because it can be inferred from how the ``Reducer()``
         macro was applied to the `Destination` enum.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0011.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012.swift)
       }
       
       That's all it takes to convert two independent, imprecisely modeled optional values into a 
@@ -233,13 +243,13 @@
         can be done with familiar dot syntax because the 
         ``ComposableArchitecture/Reducer()`` macro applies the `@CasePathable` macro to each enum.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0012.swift, previousFile: 02-02-02-code-0012-previous.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0013.swift, previousFile: 02-02-02-code-0013-previous.swift)
       }
 
       @Step {
         The same can be done for the `alert` view modifier.
         
-        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0013.swift)
+        @Code(name: "ContactsFeatures.swift", file: 02-02-02-code-0014.swift)
       }
 
       That completes the refactor of the reducer and view to use a single piece of optional enum

@@ -35,6 +35,6 @@ struct ContactsView: View {
         AddContactView(store: addContactStore)
       }
     }
-    .alert($store.scope(state: \.alert, action: \.alert))
+    .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
   }
 }

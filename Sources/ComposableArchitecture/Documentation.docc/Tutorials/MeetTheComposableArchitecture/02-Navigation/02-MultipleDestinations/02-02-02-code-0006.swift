@@ -8,6 +8,8 @@ struct ContactsFeature {
   enum Action {
     case addButtonTapped
     case deleteButtonTapped(id: Contact.ID)
+    // case addContact(PresentationAction<AddContactFeature.Action>)
+    // case alert(PresentationAction<Alert>)
     case destination(PresentationAction<Destination.Action>)
     enum Alert: Equatable {
       case confirmDeletion(id: Contact.ID)
@@ -17,10 +19,8 @@ struct ContactsFeature {
     Reduce { state, action in
       switch action {
       case .addButtonTapped:
-        state.destination = .addContact(
-          AddContactFeature.State(
-            contact: Contact(id: UUID(), name: "")
-          )
+        state.addContact = AddContactFeature.State(
+          contact: Contact(id: UUID(), name: "")
         )
         return .none
         
