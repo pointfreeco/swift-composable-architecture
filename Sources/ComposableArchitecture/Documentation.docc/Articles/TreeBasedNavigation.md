@@ -194,6 +194,12 @@ struct InventoryFeature {
 > expands it into a fully composed feature that operates on enum state with a case for each
 > feature's state. You can expand the macro code in Xcode to see everything that is written for you.
 
+> Tip: Since the ``Reducer()`` macro generates the `State` and `Action` types for you, if you need
+> to apply any protocols to those types you can do so in an extension:
+> ```swift
+> extension InventoryFeature.Destination.State: Equatable, Sendable {}
+> ```
+
 With that done we can now hold onto a _single_ piece of optional state in our feature, using the
 ``Presents()`` macro, and we hold onto the destination actions using the
 ``PresentationAction`` type:
