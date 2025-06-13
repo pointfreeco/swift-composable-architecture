@@ -83,6 +83,9 @@ extension _SynthesizedConformance {
   /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Sendable`
   /// protocol.
   public static let sendable = Self()
+  /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Identifiable`
+  /// protocol.
+  public static let identifiable = Self()
 }
 
 /// Marks the case of an enum reducer as holding onto "ephemeral" state.
