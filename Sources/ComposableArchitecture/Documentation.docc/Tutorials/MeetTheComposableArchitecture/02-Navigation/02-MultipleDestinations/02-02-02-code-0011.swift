@@ -48,8 +48,9 @@ struct ContactsFeature {
         return .none
       }
     }
-    .ifLet(\.$destination, action: \.destination) {
-      Destination.body
+    .ifLet(\.$addContact, action: \.addContact) {
+      AddContactFeature()
     }
+    .ifLet(\.$alert, action: \.alert)
   }
 }
