@@ -49,7 +49,7 @@
             }
           }
 
-          @ObservationStateIgnored private var _destination = ComposableArchitecture.PresentationState<Destination.State>(wrappedValue: nil)
+          @ObservationStateIgnored var _destination = ComposableArchitecture.PresentationState<Destination.State>(wrappedValue: nil)
         }
         """#
       }
@@ -89,7 +89,7 @@
             }
           }
 
-          @ObservationStateIgnored private var _destination = ComposableArchitecture.PresentationState<Destination.State>(wrappedValue: nil)
+          @ObservationStateIgnored public var _destination = ComposableArchitecture.PresentationState<Destination.State>(wrappedValue: nil)
         }
         """#
       }
@@ -126,7 +126,7 @@
             }
           }
 
-          @ObservationStateIgnored private var _destination = ComposableArchitecture.PresentationState<Destination.State>(wrappedValue: nil)
+          @ObservationStateIgnored package var _destination = ComposableArchitecture.PresentationState<Destination.State>(wrappedValue: nil)
         }
         """#
       }
@@ -189,7 +189,7 @@
             }
           }
 
-          private var _destination = ComposableArchitecture.PresentationState<Destination.State>(wrappedValue: nil)
+          var _destination = ComposableArchitecture.PresentationState<Destination.State>(wrappedValue: nil)
 
           var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
 

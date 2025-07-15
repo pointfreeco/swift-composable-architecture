@@ -97,7 +97,7 @@ extension VariableDeclSyntax {
     return VariableDeclSyntax(
       leadingTrivia: leadingTrivia,
       attributes: newAttributes,
-      modifiers: modifiers.privatePrefixed("_"),
+      modifiers: modifiers,
       bindingSpecifier: TokenSyntax(
         bindingSpecifier.tokenKind,
         trailingTrivia: .space,
