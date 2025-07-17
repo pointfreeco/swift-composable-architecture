@@ -432,5 +432,37 @@ final class EffectCancellationTests: BaseTCATestCase {
       //     structs in Swift have the same hash value.
       XCTAssertNotEqual(id1.hashValue, id2.hashValue)
     }
+
+    func testCancellablePath() async throws {
+      let navigationIDPath = NavigationIDPath(path: [NavigationID()])
+      let effect = withDependencies {
+        $0.navigationIDPath = navigationIDPath
+      } operation: {
+        Effect
+          .publisher {
+            Just(()).delay(for: .seconds(1), scheduler: DispatchQueue(label: #function))
+          }
+          .cancellable(id: 1)
+      }
+      await withThrowingTaskGroup(of: Void.self) { taskGroup in
+        taskGroup.addTask {
+          await withDependencies {
+            $0.navigationIDPath = NavigationIDPath(path: [NavigationID()])
+          } operation: {
+            for await _ in effect.actions {
+              XCTFail()
+            }
+          }
+        }
+        taskGroup.addTask {
+          try await withDependencies {
+            $0.navigationIDPath = navigationIDPath
+          } operation: {
+            try await Task.sleep(nanoseconds: NSEC_PER_SEC / 2)
+            Task.cancel(id: 1)
+          }
+        }
+      }
+    }
   }
 #endif
