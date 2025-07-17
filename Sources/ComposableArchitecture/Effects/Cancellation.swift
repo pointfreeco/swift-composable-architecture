@@ -42,7 +42,8 @@ extension Effect {
     case let .publisher(publisher):
       return Self(
         operation: .publisher(
-          Deferred { [navigationIDPath]
+          Deferred {
+            [navigationIDPath]
             ()
               -> Publishers.HandleEvents<
                 Publishers.PrefixUntilOutput<
