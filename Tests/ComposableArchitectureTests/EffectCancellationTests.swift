@@ -434,7 +434,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     }
 
     func testCancellablePath() async throws {
-      let navigationIDPath = dump(NavigationIDPath(path: [NavigationID()]))
+      let navigationIDPath = NavigationIDPath(path: [NavigationID()])
       let effect = withDependencies {
         $0.navigationIDPath = navigationIDPath
       } operation: {
@@ -449,7 +449,7 @@ final class EffectCancellationTests: BaseTCATestCase {
           await withDependencies {
             $0.navigationIDPath = NavigationIDPath(path: [NavigationID()])
           } operation: {
-            for await action in effect.actions {
+            for await _ in effect.actions {
               XCTFail()
             }
           }
