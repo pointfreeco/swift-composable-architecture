@@ -458,7 +458,7 @@ final class EffectCancellationTests: BaseTCATestCase {
           try await withDependencies {
             $0.navigationIDPath = navigationIDPath
           } operation: {
-            try await Task.sleep(for: .seconds(0.5))
+            try await Task.sleep(nanoseconds: NSEC_PER_SEC / 2)
             Task.cancel(id: 1)
           }
         }
