@@ -92,14 +92,34 @@ import SwiftUI
 /// Instead, stores should be observed through Swift's Observation framework (or the Perception
 /// package when targeting iOS <17) by applying the ``ObservableState()`` macro to your feature's
 /// state.
+
+
+@MainActor
+protocol _Store: AnyObject {
+  var allChildren: [AnyObject] { get }
+  func removeChild(_ store: AnyObject)
+}
+
+
 @dynamicMemberLookup
 #if swift(<5.10)
   @MainActor(unsafe)
 #else
   @preconcurrency@MainActor
 #endif
-public final class Store<State, Action> {
+public final class Store<State, Action>: _Store {
   var children: [ScopeID<State, Action>: AnyObject] = [:]
+
+  var allChildren: [AnyObject] {
+    Array(children.values)
+  }
+  func removeChild(_ store: AnyObject) {
+    for (key, child) in children {
+      guard child === store
+      else { continue }
+      children.removeValue(forKey: key)
+    }
+  }
 
   let core: any Core<State, Action>
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] { core.effectCancellables }
@@ -266,7 +286,7 @@ public final class Store<State, Action> {
       let id,
       let child = children[id] as? Store<ChildState, ChildAction>
     else {
-      let child = Store<ChildState, ChildAction>(core: childCore())
+      let child = Store<ChildState, ChildAction>(core: childCore(), parent: self)
       if core.canStoreCacheChildren, let id {
         children[id] = child
       }
@@ -313,14 +333,24 @@ public final class Store<State, Action> {
     core.send(action)
   }
 
-  private init(core: some Core<State, Action>) {
+  private weak var parent: (any _Store)?
+
+  private init(core: some Core<State, Action>, parent: (any _Store)?) {
     defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     self.core = core
+    self.parent = parent
 
     if let stateType = State.self as? any ObservableState.Type {
       func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
         return core.didSet
-          .prefix { [weak self] _ in self?.core.isInvalid != true }
+          .prefix { [weak self] _ in
+            guard let self else { return false }
+            let isInvalid = self.core.isInvalid
+            if isInvalid {
+              self.parent?.removeChild(self)
+            }
+            return !isInvalid
+          }
           .compactMap { [weak self] in (self?.currentState as? T)?._$id }
           .removeDuplicates()
           .dropFirst()
@@ -337,7 +367,7 @@ public final class Store<State, Action> {
     initialState: R.State,
     reducer: R
   ) {
-    self.init(core: RootCore(initialState: initialState, reducer: reducer))
+    self.init(core: RootCore(initialState: initialState, reducer: reducer), parent: nil)
   }
 
   /// A publisher that emits when state changes.
