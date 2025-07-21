@@ -93,14 +93,6 @@ import SwiftUI
 /// package when targeting iOS <17) by applying the ``ObservableState()`` macro to your feature's
 /// state.
 
-
-@MainActor
-protocol _Store: AnyObject {
-  var allChildren: [AnyObject] { get }
-  func removeChild(_ store: AnyObject)
-}
-
-
 @dynamicMemberLookup
 #if swift(<5.10)
   @MainActor(unsafe)
@@ -109,16 +101,11 @@ protocol _Store: AnyObject {
 #endif
 public final class Store<State, Action>: _Store {
   var children: [ScopeID<State, Action>: AnyObject] = [:]
+  private weak var parent: (any _Store)?
+  private let scopeID: AnyHashable?
 
-  var allChildren: [AnyObject] {
-    Array(children.values)
-  }
-  func removeChild(_ store: AnyObject) {
-    for (key, child) in children {
-      guard child === store
-      else { continue }
-      children.removeValue(forKey: key)
-    }
+  func removeChild(scopeID: AnyHashable) {
+    children[scopeID as! ScopeID<State, Action>] = nil
   }
 
   let core: any Core<State, Action>
@@ -159,6 +146,7 @@ public final class Store<State, Action>: _Store {
 
   init() {
     self.core = InvalidCore()
+    self.scopeID = nil
   }
 
   deinit {
@@ -286,7 +274,7 @@ public final class Store<State, Action>: _Store {
       let id,
       let child = children[id] as? Store<ChildState, ChildAction>
     else {
-      let child = Store<ChildState, ChildAction>(core: childCore(), parent: self)
+      let child = Store<ChildState, ChildAction>(core: childCore(), scopeID: id, parent: self)
       if core.canStoreCacheChildren, let id {
         children[id] = child
       }
@@ -333,28 +321,24 @@ public final class Store<State, Action>: _Store {
     core.send(action)
   }
 
-  private weak var parent: (any _Store)?
-
-  private init(core: some Core<State, Action>, parent: (any _Store)?) {
-    defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
+  private init(core: some Core<State, Action>, scopeID: AnyHashable?, parent: (any _Store)?) {
+    defer { Logger.shared.log(  "\(storeTypeName(of: self)).init") }
     self.core = core
     self.parent = parent
+    self.scopeID = scopeID
 
     if let stateType = State.self as? any ObservableState.Type {
       func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
         return core.didSet
-          .prefix { [weak self] _ in
-            guard let self else { return false }
-            let isInvalid = self.core.isInvalid
-            if isInvalid {
-              self.parent?.removeChild(self)
-            }
-            return !isInvalid
-          }
+          .prefix { [weak self] _ in self?.core.isInvalid == false }
           .compactMap { [weak self] in (self?.currentState as? T)?._$id }
           .removeDuplicates()
           .dropFirst()
           .sink { [weak self] _ in
+            guard let scopeID = self?.scopeID
+            else { return }
+            parent?.removeChild(scopeID: scopeID)
+          } receiveValue: { [weak self] _ in
             guard let self else { return }
             self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
           }
@@ -367,7 +351,11 @@ public final class Store<State, Action>: _Store {
     initialState: R.State,
     reducer: R
   ) {
-    self.init(core: RootCore(initialState: initialState, reducer: reducer), parent: nil)
+    self.init(
+      core: RootCore(initialState: initialState, reducer: reducer),
+      scopeID: nil,
+      parent: nil
+    )
   }
 
   /// A publisher that emits when state changes.
@@ -595,3 +583,8 @@ let _isStorePerceptionCheckingEnabled: Bool = {
   @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
   extension Store: Observable {}
 #endif
+
+@MainActor
+private protocol _Store: AnyObject {
+  func removeChild(scopeID: AnyHashable)
+}
