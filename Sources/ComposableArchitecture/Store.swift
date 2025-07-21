@@ -92,7 +92,6 @@ import SwiftUI
 /// Instead, stores should be observed through Swift's Observation framework (or the Perception
 /// package when targeting iOS <17) by applying the ``ObservableState()`` macro to your feature's
 /// state.
-
 @dynamicMemberLookup
 #if swift(<5.10)
   @MainActor(unsafe)
@@ -322,7 +321,7 @@ public final class Store<State, Action>: _Store {
   }
 
   private init(core: some Core<State, Action>, scopeID: AnyHashable?, parent: (any _Store)?) {
-    defer { Logger.shared.log(  "\(storeTypeName(of: self)).init") }
+    defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
     self.core = core
     self.parent = parent
     self.scopeID = scopeID
