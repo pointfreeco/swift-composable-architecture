@@ -18,7 +18,7 @@ extension Reducer {
   ///   }
   ///
   ///   var body: some Reducer<State, Action> {
-  ///     BindingReducer()
+  ///     BindingReducer(action: \.binding)
   ///       .onChange(
   ///         of: { ($0.userSettings.isHapticFeedbackEnabled, $0.userSettings.isPushEnabled) },
   ///         removeDuplicates: ==
@@ -83,7 +83,7 @@ extension Reducer {
   ///   }
   ///
   ///   var body: some Reducer<State, Action> {
-  ///     BindingReducer()
+  ///     BindingReducer(action: \.binding)
   ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled) { oldValue, newValue in
   ///         Reduce { state, action in
   ///           .run { send in
