@@ -46,65 +46,13 @@ jobs:
       - name: Debug
         run: make XCODEBUILD_ARGUMENT="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" WORKSPACE=.github/package.xcworkspace xcodebuild
 
-  xcodebuild:
-    name: xcodebuild (15)
-    runs-on: macos-14
-    strategy:
-      matrix:
-        command: [test, '']
-        platform:
-          - IOS
-          - MAC_CATALYST
-          - MACOS
-          - TVOS
-          # - VISIONOS  # Unfortunately, visionOS on CI is too flakey
-          - WATCHOS
-        xcode: [15.2, 15.4]
-        exclude:
-          - {xcode: 15.2, command: test}
-          - {xcode: 15.4, command: ''}
-          - {xcode: 15.2, platform: MAC_CATALYST}
-          - {xcode: 15.2, platform: TVOS}
-          # - {xcode: 15.2, platform: VISIONOS}
-          - {xcode: 15.2, platform: WATCHOS}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Select Xcode ${{ matrix.xcode }}
-        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      - name: Update xcbeautify
-        run: brew update && brew upgrade xcbeautify
-      - name: Install visionOS runtime
-        if: matrix.platform == 'visionOS'
-        run: |
-          sudo xcodebuild -runFirstLaunch
-          sudo xcrun simctl list
-          sudo xcodebuild -downloadPlatform visionOS
-          sudo xcodebuild -runFirstLaunch
-      - name: List available devices
-        run: xcrun simctl list devices available
-      - name: Cache derived data
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.derivedData
-          key: |
-            deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-${{ hashFiles('**/Sources/**/*.swift', '**/Tests/**/*.swift') }}
-          restore-keys: |
-            deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-
-      - name: Set IgnoreFileSystemDeviceInodeChanges flag
-        run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
-      - name: Update mtime for incremental builds
-        uses: chetan/git-restore-mtime-action@v2
-      - name: Debug
-        run: make XCODEBUILD_ARGUMENT="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" WORKSPACE=.github/package.xcworkspace xcodebuild
-
   library-evolution:
     name: Library (evolution)
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 15.4
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+      - name: Select Xcode 16.4
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
       - name: Update xcbeautify
         run: brew update && brew upgrade xcbeautify
       - name: Build for library evolution
