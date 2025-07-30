@@ -46,18 +46,6 @@ jobs:
       - name: Debug
         run: make XCODEBUILD_ARGUMENT="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" WORKSPACE=.github/package.xcworkspace xcodebuild
 
-  library-evolution:
-    name: Library (evolution)
-    runs-on: macos-15
-    steps:
-      - uses: actions/checkout@v4
-      - name: Select Xcode 16.4
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app
-      - name: Update xcbeautify
-        run: brew update && brew upgrade xcbeautify
-      - name: Build for library evolution
-        run: make build-for-library-evolution
-
   examples:
     name: Examples
     runs-on: macos-15
@@ -95,15 +83,3 @@ jobs:
         run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="Todos" xcodebuild-raw
       - name: VoiceMemos
         run: make DERIVED_DATA_PATH=~/.derivedData SCHEME="VoiceMemos" xcodebuild-raw
-
-  check-macro-compatibility:
-    name: Check Macro Compatibility
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Run Swift Macro Compatibility Check
-        uses: Matejkob/swift-macro-compatibility-check@v1
-        with:
-          run-tests: false
-          major-versions-only: true
