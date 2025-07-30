@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.0
 
 import CompilerPluginSupport
 import PackageDescription
@@ -77,16 +77,21 @@ let package = Package(
         .product(name: "MacroTesting", package: "swift-macro-testing"),
       ]
     ),
-  ]
+  ],
+  swiftLanguageModes: [.v6]
 )
 
-#if compiler(>=6)
-  for target in package.targets where target.type != .system && target.type != .test {
-    target.swiftSettings = target.swiftSettings ?? []
-    target.swiftSettings?.append(contentsOf: [
-      .enableExperimentalFeature("StrictConcurrency"),
-      .enableUpcomingFeature("ExistentialAny"),
-      .enableUpcomingFeature("InferSendableFromCaptures"),
-    ])
-  }
-#endif
+for target in package.targets {
+  target.swiftSettings = target.swiftSettings ?? []
+  target.swiftSettings?.append(contentsOf: [
+    .enableUpcomingFeature("ExistentialAny")
+  ])
+}
+
+for target in package.targets where target.type == .system || target.type == .test {
+  target.swiftSettings?.append(contentsOf: [
+    .swiftLanguageMode(.v5),
+    .enableExperimentalFeature("StrictConcurrency"),
+    .enableUpcomingFeature("InferSendableFromCaptures"),
+  ])
+}
