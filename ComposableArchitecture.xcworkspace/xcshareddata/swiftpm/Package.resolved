@@ -1,5 +1,5 @@
 {
-  "originHash" : "9b1b9de929d96574848048d539f606283ce6f267ef18a10b1174c9fec53ebedf",
+  "originHash" : "658be5678358d678b69ea40e4be4814633be8197318d5ac54b97fb40cfb2152b",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -105,8 +105,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-navigation",
       "state" : {
-        "branch" : "swift-6-2",
-        "revision" : "a7a901bf720166c0586f096fec33ef23b9ff43e0"
+        "revision" : "4e89284c1966538109dc783497405bc680e9bc96",
+        "version" : "2.4.0"
       }
     },
     {
@@ -114,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-perception",
       "state" : {
-        "branch" : "swift-6-2",
-        "revision" : "f5931d2617f9fca1634dd5421cee8237aaf87bb0"
+        "revision" : "f4f57cac7d273cddf0161293d47adbb5a6ba3aed",
+        "version" : "2.0.0"
       }
     },
     {
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-sharing",
       "state" : {
-        "branch" : "swift-6-2",
-        "revision" : "faaf2e476f1a45fda36aaf2f3dde461b955c3fe4"
+        "revision" : "5d87dda90ed048f216826efbad404110141161bb",
+        "version" : "2.6.0"
       }
     },
     {
