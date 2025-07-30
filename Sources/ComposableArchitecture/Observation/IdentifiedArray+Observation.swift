@@ -92,6 +92,7 @@ extension Store where State: ObservableState {
 public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAccessCollection {
   private let store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
   private let data: IdentifiedArray<ID, State>
+  private let isInPerceptionTracking = _isInPerceptionTracking
 
   #if swift(<5.10)
     @MainActor(unsafe)
@@ -120,28 +121,37 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
     )
     return MainActor._assumeIsolated { [uncheckedSelf = UncheckedSendable(self)] in
       let `self` = uncheckedSelf.wrappedValue
-      guard self.data.indices.contains(position)
-      else {
-        return Store()
-      }
-      let elementID = self.data.ids[position]
-      let scopeID = self.store.id(state: \.[id: elementID], action: \.[id: elementID])
-      guard let child = self.store.children[scopeID] as? Store<State, Action>
-      else {
-        @MainActor
-        func open(
-          _ core: some Core<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
-        ) -> any Core<State, Action> {
-          IfLetCore(
-            base: core,
-            cachedState: self.data[position],
-            stateKeyPath: \.[id: elementID],
-            actionKeyPath: \.[id: elementID]
-          )
+      var child: Store<State, Action> {
+        guard self.data.indices.contains(position)
+        else {
+          return Store()
         }
-        return self.store.scope(id: scopeID, childCore: open(self.store.core))
+        let elementID = self.data.ids[position]
+        let scopeID = self.store.id(state: \.[id: elementID], action: \.[id: elementID])
+        guard let child = self.store.children[scopeID] as? Store<State, Action>
+        else {
+          @MainActor
+          func open(
+            _ core: some Core<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
+          ) -> any Core<State, Action> {
+            IfLetCore(
+              base: core,
+              cachedState: self.data[position],
+              stateKeyPath: \.[id: elementID],
+              actionKeyPath: \.[id: elementID]
+            )
+          }
+          return self.store.scope(id: scopeID, childCore: open(self.store.core))
+        }
+        return child
       }
-      return child
+      #if DEBUG
+        return _PerceptionLocals.$isInPerceptionTracking.withValue(self.isInPerceptionTracking) {
+          child
+        }
+      #else
+        return child
+      #endif
     }
   }
 }
