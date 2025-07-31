@@ -3,7 +3,7 @@ import IssueReporting
 
 extension Notification.Name {
   @_documentation(visibility: private)
-  @available(*, deprecated, renamed: "_runtimeWarning")
+  //@available(*, deprecated, renamed: "_runtimeWarning")
   public static let runtimeWarning = Self("ComposableArchitecture.runtimeWarning")
 
   /// A notification that is posted when a runtime warning is emitted.

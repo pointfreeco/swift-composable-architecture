@@ -88,5 +88,14 @@ let package = Package(
       .enableUpcomingFeature("ExistentialAny"),
       .enableUpcomingFeature("InferSendableFromCaptures"),
     ])
+    if target.name == "ComposableArchitecture" {
+      target.swiftSettings?.append(.unsafeFlags(["-suppress-warnings"]))
+    }
+  }
+#else
+  // Add suppress-warnings for Swift 5.x compilers
+  if let composableArchTarget = package.targets.first(where: { $0.name == "ComposableArchitecture" }) {
+    composableArchTarget.swiftSettings = composableArchTarget.swiftSettings ?? []
+    composableArchTarget.swiftSettings?.append(.unsafeFlags(["-suppress-warnings"]))
   }
 #endif

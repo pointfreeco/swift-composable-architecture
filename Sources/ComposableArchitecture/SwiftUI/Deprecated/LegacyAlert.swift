@@ -7,11 +7,11 @@ extension View {
   /// - Parameters:
   ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for an
   ///     alert.
-  @available(iOS, introduced: 13, deprecated: 100000, message: "use `View.alert(store:) instead.")
-  @available(
-    macOS, introduced: 10.15, deprecated: 100000, message: "use `View.alert(store:) instead."
-  )
-  @available(tvOS, introduced: 13, deprecated: 100000, message: "use `View.alert(store:) instead.")
+  //@available(iOS, introduced: 13, deprecated: 100000, message: "use `View.alert(store:) instead.")
+  //@available(
+  //  macOS, introduced: 10.15, deprecated: 100000, message: "use `View.alert(store:) instead."
+  //)
+  //@available(tvOS, introduced: 13, deprecated: 100000, message: "use `View.alert(store:) instead.")
   @available(
     watchOS, introduced: 6, deprecated: 100000, message: "use `View.alert(store:) instead."
   )
@@ -35,30 +35,30 @@ extension View {
   ///   - toDestinationState: A transformation to extract alert state from the presentation state.
   ///   - fromDestinationAction: A transformation to embed alert actions into the presentation
   ///     action.
-  @available(
-    iOS,
-    introduced: 13,
-    deprecated: 100000,
-    message: "use `View.alert(store:state:action:) instead."
-  )
-  @available(
-    macOS,
-    introduced: 10.15,
-    deprecated: 100000,
-    message: "use `View.alert(store:state:action:) instead."
-  )
-  @available(
-    tvOS,
-    introduced: 13,
-    deprecated: 100000,
-    message: "use `View.alert(store:state:action:) instead."
-  )
-  @available(
-    watchOS,
-    introduced: 6,
-    deprecated: 100000,
-    message: "use `View.alert(store:state:action:) instead."
-  )
+  //@available(
+  //  iOS,
+  //  introduced: 13,
+  //  deprecated: 100000,
+  //  message: "use `View.alert(store:state:action:) instead."
+  //)
+  //@available(
+  //  macOS,
+  //  introduced: 10.15,
+  //  deprecated: 100000,
+  //  message: "use `View.alert(store:state:action:) instead."
+  //)
+  //@available(
+  //  tvOS,
+  //  introduced: 13,
+  //  deprecated: 100000,
+  //  message: "use `View.alert(store:state:action:) instead."
+  //)
+  //@available(
+  //  watchOS,
+  //  introduced: 6,
+  //  deprecated: 100000,
+  //  message: "use `View.alert(store:state:action:) instead."
+  //)
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
