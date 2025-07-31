@@ -30,11 +30,9 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
     @inlinable
     public func access<Subject: Observable, Member>(
       _ subject: Subject,
-      keyPath: KeyPath<Subject, Member>,
-      filePath: StaticString = #filePath,
-      line: UInt = #line
+      keyPath: KeyPath<Subject, Member>
     ) {
-      self.registrar.access(subject, keyPath: keyPath, filePath: filePath, line: line)
+      self.registrar.access(subject, keyPath: keyPath)
     }
 
     /// Mutates a value to a new value, and decided to notify observers based on the identity of
