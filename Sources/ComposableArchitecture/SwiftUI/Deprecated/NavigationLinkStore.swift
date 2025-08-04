@@ -26,10 +26,10 @@ import SwiftUI
 ///
 /// Then when the `child` state flips from `nil` to non-`nil` a drill-down animation will occur to
 /// the child domain.
-////@available(iOS, introduced: 13, deprecated: 16)
-////@available(macOS, introduced: 10.15, deprecated: 13)
-////@available(tvOS, introduced: 13, deprecated: 16)
-////@available(watchOS, introduced: 6, deprecated: 9)
+//@available(iOS, introduced: 13, deprecated: 16)
+//@available(macOS, introduced: 10.15, deprecated: 13)
+//@available(tvOS, introduced: 13, deprecated: 16)
+//@available(watchOS, introduced: 6, deprecated: 9)
 public struct NavigationLinkStore<
   State,
   Action,
