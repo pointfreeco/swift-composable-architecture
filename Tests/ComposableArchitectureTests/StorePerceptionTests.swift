@@ -44,18 +44,10 @@ final class StorePerceptionTests: BaseTCATestCase {
       }
     }
     #if DEBUG && !os(visionOS)
-      let previous = Perception.isPerceptionCheckingEnabled
-      Perception.isPerceptionCheckingEnabled = true
-      defer { Perception.isPerceptionCheckingEnabled = previous }
       XCTExpectFailure {
         render(FeatureView())
       } issueMatcher: {
-        $0.compactDescription == """
-          failed - Perceptible state was accessed but is not being tracked. Track changes to state by \
-          wrapping your view in a 'WithPerceptionTracking' view. This must also be done for any \
-          escaping, trailing closures, such as 'GeometryReader', `LazyVStack` (and all lazy \
-          views), navigation APIs ('sheet', 'popover', 'fullScreenCover', etc.), and others.
-          """
+        $0.compactDescription.contains("Perceptible state was accessed")
       }
     #endif
   }
