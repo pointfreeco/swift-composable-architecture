@@ -1,5 +1,5 @@
 {
-  "originHash" : "d6698d1fff6b18d6583f4b370e26f4d059db726912e042a4ae6f061b72498d87",
+  "originHash" : "7c0ce97c699629595167a8e28688f21d7804d30055fa772e6ce9f6b02d7b407c",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -15,8 +15,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/foreflight/swift-case-paths",
       "state" : {
-        "branch" : "suppress-deprecation-warnings",
-        "revision" : "3fba888573bf9965d31f83d7c4c203fb8e190cd3"
+        "revision" : "f495adc25ef5d8b29a35ee5ccdfddf2b14705e5e"
       }
     },
     {
