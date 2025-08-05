@@ -403,11 +403,18 @@ extension UIBindable {
     column: UInt = #column
   ) -> UIBinding<Store<ChildState, ChildAction>?>
   where Value == Store<State, Action> {
-    self[
-      id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
+    #if DEBUG && canImport(SwiftUI)
+      let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+        wrappedValue.currentState[keyPath: state].flatMap(_identifiableID)
+      }
+    #else
+      let id = wrappedValue.currentState[keyPath: state].flatMap(_identifiableID)
+    #endif
+    return self[
+      id: id,
       state: state,
       action: action,
-      isInViewBody: _isInPerceptionTracking,
+      isInViewBody: true,
       fileID: _HashableStaticString(rawValue: fileID),
       filePath: _HashableStaticString(rawValue: filePath),
       line: line,
