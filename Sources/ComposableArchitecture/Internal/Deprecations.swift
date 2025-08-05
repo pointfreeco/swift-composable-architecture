@@ -135,10 +135,10 @@
 
 // NB: Deprecated with 1.10.0:
 
-@available(*, deprecated, message: "Use '.fileSystem' ('FileStorage.fileSystem') instead")
+//@available(*, deprecated, message: "Use '.fileSystem' ('FileStorage.fileSystem') instead")
 public func LiveFileStorage() -> FileStorage { .fileSystem }
 
-@available(*, deprecated, message: "Use '.inMemory' ('FileStorage.inMemory') instead")
+//@available(*, deprecated, message: "Use '.inMemory' ('FileStorage.inMemory') instead")
 public func InMemoryFileStorage() -> FileStorage { .inMemory }
 
 // NB: Deprecated with 1.0.0:

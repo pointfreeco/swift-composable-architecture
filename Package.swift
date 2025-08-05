@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version: 6.0
 
 import CompilerPluginSupport
 import PackageDescription
@@ -20,7 +20,7 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "1.0.2"),
-    .package(url: "https://github.com/pointfreeco/swift-case-paths", from: "1.5.4"),
+    .package(url: "https://github.com/foreflight/swift-case-paths", branch: "suppress-deprecation-warnings"),
     .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.2"),
     .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.4.0"),
@@ -88,5 +88,14 @@ let package = Package(
       .enableUpcomingFeature("ExistentialAny"),
       .enableUpcomingFeature("InferSendableFromCaptures"),
     ])
+    if target.name == "ComposableArchitecture" {
+      target.swiftSettings?.append(.unsafeFlags(["-suppress-warnings"]))
+    }
+  }
+#else
+  // Add suppress-warnings for Swift 5.x compilers
+  if let composableArchTarget = package.targets.first(where: { $0.name == "ComposableArchitecture" }) {
+    composableArchTarget.swiftSettings = composableArchTarget.swiftSettings ?? []
+    composableArchTarget.swiftSettings?.append(.unsafeFlags(["-suppress-warnings"]))
   }
 #endif

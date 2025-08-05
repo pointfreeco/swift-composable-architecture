@@ -14,7 +14,7 @@ extension SharedReaderKey {
   ///
   /// - Parameter keyPath: A string key identifying a value to share in memory.
   /// - Returns: A persistence key.
-  @available(*, deprecated, message: "Use 'appStorage' with a supported data type, instead")
+  //@available(*, deprecated, message: "Use 'appStorage' with a supported data type, instead")
   public static func appStorage<Value>(
     _ keyPath: _SendableReferenceWritableKeyPath<UserDefaults, Value>
   ) -> Self where Self == AppStorageKeyPathKey<Value> {
@@ -25,7 +25,7 @@ extension SharedReaderKey {
 /// A type defining a user defaults persistence strategy via key path.
 ///
 /// See ``Sharing/SharedReaderKey/appStorage(_:)`` to create values of this type.
-@available(*, deprecated, message: "Use an 'AppStorageKey', instead")
+//@available(*, deprecated, message: "Use an 'AppStorageKey', instead")
 public struct AppStorageKeyPathKey<Value: Sendable>: Sendable {
   private let keyPath: _SendableReferenceWritableKeyPath<UserDefaults, Value>
   private let store: UncheckedSendable<UserDefaults>
@@ -37,7 +37,7 @@ public struct AppStorageKeyPathKey<Value: Sendable>: Sendable {
   }
 }
 
-@available(*, deprecated, message: "Use an 'AppStorageKey', instead")
+//@available(*, deprecated, message: "Use an 'AppStorageKey', instead")
 extension AppStorageKeyPathKey: SharedKey, Hashable {
   #if canImport(Sharing2)
     public func load(context: LoadContext<Value>, continuation: LoadContinuation<Value>) {

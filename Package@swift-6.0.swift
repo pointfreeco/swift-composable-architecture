@@ -86,6 +86,9 @@ for target in package.targets {
   target.swiftSettings?.append(contentsOf: [
     .enableUpcomingFeature("ExistentialAny")
   ])
+  if target.name == "ComposableArchitecture" {
+    target.swiftSettings?.append(.unsafeFlags(["-suppress-warnings"]))
+  }
 }
 
 for target in package.targets where target.type == .system || target.type == .test {

@@ -1,5 +1,5 @@
 {
-  "originHash" : "0e9a414ac23b15d7d00b87671275679eb6cce1d5dc101ec944f5e8aee4cb097b",
+  "originHash" : "d6698d1fff6b18d6583f4b370e26f4d059db726912e042a4ae6f061b72498d87",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -13,10 +13,10 @@
     {
       "identity" : "swift-case-paths",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swift-case-paths",
+      "location" : "https://github.com/foreflight/swift-case-paths",
       "state" : {
-        "revision" : "9810c8d6c2914de251e072312f01d3bf80071852",
-        "version" : "1.7.1"
+        "branch" : "suppress-deprecation-warnings",
+        "revision" : "3fba888573bf9965d31f83d7c4c203fb8e190cd3"
       }
     },
     {
