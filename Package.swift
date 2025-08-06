@@ -20,7 +20,7 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "1.0.2"),
-    .package(url: "https://github.com/foreflight/swift-case-paths", branch: "suppress-deprecation-warnings"),
+    .package(url: "https://github.com/foreflight/swift-case-paths", revision: "84f8a7ab4b031667a07ca9254ef37e6591d24c16"),
     .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.2"),
     .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.4.0"),
