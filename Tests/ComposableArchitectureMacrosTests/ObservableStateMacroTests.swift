@@ -7,7 +7,9 @@
 
   final class ObservableStateMacroTests: MacroBaseTestCase {
     override func invokeTest() {
-      withMacroTesting {
+      withMacroTesting(
+        // record: .failed,
+      ) {
         super.invokeTest()
       }
     }
@@ -35,14 +37,18 @@
               return _count
             }
             set {
+              guard shouldNotifyObservers(_count, newValue) else {
+                return
+              }
               _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
-              defer {
-                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
-              }
               yield &_count
+              guard shouldNotifyObservers(oldValue, count) else {
+                return
+              }
+              _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
             }
           }
 
@@ -54,6 +60,22 @@
 
           public mutating func _$willModify() {
             _$observationRegistrar._$willModify()
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            true
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu0_: Equatable>(_ lhs: __macro_local_6MemberfMu0_, _ rhs: __macro_local_6MemberfMu0_) -> Bool {
+            lhs != rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu1_: AnyObject>(_ lhs: __macro_local_6MemberfMu1_, _ rhs: __macro_local_6MemberfMu1_) -> Bool {
+            lhs !== rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu2_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu2_, _ rhs: __macro_local_6MemberfMu2_) -> Bool {
+            lhs != rhs
           }
         }
         """#
@@ -81,14 +103,18 @@
               return _count
             }
             set {
+              guard shouldNotifyObservers(_count, newValue) else {
+                return
+              }
               _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
-              defer {
-                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
-              }
               yield &_count
+              guard shouldNotifyObservers(oldValue, count) else {
+                return
+              }
+              _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
             }
           }
 
@@ -100,6 +126,22 @@
 
           public mutating func _$willModify() {
             _$observationRegistrar._$willModify()
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            true
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu0_: Equatable>(_ lhs: __macro_local_6MemberfMu0_, _ rhs: __macro_local_6MemberfMu0_) -> Bool {
+            lhs != rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu1_: AnyObject>(_ lhs: __macro_local_6MemberfMu1_, _ rhs: __macro_local_6MemberfMu1_) -> Bool {
+            lhs !== rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu2_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu2_, _ rhs: __macro_local_6MemberfMu2_) -> Bool {
+            lhs != rhs
           }
         }
         """#
@@ -127,14 +169,18 @@
               return _count
             }
             set {
+              guard shouldNotifyObservers(_count, newValue) else {
+                return
+              }
               _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
-              defer {
-                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
-              }
               yield &_count
+              guard shouldNotifyObservers(oldValue, count) else {
+                return
+              }
+              _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
             }
           }
 
@@ -146,6 +192,22 @@
 
           public mutating func _$willModify() {
             _$observationRegistrar._$willModify()
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            true
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu0_: Equatable>(_ lhs: __macro_local_6MemberfMu0_, _ rhs: __macro_local_6MemberfMu0_) -> Bool {
+            lhs != rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu1_: AnyObject>(_ lhs: __macro_local_6MemberfMu1_, _ rhs: __macro_local_6MemberfMu1_) -> Bool {
+            lhs !== rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu2_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu2_, _ rhs: __macro_local_6MemberfMu2_) -> Bool {
+            lhs != rhs
           }
         }
         """#
@@ -170,14 +232,18 @@
               return _count
             }
             set {
+              guard shouldNotifyObservers(_count, newValue) else {
+                return
+              }
               _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
-              defer {
-                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
-              }
               yield &_count
+              guard shouldNotifyObservers(oldValue, count) else {
+                return
+              }
+              _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
             }
           }
 
@@ -189,6 +255,22 @@
 
           public mutating func _$willModify() {
             _$observationRegistrar._$willModify()
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            true
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu0_: Equatable>(_ lhs: __macro_local_6MemberfMu0_, _ rhs: __macro_local_6MemberfMu0_) -> Bool {
+            lhs != rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu1_: AnyObject>(_ lhs: __macro_local_6MemberfMu1_, _ rhs: __macro_local_6MemberfMu1_) -> Bool {
+            lhs !== rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu2_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu2_, _ rhs: __macro_local_6MemberfMu2_) -> Bool {
+            lhs != rhs
           }
         }
         """#
@@ -217,6 +299,22 @@
 
           public mutating func _$willModify() {
             _$observationRegistrar._$willModify()
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            true
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu0_: Equatable>(_ lhs: __macro_local_6MemberfMu0_, _ rhs: __macro_local_6MemberfMu0_) -> Bool {
+            lhs != rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu1_: AnyObject>(_ lhs: __macro_local_6MemberfMu1_, _ rhs: __macro_local_6MemberfMu1_) -> Bool {
+            lhs !== rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu2_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu2_, _ rhs: __macro_local_6MemberfMu2_) -> Bool {
+            lhs != rhs
           }
         }
         """
@@ -672,6 +770,22 @@
 
           public mutating func _$willModify() {
             _$observationRegistrar._$willModify()
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu_>(_ lhs: __macro_local_6MemberfMu_, _ rhs: __macro_local_6MemberfMu_) -> Bool {
+            true
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu0_: Equatable>(_ lhs: __macro_local_6MemberfMu0_, _ rhs: __macro_local_6MemberfMu0_) -> Bool {
+            lhs != rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu1_: AnyObject>(_ lhs: __macro_local_6MemberfMu1_, _ rhs: __macro_local_6MemberfMu1_) -> Bool {
+            lhs !== rhs
+          }
+
+          private nonisolated func shouldNotifyObservers<__macro_local_6MemberfMu2_: Equatable & AnyObject>(_ lhs: __macro_local_6MemberfMu2_, _ rhs: __macro_local_6MemberfMu2_) -> Bool {
+            lhs != rhs
           }
         }
         """
