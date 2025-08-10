@@ -41,5 +41,15 @@ struct TimersTests {
     await store.send(.toggleTimerButtonTapped) {
       $0.isTimerActive = false
     }
+    await store.send(.toggleTimerButtonTapped) {
+      $0.isTimerActive = true
+    }
+    await clock.advance(by: .seconds(1))
+    await store.receive(\.timerTicked) {
+      $0.secondsElapsed = 7
+    }
+    await store.send(.onDisappear) {
+      $0.isTimerActive = false
+    }
   }
 }

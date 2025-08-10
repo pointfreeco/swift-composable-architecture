@@ -30,6 +30,7 @@ struct Timers {
     Reduce { state, action in
       switch action {
       case .onDisappear:
+        state.isTimerActive = false
         return .cancel(id: CancelID.timer)
 
       case .timerTicked:
