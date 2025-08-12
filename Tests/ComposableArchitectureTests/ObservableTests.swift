@@ -18,6 +18,19 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssertEqual(state.count, 1)
   }
 
+  func testAssignEqualValue() async {
+    var state = ChildState()
+
+    withPerceptionTracking {
+      _ = state.count
+    } onChange: {
+      XCTFail("state.count should not change.")
+    }
+
+    state.count = state.count
+    XCTAssertEqual(state.count, 0)
+  }
+
   func testCopyMutation() async {
     XCTTODO(
       """

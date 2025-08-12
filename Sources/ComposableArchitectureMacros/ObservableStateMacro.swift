@@ -647,20 +647,16 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     let setAccessor: AccessorDeclSyntax =
       """
       set {
-        guard shouldNotifyObservers(_\(identifier), newValue) else {
-          return
-        }
-        \(raw: ObservableStateMacro.registrarVariableName).mutate(self, keyPath: \\.\(identifier), &_\(identifier), newValue, _$isIdentityEqual)
+      \(raw: ObservableStateMacro.registrarVariableName).mutate(self, keyPath: \\.\(identifier), &_\(identifier), newValue, _$isIdentityEqual, shouldNotifyObservers)
       }
       """
     let modifyAccessor: AccessorDeclSyntax = """
       _modify {
         let oldValue = _$observationRegistrar.willModify(self, keyPath: \\.\(identifier), &_\(identifier))
-        yield &_\(identifier)
-        guard shouldNotifyObservers(oldValue, \(identifier)) else {
-          return
+        defer {
+          _$observationRegistrar.didModify(self, keyPath: \\.\(identifier), &_\(identifier), oldValue, _$isIdentityEqual, shouldNotifyObservers)
         }
-        _$observationRegistrar.didModify(self, keyPath: \\.\(identifier), &_\(identifier), oldValue, _$isIdentityEqual)
+        yield &_\(identifier)
       }
       """
 

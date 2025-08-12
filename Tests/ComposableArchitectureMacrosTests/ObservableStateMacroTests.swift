@@ -37,18 +37,14 @@
               return _count
             }
             set {
-              guard shouldNotifyObservers(_count, newValue) else {
-                return
-              }
-              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual, shouldNotifyObservers)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
-              yield &_count
-              guard shouldNotifyObservers(oldValue, count) else {
-                return
+              defer {
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual, shouldNotifyObservers)
               }
-              _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+              yield &_count
             }
           }
 
@@ -103,18 +99,14 @@
               return _count
             }
             set {
-              guard shouldNotifyObservers(_count, newValue) else {
-                return
-              }
-              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual, shouldNotifyObservers)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
-              yield &_count
-              guard shouldNotifyObservers(oldValue, count) else {
-                return
+              defer {
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual, shouldNotifyObservers)
               }
-              _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+              yield &_count
             }
           }
 
@@ -169,18 +161,14 @@
               return _count
             }
             set {
-              guard shouldNotifyObservers(_count, newValue) else {
-                return
-              }
-              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual, shouldNotifyObservers)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
-              yield &_count
-              guard shouldNotifyObservers(oldValue, count) else {
-                return
+              defer {
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual, shouldNotifyObservers)
               }
-              _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+              yield &_count
             }
           }
 
@@ -232,18 +220,14 @@
               return _count
             }
             set {
-              guard shouldNotifyObservers(_count, newValue) else {
-                return
-              }
-              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual, shouldNotifyObservers)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
-              yield &_count
-              guard shouldNotifyObservers(oldValue, count) else {
-                return
+              defer {
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual, shouldNotifyObservers)
               }
-              _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+              yield &_count
             }
           }
 
