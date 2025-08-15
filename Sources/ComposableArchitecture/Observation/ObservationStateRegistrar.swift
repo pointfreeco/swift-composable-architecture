@@ -52,16 +52,12 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
       _ value: inout Value,
       _ newValue: Value,
       _ isIdentityEqual: (Value, Value) -> Bool,
-      _ shouldNotifyObservers: (Value, Value) -> Bool
+      _ shouldNotifyObservers: (Value, Value) -> Bool = { _, _ in true }
     ) {
-      if isIdentityEqual(value, newValue) {
+      if isIdentityEqual(value, newValue) || !shouldNotifyObservers(value, newValue) {
         value = newValue
       } else {
-        if shouldNotifyObservers(value, newValue) {
-          self.registrar.withMutation(of: subject, keyPath: keyPath) {
-            value = newValue
-          }
-        } else {
+        self.registrar.withMutation(of: subject, keyPath: keyPath) {
           value = newValue
         }
       }
