@@ -2,7 +2,6 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 final class ObservableTests: BaseTCATestCase {
   func testBasics() async {
     var state = ChildState()
@@ -660,7 +659,6 @@ final class ObservableTests: BaseTCATestCase {
   }
 }
 
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 @ObservableState
 private struct ChildState: Equatable, Identifiable {
   let id = UUID()
@@ -675,7 +673,6 @@ private struct ChildState: Equatable, Identifiable {
     self
   }
 }
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 @ObservableState
 private struct ParentState: Equatable {
   var child = ChildState()
@@ -692,7 +689,6 @@ private struct ParentState: Equatable {
     self.sibling = childCopy
   }
 }
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 @dynamicMemberLookup
 @CasePathable
 @ObservableState
@@ -701,7 +697,6 @@ private enum DestinationState: Equatable {
   case child2(ChildState)
   case inert(Int)
 }
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 @ObservableState
 private enum EnumState: Equatable {
   case count(Count)
