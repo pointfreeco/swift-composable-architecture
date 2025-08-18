@@ -78,8 +78,11 @@ final class ObservableTests: BaseTCATestCase {
   }
 
   func testReplace() async {
-    XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
-
+    #if swift(<6.2)
+      if #available(iOS 17, macOS 14, tvOS 14, watchOS 10, *) {
+        XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
+      }
+    #endif
     var state = ChildState(count: 42)
     let didChange = LockIsolated(false)
 
@@ -91,11 +94,15 @@ final class ObservableTests: BaseTCATestCase {
 
     state.replace(with: ChildState())
     XCTAssertEqual(state.count, 0)
-    XCTAssert(!didChange.withValue { $0 })
+    XCTAssert(didChange.withValue { $0 })
   }
 
   func testReset() async {
-    XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
+    #if swift(<6.2)
+      if #available(iOS 17, macOS 14, tvOS 14, watchOS 10, *) {
+        XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
+      }
+    #endif
 
     var state = ChildState(count: 42)
     let didChange = LockIsolated(false)
@@ -108,7 +115,7 @@ final class ObservableTests: BaseTCATestCase {
 
     state.reset()
     XCTAssertEqual(state.count, 0)
-    XCTAssert(!didChange.withValue { $0 })
+    XCTAssert(didChange.withValue { $0 })
   }
 
   func testChildCountMutation() async {
