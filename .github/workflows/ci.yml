@@ -21,7 +21,7 @@ jobs:
       matrix:
         command: [test, '']
         platform: [IOS, MACOS]
-        xcode: ['16.2']
+        xcode: ['16.4']
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
@@ -49,6 +49,9 @@ jobs:
   examples:
     name: Examples
     runs-on: macos-15
+    strategy:
+      matrix:
+        xcode: ['16.4']
     steps:
       - uses: actions/checkout@v4
       - name: Cache derived data
@@ -60,7 +63,7 @@ jobs:
           restore-keys: |
             deriveddata-examples-
       - name: Select Xcode 16
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Update xcbeautify
         run: brew update && brew upgrade xcbeautify
       - name: Set IgnoreFileSystemDeviceInodeChanges flag
