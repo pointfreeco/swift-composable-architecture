@@ -103,12 +103,19 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
       _ member: inout Member,
       _ oldValue: Member,
       _ isIdentityEqual: (Member, Member) -> Bool,
-      _ shouldNotifyObservers: (Member, Member) -> Bool
+      _ shouldNotifyObservers: (Member, Member) -> Bool = { _, _ in true }
     ) {
       if !isIdentityEqual(oldValue, member) {
         let newValue = member
         member = oldValue
-        self.mutate(subject, keyPath: keyPath, &member, newValue, isIdentityEqual, shouldNotifyObservers)
+        self.mutate(
+          subject,
+          keyPath: keyPath,
+          &member,
+          newValue,
+          isIdentityEqual,
+          shouldNotifyObservers
+        )
       }
     }
   }
@@ -132,9 +139,10 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
       keyPath: KeyPath<Subject, Member>,
       _ value: inout Value,
       _ newValue: Value,
-      _ isIdentityEqual: (Value, Value) -> Bool
+      _ isIdentityEqual: (Value, Value) -> Bool,
+      _ shouldNotifyObservers: (Value, Value) -> Bool = { _, _ in true }
     ) {
-      if isIdentityEqual(value, newValue) {
+      if isIdentityEqual(value, newValue) || !shouldNotifyObservers(value, newValue) {
         value = newValue
       } else {
         self.registrar.withMutation(of: subject, keyPath: keyPath) {
@@ -171,12 +179,20 @@ extension ObservationStateRegistrar: Equatable, Hashable, Codable {
       keyPath: KeyPath<Subject, Member>,
       _ member: inout Member,
       _ oldValue: Member,
-      _ isIdentityEqual: (Member, Member) -> Bool
+      _ isIdentityEqual: (Member, Member) -> Bool,
+      _ shouldNotifyObservers: (Member, Member) -> Bool = { _, _ in true }
     ) {
       if !isIdentityEqual(oldValue, member) {
         let newValue = member
         member = oldValue
-        self.mutate(subject, keyPath: keyPath, &member, newValue, isIdentityEqual)
+        self.mutate(
+          subject,
+          keyPath: keyPath,
+          &member,
+          newValue,
+          isIdentityEqual,
+          shouldNotifyObservers
+        )
       }
     }
   }
