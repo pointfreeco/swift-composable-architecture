@@ -7,8 +7,7 @@
 
   final class ObservableStateMacroTests: MacroBaseTestCase {
     override func invokeTest() {
-      withMacroTesting(
-        // record: .failed,
+      withMacroTesting(// record: .failed,
       ) {
         super.invokeTest()
       }

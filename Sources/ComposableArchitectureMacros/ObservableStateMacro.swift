@@ -77,7 +77,9 @@ public struct ObservableStateMacro {
       """
   }
 
-  static func shouldNotifyObserversNonEquatableFunction(_ perceptibleType: TokenSyntax, context: some MacroExpansionContext) -> DeclSyntax {
+  static func shouldNotifyObserversNonEquatableFunction(
+    _ perceptibleType: TokenSyntax, context: some MacroExpansionContext
+  ) -> DeclSyntax {
     let memberGeneric = context.makeUniqueName("Member")
     return
       """
@@ -85,7 +87,9 @@ public struct ObservableStateMacro {
       """
   }
 
-  static func shouldNotifyObserversEquatableFunction(_ perceptibleType: TokenSyntax, context: some MacroExpansionContext) -> DeclSyntax {
+  static func shouldNotifyObserversEquatableFunction(
+    _ perceptibleType: TokenSyntax, context: some MacroExpansionContext
+  ) -> DeclSyntax {
     let memberGeneric = context.makeUniqueName("Member")
     return
       """
@@ -93,7 +97,9 @@ public struct ObservableStateMacro {
       """
   }
 
-  static func shouldNotifyObserversNonEquatableObjectFunction(_ perceptibleType: TokenSyntax, context: some MacroExpansionContext) -> DeclSyntax {
+  static func shouldNotifyObserversNonEquatableObjectFunction(
+    _ perceptibleType: TokenSyntax, context: some MacroExpansionContext
+  ) -> DeclSyntax {
     let memberGeneric = context.makeUniqueName("Member")
     return
       """
@@ -101,7 +107,9 @@ public struct ObservableStateMacro {
       """
   }
 
-  static func shouldNotifyObserversEquatableObjectFunction(_ perceptibleType: TokenSyntax, context: some MacroExpansionContext) -> DeclSyntax {
+  static func shouldNotifyObserversEquatableObjectFunction(
+    _ perceptibleType: TokenSyntax, context: some MacroExpansionContext
+  ) -> DeclSyntax {
     let memberGeneric = context.makeUniqueName("Member")
     return
       """
@@ -330,10 +338,18 @@ extension ObservableStateMacro: MemberMacro {
     )
     declaration.addIfNeeded(ObservableStateMacro.idVariable(), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.willModifyFunction(), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.shouldNotifyObserversNonEquatableFunction(observableType, context: context), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.shouldNotifyObserversEquatableFunction(observableType, context: context), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.shouldNotifyObserversNonEquatableObjectFunction(observableType, context: context), to: &declarations)
-    declaration.addIfNeeded(ObservableStateMacro.shouldNotifyObserversEquatableObjectFunction(observableType, context: context), to: &declarations)
+    declaration.addIfNeeded(
+      ObservableStateMacro.shouldNotifyObserversNonEquatableFunction(
+        observableType, context: context), to: &declarations)
+    declaration.addIfNeeded(
+      ObservableStateMacro.shouldNotifyObserversEquatableFunction(observableType, context: context),
+      to: &declarations)
+    declaration.addIfNeeded(
+      ObservableStateMacro.shouldNotifyObserversNonEquatableObjectFunction(
+        observableType, context: context), to: &declarations)
+    declaration.addIfNeeded(
+      ObservableStateMacro.shouldNotifyObserversEquatableObjectFunction(
+        observableType, context: context), to: &declarations)
 
     return declarations
   }

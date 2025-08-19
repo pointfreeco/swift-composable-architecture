@@ -128,7 +128,9 @@ public macro ReducerCaseIgnored() =
 
 /// Defines and implements conformance of the Observable protocol.
 @attached(extension, conformances: Observable, ObservableState)
-@attached(member, names: named(_$id), named(_$observationRegistrar), named(_$willModify), named(shouldNotifyObservers))
+@attached(
+  member, names: named(_$id), named(_$observationRegistrar), named(_$willModify),
+  named(shouldNotifyObservers))
 @attached(memberAttribute)
 public macro ObservableState() =
   #externalMacro(module: "ComposableArchitectureMacros", type: "ObservableStateMacro")
