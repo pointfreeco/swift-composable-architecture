@@ -77,6 +77,38 @@ public struct ObservableStateMacro {
       """
   }
 
+  static func shouldNotifyObserversNonEquatableFunction(_ perceptibleType: TokenSyntax, context: some MacroExpansionContext) -> DeclSyntax {
+    let memberGeneric = context.makeUniqueName("Member")
+    return
+      """
+       private nonisolated func shouldNotifyObservers<\(memberGeneric)>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool { true }
+      """
+  }
+
+  static func shouldNotifyObserversEquatableFunction(_ perceptibleType: TokenSyntax, context: some MacroExpansionContext) -> DeclSyntax {
+    let memberGeneric = context.makeUniqueName("Member")
+    return
+      """
+      private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool { lhs != rhs }
+      """
+  }
+
+  static func shouldNotifyObserversNonEquatableObjectFunction(_ perceptibleType: TokenSyntax, context: some MacroExpansionContext) -> DeclSyntax {
+    let memberGeneric = context.makeUniqueName("Member")
+    return
+      """
+       private nonisolated func shouldNotifyObservers<\(memberGeneric): AnyObject>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool { lhs !== rhs }
+      """
+  }
+
+  static func shouldNotifyObserversEquatableObjectFunction(_ perceptibleType: TokenSyntax, context: some MacroExpansionContext) -> DeclSyntax {
+    let memberGeneric = context.makeUniqueName("Member")
+    return
+      """
+      private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable & AnyObject>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool { lhs != rhs }
+      """
+  }
+
   static var ignoredAttribute: AttributeSyntax {
     AttributeSyntax(
       leadingTrivia: .space,
@@ -298,6 +330,10 @@ extension ObservableStateMacro: MemberMacro {
     )
     declaration.addIfNeeded(ObservableStateMacro.idVariable(), to: &declarations)
     declaration.addIfNeeded(ObservableStateMacro.willModifyFunction(), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.shouldNotifyObserversNonEquatableFunction(observableType, context: context), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.shouldNotifyObserversEquatableFunction(observableType, context: context), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.shouldNotifyObserversNonEquatableObjectFunction(observableType, context: context), to: &declarations)
+    declaration.addIfNeeded(ObservableStateMacro.shouldNotifyObserversEquatableObjectFunction(observableType, context: context), to: &declarations)
 
     return declarations
   }
@@ -611,7 +647,7 @@ public struct ObservationStateTrackedMacro: AccessorMacro {
     let setAccessor: AccessorDeclSyntax =
       """
       set {
-      \(raw: ObservableStateMacro.registrarVariableName).mutate(self, keyPath: \\.\(identifier), &_\(identifier), newValue, _$isIdentityEqual)
+      \(raw: ObservableStateMacro.registrarVariableName).mutate(self, keyPath: \\.\(identifier), &_\(identifier), newValue, _$isIdentityEqual, shouldNotifyObservers)
       }
       """
     let modifyAccessor: AccessorDeclSyntax = """

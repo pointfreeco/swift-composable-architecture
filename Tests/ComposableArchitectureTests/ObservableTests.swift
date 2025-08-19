@@ -18,6 +18,21 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssertEqual(state.count, 1)
   }
 
+  func testAssignEqualValue() async {
+    var state = ChildState()
+    let didChange = LockIsolated(false)
+
+    withPerceptionTracking {
+      _ = state.count
+    } onChange: {
+      didChange.withValue { $0 = true }
+    }
+
+    state.count = state.count
+    XCTAssertEqual(state.count, 0)
+    XCTAssert(!didChange.withValue { $0 })
+  }
+
   func testCopyMutation() async {
     XCTTODO(
       """
@@ -63,78 +78,89 @@ final class ObservableTests: BaseTCATestCase {
   }
 
   func testReplace() async {
-    XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
-
+    #if swift(<6.2)
+      if #available(iOS 17, macOS 14, tvOS 14, watchOS 10, *) {
+        XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
+      }
+    #endif
     var state = ChildState(count: 42)
-    let countDidChange = self.expectation(description: "count.didChange")
+    let didChange = LockIsolated(false)
 
     withPerceptionTracking {
       _ = state.count
     } onChange: {
-      countDidChange.fulfill()
+      didChange.withValue { $0 = true }
     }
 
     state.replace(with: ChildState())
-    await self.fulfillment(of: [countDidChange], timeout: 0)
     XCTAssertEqual(state.count, 0)
+    XCTAssert(didChange.withValue { $0 })
   }
 
   func testReset() async {
-    XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
+    #if swift(<6.2)
+      if #available(iOS 17, macOS 14, tvOS 14, watchOS 10, *) {
+        XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
+      }
+    #endif
 
     var state = ChildState(count: 42)
-    let countDidChange = self.expectation(description: "count.didChange")
+    let didChange = LockIsolated(false)
 
     withPerceptionTracking {
       _ = state.count
     } onChange: {
-      countDidChange.fulfill()
+      didChange.withValue { $0 = true }
     }
 
     state.reset()
-    await self.fulfillment(of: [countDidChange], timeout: 0)
     XCTAssertEqual(state.count, 0)
+    XCTAssert(didChange.withValue { $0 })
   }
 
   func testChildCountMutation() async {
     var state = ParentState()
-    let childCountDidChange = self.expectation(description: "child.count.didChange")
+    let childCountDidChange = LockIsolated(false)
+    let childDidChange = LockIsolated(false)
 
     withPerceptionTracking {
       _ = state.child.count
     } onChange: {
-      childCountDidChange.fulfill()
+      childCountDidChange.withValue { $0 = true }
     }
     withPerceptionTracking {
       _ = state.child
     } onChange: {
-      XCTFail("state.child should not change.")
+      childDidChange.withValue { $0 = true }
     }
 
     state.child.count += 1
-    await self.fulfillment(of: [childCountDidChange], timeout: 0)
     XCTAssertEqual(state.child.count, 1)
+    XCTAssert(childCountDidChange.withValue { $0 })
+    XCTAssert(!childDidChange.withValue { $0 })
   }
 
   func testChildReset() async {
     var state = ParentState()
-    let childDidChange = self.expectation(description: "child.didChange")
+    let childCountDidChange = LockIsolated(false)
+    let childDidChange = LockIsolated(false)
 
     let child = state.child
     withPerceptionTracking {
       _ = child.count
     } onChange: {
-      XCTFail("child.count should not change.")
+      childCountDidChange.withValue { $0 = true }
     }
     withPerceptionTracking {
       _ = state.child
     } onChange: {
-      childDidChange.fulfill()
+      childDidChange.withValue { $0 = true }
     }
 
     state.child = ChildState(count: 42)
-    await self.fulfillment(of: [childDidChange], timeout: 0)
     XCTAssertEqual(state.child.count, 42)
+    XCTAssert(!childCountDidChange.withValue { $0 })
+    XCTAssert(childDidChange.withValue { $0 })
   }
 
   func testReplaceChild() async {
@@ -210,23 +236,25 @@ final class ObservableTests: BaseTCATestCase {
 
   func testMutatePresentedOptional() async {
     var state = ParentState(optional: ChildState())
-    let optionalCountDidChange = self.expectation(description: "optional.count.didChange")
+    let optionalDidChange = LockIsolated(false)
+    let optionalCountDidChange = LockIsolated(false)
 
     withPerceptionTracking {
       _ = state.optional
     } onChange: {
-      XCTFail("Optional should not change")
+      optionalDidChange.withValue { $0 = true }
     }
     let optional = state.optional
     withPerceptionTracking {
       _ = optional?.count
     } onChange: {
-      optionalCountDidChange.fulfill()
+      optionalCountDidChange.withValue { $0 = true }
     }
 
     state.optional?.count += 1
-    await self.fulfillment(of: [optionalCountDidChange], timeout: 0)
     XCTAssertEqual(state.optional?.count, 1)
+    XCTAssert(!optionalDidChange.withValue { $0 })
+    XCTAssert(optionalCountDidChange.withValue { $0 })
   }
 
   func testPresentDestination() async {
@@ -429,32 +457,38 @@ final class ObservableTests: BaseTCATestCase {
       ChildState(),
       ChildState(),
     ])
-    let firstRowCountDidChange = self.expectation(description: "firstRowCountDidChange")
+    let rowsDidChange = LockIsolated(false)
+    let firstRowDidChange = LockIsolated(false)
+    let firstRowCountDidChange = LockIsolated(false)
+    let secondRowDidCountChange = LockIsolated(false)
 
     withPerceptionTracking {
       _ = state.rows
     } onChange: {
-      XCTFail("rows should not change")
+      rowsDidChange.withValue { $0 = true }
     }
     withPerceptionTracking {
       _ = state.rows[0]
     } onChange: {
-      XCTFail("rows[0] should not change")
+      firstRowDidChange.withValue { $0 = true }
     }
     withPerceptionTracking {
       _ = state.rows[0].count
     } onChange: {
-      firstRowCountDidChange.fulfill()
+      firstRowCountDidChange.withValue { $0 = true }
     }
     withPerceptionTracking {
       _ = state.rows[1].count
     } onChange: {
-      XCTFail("rows[1].count should not change")
+      secondRowDidCountChange.withValue { $0 = true }
     }
 
     state.rows[0].count += 1
     XCTAssertEqual(state.rows[0].count, 1)
-    self.wait(for: [firstRowCountDidChange], timeout: 0)
+    XCTAssert(!rowsDidChange.withValue { $0 })
+    XCTAssert(!firstRowDidChange.withValue { $0 })
+    XCTAssert(firstRowCountDidChange.withValue { $0 })
+    XCTAssert(!secondRowDidCountChange.withValue { $0 })
   }
 
   func testPresents_NilToNonNil() {
@@ -474,22 +508,24 @@ final class ObservableTests: BaseTCATestCase {
 
   func testPresents_Mutate() {
     var state = ParentState(presentation: ChildState())
-    let presentationCountDidChange = self.expectation(description: "presentationCountDidChange")
+    let presentationDidChange = LockIsolated(false)
+    let presentationCountDidChange = LockIsolated(false)
 
     withPerceptionTracking {
       _ = state.presentation
     } onChange: {
-      XCTFail("presentation should not change")
+      presentationDidChange.withValue { $0 = true }
     }
     withPerceptionTracking {
       _ = state.presentation?.count
     } onChange: {
-      presentationCountDidChange.fulfill()
+      presentationCountDidChange.withValue { $0 = true }
     }
 
     state.presentation?.count += 1
     XCTAssertEqual(state.presentation?.count, 1)
-    self.wait(for: [presentationCountDidChange], timeout: 0)
+    XCTAssert(!presentationDidChange.withValue { $0 })
+    XCTAssert(presentationCountDidChange.withValue { $0 })
   }
 
   func testStackState_AddElement() {
@@ -514,32 +550,38 @@ final class ObservableTests: BaseTCATestCase {
         ChildState(),
       ])
     )
-    let firstElementCountDidChange = self.expectation(description: "firstElementCountDidChange")
+    let pathDidChange = LockIsolated(false)
+    let firstElementDidChange = LockIsolated(false)
+    let firstElementCountDidChange = LockIsolated(false)
+    let secondElementCountDidChange = LockIsolated(false)
 
     withPerceptionTracking {
       _ = state.path
     } onChange: {
-      XCTFail("path should not change")
+      pathDidChange.withValue { $0 = true }
     }
     withPerceptionTracking {
       _ = state.path[0]
     } onChange: {
-      XCTFail("path[0] should not change")
+      firstElementDidChange.withValue { $0 = true }
     }
     withPerceptionTracking {
       _ = state.path[0].count
     } onChange: {
-      firstElementCountDidChange.fulfill()
+      firstElementCountDidChange.withValue { $0 = true }
     }
     withPerceptionTracking {
       _ = state.path[1].count
     } onChange: {
-      XCTFail("path[1].count should not change")
+      secondElementCountDidChange.withValue { $0 = true }
     }
 
     state.path[id: 0]?.count += 1
     XCTAssertEqual(state.path[0].count, 1)
-    self.wait(for: [firstElementCountDidChange], timeout: 0)
+    XCTAssert(!pathDidChange.withValue { $0 })
+    XCTAssert(!firstElementDidChange.withValue { $0 })
+    XCTAssert(firstElementCountDidChange.withValue { $0 })
+    XCTAssert(!secondElementCountDidChange.withValue { $0 })
   }
 
   func testCopy() {
@@ -575,14 +617,16 @@ final class ObservableTests: BaseTCATestCase {
 
   func testArrayMutate() {
     var state = ParentState(children: [ChildState()])
+    var didChange = LockIsolated(false)
 
     withPerceptionTracking {
       _ = state.children
     } onChange: {
-      XCTFail("children should not change")
+      didChange.withValue { $0 = true }
     }
 
     state.children[0].count += 1
+    XCTAssert(!didChange.withValue { $0 })
   }
 
   @MainActor
