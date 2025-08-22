@@ -1352,7 +1352,7 @@ final class StoreTests: BaseTCATestCase {
           }
           parentStore = store
           store.send(.presentButtonTapped)
-          guard let _ = store.scope(state: \.child, action: \.child) else {
+          guard store.scope(state: \.child, action: \.child) != nil else {
             Issue.record("Child is 'nil'")
             return
           }
