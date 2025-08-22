@@ -285,6 +285,22 @@ final class EffectCancellationTests: BaseTCATestCase {
     }
     XCTAssertEqual(output, [1, 2])
   }
+
+  @available(iOS 15.0, *)
+  func testCancellationWithoutThrowingCancellationError() async throws {
+    let effect = Effect<Void>.run { send in
+      let session = URLSession(configuration: .ephemeral)
+      let request = URLRequest(url: URL(string: "http://ipv4.download.thinkbroadband.com/1GB.zip")!)
+      let (data, response) = try await session.data(for: request, delegate: nil)
+      _ = (data, response)
+    }
+    .cancellable(id: 1)
+    Task {
+      for await _ in effect.actions {}
+    }
+    try await Task.sleep(nanoseconds: 10_000_000)
+    Task.cancel(id: 1)
+  }
 }
 
 #if DEBUG
@@ -350,7 +366,8 @@ final class EffectCancellationTests: BaseTCATestCase {
             .publisher {
               Just(idx)
                 .delay(
-                  for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+                  for: .milliseconds(Int.random(in: 1...100)),
+                  scheduler: queues.randomElement()!
                 )
             }
             .cancellable(id: id),
@@ -358,7 +375,8 @@ final class EffectCancellationTests: BaseTCATestCase {
             .publisher {
               Empty()
                 .delay(
-                  for: .milliseconds(Int.random(in: 1...100)), scheduler: queues.randomElement()!
+                  for: .milliseconds(Int.random(in: 1...100)),
+                  scheduler: queues.randomElement()!
                 )
                 .handleEvents(receiveCompletion: { _ in Task.cancel(id: id) })
             }

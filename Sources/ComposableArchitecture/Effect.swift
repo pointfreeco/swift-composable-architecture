@@ -102,6 +102,8 @@ extension Effect {
             } catch is CancellationError {
               return
             } catch {
+              guard !Task.isCancelled
+              else { return }
               guard let handler else {
                 reportIssue(
                   """
