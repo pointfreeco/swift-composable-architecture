@@ -1338,6 +1338,69 @@ final class StoreTests: BaseTCATestCase {
         #expect(store.count == 1729)
       }
     }
+
+    @Suite
+    struct ParentChildLifecycle {
+      @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
+      @MainActor
+      @Test
+      func parentChildLifecycle() async throws {
+        weak var parentStore: StoreOf<Parent>?
+        do {
+          let store = Store(initialState: Parent.State()) {
+            Parent()
+          }
+          parentStore = store
+          store.send(.presentButtonTapped)
+          guard let _ = store.scope(state: \.child, action: \.child) else {
+            Issue.record("Child is 'nil'")
+            return
+          }
+        }
+        #expect(parentStore == nil)
+      }
+
+      @Reducer struct Child {
+        @ObservableState struct State {
+          var count = 0
+        }
+        enum Action {
+          case incrementButtonTapped
+        }
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .incrementButtonTapped:
+              state.count += 1
+              return .none
+            }
+          }
+        }
+      }
+      @Reducer struct Parent {
+        @ObservableState struct State {
+          @Presents var child: Child.State?
+        }
+        enum Action {
+          case child(PresentationAction<Child.Action>)
+          case presentButtonTapped
+        }
+        var body: some Reducer<State, Action> {
+          Reduce { state, action in
+            switch action {
+            case .child:
+              return .none
+            case .presentButtonTapped:
+              state.child = Child.State()
+              return .none
+            }
+          }
+          .ifLet(\.$child, action: \.child) {
+            Child()
+          }
+        }
+      }
+    }
   }
 #endif
 
