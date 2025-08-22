@@ -339,7 +339,7 @@ public final class Store<State, Action>: _Store {
           .compactMap { [weak self] in (self?.currentState as? T)?._$id }
           .removeDuplicates()
           .dropFirst()
-          .sink { [weak self] _ in
+          .sink { [weak self, weak parent] _ in
             guard let scopeID = self?.scopeID
             else { return }
             parent?.removeChild(scopeID: scopeID)
