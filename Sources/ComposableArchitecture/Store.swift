@@ -376,7 +376,7 @@ public final class Store<State, Action>: _Store {
   public var publisher: StorePublisher<State> {
     StorePublisher(
       store: self,
-      upstream: self.core.didSet.receive(on: UIScheduler.shared).map { self.currentState }
+      upstream: self.core.didSet.receive(on: UIScheduler.shared).map { self.withState(\.self) }
     )
   }
 
