@@ -69,11 +69,34 @@ final class StorePerceptionTests: BaseTCATestCase {
   }
 
   @MainActor
+  func testPerceptionCheck_ViewRepresentable_publisher() {
+    #if canImport(UIKit)
+      struct ViewRepresentable: UIViewRepresentable {
+        let store = Store(initialState: Feature.State()) {
+          Feature()
+        }
+        func makeUIView(context: Context) -> UILabel {
+          let label = UILabel()
+          let cancellable = store.publisher.sink { [weak label] state in
+            label?.text = "\(state.count)"
+          }
+          objc_setAssociatedObject(label, cancellableKey, cancellable, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+          return label
+        }
+        func updateUIView(_ view: UILabel, context: Context) {}
+      }
+      render(ViewRepresentable())
+    #endif
+  }
+
+  @MainActor
   private func render(_ view: some View) {
     let image = ImageRenderer(content: view).cgImage
     _ = image
   }
 }
+
+@MainActor private let cancellableKey = malloc(1)!
 
 @Reducer
 private struct Feature {
