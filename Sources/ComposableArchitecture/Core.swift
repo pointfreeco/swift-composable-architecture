@@ -205,7 +205,7 @@ final class ScopedCore<Base: Core, State, Action>: Core {
   let stateKeyPath: KeyPath<Base.State, State>
   let actionKeyPath: CaseKeyPath<Base.Action, Action>
   #if DEBUG
-    let isInPerceptionTracking = _isInPerceptionTracking
+    let initializedInPerceptionTracking = _isInPerceptionTracking
   #endif
   init(
     base: Base,
@@ -221,7 +221,7 @@ final class ScopedCore<Base: Core, State, Action>: Core {
   var state: State {
     #if DEBUG
       return _PerceptionLocals.$skipPerceptionChecking.withValue(
-        isInPerceptionTracking || _isInPerceptionTracking
+        initializedInPerceptionTracking || _isInPerceptionTracking
       ) {
         base.state[keyPath: stateKeyPath]
       }
