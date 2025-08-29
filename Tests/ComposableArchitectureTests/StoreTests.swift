@@ -1176,6 +1176,12 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @MainActor
+  func testPublisherAsyncSequence() async {
+    let store = Store<Void, Void>(initialState: ()) {}
+    _ = await store.publisher.values.first { @Sendable _ in true }
+  }
+
+  @MainActor
   func testSharedMutation() async {
     XCTTODO(
       """
