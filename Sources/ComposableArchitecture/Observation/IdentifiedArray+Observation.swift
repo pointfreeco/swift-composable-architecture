@@ -92,7 +92,7 @@ extension Store where State: ObservableState {
 public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAccessCollection {
   private let store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>
   private let data: IdentifiedArray<ID, State>
-  private let isInPerceptionTracking = _isInPerceptionTracking
+  private let initializedInPerceptionTracking = _isInPerceptionTracking
 
   #if swift(<5.10)
     @MainActor(unsafe)
@@ -146,7 +146,9 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
         return child
       }
       #if DEBUG
-        return _PerceptionLocals.$isInPerceptionTracking.withValue(self.isInPerceptionTracking) {
+        return _PerceptionLocals.$isInPerceptionTracking.withValue(
+          self.initializedInPerceptionTracking || _isInPerceptionTracking
+        ) {
           child
         }
       #else
