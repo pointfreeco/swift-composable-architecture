@@ -1176,6 +1176,14 @@ final class StoreTests: BaseTCATestCase {
   }
 
   @MainActor
+  func testPublisherAsyncSequence() async {
+    if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
+      let store = Store<Void, Void>(initialState: ()) {}
+      _ = await store.publisher.values.first { @Sendable _ in true }
+    }
+  }
+
+  @MainActor
   func testSharedMutation() async {
     XCTTODO(
       """
