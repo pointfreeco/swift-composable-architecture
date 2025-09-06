@@ -121,10 +121,24 @@ extension SyntaxProtocol {
   }
 }
 
-extension DeclGroupSyntax {
-  fileprivate var hasStoreVariable: Bool {
-    self.memberBlock.members.contains(where: { member in
-      if let variableDecl = member.decl.as(VariableDeclSyntax.self),
+private extension DeclGroupSyntax {
+  var hasStoreVariable: Bool {
+    let members = memberBlock.members
+    return members.contains(where: { member in
+
+      let variableDecl: VariableDeclSyntax? =
+        if
+          let ifConfigDecl = member.decl.as(IfConfigDeclSyntax.self),
+          let firstClause = ifConfigDecl.clauses.first,
+          let member = firstClause.elements?.as(MemberBlockItemListSyntax.self)?.first
+        {
+          member.decl.as(VariableDeclSyntax.self)
+        } else {
+          member.decl.as(VariableDeclSyntax.self)
+        }
+
+      if
+        let variableDecl,
         let firstBinding = variableDecl.bindings.first,
         let identifierPattern = firstBinding.pattern.as(IdentifierPatternSyntax.self),
         identifierPattern.identifier.text == "store"
