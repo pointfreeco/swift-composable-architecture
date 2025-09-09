@@ -110,7 +110,7 @@ private struct BasicsFeature {
     case binding(BindingAction<State>)
   }
   var body: some ReducerOf<Self> {
-    BindingReducer()
+    BindingReducer(action: \.binding)
   }
 }
 
@@ -161,7 +161,7 @@ private struct PersonalInfoFeature {
   }
   @Dependency(\.dismiss) var dismiss
   var body: some ReducerOf<Self> {
-    BindingReducer()
+    BindingReducer(action: \.binding)
   }
 }
 
@@ -217,7 +217,7 @@ private struct TopicsFeature {
   }
   @Dependency(\.dismiss) var dismiss
   var body: some ReducerOf<Self> {
-    BindingReducer()
+    BindingReducer(action: \.binding)
     Reduce { state, action in
       switch action {
       case .alert:
