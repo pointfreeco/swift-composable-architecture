@@ -113,7 +113,66 @@ public struct ObservableStateMacro {
     let memberGeneric = context.makeUniqueName("Member")
     return
       """
-      private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable & AnyObject>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool { lhs != rhs }
+      private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable & AnyObject>(_ lhs: \(memberGeneric), _ rhs: \(memberGeneric)) -> Bool { lhs !== rhs || lhs != rhs }
+      """
+  }
+
+  // Optional variants
+  static func shouldNotifyObserversOptionalNonEquatableFunction(
+    _ perceptibleType: TokenSyntax, context: some MacroExpansionContext
+  ) -> DeclSyntax {
+    let memberGeneric = context.makeUniqueName("Member")
+    return
+      """
+       private nonisolated func shouldNotifyObservers<\(memberGeneric)>(_ lhs: \(memberGeneric)?, _ rhs: \(memberGeneric)?) -> Bool {
+         switch (lhs, rhs) {
+         case (.none, .none): return false
+         case (.some, .some): return true
+         default: return true
+         }
+       }
+      """
+  }
+
+  static func shouldNotifyObserversOptionalEquatableFunction(
+    _ perceptibleType: TokenSyntax, context: some MacroExpansionContext
+  ) -> DeclSyntax {
+    let memberGeneric = context.makeUniqueName("Member")
+    return
+      """
+      private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable>(_ lhs: \(memberGeneric)?, _ rhs: \(memberGeneric)?) -> Bool { lhs != rhs }
+      """
+  }
+
+  static func shouldNotifyObserversOptionalNonEquatableObjectFunction(
+    _ perceptibleType: TokenSyntax, context: some MacroExpansionContext
+  ) -> DeclSyntax {
+    let memberGeneric = context.makeUniqueName("Member")
+    return
+      """
+       private nonisolated func shouldNotifyObservers<\(memberGeneric): AnyObject>(_ lhs: \(memberGeneric)?, _ rhs: \(memberGeneric)?) -> Bool {
+         switch (lhs, rhs) {
+         case (.none, .none): return false
+         case let (.some(lhs), .some(rhs)): return lhs !== rhs
+         default: return true
+         }
+       }
+      """
+  }
+
+  static func shouldNotifyObserversOptionalEquatableObjectFunction(
+    _ perceptibleType: TokenSyntax, context: some MacroExpansionContext
+  ) -> DeclSyntax {
+    let memberGeneric = context.makeUniqueName("Member")
+    return
+      """
+      private nonisolated func shouldNotifyObservers<\(memberGeneric): Equatable & AnyObject>(_ lhs: \(memberGeneric)?, _ rhs: \(memberGeneric)?) -> Bool {
+        switch (lhs, rhs) {
+        case (.none, .none): return false
+        case let (.some(lhs), .some(rhs)): return lhs !== rhs || lhs != rhs
+        default: return true
+        }
+      }
       """
   }
 
@@ -349,6 +408,18 @@ extension ObservableStateMacro: MemberMacro {
         observableType, context: context), to: &declarations)
     declaration.addIfNeeded(
       ObservableStateMacro.shouldNotifyObserversEquatableObjectFunction(
+        observableType, context: context), to: &declarations)
+    declaration.addIfNeeded(
+      ObservableStateMacro.shouldNotifyObserversOptionalNonEquatableFunction(
+        observableType, context: context), to: &declarations)
+    declaration.addIfNeeded(
+      ObservableStateMacro.shouldNotifyObserversOptionalEquatableFunction(
+        observableType, context: context), to: &declarations)
+    declaration.addIfNeeded(
+      ObservableStateMacro.shouldNotifyObserversOptionalNonEquatableObjectFunction(
+        observableType, context: context), to: &declarations)
+    declaration.addIfNeeded(
+      ObservableStateMacro.shouldNotifyObserversOptionalEquatableObjectFunction(
         observableType, context: context), to: &declarations)
 
     return declarations
