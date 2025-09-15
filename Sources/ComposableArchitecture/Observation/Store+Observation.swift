@@ -175,7 +175,7 @@ extension Binding {
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
-    filePath: StaticString = #fileID,
+    filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) -> Binding<Store<ChildState, ChildAction>?>
@@ -203,7 +203,7 @@ extension ObservedObject.Wrapper {
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
-    filePath: StaticString = #fileID,
+    filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) -> Binding<Store<ChildState, ChildAction>?>
@@ -293,7 +293,7 @@ extension SwiftUI.Bindable {
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
-    filePath: StaticString = #fileID,
+    filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) -> Binding<Store<ChildState, ChildAction>?>
