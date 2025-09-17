@@ -87,7 +87,7 @@ the feature's state:
 struct ParentFeature {
   @ObservableState
   struct State {
-    @Shared var count: Int
+    @Shared(value: 0) var count: Int
     // Other properties
   }
   // ...
