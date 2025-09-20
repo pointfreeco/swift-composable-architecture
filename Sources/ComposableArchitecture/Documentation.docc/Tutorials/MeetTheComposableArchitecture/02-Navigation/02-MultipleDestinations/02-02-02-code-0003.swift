@@ -6,4 +6,4 @@ extension ContactsFeature {
   }
 }
 
-extension ContactFeature.Destination.State: Equatable {}
+extension ContactsFeature.Destination.State: Equatable {}
