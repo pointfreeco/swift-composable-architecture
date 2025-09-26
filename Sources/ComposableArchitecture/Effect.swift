@@ -409,7 +409,7 @@ extension Effect {
   extension Task {
     @discardableResult
     init(
-      name: String,
+      name: String?,
       priority: TaskPriority? = nil,
       operation: @escaping @Sendable () async -> Success
     ) where Failure == Never {
@@ -418,7 +418,7 @@ extension Effect {
 
     @discardableResult
     init(
-      name: String,
+      name: String?,
       priority: TaskPriority? = nil,
       operation: @escaping @Sendable () async throws -> Success
     ) where Failure == Error {
