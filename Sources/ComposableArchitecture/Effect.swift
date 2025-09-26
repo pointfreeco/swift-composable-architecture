@@ -430,7 +430,7 @@ extension Effect {
     public mutating func addTask(
       name: String?,
       priority: TaskPriority? = nil,
-      operation: @escaping @Sendable (any) () async -> ChildTaskResult
+      operation: @escaping @Sendable () async -> ChildTaskResult
     ) {
       addTask(priority: priority, operation: operation)
     }
