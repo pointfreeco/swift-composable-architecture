@@ -425,4 +425,14 @@ extension Effect {
       self.init(priority: priority, operation: operation)
     }
   }
+
+  extension TaskGroup {
+    public mutating func addTask(
+      name: String?,
+      priority: TaskPriority? = nil,
+      operation: @escaping @Sendable (any) () async -> ChildTaskResult
+    ) {
+      addTask(priority: priority, operation: operation)
+    }
+  }
 #endif
