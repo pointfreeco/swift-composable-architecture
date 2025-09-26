@@ -30,7 +30,7 @@ public struct _EffectPublisher<Action>: Publisher {
       return Empty().eraseToAnyPublisher()
     case let .publisher(publisher):
       return publisher
-    case let .run(priority, name, operation):
+    case let .run(name, priority, operation):
       return .create { subscriber in
         let task = Task(name: name, priority: priority) { @MainActor in
           defer { subscriber.send(completion: .finished) }

@@ -136,7 +136,7 @@ final class RootCore<Root: Reducer>: Core {
             task.cancel()
           }
         }
-      case let .run(priority, name, operation):
+      case let .run(name, priority, operation):
         withEscapedDependencies { continuation in
           let task = Task(name: name, priority: priority) { @MainActor [weak self] in
             let isCompleted = LockIsolated(false)

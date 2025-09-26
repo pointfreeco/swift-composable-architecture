@@ -8,9 +8,9 @@ public struct Effect<Action>: Sendable {
     case none
     case publisher(AnyPublisher<Action, Never>)
     case run(
-      TaskPriority? = nil,
-      _ name: String? = nil,
-      @Sendable (_ send: Send<Action>) async -> Void
+      name: String? = nil,
+      priority: TaskPriority? = nil,
+      operation: @Sendable (_ send: Send<Action>) async -> Void
     )
   }
 
@@ -101,7 +101,7 @@ extension Effect {
   ) -> Self {
     withEscapedDependencies { escaped in
       Self(
-        operation: .run(priority, name) { send in
+        operation: .run(name: name, priority: priority) { send in
           await escaped.yield {
             do {
               try await operation(send)
@@ -274,7 +274,10 @@ extension Effect {
           .eraseToAnyPublisher()
         )
       )
-    case let (.run(lhsPriority, lhsName, lhsOperation), .run(rhsPriority, rhsName, rhsOperation)):
+    case (
+      .run(let lhsName, let lhsPriority, let lhsOperation),
+      .run(let rhsName, let rhsPriority, let rhsOperation)
+    ):
       return Self(
         operation: .run { send in
           await withTaskGroup(of: Void.self) { group in
@@ -334,16 +337,21 @@ extension Effect {
           .eraseToAnyPublisher()
         )
       )
-    case let (.run(lhsPriority, lhsName, lhsOperation), .run(rhsPriority, rhsName, rhsOperation)):
+    case (
+      .run(let lhsName, let lhsPriority, let lhsOperation),
+      .run(let rhsName, let rhsPriority, let rhsOperation)
+    ):
       return Self(
         operation: .run { send in
           if let lhsPriority {
-            await Task(name: lhsName, priority: lhsPriority) { await lhsOperation(send) }.cancellableValue
+            await Task(name: lhsName, priority: lhsPriority) { await lhsOperation(send) }
+              .cancellableValue
           } else {
             await lhsOperation(send)
           }
           if let rhsPriority {
-            await Task(name: rhsName, priority: rhsPriority) { await rhsOperation(send) }.cancellableValue
+            await Task(name: rhsName, priority: rhsPriority) { await rhsOperation(send) }
+              .cancellableValue
           } else {
             await rhsOperation(send)
           }
@@ -362,7 +370,7 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return .init(
         operation: .publisher(
           publisher
@@ -378,10 +386,10 @@ extension Effect {
             .eraseToAnyPublisher()
         )
       )
-    case let .run(priority, name, operation):
+    case .run(let name, let priority, let operation):
       return withEscapedDependencies { escaped in
         .init(
-          operation: .run(priority, name) { send in
+          operation: .run(name: name, priority: priority) { send in
             await escaped.yield {
               await operation(
                 Send { action in
@@ -396,39 +404,25 @@ extension Effect {
   }
 }
 
-#if !swift(>=6.2)
-public extension Task {
-  /// Backwards compatibility shim for named Task initializers introduced in Swift 6.2
-  ///
-  /// This extension provides the `name` parameter for Task initializers on Swift versions
-  /// prior to 6.2.
-  ///
-  /// - Important: On Swift < 6.2, the `name` parameter is accepted but ignored.
-  ///   No naming functionality is provided - this is purely for API compatibility.
-  ///
-  /// Example usage:
-  /// ```swift
-  /// let task = Task(name: "DataLoader") {
-  ///     await loadUserData()
-  /// }
-  /// ```
-  @discardableResult
-  init(
-    name: String,
-    priority: TaskPriority? = nil,
-    operation: @escaping @Sendable () async -> Success
-  ) where Failure == Never {
-    self.init(priority: priority, operation: operation)
-  }
+#if swift(<6.2)
+  // NB: Backwards-compatible shims.
+  extension Task {
+    @discardableResult
+    init(
+      name: String,
+      priority: TaskPriority? = nil,
+      operation: @escaping @Sendable () async -> Success
+    ) where Failure == Never {
+      self.init(priority: priority, operation: operation)
+    }
 
-  /// Backwards compatibility shim for named throwing Task initializers
-  @discardableResult
-  init(
-    name: String,
-    priority: TaskPriority? = nil,
-    operation: @escaping @Sendable () async throws -> Success
-  ) where Failure == Error {
-    self.init(priority: priority, operation: operation)
+    @discardableResult
+    init(
+      name: String,
+      priority: TaskPriority? = nil,
+      operation: @escaping @Sendable () async throws -> Success
+    ) where Failure == Error {
+      self.init(priority: priority, operation: operation)
+    }
   }
-}
 #endif

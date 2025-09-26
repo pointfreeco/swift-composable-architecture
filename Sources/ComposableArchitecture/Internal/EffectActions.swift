@@ -15,7 +15,7 @@ extension Effect where Action: Sendable {
           cancellable.cancel()
         }
       }
-    case let .run(priority, name, operation):
+    case let .run(name, priority, operation):
       return AsyncStream { continuation in
         let task = Task(name: name, priority: priority) {
           await operation(Send { action in continuation.yield(action) })
