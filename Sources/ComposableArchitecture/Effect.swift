@@ -408,6 +408,7 @@ extension Effect {
   // NB: Backwards-compatible shims.
   extension Task {
     @discardableResult
+    @usableFromInline
     init(
       name: String?,
       priority: TaskPriority? = nil,
@@ -417,6 +418,7 @@ extension Effect {
     }
 
     @discardableResult
+    @usableFromInline
     init(
       name: String?,
       priority: TaskPriority? = nil,
@@ -427,7 +429,8 @@ extension Effect {
   }
 
   extension TaskGroup {
-    public mutating func addTask(
+    @usableFromInline
+    mutating func addTask(
       name: String?,
       priority: TaskPriority? = nil,
       operation: @escaping @Sendable () async -> ChildTaskResult
