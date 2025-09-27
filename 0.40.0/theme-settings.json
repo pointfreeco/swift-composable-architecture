@@ -1,0 +1,62 @@
+{
+  "meta": {},
+  "theme": {
+    "code": {
+      "indentationWidth": 4
+    },
+    "colors": {
+      "text": "",
+      "text-background": "",
+      "grid": "",
+      "article-background": "",
+      "generic-modal-background": "",
+      "secondary-label": "",
+      "header-text": "",
+      "not-found": {
+        "input-border": ""
+      },
+      "runtime-preview": {
+        "text": ""
+      },
+      "tabnav-item": {
+        "border-color": ""
+      },
+      "svg-icon": {
+        "fill-light": "",
+        "fill-dark": ""
+      },
+      "loading-placeholder": {
+        "background": ""
+      },
+      "button": {
+        "text": "",
+        "light": {
+          "background": "",
+          "backgroundHover": "",
+          "backgroundActive": ""
+        },
+        "dark": {
+          "background": "",
+          "backgroundHover": "",
+          "backgroundActive": ""
+        }
+      },
+      "link": null
+    },
+    "style": {
+      "button": {
+        "borderRadius": null
+      }
+    },
+    "typography": {
+      "html-font": ""
+    }
+  },
+  "features": {
+    "docs": {
+      "quickNavigation": {
+        "enable": false
+      }
+    }
+  }
+}
