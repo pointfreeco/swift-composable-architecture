@@ -42,10 +42,10 @@ extension Effect {
           TransactionPublisher(upstream: publisher, transaction: transaction).eraseToAnyPublisher()
         )
       )
-    case let .run(priority, operation):
+    case let .run(name, priority, operation):
       let uncheckedTransaction = UncheckedSendable(transaction)
       return Self(
-        operation: .run(priority) { send in
+        operation: .run(name: name, priority: priority) { send in
           await operation(
             Send { value in
               withTransaction(uncheckedTransaction.value) {

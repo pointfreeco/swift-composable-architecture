@@ -83,10 +83,10 @@ extension Effect {
           .eraseToAnyPublisher()
         )
       )
-    case let .run(priority, operation):
+    case let .run(name, priority, operation):
       return withEscapedDependencies { continuation in
         return Self(
-          operation: .run(priority) { send in
+          operation: .run(name: name, priority: priority) { send in
             await continuation.yield {
               await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
                 await operation(send)

@@ -114,9 +114,9 @@ extension Effect {
           .eraseToAnyPublisher()
         )
       )
-    case let .run(priority, operation):
+    case let .run(name, priority, operation):
       return .init(
-        operation: .run(priority) { send in
+        operation: .run(name: name, priority: priority) { send in
           os_signpost(
             .begin, log: log, name: "Effect", signpostID: sid, "%sStarted from %s", prefix,
             actionOutput

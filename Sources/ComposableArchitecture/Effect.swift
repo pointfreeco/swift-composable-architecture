@@ -7,7 +7,11 @@ public struct Effect<Action>: Sendable {
   enum Operation: Sendable {
     case none
     case publisher(AnyPublisher<Action, Never>)
-    case run(TaskPriority? = nil, @Sendable (_ send: Send<Action>) async -> Void)
+    case run(
+      name: String? = nil,
+      priority: TaskPriority? = nil,
+      operation: @Sendable (_ send: Send<Action>) async -> Void
+    )
   }
 
   @usableFromInline
@@ -76,6 +80,7 @@ extension Effect {
   /// - Parameters:
   ///   - priority: Priority of the underlying task. If `nil`, the priority will come from
   ///     `Task.currentPriority`.
+  ///   - name: An optional name to associate with the task that runs this effect.
   ///   - operation: The operation to execute.
   ///   - handler: An error handler, invoked if the operation throws an error other than
   ///     `CancellationError`.
@@ -86,6 +91,7 @@ extension Effect {
   /// - Returns: An effect wrapping the given asynchronous work.
   public static func run(
     priority: TaskPriority? = nil,
+    name: String? = nil,
     operation: @escaping @Sendable (_ send: Send<Action>) async throws -> Void,
     catch handler: (@Sendable (_ error: any Error, _ send: Send<Action>) async -> Void)? = nil,
     fileID: StaticString = #fileID,
@@ -95,7 +101,7 @@ extension Effect {
   ) -> Self {
     withEscapedDependencies { escaped in
       Self(
-        operation: .run(priority) { send in
+        operation: .run(name: name, priority: priority) { send in
           await escaped.yield {
             do {
               try await operation(send)
@@ -268,14 +274,17 @@ extension Effect {
           .eraseToAnyPublisher()
         )
       )
-    case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
+    case (
+      .run(let lhsName, let lhsPriority, let lhsOperation),
+      .run(let rhsName, let rhsPriority, let rhsOperation)
+    ):
       return Self(
         operation: .run { send in
           await withTaskGroup(of: Void.self) { group in
-            group.addTask(priority: lhsPriority) {
+            group.addTask(name: lhsName, priority: lhsPriority) {
               await lhsOperation(send)
             }
-            group.addTask(priority: rhsPriority) {
+            group.addTask(name: rhsName, priority: rhsPriority) {
               await rhsOperation(send)
             }
           }
@@ -328,16 +337,21 @@ extension Effect {
           .eraseToAnyPublisher()
         )
       )
-    case let (.run(lhsPriority, lhsOperation), .run(rhsPriority, rhsOperation)):
+    case (
+      .run(let lhsName, let lhsPriority, let lhsOperation),
+      .run(let rhsName, let rhsPriority, let rhsOperation)
+    ):
       return Self(
         operation: .run { send in
           if let lhsPriority {
-            await Task(priority: lhsPriority) { await lhsOperation(send) }.cancellableValue
+            await Task(name: lhsName, priority: lhsPriority) { await lhsOperation(send) }
+              .cancellableValue
           } else {
             await lhsOperation(send)
           }
           if let rhsPriority {
-            await Task(priority: rhsPriority) { await rhsOperation(send) }.cancellableValue
+            await Task(name: rhsName, priority: rhsPriority) { await rhsOperation(send) }
+              .cancellableValue
           } else {
             await rhsOperation(send)
           }
@@ -356,7 +370,7 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return .init(
         operation: .publisher(
           publisher
@@ -372,10 +386,10 @@ extension Effect {
             .eraseToAnyPublisher()
         )
       )
-    case let .run(priority, operation):
+    case .run(let name, let priority, let operation):
       return withEscapedDependencies { escaped in
         .init(
-          operation: .run(priority) { send in
+          operation: .run(name: name, priority: priority) { send in
             await escaped.yield {
               await operation(
                 Send { action in
@@ -389,3 +403,39 @@ extension Effect {
     }
   }
 }
+
+#if swift(<6.2)
+  // NB: Backwards-compatible shims.
+  extension Task {
+    @discardableResult
+    @usableFromInline
+    init(
+      name: String?,
+      priority: TaskPriority? = nil,
+      operation: @escaping @Sendable () async -> Success
+    ) where Failure == Never {
+      self.init(priority: priority, operation: operation)
+    }
+
+    @discardableResult
+    @usableFromInline
+    init(
+      name: String?,
+      priority: TaskPriority? = nil,
+      operation: @escaping @Sendable () async throws -> Success
+    ) where Failure == Error {
+      self.init(priority: priority, operation: operation)
+    }
+  }
+
+  extension TaskGroup {
+    @usableFromInline
+    mutating func addTask(
+      name: String?,
+      priority: TaskPriority? = nil,
+      operation: @escaping @Sendable () async -> ChildTaskResult
+    ) {
+      addTask(priority: priority, operation: operation)
+    }
+  }
+#endif
