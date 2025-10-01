@@ -5,7 +5,7 @@
 
   final class RuntimeWarningTests: BaseTCATestCase {
     @MainActor
-    func testBindingUnhandledAction() {
+    func testBindingUnhandledAction() async throws {
       let line = #line + 2
       struct State: Equatable {
         @BindingState var value = 0
@@ -16,8 +16,6 @@
       let store = Store<State, Action>(initialState: State()) {}
 
       XCTExpectFailure {
-        ViewStore(store, observe: { $0 }).$value.wrappedValue = 42
-      } issueMatcher: {
         $0.compactDescription == """
           failed - A binding action sent from a store for binding state defined at \
           "\(#fileID):\(line)" was not handled. …
@@ -28,6 +26,11 @@
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """
       }
+
+      let viewStore = ViewStore(store, observe: { $0 })
+      viewStore.$value.wrappedValue = 42
+      try await Task.sleep(nanoseconds: 1_000_000)
+
     }
 
     @ObservableState
@@ -35,7 +38,7 @@
       var count = 0
     }
     @MainActor
-    func testObservableBindingUnhandledAction() {
+    func testObservableBindingUnhandledAction() async throws {
       typealias State = TestObservableBindingUnhandledActionState
       enum Action: BindableAction, Equatable {
         case binding(BindingAction<State>)
@@ -43,8 +46,6 @@
       let store = Store<State, Action>(initialState: State()) {}
 
       XCTExpectFailure {
-        store.count = 42
-      } issueMatcher: {
         $0.compactDescription == """
           failed - A binding action sent from a store was not handled. …
 
@@ -54,10 +55,13 @@
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """
       }
+
+      store.count = 42
+      try await Task.sleep(nanoseconds: 1_000_000)
     }
 
     @MainActor
-    func testBindingUnhandledAction_BindingState() {
+    func testBindingUnhandledAction_BindingState() async throws {
       struct State: Equatable {
         @BindingState var value = 0
       }
@@ -68,8 +72,6 @@
       let store = Store<State, Action>(initialState: State()) {}
 
       XCTExpectFailure {
-        ViewStore(store, observe: { $0 }).$value.wrappedValue = 42
-      } issueMatcher: {
         $0.compactDescription == """
           failed - A binding action sent from a store for binding state defined at \
           "\(#fileID):\(line)" was not handled. …
@@ -80,6 +82,10 @@
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """
       }
+
+      let viewStore = ViewStore(store, observe: { $0 })
+      viewStore.$value.wrappedValue = 42
+      try await Task.sleep(nanoseconds: 1_000_000)
     }
 
     @Reducer
@@ -100,7 +106,10 @@
 
       XCTExpectFailure {
         store.scope(state: \.path, action: \.path)[
-          fileID: "file.swift", filePath: "/file.swift", line: 1, column: 1
+          fileID: "file.swift",
+          filePath: "/file.swift",
+          line: 1,
+          column: 1
         ] = .init()
       } issueMatcher: {
         $0.compactDescription == """

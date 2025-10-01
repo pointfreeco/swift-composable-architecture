@@ -770,22 +770,28 @@ extension WithViewStore where ViewState: Equatable, Content: View {
     }
 
     deinit {
-      let isInvalidated = mainActorNow(execute: isInvalidated)
-      guard !isInvalidated else { return }
-      guard self.wasCalled.value else {
+      guard !self.wasCalled.value
+      else { return }
+
+      Task {
+        @MainActor [
+          context, fileID, filePath, line, column, value, bindableActionType, isInvalidated
+        ] in
+        let tmp = isInvalidated()
+        guard !tmp else { return }
         var valueDump: String {
           var valueDump = ""
-          customDump(self.value, to: &valueDump, maxDepth: 0)
+          customDump(value, to: &valueDump, maxDepth: 0)
           return valueDump
         }
         reportIssue(
           """
           A binding action sent from a store \
-          \(self.context == .bindingState ? "for binding state defined " : "")at \
-          "\(self.fileID):\(self.line)" was not handled. …
+          \(context == .bindingState ? "for binding state defined " : "")at \
+          "\(fileID):\(line)" was not handled. …
 
             Action:
-              \(typeName(self.bindableActionType)).binding(.set(_, \(valueDump)))
+              \(typeName(bindableActionType)).binding(.set(_, \(valueDump)))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """,
@@ -794,7 +800,6 @@ extension WithViewStore where ViewState: Equatable, Content: View {
           line: line,
           column: column
         )
-        return
       }
     }
   }

@@ -100,25 +100,25 @@ extension BindingAction {
       self.isInvalidated = isInvalidated
     }
     deinit {
-      let isInvalidated = mainActorNow(execute: isInvalidated)
-      guard !isInvalidated else { return }
-      guard wasCalled.value else {
+      guard !wasCalled.value
+      else { return }
+      Task { @MainActor [value, isInvalidated] in
+        guard !isInvalidated() else { return }
         var valueDump: String {
           var valueDump = ""
-          customDump(self.value, to: &valueDump, maxDepth: 0)
+          customDump(value, to: &valueDump, maxDepth: 0)
           return valueDump
         }
         reportIssue(
           """
           A binding action sent from a store was not handled. …
-
+          
             Action:
               \(typeName(Action.self)).binding(.set(_, \(valueDump)))
-
+          
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """
         )
-        return
       }
     }
   }
