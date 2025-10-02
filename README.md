@@ -532,41 +532,8 @@ advanced usages.
 
 The documentation for releases and `main` are available here:
 
-* [`main`](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/)
-* [1.22.0](https://pointfreeco.github.io/swift-composable-architecture/1.22.0/documentation/composablearchitecture/)
-
-<details>
-  <summary>
-  Other versions
-  </summary>
-  
-  * [1.21.0](https://pointfreeco.github.io/swift-composable-architecture/1.21.0/documentation/composablearchitecture/)
-  * [1.19.0](https://pointfreeco.github.io/swift-composable-architecture/1.19.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.19))
-  * [1.18.0](https://pointfreeco.github.io/swift-composable-architecture/1.18.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.18))
-  * [1.17.0](https://pointfreeco.github.io/swift-composable-architecture/1.17.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.17))
-  * [1.16.0](https://pointfreeco.github.io/swift-composable-architecture/1.16.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.16))
-  * [1.15.0](https://pointfreeco.github.io/swift-composable-architecture/1.15.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.15))
-  * [1.14.0](https://pointfreeco.github.io/swift-composable-architecture/1.14.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.14))
-  * [1.13.0](https://pointfreeco.github.io/swift-composable-architecture/1.13.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13))
-  * [1.12.0](https://pointfreeco.github.io/swift-composable-architecture/1.12.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.12))
-  * [1.11.0](https://pointfreeco.github.io/swift-composable-architecture/1.11.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.11))
-  * [1.10.0](https://pointfreeco.github.io/swift-composable-architecture/1.10.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.10))
-  * [1.9.0](https://pointfreeco.github.io/swift-composable-architecture/1.9.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.9))
-  * [1.8.0](https://pointfreeco.github.io/swift-composable-architecture/1.8.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.8))
-  * [1.7.0](https://pointfreeco.github.io/swift-composable-architecture/1.7.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7))
-  * [1.6.0](https://pointfreeco.github.io/swift-composable-architecture/1.6.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.6))
-  * [1.5.0](https://pointfreeco.github.io/swift-composable-architecture/1.5.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5))
-  * [1.4.0](https://pointfreeco.github.io/swift-composable-architecture/1.4.0/documentation/composablearchitecture/) ([migration guide](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4))
-  * [1.3.0](https://pointfreeco.github.io/swift-composable-architecture/1.3.0/documentation/composablearchitecture/)
-  * [1.2.0](https://pointfreeco.github.io/swift-composable-architecture/1.2.0/documentation/composablearchitecture/)
-  * [1.1.0](https://pointfreeco.github.io/swift-composable-architecture/1.1.0/documentation/composablearchitecture/)
-  * [1.0.0](https://pointfreeco.github.io/swift-composable-architecture/1.0.0/documentation/composablearchitecture/)
-  * [0.59.0](https://pointfreeco.github.io/swift-composable-architecture/0.59.0/documentation/composablearchitecture/)
-  * [0.58.0](https://pointfreeco.github.io/swift-composable-architecture/0.58.0/documentation/composablearchitecture/)
-  * [0.57.0](https://pointfreeco.github.io/swift-composable-architecture/0.57.0/documentation/composablearchitecture/)
-</details>
-
-<br>
+* [`main`](https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture)
+* [1.x.x](https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/~/documentation/composablearchitecture)
 
 There are a number of articles in the documentation that you may find helpful as you become more 
 comfortable with the library:
@@ -703,13 +670,13 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [gh-isowords]: https://github.com/pointfreeco/isowords
 [gh-discussions]: https://github.com/pointfreeco/swift-composable-architecture/discussions
 [swift-forum]: https://forums.swift.org/c/related-projects/swift-composable-architecture
-[testing-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/testingtca
-[faq-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/faq
-[dependencies-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/dependencymanagement
-[getting-started-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/gettingstarted
-[navigation-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/navigation
-[performance-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/performance
-[concurrency-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/swiftconcurrency
-[bindings-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/bindings
-[sharing-state-article]: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/sharingstate
+[testing-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/testingtca
+[faq-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/faq
+[dependencies-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/dependencymanagement
+[getting-started-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/gettingstarted
+[navigation-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/navigation
+[performance-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/performance
+[concurrency-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/swiftconcurrency
+[bindings-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/bindings
+[sharing-state-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/sharingstate
 [meet-tca]: https://pointfreeco.github.io/swift-composable-architecture/main/tutorials/meetcomposablearchitecture
