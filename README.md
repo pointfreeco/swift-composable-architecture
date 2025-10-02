@@ -679,4 +679,4 @@ This library is released under the MIT license. See [LICENSE](LICENSE) for detai
 [concurrency-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/swiftconcurrency
 [bindings-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/bindings
 [sharing-state-article]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/sharingstate
-[meet-tca]: https://pointfreeco.github.io/swift-composable-architecture/main/tutorials/meetcomposablearchitecture
+[meet-tca]: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/tutorials/meetcomposablearchitecture
