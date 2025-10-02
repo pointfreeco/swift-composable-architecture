@@ -60,25 +60,25 @@ import SwiftUI
   iOS,
   deprecated: 9999,
   message:
-    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 @available(
   macOS,
   deprecated: 9999,
   message:
-    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 @available(
   tvOS,
   deprecated: 9999,
   message:
-    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 @available(
   watchOS,
   deprecated: 9999,
   message:
-    "Use '@ObservableState', instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+    "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 @dynamicMemberLookup
 #if swift(<5.10)

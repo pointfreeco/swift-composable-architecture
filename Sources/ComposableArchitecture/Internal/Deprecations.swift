@@ -30,25 +30,25 @@
       iOS,
       deprecated: 9999,
       message:
-        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
+        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
     )
     @available(
       macOS,
       deprecated: 9999,
       message:
-        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
+        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
     )
     @available(
       tvOS,
       deprecated: 9999,
       message:
-        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
+        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
     )
     @available(
       watchOS,
       deprecated: 9999,
       message:
-        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
+        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
     )
     public convenience init<Action>(
       store: Store<AlertState<Action>, PresentationAction<Action>>
@@ -76,25 +76,25 @@
       iOS,
       deprecated: 9999,
       message:
-        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
+        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
     )
     @available(
       macOS,
       deprecated: 9999,
       message:
-        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
+        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
     )
     @available(
       tvOS,
       deprecated: 9999,
       message:
-        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
+        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
     )
     @available(
       watchOS,
       deprecated: 9999,
       message:
-        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
+        "Use '@ObservableState' and the 'scope' operation on bindable stores. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.13"
     )
     public convenience init<Action>(
       store: Store<ConfirmationDialogState<Action>, PresentationAction<Action>>

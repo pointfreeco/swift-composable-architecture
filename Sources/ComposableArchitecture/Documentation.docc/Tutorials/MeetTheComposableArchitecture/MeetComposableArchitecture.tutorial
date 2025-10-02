@@ -64,10 +64,10 @@
       - [Voice memos](https://github.com/pointfreeco/swift-composable-architecture/tree/main/Examples/VoiceMemos)
     }
     
-    @Documentation(destination: "https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/") {
+    @Documentation(destination: "https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/") {
       Browse the full documentation online.
       
-      - [GitHub](https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture)
+      - [GitHub](https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture)
     }
   }
 }

@@ -506,13 +506,12 @@ func uncachedStoreWarning<State, Action>(_ store: Store<State, Action>) -> Strin
 
   • A parent view scopes on a store using transform functions, which has been \
   deprecated, instead of with key paths and case paths. Read the migration guide for 1.5 \
-  to update these scopes: https://pointfreeco.github.io/swift-composable-architecture/\
-  main/documentation/composablearchitecture/migratingto1.5
+  to update these scopes: \
+  https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5
 
   • A parent feature is using deprecated navigation APIs, such as 'IfLetStore', \
   'SwitchStore', 'ForEachStore', or any navigation view modifiers taking stores instead of \
   bindings. Read the migration guide for 1.7 to update those APIs: \
-  https://pointfreeco.github.io/swift-composable-architecture/main/documentation/\
-  composablearchitecture/migratingto1.7
+  https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7
   """
 }
