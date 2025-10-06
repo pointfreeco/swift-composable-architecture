@@ -17,7 +17,7 @@ extension Effect {
   ///   return .run { send in
   ///     await send(
   ///       .userResponse(
-  ///         TaskResult { try await self.apiClient.loadUser() }
+  ///         await Result { try await self.apiClient.loadUser() }
   ///       )
   ///     )
   ///   }
@@ -151,7 +151,7 @@ extension Effect {
   ///   try await withTaskCancellation(id: CancelID.response, cancelInFlight: true) {
   ///     try await self.clock.sleep(for: .seconds(0.3))
   ///     await send(
-  ///       .debouncedResponse(TaskResult { try await environment.request() })
+  ///       .debouncedResponse(await Result { try await environment.request() })
   ///     )
   ///   }
   /// }

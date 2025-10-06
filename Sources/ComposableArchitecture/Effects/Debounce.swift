@@ -15,7 +15,7 @@ extension Effect {
   ///   return .run { send in
   ///     await send(
   ///       .searchResponse(
-  ///         TaskResult { await self.apiClient.search(text) }
+  ///         await Result { await self.apiClient.search(text) }
   ///       )
   ///     )
   ///   }
