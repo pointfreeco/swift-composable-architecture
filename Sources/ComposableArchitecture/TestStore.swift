@@ -646,17 +646,10 @@ public final class TestStore<State: Equatable, Action> {
     self.assertNoSharedChanges(fileID: fileID, filePath: filePath, line: line, column: column)
   }
 
-  #if compiler(>=6.2)
-    isolated deinit {
-      uncheckedUseMainSerialExecutor = originalUseMainSerialExecutor
-      completed()
-    }
-  #else
-    deinit {
-      uncheckedUseMainSerialExecutor = self.originalUseMainSerialExecutor
-      mainActorNow { self.completed() }
-    }
-  #endif
+  deinit {
+    uncheckedUseMainSerialExecutor = self.originalUseMainSerialExecutor
+    mainActorNow { self.completed() }
+  }
 
   func completed() {
     self.assertNoReceivedActions(
