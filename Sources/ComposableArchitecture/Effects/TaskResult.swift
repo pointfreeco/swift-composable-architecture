@@ -38,7 +38,7 @@
 ///   return .run { send in
 ///     await send(
 ///       .factResponse(
-///         TaskResult { try await self.numberFact.fetch(state.number) }
+///         await Result { try await self.numberFact.fetch(state.number) }
 ///       )
 ///     )
 ///   }
