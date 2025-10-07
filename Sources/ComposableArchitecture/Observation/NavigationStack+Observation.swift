@@ -105,6 +105,7 @@ extension SwiftUI.Bindable {
   }
 }
 
+#if !os(visionOS)
 @available(iOS, introduced: 13, obsoleted: 17)
 @available(macOS, introduced: 10.15, obsoleted: 14)
 @available(tvOS, introduced: 13, obsoleted: 17)
@@ -122,6 +123,7 @@ extension Perception.Bindable {
     self[state: state, action: action]
   }
 }
+#endif
 
 extension UIBindable {
   /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.

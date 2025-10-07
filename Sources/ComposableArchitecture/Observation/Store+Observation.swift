@@ -311,6 +311,7 @@ extension SwiftUI.Bindable {
   }
 }
 
+#if !os(visionOS)
 @available(iOS, introduced: 13, obsoleted: 17)
 @available(macOS, introduced: 10.15, obsoleted: 14)
 @available(tvOS, introduced: 13, obsoleted: 17)
@@ -387,6 +388,7 @@ extension Perception.Bindable {
     ]
   }
 }
+#endif
 
 extension UIBindable {
   #if swift(>=5.10)

@@ -41,6 +41,7 @@ extension SwiftUI.Bindable {
   }
 }
 
+#if !os(visionOS)
 @available(iOS, introduced: 13, obsoleted: 17)
 @available(macOS, introduced: 10.15, obsoleted: 14)
 @available(tvOS, introduced: 13, obsoleted: 17)
@@ -55,6 +56,7 @@ extension Perception.Bindable {
     _StoreBindable_Perception(bindable: self, keyPath: keyPath)
   }
 }
+#endif
 
 extension UIBindable {
   @_disfavoredOverload
@@ -363,6 +365,7 @@ public struct _StoreBindable_SwiftUI<State: ObservableState, Action, Value> {
   }
 }
 
+#if !os(visionOS)
 @available(iOS, introduced: 13, obsoleted: 17)
 @available(macOS, introduced: 10.15, obsoleted: 14)
 @available(tvOS, introduced: 13, obsoleted: 17)
@@ -370,8 +373,11 @@ public struct _StoreBindable_SwiftUI<State: ObservableState, Action, Value> {
 @available(visionOS, unavailable)
 @dynamicMemberLookup
 public struct _StoreBindable_Perception<State: ObservableState, Action, Value> {
+  #if !os(visionOS)
   fileprivate let bindable: Perception.Bindable<Store<State, Action>>
+  #endif
   fileprivate let keyPath: KeyPath<State, Value>
+
 
   public subscript<Member>(
     dynamicMember keyPath: KeyPath<Value, Member>
@@ -381,6 +387,7 @@ public struct _StoreBindable_Perception<State: ObservableState, Action, Value> {
       keyPath: self.keyPath.appending(path: keyPath)
     )
   }
+
 
   /// Creates a binding to the value by sending new values through the given action.
   ///
@@ -395,6 +402,7 @@ public struct _StoreBindable_Perception<State: ObservableState, Action, Value> {
     self.bindable[state: self.keyPath, action: action]
   }
 }
+#endif
 
 public struct _StoreUIBindable<State: ObservableState, Action, Value> {
   fileprivate let bindable: UIBindable<Store<State, Action>>
