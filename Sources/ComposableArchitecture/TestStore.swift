@@ -429,7 +429,7 @@ import IssueReporting
 #if swift(<5.10)
   @MainActor(unsafe)
 #else
-  @preconcurrency @MainActor
+  @preconcurrency@MainActor
 #endif
 public final class TestStore<State: Equatable, Action> {
   /// The current dependencies of the test store.

@@ -112,10 +112,10 @@ extension BindingAction {
         reportIssue(
           """
           A binding action sent from a store was not handled. …
-          
+
             Action:
               \(typeName(Action.self)).binding(.set(_, \(valueDump)))
-          
+
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """
         )
