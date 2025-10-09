@@ -101,6 +101,67 @@ struct AlertAndConfirmationDialog {
   }
 }
 
+import UIKit
+final class AlertAndConfirmationDialogViewController: UIViewController {
+  @UIBindable var store: StoreOf<AlertAndConfirmationDialog>
+
+  init(store: StoreOf<AlertAndConfirmationDialog>) {
+    self.store = store
+    super.init(nibName: nil, bundle: nil)
+  }
+
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+
+    let countLabel = UILabel()
+
+    let alertButton = UIButton(type: .system, primaryAction: UIAction { [weak self] _ in
+      self?.store.send(.alertButtonTapped)
+    })
+    alertButton.setTitle("Alert", for: .normal)
+
+    let confirmationDialogButton = UIButton(type: .system, primaryAction: UIAction { [weak self] _ in
+      self?.store.send(.confirmationDialogButtonTapped)
+    })
+    confirmationDialogButton.setTitle("Confirmation Dialog", for: .normal)
+
+    let stack = UIStackView(arrangedSubviews: [
+      countLabel,
+      alertButton,
+      confirmationDialogButton,
+    ])
+    stack.axis = .vertical
+    stack.translatesAutoresizingMaskIntoConstraints = false
+
+    view.addSubview(stack)
+
+    NSLayoutConstraint.activate([
+      stack.topAnchor.constraint(equalTo: view.topAnchor),
+      stack.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+      stack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      stack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+    ])
+
+    observe { [weak self] in
+      guard let self else { return }
+      countLabel.text = "Count: \(store.count)"
+    }
+
+    present(item: $store.scope(state: \.alert, action: \.alert)) { store in
+      UIAlertController(store: store)
+    }
+    present(
+      item: $store.scope(state: \.confirmationDialog, action: \.confirmationDialog)
+    ) { store in
+      UIAlertController(store: store)
+    }
+  }
+}
+
 struct AlertAndConfirmationDialogView: View {
   @Bindable var store: StoreOf<AlertAndConfirmationDialog>
 
