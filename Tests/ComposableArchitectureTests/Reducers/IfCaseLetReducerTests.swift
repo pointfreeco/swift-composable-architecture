@@ -39,9 +39,10 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - An "ifCaseLet" at "\(#fileID):\(#line - 5)" received a child action when child \
-        state was set to a different case. …
+      $0.compactDescription.hasSuffix(
+        """
+        An "ifCaseLet" at "\(#fileID):\(#line - 6)" received a child action when child state was \
+        set to a different case.
 
           Action:
             Result.success(1)
@@ -50,18 +51,19 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
-        • A parent reducer set "Result" to a different case before this reducer ran. This \
+        A parent reducer set "Result" to a different case before this reducer ran. This \
         reducer must run before any other reducer sets child state to a different case. This \
         ensures that child reducers can handle their actions while their state is still available.
 
-        • An in-flight effect emitted this action when child state was unavailable. While it may \
+        An in-flight effect emitted this action when child state was unavailable. While it may \
         be perfectly reasonable to ignore this action, consider canceling the associated effect \
         before child state changes to another case, especially if it is a long-living effect.
 
-        • This action was sent to the store while state was another case. Make sure that actions \
+        This action was sent to the store while state was another case. Make sure that actions \
         for this reducer can only be sent from a store when state is set to the appropriate \
         case. In SwiftUI applications, use "SwitchStore".
         """
+      )
     }
 
     await store.send(.success(1))

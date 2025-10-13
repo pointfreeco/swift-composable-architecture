@@ -14,8 +14,9 @@ final class TaskResultTests: BaseTCATestCase {
           TaskResult<Never>.failure(Failure(message: "Something went wrong"))
         )
       } issueMatcher: {
-        $0.compactDescription == """
-          failed - "TaskResultTests.Failure" is not equatable. …
+        $0.compactDescription.hasSuffix(
+          """
+          "TaskResultTests.Failure" is not equatable.
 
           To test two values of this type, it must conform to the "Equatable" protocol. For example:
 
@@ -23,6 +24,7 @@ final class TaskResultTests: BaseTCATestCase {
 
           See the documentation of "TaskResult" for more information.
           """
+        )
       }
     }
 
@@ -40,8 +42,9 @@ final class TaskResultTests: BaseTCATestCase {
           TaskResult<Never>.failure(Failure2(message: "Something went wrong"))
         )
       } issueMatcher: {
-        $0.compactDescription == """
-          failed - Difference: …
+        $0.compactDescription.hasSuffix(
+          """
+          Difference: …
 
               TaskResult.failure(
             −   TaskResultTests.Failure1(message: "Something went wrong")
@@ -50,6 +53,7 @@ final class TaskResultTests: BaseTCATestCase {
 
           (First: −, Second: +)
           """
+        )
       }
     }
 
@@ -61,8 +65,9 @@ final class TaskResultTests: BaseTCATestCase {
       XCTExpectFailure {
         _ = TaskResult<Never>.failure(Failure(message: "Something went wrong")).hashValue
       } issueMatcher: {
-        $0.compactDescription == """
-          failed - "TaskResultTests.Failure" is not hashable. …
+        $0.compactDescription.hasSuffix(
+          """
+          "TaskResultTests.Failure" is not hashable.
 
           To hash a value of this type, it must conform to the "Hashable" protocol. For example:
 
@@ -70,6 +75,7 @@ final class TaskResultTests: BaseTCATestCase {
 
           See the documentation of "TaskResult" for more information.
           """
+        )
       }
     }
   #endif

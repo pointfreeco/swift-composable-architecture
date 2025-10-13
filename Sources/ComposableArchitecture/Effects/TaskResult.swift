@@ -271,7 +271,7 @@ extension TaskResult: Equatable where Success: Equatable {
               let lhsTypeName = typeName(lhsType)
               reportIssue(
                 """
-                "\(lhsTypeName)" is not equatable. …
+                "\(lhsTypeName)" is not equatable.
 
                 To test two values of this type, it must conform to the "Equatable" protocol. For \
                 example:
@@ -307,7 +307,7 @@ extension TaskResult: Hashable where Success: Hashable {
             let errorType = typeName(type(of: error))
             reportIssue(
               """
-              "\(errorType)" is not hashable. …
+              "\(errorType)" is not hashable.
 
               To hash a value of this type, it must conform to the "Hashable" protocol. For example:
 

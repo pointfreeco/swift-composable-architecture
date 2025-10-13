@@ -30,6 +30,6 @@ struct RecordMeetingTests {
     // ❌ The store received 1 unexpected action by the end of this test: …
     //
     //   Unhandled actions:
-    //     • .timerTick
+    //     .timerTick
   }
 }

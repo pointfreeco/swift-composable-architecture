@@ -10,14 +10,16 @@
 
       var line: UInt!
       XCTExpectFailure {
-        $0.compactDescription == """
-          failed - An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
+        $0.compactDescription.hasSuffix(
+          """
+          An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error.
 
               EffectFailureTests.Unexpected()
 
           All non-cancellation errors must be explicitly handled via the "catch" parameter on \
           "Effect.run", or via a "do" block.
           """
+        )
       }
 
       line = #line

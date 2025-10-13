@@ -47,14 +47,16 @@ final class EffectRunTests: BaseTCATestCase {
     func testRunUnhandledFailure() async {
       var line: UInt!
       XCTExpectFailure(nil, enabled: nil, strict: nil) {
-        $0.compactDescription == """
-          failed - An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error. …
+        $0.compactDescription.hasSuffix(
+          """
+          An "Effect.run" returned from "\(#fileID):\(line+1)" threw an unhandled error.
 
               EffectRunTests.Failure()
 
           All non-cancellation errors must be explicitly handled via the "catch" parameter on \
           "Effect.run", or via a "do" block.
           """
+        )
       }
       struct State: Equatable {}
       enum Action: Equatable { case tapped, response }
@@ -126,8 +128,9 @@ final class EffectRunTests: BaseTCATestCase {
   @MainActor
   func testRunEscapeFailure() async throws {
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - An action was sent from a completed effect:
+      $0.compactDescription.hasSuffix(
+        """
+        An action was sent from a completed effect.
 
           Action:
             EffectRunTests.Action.response
@@ -141,6 +144,7 @@ final class EffectRunTests: BaseTCATestCase {
         To fix this, make sure that your 'run' closure does not return until you're done \
         calling 'send'.
         """
+      )
     }
 
     enum Action { case tap, response }

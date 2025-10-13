@@ -15,22 +15,26 @@ final class TestStoreFailureTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - Expected state to change, but no change occurred.
+      $0.compactDescription.hasSuffix(
+        """
+        Expected state to change, but no change occurred.
 
         The trailing closure made no observable modifications to state. If no change to state is \
         expected, omit the trailing closure.
         """
+      )
     }
     await store.send(.first) { _ = $0 }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - Expected state to change, but no change occurred.
+      $0.compactDescription.hasSuffix(
+        """
+        Expected state to change, but no change occurred.
 
         The trailing closure made no observable modifications to state. If no change to state is \
         expected, omit the trailing closure.
         """
+      )
     }
     await store.receive(.second) { _ = $0 }
   }
@@ -46,14 +50,16 @@ final class TestStoreFailureTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - A state change does not match expectation: …
+      $0.compactDescription.hasSuffix(
+        """
+        A state change does not match expectation.
 
             − TestStoreFailureTests.State(count: 0)
             + TestStoreFailureTests.State(count: 1)
 
         (Expected: −, Actual: +)
         """
+      )
     }
     await store.send(()) { $0.count = 0 }
   }
@@ -69,14 +75,16 @@ final class TestStoreFailureTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - State was not expected to change, but a change occurred: …
+      $0.compactDescription.hasSuffix(
+        """
+        State was not expected to change, but a change occurred.
 
             − TestStoreFailureTests.State(count: 0)
             + TestStoreFailureTests.State(count: 1)
 
         (Expected: −, Actual: +)
         """
+      )
     }
     await store.send(())
   }
@@ -98,14 +106,16 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     await store.send(.first)
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - State was not expected to change, but a change occurred: …
+      $0.compactDescription.hasSuffix(
+        """
+        State was not expected to change, but a change occurred.
 
             − TestStoreFailureTests.State(count: 0)
             + TestStoreFailureTests.State(count: 1)
 
         (Expected: −, Actual: +)
         """
+      )
     }
     await store.receive(.second)
   }
@@ -123,16 +133,18 @@ final class TestStoreFailureTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - The store received 1 unexpected action: …
+      $0.compactDescription.hasSuffix(
+        """
+        The store received 1 unexpected action.
 
           Unhandled actions:
-            • .second
+            .second
 
         To fix, explicitly assert against these actions using "store.receive", skip these actions \
         by performing "await store.skipReceivedActions()", or consider using a non-exhaustive test \
         store: "store.exhaustivity = .off".
         """
+      )
     }
     await store.send(.first)
   }
@@ -152,16 +164,18 @@ final class TestStoreFailureTests: BaseTCATestCase {
 
     await store.send(.first)
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - The store received 1 unexpected action: …
+      $0.compactDescription.hasSuffix(
+        """
+        The store received 1 unexpected action.
 
           Unhandled actions:
-            • .second
+            .second
 
         To fix, explicitly assert against these actions using "store.receive", skip these actions \
         by performing "await store.skipReceivedActions()", or consider using a non-exhaustive test \
         store: "store.exhaustivity = .off".
         """
+      )
     }
     await store.finish()
   }
@@ -176,31 +190,33 @@ final class TestStoreFailureTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - An effect returned for this action is still running. It must complete before the \
-        end of the test. …
+      $0.compactDescription.hasSuffix(
+        """
+        An effect returned for this action is still running. It must complete before the end of \
+        the test.
 
         To fix, inspect any effects the reducer returns for this action and ensure that all of \
         them complete by the end of the test. There are a few reasons why an effect may not have \
         completed:
 
-        • If using async/await in your effect, it may need a little bit of time to properly \
+        If using async/await in your effect, it may need a little bit of time to properly \
         finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
-        • If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", etc.), \
+        If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", etc.), \
         make sure that you wait enough time for it to perform the effect. If you are using a test \
         clock/scheduler, advance it so that the effects may complete, or consider using an \
         immediate clock/scheduler to immediately perform the effect instead.
 
-        • If you are returning a long-living effect (timers, notifications, subjects, etc.), then \
+        If you are returning a long-living effect (timers, notifications, subjects, etc.), then \
         make sure those effects are torn down by marking the effect ".cancellable" and returning a \
         corresponding cancellation effect ("Effect.cancel") from another action, or, if your \
         effect is driven by a Combine subject, send it a completion.
 
-        • If you do not wish to assert on these effects, perform "await \
+        If you do not wish to assert on these effects, perform "await \
         store.skipInFlightEffects()", or consider using a non-exhaustive test store: \
         "store.exhaustivity = .off".
         """
+      )
     }
     await store.send(())
   }
@@ -220,13 +236,15 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.send(.first)
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - Must handle 1 received action before sending an action: …
+      $0.compactDescription.hasSuffix(
+        """
+        Must handle 1 received action before sending an action.
 
         Unhandled actions: [
           [0]: .second
         ]
         """
+      )
     }
     await store.send(.first)
 
@@ -242,11 +260,13 @@ final class TestStoreFailureTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - Expected to receive the following action, but didn't: …
+      $0.compactDescription.hasSuffix(
+        """
+        Expected to receive the following action, but didn't:
 
           TestStoreFailureTests.Action.action
         """
+      )
     }
     await store.receive(.action)
   }
@@ -269,14 +289,16 @@ final class TestStoreFailureTests: BaseTCATestCase {
     await store.send(.first)
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - Received unexpected action: …
+      $0.compactDescription.hasSuffix(
+        """
+        Received unexpected action:
 
             − TestStoreFailureTests.Action.first
             + TestStoreFailureTests.Action.second
 
         (Expected: −, Received: +)
         """
+      )
     }
     await store.receive(.first)
   }
@@ -288,7 +310,7 @@ final class TestStoreFailureTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == "failed - Threw error: SomeError()"
+      $0.compactDescription.hasSuffix("Threw error: SomeError()")
     }
     await store.send(()) { _ in
       struct SomeError: Error {}

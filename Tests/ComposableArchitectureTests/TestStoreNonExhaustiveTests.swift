@@ -41,7 +41,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     await store.receive(false) { $0 = 2 }
     XCTAssertEqual(store.state, 2)
     XCTExpectFailure {
-      $0.compactDescription == "failed - There were no received actions to skip."
+      $0.compactDescription.hasSuffix("There were no received actions to skip.")
     }
     await store.skipReceivedActions(strict: true)
   }
@@ -111,7 +111,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     let task = await store.send(true)
     await task.finish(timeout: NSEC_PER_SEC / 2)
     XCTExpectFailure {
-      $0.compactDescription == "failed - There were no in-flight effects to skip."
+      $0.compactDescription.hasSuffix("There were no in-flight effects to skip.")
     }
     await store.skipInFlightEffects(strict: true)
   }
@@ -239,8 +239,9 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     store.exhaustivity = .off(showSkippedAssertions: true)
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - A state change does not match expectation: …
+      $0.compactDescription.hasSuffix(
+        """
+        A state change does not match expectation.
 
               Counter.State(
             −   count: 0,
@@ -250,6 +251,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
 
         (Expected: −, Actual: +)
         """
+      )
     }
     await store.send(.increment) {
       $0.count = 0
@@ -341,8 +343,9 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
       $0.count = 1
     }
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - A state change does not match expectation: …
+      $0.compactDescription.hasSuffix(
+        """
+        A state change does not match expectation.
 
               TestStoreNonExhaustiveTests.State(
             −   count: 2,
@@ -352,6 +355,7 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
 
         (Expected: −, Actual: +)
         """
+      )
     }
     await store.receive(.loggedInResponse(true)) {
       $0.count = 2
@@ -629,9 +633,11 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     await store.send(.onAppear)
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - Expected to receive an action matching case path, but didn't get one.
+      $0.compactDescription.hasSuffix(
         """
+        Expected to receive an action matching case path, but didn't get one.
+        """
+      )
     }
 
     await store.receive(\.onAppear)
@@ -650,9 +656,11 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
     await store.receive(\.response2)
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - Expected to receive an action matching case path, but didn't get one.
+      $0.compactDescription.hasSuffix(
         """
+        Expected to receive an action matching case path, but didn't get one.
+        """
+      )
     }
 
     await store.receive(\.response2)
@@ -684,9 +692,11 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
       XCTExpectFailure {
         XCTModify(&state.child) { _ in }
       } issueMatcher: {
-        $0.compactDescription == """
-          failed - XCTModify: Expected "Int" value to be modified but it was unchanged.
+        $0.compactDescription.hasSuffix(
           """
+          Expected "Int" value to be modified but it was unchanged.
+          """
+        )
       }
     }
     await store.receive(.response) { state in
@@ -694,9 +704,11 @@ final class TestStoreNonExhaustiveTests: BaseTCATestCase {
       XCTExpectFailure {
         XCTModify(&state.child) { _ in }
       } issueMatcher: {
-        $0.compactDescription == """
-          failed - XCTModify: Expected "Int" value to be modified but it was unchanged.
+        $0.compactDescription.hasSuffix(
           """
+          Expected "Int" value to be modified but it was unchanged.
+          """
+        )
       }
     }
   }

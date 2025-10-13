@@ -632,7 +632,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       reportIssue(
         """
         An "ifLet" at "\(self.fileID):\(self.line)" received a presentation action when \
-        destination state was absent. …
+        destination state was absent.
 
           Action:
             \(debugCaseOutput(action))
@@ -640,11 +640,11 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
         This is generally considered an application logic error, and can happen for a few \
         reasons:
 
-        • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+        A parent reducer set destination state to "nil" before this reducer ran. This reducer \
         must run before any other reducer sets destination state to "nil". This ensures that \
         destination reducers can handle their actions while their state is still present.
 
-        • This action was sent to the store while destination state was "nil". Make sure that \
+        This action was sent to the store while destination state was "nil". Make sure that \
         actions for this reducer can only be sent from a store when state is present, or \
         from effects that start from this reducer.
         """,

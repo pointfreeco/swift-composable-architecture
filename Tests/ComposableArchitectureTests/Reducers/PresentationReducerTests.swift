@@ -37,17 +37,21 @@ final class PresentationReducerTests: BaseTCATestCase {
     XCTExpectFailure {
       parent.$child[case: /Child.text]?.append("!")
     } issueMatcher: {
-      $0.compactDescription == """
-        failed - Can't modify unrelated case "int"
+      $0.compactDescription.hasSuffix(
         """
+        Can't modify unrelated case "int"
+        """
+      )
     }
 
     XCTExpectFailure {
       parent.$child[case: /Child.text] = nil
     } issueMatcher: {
-      $0.compactDescription == """
-        failed - Can't modify unrelated case "int"
+      $0.compactDescription.hasSuffix(
         """
+        Can't modify unrelated case "int"
+        """
+      )
     }
 
     XCTAssertEqual(parent.child, .int(42))
@@ -937,7 +941,7 @@ final class PresentationReducerTests: BaseTCATestCase {
                 }
               )
               return .none
-            case let .presentChild(id):
+            case .presentChild(let id):
               state.destination = .child(Child.State(id: id ?? self.uuid()))
               return .none
             }
@@ -1219,7 +1223,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
-            case let .response(value):
+            case .response(let value):
               state.count = value
               return .none
             case .startButtonTapped:
@@ -1315,7 +1319,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
-            case let .response(value):
+            case .response(let value):
               state.count = value
               return .none
             case .startButtonTapped:
@@ -1418,7 +1422,7 @@ final class PresentationReducerTests: BaseTCATestCase {
         var body: some Reducer<State, Action> {
           Reduce { state, action in
             switch action {
-            case let .response(value):
+            case .response(let value):
               state.count = value
               return .none
             case .startButtonTapped:
@@ -1545,7 +1549,7 @@ final class PresentationReducerTests: BaseTCATestCase {
             case .presentChild:
               state.child = Child.State()
               return .none
-            case let .response(value):
+            case .response(let value):
               state.count = value
               return .none
             case .startButtonTapped:
@@ -1722,24 +1726,26 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - An "ifLet" at \
-        "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
-        presentation action when destination state was absent. …
+      $0.compactDescription.hasSuffix(
+        """
+        An "ifLet" at \
+        "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
+        presentation action when destination state was absent.
 
           Action:
             PresentationReducerTests.Parent.Action.child(.dismiss)
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
-        • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+        A parent reducer set destination state to "nil" before this reducer ran. This reducer \
         must run before any other reducer sets destination state to "nil". This ensures that \
         destination reducers can handle their actions while their state is still present.
 
-        • This action was sent to the store while destination state was "nil". Make sure that \
+        This action was sent to the store while destination state was "nil". Make sure that \
         actions for this reducer can only be sent from a store when state is present, or \
         from effects that start from this reducer.
         """
+      )
     }
 
     await store.send(.child(.dismiss))
@@ -1778,24 +1784,26 @@ final class PresentationReducerTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - An "ifLet" at \
-        "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 13)" received a \
-        presentation action when destination state was absent. …
+      $0.compactDescription.hasSuffix(
+        """
+        An "ifLet" at \
+        "ComposableArchitectureTests/PresentationReducerTests.swift:\(#line - 14)" received a \
+        presentation action when destination state was absent.
 
           Action:
             PresentationReducerTests.Parent.Action.child(.presented(.tap))
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
-        • A parent reducer set destination state to "nil" before this reducer ran. This reducer \
+        A parent reducer set destination state to "nil" before this reducer ran. This reducer \
         must run before any other reducer sets destination state to "nil". This ensures that \
         destination reducers can handle their actions while their state is still present.
 
-        • This action was sent to the store while destination state was "nil". Make sure that \
+        This action was sent to the store while destination state was "nil". Make sure that \
         actions for this reducer can only be sent from a store when state is present, or \
         from effects that start from this reducer.
         """
+      )
     }
 
     await store.send(.child(.presented(.tap)))
@@ -2104,7 +2112,8 @@ final class PresentationReducerTests: BaseTCATestCase {
                 ConfirmationDialogState {
                   TextState("Hello!")
                 } actions: {
-                })
+                }
+              )
               return .none
             case .destination(.presented(.dialog(.showAlert))):
               state.destination = .alert(AlertState { TextState("Hello!") })
@@ -2150,7 +2159,8 @@ final class PresentationReducerTests: BaseTCATestCase {
           ConfirmationDialogState {
             TextState("Hello!")
           } actions: {
-          })
+          }
+        )
       }
       await store.send(.destination(.dismiss)) {
         $0.destination = nil
@@ -2258,31 +2268,33 @@ final class PresentationReducerTests: BaseTCATestCase {
     XCTExpectFailure {
       $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
         || $0.sourceCodeContext.location?.lineNumber == line + 1
-          && $0.compactDescription == """
-            failed - An effect returned for this action is still running. It must complete before \
-            the end of the test. …
+          && $0.compactDescription.hasSuffix(
+            """
+            An effect returned for this action is still running. It must complete before the end \
+            of the test.
 
             To fix, inspect any effects the reducer returns for this action and ensure that all of \
             them complete by the end of the test. There are a few reasons why an effect may not \
             have completed:
 
-            • If using async/await in your effect, it may need a little bit of time to properly \
+            If using async/await in your effect, it may need a little bit of time to properly \
             finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
-            • If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", \
+            If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", \
             etc.), make sure that you wait enough time for it to perform the effect. If you are \
             using a test clock/scheduler, advance it so that the effects may complete, or consider \
             using an immediate clock/scheduler to immediately perform the effect instead.
 
-            • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+            If you are returning a long-living effect (timers, notifications, subjects, etc.), \
             then make sure those effects are torn down by marking the effect ".cancellable" and \
             returning a corresponding cancellation effect ("Effect.cancel") from another action, \
             or, if your effect is driven by a Combine subject, send it a completion.
 
-            • If you do not wish to assert on these effects, perform "await \
+            If you do not wish to assert on these effects, perform "await \
             store.skipInFlightEffects()", or consider using a non-exhaustive test store: \
             "store.exhaustivity = .off".
             """
+          )
     }
   }
 
@@ -2300,7 +2312,7 @@ final class PresentationReducerTests: BaseTCATestCase {
       var body: some Reducer<State, Action> {
         Reduce { state, action in
           switch action {
-          case let .response(value):
+          case .response(let value):
             state.count = value
             return .none
           case .tap:
@@ -2337,7 +2349,7 @@ final class PresentationReducerTests: BaseTCATestCase {
               await send(.response(42))
             }
             .cancellable(id: Child.CancelID())
-          case let .response(value):
+          case .response(let value):
             state.count = value
             return .none
           }
@@ -2571,10 +2583,10 @@ final class PresentationReducerTests: BaseTCATestCase {
       }
 
       XCTExpectFailure {
-        $0.compactDescription.hasPrefix(
+        $0.compactDescription.contains(
           """
-          failed - A "Scope" at "\(#fileID):\(line)" received a child action when child state was \
-          set to a different case. …
+          A "Scope" at "\(#fileID):\(line)" received a child action when child state was \
+          set to a different case.
           """
         )
       }

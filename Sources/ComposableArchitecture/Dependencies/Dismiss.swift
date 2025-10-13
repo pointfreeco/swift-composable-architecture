@@ -123,7 +123,7 @@ public struct DismissEffect: Sendable {
     else {
       reportIssue(
         """
-        A reducer requested dismissal at "\(fileID):\(line)", but couldn't be dismissed. …
+        A reducer requested dismissal at "\(fileID):\(line)", but couldn't be dismissed.
 
         This is generally considered an application logic error, and can happen when a reducer \
         assumes it runs in a presentation context. If a reducer can run at both the root level \

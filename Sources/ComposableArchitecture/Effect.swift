@@ -113,7 +113,7 @@ extension Effect {
               guard let handler else {
                 reportIssue(
                   """
-                  An "Effect.run" returned from "\(fileID):\(line)" threw an unhandled error. …
+                  An "Effect.run" returned from "\(fileID):\(line)" threw an unhandled error.
 
                   \(String(customDumping: error).indent(by: 4))
 

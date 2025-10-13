@@ -287,22 +287,22 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       reportIssue(
         """
         An "ifLet" at "\(self.fileID):\(self.line)" received a child action when child state was \
-        "nil". …
+        "nil".
 
           Action:
         \(String(customDumping: action).indent(by: 4))
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
-        • A parent reducer set child state to "nil" before this reducer ran. This reducer must run \
+        A parent reducer set child state to "nil" before this reducer ran. This reducer must run \
         before any other reducer sets child state to "nil". This ensures that child reducers can \
         handle their actions while their state is still available.
 
-        • An in-flight effect emitted this action when child state was "nil". While it may be \
+        An in-flight effect emitted this action when child state was "nil". While it may be \
         perfectly reasonable to ignore this action, consider canceling the associated effect \
         before child state becomes "nil", especially if it is a long-living effect.
 
-        • This action was sent to the store while state was "nil". Make sure that actions for this \
+        This action was sent to the store while state was "nil". Make sure that actions for this \
         reducer can only be sent from a store when state is non-"nil". In SwiftUI \
         applications, use "IfLetStore".
         """,

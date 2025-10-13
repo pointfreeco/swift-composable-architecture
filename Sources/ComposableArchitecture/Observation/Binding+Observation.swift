@@ -111,7 +111,7 @@ extension BindingAction {
         }
         reportIssue(
           """
-          A binding action sent from a store was not handled. …
+          A binding action sent from a store was not handled.
 
             Action:
               \(typeName(Action.self)).binding(.set(_, \(valueDump)))
