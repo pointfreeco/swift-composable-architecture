@@ -343,7 +343,9 @@ public final class Store<State, Action>: _Store {
           .sink { [weak self, weak parent] _ in
             guard let scopeID = self?.scopeID
             else { return }
-            parent?.removeChild(scopeID: scopeID)
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+              parent?.removeChild(scopeID: scopeID)
+            }
           } receiveValue: { [weak self] _ in
             guard let self else { return }
             self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
