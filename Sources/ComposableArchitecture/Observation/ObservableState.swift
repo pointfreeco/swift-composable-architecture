@@ -18,6 +18,12 @@ import Foundation
   }
 #endif
 
+extension ObservableState where Self: Identifiable {
+  public var id: ObservableStateID {
+    _$id
+  }
+}
+
 /// A unique identifier for a observed value.
 public struct ObservableStateID: Equatable, Hashable, Sendable {
   @usableFromInline
@@ -192,4 +198,26 @@ public func _$willModify<T>(_: inout T) {}
 @inlinable
 public func _$willModify<T: ObservableState>(_ value: inout T) {
   value._$willModify()
+}
+
+
+extension IdentifiedArray {
+  public subscript(id id: ID) -> Element? where Element: ObservableState {
+    get {
+      index(id: id).map { self[$0] }
+    }
+    set {
+      guard var newValue
+      else {
+        self.remove(id: id)
+        return
+      }
+      if let index = index(id: id) {
+        newValue._$willModify()
+        self[index] = newValue
+      } else {
+        self.append(newValue)
+      }
+    }
+  }
 }

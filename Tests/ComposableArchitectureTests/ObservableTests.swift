@@ -39,7 +39,8 @@ final class ObservableTests: BaseTCATestCase {
       Ideally this test would pass but it does not because making a copy of a child state, mutating
       it, and assigning it does not change the identified array's IDs, and therefore the fast-path
       of _$isIdentityEqual prevents observation.
-      """)
+      """
+    )
 
     var state = ParentState(children: [ChildState(count: 42)])
     let countDidChange = self.expectation(description: "count.didChange")
@@ -491,6 +492,64 @@ final class ObservableTests: BaseTCATestCase {
     XCTAssert(!secondRowDidCountChange.withValue { $0 })
   }
 
+  func testIdentifiedArray_CopyMutateAssignElement() {
+    var state = ParentState(rows: [
+      ChildState(),
+      ChildState(),
+    ])
+    let rowsDidChange = LockIsolated(0)
+    let firstRowDidChange = LockIsolated(0)
+    let firstRowCountDidChange = LockIsolated(0)
+    let secondRowDidCountChange = LockIsolated(0)
+
+    withPerceptionTracking {
+      _ = state.rows
+    } onChange: {
+      rowsDidChange.withValue { $0 += 1 }
+    }
+    withPerceptionTracking {
+      _ = state.rows[0]
+    } onChange: {
+      firstRowDidChange.withValue { $0 += 1 }
+    }
+    withPerceptionTracking {
+      _ = state.rows[0].count
+    } onChange: {
+      firstRowCountDidChange.withValue { $0 += 1 }
+    }
+    withPerceptionTracking {
+      _ = state.rows[1].count
+    } onChange: {
+      secondRowDidCountChange.withValue { $0 += 1 }
+    }
+
+    var copy = state.rows[0]
+    copy.count += 1
+    state.rows[id: copy.id] = copy
+
+    XCTAssertEqual(state.rows[0].count, 1)
+    XCTAssert(rowsDidChange.withValue(\.self) == 1)
+    XCTAssert(firstRowDidChange.withValue(\.self) == 1)
+    XCTAssert(firstRowCountDidChange.withValue(\.self) == 1)
+    XCTAssert(secondRowDidCountChange.withValue(\.self) == 1)
+
+    state.rows[id: state.rows[0].id] = nil
+    XCTAssertEqual(state.rows.count, 1)
+    XCTAssertEqual(state.rows[0].count, 0)
+    XCTAssertEqual(rowsDidChange.withValue(\.self), 2)
+    XCTAssertEqual(firstRowDidChange.withValue(\.self), 1)
+    XCTAssertEqual(firstRowCountDidChange.withValue(\.self), 1)
+    XCTAssertEqual(secondRowDidCountChange.withValue(\.self), 1)
+
+    let new = ChildState(count: 42)
+    state.rows[id: new.id] = new
+    XCTAssertEqual(state.rows[1].count, 42)
+    XCTAssertEqual(rowsDidChange.withValue(\.self), 3)
+    XCTAssertEqual(firstRowDidChange.withValue(\.self), 1)
+    XCTAssertEqual(firstRowCountDidChange.withValue(\.self), 1)
+    XCTAssertEqual(secondRowDidCountChange.withValue(\.self), 1)
+  }
+
   func testPresents_NilToNonNil() {
     var state = ParentState()
     let presentationDidChange = self.expectation(description: "presentationDidChange")
@@ -692,7 +751,6 @@ final class ObservableTests: BaseTCATestCase {
 
 @ObservableState
 private struct ChildState: Equatable, Identifiable {
-  let id = UUID()
   var count = 0
   mutating func replace(with other: Self) {
     self = other
