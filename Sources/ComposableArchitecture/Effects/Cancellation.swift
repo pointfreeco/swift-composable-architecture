@@ -17,7 +17,7 @@ extension Effect {
   ///   return .run { send in
   ///     await send(
   ///       .userResponse(
-  ///         TaskResult { try await self.apiClient.loadUser() }
+  ///         await Result { try await self.apiClient.loadUser() }
   ///       )
   ///     )
   ///   }
@@ -83,10 +83,10 @@ extension Effect {
           .eraseToAnyPublisher()
         )
       )
-    case let .run(priority, operation):
+    case let .run(name, priority, operation):
       return withEscapedDependencies { continuation in
         return Self(
-          operation: .run(priority) { send in
+          operation: .run(name: name, priority: priority) { send in
             await continuation.yield {
               await withTaskCancellation(id: id, cancelInFlight: cancelInFlight) {
                 await operation(send)
@@ -151,7 +151,7 @@ extension Effect {
   ///   try await withTaskCancellation(id: CancelID.response, cancelInFlight: true) {
   ///     try await self.clock.sleep(for: .seconds(0.3))
   ///     await send(
-  ///       .debouncedResponse(TaskResult { try await environment.request() })
+  ///       .debouncedResponse(await Result { try await environment.request() })
   ///     )
   ///   }
   /// }

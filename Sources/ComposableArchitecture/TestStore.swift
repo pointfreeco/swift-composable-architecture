@@ -576,7 +576,11 @@ public final class TestStore<State: Equatable, Action> {
     column: UInt = #column
   ) async {
     await self.finish(
-      timeout: duration.nanoseconds, fileID: fileID, file: filePath, line: line, column: column
+      timeout: duration.nanoseconds,
+      fileID: fileID,
+      file: filePath,
+      line: line,
+      column: column
     )
   }
 
@@ -649,7 +653,10 @@ public final class TestStore<State: Equatable, Action> {
 
   func completed() {
     self.assertNoReceivedActions(
-      fileID: self.fileID, filePath: self.filePath, line: self.line, column: self.column
+      fileID: self.fileID,
+      filePath: self.filePath,
+      line: self.line,
+      column: self.column
     )
     Task.cancel(id: OnFirstAppearID())
     for effect in self.reducer.inFlightEffects {
@@ -983,7 +990,11 @@ extension TestStore {
       let previousStackElementID = self.reducer.dependencies.stackElementID.incrementingCopy()
       let task = self.store.send(
         .init(
-          origin: .send(action), fileID: fileID, filePath: filePath, line: line, column: column
+          origin: .send(action),
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
         )
       )
       if uncheckedUseMainSerialExecutor {
@@ -1810,25 +1821,25 @@ extension TestStore {
     iOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     macOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     tvOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     watchOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @_disfavoredOverload
   public func receive<Value>(
@@ -1997,28 +2008,28 @@ extension TestStore {
     introduced: 16,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     macOS,
     introduced: 13,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     tvOS,
     introduced: 16,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     watchOS,
     introduced: 9,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   public func receive<Value>(
     _ actionCase: AnyCasePath<Action, Value>,
@@ -2379,7 +2390,11 @@ extension TestStore {
     await Task.megaYield()
     _ = {
       self._skipReceivedActions(
-        strict: strict, fileID: fileID, file: filePath, line: line, column: column
+        strict: strict,
+        fileID: fileID,
+        file: filePath,
+        line: line,
+        column: column
       )
     }()
   }
@@ -2464,7 +2479,11 @@ extension TestStore {
     await Task.megaYield()
     _ = {
       self._skipInFlightEffects(
-        strict: strict, fileID: fileID, filePath: filePath, line: line, column: column
+        strict: strict,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       )
     }()
   }
@@ -2526,7 +2545,7 @@ extension TestStore {
     switch exhaustivity {
     case .on:
       reportIssue(message, fileID: fileID, filePath: filePath, line: line, column: column)
-    case let .off(showSkippedAssertions):
+    case .off(let showSkippedAssertions):
       if showSkippedAssertions {
         withExpectedIssue {
           reportIssue(
@@ -2590,25 +2609,25 @@ extension TestStore {
     iOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     macOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     tvOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     watchOS,
     deprecated: 9999,
     message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://pointfreeco.github.io/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   public func bindings<ViewAction: BindableAction>(
     action toViewAction: AnyCasePath<Action, ViewAction>
@@ -2833,11 +2852,11 @@ class TestReducer<State: Equatable, Action>: Reducer {
 
     let effects: Effect<Action>
     switch action.origin {
-    case let .send(action):
+    case .send(let action):
       effects = reducer.reduce(into: &state, action: action)
       self.state = state
 
-    case let .receive(action):
+    case .receive(let action):
       effects = reducer.reduce(into: &state, action: action)
       self.receivedActions.append((action, state))
     }
@@ -2908,7 +2927,7 @@ class TestReducer<State: Equatable, Action>: Reducer {
       case send(Action)
       fileprivate var action: Action {
         switch self {
-        case let .receive(action), let .send(action):
+        case .receive(let action), .send(let action):
           return action
         }
       }

@@ -128,3 +128,5 @@ public struct _PrintChangesReducer<Base: Reducer>: Reducer {
     }
   #endif
 }
+
+extension _PrintChangesReducer: Sendable where Base: Sendable {}
