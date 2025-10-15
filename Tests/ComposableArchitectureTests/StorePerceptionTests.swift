@@ -80,7 +80,8 @@ final class StorePerceptionTests: BaseTCATestCase {
           let cancellable = store.publisher.sink { [weak label] state in
             label?.text = "\(state.count)"
           }
-          objc_setAssociatedObject(label, cancellableKey, cancellable, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+          objc_setAssociatedObject(
+            label, cancellableKey, cancellable, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
           return label
         }
         func updateUIView(_ view: UILabel, context: Context) {}
