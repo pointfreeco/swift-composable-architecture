@@ -788,7 +788,7 @@ extension WithViewStore where ViewState: Equatable, Content: View {
           """
           A binding action sent from a store \
           \(context == .bindingState ? "for binding state defined " : "")at \
-          "\(fileID):\(line)" was not handled. …
+          "\(fileID):\(line)" was not handled.
 
             Action:
               \(typeName(bindableActionType)).binding(.set(_, \(valueDump)))

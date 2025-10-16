@@ -663,26 +663,26 @@ public final class TestStore<State: Equatable, Action> {
       reportIssueHelper(
         """
         An effect returned for this action is still running. It must complete before the end of \
-        the test. …
+        the test.
 
         To fix, inspect any effects the reducer returns for this action and ensure that all of \
         them complete by the end of the test. There are a few reasons why an effect may not have \
         completed:
 
-        • If using async/await in your effect, it may need a little bit of time to properly \
+        If using async/await in your effect, it may need a little bit of time to properly \
         finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
-        • If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", etc.), \
+        If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", etc.), \
         make sure that you wait enough time for it to perform the effect. If you are using a test \
         clock/scheduler, advance it so that the effects may complete, or consider using an \
         immediate clock/scheduler to immediately perform the effect instead.
 
-        • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+        If you are returning a long-living effect (timers, notifications, subjects, etc.), \
         then make sure those effects are torn down by marking the effect ".cancellable" and \
         returning a corresponding cancellation effect ("Effect.cancel") from another action, or, \
         if your effect is driven by a Combine subject, send it a completion.
 
-        • If you do not wish to assert on these effects, perform "await \
+        If you do not wish to assert on these effects, perform "await \
         store.skipInFlightEffects()", or consider using a non-exhaustive test store: \
         "store.exhaustivity = .off".
         """,
@@ -709,12 +709,12 @@ public final class TestStore<State: Equatable, Action> {
     if !self.reducer.receivedActions.isEmpty {
       let actions = self.reducer.receivedActions
         .map(\.action)
-        .map { "    • " + debugCaseOutput($0, abbreviated: true) }
+        .map { "    " + debugCaseOutput($0, abbreviated: true) }
         .joined(separator: "\n")
       reportIssueHelper(
         """
         The store received \(self.reducer.receivedActions.count) unexpected \
-        action\(self.reducer.receivedActions.count == 1 ? "" : "s"): …
+        action\(self.reducer.receivedActions.count == 1 ? "" : "s").
 
           Unhandled actions:
         \(actions)
@@ -965,7 +965,7 @@ extension TestStore {
         reportIssueHelper(
           """
           Must handle \(self.reducer.receivedActions.count) received \
-          action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action: …
+          action\(self.reducer.receivedActions.count == 1 ? "" : "s") before sending an action.
 
           Unhandled actions: \(actions)
           """,
@@ -1197,7 +1197,7 @@ extension TestStore {
               } catch {
                 reportIssue(
                   """
-                  Skipped assertions: …
+                  Skipped assertions.
 
                   Threw error: \(error)
                   """,
@@ -1241,7 +1241,7 @@ extension TestStore {
             : "State was not expected to change, but a change occurred"
         reportIssueHelper(
           """
-          \(messageHeading): …
+          \(messageHeading).
 
           \(difference)\(postamble.isEmpty ? "" : "\n\n\(postamble)")
           """,
@@ -1292,7 +1292,7 @@ extension TestStore where Action: Equatable {
     self.receiveAction(
       matching: { expectedAction == $0 },
       failureMessage: """
-        Expected to receive the following action, but didn't: …
+        Expected to receive the following action, but didn't:
 
         \(expectedActionDump)
         """,
@@ -2133,7 +2133,7 @@ extension TestStore {
         reportIssueHelper(
           """
           \(actions.count) received action\
-          \(actions.count == 1 ? " was" : "s were") skipped:
+          \(actions.count == 1 ? " was" : "s were") skipped.
 
           \(actionsDump)
           """,
@@ -2151,7 +2151,7 @@ extension TestStore {
         .contains(where: { action, _ in predicate(receivedAction) })
       reportIssueHelper(
         """
-        Received unexpected action\(receivedActionLater ? " before this one" : ""): …
+        Received unexpected action\(receivedActionLater ? " before this one" : ""):
 
         \(unexpectedActionDescription(receivedAction))
         """,
@@ -2427,7 +2427,7 @@ extension TestStore {
     reportIssueHelper(
       """
       \(self.reducer.receivedActions.count) received action\
-      \(self.reducer.receivedActions.count == 1 ? " was" : "s were") skipped:
+      \(self.reducer.receivedActions.count == 1 ? " was" : "s were") skipped.
 
       \(actions)
       """,
@@ -2550,7 +2550,7 @@ extension TestStore {
         withExpectedIssue {
           reportIssue(
             """
-            Skipped assertions: …
+            Skipped assertions.
 
             \(message)
             """,

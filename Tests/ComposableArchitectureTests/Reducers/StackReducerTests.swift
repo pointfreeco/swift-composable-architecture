@@ -28,17 +28,21 @@ final class StackReducerTests: BaseTCATestCase {
     XCTExpectFailure {
       stack[id: 0, case: /Element.text]?.append("!")
     } issueMatcher: {
-      $0.compactDescription == """
-        failed - Can't modify unrelated case "int"
+      $0.compactDescription.hasSuffix(
         """
+        Can't modify unrelated case "int"
+        """
+      )
     }
 
     XCTExpectFailure {
       stack[id: 0, case: /Element.text] = nil
     } issueMatcher: {
-      $0.compactDescription == """
-        failed - Can't modify unrelated case "int"
+      $0.compactDescription.hasSuffix(
         """
+        Can't modify unrelated case "int"
+        """
+      )
     }
 
     XCTAssertEqual(Array(stack), [.int(42)])
@@ -261,8 +265,9 @@ final class StackReducerTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - Received unexpected action: …
+      $0.compactDescription.hasSuffix(
+        """
+        Received unexpected action:
 
               StackReducerTests.Parent.Action.children(
             −   .popFrom(id: #1)
@@ -271,6 +276,7 @@ final class StackReducerTests: BaseTCATestCase {
 
         (Expected: −, Received: +)
         """
+      )
     }
 
     await store.send(.children(.element(id: 0, action: .tap)))
@@ -561,7 +567,7 @@ final class StackReducerTests: BaseTCATestCase {
           switch action {
           case .cancel:
             return .cancel(id: CancelID.cancel)
-          case let .response(value):
+          case .response(let value):
             state.count = value
             return .none
           case .tap:
@@ -661,7 +667,7 @@ final class StackReducerTests: BaseTCATestCase {
       var body: some Reducer<State, Action> {
         Reduce { state, action in
           switch action {
-          case let .response(value):
+          case .response(let value):
             state.count += value
             return .none
           case .tap:
@@ -774,28 +780,30 @@ final class StackReducerTests: BaseTCATestCase {
     let line = #line - 3
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
-        received an action for a missing element. …
+      $0.compactDescription.hasSuffix(
+        """
+        A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received an \
+        action for a missing element.
 
           Action:
             ()
 
         This is generally considered an application logic error, and can happen for a few reasons:
 
-        • A parent reducer removed an element with this ID before this reducer ran. This reducer \
+        A parent reducer removed an element with this ID before this reducer ran. This reducer \
         must run before any other reducer removes an element, which ensures that element \
         reducers can handle their actions while their state is still available.
 
-        • An in-flight effect emitted this action when state contained no element at this ID. \
+        An in-flight effect emitted this action when state contained no element at this ID. \
         While it may be perfectly reasonable to ignore this action, consider canceling the \
         associated effect before an element is removed, especially if it is a long-living effect.
 
-        • This action was sent to the store while its state contained no element at this ID. To \
+        This action was sent to the store while its state contained no element at this ID. To \
         fix this make sure that actions for this reducer can only be sent from a store when \
         its state contains an element at this id. In SwiftUI applications, use \
         "NavigationStack.init(path:)" with a binding to a store.
         """
+      )
     }
 
     var path = StackState<Int>()
@@ -823,15 +831,17 @@ final class StackReducerTests: BaseTCATestCase {
     let line = #line - 3
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
-        received a "popFrom" action for a missing element. …
+      $0.compactDescription.hasSuffix(
+        """
+        A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
+        received a "popFrom" action for a missing element.
 
           ID:
             #999
           Path IDs:
             [#0]
         """
+      )
     }
 
     let store = TestStore(initialState: Parent.State(path: StackState<Int>([1]))) {
@@ -874,31 +884,33 @@ final class StackReducerTests: BaseTCATestCase {
     XCTExpectFailure {
       $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
         || $0.sourceCodeContext.location?.lineNumber == line + 1
-          && $0.compactDescription == """
-            failed - An effect returned for this action is still running. It must complete before \
-            the end of the test. …
+          && $0.compactDescription.hasSuffix(
+            """
+            An effect returned for this action is still running. It must complete before \
+            the end of the test.
 
             To fix, inspect any effects the reducer returns for this action and ensure that all \
             of them complete by the end of the test. There are a few reasons why an effect may \
             not have completed:
 
-            • If using async/await in your effect, it may need a little bit of time to properly \
+            If using async/await in your effect, it may need a little bit of time to properly \
             finish. To fix you can simply perform "await store.finish()" at the end of your test.
 
-            • If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", \
+            If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", \
             etc.), make sure that you wait enough time for it to perform the effect. If you are \
             using a test clock/scheduler, advance it so that the effects may complete, or \
             consider using an immediate clock/scheduler to immediately perform the effect instead.
 
-            • If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+            If you are returning a long-living effect (timers, notifications, subjects, etc.), \
             then make sure those effects are torn down by marking the effect ".cancellable" and \
             returning a corresponding cancellation effect ("Effect.cancel") from another action, \
             or, if your effect is driven by a Combine subject, send it a completion.
 
-            • If you do not wish to assert on these effects, perform "await \
+            If you do not wish to assert on these effects, perform "await \
             store.skipInFlightEffects()", or consider using a non-exhaustive test store: \
             "store.exhaustivity = .off".
             """
+          )
     }
   }
 
@@ -918,7 +930,7 @@ final class StackReducerTests: BaseTCATestCase {
               try await self.mainQueue.sleep(for: .seconds(count))
               await send(.response(42))
             }
-          case let .response(value):
+          case .response(let value):
             state.count = value
             return .none
           }
@@ -1084,15 +1096,17 @@ final class StackReducerTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
-        received a "push" action for an element it already contains. …
+      $0.compactDescription.hasSuffix(
+        """
+        A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
+        received a "push" action for an element it already contains.
 
           ID:
             #0
           Path IDs:
             [#0]
         """
+      )
     }
 
     await store.send(.child(.push(id: 0, state: Child.State()))) {
@@ -1128,15 +1142,17 @@ final class StackReducerTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
-        received a "push" action with an unexpected generational ID. …
+      $0.compactDescription.hasSuffix(
+        """
+        A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
+        "push" action with an unexpected generational ID.
 
           Received ID:
             #1
           Expected ID:
             #0
         """
+      )
     }
 
     await store.send(.child(.push(id: 1, state: Child.State()))) {
@@ -1169,8 +1185,9 @@ final class StackReducerTests: BaseTCATestCase {
     }
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - A state change does not match expectation: …
+      $0.compactDescription.hasSuffix(
+        """
+        A state change does not match expectation.
 
               StackReducerTests.Parent.State(
                 children: [
@@ -1181,6 +1198,7 @@ final class StackReducerTests: BaseTCATestCase {
 
         (Expected: −, Actual: +)
         """
+      )
     }
     await store.send(.child(.push(id: 0, state: Child.State()))) {
       $0.children[id: 1] = Child.State()

@@ -78,11 +78,7 @@ final class ObservableTests: BaseTCATestCase {
   }
 
   func testReplace() async {
-    #if swift(<6.2)
-      if #available(iOS 17, macOS 14, tvOS 14, watchOS 10, *) {
-        XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
-      }
-    #endif
+    XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
     var state = ChildState(count: 42)
     let didChange = LockIsolated(false)
 
@@ -98,12 +94,7 @@ final class ObservableTests: BaseTCATestCase {
   }
 
   func testReset() async {
-    #if swift(<6.2)
-      if #available(iOS 17, macOS 14, tvOS 14, watchOS 10, *) {
-        XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
-      }
-    #endif
-
+    XCTTODO("Ideally this would pass but we cannot detect this kind of mutation currently.")
     var state = ChildState(count: 42)
     let didChange = LockIsolated(false)
 

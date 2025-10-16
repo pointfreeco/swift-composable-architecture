@@ -389,7 +389,7 @@ public struct _NavigationLinkStoreContent<State, Label: View>: View {
               """
           reportIssue(
             """
-            A navigation link at "\(fileID):\(line)" is unpresentable. …
+            A navigation link at "\(fileID):\(line)" is not presentable.
 
               NavigationStack state element type:
                 \(elementType)

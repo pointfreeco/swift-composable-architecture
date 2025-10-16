@@ -459,14 +459,16 @@ final class TestStoreTests: BaseTCATestCase {
         $0 = 1
       }
     } issueMatcher: {
-      $0.compactDescription == """
-        failed - A state change does not match expectation: …
+      $0.compactDescription.hasSuffix(
+        """
+        A state change does not match expectation.
 
             − 1
             + 0
 
         (Expected: −, Actual: +)
         """
+      )
     }
   }
 
@@ -551,8 +553,9 @@ final class TestStoreTests: BaseTCATestCase {
     await store.receive(\.delegate.success, 42)
 
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - Received unexpected action: …
+      $0.compactDescription.hasSuffix(
+        """
+        Received unexpected action:
 
             Action.delegate(
           −   .success(43)
@@ -561,6 +564,7 @@ final class TestStoreTests: BaseTCATestCase {
 
         (Expected: −, Actual: +)
         """
+      )
     }
     await store.send(.tap)
     await store.receive(\.delegate.success, 43)
@@ -652,9 +656,7 @@ final class TestStoreTests: BaseTCATestCase {
     }
     await store.send(.dismiss)
     XCTExpectFailure {
-      $0.compactDescription == """
-        failed - Can't send action to dismissed test store.
-        """
+      $0.compactDescription.hasSuffix("Can't send action to dismissed test store.")
     }
     await store.send(.onTask)
   }

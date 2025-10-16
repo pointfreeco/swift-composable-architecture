@@ -146,7 +146,7 @@ final class RootCore<Root: Reducer>: Core {
                 if isCompleted.value {
                   reportIssue(
                     """
-                    An action was sent from a completed effect:
+                    An action was sent from a completed effect.
 
                       Action:
                         \(debugCaseOutput(effectAction))

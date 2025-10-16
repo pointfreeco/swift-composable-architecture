@@ -16,15 +16,17 @@
       let store = Store<State, Action>(initialState: State()) {}
 
       XCTExpectFailure {
-        $0.compactDescription == """
-          failed - A binding action sent from a store for binding state defined at \
-          "\(#fileID):\(line)" was not handled. …
+        $0.compactDescription.hasSuffix(
+          """
+          A binding action sent from a store for binding state defined at "\(#fileID):\(line)" was \
+          not handled.
 
             Action:
               RuntimeWarningTests.Action.binding(.set(_, 42))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """
+        )
       }
 
       let viewStore = ViewStore(store, observe: { $0 })
@@ -46,14 +48,16 @@
       let store = Store<State, Action>(initialState: State()) {}
 
       XCTExpectFailure {
-        $0.compactDescription == """
-          failed - A binding action sent from a store was not handled. …
+        $0.compactDescription.hasSuffix(
+          """
+          A binding action sent from a store was not handled.
 
             Action:
               RuntimeWarningTests.Action.binding(.set(_, 42))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """
+        )
       }
 
       store.count = 42
@@ -72,15 +76,17 @@
       let store = Store<State, Action>(initialState: State()) {}
 
       XCTExpectFailure {
-        $0.compactDescription == """
-          failed - A binding action sent from a store for binding state defined at \
-          "\(#fileID):\(line)" was not handled. …
+        $0.compactDescription.hasSuffix(
+          """
+          A binding action sent from a store for binding state defined at "\(#fileID):\(line)" was \
+          not handled.
 
             Action:
               RuntimeWarningTests.Action.binding(.set(_, 42))
 
           To fix this, invoke "BindingReducer()" from your feature reducer's "body".
           """
+        )
       }
 
       let viewStore = ViewStore(store, observe: { $0 })
@@ -112,11 +118,12 @@
           column: 1
         ] = .init()
       } issueMatcher: {
-        $0.compactDescription == """
-          failed - A navigation stack binding at "file.swift:1" was written to with a path that \
-          has the same number of elements that already exist in the store. A view should only \
-          write to this binding with a path that has pushed a new element onto the stack, or \
-          popped one or more elements from the stack.
+        $0.compactDescription.hasSuffix(
+          """
+          A navigation stack binding at "file.swift:1" was written to with a path that has the \
+          same number of elements that already exist in the store. A view should only write to \
+          this binding with a path that has pushed a new element onto the stack, or popped one or \
+          more elements from the stack.
 
           This usually means the "forEach" has not been integrated with the reducer powering the \
           store, and this reducer is responsible for handling stack actions.
@@ -133,6 +140,7 @@
           And ensure that every parent reducer is integrated into the root reducer that powers \
           the store.
           """
+        )
       }
     }
 
@@ -168,9 +176,9 @@
           column: 1
         ] = nil
       } issueMatcher: {
-        $0.compactDescription == """
-          failed - A binding at "file.swift:1" was set to "nil", but the store destination wasn't \
-          nil'd out.
+        $0.compactDescription.hasSuffix(
+          """
+          A binding at "file.swift:1" was set to "nil", but the store destination wasn't nil'd out.
 
           This usually means an "ifLet" has not been integrated with the reducer powering the \
           store, and this reducer is responsible for handling presentation actions.
@@ -187,6 +195,7 @@
           And ensure that every parent reducer is integrated into the root reducer that powers the \
           store.
           """
+        )
       }
     }
   }
