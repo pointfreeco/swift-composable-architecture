@@ -423,7 +423,7 @@ extension Effect {
       name: String?,
       priority: TaskPriority? = nil,
       operation: @escaping @Sendable () async throws -> Success
-    ) where Failure == Error {
+    ) where Failure == any Error {
       self.init(priority: priority, operation: operation)
     }
   }
