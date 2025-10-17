@@ -56,6 +56,7 @@ public macro Reducer(state: _SynthesizedConformance..., action: _SynthesizedConf
 #endif
 public struct _SynthesizedConformance: Sendable {}
 
+@available(*, deprecated, message: "Define your conformance using an extension, instead")
 extension _SynthesizedConformance {
   /// Extends the `State` or `Action` types that ``Reducer()`` creates with the `Codable`
   /// protocol.
