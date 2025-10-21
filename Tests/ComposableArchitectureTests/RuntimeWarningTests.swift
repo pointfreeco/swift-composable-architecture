@@ -24,7 +24,8 @@
             Action:
               RuntimeWarningTests.Action.binding(.set(_, 42))
 
-          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+          To fix this, invoke "BindingReducer(action: \\.binding)" from your feature reducer's \
+          "body".
           """
         )
       }
@@ -84,7 +85,8 @@
             Action:
               RuntimeWarningTests.Action.binding(.set(_, 42))
 
-          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+          To fix this, invoke "BindingReducer(action: \\.binding)" from your feature reducer's \
+          "body".
           """
         )
       }
