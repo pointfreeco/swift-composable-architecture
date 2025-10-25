@@ -20,8 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-@preconcurrency import Combine
 import Foundation
+
+#if canImport(Combine)
+  @preconcurrency import Combine
+#else
+  @preconcurrency import OpenCombine
+#endif
 
 final class DemandBuffer<S: Subscriber>: @unchecked Sendable {
   private var buffer = [S.Input]()
@@ -127,13 +132,14 @@ extension Publishers {
     }
 
     func receive<S: Subscriber>(subscriber: S) where S.Input == Output, S.Failure == Failure {
-      subscriber.receive(subscription: Subscription(callback: callback, downstream: subscriber))
+      subscriber.receive(
+        subscription: Subscription(callback: callback, downstream: subscriber))
     }
   }
 }
 
 extension Publishers.Create {
-  fileprivate final class Subscription<Downstream: Subscriber>: Combine.Subscription, Sendable
+  fileprivate final class Subscription<Downstream: Subscriber>: CombineSubscription, Sendable
   where Downstream.Input == Output, Downstream.Failure == Never {
     private let buffer: DemandBuffer<Downstream>
     private let cancellable = LockIsolated<(any Cancellable)?>(nil)

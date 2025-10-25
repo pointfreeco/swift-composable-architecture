@@ -1,6 +1,11 @@
-import Combine
 import ComposableArchitecture
 import XCTest
+
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 final class ObservableTests: BaseTCATestCase {
   func testBasics() async {

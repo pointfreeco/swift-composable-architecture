@@ -1,100 +1,108 @@
-import Combine
-import SwiftUI
+#if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+  import SwiftUI
 
-extension Effect {
-  /// Wraps the emission of each element with SwiftUI's `withAnimation`.
-  ///
-  /// ```swift
-  /// case .buttonTapped:
-  ///   return .run { send in
-  ///     await send(.activityResponse(self.apiClient.fetchActivity()))
-  ///   }
-  ///   .animation()
-  /// ```
-  ///
-  /// - Parameter animation: An animation.
-  /// - Returns: A publisher.
-  public func animation(_ animation: Animation? = .default) -> Self {
-    self.transaction(Transaction(animation: animation))
-  }
+  #if canImport(Combine)
+    import Combine
+  #else
+    import OpenCombine
+  #endif
 
-  /// Wraps the emission of each element with SwiftUI's `withTransaction`.
-  ///
-  /// ```swift
-  /// case .buttonTapped:
-  ///   var transaction = Transaction(animation: .default)
-  ///   transaction.disablesAnimations = true
-  ///   return .run { send in
-  ///     await send(.activityResponse(self.apiClient.fetchActivity()))
-  ///   }
-  ///   .transaction(transaction)
-  /// ```
-  ///
-  /// - Parameter transaction: A transaction.
-  /// - Returns: A publisher.
-  public func transaction(_ transaction: Transaction) -> Self {
-    switch self.operation {
-    case .none:
-      return .none
-    case let .publisher(publisher):
-      return Self(
-        operation: .publisher(
-          TransactionPublisher(upstream: publisher, transaction: transaction).eraseToAnyPublisher()
-        )
-      )
-    case let .run(name, priority, operation):
-      let uncheckedTransaction = UncheckedSendable(transaction)
-      return Self(
-        operation: .run(name: name, priority: priority) { send in
-          await operation(
-            Send { value in
-              withTransaction(uncheckedTransaction.value) {
-                send(value)
-              }
-            }
+  extension Effect {
+    /// Wraps the emission of each element with SwiftUI's `withAnimation`.
+    ///
+    /// ```swift
+    /// case .buttonTapped:
+    ///   return .run { send in
+    ///     await send(.activityResponse(self.apiClient.fetchActivity()))
+    ///   }
+    ///   .animation()
+    /// ```
+    ///
+    /// - Parameter animation: An animation.
+    /// - Returns: A publisher.
+    public func animation(_ animation: Animation? = .default) -> Self {
+      self.transaction(Transaction(animation: animation))
+    }
+
+    /// Wraps the emission of each element with SwiftUI's `withTransaction`.
+    ///
+    /// ```swift
+    /// case .buttonTapped:
+    ///   var transaction = Transaction(animation: .default)
+    ///   transaction.disablesAnimations = true
+    ///   return .run { send in
+    ///     await send(.activityResponse(self.apiClient.fetchActivity()))
+    ///   }
+    ///   .transaction(transaction)
+    /// ```
+    ///
+    /// - Parameter transaction: A transaction.
+    /// - Returns: A publisher.
+    public func transaction(_ transaction: Transaction) -> Self {
+      switch self.operation {
+      case .none:
+        return .none
+      case .publisher(let publisher):
+        return Self(
+          operation: .publisher(
+            TransactionPublisher(upstream: publisher, transaction: transaction)
+              .eraseToAnyPublisher()
           )
-        }
-      )
-    }
-  }
-}
-
-private struct TransactionPublisher<Upstream: Publisher>: Publisher {
-  typealias Output = Upstream.Output
-  typealias Failure = Upstream.Failure
-
-  var upstream: Upstream
-  var transaction: Transaction
-
-  func receive(subscriber: some Combine.Subscriber<Upstream.Output, Upstream.Failure>) {
-    let conduit = Subscriber(downstream: subscriber, transaction: self.transaction)
-    self.upstream.receive(subscriber: conduit)
-  }
-
-  private final class Subscriber<Downstream: Combine.Subscriber>: Combine.Subscriber {
-    typealias Input = Downstream.Input
-    typealias Failure = Downstream.Failure
-
-    let downstream: Downstream
-    let transaction: Transaction
-
-    init(downstream: Downstream, transaction: Transaction) {
-      self.downstream = downstream
-      self.transaction = transaction
-    }
-
-    func receive(subscription: any Subscription) {
-      self.downstream.receive(subscription: subscription)
-    }
-
-    func receive(_ input: Input) -> Subscribers.Demand {
-      withTransaction(self.transaction) {
-        self.downstream.receive(input)
+        )
+      case .run(let name, let priority, let operation):
+        let uncheckedTransaction = UncheckedSendable(transaction)
+        return Self(
+          operation: .run(name: name, priority: priority) { send in
+            await operation(
+              Send { value in
+                withTransaction(uncheckedTransaction.value) {
+                  send(value)
+                }
+              }
+            )
+          }
+        )
       }
     }
+  }
 
-    func receive(completion: Subscribers.Completion<Failure>) {
-      self.downstream.receive(completion: completion)
+  private struct TransactionPublisher<Upstream: Publisher>: Publisher {
+    typealias Output = Upstream.Output
+    typealias Failure = Upstream.Failure
+
+    var upstream: Upstream
+    var transaction: Transaction
+
+    func receive(subscriber: some Combine.Subscriber<Upstream.Output, Upstream.Failure>) {
+      let conduit = Subscriber(downstream: subscriber, transaction: self.transaction)
+      self.upstream.receive(subscriber: conduit)
+    }
+
+    private final class Subscriber<Downstream: Combine.Subscriber>: Combine.Subscriber {
+      typealias Input = Downstream.Input
+      typealias Failure = Downstream.Failure
+
+      let downstream: Downstream
+      let transaction: Transaction
+
+      init(downstream: Downstream, transaction: Transaction) {
+        self.downstream = downstream
+        self.transaction = transaction
+      }
+
+      func receive(subscription: any Subscription) {
+        self.downstream.receive(subscription: subscription)
+      }
+
+      func receive(_ input: Input) -> Subscribers.Demand {
+        withTransaction(self.transaction) {
+          self.downstream.receive(input)
+        }
+      }
+
+      func receive(completion: Subscribers.Completion<Failure>) {
+        self.downstream.receive(completion: completion)
+      }
     }
   }
-}
+#endif

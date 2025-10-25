@@ -1,4 +1,8 @@
-import Combine
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 extension Effect {
   /// Creates an effect from a Combine publisher.
@@ -20,17 +24,24 @@ public struct _EffectPublisher<Action>: Publisher {
     self.effect = effect
   }
 
-  public func receive(subscriber: some Combine.Subscriber<Action, Failure>) {
-    publisher.subscribe(subscriber)
-  }
+  #if canImport(Combine)
+    public func receive(subscriber: some Combine.Subscriber<Action, Failure>) {
+      publisher.subscribe(subscriber)
+    }
+  #else
+    public func receive<Downstream: OpenCombine.Subscriber>(subscriber: Downstream)
+    where Downstream.Failure == Failure, Downstream.Input == Output {
+      publisher.subscribe(subscriber)
+    }
+  #endif
 
   private var publisher: AnyPublisher<Action, Failure> {
     switch effect.operation {
     case .none:
       return Empty().eraseToAnyPublisher()
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return publisher
-    case let .run(name, priority, operation):
+    case .run(let name, let priority, let operation):
       return .create { subscriber in
         let task = Task(name: name, priority: priority) { @MainActor in
           defer { subscriber.send(completion: .finished) }

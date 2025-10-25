@@ -1,6 +1,11 @@
-import Combine
 @_spi(Canary) @_spi(Internals) import ComposableArchitecture
 import XCTest
+
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 final class EffectTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
@@ -139,7 +144,7 @@ final class EffectTests: BaseTCATestCase {
           return .run { send in
             await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
           }
-        case let .response(value):
+        case .response(let value):
           state = value
           return .none
         }
@@ -172,7 +177,7 @@ final class EffectTests: BaseTCATestCase {
           return .run { send in
             await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
           }
-        case let .response(value):
+        case .response(let value):
           state = value
           return .none
         }

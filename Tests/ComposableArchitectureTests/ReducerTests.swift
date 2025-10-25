@@ -1,8 +1,13 @@
-import Combine
 @_spi(Internals) import ComposableArchitecture
 import CustomDump
 import XCTest
 import os.signpost
+
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 final class ReducerTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
