@@ -1,6 +1,10 @@
-@preconcurrency import Combine
 import Foundation
-import SwiftUI
+
+#if canImport(Combine)
+  @preconcurrency import Combine
+#else
+  @preconcurrency import OpenCombine
+#endif
 
 public struct Effect<Action>: Sendable {
   @usableFromInline
@@ -148,20 +152,22 @@ extension Effect {
     Self(operation: .publisher(Just(action).eraseToAnyPublisher()))
   }
 
-  /// Initializes an effect that immediately emits the action passed in.
-  ///
-  /// > Note: We do not recommend using `Effect.send` to share logic. Instead, limit usage to
-  /// > child-parent communication, where a child may want to emit a "delegate" action for a parent
-  /// > to listen to.
-  /// >
-  /// > For more information, see <doc:Performance#Sharing-logic-with-actions>.
-  ///
-  /// - Parameters:
-  ///   - action: The action that is immediately emitted by the effect.
-  ///   - animation: An animation.
-  public static func send(_ action: Action, animation: Animation? = nil) -> Self {
-    .send(action).animation(animation)
-  }
+  #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+    /// Initializes an effect that immediately emits the action passed in.
+    ///
+    /// > Note: We do not recommend using `Effect.send` to share logic. Instead, limit usage to
+    /// > child-parent communication, where a child may want to emit a "delegate" action for a parent
+    /// > to listen to.
+    /// >
+    /// > For more information, see <doc:Performance#Sharing-logic-with-actions>.
+    ///
+    /// - Parameters:
+    ///   - action: The action that is immediately emitted by the effect.
+    ///   - animation: An animation.
+    public static func send(_ action: Action, animation: Animation? = nil) -> Self {
+      .send(action).animation(animation)
+    }
+  #endif
 }
 
 /// A type that can send actions back into the system when used from
@@ -208,26 +214,28 @@ public struct Send<Action>: Sendable {
     self.send(action)
   }
 
-  /// Sends an action back into the system from an effect with animation.
-  ///
-  /// - Parameters:
-  ///   - action: An action.
-  ///   - animation: An animation.
-  public func callAsFunction(_ action: Action, animation: Animation?) {
-    callAsFunction(action, transaction: Transaction(animation: animation))
-  }
-
-  /// Sends an action back into the system from an effect with transaction.
-  ///
-  /// - Parameters:
-  ///   - action: An action.
-  ///   - transaction: A transaction.
-  public func callAsFunction(_ action: Action, transaction: Transaction) {
-    guard !Task.isCancelled else { return }
-    withTransaction(transaction) {
-      self(action)
+  #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+    /// Sends an action back into the system from an effect with animation.
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - animation: An animation.
+    public func callAsFunction(_ action: Action, animation: Animation?) {
+      callAsFunction(action, transaction: Transaction(animation: animation))
     }
-  }
+
+    /// Sends an action back into the system from an effect with transaction.
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - transaction: A transaction.
+    public func callAsFunction(_ action: Action, transaction: Transaction) {
+      guard !Task.isCancelled else { return }
+      withTransaction(transaction) {
+        self(action)
+      }
+    }
+  #endif
 }
 
 // MARK: - Composing Effects

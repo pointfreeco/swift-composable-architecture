@@ -1,6 +1,11 @@
-import Combine
 import Dispatch
 @_spi(SharedChangeTracking) import Sharing
+
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 extension Reducer {
   /// Enhances a reducer with debug logging of received actions and state mutations for the given
@@ -33,11 +38,12 @@ public struct _ReducerPrinter<State, Action>: Sendable {
   let queue: DispatchQueue
 
   public init(
-    printChange: @escaping @Sendable (
-      _ receivedAction: Action,
-      _ oldState: State,
-      _ newState: State
-    ) -> Void,
+    printChange:
+      @escaping @Sendable (
+        _ receivedAction: Action,
+        _ oldState: State,
+        _ newState: State
+      ) -> Void,
     queue: DispatchQueue? = nil
   ) {
     self._printChange = printChange

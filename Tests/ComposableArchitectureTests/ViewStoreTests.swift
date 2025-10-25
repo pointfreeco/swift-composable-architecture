@@ -1,6 +1,11 @@
-@preconcurrency import Combine
 import ComposableArchitecture
 import XCTest
+
+#if canImport(Combine)
+  @preconcurrency import Combine
+#else
+  @preconcurrency import OpenCombine
+#endif
 
 final class ViewStoreTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
@@ -253,7 +258,7 @@ final class ViewStoreTests: BaseTCATestCase {
           return .run { send in
             await send(.response(42))
           }
-        case let .response(value):
+        case .response(let value):
           state = value
           return .none
         }
@@ -282,7 +287,7 @@ final class ViewStoreTests: BaseTCATestCase {
             try await Task.sleep(nanoseconds: NSEC_PER_SEC)
             await send(.response(42))
           }
-        case let .response(value):
+        case .response(let value):
           state = value
           return .none
         }

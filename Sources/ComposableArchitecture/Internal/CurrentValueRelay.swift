@@ -1,11 +1,22 @@
-import Combine
 import Foundation
+
+#if canImport(Combine)
+  import Combine
+  typealias CombineSubscription = Combine.Subscription
+#else
+  import OpenCombine
+  typealias CombineSubscription = OpenCombine.Subscription
+#endif
 
 final class CurrentValueRelay<Output>: Publisher, @unchecked Sendable {
   typealias Failure = Never
 
   private var currentValue: Output
-  private let lock: os_unfair_lock_t
+  #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+    private let lock: os_unfair_lock_t
+  #else
+    private let lock = NSLock()
+  #endif
   private var subscriptions = ContiguousArray<Subscription>()
 
   var value: Output {
@@ -15,14 +26,18 @@ final class CurrentValueRelay<Output>: Publisher, @unchecked Sendable {
 
   init(_ value: Output) {
     self.currentValue = value
-    self.lock = os_unfair_lock_t.allocate(capacity: 1)
-    self.lock.initialize(to: os_unfair_lock())
+    #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+      self.lock = os_unfair_lock_t.allocate(capacity: 1)
+      self.lock.initialize(to: os_unfair_lock())
+    #endif
   }
 
-  deinit {
-    self.lock.deinitialize(count: 1)
-    self.lock.deallocate()
-  }
+  #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+    deinit {
+      self.lock.deinitialize(count: 1)
+      self.lock.deallocate()
+    }
+  #endif
 
   func receive(subscriber: some Subscriber<Output, Never>) {
     let subscription = Subscription(upstream: self, downstream: subscriber)
@@ -52,24 +67,32 @@ final class CurrentValueRelay<Output>: Publisher, @unchecked Sendable {
 }
 
 extension CurrentValueRelay {
-  fileprivate final class Subscription: Combine.Subscription, Equatable {
+  fileprivate final class Subscription: CombineSubscription, Equatable {
     private var demand = Subscribers.Demand.none
     private var downstream: (any Subscriber<Output, Never>)?
-    private let lock: os_unfair_lock_t
+    #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+      private let lock: os_unfair_lock_t
+    #else
+      private let lock = NSLock()
+    #endif
     private var receivedLastValue = false
     private var upstream: CurrentValueRelay?
 
     init(upstream: CurrentValueRelay, downstream: any Subscriber<Output, Never>) {
       self.upstream = upstream
       self.downstream = downstream
-      self.lock = os_unfair_lock_t.allocate(capacity: 1)
-      self.lock.initialize(to: os_unfair_lock())
+      #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+        self.lock = os_unfair_lock_t.allocate(capacity: 1)
+        self.lock.initialize(to: os_unfair_lock())
+      #endif
     }
 
-    deinit {
-      self.lock.deinitialize(count: 1)
-      self.lock.deallocate()
-    }
+    #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+      deinit {
+        self.lock.deinitialize(count: 1)
+        self.lock.deallocate()
+      }
+    #endif
 
     func cancel() {
       self.lock.sync {

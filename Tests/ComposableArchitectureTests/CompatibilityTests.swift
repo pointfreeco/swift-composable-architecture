@@ -1,6 +1,11 @@
-import Combine
 import ComposableArchitecture
 import XCTest
+
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 final class CompatibilityTests: BaseTCATestCase {
   // Actions can be re-entrantly sent into the store if an action is sent that holds an object

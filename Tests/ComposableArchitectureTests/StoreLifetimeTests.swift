@@ -1,6 +1,11 @@
-import Combine
 @_spi(Logging) import ComposableArchitecture
 import XCTest
+
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 final class StoreLifetimeTests: BaseTCATestCase {

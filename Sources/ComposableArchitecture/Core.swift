@@ -1,5 +1,10 @@
-import Combine
 import Foundation
+
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 @MainActor
 protocol Core<State, Action>: AnyObject, Sendable {
@@ -101,12 +106,14 @@ final class RootCore<Root: Reducer>: Core {
       switch effect.operation {
       case .none:
         break
-      case let .publisher(publisher):
+      case .publisher(let publisher):
         var didComplete = false
         let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
         let effectCancellable = withEscapedDependencies { continuation in
           publisher
-            .receive(on: UIScheduler.shared)
+            #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+              .receive(on: UIScheduler.shared)
+            #endif
             .handleEvents(receiveCancel: { [weak self] in self?.effectCancellables[uuid] = nil })
             .sink(
               receiveCompletion: { [weak self] _ in
@@ -136,7 +143,7 @@ final class RootCore<Root: Reducer>: Core {
             task.cancel()
           }
         }
-      case let .run(name, priority, operation):
+      case .run(let name, let priority, let operation):
         withEscapedDependencies { continuation in
           let task = Task(name: name, priority: priority) { @MainActor [weak self] in
             let isCompleted = LockIsolated(false)

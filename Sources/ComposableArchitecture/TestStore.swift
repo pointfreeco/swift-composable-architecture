@@ -1,11 +1,16 @@
 @_spi(Internals) import CasePaths
-import Combine
 import ConcurrencyExtras
 import CustomDump
 @_spi(Beta) import Dependencies
 import Foundation
 import IssueReporting
 @_spi(SharedChangeTracking) import Sharing
+
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 /// A testable runtime for a reducer.
 ///
@@ -429,7 +434,7 @@ import IssueReporting
 #if swift(<5.10)
   @MainActor(unsafe)
 #else
-  @preconcurrency@MainActor
+  @preconcurrency @MainActor
 #endif
 public final class TestStore<State: Equatable, Action> {
   /// The current dependencies of the test store.
@@ -473,13 +478,20 @@ public final class TestStore<State: Equatable, Action> {
   /// The current exhaustivity level of the test store.
   public var exhaustivity: Exhaustivity = .on
 
-  /// Serializes all async work to the main thread for the lifetime of the test store.
-  public var useMainSerialExecutor: Bool {
-    get { uncheckedUseMainSerialExecutor }
-    set { uncheckedUseMainSerialExecutor = newValue }
-  }
-  private let originalUseMainSerialExecutor = uncheckedUseMainSerialExecutor
-
+  #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+    /// Serializes all async work to the main thread for the lifetime of the test store.
+    public var useMainSerialExecutor: Bool {
+      get { uncheckedUseMainSerialExecutor }
+      set { uncheckedUseMainSerialExecutor = newValue }
+    }
+    private let originalUseMainSerialExecutor = uncheckedUseMainSerialExecutor
+  #else
+    /// Serializes all async work to the main thread for the lifetime of the test store.
+    public var useMainSerialExecutor: Bool {
+      get { false }
+      set {}
+    }
+  #endif
   /// The current state of the test store.
   ///
   /// When read from a trailing closure assertion in
@@ -647,7 +659,9 @@ public final class TestStore<State: Equatable, Action> {
   }
 
   deinit {
-    uncheckedUseMainSerialExecutor = self.originalUseMainSerialExecutor
+    #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+      uncheckedUseMainSerialExecutor = self.originalUseMainSerialExecutor
+    #endif
     mainActorNow { self.completed() }
   }
 
@@ -997,13 +1011,19 @@ extension TestStore {
           column: column
         )
       )
-      if uncheckedUseMainSerialExecutor {
-        await Task.yield()
-      } else {
+      #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+        if uncheckedUseMainSerialExecutor {
+          await Task.yield()
+        } else {
+          for await _ in self.reducer.effectDidSubscribe.stream {
+            break
+          }
+        }
+      #else
         for await _ in self.reducer.effectDidSubscribe.stream {
           break
         }
-      }
+      #endif
       do {
         let currentState = self.state
         let currentStackElementID = self.reducer.dependencies.stackElementID
@@ -2565,108 +2585,110 @@ extension TestStore {
   }
 }
 
-extension TestStore {
-  /// Returns a binding view store for this store.
-  ///
-  /// Useful for testing view state of a store.
-  ///
-  /// ```swift
-  /// let store = TestStore(LoginFeature.State()) {
-  ///   Login.Feature()
-  /// }
-  /// await store.send(.view(.set(\.$email, "blob@pointfree.co"))) {
-  ///   $0.email = "blob@pointfree.co"
-  /// }
-  /// XCTAssertTrue(
-  ///   LoginView.ViewState(store.bindings(action: \.view))
-  ///     .isLoginButtonDisabled
-  /// )
-  ///
-  /// await store.send(.view(.set(\.$password, "whats-the-point?"))) {
-  ///   $0.password = "blob@pointfree.co"
-  ///   $0.isFormValid = true
-  /// }
-  /// XCTAssertFalse(
-  ///   LoginView.ViewState(store.bindings(action: \.view))
-  ///     .isLoginButtonDisabled
-  /// )
-  /// ```
-  ///
-  /// - Parameter toViewAction: A case path from action to a bindable view action.
-  /// - Returns: A binding view store.
-  public func bindings<ViewAction: BindableAction>(
-    action toViewAction: CaseKeyPath<Action, ViewAction>
-  ) -> BindingViewStore<State> where State == ViewAction.State, Action: CasePathable {
-    BindingViewStore(
-      store: Store(initialState: self.state) {
-        BindingReducer(action: toViewAction)
-      }
-      .scope(state: \.self, action: toViewAction)
+#if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+  extension TestStore {
+    /// Returns a binding view store for this store.
+    ///
+    /// Useful for testing view state of a store.
+    ///
+    /// ```swift
+    /// let store = TestStore(LoginFeature.State()) {
+    ///   Login.Feature()
+    /// }
+    /// await store.send(.view(.set(\.$email, "blob@pointfree.co"))) {
+    ///   $0.email = "blob@pointfree.co"
+    /// }
+    /// XCTAssertTrue(
+    ///   LoginView.ViewState(store.bindings(action: \.view))
+    ///     .isLoginButtonDisabled
+    /// )
+    ///
+    /// await store.send(.view(.set(\.$password, "whats-the-point?"))) {
+    ///   $0.password = "blob@pointfree.co"
+    ///   $0.isFormValid = true
+    /// }
+    /// XCTAssertFalse(
+    ///   LoginView.ViewState(store.bindings(action: \.view))
+    ///     .isLoginButtonDisabled
+    /// )
+    /// ```
+    ///
+    /// - Parameter toViewAction: A case path from action to a bindable view action.
+    /// - Returns: A binding view store.
+    public func bindings<ViewAction: BindableAction>(
+      action toViewAction: CaseKeyPath<Action, ViewAction>
+    ) -> BindingViewStore<State> where State == ViewAction.State, Action: CasePathable {
+      BindingViewStore(
+        store: Store(initialState: self.state) {
+          BindingReducer(action: toViewAction)
+        }
+        .scope(state: \.self, action: toViewAction)
+      )
+    }
+
+    @available(
+      iOS,
+      deprecated: 9999,
+      message:
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
     )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message:
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message:
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message:
+        "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+    )
+    public func bindings<ViewAction: BindableAction>(
+      action toViewAction: AnyCasePath<Action, ViewAction>
+    ) -> BindingViewStore<State> where State == ViewAction.State {
+      BindingViewStore(
+        store: Store(initialState: self.state) {
+          BindingReducer(action: toViewAction.extract(from:))
+        }
+        ._scope(state: { $0 }, action: toViewAction.embed)
+      )
+    }
   }
 
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  public func bindings<ViewAction: BindableAction>(
-    action toViewAction: AnyCasePath<Action, ViewAction>
-  ) -> BindingViewStore<State> where State == ViewAction.State {
-    BindingViewStore(
-      store: Store(initialState: self.state) {
-        BindingReducer(action: toViewAction.extract(from:))
-      }
-      ._scope(state: { $0 }, action: toViewAction.embed)
-    )
+  extension TestStore where Action: BindableAction, State == Action.State {
+    /// Returns a binding view store for this store.
+    ///
+    /// Useful for testing view state of a store.
+    ///
+    /// ```swift
+    /// let store = TestStore(LoginFeature.State()) {
+    ///   Login.Feature()
+    /// }
+    /// await store.send(.set(\.$email, "blob@pointfree.co")) {
+    ///   $0.email = "blob@pointfree.co"
+    /// }
+    /// XCTAssertTrue(LoginView.ViewState(store.bindings).isLoginButtonDisabled)
+    ///
+    /// await store.send(.set(\.$password, "whats-the-point?")) {
+    ///   $0.password = "blob@pointfree.co"
+    ///   $0.isFormValid = true
+    /// }
+    /// XCTAssertFalse(LoginView.ViewState(store.bindings).isLoginButtonDisabled)
+    /// ```
+    ///
+    /// - Returns: A binding view store.
+    public var bindings: BindingViewStore<State> {
+      self.bindings(action: AnyCasePath())
+    }
   }
-}
-
-extension TestStore where Action: BindableAction, State == Action.State {
-  /// Returns a binding view store for this store.
-  ///
-  /// Useful for testing view state of a store.
-  ///
-  /// ```swift
-  /// let store = TestStore(LoginFeature.State()) {
-  ///   Login.Feature()
-  /// }
-  /// await store.send(.set(\.$email, "blob@pointfree.co")) {
-  ///   $0.email = "blob@pointfree.co"
-  /// }
-  /// XCTAssertTrue(LoginView.ViewState(store.bindings).isLoginButtonDisabled)
-  ///
-  /// await store.send(.set(\.$password, "whats-the-point?")) {
-  ///   $0.password = "blob@pointfree.co"
-  ///   $0.isFormValid = true
-  /// }
-  /// XCTAssertFalse(LoginView.ViewState(store.bindings).isLoginButtonDisabled)
-  /// ```
-  ///
-  /// - Returns: A binding view store.
-  public var bindings: BindingViewStore<State> {
-    self.bindings(action: AnyCasePath())
-  }
-}
+#endif
 
 /// The type returned from ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` that represents the
 /// lifecycle of the effect started from sending an action.
@@ -2934,6 +2956,10 @@ class TestReducer<State: Equatable, Action>: Reducer {
     }
   }
 }
+
+#if os(Linux) || os(Android)
+  let NSEC_PER_SEC: UInt64 = 1_000_000_000
+#endif
 
 @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension Duration {

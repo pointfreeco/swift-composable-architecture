@@ -1,7 +1,12 @@
-import Combine
 @_spi(Internals) import ComposableArchitecture
 import SwiftUI
 import XCTest
+
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
 final class BindableStoreTests: XCTestCase {

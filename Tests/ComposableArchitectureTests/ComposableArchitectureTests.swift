@@ -1,5 +1,13 @@
-import Combine
-import CombineSchedulers
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endifSchedulers
 import ComposableArchitecture
 import XCTest
 

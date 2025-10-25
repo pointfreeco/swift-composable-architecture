@@ -1,4 +1,8 @@
-import Combine
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 extension Effect {
   /// Turns an effect into one that can be debounced.

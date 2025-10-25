@@ -1,5 +1,3 @@
-import SwiftUI
-
 /// Defines the actions that can be sent from a view.
 ///
 /// See the ``ViewAction(for:)`` macro for more information on how to use this.
@@ -12,7 +10,7 @@ public protocol ViewAction<ViewAction> {
 #if swift(<5.10)
   @MainActor(unsafe)
 #else
-  @preconcurrency@MainActor
+  @preconcurrency @MainActor
 #endif
 public protocol ViewActionSending<StoreState, StoreAction> {
   associatedtype StoreState
@@ -27,15 +25,17 @@ extension ViewActionSending {
     self.store.send(.view(action))
   }
 
-  /// Send a view action to the store with animation.
-  @discardableResult
-  public func send(_ action: StoreAction.ViewAction, animation: Animation?) -> StoreTask {
-    self.store.send(.view(action), animation: animation)
-  }
+  #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+    /// Send a view action to the store with animation.
+    @discardableResult
+    public func send(_ action: StoreAction.ViewAction, animation: Animation?) -> StoreTask {
+      self.store.send(.view(action), animation: animation)
+    }
 
-  /// Send a view action to the store with a transaction.
-  @discardableResult
-  public func send(_ action: StoreAction.ViewAction, transaction: Transaction) -> StoreTask {
-    self.store.send(.view(action), transaction: transaction)
-  }
+    /// Send a view action to the store with a transaction.
+    @discardableResult
+    public func send(_ action: StoreAction.ViewAction, transaction: Transaction) -> StoreTask {
+      self.store.send(.view(action), transaction: transaction)
+    }
+  #endif
 }

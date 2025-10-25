@@ -1,5 +1,10 @@
 @_spi(Reflection) import CasePaths
-import Combine
+
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 /// A property wrapper for state that can be presented.
 ///
@@ -286,7 +291,7 @@ extension PresentationAction: CasePathable {
       AnyCasePath(
         embed: { .presented($0) },
         extract: {
-          guard case let .presented(value) = $0 else { return nil }
+          guard case .presented(let value) = $0 else { return nil }
           return value
         }
       )
@@ -300,7 +305,7 @@ extension PresentationAction: CasePathable {
       return AnyCasePath<PresentationAction, AppendedAction>(
         embed: { .presented(keyPath($0)) },
         extract: {
-          guard case let .presented(action) = $0 else { return nil }
+          guard case .presented(let action) = $0 else { return nil }
           return action[case: keyPath]
         }
       )
@@ -317,7 +322,7 @@ extension PresentationAction: CasePathable {
           switch $0 {
           case .dismiss:
             return .dismiss
-          case let .presented(action):
+          case .presented(let action):
             return .presented(keyPath(action))
           }
         },
@@ -325,7 +330,7 @@ extension PresentationAction: CasePathable {
           switch $0 {
           case .dismiss:
             return .dismiss
-          case let .presented(action):
+          case .presented(let action):
             return action[case: keyPath].map { .presented($0) }
           }
         }
@@ -591,7 +596,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     let baseEffects: Effect<Base.Action>
 
     switch (initialPresentationState.wrappedValue, presentationAction) {
-    case let (.some(destinationState), .some(.dismiss)):
+    case (.some(let destinationState), .some(.dismiss)):
       destinationEffects = .none
       baseEffects = self.base.reduce(into: &state, action: action)
       if self.navigationIDPath(for: destinationState)
@@ -600,7 +605,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
         state[keyPath: self.toPresentationState].wrappedValue = nil
       }
 
-    case let (.some(destinationState), .some(.presented(destinationAction))):
+    case (.some(let destinationState), .some(.presented(let destinationAction))):
       let destinationNavigationIDPath = self.navigationIDPath(for: destinationState)
       destinationEffects = self.destination
         .dependency(

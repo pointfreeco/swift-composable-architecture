@@ -1,6 +1,11 @@
-@preconcurrency import Combine
 import Dispatch
 import Foundation
+
+#if canImport(Combine)
+  @preconcurrency import Combine
+#else
+  @preconcurrency import OpenCombine
+#endif
 
 extension Effect where Action: Sendable {
   /// Throttles an effect so that it only publishes one output per given interval.
@@ -38,7 +43,7 @@ extension Effect where Action: Sendable {
       return .publisher { _EffectPublisher(self) }
         .throttle(id: id, for: interval, scheduler: scheduler, latest: latest)
 
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return .publisher {
         publisher
           .receive(on: scheduler)

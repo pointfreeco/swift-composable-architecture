@@ -1,4 +1,4 @@
-#if canImport(SwiftUI)
+#if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
   import SwiftUI
 #endif
 #if canImport(UIKit)
@@ -120,7 +120,7 @@
   }
 #endif
 
-#if canImport(SwiftUI)
+#if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
   extension Binding {
     @available(
       *, deprecated,
@@ -135,11 +135,13 @@
 
 // NB: Deprecated with 1.10.0:
 
-@available(*, deprecated, message: "Use '.fileSystem' ('FileStorage.fileSystem') instead")
-public func LiveFileStorage() -> FileStorage { .fileSystem }
+#if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+  @available(*, deprecated, message: "Use '.fileSystem' ('FileStorage.fileSystem') instead")
+  public func LiveFileStorage() -> FileStorage { .fileSystem }
 
-@available(*, deprecated, message: "Use '.inMemory' ('FileStorage.inMemory') instead")
-public func InMemoryFileStorage() -> FileStorage { .inMemory }
+  @available(*, deprecated, message: "Use '.inMemory' ('FileStorage.inMemory') instead")
+  public func InMemoryFileStorage() -> FileStorage { .inMemory }
+#endif
 
 // NB: Deprecated with 1.0.0:
 

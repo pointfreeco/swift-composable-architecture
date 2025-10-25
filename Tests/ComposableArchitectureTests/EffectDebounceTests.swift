@@ -1,6 +1,11 @@
-import Combine
 @_spi(Internals) import ComposableArchitecture
 import XCTest
+
+#if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
 
 final class EffectDebounceTests: BaseTCATestCase {
   @MainActor

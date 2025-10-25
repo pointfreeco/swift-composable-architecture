@@ -1,5 +1,14 @@
 #if DEBUG
-  @preconcurrency import Combine
+
+  #if canImport(Combine)
+    @preconcurrency #if canImport(Combine)
+  import Combine
+#else
+  import OpenCombine
+#endif
+  #else
+    @preconcurrency import OpenCombine
+  #endif
   @testable @preconcurrency import ComposableArchitecture
   import XCTest
 
