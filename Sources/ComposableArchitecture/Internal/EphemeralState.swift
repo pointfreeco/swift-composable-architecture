@@ -14,12 +14,14 @@ extension _EphemeralState {
   public static var actionType: Any.Type { Action.self }
 }
 
-@_documentation(visibility: private)
-extension AlertState: _EphemeralState {}
+#if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+  @_documentation(visibility: private)
+  extension AlertState: _EphemeralState {}
 
-@_documentation(visibility: private)
-@available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
-extension ConfirmationDialogState: _EphemeralState {}
+  @_documentation(visibility: private)
+  @available(iOS 13, macOS 12, tvOS 13, watchOS 6, *)
+  extension ConfirmationDialogState: _EphemeralState {}
+#endif
 
 @usableFromInline
 func ephemeralType<State>(of state: State) -> (any _EphemeralState.Type)? {

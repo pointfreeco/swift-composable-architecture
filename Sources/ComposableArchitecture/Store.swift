@@ -1,7 +1,20 @@
-import Combine
-import CombineSchedulers
 import Foundation
-import SwiftUI
+
+#if canImport(Combine)
+  import Combine
+  import CombineSchedulers
+#else
+  import OpenCombine
+#endif
+
+@_spi(Internals)
+public var _isInPerceptionTracking: Bool {
+  #if DEBUG && !os(visionOS) && !os(Linux) && !os(Android)
+    return _PerceptionLocals.isInPerceptionTracking || _PerceptionLocals.skipPerceptionChecking
+  #else
+    return false
+  #endif
+}
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
 /// around to views that need to interact with the application.
@@ -149,12 +162,14 @@ public final class Store<State, Action>: _Store {
     self.scopeID = nil
   }
 
-  deinit {
-    guard Thread.isMainThread else { return }
-    MainActor._assumeIsolated {
-      Logger.shared.log("\(storeTypeName(of: self)).deinit")
+  #if !os(Linux) && !os(Android)
+    deinit {
+      guard Thread.isMainThread else { return }
+      MainActor._assumeIsolated {
+        Logger.shared.log("\(storeTypeName(of: self)).deinit")
+      }
     }
-  }
+  #endif
 
   /// Calls the given closure with a snapshot of the current state of the store.
   ///
@@ -195,31 +210,33 @@ public final class Store<State, Action>: _Store {
     .init(rawValue: self.send(action))
   }
 
-  /// Sends an action to the store with a given animation.
-  ///
-  /// See ``Store/send(_:)`` for more info.
-  ///
-  /// - Parameters:
-  ///   - action: An action.
-  ///   - animation: An animation.
-  @discardableResult
-  public func send(_ action: Action, animation: Animation?) -> StoreTask {
-    send(action, transaction: Transaction(animation: animation))
-  }
-
-  /// Sends an action to the store with a given transaction.
-  ///
-  /// See ``Store/send(_:)`` for more info.
-  ///
-  /// - Parameters:
-  ///   - action: An action.
-  ///   - transaction: A transaction.
-  @discardableResult
-  public func send(_ action: Action, transaction: Transaction) -> StoreTask {
-    withTransaction(transaction) {
-      .init(rawValue: self.send(action))
+  #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+    /// Sends an action to the store with a given animation.
+    ///
+    /// See ``Store/send(_:)`` for more info.
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - animation: An animation.
+    @discardableResult
+    public func send(_ action: Action, animation: Animation?) -> StoreTask {
+      send(action, transaction: Transaction(animation: animation))
     }
-  }
+
+    /// Sends an action to the store with a given transaction.
+    ///
+    /// See ``Store/send(_:)`` for more info.
+    ///
+    /// - Parameters:
+    ///   - action: An action.
+    ///   - transaction: A transaction.
+    @discardableResult
+    public func send(_ action: Action, transaction: Transaction) -> StoreTask {
+      withTransaction(transaction) {
+        .init(rawValue: self.send(action))
+      }
+    }
+  #endif
 
   /// Scopes the store to one that exposes child state and actions.
   ///
@@ -328,7 +345,9 @@ public final class Store<State, Action>: _Store {
   }
 
   private init(core: some Core<State, Action>, scopeID: AnyHashable?, parent: (any _Store)?) {
-    defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
+    #if !os(Linux) && !os(Android)
+      defer { Logger.shared.log("\(storeTypeName(of: self)).init") }
+    #endif
     self.core = core
     self.parent = parent
     self.scopeID = scopeID
@@ -378,7 +397,11 @@ public final class Store<State, Action>: _Store {
   public var publisher: StorePublisher<State> {
     StorePublisher(
       store: self,
-      upstream: self.core.didSet.receive(on: UIScheduler.shared).map { self.withState(\.self) }
+      upstream: self.core.didSet
+        #if os(macOS) || os(iOS) || os(watchOS) || os(visionOS) || os(tvOS)
+          .receive(on: UIScheduler.shared)
+        #endif
+        .map { self.withState(\.self) }
     )
   }
 

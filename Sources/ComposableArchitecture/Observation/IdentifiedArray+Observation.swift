@@ -1,5 +1,5 @@
+import Foundation
 import OrderedCollections
-import SwiftUI
 
 extension Store where State: ObservableState {
   /// Scopes the store of an identified collection to a collection of stores.
@@ -97,7 +97,7 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
   #if swift(<5.10)
     @MainActor(unsafe)
   #else
-    @preconcurrency@MainActor
+    @preconcurrency @MainActor
   #endif
   fileprivate init(_ store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>) {
     self.store = store
