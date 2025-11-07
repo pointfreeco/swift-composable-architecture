@@ -316,6 +316,49 @@ public final class Store<State, Action>: _Store {
     return scope(id: nil, childCore: open(core))
   }
 
+  /// Scopes the store to one that exposes child state and actions.
+  ///
+  /// This can be useful for deriving new stores to hand to child views in an application.
+  /// It is especially useful when a child state may be represented by multiple different
+  /// types, for example when it is defined using a protocol which may be implemented in
+  /// many different ways.  When the child state changes, Observation may attempt to refresh
+  /// a view, but the observable reference is expecting the old child state.  To handle
+  /// this situation, the toChildState closure should return nil if the actual child state
+  /// is not ChildState.  This will result in using a ChildState that was previously cached.
+  ///
+  /// Users are cautioned that using this implementation of scope makes it possible for a
+  /// child reducer to be terminated without notification.  If notification is desired, an
+  /// action with that purpose should be sent to the child before it is terminated.  This is
+  /// different from the implementation for the .ifCaseLet reducer, which guarantees that the
+  /// child reducer is invoked before any parent reducer that might change the child state.
+  /// 
+  /// - Parameters:
+  ///   - toChildState: A function that optionally transforms `State` into `ChildState`.
+  ///   - fromChildAction: A function that transforms `ChildAction` into `Action`.
+  /// - Returns: A new store with its domain (state and action) transformed.
+
+  public func scope<ChildState, ChildAction>(
+    state toChildState: @escaping (_ state: State) -> ChildState?,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction> {
+    _scope(state: toChildState, action: fromChildAction)
+  }
+
+  func _scope<ChildState, ChildAction>(
+    state toChildState: @escaping (_ state: State) -> ChildState?,
+    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
+  ) -> Store<ChildState, ChildAction> {
+    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
+      OptionalClosureScopedCore(
+        base: core,
+        cachedState: toChildState(core.state)!,
+        toState: toChildState,
+        fromAction: fromChildAction
+      )
+    }
+    return scope(id: nil, childCore: open(core))
+  }
+
   @_spi(Internals)
   public var currentState: State {
     core.state

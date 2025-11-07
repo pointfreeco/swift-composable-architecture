@@ -354,3 +354,53 @@ final class ClosureScopedCore<Base: Core, State, Action>: Core {
     base.effectCancellables
   }
 }
+
+final class OptionalClosureScopedCore<Base: Core, State, Action>: Core {
+  let base: Base
+  var cachedState: State
+  let toState: (Base.State) -> State?
+  let fromAction: (Action) -> Base.Action
+  init(
+    base: Base,
+    cachedState: State,
+    toState: @escaping (Base.State) -> State?,
+    fromAction: @escaping (Action) -> Base.Action
+  ) {
+    self.base = base
+    self.cachedState = cachedState
+    self.toState = toState
+    self.fromAction = fromAction
+  }
+  @inlinable
+  @inline(__always)
+  var state: State {
+    let state = toState(base.state) ?? cachedState
+    cachedState = state
+    return state
+  }
+  @inlinable
+  @inline(__always)
+  func send(_ action: Action) -> Task<Void, Never>? {
+    base.send(fromAction(action))
+  }
+  @inlinable
+  @inline(__always)
+  var canStoreCacheChildren: Bool {
+    true
+  }
+  @inlinable
+  @inline(__always)
+  var didSet: CurrentValueRelay<Void> {
+    base.didSet
+  }
+  @inlinable
+  @inline(__always)
+  var isInvalid: Bool {
+    base.isInvalid
+  }
+  @inlinable
+  @inline(__always)
+  var effectCancellables: [UUID: AnyCancellable] {
+    base.effectCancellables
+  }
+}
