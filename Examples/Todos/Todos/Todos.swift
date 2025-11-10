@@ -36,7 +36,9 @@ struct Todos {
 
   @Dependency(\.continuousClock) var clock
   @Dependency(\.uuid) var uuid
-  private enum CancelID { case todoCompletion }
+  private nonisolated enum CancelID: Hashable, Sendable {
+    case todoCompletion
+  }
 
   var body: some Reducer<State, Action> {
     BindingReducer()
