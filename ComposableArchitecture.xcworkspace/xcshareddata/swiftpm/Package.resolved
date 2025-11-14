@@ -1,13 +1,13 @@
 {
-  "originHash" : "658be5678358d678b69ea40e4be4814633be8197318d5ac54b97fb40cfb2152b",
+  "originHash" : "c55ea51a4817791946e7830a957bd243534ea4fed282d6370350fb9dcb3b15c7",
   "pins" : [
     {
-      "identity" : "combine-schedulers",
+      "identity" : "opencombine",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/combine-schedulers",
+      "location" : "https://github.com/OpenCombine/OpenCombine.git",
       "state" : {
-        "revision" : "5928286acce13def418ec36d05a001a9641086f2",
-        "version" : "1.0.3"
+        "revision" : "8576f0d579b27020beccbccc3ea6844f3ddfc2c2",
+        "version" : "0.14.0"
       }
     },
     {
