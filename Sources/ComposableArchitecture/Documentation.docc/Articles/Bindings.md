@@ -247,7 +247,7 @@ Toggle("Notifications", text: $store.enableNotifications)
 // ...
 ```
 
-Should you need to layer additional functionality over these bindings, your can pattern match the
+Should you need to layer additional functionality over these bindings, you can pattern match the
 action for a given key path in the reducer:
 
 ```swift
