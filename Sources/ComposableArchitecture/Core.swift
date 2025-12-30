@@ -262,6 +262,9 @@ final class IfLetCore<Base: Core, State, Action>: Core {
   let stateKeyPath: KeyPath<Base.State, State?>
   let actionKeyPath: CaseKeyPath<Base.Action, Action>
   var parentCancellable: AnyCancellable?
+  #if DEBUG
+    let initializedInPerceptionTracking = _isInPerceptionTracking
+  #endif
   init(
     base: Base,
     cachedState: State,
@@ -276,9 +279,19 @@ final class IfLetCore<Base: Core, State, Action>: Core {
   @inlinable
   @inline(__always)
   var state: State {
-    let state = base.state[keyPath: stateKeyPath] ?? cachedState
-    cachedState = state
-    return state
+    #if DEBUG
+      return _PerceptionLocals.$skipPerceptionChecking.withValue(
+        initializedInPerceptionTracking || _isInPerceptionTracking
+      ) {
+        let state = base.state[keyPath: stateKeyPath] ?? cachedState
+        cachedState = state
+        return state
+      }
+    #else
+      let state = base.state[keyPath: stateKeyPath] ?? cachedState
+      cachedState = state
+      return state
+    #endif
   }
   @inlinable
   @inline(__always)
@@ -301,7 +314,15 @@ final class IfLetCore<Base: Core, State, Action>: Core {
   @inlinable
   @inline(__always)
   var isInvalid: Bool {
-    base.state[keyPath: stateKeyPath] == nil || base.isInvalid
+    #if DEBUG
+      return _PerceptionLocals.$skipPerceptionChecking.withValue(
+        initializedInPerceptionTracking || _isInPerceptionTracking
+      ) {
+        base.state[keyPath: stateKeyPath] == nil || base.isInvalid
+      }
+    #else
+      base.state[keyPath: stateKeyPath] == nil || base.isInvalid
+    #endif
   }
   @inlinable
   @inline(__always)
