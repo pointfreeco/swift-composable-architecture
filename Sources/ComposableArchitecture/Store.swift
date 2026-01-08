@@ -353,6 +353,10 @@ public final class Store<State, Action>: _Store {
       }
       self.parentCancellable = subscribeToDidSet(stateType)
     }
+    
+    if let lifecycleAction = (Action.self as? (any LifecycleAction.Type))?.lifecycle as? Action {
+      send(lifecycleAction)
+    }
   }
 
   convenience init<R: Reducer<State, Action>>(
@@ -599,4 +603,14 @@ let _isStorePerceptionCheckingEnabled: Bool = {
 @MainActor
 private protocol _Store: AnyObject {
   func removeChild(scopeID: AnyHashable)
+}
+
+/// Marks an `Action` as tied to the Store lifecycle.
+///
+/// When an `Action` conforms to `LifecycleAction`, the `lifecycle` action is
+/// executed immediately when the Store is created and is automatically
+/// cancelled when the Store is destroyed.
+public protocol LifecycleAction {
+  /// Action triggered on Store creation.
+  static var lifecycle: Self { get }
 }

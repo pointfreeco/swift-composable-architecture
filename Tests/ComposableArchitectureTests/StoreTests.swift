@@ -1298,6 +1298,24 @@ final class StoreTests: BaseTCATestCase {
       }
     }
   }
+  
+  @MainActor
+  func testLifecycleAction() async {
+    enum Action: LifecycleAction {
+      case lifecycle
+    }
+    
+    let store = Store<Int, Action>(initialState: 0) {
+      Reduce<Int, Action> { state, action in
+        switch action {
+        case .lifecycle:
+          state += 1
+          return .none
+        }
+      }
+    }
+    XCTAssertEqual(store.currentState, 1)
+  }
 }
 
 #if canImport(Testing)
