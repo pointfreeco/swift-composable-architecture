@@ -80,7 +80,7 @@ extension BindingAction {
   }
 
   public static func ~= <Value>(
-    keyPath: WritableKeyPath<Root, Value>,
+    keyPath: _SendableWritableKeyPath<Root, Value>,
     bindingAction: Self
   ) -> Bool where Root: ObservableState {
     keyPath == bindingAction.keyPath
