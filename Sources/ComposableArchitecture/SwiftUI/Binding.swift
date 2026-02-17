@@ -229,7 +229,7 @@ extension BindingAction {
   ///   // Return an authorization request effect
   /// ```
   public static func ~= <Value>(
-    keyPath: WritableKeyPath<Root, BindingState<Value>>,
+    keyPath: _SendableWritableKeyPath<Root, Value>,
     bindingAction: Self
   ) -> Bool {
     keyPath == bindingAction.keyPath
