@@ -197,7 +197,6 @@ final class RootCore<Root: Reducer>: Core {
       }
     }
   }
-  private actor DefaultIsolation {}
 }
 
 final class ScopedCore<Base: Core, State, Action>: Core {
