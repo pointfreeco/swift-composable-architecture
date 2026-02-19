@@ -285,19 +285,6 @@ public final class Store<State, Action>: _Store {
     return child
   }
 
-  @available(
-    *,
-    deprecated,
-    message:
-      "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
-  )
-  public func scope<ChildState, ChildAction>(
-    state toChildState: @escaping (_ state: State) -> ChildState,
-    action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
-  ) -> Store<ChildState, ChildAction> {
-    _scope(state: toChildState, action: fromChildAction)
-  }
-
   func _scope<ChildState, ChildAction>(
     state toChildState: @escaping (_ state: State) -> ChildState,
     action fromChildAction: @escaping (_ childAction: ChildAction) -> Action
