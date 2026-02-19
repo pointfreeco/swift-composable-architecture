@@ -7,11 +7,30 @@
 
 // NB: Deprecated with 1.24.0:
 
+extension PresentationState {
+  @available(
+    *,
+    deprecated,
+    message:
+      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  public subscript<Case>(
+    case path: AnyCasePath<State, Case>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Case? {
+    _read { yield self[_case: path] }
+    _modify { yield &self[_case: path] }
+  }
+}
+
 extension Reducer {
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
   )
   @inlinable
@@ -78,8 +97,8 @@ extension Reducer {
 
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @inlinable
@@ -107,8 +126,8 @@ extension Reducer {
 
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @inlinable
@@ -136,8 +155,8 @@ extension Reducer {
 
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @inlinable
@@ -271,12 +290,50 @@ extension Scope {
   }
 }
 
+extension StackState {
+  @available(
+    *,
+    deprecated,
+    message:
+      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  public subscript<Case>(
+    id id: StackElementID,
+    case path: AnyCasePath<Element, Case>,
+    fileID fileID: _HashableStaticString = #fileID,
+    filePath filePath: _HashableStaticString = #filePath,
+    line line: UInt = #line,
+    column column: UInt = #column
+  ) -> Case? {
+    _read {
+      yield self[
+        id: id,
+        _case: path,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ]
+    }
+    _modify {
+      yield &self[
+        id: id,
+        _case: path,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ]
+    }
+  }
+}
+
 extension TestStore {
   @_disfavoredOverload
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   public func receive<Value>(
@@ -301,8 +358,8 @@ extension TestStore {
 
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   public func bindings<ViewAction: BindableAction>(
