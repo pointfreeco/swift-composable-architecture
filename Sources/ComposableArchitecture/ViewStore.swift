@@ -81,11 +81,7 @@ import SwiftUI
     "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 @dynamicMemberLookup
-#if swift(<5.10)
-  @MainActor(unsafe)
-#else
-  @preconcurrency@MainActor
-#endif
+@preconcurrency @MainActor
 public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   // N.B. `ViewStore` does not use a `@Published` property, so `objectWillChange`
   // won't be synthesized automatically. To work around issues on iOS 13 we explicitly declare it.
@@ -178,7 +174,7 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   #if DEBUG
     deinit {
       guard Thread.isMainThread else { return }
-      MainActor._assumeIsolated {
+      MainActor.assumeIsolated {
         Logger.shared.log("View\(self.storeTypeName).deinit")
       }
     }

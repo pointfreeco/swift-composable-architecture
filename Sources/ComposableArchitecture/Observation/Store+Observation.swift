@@ -166,11 +166,7 @@ extension Binding {
   ///   - line: The line.
   ///   - column: The column.
   /// - Returns: A binding of an optional child store.
-  #if swift(>=5.10)
-    @preconcurrency@MainActor
-  #else
-    @MainActor(unsafe)
-  #endif
+  @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
@@ -194,11 +190,7 @@ extension Binding {
 }
 
 extension ObservedObject.Wrapper {
-  #if swift(>=5.10)
-    @preconcurrency@MainActor
-  #else
-    @MainActor(unsafe)
-  #endif
+  @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
@@ -284,11 +276,7 @@ extension SwiftUI.Bindable {
   ///   - line: The line.
   ///   - column: The column.
   /// - Returns: A binding of an optional child store.
-  #if swift(>=5.10)
-    @preconcurrency@MainActor
-  #else
-    @MainActor(unsafe)
-  #endif
+  @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
@@ -389,11 +377,7 @@ extension Perception.Bindable {
 }
 
 extension UIBindable {
-  #if swift(>=5.10)
-    @preconcurrency@MainActor
-  #else
-    @MainActor(unsafe)
-  #endif
+  @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,

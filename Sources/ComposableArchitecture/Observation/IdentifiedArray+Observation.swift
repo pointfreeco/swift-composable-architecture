@@ -94,11 +94,7 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
   private let data: IdentifiedArray<ID, State>
   private let initializedInPerceptionTracking = _isInPerceptionTracking
 
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   fileprivate init(_ store: Store<IdentifiedArray<ID, State>, IdentifiedAction<ID, Action>>) {
     self.store = store
     store._$observationRegistrar.access(store, keyPath: \.currentState)
@@ -119,7 +115,7 @@ public struct _StoreCollection<ID: Hashable & Sendable, State, Action>: RandomAc
           Array(store.scope(state: \.elements, action: \.elements))
       """#
     )
-    return MainActor._assumeIsolated { [uncheckedSelf = UncheckedSendable(self)] in
+    return MainActor.assumeIsolated { [uncheckedSelf = UncheckedSendable(self)] in
       let `self` = uncheckedSelf.wrappedValue
       var child: Store<State, Action> {
         guard self.data.indices.contains(position)

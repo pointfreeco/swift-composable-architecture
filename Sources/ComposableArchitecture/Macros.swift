@@ -38,9 +38,7 @@ public macro Reducer() =
 )
 @attached(memberAttribute)
 @attached(extension, conformances: Reducer, CaseReducer)
-#if compiler(>=6)
-  @available(*, deprecated, message: "Define your conformance using an extension, instead")
-#endif
+@available(*, deprecated, message: "Define your conformance using an extension, instead")
 public macro Reducer(state: _SynthesizedConformance..., action: _SynthesizedConformance...) =
   #externalMacro(
     module: "ComposableArchitectureMacros", type: "ReducerMacro"
@@ -51,9 +49,7 @@ public macro Reducer(state: _SynthesizedConformance..., action: _SynthesizedConf
 ///
 /// See <doc:Reducers#Synthesizing-protocol-conformances-on-State-and-Action> for more information.
 @_documentation(visibility: public)
-#if compiler(>=6)
-  @available(*, deprecated, message: "Define your conformance using an extension, instead")
-#endif
+@available(*, deprecated, message: "Define your conformance using an extension, instead")
 public struct _SynthesizedConformance: Sendable {}
 
 @available(*, deprecated, message: "Define your conformance using an extension, instead")

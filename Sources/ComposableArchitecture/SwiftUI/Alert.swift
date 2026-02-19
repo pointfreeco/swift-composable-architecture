@@ -7,11 +7,7 @@ extension View {
   /// - Parameters:
   ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for an
   ///     alert.
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func alert<ButtonAction>(
     store: Store<PresentationState<AlertState<ButtonAction>>, PresentationAction<ButtonAction>>
   ) -> some View {
@@ -47,11 +43,7 @@ extension View {
     message:
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,
@@ -60,11 +52,7 @@ extension View {
     self._alert(store: store, state: toDestinationState, action: fromDestinationAction)
   }
 
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   private func _alert<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> AlertState<ButtonAction>?,

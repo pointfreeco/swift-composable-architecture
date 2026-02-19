@@ -29,11 +29,7 @@ extension View {
     deprecated: 100000,
     message: "use 'View.confirmationDialog(store:)' instead."
   )
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func actionSheet<ButtonAction>(
     store: Store<
       PresentationState<ConfirmationDialogState<ButtonAction>>, PresentationAction<ButtonAction>
@@ -70,11 +66,7 @@ extension View {
     deprecated: 100000,
     message: "use 'View.confirmationDialog(store:state:action:)' instead."
   )
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func actionSheet<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,

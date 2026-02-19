@@ -773,26 +773,13 @@ extension WithViewStore where ViewState: Equatable, Content: View {
   }
 }
 
-#if compiler(>=6)
-  extension WithViewStore: @preconcurrency DynamicViewContent
-  where
-    ViewState: Collection,
-    Content: DynamicViewContent
-  {
-    public typealias Data = ViewState
-    public var data: ViewState {
-      self.viewStore.state
-    }
+extension WithViewStore: @preconcurrency DynamicViewContent
+where
+  ViewState: Collection,
+  Content: DynamicViewContent
+{
+  public typealias Data = ViewState
+  public var data: ViewState {
+    self.viewStore.state
   }
-#else
-  extension WithViewStore: DynamicViewContent
-  where
-    ViewState: Collection,
-    Content: DynamicViewContent
-  {
-    public typealias Data = ViewState
-    public var data: ViewState {
-      self.viewStore.state
-    }
-  }
-#endif
+}

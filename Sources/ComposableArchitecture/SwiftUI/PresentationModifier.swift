@@ -3,11 +3,7 @@ import SwiftUI
 
 extension View {
   @_spi(Presentation)
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder body:
@@ -24,11 +20,7 @@ extension View {
 
   @_disfavoredOverload
   @_spi(Presentation)
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder body:
@@ -48,11 +40,7 @@ extension View {
 
   @_disfavoredOverload
   @_spi(Presentation)
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     id toID: @escaping (PresentationState<State>) -> AnyHashable?,
@@ -69,11 +57,7 @@ extension View {
   }
 
   @_spi(Presentation)
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func presentation<
     State,
     Action,
@@ -100,11 +84,7 @@ extension View {
 
   @_disfavoredOverload
   @_spi(Presentation)
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func presentation<
     State,
     Action,
@@ -133,11 +113,7 @@ extension View {
 
   @_spi(Presentation)
   @ViewBuilder
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func presentation<
     State,
     Action,
@@ -374,11 +350,7 @@ public struct AnyIdentifiable: Identifiable {
   }
 }
 
-#if swift(<5.10)
-  @MainActor(unsafe)
-#else
-  @preconcurrency@MainActor
-#endif
+@preconcurrency @MainActor
 @_spi(Presentation)
 public struct DestinationContent<State, Action> {
   let store: Store<State?, Action>

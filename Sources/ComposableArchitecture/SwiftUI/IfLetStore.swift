@@ -50,11 +50,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///   - ifContent: A function that is given a store of non-optional state and returns a view that
   ///     is visible only when the optional state is non-`nil`.
   ///   - elseContent: A view that is only visible when the optional state is `nil`.
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public init<IfContent, ElseContent>(
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
@@ -96,11 +92,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
   ///   - store: A store of optional state.
   ///   - ifContent: A function that is given a store of non-optional state and returns a view that
   ///     is visible only when the optional state is non-`nil`.
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public init<IfContent>(
     _ store: Store<State?, Action>,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
@@ -159,11 +151,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     message:
       "Scope the store into the destination's wrapped 'state' and presented 'action', instead: 'store.scope(state: \\.destination, action: \\.destination.presented)'. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public init<IfContent, ElseContent>(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent,
@@ -203,11 +191,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     message:
       "Scope the store into the destination's wrapped 'state' and presented 'action', instead: 'store.scope(state: \\.destination, action: \\.destination.presented)'. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public init<IfContent>(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     @ViewBuilder then ifContent: @escaping (_ store: Store<State, Action>) -> IfContent
@@ -237,11 +221,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     message:
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public init<DestinationState, DestinationAction, IfContent, ElseContent>(
     _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
     state toState: @escaping (_ destinationState: DestinationState) -> State?,
@@ -276,11 +256,7 @@ public struct IfLetStore<State, Action, Content: View>: View {
     message:
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public init<DestinationState, DestinationAction, IfContent>(
     _ store: Store<PresentationState<DestinationState>, PresentationAction<DestinationAction>>,
     state toState: @escaping (_ destinationState: DestinationState) -> State?,
