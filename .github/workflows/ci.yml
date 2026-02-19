@@ -23,7 +23,7 @@ jobs:
         platform: [IOS, MACOS]
         xcode: ['16.4']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Update xcbeautify
@@ -53,7 +53,7 @@ jobs:
       matrix:
         xcode: ['16.4']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Cache derived data
         uses: actions/cache@v3
         with:

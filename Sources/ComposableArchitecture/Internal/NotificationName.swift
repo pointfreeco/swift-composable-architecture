@@ -16,8 +16,10 @@ public var willResignNotificationName: Notification.Name? {
     return UIApplication.willResignActiveNotification
   #elseif os(macOS)
     return NSApplication.willResignActiveNotification
-  #else
+  #elseif os(watchOS)
     return WKExtension.applicationWillResignActiveNotification
+  #else
+    return nil
   #endif
 }
 
@@ -27,8 +29,10 @@ public let willEnterForegroundNotificationName: Notification.Name? = {
     return UIApplication.willEnterForegroundNotification
   #elseif os(macOS)
     return NSApplication.willBecomeActiveNotification
-  #else
+  #elseif os(watchOS)
     return WKExtension.applicationWillEnterForegroundNotification
+  #else
+    return nil
   #endif
 }()
 

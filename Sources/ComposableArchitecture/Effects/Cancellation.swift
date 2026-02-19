@@ -106,17 +106,13 @@ extension Effect {
   public static func cancel(id: some Hashable & Sendable) -> Self {
     let dependencies = DependencyValues._current
     @Dependency(\.navigationIDPath) var navigationIDPath
-    // NB: Ideally we'd return a `Deferred` wrapping an `Empty(completeImmediately: true)`, but
-    //     due to a bug in iOS 13.2 that publisher will never complete. The bug was fixed in
-    //     iOS 13.3, but to remain compatible with iOS 13.2 and higher we need to do a little
-    //     trickery to make sure the deferred publisher completes.
-    return .publisher { () -> Publishers.CompactMap<Just<Action?>, Action> in
+    return .publisher {
       DependencyValues.$_current.withValue(dependencies) {
         _cancellationCancellables.withValue {
           $0.cancel(id: id, path: navigationIDPath)
         }
       }
-      return Just<Action?>(nil).compactMap { $0 }
+      return Empty<Action, Never>(completeImmediately: true)
     }
   }
 }
