@@ -7,6 +7,106 @@
 
 // NB: Deprecated with 1.24.0:
 
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+@propertyWrapper
+public struct BindingState<Value> {
+  public var wrappedValue: Value
+  #if DEBUG
+    let fileID: StaticString
+    let filePath: StaticString
+    let line: UInt
+    let column: UInt
+  #endif
+
+  public init(
+    wrappedValue: Value,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) {
+    self.wrappedValue = wrappedValue
+    #if DEBUG
+      self.fileID = fileID
+      self.filePath = filePath
+      self.line = line
+      self.column = column
+    #endif
+  }
+
+  public var projectedValue: Self {
+    get { self }
+    set { self = newValue }
+  }
+}
+
+@available(*, deprecated)
+extension BindingState: Equatable where Value: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.wrappedValue == rhs.wrappedValue
+  }
+}
+
+@available(*, deprecated)
+extension BindingState: Hashable where Value: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    self.wrappedValue.hash(into: &hasher)
+  }
+}
+
+@available(*, deprecated)
+extension BindingState: Decodable where Value: Decodable {
+  public init(from decoder: any Decoder) throws {
+    do {
+      let container = try decoder.singleValueContainer()
+      self.init(wrappedValue: try container.decode(Value.self))
+    } catch {
+      self.init(wrappedValue: try Value(from: decoder))
+    }
+  }
+}
+
+@available(*, deprecated)
+extension BindingState: Encodable where Value: Encodable {
+  public func encode(to encoder: any Encoder) throws {
+    do {
+      var container = encoder.singleValueContainer()
+      try container.encode(self.wrappedValue)
+    } catch {
+      try self.wrappedValue.encode(to: encoder)
+    }
+  }
+}
+
+@available(*, deprecated)
+extension BindingState: CustomReflectable {
+  public var customMirror: Mirror {
+    Mirror(reflecting: self.wrappedValue)
+  }
+}
+
+@available(*, deprecated)
+extension BindingState: CustomDumpRepresentable {
+  public var customDumpValue: Any {
+    self.wrappedValue
+  }
+}
+
+@available(*, deprecated)
+extension BindingState: CustomDebugStringConvertible where Value: CustomDebugStringConvertible {
+  public var debugDescription: String {
+    self.wrappedValue.debugDescription
+  }
+}
+
+@available(*, deprecated)
+extension BindingState: Sendable where Value: Sendable {}
+
 extension IfLetStore {
   @available(
     *,
@@ -105,8 +205,8 @@ extension IfLetStore {
 extension Store {
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Pass 'state' a key path to child state and 'action' a case key path to child action, instead. For more information see the following migration guide: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Store-scoping-with-key-paths"
   )
   public func scope<ChildState, ChildAction>(
@@ -120,8 +220,8 @@ extension Store {
 extension View {
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   @preconcurrency @MainActor
@@ -135,8 +235,8 @@ extension View {
 
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   @preconcurrency @MainActor
@@ -148,56 +248,56 @@ extension View {
     self._confirmationDialog(store: store, state: toDestinationState, action: fromDestinationAction)
   }
 
-#if !os(macOS)
-  @available(
-    *,
-     deprecated,
-     message:
-      "Pass a binding of a store to 'fullScreenCover(item:)' instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
-  )
-  public func fullScreenCover<State, Action, Content: View>(
-    store: Store<PresentationState<State>, PresentationAction<Action>>,
-    onDismiss: (() -> Void)? = nil,
-    @ViewBuilder content: @escaping (_ store: Store<State, Action>) -> Content
-  ) -> some View {
-    self.presentation(store: store) { `self`, $item, destination in
-      self.fullScreenCover(item: $item, onDismiss: onDismiss) { _ in
-        destination(content)
+  #if !os(macOS)
+    @available(
+      *,
+      deprecated,
+      message:
+        "Pass a binding of a store to 'fullScreenCover(item:)' instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-navigation-view-modifiers-with-SwiftUI-modifiers]"
+    )
+    public func fullScreenCover<State, Action, Content: View>(
+      store: Store<PresentationState<State>, PresentationAction<Action>>,
+      onDismiss: (() -> Void)? = nil,
+      @ViewBuilder content: @escaping (_ store: Store<State, Action>) -> Content
+    ) -> some View {
+      self.presentation(store: store) { `self`, $item, destination in
+        self.fullScreenCover(item: $item, onDismiss: onDismiss) { _ in
+          destination(content)
+        }
       }
     }
-  }
+
+    @available(
+      *,
+      deprecated,
+      message:
+        "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
+    )
+    public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
+      store: Store<PresentationState<State>, PresentationAction<Action>>,
+      state toDestinationState: @escaping (_ state: State) -> DestinationState?,
+      action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
+      onDismiss: (() -> Void)? = nil,
+      @ViewBuilder content:
+        @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+        Content
+    ) -> some View {
+      self.presentation(
+        store: store,
+        state: toDestinationState,
+        action: fromDestinationAction
+      ) { `self`, $item, destination in
+        self.fullScreenCover(item: $item, onDismiss: onDismiss) { _ in
+          destination(content)
+        }
+      }
+    }
+  #endif
 
   @available(
     *,
-     deprecated,
-     message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
-  )
-  public func fullScreenCover<State, Action, DestinationState, DestinationAction, Content: View>(
-    store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> DestinationState?,
-    action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
-    onDismiss: (() -> Void)? = nil,
-    @ViewBuilder content:
-    @escaping (_ store: Store<DestinationState, DestinationAction>) ->
-    Content
-  ) -> some View {
-    self.presentation(
-      store: store,
-      state: toDestinationState,
-      action: fromDestinationAction
-    ) { `self`, $item, destination in
-      self.fullScreenCover(item: $item, onDismiss: onDismiss) { _ in
-        destination(content)
-      }
-    }
-  }
-#endif
-
-  @available(
-    *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
   @preconcurrency @MainActor
@@ -212,8 +312,8 @@ extension View {
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
     action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     @ViewBuilder destination:
-    @escaping (_ store: Store<DestinationState, DestinationAction>) ->
-    Destination
+      @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+      Destination
   ) -> some View {
     self.presentation(
       store: store,
@@ -228,7 +328,8 @@ extension View {
   }
 
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
@@ -242,7 +343,9 @@ extension View {
     @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
     self.presentation(
-      store: store, state: toDestinationState, action: fromDestinationAction
+      store: store,
+      state: toDestinationState,
+      action: fromDestinationAction
     ) { `self`, $item, destination in
       self.popover(item: $item, attachmentAnchor: attachmentAnchor, arrowEdge: arrowEdge) { _ in
         destination(content)
@@ -251,7 +354,8 @@ extension View {
   }
 
   @available(
-    *, deprecated,
+    *,
+    deprecated,
     message:
       "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
   )
@@ -264,7 +368,9 @@ extension View {
     @ViewBuilder content: @escaping (_ store: Store<DestinationState, DestinationAction>) -> Content
   ) -> some View {
     self.presentation(
-      store: store, state: toDestinationState, action: fromDestinationAction
+      store: store,
+      state: toDestinationState,
+      action: fromDestinationAction
     ) { `self`, $item, destination in
       self.sheet(item: $item, onDismiss: onDismiss) { _ in
         destination(content)

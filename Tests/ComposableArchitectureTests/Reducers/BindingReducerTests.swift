@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import XCTest
 
+@available(*, deprecated)
 final class BindingTests: BaseTCATestCase {
   @Reducer
   struct BindingTest {
