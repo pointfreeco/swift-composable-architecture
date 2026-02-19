@@ -107,6 +107,155 @@ extension BindingState: CustomDebugStringConvertible where Value: CustomDebugStr
 @available(*, deprecated)
 extension BindingState: Sendable where Value: Sendable {}
 
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+extension BindableAction {
+  public static func set<Value: Equatable & Sendable>(
+    _ keyPath: _SendableWritableKeyPath<State, BindingState<Value>>,
+    _ value: Value
+  ) -> Self {
+    self.binding(.set(keyPath, value))
+  }
+}
+
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+extension BindingAction {
+  public static func set<Value: Equatable & Sendable>(
+    _ keyPath: _SendableWritableKeyPath<Root, BindingState<Value>>,
+    _ value: Value
+  ) -> Self {
+    return .init(
+      keyPath: keyPath,
+      set: { $0[keyPath: keyPath].wrappedValue = value },
+      value: value
+    )
+  }
+
+  init<Value: Equatable & Sendable>(
+    keyPath: _SendableWritableKeyPath<Root, BindingState<Value>>,
+    set: @escaping @Sendable (_ state: inout Root) -> Void,
+    value: Value
+  ) {
+    self.init(
+      keyPath: keyPath,
+      set: set,
+      value: value,
+      valueIsEqualTo: { $0 as? Value == value }
+    )
+  }
+}
+
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+extension BindingAction.AllCasePaths {
+  public subscript<Value: Equatable & Sendable>(
+    dynamicMember keyPath: WritableKeyPath<Root, BindingState<Value>>
+  ) -> AnyCasePath<BindingAction, Value> {
+    let keyPath = keyPath.unsafeSendable()
+    return AnyCasePath(
+      embed: { .set(keyPath, $0) },
+      extract: { $0.keyPath == keyPath ? $0.value as? Value : nil }
+    )
+  }
+}
+
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+extension BindingViewStore {
+  public subscript<Value: Equatable & Sendable>(
+    dynamicMember keyPath: WritableKeyPath<State, BindingState<Value>>
+  ) -> BindingViewState<Value> {
+    let keyPath = keyPath.unsafeSendable()
+    return BindingViewState(
+      binding: ViewStore(self.store, observe: { $0[keyPath: keyPath].wrappedValue })
+        .binding(
+          send: { value in
+            #if DEBUG
+              let debugger = BindableActionViewStoreDebugger(
+                value: value,
+                bindableActionType: self.bindableActionType,
+                context: .bindingStore,
+                isInvalidated: { [weak store] in store?.core.isInvalid ?? true },
+                fileID: self.fileID,
+                filePath: self.filePath,
+                line: self.line,
+                column: self.column
+              )
+              let set: @Sendable (inout State) -> Void = {
+                $0[keyPath: keyPath].wrappedValue = value
+                debugger.wasCalled.setValue(true)
+              }
+            #else
+              let set: @Sendable (inout State) -> Void = {
+                $0[keyPath: keyPath].wrappedValue = value
+              }
+            #endif
+            return .init(keyPath: keyPath, set: set, value: value)
+          }
+        )
+    )
+  }
+
+}
+
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
+  public subscript<Value: Equatable & Sendable>(
+    dynamicMember keyPath: WritableKeyPath<ViewState, BindingState<Value>>
+  ) -> Binding<Value> {
+    let keyPath = keyPath.unsafeSendable()
+    return self.binding(
+      get: { $0[keyPath: keyPath].wrappedValue },
+      send: { value in
+        #if DEBUG
+          let bindingState = self.state[keyPath: keyPath]
+          let debugger = BindableActionViewStoreDebugger(
+            value: value,
+            bindableActionType: ViewAction.self,
+            context: .bindingState,
+            isInvalidated: { [weak self] in self?.store.core.isInvalid ?? true },
+            fileID: bindingState.fileID,
+            filePath: bindingState.filePath,
+            line: bindingState.line,
+            column: bindingState.column
+          )
+          let set: @Sendable (inout ViewState) -> Void = {
+            $0[keyPath: keyPath].wrappedValue = value
+            debugger.wasCalled.setValue(true)
+          }
+        #else
+          let set: @Sendable (inout ViewState) -> Void = {
+            $0[keyPath: keyPath].wrappedValue = value
+          }
+        #endif
+        return .binding(.init(keyPath: keyPath, set: set, value: value))
+      }
+    )
+  }
+}
+
 extension IfLetStore {
   @available(
     *,
