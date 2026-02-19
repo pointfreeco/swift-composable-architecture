@@ -148,7 +148,7 @@ final class EffectTests: BaseTCATestCase {
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
     }
 
-    await store.send(.tap).finish(timeout: NSEC_PER_SEC)
+    await store.send(.tap).finish(timeout: .seconds(1))
     await store.receive(.response(1_234_567_890)) {
       $0 = 1_234_567_890
     }
@@ -182,7 +182,7 @@ final class EffectTests: BaseTCATestCase {
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
     }
 
-    await store.send(.tap).finish(timeout: NSEC_PER_SEC)
+    await store.send(.tap).finish(timeout: .seconds(1))
     await store.receive(.response(1_234_567_890)) {
       $0 = 1_234_567_890
     }
@@ -219,13 +219,13 @@ final class EffectTests: BaseTCATestCase {
 
   func testCanary1() async {
     for _ in 1...100 {
-      let task = TestStoreTask(rawValue: Task {}, timeout: NSEC_PER_SEC)
+      let task = TestStoreTask(rawValue: Task {}, timeout: .seconds(1))
       await task.finish()
     }
   }
   func testCanary2() async {
     for _ in 1...100 {
-      let task = TestStoreTask(rawValue: nil, timeout: NSEC_PER_SEC)
+      let task = TestStoreTask(rawValue: nil, timeout: .seconds(1))
       await task.finish()
     }
   }

@@ -75,7 +75,7 @@ final class EffectRunTests: BaseTCATestCase {
         }
       }
       // NB: We wait a long time here because XCTest failures take a long time to generate
-      await store.send(.tapped).finish(timeout: 5 * NSEC_PER_SEC)
+      await store.send(.tapped).finish(timeout: .seconds(5))
     }
   #endif
 
