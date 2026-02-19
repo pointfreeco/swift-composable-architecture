@@ -268,7 +268,7 @@ public enum StackAction<State, Action>: CasePathable {
       AnyCasePath(
         embed: { .element(id: $0, action: $1) },
         extract: {
-          guard case let .element(id, action) = $0 else { return nil }
+          guard case .element(let id, let action) = $0 else { return nil }
           return (id: id, action: action)
         }
       )
@@ -278,7 +278,7 @@ public enum StackAction<State, Action>: CasePathable {
       AnyCasePath(
         embed: { .popFrom(id: $0) },
         extract: {
-          guard case let .popFrom(id) = $0 else { return nil }
+          guard case .popFrom(let id) = $0 else { return nil }
           return id
         }
       )
@@ -288,7 +288,7 @@ public enum StackAction<State, Action>: CasePathable {
       AnyCasePath(
         embed: { .push(id: $0, state: $1) },
         extract: {
-          guard case let .push(id, state) = $0 else { return nil }
+          guard case .push(let id, let state) = $0 else { return nil }
           return (id: id, state: state)
         }
       )
@@ -503,7 +503,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
     let baseEffects: Effect<Base.Action>
 
     switch self.toStackAction.extract(from: action) {
-    case let .element(elementID, destinationAction):
+    case .element(let elementID, let destinationAction):
       if state[keyPath: self.toStackState][id: elementID] != nil {
         let elementNavigationIDPath = self.navigationIDPath(for: elementID)
         destinationEffects = self.destination
@@ -556,7 +556,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
 
       baseEffects = self.base.reduce(into: &state, action: action)
 
-    case let .popFrom(id):
+    case .popFrom(let id):
       destinationEffects = .none
       let canPop = state[keyPath: self.toStackState].ids.contains(id)
       baseEffects = self.base.reduce(into: &state, action: action)
@@ -580,7 +580,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
         )
       }
 
-    case let .push(id, element):
+    case .push(let id, let element):
       destinationEffects = .none
       if state[keyPath: self.toStackState].ids.contains(id) {
         reportIssue(

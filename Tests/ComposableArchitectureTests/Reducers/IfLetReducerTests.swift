@@ -281,7 +281,7 @@ final class IfLetReducerTests: BaseTCATestCase {
               try await mainQueue.sleep(for: .seconds(0))
               await send(.response(id))
             }
-          case let .response(value):
+          case .response(let value):
             state.value = value
             return .none
           }

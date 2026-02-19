@@ -40,7 +40,7 @@ struct NavigateAndLoadList {
       case .counter:
         return .none
 
-      case let .setNavigation(selection: .some(id)):
+      case .setNavigation(selection: .some(let id)):
         state.selection = Identified(nil, id: id)
         return .run { send in
           try await self.clock.sleep(for: .seconds(1))

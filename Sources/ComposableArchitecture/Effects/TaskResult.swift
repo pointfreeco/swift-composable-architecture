@@ -153,9 +153,9 @@ public enum TaskResult<Success: Sendable>: Sendable {
   @inlinable
   public init<Failure>(_ result: Result<Success, Failure>) {
     switch result {
-    case let .success(value):
+    case .success(let value):
       self = .success(value)
-    case let .failure(error):
+    case .failure(let error):
       self = .failure(error)
     }
   }
@@ -165,9 +165,9 @@ public enum TaskResult<Success: Sendable>: Sendable {
   public var value: Success {
     get throws {
       switch self {
-      case let .success(value):
+      case .success(let value):
         return value
-      case let .failure(error):
+      case .failure(let error):
         throw error
       }
     }
@@ -183,9 +183,9 @@ public enum TaskResult<Success: Sendable>: Sendable {
   @inlinable
   public func map<NewSuccess>(_ transform: (Success) -> NewSuccess) -> TaskResult<NewSuccess> {
     switch self {
-    case let .success(value):
+    case .success(let value):
       return .success(transform(value))
-    case let .failure(error):
+    case .failure(let error):
       return .failure(error)
     }
   }
@@ -202,9 +202,9 @@ public enum TaskResult<Success: Sendable>: Sendable {
     _ transform: (Success) -> TaskResult<NewSuccess>
   ) -> TaskResult<NewSuccess> {
     switch self {
-    case let .success(value):
+    case .success(let value):
       return transform(value)
-    case let .failure(error):
+    case .failure(let error):
       return .failure(error)
     }
   }
@@ -220,7 +220,7 @@ extension TaskResult: CasePathable {
       AnyCasePath(
         embed: { .success($0) },
         extract: {
-          guard case let .success(value) = $0 else { return nil }
+          guard case .success(let value) = $0 else { return nil }
           return value
         }
       )
@@ -230,7 +230,7 @@ extension TaskResult: CasePathable {
       AnyCasePath(
         embed: { .failure($0) },
         extract: {
-          guard case let .failure(value) = $0 else { return nil }
+          guard case .failure(let value) = $0 else { return nil }
           return value
         }
       )
@@ -245,9 +245,9 @@ extension Result where Success: Sendable, Failure == any Error {
   @inlinable
   public init(_ result: TaskResult<Success>) {
     switch result {
-    case let .success(value):
+    case .success(let value):
       self = .success(value)
-    case let .failure(error):
+    case .failure(let error):
       self = .failure(error)
     }
   }
@@ -260,9 +260,9 @@ enum TaskResultDebugging {
 extension TaskResult: Equatable where Success: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
     switch (lhs, rhs) {
-    case let (.success(lhs), .success(rhs)):
+    case (.success(let lhs), .success(let rhs)):
       return lhs == rhs
-    case let (.failure(lhs), .failure(rhs)):
+    case (.failure(let lhs), .failure(let rhs)):
       return _isEqual(lhs, rhs)
         ?? {
           #if DEBUG
@@ -294,10 +294,10 @@ extension TaskResult: Equatable where Success: Equatable {
 extension TaskResult: Hashable where Success: Hashable {
   public func hash(into hasher: inout Hasher) {
     switch self {
-    case let .success(value):
+    case .success(let value):
       hasher.combine(value)
       hasher.combine(0)
-    case let .failure(error):
+    case .failure(let error):
       if let error = (error as Any) as? AnyHashable {
         hasher.combine(error)
         hasher.combine(1)

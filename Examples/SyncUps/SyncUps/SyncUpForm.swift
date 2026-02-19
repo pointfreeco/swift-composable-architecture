@@ -45,7 +45,7 @@ struct SyncUpForm {
       case .binding:
         return .none
 
-      case let .deleteAttendees(atOffsets: indices):
+      case .deleteAttendees(atOffsets: let indices):
         state.syncUp.attendees.remove(atOffsets: indices)
         if state.syncUp.attendees.isEmpty {
           state.syncUp.attendees.append(Attendee(id: Attendee.ID(uuid())))

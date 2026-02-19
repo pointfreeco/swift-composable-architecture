@@ -85,7 +85,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
       var body: some ReducerOf<Self> {
         Reduce { state, action in
           switch action {
-          case let .addChildState(childState):
+          case .addChildState(let childState):
             state.childStates.append(childState)
             return .none
           case .child:
@@ -159,7 +159,7 @@ final class OnChangeReducerTests: BaseTCATestCase {
             return .none
           case .noop:
             return .none
-          case let .updateSum(sum):
+          case .updateSum(let sum):
             state.sum = sum
             return .none
           }

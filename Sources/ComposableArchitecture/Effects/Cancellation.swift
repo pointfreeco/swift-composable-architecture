@@ -39,7 +39,7 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return Self(
         operation: .publisher(
           Deferred {
@@ -83,7 +83,7 @@ extension Effect {
           .eraseToAnyPublisher()
         )
       )
-    case let .run(name, priority, operation):
+    case .run(let name, let priority, let operation):
       return withEscapedDependencies { continuation in
         return Self(
           operation: .run(name: name, priority: priority) { send in
@@ -248,7 +248,7 @@ extension Task<Never, Never> {
     self.id = id
     self.navigationIDPath = navigationIDPath
     switch TestContext.current {
-    case let .swiftTesting(.some(testing)):
+    case .swiftTesting(.some(let testing)):
       self.testIdentifier = testing.test.id
     default:
       self.testIdentifier = nil

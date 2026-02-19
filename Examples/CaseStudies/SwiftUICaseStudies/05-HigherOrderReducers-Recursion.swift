@@ -40,11 +40,11 @@ struct Nested {
         state.rows.append(State(id: self.uuid()))
         return .none
 
-      case let .nameTextFieldChanged(name):
+      case .nameTextFieldChanged(let name):
         state.name = name
         return .none
 
-      case let .onDelete(indexSet):
+      case .onDelete(let indexSet):
         state.rows.remove(atOffsets: indexSet)
         return .none
 

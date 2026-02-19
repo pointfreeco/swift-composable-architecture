@@ -14,7 +14,7 @@ public enum TicTacToe {
         state = .newGame(NewGame.State())
         return .none
 
-      case let .login(.loginResponse(.success(response))) where !response.twoFactorRequired:
+      case .login(.loginResponse(.success(let response))) where !response.twoFactorRequired:
         state = .newGame(NewGame.State())
         return .none
 

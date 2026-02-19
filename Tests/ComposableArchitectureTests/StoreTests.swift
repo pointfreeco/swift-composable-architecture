@@ -490,7 +490,7 @@ final class StoreTests: BaseTCATestCase {
         state.child = .init(count: nil)
         return .none
 
-      case let .child(childCount):
+      case .child(let childCount):
         state.count = childCount
         return .none
       }
@@ -670,21 +670,21 @@ final class StoreTests: BaseTCATestCase {
           } operation: {
             .run { send in await send(.response1(self.count.value)) }
           }
-        case let .response1(count):
+        case .response1(let count):
           state.count = count
           return withDependencies {
             $0.count.value += 1
           } operation: {
             .run { send in await send(.response2(self.count.value)) }
           }
-        case let .response2(count):
+        case .response2(let count):
           state.count = count
           return withDependencies {
             $0.count.value += 1
           } operation: {
             .run { send in await send(.response3(self.count.value)) }
           }
-        case let .response3(count):
+        case .response3(let count):
           state.count = count
           return .none
         }
@@ -732,21 +732,21 @@ final class StoreTests: BaseTCATestCase {
           } operation: {
             .run { send in await send(.response1(self.count.value)) }
           }
-        case let .response1(count):
+        case .response1(let count):
           state.count = count
           return withDependencies {
             $0.count.value += 1
           } operation: {
             .run { send in await send(.response2(self.count.value)) }
           }
-        case let .response2(count):
+        case .response2(let count):
           state.count = count
           return withDependencies {
             $0.count.value += 1
           } operation: {
             .run { send in await send(.response3(self.count.value)) }
           }
-        case let .response3(count):
+        case .response3(let count):
           state.count = count
           return .none
         }

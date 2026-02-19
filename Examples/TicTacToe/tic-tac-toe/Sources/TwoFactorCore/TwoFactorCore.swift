@@ -43,7 +43,7 @@ public struct TwoFactor: Sendable {
       case .alert:
         return .none
 
-      case let .twoFactorResponse(.failure(error)):
+      case .twoFactorResponse(.failure(let error)):
         state.alert = AlertState { TextState(error.localizedDescription) }
         state.isTwoFactorRequestInFlight = false
         return .none

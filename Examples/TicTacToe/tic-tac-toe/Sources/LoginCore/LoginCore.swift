@@ -43,14 +43,14 @@ public struct Login: Sendable {
       case .alert:
         return .none
 
-      case let .loginResponse(.success(response)):
+      case .loginResponse(.success(let response)):
         state.isLoginRequestInFlight = false
         if response.twoFactorRequired {
           state.twoFactor = TwoFactor.State(token: response.token)
         }
         return .none
 
-      case let .loginResponse(.failure(error)):
+      case .loginResponse(.failure(let error)):
         state.alert = AlertState { TextState(error.localizedDescription) }
         state.isLoginRequestInFlight = false
         return .none

@@ -42,7 +42,7 @@ struct SyncUpsList {
         return .none
 
       case .confirmAddSyncUpButtonTapped:
-        guard case let .some(.add(editState)) = state.destination
+        guard case .some(.add(let editState)) = state.destination
         else { return .none }
         var syncUp = editState.syncUp
         syncUp.attendees.removeAll { attendee in
@@ -65,7 +65,7 @@ struct SyncUpsList {
         state.destination = nil
         return .none
 
-      case let .onDelete(indexSet):
+      case .onDelete(let indexSet):
         state.$syncUps.withLock { $0.remove(atOffsets: indexSet) }
         return .none
       }

@@ -4,7 +4,7 @@ extension Optional: Reducer where Wrapped: Reducer {
     into state: inout Wrapped.State, action: Wrapped.Action
   ) -> Effect<Wrapped.Action> {
     switch self {
-    case let .some(wrapped):
+    case .some(let wrapped):
       return wrapped.reduce(into: &state, action: action)
     case .none:
       return .none

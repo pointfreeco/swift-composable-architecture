@@ -33,11 +33,12 @@ public struct _ReducerPrinter<State, Action>: Sendable {
   let queue: DispatchQueue
 
   public init(
-    printChange: @escaping @Sendable (
-      _ receivedAction: Action,
-      _ oldState: State,
-      _ newState: State
-    ) -> Void,
+    printChange:
+      @escaping @Sendable (
+        _ receivedAction: Action,
+        _ oldState: State,
+        _ newState: State
+      ) -> Void,
     queue: DispatchQueue? = nil
   ) {
     self._printChange = printChange

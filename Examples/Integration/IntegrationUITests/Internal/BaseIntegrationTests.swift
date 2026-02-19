@@ -122,9 +122,9 @@ extension Snapshotting<String, String> {
 
       for change in difference {
         switch change {
-        case let .insert(offset, element, _):
+        case .insert(let offset, let element, _):
           insertions[offset] = element
-        case let .remove(offset, element, _):
+        case .remove(let offset, let element, _):
           removals[offset] = element
         }
       }

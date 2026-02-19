@@ -66,7 +66,7 @@ let multipleDependenciesReducer = Reducer<
     state.isFetchInFlight = true
     return .task { .fetchNumberResponse(try await environment.fetchNumber()) }
 
-  case let .fetchNumberResponse(number):
+  case .fetchNumberResponse(let number):
     state.isFetchInFlight = false
     state.fetchedNumberString = "\(number)"
     return .none

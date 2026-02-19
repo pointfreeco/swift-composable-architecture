@@ -20,7 +20,7 @@
         var body: some Reducer<State, Action> {
           Reduce(internal: { state, action in
             switch action {
-            case let .textChanged(text):
+            case .textChanged(let text):
               state.text = text
               return .none
             }

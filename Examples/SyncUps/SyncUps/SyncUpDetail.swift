@@ -56,11 +56,11 @@ struct SyncUpDetail {
         state.destination = .alert(.deleteSyncUp)
         return .none
 
-      case let .deleteMeetings(atOffsets: indices):
+      case .deleteMeetings(atOffsets: let indices):
         state.$syncUp.withLock { $0.meetings.remove(atOffsets: indices) }
         return .none
 
-      case let .destination(.presented(.alert(alertAction))):
+      case .destination(.presented(.alert(let alertAction))):
         switch alertAction {
         case .confirmDeletion:
           @Shared(.syncUps) var syncUps
@@ -78,7 +78,7 @@ struct SyncUpDetail {
         return .none
 
       case .doneEditingButtonTapped:
-        guard case let .some(.edit(editState)) = state.destination
+        guard case .some(.edit(let editState)) = state.destination
         else { return .none }
         state.$syncUp.withLock { $0 = editState.syncUp }
         state.destination = nil

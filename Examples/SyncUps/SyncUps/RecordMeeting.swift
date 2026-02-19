@@ -108,7 +108,7 @@ struct RecordMeeting {
         state.alert = .speechRecognizerFailed
         return .none
 
-      case let .speechResult(result):
+      case .speechResult(let result):
         state.transcript = result.bestTranscription.formattedString
         return .none
       }

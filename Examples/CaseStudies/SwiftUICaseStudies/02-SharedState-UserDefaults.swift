@@ -41,7 +41,7 @@ struct SharedStateUserDefaults {
       switch action {
       case .counter, .profile:
         return .none
-      case let .selectTab(tab):
+      case .selectTab(let tab):
         state.currentTab = tab
         return .none
       }

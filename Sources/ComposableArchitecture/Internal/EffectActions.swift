@@ -5,7 +5,7 @@ extension Effect where Action: Sendable {
     switch self.operation {
     case .none:
       return .finished
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return AsyncStream { continuation in
         let cancellable = publisher.sink(
           receiveCompletion: { _ in continuation.finish() },
@@ -15,7 +15,7 @@ extension Effect where Action: Sendable {
           cancellable.cancel()
         }
       }
-    case let .run(name, priority, operation):
+    case .run(let name, let priority, let operation):
       return AsyncStream { continuation in
         let task = Task(name: name, priority: priority) {
           await operation(Send { action in continuation.yield(action) })

@@ -142,7 +142,7 @@ final class ComposableArchitectureTests: BaseTCATestCase {
           }
           .cancellable(id: CancelID.sleep)
 
-        case let .response(value):
+        case .response(let value):
           state = value
           return .none
         }

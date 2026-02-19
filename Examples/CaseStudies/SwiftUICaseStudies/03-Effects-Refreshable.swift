@@ -41,7 +41,7 @@ struct Refreshable {
         state.count -= 1
         return .none
 
-      case let .factResponse(.success(fact)):
+      case .factResponse(.success(let fact)):
         state.fact = fact
         return .none
 

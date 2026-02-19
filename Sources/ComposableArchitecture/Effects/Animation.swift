@@ -36,13 +36,13 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return Self(
         operation: .publisher(
           TransactionPublisher(upstream: publisher, transaction: transaction).eraseToAnyPublisher()
         )
       )
-    case let .run(name, priority, operation):
+    case .run(let name, let priority, let operation):
       let uncheckedTransaction = UncheckedSendable(transaction)
       return Self(
         operation: .run(name: name, priority: priority) { send in

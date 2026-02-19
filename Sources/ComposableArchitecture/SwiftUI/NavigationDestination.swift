@@ -102,7 +102,8 @@ extension View {
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
     action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
-    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+    @ViewBuilder destination:
+      @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination
   ) -> some View {
     self.presentation(
