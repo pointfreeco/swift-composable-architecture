@@ -123,7 +123,6 @@ public struct IfLetStore<State, Action, Content: View>: View {
     }
   }
 
-
   public var body: some View {
     WithViewStore(
       self.store,
