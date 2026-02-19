@@ -3,7 +3,7 @@ import Combine
 import SwiftUI
 import XCTest
 
-@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax")
 final class BindableStoreTests: XCTestCase {
   func testBindableStore() {
     struct BindableReducer: Reducer {

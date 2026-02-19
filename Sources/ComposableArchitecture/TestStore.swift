@@ -2650,13 +2650,15 @@ private func _withIssueContext<R>(
   filePath: StaticString,
   line: UInt,
   column: UInt,
-  @_inheritActorContext operation: () async throws -> R
+  isolation: isolated (any Actor)? = #isolation,
+  operation: () async throws -> R
 ) async rethrows -> R {
   let result = try await withIssueContext(
     fileID: fileID,
     filePath: filePath,
     line: line,
     column: column,
+    isolation: isolation,
     operation: operation
   )
   await Task.yield()

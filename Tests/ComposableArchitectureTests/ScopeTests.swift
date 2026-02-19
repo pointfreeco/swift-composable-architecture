@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import XCTest
 
-@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax")
 final class ScopeTests: BaseTCATestCase {
   func testStructChild() async {
     let store = await TestStore(initialState: Feature.State()) {
