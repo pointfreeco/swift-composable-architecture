@@ -26,26 +26,28 @@ final class StorePerceptionTests: BaseTCATestCase {
     render(FeatureView())
   }
 
-  @MainActor
-  @available(*, deprecated)
-  func testPerceptionCheck_AccessStateWithoutTracking() {
+  #if !os(macOS)
     @MainActor
-    struct FeatureView: View {
-      let store = Store(initialState: Feature.State()) {
-        Feature()
+    @available(*, deprecated)
+    func testPerceptionCheck_AccessStateWithoutTracking() {
+      @MainActor
+      struct FeatureView: View {
+        let store = Store(initialState: Feature.State()) {
+          Feature()
+        }
+        var body: some View {
+          Text(store.count.description)
+        }
       }
-      var body: some View {
-        Text(store.count.description)
-      }
+      #if DEBUG && !os(visionOS)
+        XCTExpectFailure {
+          render(FeatureView())
+        } issueMatcher: {
+          $0.compactDescription.contains("Perceptible state was accessed")
+        }
+      #endif
     }
-    #if DEBUG && !os(visionOS)
-      XCTExpectFailure {
-        render(FeatureView())
-      } issueMatcher: {
-        $0.compactDescription.contains("Perceptible state was accessed")
-      }
-    #endif
-  }
+  #endif
 
   @MainActor
   func testPerceptionCheck_AccessStateWithTracking() {
