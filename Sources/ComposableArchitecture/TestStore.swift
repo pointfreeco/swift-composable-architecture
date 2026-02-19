@@ -426,11 +426,7 @@ import IssueReporting
 /// [merowing.info]: https://www.merowing.info
 /// [exhaustive-testing-in-tca]: https://www.merowing.info/exhaustive-testing-in-tca/
 /// [Composable-Architecture-at-Scale]: https://vimeo.com/751173570
-#if swift(<5.10)
-  @MainActor(unsafe)
-#else
-  @preconcurrency@MainActor
-#endif
+@preconcurrency @MainActor
 public final class TestStore<State: Equatable, Action> {
   /// The current dependencies of the test store.
   ///
@@ -743,33 +739,21 @@ public final class TestStore<State: Equatable, Action> {
     return try operation()
   }
 
-  #if compiler(>=6)
-    /// Overrides the store's dependencies for a given operation.
-    ///
-    /// - Parameters:
-    ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
-    ///     duration of the operation.
-    ///   - operation: The operation.
-    public func withDependencies<R>(
-      _ updateValuesForOperation: (_ dependencies: inout DependencyValues) throws -> Void,
-      operation: () async throws -> sending R
-    ) async rethrows -> R {
-      let previous = self.dependencies
-      defer { self.dependencies = previous }
-      try updateValuesForOperation(&self.dependencies)
-      return try await operation()
-    }
-  #else
-    public func withDependencies<R: Sendable>(
-      _ updateValuesForOperation: (_ dependencies: inout DependencyValues) throws -> Void,
-      operation: () async throws -> R
-    ) async rethrows -> R {
-      let previous = self.dependencies
-      defer { self.dependencies = previous }
-      try updateValuesForOperation(&self.dependencies)
-      return try await operation()
-    }
-  #endif
+  /// Overrides the store's dependencies for a given operation.
+  ///
+  /// - Parameters:
+  ///   - updateValuesForOperation: A closure for updating the store's dependency values for the
+  ///     duration of the operation.
+  ///   - operation: The operation.
+  public func withDependencies<R>(
+    _ updateValuesForOperation: (_ dependencies: inout DependencyValues) throws -> Void,
+    operation: () async throws -> sending R
+  ) async rethrows -> R {
+    let previous = self.dependencies
+    defer { self.dependencies = previous }
+    try updateValuesForOperation(&self.dependencies)
+    return try await operation()
+  }
 
   /// Overrides the store's exhaustivity for a given operation.
   ///
@@ -786,32 +770,20 @@ public final class TestStore<State: Equatable, Action> {
     return try operation()
   }
 
-  #if compiler(>=6)
-    /// Overrides the store's exhaustivity for a given operation.
-    ///
-    /// - Parameters:
-    ///   - exhaustivity: The exhaustivity.
-    ///   - operation: The operation.
-    public func withExhaustivity<R>(
-      _ exhaustivity: Exhaustivity,
-      operation: () async throws -> sending R
-    ) async rethrows -> R {
-      let previous = self.exhaustivity
-      defer { self.exhaustivity = previous }
-      self.exhaustivity = exhaustivity
-      return try await operation()
-    }
-  #else
-    public func withExhaustivity<R: Sendable>(
-      _ exhaustivity: Exhaustivity,
-      operation: () async throws -> R
-    ) async rethrows -> R {
-      let previous = self.exhaustivity
-      defer { self.exhaustivity = previous }
-      self.exhaustivity = exhaustivity
-      return try await operation()
-    }
-  #endif
+  /// Overrides the store's exhaustivity for a given operation.
+  ///
+  /// - Parameters:
+  ///   - exhaustivity: The exhaustivity.
+  ///   - operation: The operation.
+  public func withExhaustivity<R>(
+    _ exhaustivity: Exhaustivity,
+    operation: () async throws -> sending R
+  ) async rethrows -> R {
+    let previous = self.exhaustivity
+    defer { self.exhaustivity = previous }
+    self.exhaustivity = exhaustivity
+    return try await operation()
+  }
 }
 
 /// A convenience type alias for referring to a test store of a given reducer's domain.

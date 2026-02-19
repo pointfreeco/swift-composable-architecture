@@ -402,11 +402,7 @@ where Value: CustomDebugStringConvertible {
 /// Read <doc:Bindings> for more information.
 @dynamicMemberLookup
 @propertyWrapper
-#if swift(<5.10)
-  @MainActor(unsafe)
-#else
-  @preconcurrency@MainActor
-#endif
+@preconcurrency @MainActor
 public struct BindingViewStore<State> {
   let store: Store<State, BindingAction<State>>
   #if DEBUG

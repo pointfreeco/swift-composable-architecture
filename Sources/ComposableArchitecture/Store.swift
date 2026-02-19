@@ -94,11 +94,7 @@ import SwiftUI
 /// package when targeting iOS <17) by applying the ``ObservableState()`` macro to your feature's
 /// state.
 @dynamicMemberLookup
-#if swift(<5.10)
-  @MainActor(unsafe)
-#else
-  @preconcurrency@MainActor
-#endif
+@preconcurrency @MainActor
 public final class Store<State, Action>: _Store {
   var children: [ScopeID<State, Action>: AnyObject] = [:]
   private weak var parent: (any _Store)?
@@ -151,7 +147,7 @@ public final class Store<State, Action>: _Store {
 
   deinit {
     guard Thread.isMainThread else { return }
-    MainActor._assumeIsolated {
+    MainActor.assumeIsolated {
       Logger.shared.log("\(storeTypeName(of: self)).deinit")
     }
   }
