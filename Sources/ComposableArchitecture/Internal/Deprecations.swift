@@ -7,6 +7,270 @@
 
 // NB: Deprecated with 1.24.0:
 
+extension Reducer {
+  @available(
+    *,
+     deprecated,
+     message:
+      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
+  )
+  @inlinable
+  @warn_unqualified_access
+  public func forEach<
+    ElementState,
+    ElementAction,
+    ID: Hashable & Sendable,
+    Element: Reducer<ElementState, ElementAction>
+  >(
+    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
+    action toElementAction: AnyCasePath<Action, (ID, ElementAction)>,
+    @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> some Reducer<State, Action> {
+    _ForEachReducer(
+      parent: self,
+      toElementsState: toElementsState,
+      toElementAction: .init(
+        embed: { toElementAction.embed($0) },
+        extract: { toElementAction.extract(from: $0) }
+      ),
+      element: element(),
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  @available(
+    *,
+    deprecated,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @inlinable
+  @warn_unqualified_access
+  public func forEach<
+    DestinationState, DestinationAction, Destination: Reducer<DestinationState, DestinationAction>
+  >(
+    _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
+    action toStackAction: AnyCasePath<Action, StackAction<DestinationState, DestinationAction>>,
+    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> some Reducer<State, Action> {
+    _StackReducer(
+      base: self,
+      toStackState: toStackState,
+      toStackAction: toStackAction,
+      destination: destination(),
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  @available(
+    *,
+     deprecated,
+     message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @inlinable
+  @warn_unqualified_access
+  public func ifCaseLet<CaseState, CaseAction, Case: Reducer<CaseState, CaseAction>>(
+    _ toCaseState: AnyCasePath<State, CaseState>,
+    action toCaseAction: AnyCasePath<Action, CaseAction>,
+    @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> some Reducer<State, Action> {
+    _IfCaseLetReducer(
+      parent: self,
+      child: `case`(),
+      toChildState: toCaseState,
+      toChildAction: toCaseAction,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  @available(
+    *,
+     deprecated,
+     message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @inlinable
+  @warn_unqualified_access
+  public func ifLet<WrappedState, WrappedAction, Wrapped: Reducer<WrappedState, WrappedAction>>(
+    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
+    action toWrappedAction: AnyCasePath<Action, WrappedAction>,
+    @ReducerBuilder<WrappedState, WrappedAction> then wrapped: () -> Wrapped,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> some Reducer<State, Action> {
+    _IfLetReducer(
+      parent: self,
+      child: wrapped(),
+      toChildState: toWrappedState,
+      toChildAction: toWrappedAction,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  @available(
+    *,
+     deprecated,
+     message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @inlinable
+  @warn_unqualified_access
+  public func ifLet<WrappedState: _EphemeralState, WrappedAction>(
+    _ toWrappedState: WritableKeyPath<State, WrappedState?>,
+    action toWrappedAction: AnyCasePath<Action, WrappedAction>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> _IfLetReducer<Self, EmptyReducer<WrappedState, WrappedAction>> {
+    .init(
+      parent: self,
+      child: EmptyReducer(),
+      toChildState: toWrappedState,
+      toChildAction: toWrappedAction,
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  @available(
+    *,
+    deprecated,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @warn_unqualified_access
+  @inlinable
+  public func ifLet<
+    DestinationState, DestinationAction, Destination: Reducer<DestinationState, DestinationAction>
+  >(
+    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
+    action toPresentationAction: AnyCasePath<Action, PresentationAction<DestinationAction>>,
+    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> some Reducer<State, Action> {
+    _PresentationReducer(
+      base: self,
+      toPresentationState: toPresentationState,
+      toPresentationAction: toPresentationAction,
+      destination: destination(),
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  @available(
+    *,
+    deprecated,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @warn_unqualified_access
+  @inlinable
+  public func ifLet<DestinationState: _EphemeralState, DestinationAction>(
+    _ toPresentationState: WritableKeyPath<State, PresentationState<DestinationState>>,
+    action toPresentationAction: AnyCasePath<Action, PresentationAction<DestinationAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> some Reducer<State, Action> {
+    self.ifLet(
+      toPresentationState,
+      action: toPresentationAction,
+      destination: {},
+      fileID: fileID,
+      filePath: filePath,
+      line: line,
+      column: column
+    )
+  }
+}
+
+extension Scope {
+  @available(
+    *,
+    deprecated,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @inlinable
+  public init<ChildState, ChildAction>(
+    state toChildState: WritableKeyPath<ParentState, ChildState>,
+    action toChildAction: AnyCasePath<ParentAction, ChildAction>,
+    @ReducerBuilder<ChildState, ChildAction> child: () -> Child
+  ) where ChildState == Child.State, ChildAction == Child.Action {
+    self.init(
+      toChildState: .keyPath(toChildState),
+      toChildAction: toChildAction,
+      child: child()
+    )
+  }
+
+  @available(
+    *,
+    deprecated,
+    message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  @inlinable
+  public init<ChildState, ChildAction>(
+    state toChildState: AnyCasePath<ParentState, ChildState>,
+    action toChildAction: AnyCasePath<ParentAction, ChildAction>,
+    @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) where ChildState == Child.State, ChildAction == Child.Action {
+    self.init(
+      toChildState: .casePath(
+        toChildState,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ),
+      toChildAction: toChildAction,
+      child: child()
+    )
+  }
+}
+
 @available(
   *,
   message:
