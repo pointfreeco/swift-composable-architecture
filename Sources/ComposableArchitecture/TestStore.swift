@@ -1594,7 +1594,7 @@ extension TestStore {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await self.receive(
+    await self._receive(
       AnyCasePath(actionCase),
       timeout: duration,
       assert: updateStateToExpectedResult,
@@ -1603,6 +1603,52 @@ extension TestStore {
       line: line,
       column: column
     )
+  }
+
+  func _receive<Value>(
+    _ actionCase: AnyCasePath<Action, Value>,
+    timeout duration: Duration? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) async {
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+      guard !self.reducer.inFlightEffects.isEmpty
+      else {
+        _ = {
+          self._receive(
+            actionCase,
+            assert: updateStateToExpectedResult,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+          )
+        }()
+        return
+      }
+      await self.receiveAction(
+        matching: { actionCase.extract(from: $0) != nil },
+        timeout: duration,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+      _ = {
+        self._receive(
+          actionCase,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      }()
+      await Task.megaYield()
+    }
   }
 
   /// Asserts an action was received matching a case path with a specific payload, and asserts how
@@ -1674,77 +1720,6 @@ extension TestStore {
         self._receive(
           actionCase,
           value,
-          assert: updateStateToExpectedResult,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }()
-      await Task.megaYield()
-    }
-  }
-
-  @_disfavoredOverload
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  public func receive<Value>(
-    _ actionCase: AnyCasePath<Action, Value>,
-    timeout duration: Duration? = nil,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    fileID: StaticString = #fileID,
-    file filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) async {
-    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
-      guard !self.reducer.inFlightEffects.isEmpty
-      else {
-        _ = {
-          self._receive(
-            actionCase,
-            assert: updateStateToExpectedResult,
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-        }()
-        return
-      }
-      await self.receiveAction(
-        matching: { actionCase.extract(from: $0) != nil },
-        timeout: duration,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
-      _ = {
-        self._receive(
-          actionCase,
           assert: updateStateToExpectedResult,
           fileID: fileID,
           filePath: filePath,
@@ -2246,6 +2221,17 @@ extension TestStore {
 }
 
 extension TestStore {
+  func _bindings<ViewAction: BindableAction>(
+    action toViewAction: AnyCasePath<Action, ViewAction>
+  ) -> BindingViewStore<State> where State == ViewAction.State {
+    BindingViewStore(
+      store: Store(initialState: self.state) {
+        BindingReducer(action: toViewAction.extract(from:))
+      }
+      ._scope(state: { $0 }, action: toViewAction.embed)
+    )
+  }
+
   /// Returns a binding view store for this store.
   ///
   /// Useful for testing view state of a store.
@@ -2277,46 +2263,8 @@ extension TestStore {
   public func bindings<ViewAction: BindableAction>(
     action toViewAction: CaseKeyPath<Action, ViewAction>
   ) -> BindingViewStore<State> where State == ViewAction.State, Action: CasePathable {
-    BindingViewStore(
-      store: Store(initialState: self.state) {
-        BindingReducer(action: toViewAction)
-      }
-      .scope(state: \.self, action: toViewAction)
-    )
-  }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  public func bindings<ViewAction: BindableAction>(
-    action toViewAction: AnyCasePath<Action, ViewAction>
-  ) -> BindingViewStore<State> where State == ViewAction.State {
-    BindingViewStore(
-      store: Store(initialState: self.state) {
-        BindingReducer(action: toViewAction.extract(from:))
-      }
-      ._scope(state: { $0 }, action: toViewAction.embed)
+    self._bindings(
+      action: AnyCasePath(toViewAction)
     )
   }
 }
@@ -2344,7 +2292,7 @@ extension TestStore where Action: BindableAction, State == Action.State {
   ///
   /// - Returns: A binding view store.
   public var bindings: BindingViewStore<State> {
-    self.bindings(action: AnyCasePath())
+    self._bindings(action: AnyCasePath())
   }
 }
 

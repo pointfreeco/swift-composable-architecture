@@ -271,6 +271,47 @@ extension Scope {
   }
 }
 
+extension TestStore {
+  @_disfavoredOverload
+  @available(
+    *,
+     deprecated,
+     message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  public func receive<Value>(
+    _ actionCase: AnyCasePath<Action, Value>,
+    timeout duration: Duration? = nil,
+    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) async {
+    await self._receive(
+      actionCase,
+      timeout: duration,
+      assert: updateStateToExpectedResult,
+      fileID: fileID,
+      file: filePath,
+      line: line,
+      column: column
+    )
+  }
+
+  @available(
+    *,
+     deprecated,
+     message:
+      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  public func bindings<ViewAction: BindableAction>(
+    action toViewAction: AnyCasePath<Action, ViewAction>
+  ) -> BindingViewStore<State> where State == ViewAction.State {
+    self._bindings(action: toViewAction)
+  }
+}
+
 @available(
   *,
   message:
@@ -548,8 +589,8 @@ extension TestStore {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await self.receive(
-      actionCase,
+    await self._receive(
+      AnyCasePath(actionCase),
       timeout: Duration(nanoseconds: nanoseconds),
       assert: updateStateToExpectedResult,
       fileID: fileID,
@@ -603,7 +644,7 @@ extension TestStore {
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await self.receive(
+    await self._receive(
       actionCase,
       timeout: Duration(nanoseconds: nanoseconds),
       assert: updateStateToExpectedResult,
