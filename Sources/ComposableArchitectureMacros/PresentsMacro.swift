@@ -83,7 +83,7 @@ extension VariableDeclSyntax {
     for index in attributes.indices.reversed() {
       let attribute = attributes[index]
       switch attribute {
-      case let .attribute(attribute):
+      case .attribute(let attribute):
         if attribute.attributeName.tokens(viewMode: .all).map(\.tokenKind) == [
           .identifier("Presents")
         ] {

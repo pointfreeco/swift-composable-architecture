@@ -44,13 +44,13 @@ struct RecordingMemo {
       case .audioRecorderDidFinish(.success(false)):
         return .send(.delegate(.didFinish(.failure(Failed()))))
 
-      case let .audioRecorderDidFinish(.failure(error)):
+      case .audioRecorderDidFinish(.failure(let error)):
         return .send(.delegate(.didFinish(.failure(error))))
 
       case .delegate:
         return .none
 
-      case let .finalRecordingTime(duration):
+      case .finalRecordingTime(let duration):
         state.duration = duration
         return .none
 

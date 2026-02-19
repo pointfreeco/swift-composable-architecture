@@ -36,7 +36,7 @@ public struct Game: Sendable {
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .cellTapped(row, column):
+      case .cellTapped(let row, let column):
         guard
           state.board[row][column] == nil,
           !state.board.hasWinner

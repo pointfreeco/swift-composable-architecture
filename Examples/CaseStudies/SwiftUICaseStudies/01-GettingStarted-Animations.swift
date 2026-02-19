@@ -57,7 +57,7 @@ struct Animations {
       case .alert:
         return .none
 
-      case let .circleScaleToggleChanged(isScaled):
+      case .circleScaleToggleChanged(let isScaled):
         state.isCircleScaled = isScaled
         return .none
 
@@ -86,11 +86,11 @@ struct Animations {
         }
         return .none
 
-      case let .setColor(color):
+      case .setColor(let color):
         state.circleColor = color
         return .none
 
-      case let .tapped(point):
+      case .tapped(let point):
         state.circleCenter = point
         return .none
       }

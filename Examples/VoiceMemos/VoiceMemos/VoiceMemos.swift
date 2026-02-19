@@ -42,7 +42,7 @@ struct VoiceMemos {
       case .alert:
         return .none
 
-      case let .onDelete(indexSet):
+      case .onDelete(let indexSet):
         state.voiceMemos.remove(atOffsets: indexSet)
         return .none
 
@@ -67,7 +67,7 @@ struct VoiceMemos {
           return .none
         }
 
-      case let .recordingMemo(.presented(.delegate(.didFinish(.success(recordingMemo))))):
+      case .recordingMemo(.presented(.delegate(.didFinish(.success(let recordingMemo))))):
         state.recordingMemo = nil
         state.voiceMemos.insert(
           VoiceMemo.State(
@@ -87,7 +87,7 @@ struct VoiceMemos {
       case .recordingMemo:
         return .none
 
-      case let .recordPermissionResponse(permission):
+      case .recordPermissionResponse(let permission):
         state.audioRecorderPermission = permission ? .allowed : .denied
         if permission {
           state.recordingMemo = newRecordingMemo
@@ -97,7 +97,7 @@ struct VoiceMemos {
           return .none
         }
 
-      case let .voiceMemos(.element(id: id, action: .delegate(delegateAction))):
+      case .voiceMemos(.element(id: let id, action: .delegate(let delegateAction))):
         switch delegateAction {
         case .playbackFailed:
           state.alert = AlertState { TextState("Voice memo playback failed.") }

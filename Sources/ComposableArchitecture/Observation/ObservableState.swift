@@ -82,9 +82,9 @@ public struct ObservableStateID: Equatable, Hashable, Sendable {
       var location: UUID {
         get {
           switch self {
-          case let .location(location):
+          case .location(let location):
             return location
-          case let .tag(_, id):
+          case .tag(_, let id):
             return id.location
           }
         }

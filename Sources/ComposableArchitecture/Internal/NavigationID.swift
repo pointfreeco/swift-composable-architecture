@@ -49,9 +49,9 @@ struct NavigationID: Hashable, @unchecked Sendable {
 
     static func == (lhs: Self, rhs: Self) -> Bool {
       switch (lhs, rhs) {
-      case let (.casePath(lhsRoot, lhsValue), .casePath(rhsRoot, rhsValue)):
+      case (.casePath(let lhsRoot, let lhsValue), .casePath(let rhsRoot, let rhsValue)):
         return lhsRoot == rhsRoot && lhsValue == rhsValue
-      case let (.keyPath(lhs), .keyPath(rhs)):
+      case (.keyPath(let lhs), .keyPath(let rhs)):
         return lhs == rhs
       case (.casePath, _), (.keyPath, _):
         return false
@@ -60,11 +60,11 @@ struct NavigationID: Hashable, @unchecked Sendable {
 
     func hash(into hasher: inout Hasher) {
       switch self {
-      case let .casePath(root: root, value: value):
+      case .casePath(root: let root, value: let value):
         hasher.combine(0)
         hasher.combine(ObjectIdentifier(root))
         hasher.combine(ObjectIdentifier(value))
-      case let .keyPath(keyPath):
+      case .keyPath(let keyPath):
         hasher.combine(1)
         hasher.combine(keyPath)
       }

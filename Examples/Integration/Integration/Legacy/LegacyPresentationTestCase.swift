@@ -90,7 +90,7 @@ private enum PresentationTestCase {
           .destination(.presented(.popover(.parentSendDismissActionButtonTapped))):
           return .send(.destination(.dismiss))
 
-        case let .destination(.presented(.alert(alertAction))):
+        case .destination(.presented(.alert(let alertAction))):
           switch alertAction {
           case .ok:
             return .none
@@ -115,7 +115,7 @@ private enum PresentationTestCase {
             return .none
           }
 
-        case let .destination(.presented(.dialog(dialogAction))):
+        case .destination(.presented(.dialog(let dialogAction))):
           switch dialogAction {
           case .ok:
             return .none

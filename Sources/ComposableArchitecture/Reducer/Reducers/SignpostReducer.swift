@@ -88,7 +88,7 @@ extension Effect {
     switch self.operation {
     case .none:
       return self
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return .init(
         operation: .publisher(
           publisher.handleEvents(
@@ -114,7 +114,7 @@ extension Effect {
           .eraseToAnyPublisher()
         )
       )
-    case let .run(name, priority, operation):
+    case .run(let name, let priority, let operation):
       return .init(
         operation: .run(name: name, priority: priority) { send in
           os_signpost(

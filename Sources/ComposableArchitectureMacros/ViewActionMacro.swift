@@ -15,7 +15,7 @@ public struct ViewActionMacro: ExtensionMacro {
     in context: C
   ) throws -> [ExtensionDeclSyntax] {
     guard
-      case let .argumentList(arguments) = node.arguments,
+      case .argumentList(let arguments) = node.arguments,
       arguments.count == 1,
       let memberAccessExpr = arguments.first?.expression.as(MemberAccessExprSyntax.self)
     else { return [] }

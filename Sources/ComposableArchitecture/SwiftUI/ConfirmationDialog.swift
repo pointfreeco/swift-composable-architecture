@@ -87,11 +87,11 @@ extension View {
           ForEach(confirmationDialogState.buttons) { button in
             Button(role: button.role.map(ButtonRole.init)) {
               switch button.action.type {
-              case let .send(action):
+              case .send(let action):
                 if let action {
                   store.send(.presented(fromDestinationAction(action)))
                 }
-              case let .animatedSend(action, animation):
+              case .animatedSend(let action, let animation):
                 if let action {
                   store.send(.presented(fromDestinationAction(action)), animation: animation)
                 }

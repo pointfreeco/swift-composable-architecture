@@ -38,7 +38,7 @@ struct EffectsCancellation {
         state.isFactRequestInFlight = false
         return .cancel(id: CancelID.factRequest)
 
-      case let .stepperChanged(value):
+      case .stepperChanged(let value):
         state.count = value
         state.currentFact = nil
         state.isFactRequestInFlight = false
@@ -53,7 +53,7 @@ struct EffectsCancellation {
         }
         .cancellable(id: CancelID.factRequest)
 
-      case let .factResponse(.success(response)):
+      case .factResponse(.success(let response)):
         state.isFactRequestInFlight = false
         state.currentFact = response
         return .none

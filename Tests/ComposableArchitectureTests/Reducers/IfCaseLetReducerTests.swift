@@ -162,7 +162,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
           case .child:
             return .none
           case .newChild:
-            guard case let .child(childState) = state
+            guard case .child(let childState) = state
             else { return .none }
             state = .child(Child.State(id: childState.id + 1))
             return .none
@@ -189,7 +189,7 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
               try await mainQueue.sleep(for: .seconds(0))
               await send(.response(id))
             }
-          case let .response(value):
+          case .response(let value):
             state.value = value
             return .none
           }

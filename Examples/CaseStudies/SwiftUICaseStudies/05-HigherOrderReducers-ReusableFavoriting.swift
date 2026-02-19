@@ -57,11 +57,11 @@ struct Favoriting<ID: Hashable & Sendable> {
         }
         .cancellable(id: CancelID(id: AnyHashableSendable(state.id)), cancelInFlight: true)
 
-      case let .response(.failure(error)):
+      case .response(.failure(let error)):
         state.alert = AlertState { TextState(error.localizedDescription) }
         return .none
 
-      case let .response(.success(isFavorite)):
+      case .response(.success(let isFavorite)):
         state.isFavorite = isFavorite
         return .none
       }

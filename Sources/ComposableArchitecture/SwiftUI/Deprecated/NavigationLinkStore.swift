@@ -68,7 +68,8 @@ public struct NavigationLinkStore<
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
     action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+    @ViewBuilder destination:
+      @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination,
     @ViewBuilder label: () -> Label
   ) {
@@ -120,7 +121,8 @@ public struct NavigationLinkStore<
     action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
     id: DestinationState.ID,
     onTap: @escaping () -> Void,
-    @ViewBuilder destination: @escaping (_ store: Store<DestinationState, DestinationAction>) ->
+    @ViewBuilder destination:
+      @escaping (_ store: Store<DestinationState, DestinationAction>) ->
       Destination,
     @ViewBuilder label: () -> Label
   ) where DestinationState: Identifiable {

@@ -10,11 +10,12 @@ extension View {
   #endif
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    @ViewBuilder body: @escaping (
-      _ content: Self,
-      _ isPresented: Binding<Bool>,
-      _ destination: DestinationContent<State, Action>
-    ) -> Content
+    @ViewBuilder body:
+      @escaping (
+        _ content: Self,
+        _ isPresented: Binding<Bool>,
+        _ destination: DestinationContent<State, Action>
+      ) -> Content
   ) -> some View {
     self.presentation(store: store) { `self`, $item, destination in
       body(self, Binding($item), destination)
@@ -30,11 +31,12 @@ extension View {
   #endif
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
-    @ViewBuilder body: @escaping (
-      _ content: Self,
-      _ item: Binding<AnyIdentifiable?>,
-      _ destination: DestinationContent<State, Action>
-    ) -> Content
+    @ViewBuilder body:
+      @escaping (
+        _ content: Self,
+        _ item: Binding<AnyIdentifiable?>,
+        _ destination: DestinationContent<State, Action>
+      ) -> Content
   ) -> some View {
     self.presentation(
       store: store,
@@ -54,11 +56,12 @@ extension View {
   public func presentation<State, Action, Content: View>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     id toID: @escaping (PresentationState<State>) -> AnyHashable?,
-    @ViewBuilder body: @escaping (
-      _ content: Self,
-      _ item: Binding<AnyIdentifiable?>,
-      _ destination: DestinationContent<State, Action>
-    ) -> Content
+    @ViewBuilder body:
+      @escaping (
+        _ content: Self,
+        _ item: Binding<AnyIdentifiable?>,
+        _ destination: DestinationContent<State, Action>
+      ) -> Content
   ) -> some View {
     PresentationStore(store, id: toID) { $item, destination in
       body(self, $item, destination)
@@ -81,11 +84,12 @@ extension View {
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
     action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
-    @ViewBuilder body: @escaping (
-      _ content: Self,
-      _ isPresented: Binding<Bool>,
-      _ destination: DestinationContent<DestinationState, DestinationAction>
-    ) -> Content
+    @ViewBuilder body:
+      @escaping (
+        _ content: Self,
+        _ isPresented: Binding<Bool>,
+        _ destination: DestinationContent<DestinationState, DestinationAction>
+      ) -> Content
   ) -> some View {
     self.presentation(
       store: store, state: toDestinationState, action: fromDestinationAction
@@ -111,11 +115,12 @@ extension View {
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
     action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
-    @ViewBuilder body: @escaping (
-      _ content: Self,
-      _ item: Binding<AnyIdentifiable?>,
-      _ destination: DestinationContent<DestinationState, DestinationAction>
-    ) -> Content
+    @ViewBuilder body:
+      @escaping (
+        _ content: Self,
+        _ item: Binding<AnyIdentifiable?>,
+        _ destination: DestinationContent<DestinationState, DestinationAction>
+      ) -> Content
   ) -> some View {
     self.presentation(
       store: store,
@@ -144,11 +149,12 @@ extension View {
     state toDestinationState: @escaping (State) -> DestinationState?,
     id toID: @escaping (PresentationState<State>) -> AnyHashable?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
-    @ViewBuilder body: @escaping (
-      Self,
-      Binding<AnyIdentifiable?>,
-      DestinationContent<DestinationState, DestinationAction>
-    ) -> Content
+    @ViewBuilder body:
+      @escaping (
+        Self,
+        Binding<AnyIdentifiable?>,
+        DestinationContent<DestinationState, DestinationAction>
+      ) -> Content
   ) -> some View {
     PresentationStore(
       store, state: toDestinationState, id: toID, action: fromDestinationAction
@@ -177,10 +183,11 @@ public struct PresentationStore<
 
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    @ViewBuilder content: @escaping (
-      _ isPresented: Binding<Bool>,
-      _ destination: DestinationContent<DestinationState, DestinationAction>
-    ) -> Content
+    @ViewBuilder content:
+      @escaping (
+        _ isPresented: Binding<Bool>,
+        _ destination: DestinationContent<DestinationState, DestinationAction>
+      ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
     self.init(store) { $item, destination in
       content(Binding($item), destination)
@@ -190,10 +197,11 @@ public struct PresentationStore<
   @_disfavoredOverload
   public init(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
-    @ViewBuilder content: @escaping (
-      _ item: Binding<AnyIdentifiable?>,
-      _ destination: DestinationContent<DestinationState, DestinationAction>
-    ) -> Content
+    @ViewBuilder content:
+      @escaping (
+        _ item: Binding<AnyIdentifiable?>,
+        _ destination: DestinationContent<DestinationState, DestinationAction>
+      ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
     self.init(
       store,
@@ -206,10 +214,11 @@ public struct PresentationStore<
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
     action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
-    @ViewBuilder content: @escaping (
-      _ isPresented: Binding<Bool>,
-      _ destination: DestinationContent<DestinationState, DestinationAction>
-    ) -> Content
+    @ViewBuilder content:
+      @escaping (
+        _ isPresented: Binding<Bool>,
+        _ destination: DestinationContent<DestinationState, DestinationAction>
+      ) -> Content
   ) {
     self.init(
       store, state: toDestinationState, action: fromDestinationAction
@@ -223,10 +232,11 @@ public struct PresentationStore<
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> DestinationState?,
     action fromDestinationAction: @escaping (_ destinationAction: DestinationAction) -> Action,
-    @ViewBuilder content: @escaping (
-      _ item: Binding<AnyIdentifiable?>,
-      _ destination: DestinationContent<DestinationState, DestinationAction>
-    ) -> Content
+    @ViewBuilder content:
+      @escaping (
+        _ item: Binding<AnyIdentifiable?>,
+        _ destination: DestinationContent<DestinationState, DestinationAction>
+      ) -> Content
   ) {
     self.init(
       store,
@@ -240,10 +250,11 @@ public struct PresentationStore<
   fileprivate init<ID: Hashable>(
     _ store: Store<PresentationState<State>, PresentationAction<Action>>,
     id toID: @escaping (PresentationState<State>) -> ID?,
-    content: @escaping (
-      _ item: Binding<AnyIdentifiable?>,
-      _ destination: DestinationContent<DestinationState, DestinationAction>
-    ) -> Content
+    content:
+      @escaping (
+        _ item: Binding<AnyIdentifiable?>,
+        _ destination: DestinationContent<DestinationState, DestinationAction>
+      ) -> Content
   ) where State == DestinationState, Action == DestinationAction {
     func open(
       _ core: some Core<PresentationState<State>, PresentationAction<Action>>
@@ -274,10 +285,11 @@ public struct PresentationStore<
     state toDestinationState: @escaping (State) -> DestinationState?,
     id toID: @escaping (PresentationState<State>) -> ID?,
     action fromDestinationAction: @escaping (DestinationAction) -> Action,
-    content: @escaping (
-      _ item: Binding<AnyIdentifiable?>,
-      _ destination: DestinationContent<DestinationState, DestinationAction>
-    ) -> Content
+    content:
+      @escaping (
+        _ item: Binding<AnyIdentifiable?>,
+        _ destination: DestinationContent<DestinationState, DestinationAction>
+      ) -> Content
   ) {
     func open(
       _ core: some Core<PresentationState<State>, PresentationAction<Action>>

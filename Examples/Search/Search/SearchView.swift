@@ -49,7 +49,7 @@ struct Search {
         state.resultForecastRequestInFlight = nil
         return .none
 
-      case let .forecastResponse(id, .success(forecast)):
+      case .forecastResponse(let id, .success(let forecast)):
         state.weather = State.Weather(
           id: id,
           days: forecast.daily.time.indices.map {
@@ -65,7 +65,7 @@ struct Search {
         state.resultForecastRequestInFlight = nil
         return .none
 
-      case let .searchQueryChanged(query):
+      case .searchQueryChanged(let query):
         state.searchQuery = query
 
         // When the query is cleared we can clear the search results, but we have to make sure to
@@ -90,11 +90,11 @@ struct Search {
         state.results = []
         return .none
 
-      case let .searchResponse(.success(response)):
+      case .searchResponse(.success(let response)):
         state.results = response.results
         return .none
 
-      case let .searchResultTapped(location):
+      case .searchResultTapped(let location):
         state.resultForecastRequestInFlight = location
 
         return .run { send in

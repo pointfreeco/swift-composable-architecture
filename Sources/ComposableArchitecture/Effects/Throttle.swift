@@ -38,7 +38,7 @@ extension Effect where Action: Sendable {
       return .publisher { _EffectPublisher(self) }
         .throttle(id: id, for: interval, scheduler: scheduler, latest: latest)
 
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return .publisher {
         publisher
           .receive(on: scheduler)

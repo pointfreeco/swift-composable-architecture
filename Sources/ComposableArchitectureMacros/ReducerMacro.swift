@@ -69,7 +69,7 @@ extension ReducerMacro: MemberAttributeMacro {
       }
       for attribute in enumDecl.attributes {
         guard
-          case let .attribute(attribute) = attribute,
+          case .attribute(let attribute) = attribute,
           let attributeName = attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.text
         else { continue }
         attributes.removeAll(where: { $0 == attributeName })
@@ -129,7 +129,7 @@ extension ReducerMacro: MemberAttributeMacro {
       }
       for attribute in property.attributes {
         guard
-          case let .attribute(attribute) = attribute,
+          case .attribute(let attribute) = attribute,
           let attributeName = attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.text
         else { continue }
         guard
@@ -279,7 +279,7 @@ extension ReducerMacro: MemberMacro {
       }
       if !hasState {
         var conformances: [String] = []
-        if case let .argumentList(arguments) = node.arguments,
+        if case .argumentList(let arguments) = node.arguments,
           let startIndex = arguments.firstIndex(where: { $0.label?.text == "state" })
         {
           let endIndex =
@@ -306,7 +306,7 @@ extension ReducerMacro: MemberMacro {
       }
       if !hasAction {
         var conformances: [String] = []
-        if case let .argumentList(arguments) = node.arguments,
+        if case .argumentList(let arguments) = node.arguments,
           let startIndex = arguments.firstIndex(where: { $0.label?.text == "action" })
         {
           conformances.append(
@@ -330,7 +330,7 @@ extension ReducerMacro: MemberMacro {
         switch reducerType {
         case .erased:
           staticVarBody = "Reduce<Self.State, Self.Action>"
-        case let .scoped(reducerTypeScopes):
+        case .scoped(let reducerTypeScopes):
           if reducerTypeScopes.isEmpty {
             staticVarBody = "ComposableArchitecture.EmptyReducer<Self.State, Self.Action>"
           } else if reducerTypeScopes.count == 1 {
@@ -475,7 +475,7 @@ private enum ReducerCase {
 
     mutating func append(_ other: Body) {
       switch (self, other) {
-      case let (.scoped(lhs), .scoped(rhs)):
+      case (.scoped(let lhs), .scoped(let rhs)):
         self = .scoped(lhs + rhs)
       case (.erased, _):
         break
@@ -487,7 +487,7 @@ private enum ReducerCase {
 
   var stateCaseDecl: String {
     switch self {
-    case let .element(element, attribute):
+    case .element(let element, let attribute):
       if attribute != .ignored,
         let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
@@ -500,7 +500,7 @@ private enum ReducerCase {
         return "case \(element.trimmedDescription)"
       }
 
-    case let .ifConfig(configs):
+    case .ifConfig(let configs):
       return
         configs
         .map {
@@ -515,7 +515,7 @@ private enum ReducerCase {
 
   var actionCaseDecl: String {
     switch self {
-    case let .element(element, attribute):
+    case .element(let element, let attribute):
       if attribute != .ignored,
         let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
@@ -536,7 +536,7 @@ private enum ReducerCase {
         return "case \(element.name)(Swift.Never)"
       }
 
-    case let .ifConfig(configs):
+    case .ifConfig(let configs):
       return
         configs
         .map {
@@ -552,7 +552,7 @@ private enum ReducerCase {
 
   var reducerTypeScope: Body {
     switch self {
-    case let .element(element, attribute):
+    case .element(let element, let attribute):
       if attribute == nil,
         let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
@@ -571,7 +571,7 @@ private enum ReducerCase {
 
   var reducerScope: String? {
     switch self {
-    case let .element(element, attribute):
+    case .element(let element, let attribute):
       if attribute == nil,
         let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
@@ -591,7 +591,7 @@ private enum ReducerCase {
       } else {
         return nil
       }
-    case let .ifConfig(configs):
+    case .ifConfig(let configs):
       return
         configs
         .map {
@@ -608,7 +608,7 @@ private enum ReducerCase {
 
   var storeCase: String {
     switch self {
-    case let .element(element, attribute):
+    case .element(let element, let attribute):
       if attribute == nil,
         let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
@@ -621,7 +621,7 @@ private enum ReducerCase {
       } else {
         return "case \(element.trimmedDescription)"
       }
-    case let .ifConfig(configs):
+    case .ifConfig(let configs):
       return
         configs
         .map {
@@ -636,7 +636,7 @@ private enum ReducerCase {
 
   var storeScope: String {
     switch self {
-    case let .element(element, attribute):
+    case .element(let element, let attribute):
       let name = element.name.text
       if attribute == nil,
         let parameterClause = element.parameterClause,
@@ -663,7 +663,7 @@ private enum ReducerCase {
           return .\(name)
           """
       }
-    case let .ifConfig(configs):
+    case .ifConfig(let configs):
       return
         configs
         .map {
@@ -813,7 +813,7 @@ extension AttributeListSyntax {
   fileprivate func contains(_ name: TokenSyntax) -> Bool {
     self.contains {
       guard
-        case let .attribute(attribute) = $0,
+        case .attribute(let attribute) = $0,
         attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.text == name.text
       else { return false }
       return true

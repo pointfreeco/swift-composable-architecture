@@ -55,7 +55,7 @@ private actor Speech {
       let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
       self.recognitionTask = speechRecognizer.recognitionTask(with: request) { result, error in
         switch (result, error) {
-        case let (.some(result), _):
+        case (.some(let result), _):
           continuation.yield(SpeechRecognitionResult(result))
         case (_, .some):
           continuation.finish(throwing: SpeechClient.Failure.taskError)

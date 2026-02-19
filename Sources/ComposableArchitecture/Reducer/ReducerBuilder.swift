@@ -89,10 +89,10 @@ public enum ReducerBuilder<State, Action> {
       First.Action
     > {
       switch self {
-      case let .first(first):
+      case .first(let first):
         return first.reduce(into: &state, action: action)
 
-      case let .second(second):
+      case .second(let second):
         return second.reduce(into: &state, action: action)
       }
     }
