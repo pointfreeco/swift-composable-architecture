@@ -1261,6 +1261,20 @@ public func LiveFileStorage() -> FileStorage { .fileSystem }
 @available(*, deprecated, message: "Use '.inMemory' ('FileStorage.inMemory') instead")
 public func InMemoryFileStorage() -> FileStorage { .inMemory }
 
+// NB: Deprecated with 1.7.0:
+
+extension Reducer {
+  @available(*, deprecated, message: "Use 'onChange(of:)' with and equatable value, instead.")
+  @inlinable
+  public func onChange<V, R: Reducer>(
+    of toValue: @escaping (State) -> V,
+    removeDuplicates isDuplicate: @escaping (V, V) -> Bool,
+    @ReducerBuilder<State, Action> _ reducer: @escaping (_ oldValue: V, _ newValue: V) -> R
+  ) -> _OnChangeReducer<Self, V, R> {
+    _OnChangeReducer(base: self, toValue: toValue, isDuplicate: isDuplicate, reducer: reducer)
+  }
+}
+
 // NB: Deprecated with 1.0.0:
 
 @available(*, unavailable, renamed: "Effect")
