@@ -117,36 +117,12 @@ public struct PresentationState<State> {
   /// > Important: Accessing the wrong case will result in a runtime warning and test failure.
   public subscript<Case>(case path: CaseKeyPath<State, Case>) -> Case?
   where State: CasePathable {
-    _read { yield self[case: AnyCasePath(path)] }
-    _modify { yield &self[case: AnyCasePath(path)] }
+    _read { yield self[_case: AnyCasePath(path)] }
+    _modify { yield &self[_case: AnyCasePath(path)] }
   }
 
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this subscript with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  public subscript<Case>(
-    case path: AnyCasePath<State, Case>,
+  subscript<Case>(
+    _case path: AnyCasePath<State, Case>,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
