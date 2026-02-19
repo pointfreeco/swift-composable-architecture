@@ -66,7 +66,7 @@ struct ObservableIdentifiedListView: View {
         case .incrementFirstButtonTapped:
           state.rows[id: state.rows.ids[0]]?.count += 1
           return .none
-        case .removeButtonTapped(id: let id):
+        case .removeButtonTapped(let id):
           state.rows.remove(id: id)
           return .none
         case .rows:
