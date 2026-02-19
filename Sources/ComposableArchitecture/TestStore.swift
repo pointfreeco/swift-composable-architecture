@@ -567,7 +567,6 @@ public final class TestStore<State: Equatable, Action> {
   ///   - filePath: The filePath.
   ///   - line: The line.
   ///   - column: The column.
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func finish(
     timeout duration: Duration,
     fileID: StaticString = #fileID,
@@ -1350,7 +1349,6 @@ extension TestStore where Action: Equatable {
   ///   - filePath: The filePath.
   ///   - line: The line.
   ///   - column: The column.
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive(
     _ expectedAction: Action,
     timeout duration: Duration,
@@ -1576,7 +1574,6 @@ extension TestStore {
   ///   - line: The line.
   ///   - column: The column.
   @_disfavoredOverload
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive(
     _ isMatching: (_ action: Action) -> Bool,
     timeout duration: Duration,
@@ -1924,7 +1921,6 @@ extension TestStore {
   ///   - line: The line.
   ///   - column: The column.
   @_disfavoredOverload
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive<Value>(
     _ actionCase: CaseKeyPath<Action, Value>,
     timeout duration: Duration,
@@ -1974,7 +1970,6 @@ extension TestStore {
   ///   - line: The line.
   ///   - column: The column.
   @_disfavoredOverload
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive<Value: Equatable & Sendable>(
     _ actionCase: _SendableCaseKeyPath<Action, Value>,
     _ value: Value,
@@ -2734,7 +2729,6 @@ public struct TestStoreTask: Hashable, Sendable {
   ///   - filePath: The filePath.
   ///   - line: The line.
   ///   - column: The column.
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func finish(
     timeout duration: Duration,
     fileID: StaticString = #fileID,
@@ -2935,7 +2929,6 @@ class TestReducer<State: Equatable, Action>: Reducer {
   }
 }
 
-@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 extension Duration {
   fileprivate var nanoseconds: UInt64 {
     UInt64(self.components.seconds) * NSEC_PER_SEC

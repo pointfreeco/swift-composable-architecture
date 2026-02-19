@@ -5,6 +5,12 @@
   import UIKit
 #endif
 
+// NB: Deprecated with 1.23.1:
+
+extension TestStore {
+  
+}
+
 // NB: Deprecated with 1.13.0:
 
 #if canImport(UIKit) && !os(watchOS)

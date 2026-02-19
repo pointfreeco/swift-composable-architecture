@@ -2,12 +2,7 @@
 import SwiftUI
 import XCTest
 
-@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 final class StorePerceptionTests: BaseTCATestCase {
-  override func setUpWithError() throws {
-    try checkAvailability()
-  }
-
   @MainActor
   func testPerceptionCheck_SkipWhenOutsideView() {
     let store = Store(initialState: Feature.State()) {
@@ -111,12 +106,5 @@ private struct Feature {
       state.count += 1
       return .none
     }
-  }
-}
-
-// NB: Workaround to XCTest ignoring `@available(...)` attributes.
-private func checkAvailability() throws {
-  guard #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) else {
-    throw XCTSkip("Requires iOS 16, macOS 13, tvOS 16, or watchOS 9")
   }
 }

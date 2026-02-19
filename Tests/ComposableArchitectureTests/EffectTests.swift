@@ -7,42 +7,40 @@ final class EffectTests: BaseTCATestCase {
   let mainQueue = DispatchQueue.test
 
   func testConcatenate() async {
-    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-      await withMainSerialExecutor {
-        let clock = TestClock()
-        let values = LockIsolated<[Int]>([])
+    await withMainSerialExecutor {
+      let clock = TestClock()
+      let values = LockIsolated<[Int]>([])
 
-        let effect = Effect<Int>.concatenate(
-          (1...3).map { count in
-            .run { send in
-              try await clock.sleep(for: .seconds(count))
-              await send(count)
-            }
-          }
-        )
-
-        let task = Task {
-          for await n in effect.actions {
-            values.withValue { $0.append(n) }
+      let effect = Effect<Int>.concatenate(
+        (1...3).map { count in
+          .run { send in
+            try await clock.sleep(for: .seconds(count))
+            await send(count)
           }
         }
+      )
 
-        XCTAssertEqual(values.value, [])
-
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values.value, [1])
-
-        await clock.advance(by: .seconds(2))
-        XCTAssertEqual(values.value, [1, 2])
-
-        await clock.advance(by: .seconds(3))
-        XCTAssertEqual(values.value, [1, 2, 3])
-
-        await clock.run()
-        XCTAssertEqual(values.value, [1, 2, 3])
-
-        await task.value
+      let task = Task {
+        for await n in effect.actions {
+          values.withValue { $0.append(n) }
+        }
       }
+
+      XCTAssertEqual(values.value, [])
+
+      await clock.advance(by: .seconds(1))
+      XCTAssertEqual(values.value, [1])
+
+      await clock.advance(by: .seconds(2))
+      XCTAssertEqual(values.value, [1, 2])
+
+      await clock.advance(by: .seconds(3))
+      XCTAssertEqual(values.value, [1, 2, 3])
+
+      await clock.run()
+      XCTAssertEqual(values.value, [1, 2, 3])
+
+      await task.value
     }
   }
 
@@ -73,40 +71,38 @@ final class EffectTests: BaseTCATestCase {
   }
 
   func testMerge() async {
-    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-      await withMainSerialExecutor {
-        let clock = TestClock()
+    await withMainSerialExecutor {
+      let clock = TestClock()
 
-        let effect = Effect<Int>.merge(
-          (1...3).map { count in
-            .run { send in
-              try await clock.sleep(for: .seconds(count))
-              await send(count)
-            }
-          }
-        )
-
-        let values = LockIsolated<[Int]>([])
-
-        let task = Task {
-          for await n in effect.actions {
-            values.withValue { $0.append(n) }
+      let effect = Effect<Int>.merge(
+        (1...3).map { count in
+          .run { send in
+            try await clock.sleep(for: .seconds(count))
+            await send(count)
           }
         }
+      )
 
-        XCTAssertEqual(values.value, [])
+      let values = LockIsolated<[Int]>([])
 
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values.value, [1])
-
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values.value, [1, 2])
-
-        await clock.advance(by: .seconds(1))
-        XCTAssertEqual(values.value, [1, 2, 3])
-
-        await task.value
+      let task = Task {
+        for await n in effect.actions {
+          values.withValue { $0.append(n) }
+        }
       }
+
+      XCTAssertEqual(values.value, [])
+
+      await clock.advance(by: .seconds(1))
+      XCTAssertEqual(values.value, [1])
+
+      await clock.advance(by: .seconds(1))
+      XCTAssertEqual(values.value, [1, 2])
+
+      await clock.advance(by: .seconds(1))
+      XCTAssertEqual(values.value, [1, 2, 3])
+
+      await task.value
     }
   }
 
@@ -206,7 +202,7 @@ final class EffectTests: BaseTCATestCase {
     }
     XCTAssertEqual(output, Date(timeIntervalSince1970: 1_234_567_890))
 
-    if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
+    do {
       let effect = withDependencies {
         $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       } operation: {

@@ -1,7 +1,6 @@
 import SwiftUI
 
 #if !os(macOS)
-  @available(iOS 14, tvOS 14, watchOS 7, *)
   @available(macOS, unavailable)
   extension View {
     /// Presents a modal view that covers as much of the screen as possible using the store you

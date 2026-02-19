@@ -1177,10 +1177,8 @@ final class StoreTests: BaseTCATestCase {
 
   @MainActor
   func testPublisherAsyncSequence() async {
-    if #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) {
-      let store = Store<Void, Void>(initialState: ()) {}
-      _ = await store.publisher.values.first { @Sendable _ in true }
-    }
+    let store = Store<Void, Void>(initialState: ()) {}
+    _ = await store.publisher.values.first { @Sendable _ in true }
   }
 
   @MainActor
@@ -1222,7 +1220,6 @@ final class StoreTests: BaseTCATestCase {
     }
   }
 
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   @MainActor func testRootStoreCancellationIsolation() async throws {
     let clock = TestClock()
     let store1 = Store(initialState: RootStoreCancellationIsolation.State()) {
@@ -1246,7 +1243,6 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(store2.count, 0)
   }
 
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   @MainActor func testRootStoreCancellationIsolation_TestStore() async throws {
     let clock = TestClock()
     let store1 = TestStore(initialState: RootStoreCancellationIsolation.State()) {
@@ -1268,7 +1264,6 @@ final class StoreTests: BaseTCATestCase {
     }
   }
 
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   @Reducer struct RootStoreCancellationIsolation {
     @ObservableState struct State: Equatable {
       var count = 0
@@ -1303,7 +1298,6 @@ final class StoreTests: BaseTCATestCase {
 #if canImport(Testing)
   @Suite
   struct ModernStoreTests {
-    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     @Reducer
     fileprivate struct TaskTreeFeature {
       let clock: TestClock<Duration>
@@ -1331,7 +1325,6 @@ final class StoreTests: BaseTCATestCase {
       }
     }
 
-    @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
     @MainActor
     @Test
     func cancellation() async throws {
@@ -1349,7 +1342,6 @@ final class StoreTests: BaseTCATestCase {
 
     @Suite
     struct ParentChildLifecycle {
-      @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
       @MainActor
       @Test
       func parentChildLifecycle() async throws {

@@ -6,7 +6,6 @@
   final class EffectFailureTests: BaseTCATestCase {
     @MainActor
     func testRunUnexpectedThrows() async {
-      guard #available(iOS 15, macOS 12, tvOS 15, watchOS 8, *) else { return }
 
       var line: UInt!
       XCTExpectFailure {

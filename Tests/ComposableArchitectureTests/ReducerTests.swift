@@ -19,7 +19,6 @@ final class ReducerTests: BaseTCATestCase {
   }
 
   @Reducer
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   fileprivate struct Feature_testCombine_EffectsAreMerged {
     typealias State = Int
     enum Action { case increment }
@@ -39,37 +38,35 @@ final class ReducerTests: BaseTCATestCase {
 
   @MainActor
   func testCombine_EffectsAreMerged() async throws {
-    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-      var fastValue: Int? = nil
-      var slowValue: Int? = nil
-      let clock = TestClock()
+    var fastValue: Int? = nil
+    var slowValue: Int? = nil
+    let clock = TestClock()
 
-      let store = TestStore(initialState: 0) {
-        CombineReducers {
-          Feature_testCombine_EffectsAreMerged(
-            delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
-          Feature_testCombine_EffectsAreMerged(
-            delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
-        }
-      } withDependencies: {
-        $0.continuousClock = clock
+    let store = TestStore(initialState: 0) {
+      CombineReducers {
+        Feature_testCombine_EffectsAreMerged(
+          delay: .seconds(1), setValue: { @MainActor in fastValue = 42 })
+        Feature_testCombine_EffectsAreMerged(
+          delay: .seconds(2), setValue: { @MainActor in slowValue = 1729 })
       }
-
-      await store.send(.increment) {
-        $0 = 2
-      }
-      // Waiting a second causes the fast effect to fire.
-      await clock.advance(by: .seconds(1))
-      try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
-      XCTAssertEqual(fastValue, 42)
-      XCTAssertEqual(slowValue, nil)
-      // Waiting one more second causes the slow effect to fire. This proves that the effects
-      // are merged together, as opposed to concatenated.
-      await clock.advance(by: .seconds(1))
-      await store.finish()
-      XCTAssertEqual(fastValue, 42)
-      XCTAssertEqual(slowValue, 1729)
+    } withDependencies: {
+      $0.continuousClock = clock
     }
+
+    await store.send(.increment) {
+      $0 = 2
+    }
+    // Waiting a second causes the fast effect to fire.
+    await clock.advance(by: .seconds(1))
+    try await Task.sleep(nanoseconds: NSEC_PER_SEC / 3)
+    XCTAssertEqual(fastValue, 42)
+    XCTAssertEqual(slowValue, nil)
+    // Waiting one more second causes the slow effect to fire. This proves that the effects
+    // are merged together, as opposed to concatenated.
+    await clock.advance(by: .seconds(1))
+    await store.finish()
+    XCTAssertEqual(fastValue, 42)
+    XCTAssertEqual(slowValue, 1729)
   }
 
   @Reducer

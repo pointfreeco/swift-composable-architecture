@@ -1,6 +1,5 @@
 import SwiftUI
 
-@available(iOS 15, macOS 12, tvOS 15, watchOS 8, *)
 extension View {
   /// Presents an alert when a piece of optional state held in a store becomes non-`nil`.
   #if swift(<5.10)
