@@ -232,7 +232,7 @@ extension BindingAction {
     keyPath: _SendableWritableKeyPath<Root, Value>,
     bindingAction: Self
   ) -> Bool {
-    keyPath == bindingAction.keyPath
+    _unsafePartialKeyPath(keyPath) == bindingAction.keyPath
   }
 
   init<Value: Equatable & Sendable>(

@@ -22,6 +22,17 @@
   public typealias _SendableCaseKeyPath<Root, Value> = CaseKeyPath<Root, Value>
 #endif
 
+@_transparent
+func _unsafePartialKeyPath<Root, Value>(
+  _ keyPath: _SendableWritableKeyPath<Root, Value>
+) -> _SendablePartialKeyPath<Root> {
+  #if compiler(>=6)
+    unsafeBitCast(keyPath, to: _SendablePartialKeyPath<Root>.self)
+  #else
+    keyPath
+  #endif
+}
+
 // NB: Dynamic member lookup does not currently support sendable key paths and even breaks
 //     autocomplete.
 //

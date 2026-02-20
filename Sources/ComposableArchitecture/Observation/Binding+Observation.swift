@@ -83,7 +83,7 @@ extension BindingAction {
     keyPath: _SendableWritableKeyPath<Root, Value>,
     bindingAction: Self
   ) -> Bool where Root: ObservableState {
-    keyPath == bindingAction.keyPath
+    _unsafePartialKeyPath(keyPath) == bindingAction.keyPath
   }
 }
 
