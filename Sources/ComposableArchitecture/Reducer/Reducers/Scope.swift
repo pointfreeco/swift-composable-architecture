@@ -252,7 +252,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   }
 
   @inlinable
-  public func reduce(
+  public func _reduce(
     into state: inout ParentState, action: ParentAction
   ) -> Effect<ParentAction> {
     guard let childAction = self.toChildAction.extract(from: action)
@@ -298,12 +298,12 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
       defer { state = toChildState.embed(childState) }
 
       return self.child
-        .reduce(into: &childState, action: childAction)
+        ._reduce(into: &childState, action: childAction)
         .map { [toChildAction] in toChildAction.embed($0) }
 
     case .keyPath(let toChildState):
       return self.child
-        .reduce(into: &state[keyPath: toChildState], action: childAction)
+        ._reduce(into: &state[keyPath: toChildState], action: childAction)
         .map { [toChildAction] in toChildAction.embed($0) }
     }
   }

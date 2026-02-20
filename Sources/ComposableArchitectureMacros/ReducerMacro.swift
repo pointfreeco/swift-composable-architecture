@@ -90,43 +90,6 @@ extension ReducerMacro: MemberAttributeMacro {
         .genericArgumentClause?
         .arguments
     {
-      if let reduce = declaration.memberBlock.members.first(where: {
-        guard
-          let method = $0.decl.as(FunctionDeclSyntax.self),
-          method.name.text == "reduce",
-          method.signature.parameterClause.parameters.count == 2,
-          let state = method.signature.parameterClause.parameters.first,
-          state.firstName.text == "into",
-          state.type.as(AttributedTypeSyntax.self)?.isInout == true,
-          method.signature.parameterClause.parameters.last?.firstName.text == "action",
-          method.signature.effectSpecifiers == nil,
-          method.signature.returnClause?.type.as(IdentifierTypeSyntax.self) != nil
-        else {
-          return false
-        }
-        return true
-      }) {
-        let reduce = reduce.decl.cast(FunctionDeclSyntax.self)
-        let visitor = ReduceVisitor(viewMode: .all)
-        visitor.walk(declaration)
-        context.diagnose(
-          Diagnostic(
-            node: reduce.name,
-            message: MacroExpansionErrorMessage(
-              """
-              A 'reduce' method should not be defined in a reducer with a 'body'; it takes \
-              precedence and 'body' will never be invoked
-              """
-            ),
-            notes: [
-              Note(
-                node: Syntax(identifier),
-                message: MacroExpansionNoteMessage("'body' defined here")
-              )
-            ]
-          )
-        )
-      }
       for attribute in property.attributes {
         guard
           case .attribute(let attribute) = attribute,
@@ -239,6 +202,36 @@ extension ReducerMacro: MemberMacro {
       else {
         return false
       }
+      let body = method.body?.statements.map(\.trimmedDescription).joined(separator: "\n") ?? ""
+      context.diagnose(
+        Diagnostic(
+          node: method.name,
+          message: MacroExpansionWarningMessage(
+            """
+            'reduce(into:action:)' is deprecated: Reducers should be defined using the 'body' \
+            property and a 'Reduce'.
+            """
+          ),
+          fixIt: .replace(
+            message: MacroExpansionFixItMessage(
+              """
+              Use 'body' instead
+              """
+            ),
+            oldNode: method,
+            newNode: DeclSyntax(
+              """
+              var body: some Reducer<State, Action> {
+              Reduce { state, action in
+              \(raw: body)
+              }
+              }
+              """
+            )
+            .with(\.leadingTrivia, method.leadingTrivia)
+          )
+        )
+      )
       return true
     }
     let hasExplicitReducerBody =
@@ -727,30 +720,6 @@ struct MacroExpansionNoteMessage: NoteMessage {
 }
 
 private let diagnosticDomain: String = "ComposableArchitectureMacros"
-
-private final class ReduceVisitor: SyntaxVisitor {
-  var changes: [FixIt.Change] = []
-
-  override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
-    guard node.baseName.text == "reduce" else { return super.visit(node) }
-    guard
-      node.argumentNames == nil
-        || node.argumentNames?.arguments.map(\.name.text) == ["into", "action"]
-    else { return super.visit(node) }
-    if let base = node.parent?.as(MemberAccessExprSyntax.self)?.base,
-      base.as(DeclReferenceExprSyntax.self)?.baseName.tokenKind != .keyword(Keyword.`self`)
-    {
-      return super.visit(node)
-    }
-    self.changes.append(
-      .replace(
-        oldNode: Syntax(node),
-        newNode: Syntax(node.with(\.baseName, "update"))
-      )
-    )
-    return .visitChildren
-  }
-}
 
 extension EnumCaseDeclSyntax {
   fileprivate var attribute: ReducerCase.Attribute? {

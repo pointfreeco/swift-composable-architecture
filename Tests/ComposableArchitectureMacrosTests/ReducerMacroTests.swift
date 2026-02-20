@@ -174,14 +174,6 @@
           func reduce(into state: inout State, action: Action) -> EffectOf<Self> {
             .none
           }
-          var body: some ReducerOf<Self> {
-            Reduce(reduce)
-            Reduce(reduce(into:action:))
-            Reduce(self.reduce)
-            Reduce(self.reduce(into:action:))
-            Reduce(AnotherReducer().reduce)
-            Reduce(AnotherReducer().reduce(into:action:))
-          }
         }
         """
       } diagnostics: {
@@ -194,17 +186,44 @@
           }
           func reduce(into state: inout State, action: Action) -> EffectOf<Self> {
                ┬─────
-               ╰─ 🛑 A 'reduce' method should not be defined in a reducer with a 'body'; it takes precedence and 'body' will never be invoked
+               ╰─ ⚠️ 'reduce(into:action:)' is deprecated: Reducers should be defined using the 'body' property and a 'Reduce'.
+                  ✏️ Use 'body' instead
             .none
           }
-          var body: some ReducerOf<Self> {
-            Reduce(reduce)
-            Reduce(reduce(into:action:))
-            Reduce(self.reduce)
-            Reduce(self.reduce(into:action:))
-            Reduce(AnotherReducer().reduce)
-            Reduce(AnotherReducer().reduce(into:action:))
+        }
+        """
+      } fixes: {
+        """
+        @Reducer
+        struct Feature {
+          struct State {
           }
+          enum Action {
+          }
+          var body: some Reducer<State, Action> {
+        Reduce { state, action in
+        .none
+        }
+        }
+        }
+        """
+      } expansion: {
+        """
+        struct Feature {
+          struct State {
+          }
+          @CasePathable
+          enum Action {
+          }
+          @ComposableArchitecture.ReducerBuilder<State, Action>
+          var body: some Reducer<State, Action> {
+        Reduce { state, action in
+        .none
+        }
+        }
+        }
+
+        extension Feature: ComposableArchitecture.Reducer {
         }
         """
       }
@@ -1040,30 +1059,6 @@
         struct Feature {
           @ComposableArchitecture.ReducerBuilder<Base.State, Base.Action>
           var body: some ReducerOf<Base> { EmptyReducer() }
-        }
-
-        extension Feature: ComposableArchitecture.Reducer {
-        }
-        """
-      }
-    }
-
-    func testFilledRequirements_ReduceMethod() {
-      assertMacro {
-        """
-        @Reducer
-        struct Feature {
-          func reduce(into state: inout Base.State, action: Base.Action) -> EffectOf<Base> {
-            .none
-          }
-        }
-        """
-      } expansion: {
-        """
-        struct Feature {
-          func reduce(into state: inout Base.State, action: Base.Action) -> EffectOf<Base> {
-            .none
-          }
         }
 
         extension Feature: ComposableArchitecture.Reducer {

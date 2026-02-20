@@ -69,7 +69,7 @@ where State == ViewAction.State {
   }
 
   @inlinable
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
+  public func _reduce(into state: inout State, action: Action) -> Effect<Action> {
     // NB: Using a closure and not a `\.binding` key path literal to avoid a bug with archives:
     //     https://github.com/pointfreeco/swift-composable-architecture/pull/2641
     guard let bindingAction = self.toViewAction(action).flatMap({ $0.binding })

@@ -17,19 +17,23 @@ public protocol Reducer<State, Action> {
   /// infers this type to be `Never`.
   associatedtype Body
 
-  /// Evolves the current state of the reducer to the next state.
-  ///
-  /// Implement this requirement for "primitive" reducers, or reducers that work on leaf node
-  /// features. To define a reducer by combining the logic of other reducers together, implement the
-  /// ``body-swift.property`` requirement instead.
-  ///
-  /// - Parameters:
-  ///   - state: The current state of the reducer.
-  ///   - action: An action that can cause the state of the reducer to change, and/or kick off a
-  ///     side effect that can communicate with the outside world.
-  /// - Returns: An effect that can communicate with the outside world and feed actions back into
-  ///   the system.
+  @available(
+    *,
+    deprecated,
+    message: """
+      Don't invoke a reducer directly. Reducers are processed by the store. If you need to run a \
+      reducer on some child state given some child action, use a 'send' effect:
+
+        \u{2212} return Child().reduce(&child.state, action: .childAction).map(Action.child)
+        \u{002B} return .send(.child(.childAction))
+
+      Or, if you don't want to send a new action through the store, extract helpers that can be \
+      invoked by either reducer.
+      """
+  )
   func reduce(into state: inout State, action: Action) -> Effect<Action>
+
+  func _reduce(into state: inout State, action: Action) -> Effect<Action>
 
   /// The content and behavior of a reducer that is composed from other reducers.
   ///
@@ -62,20 +66,37 @@ public protocol Reducer<State, Action> {
   var body: Body { get }
 }
 
+extension Reducer {
+  public func _reduce(into state: inout State, action: Action) -> Effect<Action> {
+    reduce(into: &state, action: action)
+  }
+
+  @available(
+    *,
+     deprecated,
+     message: """
+      Don't invoke a reducer directly. Reducers are processed by the store. If you need to run a \
+      reducer on some child state given some child action, use a 'send' effect:
+
+        \u{2212} return Child().reduce(&state.child, action: .childAction).map(Action.child)
+        \u{002B} return .send(.child(.childAction))
+
+      Or, if you don't want to send a new action through the store, extract helpers that can be \
+      invoked by either reducer.
+      """
+  )
+  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    _reduce(into: &state, action: action)
+  }
+}
+
 extension Reducer where Body == Never {
   /// A non-existent body.
   ///
   /// > Warning: Do not invoke this property directly. It will trigger a fatal error at runtime.
   @_transparent
   public var body: Body {
-    fatalError(
-      """
-      '\(Self.self)' has no body. …
-
-      Do not access a reducer's 'body' property directly, as it may not exist. To run a reducer, \
-      call 'Reducer.reduce(into:action:)', instead.
-      """
-    )
+    fatalError("'\(Self.self)' has no body.")
   }
 }
 
@@ -83,10 +104,10 @@ extension Reducer where Body: Reducer<State, Action> {
   /// Invokes the ``Body-40qdd``'s implementation of ``reduce(into:action:)-1t2ri``.
   @inlinable
   @_optimize(none)
-  public func reduce(
+  public func _reduce(
     into state: inout Body.State, action: Body.Action
   ) -> Effect<Body.Action> {
-    self.body.reduce(into: &state, action: action)
+    self.body._reduce(into: &state, action: action)
   }
 }
 

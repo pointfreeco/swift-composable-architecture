@@ -86,12 +86,12 @@ where Base.State == Body.State, Base.Action == Body.Action {
   }
 
   @inlinable
-  public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
+  public func _reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
     let oldValue = toValue(state)
-    let baseEffects = self.base.reduce(into: &state, action: action)
+    let baseEffects = self.base._reduce(into: &state, action: action)
     let newValue = toValue(state)
     return isDuplicate(oldValue, newValue)
       ? baseEffects
-      : .merge(baseEffects, self.reducer(oldValue, newValue).reduce(into: &state, action: action))
+      : .merge(baseEffects, self.reducer(oldValue, newValue)._reduce(into: &state, action: action))
   }
 }
