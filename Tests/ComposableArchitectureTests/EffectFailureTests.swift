@@ -22,7 +22,7 @@
       }
 
       line = #line
-      let effect = Effect<Void>.run { _ in
+      let effect = _Effect<Void>.run { _ in
         struct Unexpected: Error {}
         throw Unexpected()
       }

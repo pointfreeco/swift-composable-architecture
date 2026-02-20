@@ -2,7 +2,13 @@
 import Foundation
 import SwiftUI
 
-public struct Effect<Action>: Sendable {
+/// An effect of a given reducer's domain.
+public typealias EffectOf<R: Reducer> = _Effect<R.Action>
+
+@available(*, deprecated, message: "Use 'EffectOf<Feature>' instead.")
+public typealias Effect<Action> = _Effect<Action>
+
+public struct _Effect<Action>: Sendable {
   @usableFromInline
   enum Operation: Sendable {
     case none
@@ -23,24 +29,9 @@ public struct Effect<Action>: Sendable {
   }
 }
 
-/// A convenience type alias for referring to an effect of a given reducer's domain.
-///
-/// Instead of specifying the action:
-///
-/// ```swift
-/// let effect: Effect<Feature.Action>
-/// ```
-///
-/// You can specify the reducer:
-///
-/// ```swift
-/// let effect: EffectOf<Feature>
-/// ```
-public typealias EffectOf<R: Reducer> = Effect<R.Action>
-
 // MARK: - Creating Effects
 
-extension Effect {
+extension _Effect {
   /// An effect that does nothing and completes immediately. Useful for situations where you must
   /// return an effect, but you don't need to do anything.
   @inlinable
@@ -232,7 +223,7 @@ public struct Send<Action>: Sendable {
 
 // MARK: - Composing Effects
 
-extension Effect {
+extension _Effect {
   /// Merges a variadic list of effects together into a single effect, which runs the effects at the
   /// same time.
   ///
@@ -366,7 +357,7 @@ extension Effect {
   /// - Returns: A publisher that uses the provided closure to map elements from the upstream effect
   ///   to new elements that it then publishes.
   @inlinable
-  public func map<T>(_ transform: @escaping @Sendable (Action) -> T) -> Effect<T> {
+  public func map<T>(_ transform: @escaping @Sendable (Action) -> T) -> _Effect<T> {
     switch self.operation {
     case .none:
       return .none

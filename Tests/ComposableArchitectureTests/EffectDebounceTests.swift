@@ -13,7 +13,7 @@ final class EffectDebounceTests: BaseTCATestCase {
       Task {
         struct CancelToken: Hashable {}
 
-        let effect = Effect.send(value)
+        let effect = _Effect.send(value)
           .debounce(id: CancelToken(), for: 1, scheduler: mainQueue)
 
         for await action in effect.actions {
@@ -65,7 +65,7 @@ final class EffectDebounceTests: BaseTCATestCase {
       Task {
         struct CancelToken: Hashable {}
 
-        let effect = Effect.publisher {
+        let effect = _Effect.publisher {
           Deferred { () -> Just<Int> in
             effectRuns += 1
             return Just(1)

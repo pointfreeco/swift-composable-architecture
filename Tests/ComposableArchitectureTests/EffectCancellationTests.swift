@@ -21,7 +21,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     let values = LockIsolated<[Int]>([])
 
     let subject = PassthroughSubject<Int, Never>()
-    let effect = Effect.publisher { subject }
+    let effect = _Effect.publisher { subject }
       .cancellable(id: CancelID())
 
     let task = Task {
@@ -52,7 +52,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     let values = LockIsolated<[Int]>([])
 
     let subject = PassthroughSubject<Int, Never>()
-    let effect1 = Effect.publisher { subject }
+    let effect1 = _Effect.publisher { subject }
       .cancellable(id: CancelID(), cancelInFlight: true)
 
     let task1 = Task {
@@ -72,7 +72,7 @@ final class EffectCancellationTests: BaseTCATestCase {
 
     defer { Task.cancel(id: CancelID()) }
 
-    let effect2 = Effect.publisher { subject }
+    let effect2 = _Effect.publisher { subject }
       .cancellable(id: CancelID(), cancelInFlight: true)
 
     let task2 = Task {
@@ -97,7 +97,7 @@ final class EffectCancellationTests: BaseTCATestCase {
   func testCancellationAfterDelay() async {
     let result = LockIsolated<Int?>(nil)
 
-    let effect = Effect.publisher {
+    let effect = _Effect.publisher {
       Just(1)
         .delay(for: 0.15, scheduler: DispatchQueue.main)
     }
@@ -123,7 +123,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     let mainQueue = DispatchQueue.test
     let result = LockIsolated<Int?>(nil)
 
-    let effect = Effect.publisher {
+    let effect = _Effect.publisher {
       Just(1)
         .delay(for: 2, scheduler: mainQueue)
     }
@@ -153,7 +153,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     let values = LockIsolated<[Int]>([])
 
     let subject = PassthroughSubject<Int, Never>()
-    let effect = Effect.publisher { subject }
+    let effect = _Effect.publisher { subject }
       .cancellable(id: CancelID())
       .cancellable(id: CancelID())
 
@@ -185,7 +185,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     let values = LockIsolated<[Int]>([])
 
     let subject = PassthroughSubject<Int, Never>()
-    let effect = Effect.publisher { subject }
+    let effect = _Effect.publisher { subject }
       .cancellable(id: CancelID())
 
     let task = Task {
@@ -212,13 +212,13 @@ final class EffectCancellationTests: BaseTCATestCase {
   func testSharedId() async {
     let mainQueue = DispatchQueue.test
 
-    let effect1 = Effect.publisher {
+    let effect1 = _Effect.publisher {
       Just(1)
         .delay(for: 1, scheduler: mainQueue)
     }
     .cancellable(id: "id")
 
-    let effect2 = Effect.publisher {
+    let effect2 = _Effect.publisher {
       Just(2)
         .delay(for: 2, scheduler: mainQueue)
     }
@@ -251,7 +251,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     let mainQueue = DispatchQueue.test
 
     let expectedOutput = LockIsolated<[Int]>([])
-    let effect = Effect.run { send in
+    let effect = _Effect.run { send in
       try await mainQueue.sleep(for: .seconds(1))
       await send(1)
     }
@@ -273,7 +273,7 @@ final class EffectCancellationTests: BaseTCATestCase {
   }
 
   func testNestedMergeCancellation() async {
-    let effect = Effect<Int>.merge(
+    let effect = _Effect<Int>.merge(
       .publisher { (1...2).publisher }
         .cancellable(id: 1)
     )
@@ -287,7 +287,7 @@ final class EffectCancellationTests: BaseTCATestCase {
   }
 
   func testCancellationWithoutThrowingCancellationError() async throws {
-    let effect = Effect<Void>.run { send in
+    let effect = _Effect<Void>.run { send in
       let session = URLSession(configuration: .ephemeral)
       let request = URLRequest(url: URL(string: "http://ipv4.download.thinkbroadband.com/1GB.zip")!)
       let (data, response) = try await session.data(for: request, delegate: nil)
@@ -311,7 +311,7 @@ final class EffectCancellationTests: BaseTCATestCase {
     func testCancellablesCleanUp_OnComplete() async {
       let id = UUID()
 
-      for await _ in Effect.send(1).cancellable(id: id).actions {}
+      for await _ in _Effect.send(1).cancellable(id: id).actions {}
 
       XCTAssertEqual(
         _cancellationCancellables.withValue { $0.exists(at: id, path: NavigationIDPath()) },
@@ -323,7 +323,7 @@ final class EffectCancellationTests: BaseTCATestCase {
       let id = UUID()
 
       let mainQueue = DispatchQueue.test
-      let effect = Effect.publisher {
+      let effect = _Effect.publisher {
         Just(1)
           .delay(for: 1, scheduler: mainQueue)
       }
@@ -357,8 +357,8 @@ final class EffectCancellationTests: BaseTCATestCase {
       ]
       let ids = (1...10).map { _ in UUID() }
 
-      let effect = Effect.merge(
-        (1...1_000).map { idx -> Effect<Int> in
+      let effect = _Effect.merge(
+        (1...1_000).map { idx -> _Effect<Int> in
           let id = ids[idx % 10]
 
           return .merge(
@@ -455,7 +455,7 @@ final class EffectCancellationTests: BaseTCATestCase {
       let effect = withDependencies {
         $0.navigationIDPath = navigationIDPath
       } operation: {
-        Effect
+        _Effect
           .publisher {
             Just(()).delay(for: .seconds(1), scheduler: DispatchQueue(label: #function))
           }

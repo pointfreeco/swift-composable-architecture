@@ -59,7 +59,7 @@ public struct _SignpostReducer<Base: Reducer>: Reducer {
   @inlinable
   public func reduce(
     into state: inout Base.State, action: Base.Action
-  ) -> Effect<Base.Action> {
+  ) -> EffectOf<Base> {
     var actionOutput: String!
     if self.log.signpostsEnabled {
       actionOutput = debugCaseOutput(action)
@@ -76,7 +76,7 @@ public struct _SignpostReducer<Base: Reducer>: Reducer {
   }
 }
 
-extension Effect {
+extension _Effect {
   @usableFromInline
   func effectSignpost(
     _ prefix: String,

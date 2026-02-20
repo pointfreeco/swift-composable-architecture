@@ -2,7 +2,7 @@ import Combine
 @_spi(Canary) @_spi(Internals) import ComposableArchitecture
 import XCTest
 
-final class EffectTests: BaseTCATestCase {
+final class _EffectTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
   let mainQueue = DispatchQueue.test
 
@@ -11,7 +11,7 @@ final class EffectTests: BaseTCATestCase {
       let clock = TestClock()
       let values = LockIsolated<[Int]>([])
 
-      let effect = Effect<Int>.concatenate(
+      let effect = _Effect<Int>.concatenate(
         (1...3).map { count in
           .run { send in
             try await clock.sleep(for: .seconds(count))
@@ -44,11 +44,11 @@ final class EffectTests: BaseTCATestCase {
     }
   }
 
-  func testConcatenateOneEffect() async {
+  func testConcatenateOne_Effect() async {
     await withMainSerialExecutor { [mainQueue] in
       let values = LockIsolated<[Int]>([])
 
-      let effect = Effect<Int>.concatenate(
+      let effect = _Effect<Int>.concatenate(
         .publisher { Just(1).delay(for: 1, scheduler: mainQueue) }
       )
 
@@ -74,7 +74,7 @@ final class EffectTests: BaseTCATestCase {
     await withMainSerialExecutor {
       let clock = TestClock()
 
-      let effect = Effect<Int>.merge(
+      let effect = _Effect<Int>.merge(
         (1...3).map { count in
           .run { send in
             try await clock.sleep(for: .seconds(count))
@@ -109,7 +109,7 @@ final class EffectTests: BaseTCATestCase {
   func testDoubleCancelInFlight() async {
     var result: Int?
 
-    let effect = Effect.send(42)
+    let effect = _Effect.send(42)
       .cancellable(id: "id", cancelInFlight: true)
       .cancellable(id: "id", cancelInFlight: true)
 
@@ -122,7 +122,7 @@ final class EffectTests: BaseTCATestCase {
   }
 
   @Reducer
-  fileprivate struct Feature_testDependenciesTransferredToEffects_Task {
+  fileprivate struct Feature_testDependenciesTransferredTo_Effects_Task {
     enum Action: Equatable {
       case tap
       case response(Int)
@@ -142,9 +142,9 @@ final class EffectTests: BaseTCATestCase {
       }
     }
   }
-  func testDependenciesTransferredToEffects_Task() async {
+  func testDependenciesTransferredTo_Effects_Task() async {
     let store = await TestStore(initialState: 0) {
-      Feature_testDependenciesTransferredToEffects_Task()
+      Feature_testDependenciesTransferredTo_Effects_Task()
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
     }
 
@@ -155,7 +155,7 @@ final class EffectTests: BaseTCATestCase {
   }
 
   @Reducer
-  fileprivate struct Feature_testDependenciesTransferredToEffects_Run {
+  fileprivate struct Feature_testDependenciesTransferredTo_Effects_Run {
     enum Action: Equatable {
       case tap
       case response(Int)
@@ -176,9 +176,9 @@ final class EffectTests: BaseTCATestCase {
     }
   }
 
-  func testDependenciesTransferredToEffects_Run() async {
+  func testDependenciesTransferredTo_Effects_Run() async {
     let store = await TestStore(initialState: 0) {
-      Feature_testDependenciesTransferredToEffects_Run()
+      Feature_testDependenciesTransferredTo_Effects_Run()
         .dependency(\.date, .constant(.init(timeIntervalSinceReferenceDate: 1_234_567_890)))
     }
 
@@ -193,7 +193,7 @@ final class EffectTests: BaseTCATestCase {
     let effect = withDependencies {
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
     } operation: {
-      Effect.send(()).map { date() }
+      _Effect.send(()).map { date() }
     }
     var output: Date?
     for await date in effect.actions {
@@ -206,7 +206,7 @@ final class EffectTests: BaseTCATestCase {
       let effect = withDependencies {
         $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       } operation: {
-        Effect<Void>.run { send in await send(()) }.map { date() }
+        _Effect<Void>.run { send in await send(()) }.map { date() }
       }
       output = nil
       for await date in effect.actions {

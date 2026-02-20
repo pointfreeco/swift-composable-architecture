@@ -1,6 +1,6 @@
 import Combine
 
-extension Effect {
+extension _Effect {
   /// Turns an effect into one that can be debounced.
   ///
   /// To turn an effect into a debounce-able one you must provide an identifier, which is used to

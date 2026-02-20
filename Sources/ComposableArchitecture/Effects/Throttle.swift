@@ -2,7 +2,7 @@
 import Dispatch
 import Foundation
 
-extension Effect where Action: Sendable {
+extension _Effect where Action: Sendable {
   /// Throttles an effect so that it only publishes one output per given interval.
   ///
   /// The throttling of an effect is with respect to actions being sent into the store. So, if

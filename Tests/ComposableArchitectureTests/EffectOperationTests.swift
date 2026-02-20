@@ -3,9 +3,9 @@
 
   @testable import ComposableArchitecture
 
-  class EffectOperationTests: BaseTCATestCase {
+  class _EffectOperationTests: BaseTCATestCase {
     func testMergeDiscardsNones() async {
-      var effect = Effect<Int>.none
+      var effect = _Effect<Int>.none
         .merge(with: .none)
       switch effect.operation {
       case .none:
@@ -14,7 +14,7 @@
         XCTFail()
       }
 
-      effect = Effect<Int>.run { send in await send(42) }
+      effect = _Effect<Int>.run { send in await send(42) }
         .merge(with: .none)
       switch effect.operation {
       case .run(_, _, let send):
@@ -23,7 +23,7 @@
         XCTFail()
       }
 
-      effect = Effect<Int>.none
+      effect = _Effect<Int>.none
         .merge(with: .run { send in await send(42) })
       switch effect.operation {
       case .run(_, _, let send):
@@ -32,7 +32,7 @@
         XCTFail()
       }
 
-      effect = Effect<Int>.run { await $0(42) }
+      effect = _Effect<Int>.run { await $0(42) }
         .merge(with: .none)
       switch effect.operation {
       case .run(_, _, let send):
@@ -41,7 +41,7 @@
         XCTFail()
       }
 
-      effect = Effect<Int>.none
+      effect = _Effect<Int>.none
         .merge(with: .run { await $0(42) })
       switch effect.operation {
       case .run(_, _, let send):
@@ -52,7 +52,7 @@
     }
 
     func testConcatenateDiscardsNones() async {
-      var effect = Effect<Int>.none
+      var effect = _Effect<Int>.none
         .concatenate(with: .none)
       switch effect.operation {
       case .none:
@@ -61,7 +61,7 @@
         XCTFail()
       }
 
-      effect = Effect<Int>.run { send in await send(42) }
+      effect = _Effect<Int>.run { send in await send(42) }
         .concatenate(with: .none)
       switch effect.operation {
       case .run(_, _, let send):
@@ -70,7 +70,7 @@
         XCTFail()
       }
 
-      effect = Effect<Int>.none
+      effect = _Effect<Int>.none
         .concatenate(with: .run { send in await send(42) })
       switch effect.operation {
       case .run(_, _, let send):
@@ -79,7 +79,7 @@
         XCTFail()
       }
 
-      effect = Effect<Int>.run { send in await send(42) }
+      effect = _Effect<Int>.run { send in await send(42) }
         .concatenate(with: .none)
       switch effect.operation {
       case .run(_, _, let send):
@@ -88,7 +88,7 @@
         XCTFail()
       }
 
-      effect = Effect<Int>.none
+      effect = _Effect<Int>.none
         .concatenate(with: .run { send in await send(42) })
       switch effect.operation {
       case .run(_, _, let send):
@@ -102,7 +102,7 @@
     func testMergeFuses() async {
       var values = [Int]()
 
-      let effect = Effect<Int>.run { send in
+      let effect = _Effect<Int>.run { send in
         try await Task.sleep(nanoseconds: NSEC_PER_SEC / 10)
         await send(42)
       }
@@ -126,7 +126,7 @@
     func testConcatenateFuses() async {
       var values = [Int]()
 
-      let effect = Effect<Int>.run { send in await send(42) }
+      let effect = _Effect<Int>.run { send in await send(42) }
         .concatenate(with: .run { send in await send(1729) })
       switch effect.operation {
       case .run(_, _, let send):
@@ -139,7 +139,7 @@
     }
 
     func testMap() async {
-      let effect = Effect<Int>.run { send in await send(42) }
+      let effect = _Effect<Int>.run { send in await send(42) }
         .map { "\($0)" }
 
       switch effect.operation {

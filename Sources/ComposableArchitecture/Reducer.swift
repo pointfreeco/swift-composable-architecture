@@ -29,7 +29,7 @@ public protocol Reducer<State, Action> {
   ///     side effect that can communicate with the outside world.
   /// - Returns: An effect that can communicate with the outside world and feed actions back into
   ///   the system.
-  func reduce(into state: inout State, action: Action) -> Effect<Action>
+  func reduce(into state: inout State, action: Action) -> EffectOf<Self>
 
   /// The content and behavior of a reducer that is composed from other reducers.
   ///
@@ -85,7 +85,7 @@ extension Reducer where Body: Reducer<State, Action> {
   @_optimize(none)
   public func reduce(
     into state: inout Body.State, action: Body.Action
-  ) -> Effect<Body.Action> {
+  ) -> EffectOf<Body> {
     self.body.reduce(into: &state, action: action)
   }
 }
