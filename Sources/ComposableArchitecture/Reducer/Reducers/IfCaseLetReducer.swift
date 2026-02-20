@@ -132,7 +132,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     self.column = column
   }
 
-  public func reduce(
+  public func _reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
@@ -140,7 +140,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     let childIDBefore = self.toChildState.extract(from: state).map {
       NavigationID(root: state, value: $0, casePath: self.toChildState)
     }
-    let parentEffects = self.parent.reduce(into: &state, action: action)
+    let parentEffects = self.parent._reduce(into: &state, action: action)
     let childIDAfter = self.toChildState.extract(from: state).map {
       NavigationID(root: state, value: $0, casePath: self.toChildState)
     }
@@ -202,7 +202,7 @@ public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     let newNavigationID = self.navigationIDPath.appending(childID)
     return self.child
       .dependency(\.navigationIDPath, newNavigationID)
-      .reduce(into: &childState, action: childAction)
+      ._reduce(into: &childState, action: childAction)
       .map { [toChildAction] in toChildAction.embed($0) }
       .cancellable(id: childID)
   }

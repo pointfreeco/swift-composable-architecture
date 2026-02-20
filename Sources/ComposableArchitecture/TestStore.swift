@@ -2440,7 +2440,7 @@ class TestReducer<State: Equatable, Action>: Reducer {
     self.state = initialState
   }
 
-  func reduce(into state: inout State, action: TestAction) -> Effect<TestAction> {
+  func _reduce(into state: inout State, action: TestAction) -> Effect<TestAction> {
     var dependencies = self.dependencies
     let dismiss = dependencies.dismiss.dismiss
     dependencies.dismiss = DismissEffect { [weak store] in
@@ -2455,11 +2455,11 @@ class TestReducer<State: Equatable, Action>: Reducer {
     let effects: Effect<Action>
     switch action.origin {
     case .send(let action):
-      effects = reducer.reduce(into: &state, action: action)
+      effects = reducer._reduce(into: &state, action: action)
       self.state = state
 
     case .receive(let action):
-      effects = reducer.reduce(into: &state, action: action)
+      effects = reducer._reduce(into: &state, action: action)
       self.receivedActions.append((action, state))
     }
 

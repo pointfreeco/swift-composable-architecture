@@ -95,7 +95,7 @@ final class RootCore<Root: Reducer>: Core {
     while index < self.bufferedActions.endIndex {
       defer { index += 1 }
       let action = self.bufferedActions[index]
-      let effect = reducer.reduce(into: &currentState, action: action)
+      let effect = reducer._reduce(into: &currentState, action: action)
       let uuid = UUID()
 
       switch effect.operation {

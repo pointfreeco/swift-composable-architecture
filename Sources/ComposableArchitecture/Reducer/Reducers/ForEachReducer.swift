@@ -191,13 +191,13 @@ public struct _ForEachReducer<
     self.column = column
   }
 
-  public func reduce(
+  public func _reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action> {
     let elementEffects = self.reduceForEach(into: &state, action: action)
 
     let idsBefore = state[keyPath: self.toElementsState].ids
-    let parentEffects = self.parent.reduce(into: &state, action: action)
+    let parentEffects = self.parent._reduce(into: &state, action: action)
     let idsAfter = state[keyPath: self.toElementsState].ids
 
     let elementCancelEffects: Effect<Parent.Action> =
@@ -256,7 +256,7 @@ public struct _ForEachReducer<
     let elementNavigationID = self.navigationIDPath.appending(navigationID)
     return self.element
       .dependency(\.navigationIDPath, elementNavigationID)
-      .reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
+      ._reduce(into: &state[keyPath: self.toElementsState][id: id]!, action: elementAction)
       .map { [toElementAction] in toElementAction.embed((id, $0)) }
       ._cancellable(id: navigationID, navigationIDPath: self.navigationIDPath)
   }
