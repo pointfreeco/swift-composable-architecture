@@ -192,10 +192,10 @@ struct ThrottleFeature {
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .tap(value):
+      case .tap(let value):
         return .send(.throttledResponse(value))
           .throttle(id: self.id, for: .seconds(1), scheduler: self.mainQueue, latest: self.latest)
-      case let .throttledResponse(value):
+      case .throttledResponse(let value):
         state.count = value
         return .none
       }

@@ -2,11 +2,7 @@ import SwiftUI
 
 extension View {
   /// Presents an alert when a piece of optional state held in a store becomes non-`nil`.
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func alert<Action>(_ item: Binding<Store<AlertState<Action>, Action>?>) -> some View {
     let store = item.wrappedValue
     let alertState = store?.withState { $0 }
@@ -18,11 +14,11 @@ extension View {
         ForEach(alertState.buttons) { button in
           Button(role: button.role.map(ButtonRole.init)) {
             switch button.action.type {
-            case let .send(action):
+            case .send(let action):
               if let action {
                 store?.send(action)
               }
-            case let .animatedSend(action, animation):
+            case .animatedSend(let action, let animation):
               if let action {
                 store?.send(action, animation: animation)
               }
@@ -39,11 +35,7 @@ extension View {
   }
 
   /// Presents an alert when a piece of optional state held in a store becomes non-`nil`.
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func confirmationDialog<Action>(
     _ item: Binding<Store<ConfirmationDialogState<Action>, Action>?>
   ) -> some View {
@@ -59,11 +51,11 @@ extension View {
         ForEach(confirmationDialogState.buttons) { button in
           Button(role: button.role.map(ButtonRole.init)) {
             switch button.action.type {
-            case let .send(action):
+            case .send(let action):
               if let action {
                 store?.send(action)
               }
-            case let .animatedSend(action, animation):
+            case .animatedSend(let action, let animation):
               if let action {
                 store?.send(action, animation: animation)
               }

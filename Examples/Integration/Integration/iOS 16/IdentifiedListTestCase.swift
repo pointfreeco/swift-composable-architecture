@@ -76,7 +76,7 @@ struct IdentifiedListView: View {
         case .incrementFirstButtonTapped:
           state.rows[id: state.rows.ids[0]]?.count += 1
           return .none
-        case let .removeButtonTapped(id: id):
+        case .removeButtonTapped(id: let id):
           state.rows.remove(id: id)
           return .none
         case .rows:

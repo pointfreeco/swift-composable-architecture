@@ -39,20 +39,20 @@ struct BindingBasics {
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .sliderValueChanged(value):
+      case .sliderValueChanged(let value):
         state.sliderValue = value
         return .none
 
-      case let .stepCountChanged(count):
+      case .stepCountChanged(let count):
         state.sliderValue = .minimum(state.sliderValue, Double(count))
         state.stepCount = count
         return .none
 
-      case let .textChanged(text):
+      case .textChanged(let text):
         state.text = text
         return .none
 
-      case let .toggleChanged(isOn):
+      case .toggleChanged(let isOn):
         state.toggleIsOn = isOn
         return .none
       }

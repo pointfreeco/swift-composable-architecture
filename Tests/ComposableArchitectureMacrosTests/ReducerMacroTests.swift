@@ -242,11 +242,7 @@
 
             }
 
-            #if swift(<5.10)
-            @MainActor(unsafe)
-            #else
             @preconcurrency @MainActor
-            #endif
             static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
                 switch store.state {
 
@@ -327,11 +323,7 @@
             case alert(AlertState<Alert>)
           }
 
-          #if swift(<5.10)
-          @MainActor(unsafe)
-          #else
           @preconcurrency @MainActor
-          #endif
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .activity:
@@ -397,11 +389,7 @@
             case meeting(ComposableArchitecture.StoreOf<Meeting>)
           }
 
-          #if swift(<5.10)
-          @MainActor(unsafe)
-          #else
           @preconcurrency @MainActor
-          #endif
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .timeline:
@@ -451,11 +439,7 @@
 
             }
 
-            #if swift(<5.10)
-            @MainActor(unsafe)
-            #else
             @preconcurrency @MainActor
-            #endif
             static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
                 switch store.state {
 
@@ -506,11 +490,7 @@
 
             }
 
-            #if swift(<5.10)
-            @MainActor(unsafe)
-            #else
             @preconcurrency @MainActor
-            #endif
 
             package static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
                 switch store.state {
@@ -562,11 +542,7 @@
 
             }
 
-            #if swift(<5.10)
-            @MainActor(unsafe)
-            #else
             @preconcurrency @MainActor
-            #endif
 
             public static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
                 switch store.state {
@@ -617,11 +593,7 @@
             case alert(AlertState<Never>)
           }
 
-          #if swift(<5.10)
-          @MainActor(unsafe)
-          #else
           @preconcurrency @MainActor
-          #endif
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case let .alert(v0):
@@ -681,11 +653,7 @@
             case timeline(ComposableArchitecture.StoreOf<Timeline>)
           }
 
-          #if swift(<5.10)
-          @MainActor(unsafe)
-          #else
           @preconcurrency @MainActor
-          #endif
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .activity:
@@ -746,11 +714,7 @@
             case meeting(Meeting)
           }
 
-          #if swift(<5.10)
-          @MainActor(unsafe)
-          #else
           @preconcurrency @MainActor
-          #endif
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .timeline:
@@ -815,11 +779,7 @@
             case meeting(Meeting, syncUp: SyncUp)
           }
 
-          #if swift(<5.10)
-          @MainActor(unsafe)
-          #else
           @preconcurrency @MainActor
-          #endif
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case let .alert(v0):
@@ -891,11 +851,7 @@
             case sheet(ComposableArchitecture.StoreOf<Counter>)
           }
 
-          #if swift(<5.10)
-          @MainActor(unsafe)
-          #else
           @preconcurrency @MainActor
-          #endif
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .drillDown:
@@ -951,11 +907,7 @@
             case feature(ComposableArchitecture.StoreOf<Nested.Feature>)
           }
 
-          #if swift(<5.10)
-          @MainActor(unsafe)
-          #else
           @preconcurrency @MainActor
-          #endif
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .feature:
@@ -1319,11 +1271,7 @@
 
           }
 
-          #if swift(<5.10)
-          @MainActor(unsafe)
-          #else
           @preconcurrency @MainActor
-          #endif
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .child:

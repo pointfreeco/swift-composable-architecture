@@ -42,9 +42,9 @@ class AppViewController: UINavigationController {
     observe { [weak self] in
       guard let self else { return }
       switch store.case {
-      case let .login(store):
+      case .login(let store):
         setViewControllers([LoginViewController(store: store)], animated: false)
-      case let .newGame(store):
+      case .newGame(let store):
         setViewControllers([NewGameViewController(store: store)], animated: false)
       }
     }

@@ -86,13 +86,13 @@ struct SignUpFlow: View {
       .navigationTitle("Sign up")
     } destination: { store in
       switch store.case {
-      case let .basics(store):
+      case .basics(let store):
         BasicsStep(store: store)
-      case let .personalInfo(store):
+      case .personalInfo(let store):
         PersonalInfoStep(store: store)
-      case let .summary(store):
+      case .summary(let store):
         SummaryStep(store: store)
-      case let .topics(store):
+      case .topics(let store):
         TopicsStep(store: store)
       }
     }

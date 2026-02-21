@@ -28,9 +28,9 @@ public struct _EffectPublisher<Action>: Publisher {
     switch effect.operation {
     case .none:
       return Empty().eraseToAnyPublisher()
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return publisher
-    case let .run(name, priority, operation):
+    case .run(let name, let priority, let operation):
       return .create { subscriber in
         let task = Task(name: name, priority: priority) { @MainActor in
           defer { subscriber.send(completion: .finished) }

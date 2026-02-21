@@ -272,11 +272,7 @@ public struct _StoreBinding<State: ObservableState, Action, Value> {
   ///
   /// - Parameter action: An action for the binding to send values through.
   /// - Returns: A binding.
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
     self.binding[state: self.keyPath, action: action]
   }
@@ -300,11 +296,7 @@ public struct _StoreObservedObject<State: ObservableState, Action, Value> {
   ///
   /// - Parameter action: An action for the binding to send values through.
   /// - Returns: A binding.
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
     self.wrapper[state: self.keyPath, action: action]
   }
@@ -353,11 +345,7 @@ public struct _StoreBindable_SwiftUI<State: ObservableState, Action, Value> {
   ///
   /// - Parameter action: An action for the binding to send values through.
   /// - Returns: A binding.
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
     self.bindable[state: self.keyPath, action: action]
   }
@@ -386,11 +374,7 @@ public struct _StoreBindable_Perception<State: ObservableState, Action, Value> {
   ///
   /// - Parameter action: An action for the binding to send values through.
   /// - Returns: A binding.
-  #if swift(<5.10)
-    @MainActor(unsafe)
-  #else
-    @preconcurrency@MainActor
-  #endif
+  @preconcurrency @MainActor
   public func sending(_ action: CaseKeyPath<Action, Value>) -> Binding<Value> {
     self.bindable[state: self.keyPath, action: action]
   }

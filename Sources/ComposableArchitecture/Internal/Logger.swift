@@ -1,11 +1,7 @@
 import OSLog
 
 @_spi(Logging)
-#if swift(<5.10)
-  @MainActor(unsafe)
-#else
-  @preconcurrency@MainActor
-#endif
+@preconcurrency @MainActor
 public final class Logger {
   public static let shared = Logger()
   public var isEnabled = false

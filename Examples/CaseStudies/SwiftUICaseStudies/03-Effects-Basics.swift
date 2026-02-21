@@ -76,7 +76,7 @@ struct EffectsBasics {
           await send(.numberFactResponse(Result { try await self.factClient.fetch(count) }))
         }
 
-      case let .numberFactResponse(.success(response)):
+      case .numberFactResponse(.success(let response)):
         state.isNumberFactRequestInFlight = false
         state.numberFact = response
         return .none

@@ -39,7 +39,7 @@ extension Effect {
     switch self.operation {
     case .none:
       return .none
-    case let .publisher(publisher):
+    case .publisher(let publisher):
       return Self(
         operation: .publisher(
           Deferred {
@@ -83,7 +83,7 @@ extension Effect {
           .eraseToAnyPublisher()
         )
       )
-    case let .run(name, priority, operation):
+    case .run(let name, let priority, let operation):
       return withEscapedDependencies { continuation in
         return Self(
           operation: .run(name: name, priority: priority) { send in
@@ -117,112 +117,79 @@ extension Effect {
   }
 }
 
-#if compiler(>=6)
-  /// Execute an operation with a cancellation identifier.
-  ///
-  /// If the operation is in-flight when `Task.cancel(id:)` is called with the same identifier, the
-  /// operation will be cancelled.
-  ///
-  /// ```swift
-  /// enum CancelID { case timer }
-  ///
-  /// await withTaskCancellation(id: CancelID.timer) {
-  ///   // Start cancellable timer...
-  /// }
-  /// ```
-  ///
-  /// ### Debouncing tasks
-  ///
-  /// When paired with a clock, this function can be used to debounce a unit of async work by
-  /// specifying the `cancelInFlight`, which will automatically cancel any in-flight work with the
-  /// same identifier:
-  ///
-  /// ```swift
-  /// @Dependency(\.continuousClock) var clock
-  /// enum CancelID { case response }
-  ///
-  /// // ...
-  ///
-  /// return .run { send in
-  ///   try await withTaskCancellation(id: CancelID.response, cancelInFlight: true) {
-  ///     try await self.clock.sleep(for: .seconds(0.3))
-  ///     await send(
-  ///       .debouncedResponse(await Result { try await environment.request() })
-  ///     )
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// - Parameters:
-  ///   - id: A unique identifier for the operation.
-  ///   - cancelInFlight: Determines if any in-flight operation with the same identifier should be
-  ///     canceled before starting this new one.
-  ///   - isolation: The isolation of the operation.
-  ///   - operation: An async operation.
-  /// - Throws: An error thrown by the operation.
-  /// - Returns: A value produced by operation.
-  public func withTaskCancellation<T: Sendable>(
-    id: some Hashable & Sendable,
-    cancelInFlight: Bool = false,
-    isolation: isolated (any Actor)? = #isolation,
-    operation: @escaping @Sendable () async throws -> T
-  ) async rethrows -> T {
-    @Dependency(\.navigationIDPath) var navigationIDPath
+/// Execute an operation with a cancellation identifier.
+///
+/// If the operation is in-flight when `Task.cancel(id:)` is called with the same identifier, the
+/// operation will be cancelled.
+///
+/// ```swift
+/// enum CancelID { case timer }
+///
+/// await withTaskCancellation(id: CancelID.timer) {
+///   // Start cancellable timer...
+/// }
+/// ```
+///
+/// ### Debouncing tasks
+///
+/// When paired with a clock, this function can be used to debounce a unit of async work by
+/// specifying the `cancelInFlight`, which will automatically cancel any in-flight work with the
+/// same identifier:
+///
+/// ```swift
+/// @Dependency(\.continuousClock) var clock
+/// enum CancelID { case response }
+///
+/// // ...
+///
+/// return .run { send in
+///   try await withTaskCancellation(id: CancelID.response, cancelInFlight: true) {
+///     try await self.clock.sleep(for: .seconds(0.3))
+///     await send(
+///       .debouncedResponse(await Result { try await environment.request() })
+///     )
+///   }
+/// }
+/// ```
+///
+/// - Parameters:
+///   - id: A unique identifier for the operation.
+///   - cancelInFlight: Determines if any in-flight operation with the same identifier should be
+///     canceled before starting this new one.
+///   - isolation: The isolation of the operation.
+///   - operation: An async operation.
+/// - Throws: An error thrown by the operation.
+/// - Returns: A value produced by operation.
+public func withTaskCancellation<T: Sendable>(
+  id: some Hashable & Sendable,
+  cancelInFlight: Bool = false,
+  isolation: isolated (any Actor)? = #isolation,
+  operation: @escaping @Sendable () async throws -> T
+) async rethrows -> T {
+  @Dependency(\.navigationIDPath) var navigationIDPath
 
-    let (cancellable, task): (AnyCancellable, Task<T, any Error>) =
-      _cancellationCancellables
-      .withValue {
-        if cancelInFlight {
-          $0.cancel(id: id, path: navigationIDPath)
-        }
-        let task = Task { try await operation() }
-        let cancellable = AnyCancellable { @Sendable in task.cancel() }
-        $0.insert(cancellable, at: id, path: navigationIDPath)
-        return (cancellable, task)
+  let (cancellable, task): (AnyCancellable, Task<T, any Error>) =
+    _cancellationCancellables
+    .withValue {
+      if cancelInFlight {
+        $0.cancel(id: id, path: navigationIDPath)
       }
-    defer {
-      _cancellationCancellables.withValue {
-        $0.remove(cancellable, at: id, path: navigationIDPath)
-      }
+      let task = Task { try await operation() }
+      let cancellable = AnyCancellable { @Sendable in task.cancel() }
+      $0.insert(cancellable, at: id, path: navigationIDPath)
+      return (cancellable, task)
     }
-    do {
-      return try await task.cancellableValue
-    } catch {
-      return try Result<T, any Error>.failure(error)._rethrowGet()
+  defer {
+    _cancellationCancellables.withValue {
+      $0.remove(cancellable, at: id, path: navigationIDPath)
     }
   }
-#else
-  @_unsafeInheritExecutor
-  public func withTaskCancellation<T: Sendable>(
-    id: some Hashable,
-    cancelInFlight: Bool = false,
-    operation: @Sendable @escaping () async throws -> T
-  ) async rethrows -> T {
-    @Dependency(\.navigationIDPath) var navigationIDPath
-
-    let (cancellable, task): (AnyCancellable, Task<T, any Error>) =
-      _cancellationCancellables
-      .withValue {
-        if cancelInFlight {
-          $0.cancel(id: id, path: navigationIDPath)
-        }
-        let task = Task { try await operation() }
-        let cancellable = AnyCancellable { task.cancel() }
-        $0.insert(cancellable, at: id, path: navigationIDPath)
-        return (cancellable, task)
-      }
-    defer {
-      _cancellationCancellables.withValue {
-        $0.remove(cancellable, at: id, path: navigationIDPath)
-      }
-    }
-    do {
-      return try await task.cancellableValue
-    } catch {
-      return try Result<T, any Error>.failure(error)._rethrowGet()
-    }
+  do {
+    return try await task.cancellableValue
+  } catch {
+    return try Result<T, any Error>.failure(error)._rethrowGet()
   }
-#endif
+}
 
 extension Task<Never, Never> {
   /// Cancel any currently in-flight operation with the given identifier.
@@ -248,7 +215,7 @@ extension Task<Never, Never> {
     self.id = id
     self.navigationIDPath = navigationIDPath
     switch TestContext.current {
-    case let .swiftTesting(.some(testing)):
+    case .swiftTesting(.some(let testing)):
       self.testIdentifier = testing.test.id
     default:
       self.testIdentifier = nil

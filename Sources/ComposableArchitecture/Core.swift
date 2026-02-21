@@ -101,7 +101,7 @@ final class RootCore<Root: Reducer>: Core {
       switch effect.operation {
       case .none:
         break
-      case let .publisher(publisher):
+      case .publisher(let publisher):
         var didComplete = false
         let boxedTask = Box<Task<Void, Never>?>(wrappedValue: nil)
         let effectCancellable = withEscapedDependencies { continuation in
@@ -136,7 +136,7 @@ final class RootCore<Root: Reducer>: Core {
             task.cancel()
           }
         }
-      case let .run(name, priority, operation):
+      case .run(let name, let priority, let operation):
         withEscapedDependencies { continuation in
           let task = Task(name: name, priority: priority) { @MainActor [weak self] in
             let isCompleted = LockIsolated(false)

@@ -13,11 +13,11 @@ public struct AppView: View {
 
   public var body: some View {
     switch store.case {
-    case let .login(store):
+    case .login(let store):
       NavigationStack {
         LoginView(store: store)
       }
-    case let .newGame(store):
+    case .newGame(let store):
       NavigationStack {
         NewGameView(store: store)
       }

@@ -29,7 +29,7 @@ struct NavigationDemo {
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
-      case let .goBackToScreen(id):
+      case .goBackToScreen(let id):
         state.path.pop(to: id)
         return .none
 
@@ -39,7 +39,7 @@ struct NavigationDemo {
         state.path.append(.screenC(ScreenC.State()))
         return .none
 
-      case let .path(action):
+      case .path(let action):
         switch action {
         case .element(id: _, action: .screenB(.screenAButtonTapped)):
           state.path.append(.screenA(ScreenA.State()))
@@ -99,11 +99,11 @@ struct NavigationDemoView: View {
       .navigationTitle("Root")
     } destination: { store in
       switch store.case {
-      case let .screenA(store):
+      case .screenA(let store):
         ScreenAView(store: store)
-      case let .screenB(store):
+      case .screenB(let store):
         ScreenBView(store: store)
-      case let .screenC(store):
+      case .screenC(let store):
         ScreenCView(store: store)
       }
     }
@@ -132,12 +132,12 @@ struct FloatingMenuView: View {
       self.currentStack = []
       for (id, element) in zip(state.path.ids, state.path) {
         switch element {
-        case let .screenA(screenAState):
+        case .screenA(let screenAState):
           self.total += screenAState.count
           self.currentStack.insert(Screen(id: id, name: "Screen A"), at: 0)
         case .screenB:
           self.currentStack.insert(Screen(id: id, name: "Screen B"), at: 0)
-        case let .screenC(screenBState):
+        case .screenC(let screenBState):
           self.total += screenBState.count
           self.currentStack.insert(Screen(id: id, name: "Screen C"), at: 0)
         }
@@ -219,7 +219,7 @@ struct ScreenA {
           await send(.factResponse(Result { try await self.factClient.fetch(count) }))
         }
 
-      case let .factResponse(.success(fact)):
+      case .factResponse(.success(let fact)):
         state.isLoading = false
         state.fact = fact
         return .none

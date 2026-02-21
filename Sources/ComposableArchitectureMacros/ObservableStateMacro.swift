@@ -400,7 +400,7 @@ enum ObservableStateCase {
 
   var getCase: String {
     switch self {
-    case let .element(element, tag):
+    case .element(let element, let tag):
       if let parameters = element.parameterClause?.parameters, parameters.count == 1 {
         return """
           case let .\(element.name.text)(state):
@@ -412,7 +412,7 @@ enum ObservableStateCase {
           return ObservableStateID()._$tag(\(tag))
           """
       }
-    case let .ifConfig(configs):
+    case .ifConfig(let configs):
       return
         configs
         .map {
@@ -427,7 +427,7 @@ enum ObservableStateCase {
 
   var willModifyCase: String {
     switch self {
-    case let .element(element, _):
+    case .element(let element, _):
       if let parameters = element.parameterClause?.parameters,
         parameters.count == 1,
         let parameter = parameters.first
@@ -443,7 +443,7 @@ enum ObservableStateCase {
           break
           """
       }
-    case let .ifConfig(configs):
+    case .ifConfig(let configs):
       return
         configs
         .map {

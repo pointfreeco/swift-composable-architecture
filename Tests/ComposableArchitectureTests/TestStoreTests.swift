@@ -61,7 +61,7 @@ final class TestStoreTests: BaseTCATestCase {
         switch action {
         case .tap:
           return .run { send in await send(.response(42)) }
-        case let .response(number):
+        case .response(let number):
           state = number
           return .none
         }
@@ -91,7 +91,7 @@ final class TestStoreTests: BaseTCATestCase {
         case .increment:
           state.isChanging = true
           return .send(.changed(from: state.count, to: state.count + 1))
-        case let .changed(from, to):
+        case .changed(let from, let to):
           state.isChanging = false
           if state.count == from {
             state.count = to
@@ -369,7 +369,7 @@ final class TestStoreTests: BaseTCATestCase {
         case .tap:
           state.count += 1
           return .run { send in await send(.response(42)) }
-        case let .response(number):
+        case .response(let number):
           state.count = number
           state.date = now
           return .none
@@ -581,7 +581,7 @@ final class TestStoreTests: BaseTCATestCase {
         case .view(.tap):
           state = state + 1
           return .send(.delegate(.success(42 * 42)))
-        case let .view(.delete(indexSet)):
+        case .view(.delete(let indexSet)):
           let sum = indexSet.reduce(0, +)
           if sum == 42 {
             state = state + 1

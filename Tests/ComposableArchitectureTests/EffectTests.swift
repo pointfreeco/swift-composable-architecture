@@ -135,7 +135,7 @@ final class EffectTests: BaseTCATestCase {
           return .run { send in
             await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
           }
-        case let .response(value):
+        case .response(let value):
           state = value
           return .none
         }
@@ -168,7 +168,7 @@ final class EffectTests: BaseTCATestCase {
           return .run { send in
             await send(.response(Int(self.date.now.timeIntervalSinceReferenceDate)))
           }
-        case let .response(value):
+        case .response(let value):
           state = value
           return .none
         }

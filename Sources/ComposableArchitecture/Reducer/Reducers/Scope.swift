@@ -342,7 +342,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     switch self.toChildState {
-    case let .casePath(toChildState, fileID, filePath, line, column):
+    case .casePath(let toChildState, let fileID, let filePath, let line, let column):
       guard var childState = toChildState.extract(from: state) else {
         reportIssue(
           """
@@ -385,7 +385,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
         .reduce(into: &childState, action: childAction)
         .map { [toChildAction] in toChildAction.embed($0) }
 
-    case let .keyPath(toChildState):
+    case .keyPath(let toChildState):
       return self.child
         .reduce(into: &state[keyPath: toChildState], action: childAction)
         .map { [toChildAction] in toChildAction.embed($0) }

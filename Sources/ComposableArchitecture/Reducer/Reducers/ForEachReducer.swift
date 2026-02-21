@@ -17,7 +17,7 @@ public enum IdentifiedAction<ID: Hashable & Sendable, Action>: CasePathable {
       AnyCasePath(
         embed: { .element(id: $0, action: $1) },
         extract: {
-          guard case let .element(id, action) = $0 else { return nil }
+          guard case .element(let id, let action) = $0 else { return nil }
           return (id, action)
         }
       )
