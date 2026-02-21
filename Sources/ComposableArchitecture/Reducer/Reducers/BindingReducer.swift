@@ -9,7 +9,7 @@ import SwiftUI
 /// @Reducer
 /// struct Feature {
 ///   struct State {
-///     @BindingState var isOn = false
+///     var isOn = false
 ///     // More properties...
 ///   }
 ///   enum Action: BindableAction {
