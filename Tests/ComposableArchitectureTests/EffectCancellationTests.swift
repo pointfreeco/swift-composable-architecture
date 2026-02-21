@@ -286,7 +286,6 @@ final class EffectCancellationTests: BaseTCATestCase {
     XCTAssertEqual(output, [1, 2])
   }
 
-  @available(iOS 15.0, *)
   func testCancellationWithoutThrowingCancellationError() async throws {
     let effect = Effect<Void>.run { send in
       let session = URLSession(configuration: .ephemeral)

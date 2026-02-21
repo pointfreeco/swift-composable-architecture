@@ -2,12 +2,7 @@
 import SwiftUI
 import XCTest
 
-@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 final class StorePerceptionTests: BaseTCATestCase {
-  override func setUpWithError() throws {
-    try checkAvailability()
-  }
-
   @MainActor
   func testPerceptionCheck_SkipWhenOutsideView() {
     let store = Store(initialState: Feature.State()) {
@@ -31,26 +26,28 @@ final class StorePerceptionTests: BaseTCATestCase {
     render(FeatureView())
   }
 
-  @MainActor
-  @available(*, deprecated)
-  func testPerceptionCheck_AccessStateWithoutTracking() {
+  #if !os(macOS)
     @MainActor
-    struct FeatureView: View {
-      let store = Store(initialState: Feature.State()) {
-        Feature()
+    @available(*, deprecated)
+    func testPerceptionCheck_AccessStateWithoutTracking() {
+      @MainActor
+      struct FeatureView: View {
+        let store = Store(initialState: Feature.State()) {
+          Feature()
+        }
+        var body: some View {
+          Text(store.count.description)
+        }
       }
-      var body: some View {
-        Text(store.count.description)
-      }
+      #if DEBUG && !os(visionOS)
+        XCTExpectFailure {
+          render(FeatureView())
+        } issueMatcher: {
+          $0.compactDescription.contains("Perceptible state was accessed")
+        }
+      #endif
     }
-    #if DEBUG && !os(visionOS)
-      XCTExpectFailure {
-        render(FeatureView())
-      } issueMatcher: {
-        $0.compactDescription.contains("Perceptible state was accessed")
-      }
-    #endif
-  }
+  #endif
 
   @MainActor
   func testPerceptionCheck_AccessStateWithTracking() {
@@ -111,12 +108,5 @@ private struct Feature {
       state.count += 1
       return .none
     }
-  }
-}
-
-// NB: Workaround to XCTest ignoring `@available(...)` attributes.
-private func checkAvailability() throws {
-  guard #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) else {
-    throw XCTSkip("Requires iOS 16, macOS 13, tvOS 16, or watchOS 9")
   }
 }

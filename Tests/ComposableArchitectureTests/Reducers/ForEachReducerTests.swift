@@ -70,153 +70,151 @@ final class ForEachReducerTests: BaseTCATestCase {
 
   @available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
   func testAutomaticEffectCancellation() async {
-    if #available(iOS 16, macOS 13, tvOS 16, watchOS 9, *) {
-      struct Timer: Reducer {
-        struct State: Equatable, Identifiable {
-          let id: UUID
-          var elapsed = 0
-        }
-        enum Action: Equatable {
-          case startButtonTapped
-          case tick
-        }
-        @Dependency(\.continuousClock) var clock
-        var body: some Reducer<State, Action> {
-          Reduce { state, action in
-            switch action {
-            case .startButtonTapped:
-              return .run { send in
-                for await _ in self.clock.timer(interval: .seconds(1)) {
-                  await send(.tick)
-                }
+    struct Timer: Reducer {
+      struct State: Equatable, Identifiable {
+        let id: UUID
+        var elapsed = 0
+      }
+      enum Action: Equatable {
+        case startButtonTapped
+        case tick
+      }
+      @Dependency(\.continuousClock) var clock
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          switch action {
+          case .startButtonTapped:
+            return .run { send in
+              for await _ in self.clock.timer(interval: .seconds(1)) {
+                await send(.tick)
               }
-            case .tick:
-              state.elapsed += 1
-              return .none
             }
+          case .tick:
+            state.elapsed += 1
+            return .none
           }
         }
       }
-      struct Timers: Reducer {
-        struct State: Equatable {
-          var timers: IdentifiedArrayOf<Timer.State> = []
-        }
-        enum Action: Equatable {
-          case addTimerButtonTapped
-          case removeLastTimerButtonTapped
-          case timers(id: Timer.State.ID, action: Timer.Action)
-        }
-        @Dependency(\.uuid) var uuid
-        var body: some ReducerOf<Self> {
-          Reduce { state, action in
-            switch action {
-            case .addTimerButtonTapped:
-              state.timers.append(Timer.State(id: self.uuid()))
-              return .none
-            case .removeLastTimerButtonTapped:
-              state.timers.removeLast()
-              return .none
-            case .timers:
-              return .none
-            }
+    }
+    struct Timers: Reducer {
+      struct State: Equatable {
+        var timers: IdentifiedArrayOf<Timer.State> = []
+      }
+      enum Action: Equatable {
+        case addTimerButtonTapped
+        case removeLastTimerButtonTapped
+        case timers(id: Timer.State.ID, action: Timer.Action)
+      }
+      @Dependency(\.uuid) var uuid
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .addTimerButtonTapped:
+            state.timers.append(Timer.State(id: self.uuid()))
+            return .none
+          case .removeLastTimerButtonTapped:
+            state.timers.removeLast()
+            return .none
+          case .timers:
+            return .none
           }
-          .forEach(\.timers, action: /Action.timers) {
-            Timer()
-          }
+        }
+        .forEach(\.timers, action: /Action.timers) {
+          Timer()
         }
       }
+    }
 
-      let clock = TestClock()
-      let store = await TestStore(initialState: Timers.State()) {
-        Timers()
-      } withDependencies: {
-        $0.uuid = .incrementing
-        $0.continuousClock = clock
-      }
-      await store.send(.addTimerButtonTapped) {
-        $0.timers = [
-          Timer.State(id: UUID(0))
-        ]
-      }
-      await store.send(
-        .timers(
-          id: UUID(0),
-          action: .startButtonTapped
-        )
+    let clock = TestClock()
+    let store = await TestStore(initialState: Timers.State()) {
+      Timers()
+    } withDependencies: {
+      $0.uuid = .incrementing
+      $0.continuousClock = clock
+    }
+    await store.send(.addTimerButtonTapped) {
+      $0.timers = [
+        Timer.State(id: UUID(0))
+      ]
+    }
+    await store.send(
+      .timers(
+        id: UUID(0),
+        action: .startButtonTapped
       )
-      await clock.advance(by: .seconds(2))
-      await store.receive(
-        .timers(
-          id: UUID(0),
-          action: .tick
-        )
-      ) {
-        $0.timers[0].elapsed = 1
-      }
-      await store.receive(
-        .timers(
-          id: UUID(0),
-          action: .tick
-        )
-      ) {
-        $0.timers[0].elapsed = 2
-      }
-      await store.send(.addTimerButtonTapped) {
-        $0.timers = [
-          Timer.State(
-            id: UUID(0), elapsed: 2),
-          Timer.State(id: UUID(1)),
-        ]
-      }
-      await clock.advance(by: .seconds(1))
-      await store.receive(
-        .timers(
-          id: UUID(0),
-          action: .tick
-        )
-      ) {
-        $0.timers[0].elapsed = 3
-      }
-      await store.send(
-        .timers(
-          id: UUID(1),
-          action: .startButtonTapped
-        )
+    )
+    await clock.advance(by: .seconds(2))
+    await store.receive(
+      .timers(
+        id: UUID(0),
+        action: .tick
       )
-      await clock.advance(by: .seconds(1))
-      await store.receive(
-        .timers(
-          id: UUID(0),
-          action: .tick
-        )
-      ) {
-        $0.timers[0].elapsed = 4
-      }
-      await store.receive(
-        .timers(
-          id: UUID(1),
-          action: .tick
-        )
-      ) {
-        $0.timers[1].elapsed = 1
-      }
-      await store.send(.removeLastTimerButtonTapped) {
-        $0.timers = [
-          Timer.State(id: UUID(0), elapsed: 4)
-        ]
-      }
-      await clock.advance(by: .seconds(1))
-      await store.receive(
-        .timers(
-          id: UUID(0),
-          action: .tick
-        )
-      ) {
-        $0.timers[0].elapsed = 5
-      }
-      await store.send(.removeLastTimerButtonTapped) {
-        $0.timers = []
-      }
+    ) {
+      $0.timers[0].elapsed = 1
+    }
+    await store.receive(
+      .timers(
+        id: UUID(0),
+        action: .tick
+      )
+    ) {
+      $0.timers[0].elapsed = 2
+    }
+    await store.send(.addTimerButtonTapped) {
+      $0.timers = [
+        Timer.State(
+          id: UUID(0), elapsed: 2),
+        Timer.State(id: UUID(1)),
+      ]
+    }
+    await clock.advance(by: .seconds(1))
+    await store.receive(
+      .timers(
+        id: UUID(0),
+        action: .tick
+      )
+    ) {
+      $0.timers[0].elapsed = 3
+    }
+    await store.send(
+      .timers(
+        id: UUID(1),
+        action: .startButtonTapped
+      )
+    )
+    await clock.advance(by: .seconds(1))
+    await store.receive(
+      .timers(
+        id: UUID(0),
+        action: .tick
+      )
+    ) {
+      $0.timers[0].elapsed = 4
+    }
+    await store.receive(
+      .timers(
+        id: UUID(1),
+        action: .tick
+      )
+    ) {
+      $0.timers[1].elapsed = 1
+    }
+    await store.send(.removeLastTimerButtonTapped) {
+      $0.timers = [
+        Timer.State(id: UUID(0), elapsed: 4)
+      ]
+    }
+    await clock.advance(by: .seconds(1))
+    await store.receive(
+      .timers(
+        id: UUID(0),
+        action: .tick
+      )
+    ) {
+      $0.timers[0].elapsed = 5
+    }
+    await store.send(.removeLastTimerButtonTapped) {
+      $0.timers = []
     }
   }
 }

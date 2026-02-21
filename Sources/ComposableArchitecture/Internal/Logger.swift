@@ -11,7 +11,6 @@ public final class Logger {
   public var isEnabled = false
   @Published public var logs: [String] = []
   #if DEBUG
-    @available(iOS 14, macOS 11, tvOS 14, watchOS 7, *)
     var logger: os.Logger {
       os.Logger(subsystem: "composable-architecture", category: "store-events")
     }
@@ -21,9 +20,7 @@ public final class Logger {
       if isRunningForPreviews {
         print("\(string)")
       } else {
-        if #available(iOS 14, macOS 11, tvOS 14, watchOS 7, *) {
-          self.logger.log(level: level, "\(string)")
-        }
+        self.logger.log(level: level, "\(string)")
       }
       self.logs.append(string)
     }

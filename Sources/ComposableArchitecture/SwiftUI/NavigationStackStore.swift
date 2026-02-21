@@ -28,7 +28,6 @@ import SwiftUI
   message:
     "Use 'NavigationStack.init(path:)' with a store scoped from observable state, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Replacing-NavigationStackStore-with-NavigationStack]"
 )
-@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
 public struct NavigationStackStore<State, Action, Root: View, Destination: View>: View {
   private let root: Root
   private let destination: (StackState<State>.Component) -> Destination

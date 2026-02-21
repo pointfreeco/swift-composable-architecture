@@ -496,7 +496,7 @@ public final class TestStore<State: Equatable, Action> {
   /// This is the default timeout used in all methods that take an optional timeout, such as
   /// ``receive(_:timeout:assert:fileID:file:line:column:)-8zqxk`` and
   /// ``finish(timeout:fileID:file:line:column:)-klnc``.
-  public var timeout: UInt64
+  public var timeout: Duration
 
   private let fileID: StaticString
   private let filePath: StaticString
@@ -551,7 +551,7 @@ public final class TestStore<State: Equatable, Action> {
     self.column = column
     self.reducer = reducer
     self.store = Store(initialState: reducer.state) { reducer }
-    self.timeout = 1 * NSEC_PER_SEC
+    self.timeout = .seconds(1)
     self.sharedChangeTracker = sharedChangeTracker
     self.useMainSerialExecutor = true
     self.reducer.store = self
@@ -567,39 +567,8 @@ public final class TestStore<State: Equatable, Action> {
   ///   - filePath: The filePath.
   ///   - line: The line.
   ///   - column: The column.
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func finish(
-    timeout duration: Duration,
-    fileID: StaticString = #fileID,
-    file filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) async {
-    await self.finish(
-      timeout: duration.nanoseconds,
-      fileID: fileID,
-      file: filePath,
-      line: line,
-      column: column
-    )
-  }
-
-  /// Suspends until all in-flight effects have finished, or until it times out.
-  ///
-  /// Can be used to assert that all effects have finished.
-  ///
-  /// > Important: `TestStore.finish()` should only be called once per test store, at the end of the
-  /// > test. Interacting with a finished test store is undefined.
-  ///
-  /// - Parameters:
-  ///   - nanoseconds: The amount of time to wait before asserting.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
-  @_disfavoredOverload
-  public func finish(
-    timeout nanoseconds: UInt64? = nil,
+    timeout duration: Duration? = nil,
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -607,14 +576,15 @@ public final class TestStore<State: Equatable, Action> {
   ) async {
     self.assertNoReceivedActions(fileID: fileID, filePath: filePath, line: line, column: column)
     Task.cancel(id: OnFirstAppearID())
-    let nanoseconds = nanoseconds ?? self.timeout
-    let start = DispatchTime.now().uptimeNanoseconds
+    let duration = duration ?? self.timeout
+    let clock = ContinuousClock()
+    let deadline = clock.now.advanced(by: duration)
     await Task.megaYield()
     while !self.reducer.inFlightEffects.isEmpty {
-      guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
+      guard clock.now < deadline
       else {
         let timeoutMessage =
-          nanoseconds != self.timeout
+          duration != self.timeout
           ? #"try increasing the duration of this assertion's "timeout""#
           : #"configure this assertion with an explicit "timeout""#
         let suggestion = """
@@ -630,7 +600,7 @@ public final class TestStore<State: Equatable, Action> {
         reportIssueHelper(
           """
           Expected effects to finish, but there are still effects in-flight\
-          \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
+          \(duration > .zero ? " after \(duration)" : "").
 
           \(suggestion)
           """,
@@ -1350,19 +1320,18 @@ extension TestStore where Action: Equatable {
   ///   - filePath: The filePath.
   ///   - line: The line.
   ///   - column: The column.
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive(
     _ expectedAction: Action,
-    timeout duration: Duration,
+    timeout duration: Duration? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await self.receive(
+    await self._receiveExpectedAction(
       expectedAction,
-      timeout: duration.nanoseconds,
+      timeout: duration,
       assert: updateStateToExpectedResult,
       fileID: fileID,
       file: filePath,
@@ -1371,43 +1340,9 @@ extension TestStore where Action: Equatable {
     )
   }
 
-  /// Asserts an action was received from an effect and asserts how the state changes.
-  ///
-  /// When an effect is executed in your feature and sends an action back into the system, you can
-  /// use this method to assert that fact, and further assert how state changes after the effect
-  /// action is received:
-  ///
-  /// ```swift
-  /// await store.send(.buttonTapped)
-  /// await store.receive(.response(.success(42)) {
-  ///   $0.count = 42
-  /// }
-  /// ```
-  ///
-  /// Due to the variability of concurrency in Swift, sometimes a small amount of time needs to pass
-  /// before effects execute and send actions, and that is why this method suspends. The default
-  /// time waited is very small, and typically it is enough so you should be controlling your
-  /// dependencies so that they do not wait for real world time to pass (see
-  /// <doc:DependencyManagement> for more information on how to do that).
-  ///
-  /// To change the amount of time this method waits for an action, pass an explicit `timeout`
-  /// argument, or set the ``timeout`` on the ``TestStore``.
-  ///
-  /// - Parameters:
-  ///   - expectedAction: An action expected from an effect.
-  ///   - nanoseconds: The amount of time to wait for the expected action.
-  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
-  ///     the store. The mutable state sent to this closure must be modified to match the state of
-  ///     the store after processing the given action. Do not provide a closure if no change is
-  ///     expected.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
-  @_disfavoredOverload
-  public func receive(
+  private func _receiveExpectedAction(
     _ expectedAction: Action,
-    timeout nanoseconds: UInt64? = nil,
+    timeout duration: Duration? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
@@ -1431,7 +1366,7 @@ extension TestStore where Action: Equatable {
       }
       await self.receiveAction(
         matching: { expectedAction == $0 },
-        timeout: nanoseconds,
+        timeout: duration,
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -1576,19 +1511,18 @@ extension TestStore {
   ///   - line: The line.
   ///   - column: The column.
   @_disfavoredOverload
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive(
     _ isMatching: (_ action: Action) -> Bool,
-    timeout duration: Duration,
+    timeout duration: Duration? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await self.receive(
+    await self._receiveMatchingAction(
       isMatching,
-      timeout: duration.nanoseconds,
+      timeout: duration,
       assert: updateStateToExpectedResult,
       fileID: fileID,
       file: filePath,
@@ -1597,47 +1531,9 @@ extension TestStore {
     )
   }
 
-  /// Asserts an action was received from an effect that matches a predicate, and asserts how the
-  /// state changes.
-  ///
-  /// This method is similar to ``receive(_:timeout:assert:fileID:file:line:column:)-8zqxk``, except
-  /// it allows you to assert that an action was received that matches a predicate instead of a case
-  /// key path:
-  ///
-  /// ```swift
-  /// await store.send(.buttonTapped)
-  /// await store.receive {
-  ///   guard case .response(.success) = $0 else { return false }
-  ///   return true
-  /// } assert: {
-  ///   store.count = 42
-  /// }
-  /// ```
-  ///
-  /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/off``, a grey
-  /// information box will show next to the `store.receive` line in Xcode letting you know what data
-  /// was in the effect that you chose not to assert on.
-  ///
-  /// If you only want to check that a particular action case was received, then you might find the
-  /// ``receive(_:timeout:assert:fileID:file:line:column:)-53wic`` overload of this method more
-  /// useful.
-  ///
-  /// - Parameters:
-  ///   - isMatching: A closure that attempts to match an action. If it returns `false`, a test
-  ///     failure is reported.
-  ///   - nanoseconds: The amount of time to wait for the expected action.
-  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
-  ///     the store. The mutable state sent to this closure must be modified to match the state of
-  ///     the store after processing the given action. Do not provide a closure if no change is
-  ///     expected.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
-  @_disfavoredOverload
-  public func receive(
+  private func _receiveMatchingAction(
     _ isMatching: (_ action: Action) -> Bool,
-    timeout nanoseconds: UInt64? = nil,
+    timeout duration: Duration? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
@@ -1661,7 +1557,7 @@ extension TestStore {
       }
       await self.receiveAction(
         matching: isMatching,
-        timeout: nanoseconds,
+        timeout: duration,
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -1670,213 +1566,6 @@ extension TestStore {
       _ = {
         self._receive(
           isMatching,
-          assert: updateStateToExpectedResult,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }()
-      await Task.megaYield()
-    }
-  }
-
-  /// Asserts an action was received matching a case path and asserts how the state changes.
-  ///
-  /// This method is similar to ``receive(_:timeout:assert:fileID:file:line:column:)-35638``, except
-  /// it allows you to assert that an action was received that matches a case key path instead of a
-  /// predicate.
-  ///
-  /// It can be useful to assert that a particular action was received without asserting on the data
-  /// inside the action. For example:
-  ///
-  /// ```swift
-  /// await store.receive(/Search.Action.searchResponse) {
-  ///   $0.results = [
-  ///     "CasePaths",
-  ///     "ComposableArchitecture",
-  ///     "IdentifiedCollections",
-  ///     "XCTestDynamicOverlay",
-  ///   ]
-  /// }
-  /// ```
-  ///
-  /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/off``, a grey
-  /// information box will show next to the `store.receive` line in Xcode letting you know what data
-  /// was in the effect that you chose not to assert on.
-  ///
-  /// - Parameters:
-  ///   - actionCase: A case path identifying the case of an action to enum to receive
-  ///   - nanoseconds: The amount of time to wait for the expected action.
-  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action to
-  ///     the store. The mutable state sent to this closure must be modified to match the state of
-  ///     the store after processing the given action. Do not provide a closure if no change is
-  ///     expected.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
-  @_disfavoredOverload
-  public func receive<Value>(
-    _ actionCase: CaseKeyPath<Action, Value>,
-    timeout nanoseconds: UInt64? = nil,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    fileID: StaticString = #fileID,
-    file filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) async {
-    await self.receive(
-      AnyCasePath(actionCase),
-      timeout: nanoseconds,
-      assert: updateStateToExpectedResult,
-      fileID: fileID,
-      file: filePath,
-      line: line,
-      column: column
-    )
-  }
-
-  /// Asserts an action was received matching a case path with a specific payload, and asserts how
-  /// the state changes.
-  ///
-  /// This method is similar to ``receive(_:timeout:assert:fileID:file:line:column:)-53wic``, except
-  /// it allows you to assert on the value inside the action too.
-  ///
-  /// It can be useful when asserting on delegate actions sent by a child feature:
-  ///
-  /// ```swift
-  /// await store.receive(\.delegate.success, "Hello!")
-  /// ```
-  ///
-  /// When the store's ``exhaustivity`` is set to anything other than ``Exhaustivity/off``, a grey
-  /// information box will show next to the `store.receive` line in Xcode letting you know what data
-  /// was in the effect that you chose not to assert on.
-  ///
-  /// - Parameters:
-  ///   - actionCase: A case path identifying the case of an action to enum to receive
-  ///   - value: The value to match in the action.
-  ///   - nanoseconds: The amount of time to wait for the expected action.
-  ///   - updateStateToExpectedResult: A closure that asserts state changed by sending the action
-  ///     to the store. The mutable state sent to this closure must be modified to match the state
-  ///     of the store after processing the given action. Do not provide a closure if no change is
-  ///     expected.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
-  @_disfavoredOverload
-  public func receive<Value: Equatable>(
-    _ actionCase: CaseKeyPath<Action, Value>,
-    _ value: Value,
-    timeout nanoseconds: UInt64? = nil,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    fileID: StaticString = #fileID,
-    file filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) async
-  where Action: CasePathable {
-    let actionCase = AnyCasePath(actionCase)
-    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
-      guard !self.reducer.inFlightEffects.isEmpty
-      else {
-        _ = {
-          self._receive(
-            actionCase,
-            value,
-            assert: updateStateToExpectedResult,
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-        }()
-        return
-      }
-      await self.receiveAction(
-        matching: { actionCase.extract(from: $0) != nil },
-        timeout: nanoseconds,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
-      _ = {
-        self._receive(
-          actionCase,
-          value,
-          assert: updateStateToExpectedResult,
-          fileID: fileID,
-          filePath: filePath,
-          line: line,
-          column: column
-        )
-      }()
-      await Task.megaYield()
-    }
-  }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @_disfavoredOverload
-  public func receive<Value>(
-    _ actionCase: AnyCasePath<Action, Value>,
-    timeout nanoseconds: UInt64? = nil,
-    assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
-    fileID: StaticString = #fileID,
-    file filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) async {
-    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
-      guard !self.reducer.inFlightEffects.isEmpty
-      else {
-        _ = {
-          self._receive(
-            actionCase,
-            assert: updateStateToExpectedResult,
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
-        }()
-        return
-      }
-      await self.receiveAction(
-        matching: { actionCase.extract(from: $0) != nil },
-        timeout: nanoseconds,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-      )
-      _ = {
-        self._receive(
-          actionCase,
           assert: updateStateToExpectedResult,
           fileID: fileID,
           filePath: filePath,
@@ -1924,10 +1613,9 @@ extension TestStore {
   ///   - line: The line.
   ///   - column: The column.
   @_disfavoredOverload
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func receive<Value>(
     _ actionCase: CaseKeyPath<Action, Value>,
-    timeout duration: Duration,
+    timeout duration: Duration? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
@@ -1974,11 +1662,10 @@ extension TestStore {
   ///   - line: The line.
   ///   - column: The column.
   @_disfavoredOverload
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-  public func receive<Value: Equatable & Sendable>(
-    _ actionCase: _SendableCaseKeyPath<Action, Value>,
+  public func receive<Value: Equatable>(
+    _ actionCase: CaseKeyPath<Action, Value>,
     _ value: Value,
-    timeout duration: Duration,
+    timeout duration: Duration? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
@@ -1986,54 +1673,74 @@ extension TestStore {
     column: UInt = #column
   ) async
   where Action: CasePathable {
-    await self.receive(
-      AnyCasePath(
-        embed: { actionCase($0) },
-        extract: { action in
-          action[case: actionCase].flatMap { $0 == value ? $0 : nil }
-        }
-      ),
-      timeout: duration,
-      assert: updateStateToExpectedResult,
-      fileID: fileID,
-      file: filePath,
-      line: line,
-      column: column
-    )
+    let actionCase = AnyCasePath(actionCase)
+    await _withIssueContext(fileID: fileID, filePath: filePath, line: line, column: column) {
+      guard !self.reducer.inFlightEffects.isEmpty
+      else {
+        _ = {
+          self._receive(
+            actionCase,
+            value,
+            assert: updateStateToExpectedResult,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+          )
+        }()
+        return
+      }
+      await self.receiveAction(
+        matching: { actionCase.extract(from: $0) != nil },
+        timeout: duration,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+      _ = {
+        self._receive(
+          actionCase,
+          value,
+          assert: updateStateToExpectedResult,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      }()
+      await Task.megaYield()
+    }
   }
 
   @_disfavoredOverload
   @available(
     iOS,
-    introduced: 16,
     deprecated: 9999,
     message:
       "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     macOS,
-    introduced: 13,
     deprecated: 9999,
     message:
       "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     tvOS,
-    introduced: 16,
     deprecated: 9999,
     message:
       "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   @available(
     watchOS,
-    introduced: 9,
     deprecated: 9999,
     message:
       "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   public func receive<Value>(
     _ actionCase: AnyCasePath<Action, Value>,
-    timeout duration: Duration,
+    timeout duration: Duration? = nil,
     assert updateStateToExpectedResult: ((_ state: inout State) throws -> Void)? = nil,
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
@@ -2057,7 +1764,7 @@ extension TestStore {
       }
       await self.receiveAction(
         matching: { actionCase.extract(from: $0) != nil },
-        timeout: duration.nanoseconds,
+        timeout: duration,
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -2187,16 +1894,17 @@ extension TestStore {
 
   private func receiveAction(
     matching predicate: (Action) -> Bool,
-    timeout nanoseconds: UInt64?,
+    timeout duration: Duration?,
     fileID: StaticString,
     filePath: StaticString,
     line: UInt,
     column: UInt
   ) async {
-    let nanoseconds = nanoseconds ?? self.timeout
+    let duration = duration ?? self.timeout
+    let clock = ContinuousClock()
+    let deadline = clock.now.advanced(by: duration)
 
     await Task.megaYield()
-    let start = DispatchTime.now().uptimeNanoseconds
     while !Task.isCancelled {
       await Task.detached(priority: .background) { await Task.yield() }.value
 
@@ -2209,7 +1917,7 @@ extension TestStore {
         else { return }
       }
 
-      guard start.distance(to: DispatchTime.now().uptimeNanoseconds) < nanoseconds
+      guard clock.now < deadline
       else {
         let suggestion: String
         if self.reducer.inFlightEffects.isEmpty {
@@ -2219,7 +1927,7 @@ extension TestStore {
             """
         } else {
           let timeoutMessage =
-            nanoseconds != self.timeout
+            duration != self.timeout
             ? #"try increasing the duration of this assertion's "timeout""#
             : #"configure this assertion with an explicit "timeout""#
           suggestion = """
@@ -2237,7 +1945,7 @@ extension TestStore {
           """
           Expected to receive \(self.exhaustivity == .on ? "an action" : "a matching action"), but \
           received none\
-          \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
+          \(duration > .zero ? " after \(duration)" : "").
 
           \(suggestion)
           """,
@@ -2699,9 +2407,9 @@ extension TestStore where Action: BindableAction, State == Action.State {
 /// See ``StoreTask`` for the analog provided to ``Store``.
 public struct TestStoreTask: Hashable, Sendable {
   fileprivate let rawValue: Task<Void, Never>?
-  fileprivate let timeout: UInt64
+  fileprivate let timeout: Duration
 
-  @_spi(Canary) public init(rawValue: Task<Void, Never>?, timeout: UInt64) {
+  @_spi(Canary) public init(rawValue: Task<Void, Never>?, timeout: Duration) {
     self.rawValue = rawValue
     self.timeout = timeout
   }
@@ -2734,46 +2442,20 @@ public struct TestStoreTask: Hashable, Sendable {
   ///   - filePath: The filePath.
   ///   - line: The line.
   ///   - column: The column.
-  @available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
   public func finish(
-    timeout duration: Duration,
+    timeout duration: Duration? = nil,
     fileID: StaticString = #fileID,
     file filePath: StaticString = #filePath,
     line: UInt = #line,
     column: UInt = #column
   ) async {
-    await self.finish(
-      timeout: duration.nanoseconds,
-      fileID: fileID,
-      file: filePath,
-      line: line,
-      column: column
-    )
-  }
-
-  /// Asserts the underlying task finished.
-  ///
-  /// - Parameters:
-  ///   - nanoseconds: The amount of time to wait before asserting.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
-  @_disfavoredOverload
-  public func finish(
-    timeout nanoseconds: UInt64? = nil,
-    fileID: StaticString = #fileID,
-    file filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) async {
-    let nanoseconds = nanoseconds ?? self.timeout
+    let duration = duration ?? self.timeout
     await Task.megaYield()
     do {
       try await withThrowingTaskGroup(of: Void.self) { group in
         group.addTask { await self.rawValue?.cancellableValue }
         group.addTask {
-          try await Task.sleep(nanoseconds: nanoseconds)
+          try await Task.sleep(for: duration)
           throw CancellationError()
         }
         try await group.next()
@@ -2781,7 +2463,7 @@ public struct TestStoreTask: Hashable, Sendable {
       }
     } catch {
       let timeoutMessage =
-        nanoseconds != self.timeout
+        duration != self.timeout
         ? #"try increasing the duration of this assertion's "timeout""#
         : #"configure this assertion with an explicit "timeout""#
       let suggestion = """
@@ -2798,7 +2480,7 @@ public struct TestStoreTask: Hashable, Sendable {
       reportIssue(
         """
         Expected task to finish, but it is still in-flight\
-        \(nanoseconds > 0 ? " after \(Double(nanoseconds)/Double(NSEC_PER_SEC)) seconds" : "").
+        \(duration > .zero ? " after \(duration)" : "").
 
         \(suggestion)
         """,
@@ -2932,14 +2614,6 @@ class TestReducer<State: Equatable, Action>: Reducer {
         }
       }
     }
-  }
-}
-
-@available(iOS 16, macOS 13, tvOS 16, watchOS 9, *)
-extension Duration {
-  fileprivate var nanoseconds: UInt64 {
-    UInt64(self.components.seconds) * NSEC_PER_SEC
-      + UInt64(self.components.attoseconds) / 1_000_000_000
   }
 }
 

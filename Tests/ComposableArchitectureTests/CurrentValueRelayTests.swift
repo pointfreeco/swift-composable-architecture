@@ -26,7 +26,6 @@
       _ = cancellable
     }
 
-    @available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
     func testConcurrentSendAndReceive() async {
       let subject = CurrentValueRelay(0)
       let values = LockIsolated<Set<Int>>([])
