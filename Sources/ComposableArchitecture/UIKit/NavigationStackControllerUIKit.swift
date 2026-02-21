@@ -23,6 +23,39 @@
     public convenience init<State, Action>(
       navigationBarClass: AnyClass? = nil,
       toolbarClass: AnyClass? = nil,
+      path: UIBindable<Store<StackState<State>, StackAction<State, Action>>>,
+      root: () -> UIViewController,
+      destination: @escaping (Store<State, Action>) -> UIViewController,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) {
+      self.init(
+        navigationBarClass: navigationBarClass,
+        toolbarClass: toolbarClass,
+        path: path[
+          fileID: _HashableStaticString(rawValue: fileID),
+          filePath: _HashableStaticString(rawValue: filePath),
+          line: line,
+          column: column
+        ],
+        root: root
+      )
+      _navigationDestination(
+        path: path.wrappedValue,
+        destination: destination,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+    
+    @_disfavoredOverload
+    public convenience init<State, Action>(
+      navigationBarClass: AnyClass? = nil,
+      toolbarClass: AnyClass? = nil,
       path: UIBinding<Store<StackState<State>, StackAction<State, Action>>>,
       root: () -> UIViewController,
       destination: @escaping (Store<State, Action>) -> UIViewController,
@@ -42,8 +75,26 @@
         ],
         root: root
       )
+      _navigationDestination(
+        path: path.wrappedValue,
+        destination: destination,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      )
+    }
+    
+    private func _navigationDestination<State, Action>(
+      path: Store<StackState<State>, StackAction<State, Action>>,
+      destination: @escaping (Store<State, Action>) -> UIViewController,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) {
       navigationDestination(for: StackState<State>.Component.self) { component in
-        let id = path.wrappedValue.id(
+        let id = path.id(
           state:
             \.[
               id: component.id,
@@ -72,7 +123,7 @@
             actionKeyPath: \.[id: component.id]
           )
         }
-        return destination(path.wrappedValue.scope(id: id, childCore: open(path.wrappedValue.core)))
+        return destination(path.scope(id: id, childCore: open(path.core)))
       }
     }
   }
