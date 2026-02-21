@@ -82,53 +82,6 @@ extension Reducer {
       column: column
     )
   }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @inlinable
-  @warn_unqualified_access
-  public func ifCaseLet<CaseState, CaseAction, Case: Reducer<CaseState, CaseAction>>(
-    _ toCaseState: AnyCasePath<State, CaseState>,
-    action toCaseAction: AnyCasePath<Action, CaseAction>,
-    @ReducerBuilder<CaseState, CaseAction> then case: () -> Case,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> some Reducer<State, Action> {
-    _IfCaseLetReducer(
-      parent: self,
-      child: `case`(),
-      toChildState: toCaseState,
-      toChildAction: toCaseAction,
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column
-    )
-  }
 }
 
 public struct _IfCaseLetReducer<Parent: Reducer, Child: Reducer>: Reducer {

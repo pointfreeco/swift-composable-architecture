@@ -374,55 +374,6 @@ extension Reducer {
       column: column
     )
   }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use the version of this operator with case key paths, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
-  )
-  @inlinable
-  @warn_unqualified_access
-  public func forEach<
-    DestinationState, DestinationAction, Destination: Reducer<DestinationState, DestinationAction>
-  >(
-    _ toStackState: WritableKeyPath<State, StackState<DestinationState>>,
-    action toStackAction: AnyCasePath<Action, StackAction<DestinationState, DestinationAction>>,
-    @ReducerBuilder<DestinationState, DestinationAction> destination: () -> Destination,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> some Reducer<State, Action> {
-    _StackReducer(
-      base: self,
-      toStackState: toStackState,
-      toStackAction: toStackAction,
-      destination: destination(),
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column
-    )
-  }
 }
 
 /// A convenience type alias for referring to a stack action of a given reducer's domain.

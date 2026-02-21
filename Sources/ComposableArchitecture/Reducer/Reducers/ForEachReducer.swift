@@ -139,61 +139,6 @@ extension Reducer {
       column: column
     )
   }
-
-  @available(
-    iOS,
-    deprecated: 9999,
-    message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message:
-      "Use a case key path to an 'IdentifiedAction', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4"
-  )
-  @inlinable
-  @warn_unqualified_access
-  public func forEach<
-    ElementState,
-    ElementAction,
-    ID: Hashable & Sendable,
-    Element: Reducer<ElementState, ElementAction>
-  >(
-    _ toElementsState: WritableKeyPath<State, IdentifiedArray<ID, ElementState>>,
-    action toElementAction: AnyCasePath<Action, (ID, ElementAction)>,
-    @ReducerBuilder<ElementState, ElementAction> element: () -> Element,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> some Reducer<State, Action> {
-    _ForEachReducer(
-      parent: self,
-      toElementsState: toElementsState,
-      toElementAction: .init(
-        embed: { toElementAction.embed($0) },
-        extract: { toElementAction.extract(from: $0) }
-      ),
-      element: element(),
-      fileID: fileID,
-      filePath: filePath,
-      line: line,
-      column: column
-    )
-  }
 }
 
 public struct _ForEachReducer<
