@@ -17,46 +17,8 @@ extension View {
     self._confirmationDialog(store: store, state: { $0 }, action: { $0 })
   }
 
-  /// Displays a dialog when then store's state becomes non-`nil`, and dismisses it when it becomes
-  /// `nil`.
-  ///
-  /// - Parameters:
-  ///   - store: A store that is focused on ``PresentationState`` and ``PresentationAction`` for a
-  ///     dialog.
-  ///   - toDestinationState: A transformation to extract dialog state from the presentation state.
-  ///   - fromDestinationAction: A transformation to embed dialog actions into the presentation
-  ///     action.
-  @available(
-    iOS, deprecated: 9999,
-    message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
-  )
-  @available(
-    macOS, deprecated: 9999,
-    message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
-  )
-  @available(
-    tvOS, deprecated: 9999,
-    message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
-  )
-  @available(
-    watchOS, deprecated: 9999,
-    message:
-      "Further scope the store into the 'state' and 'action' cases, instead. For more information, see the following article: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.5#Enum-driven-navigation-APIs"
-  )
   @preconcurrency @MainActor
-  public func confirmationDialog<State, Action, ButtonAction>(
-    store: Store<PresentationState<State>, PresentationAction<Action>>,
-    state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
-    action fromDestinationAction: @escaping (_ confirmationDialogAction: ButtonAction) -> Action
-  ) -> some View {
-    self._confirmationDialog(store: store, state: toDestinationState, action: fromDestinationAction)
-  }
-
-  @preconcurrency @MainActor
-  private func _confirmationDialog<State, Action, ButtonAction>(
+  func _confirmationDialog<State, Action, ButtonAction>(
     store: Store<PresentationState<State>, PresentationAction<Action>>,
     state toDestinationState: @escaping (_ state: State) -> ConfirmationDialogState<ButtonAction>?,
     action fromDestinationAction: @escaping (_ confirmationDialogAction: ButtonAction) -> Action
