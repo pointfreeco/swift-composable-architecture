@@ -5,7 +5,193 @@
   import UIKit
 #endif
 
-// NB: Deprecated with 1.23.1:
+// NB: Deprecated with 1.24.0:
+
+@available(
+  *,
+  message:
+    "Use 'Result', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Moving-off-of-TaskResult"
+)
+public enum TaskResult<Success: Sendable>: Sendable {
+  case success(Success)
+  case failure(any Error)
+
+  @_transparent
+  public init(catching body: @Sendable () async throws -> Success) async {
+    do {
+      self = .success(try await body())
+    } catch {
+      self = .failure(error)
+    }
+  }
+
+  @inlinable
+  public init<Failure>(_ result: Result<Success, Failure>) {
+    switch result {
+    case .success(let value):
+      self = .success(value)
+    case .failure(let error):
+      self = .failure(error)
+    }
+  }
+
+  @inlinable
+  public var value: Success {
+    get throws {
+      switch self {
+      case .success(let value):
+        return value
+      case .failure(let error):
+        throw error
+      }
+    }
+  }
+
+  @inlinable
+  public func map<NewSuccess>(_ transform: (Success) -> NewSuccess) -> TaskResult<NewSuccess> {
+    switch self {
+    case .success(let value):
+      return .success(transform(value))
+    case .failure(let error):
+      return .failure(error)
+    }
+  }
+
+  @inlinable
+  public func flatMap<NewSuccess>(
+    _ transform: (Success) -> TaskResult<NewSuccess>
+  ) -> TaskResult<NewSuccess> {
+    switch self {
+    case .success(let value):
+      return transform(value)
+    case .failure(let error):
+      return .failure(error)
+    }
+  }
+}
+
+extension TaskResult: CasePathable {
+  public static var allCasePaths: AllCasePaths {
+    AllCasePaths()
+  }
+
+  public struct AllCasePaths {
+    public var success: AnyCasePath<TaskResult, Success> {
+      AnyCasePath(
+        embed: { .success($0) },
+        extract: {
+          guard case .success(let value) = $0 else { return nil }
+          return value
+        }
+      )
+    }
+
+    public var failure: AnyCasePath<TaskResult, any Error> {
+      AnyCasePath(
+        embed: { .failure($0) },
+        extract: {
+          guard case .failure(let value) = $0 else { return nil }
+          return value
+        }
+      )
+    }
+  }
+}
+
+extension Result where Success: Sendable, Failure == any Error {
+  @available(
+    *,
+    message:
+      "Use 'Result', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Moving-off-of-TaskResult"
+  )
+  @inlinable
+  public init(_ result: TaskResult<Success>) {
+    switch result {
+    case .success(let value):
+      self = .success(value)
+    case .failure(let error):
+      self = .failure(error)
+    }
+  }
+}
+
+enum TaskResultDebugging {
+  @TaskLocal static var emitRuntimeWarnings = true
+}
+
+extension TaskResult: Equatable where Success: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    switch (lhs, rhs) {
+    case (.success(let lhs), .success(let rhs)):
+      return lhs == rhs
+    case (.failure(let lhs), .failure(let rhs)):
+      return _isEqual(lhs, rhs)
+        ?? {
+          #if DEBUG
+            let lhsType = type(of: lhs)
+            if TaskResultDebugging.emitRuntimeWarnings, lhsType == type(of: rhs) {
+              let lhsTypeName = typeName(lhsType)
+              reportIssue(
+                """
+                "\(lhsTypeName)" is not equatable.
+
+                To test two values of this type, it must conform to the "Equatable" protocol. For \
+                example:
+
+                    extension \(lhsTypeName): Equatable {}
+
+                See the documentation of "TaskResult" for more information.
+                """
+              )
+            }
+          #endif
+          return false
+        }()
+    default:
+      return false
+    }
+  }
+}
+
+extension TaskResult: Hashable where Success: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    switch self {
+    case .success(let value):
+      hasher.combine(value)
+      hasher.combine(0)
+    case .failure(let error):
+      if let error = (error as Any) as? AnyHashable {
+        hasher.combine(error)
+        hasher.combine(1)
+      } else {
+        #if DEBUG
+          if TaskResultDebugging.emitRuntimeWarnings {
+            let errorType = typeName(type(of: error))
+            reportIssue(
+              """
+              "\(errorType)" is not hashable.
+
+              To hash a value of this type, it must conform to the "Hashable" protocol. For example:
+
+                  extension \(errorType): Hashable {}
+
+              See the documentation of "TaskResult" for more information.
+              """
+            )
+          }
+        #endif
+      }
+    }
+  }
+}
+
+extension TaskResult {
+  // NB: For those that try to interface with `TaskResult` using `Result`'s old API.
+  @available(*, unavailable, renamed: "value")
+  public func get() throws -> Success {
+    try self.value
+  }
+}
 
 extension TestStore {
   @available(

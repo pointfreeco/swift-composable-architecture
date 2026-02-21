@@ -8,7 +8,6 @@
 - ``run(priority:operation:catch:fileID:filePath:line:column:)``
 - ``send(_:)``
 - ``EffectOf``
-- ``TaskResult``
 
 ### Cancellation
 
@@ -37,3 +36,7 @@
 - ``publisher(_:)``
 - ``debounce(id:for:scheduler:options:)``
 - ``throttle(id:for:scheduler:latest:)``
+
+### Deprecations
+
+- <doc:EffectDeprecations>

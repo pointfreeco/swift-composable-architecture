@@ -60,7 +60,7 @@ struct NavigationID: Hashable, @unchecked Sendable {
 
     func hash(into hasher: inout Hasher) {
       switch self {
-      case .casePath(root: let root, value: let value):
+      case .casePath(let root, let value):
         hasher.combine(0)
         hasher.combine(ObjectIdentifier(root))
         hasher.combine(ObjectIdentifier(value))
