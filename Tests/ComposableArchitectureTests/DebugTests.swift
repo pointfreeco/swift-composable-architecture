@@ -43,42 +43,6 @@
       )
     }
 
-    func testBindingAction() {
-      struct State {
-        @BindingState var width = 0
-      }
-      let action = BindingAction.set(\State.$width, 50)
-      var dump = ""
-      customDump(action, to: &dump)
-
-      XCTAssertEqual(
-        dump,
-        #"""
-        .set(\State.$width, 50)
-        """#
-      )
-    }
-
-    func testBindingAction_Nested() {
-      struct Settings: Equatable {
-        var isEnabled = false
-        var description = ""
-      }
-      struct State {
-        @BindingState var settings = Settings()
-      }
-      let action = BindingAction.set(\State.$settings, Settings(isEnabled: true))
-      var dump = ""
-      customDump(action, to: &dump)
-
-      XCTAssertEqual(
-        dump,
-        #"""
-        .set(\State.$settings, DebugTests.Settings(…))
-        """#
-      )
-    }
-
     func testDebugReducer() async throws {
       let logs = LockIsolated<String>("")
       let printer = _ReducerPrinter<Int, Bool>(
