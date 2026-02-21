@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import XCTest
 
-@available(*, deprecated, message: "TODO: Update to use case pathable syntax with Swift 5.9")
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax")
 final class IfCaseLetReducerTests: BaseTCATestCase {
   func testChildAction() async {
     struct SomeError: Error, Equatable {}
