@@ -25,9 +25,9 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   private let _state: CurrentValueRelay<ViewState>
 
   private var viewCancellable: AnyCancellable?
-#if DEBUG
-  private let storeTypeName: String
-#endif
+  #if DEBUG
+    private let storeTypeName: String
+  #endif
   let store: Store<ViewState, ViewAction>
 
   public convenience init<State>(
@@ -49,10 +49,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     send fromViewAction: @escaping (_ viewAction: ViewAction) -> Action,
     removeDuplicates isDuplicate: @escaping (_ lhs: ViewState, _ rhs: ViewState) -> Bool
   ) {
-#if DEBUG
-    self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
-    Logger.shared.log("View\(self.storeTypeName).init")
-#endif
+    #if DEBUG
+      self.storeTypeName = ComposableArchitecture.storeTypeName(of: store)
+      Logger.shared.log("View\(self.storeTypeName).init")
+    #endif
     self.store = store._scope(state: toViewState, action: fromViewAction)
     self._state = CurrentValueRelay(self.store.withState { $0 })
     self.viewCancellable = self.store.core.didSet
@@ -66,10 +66,10 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
   }
 
   init(_ viewStore: ViewStore<ViewState, ViewAction>) {
-#if DEBUG
-    self.storeTypeName = viewStore.storeTypeName
-    Logger.shared.log("View\(self.storeTypeName).init")
-#endif
+    #if DEBUG
+      self.storeTypeName = viewStore.storeTypeName
+      Logger.shared.log("View\(self.storeTypeName).init")
+    #endif
     self.store = viewStore.store
     self._state = viewStore._state
     self.viewCancellable = viewStore.objectWillChange.sink { [weak self] in
@@ -78,14 +78,14 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
     }
   }
 
-#if DEBUG
-  deinit {
-    guard Thread.isMainThread else { return }
-    MainActor.assumeIsolated {
-      Logger.shared.log("View\(self.storeTypeName).deinit")
+  #if DEBUG
+    deinit {
+      guard Thread.isMainThread else { return }
+      MainActor.assumeIsolated {
+        Logger.shared.log("View\(self.storeTypeName).deinit")
+      }
     }
-  }
-#endif
+  #endif
 
   public var publisher: StorePublisher<ViewState> {
     StorePublisher(store: self, upstream: self._state)
@@ -216,16 +216,16 @@ public final class ViewStore<ViewState, ViewAction>: ObservableObject {
 
 @available(
   *,
-   deprecated,
-   message:
+  deprecated,
+  message:
     "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 public typealias ViewStoreOf<R: Reducer> = ViewStore<R.State, R.Action>
 
 @available(
   *,
-   deprecated,
-   message:
+  deprecated,
+  message:
     "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 extension ViewStore where ViewState: Equatable {
@@ -247,8 +247,8 @@ extension ViewStore where ViewState: Equatable {
 
 @available(
   *,
-   deprecated,
-   message:
+  deprecated,
+  message:
     "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 extension ViewStore {
@@ -289,8 +289,8 @@ extension ViewStore {
 
 @available(
   *,
-   deprecated,
-   message:
+  deprecated,
+  message:
     "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
 )
 extension ViewStore where ViewState: Equatable {
