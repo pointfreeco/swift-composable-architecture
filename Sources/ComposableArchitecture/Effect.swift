@@ -280,12 +280,23 @@ extension Effect {
     ):
       return Self(
         operation: .run { send in
-          await withTaskGroup(of: Void.self) { group in
-            group.addTask(name: lhsName, priority: lhsPriority) {
-              await lhsOperation(send)
+          if #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) {
+            await withDiscardingTaskGroup { group in
+              group.addTask(name: lhsName, priority: lhsPriority) {
+                await lhsOperation(send)
+              }
+              group.addTask(name: rhsName, priority: rhsPriority) {
+                await rhsOperation(send)
+              }
             }
-            group.addTask(name: rhsName, priority: rhsPriority) {
-              await rhsOperation(send)
+          } else {
+            await withTaskGroup(of: Void.self) { group in
+              group.addTask(name: lhsName, priority: lhsPriority) {
+                await lhsOperation(send)
+              }
+              group.addTask(name: rhsName, priority: rhsPriority) {
+                await rhsOperation(send)
+              }
             }
           }
         }
