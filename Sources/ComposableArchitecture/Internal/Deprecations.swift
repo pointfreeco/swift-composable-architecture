@@ -2172,8 +2172,8 @@ extension BindingReducer {
   @inlinable
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Use the version of this API that takes a case key path, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
   )
   public init(action toViewAction: @escaping (_ action: Action) -> ViewAction?) {
