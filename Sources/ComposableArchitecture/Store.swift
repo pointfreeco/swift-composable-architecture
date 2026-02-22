@@ -307,7 +307,7 @@ public final class Store<State, Action>: _Store {
   @_spi(Internals)
   @_disfavoredOverload
   public func send(_ action: Action) -> Task<Void, Never>? {
-    core.send(action)
+    core.send(action, origin: .store)
   }
 
   private init(core: some Core<State, Action>, scopeID: AnyHashable?, parent: (any _Store)?) {

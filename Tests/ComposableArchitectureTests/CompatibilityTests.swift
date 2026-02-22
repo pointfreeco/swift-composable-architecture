@@ -96,7 +96,11 @@ final class CompatibilityTests: BaseTCATestCase {
     viewStore.publisher
       .sink { value in
         if value == 1 {
-          viewStore.send(0)
+          XCTExpectFailure {
+            viewStore.send(0)
+          } issueMatcher: {
+            $0.compactDescription.contains("Reentrant actions are undefined")
+          }
         }
       }
       .store(in: &cancellables)

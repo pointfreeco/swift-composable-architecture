@@ -518,7 +518,11 @@ final class StoreTests: BaseTCATestCase {
 
     XCTAssertEqual(handledActions, [])
 
-    _ = ViewStore(parentStore, observe: { $0 }).send(.button)
+    XCTExpectFailure {
+      _ = ViewStore(parentStore, observe: { $0 }).send(.button)
+    } issueMatcher: {
+      $0.compactDescription.contains("Reentrant actions are undefined")
+    }
     XCTAssertEqual(
       handledActions,
       [

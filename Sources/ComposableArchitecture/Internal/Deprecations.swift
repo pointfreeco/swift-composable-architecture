@@ -551,7 +551,9 @@ private final class _IfLetCore<Base: Core<Wrapped?, Action>, Wrapped, Action>: C
     self.base = base
   }
   var state: Base.State { base.state }
-  func send(_ action: Action) -> Task<Void, Never>? { base.send(action) }
+  func send(_ action: Action, origin: Origin) -> Task<Void, Never>? {
+    base.send(action, origin: origin)
+  }
   var canStoreCacheChildren: Bool { base.canStoreCacheChildren }
   var didSet: CurrentValueRelay<Void> { base.didSet }
   var isInvalid: Bool { state == nil || base.isInvalid }
@@ -1499,8 +1501,8 @@ final class PresentationCore<
   var state: Base.State {
     base.state
   }
-  func send(_ action: Base.Action) -> Task<Void, Never>? {
-    base.send(action)
+  func send(_ action: Base.Action, origin: Origin) -> Task<Void, Never>? {
+    base.send(action, origin: origin)
   }
   var canStoreCacheChildren: Bool { base.canStoreCacheChildren }
   var didSet: CurrentValueRelay<Void> { base.didSet }
@@ -1966,8 +1968,8 @@ private final class NavigationLinkCore<
   var state: Base.State {
     base.state
   }
-  func send(_ action: Base.Action) -> Task<Void, Never>? {
-    base.send(action)
+  func send(_ action: Base.Action, origin: Origin) -> Task<Void, Never>? {
+    base.send(action, origin: origin)
   }
   var canStoreCacheChildren: Bool { base.canStoreCacheChildren }
   var didSet: CurrentValueRelay<Void> { base.didSet }

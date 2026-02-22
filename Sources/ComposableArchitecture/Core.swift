@@ -1,12 +1,17 @@
 import Combine
 import Foundation
 
+enum Origin {
+  case effect
+  case store
+}
+
 @MainActor
 protocol Core<State, Action>: AnyObject, Sendable {
   associatedtype State
   associatedtype Action
   var state: State { get }
-  func send(_ action: Action) -> Task<Void, Never>?
+  func send(_ action: Action, origin: Origin) -> Task<Void, Never>?
 
   var canStoreCacheChildren: Bool { get }
   var didSet: CurrentValueRelay<Void> { get }
@@ -20,7 +25,7 @@ final class InvalidCore<State, Action>: Core {
     get { fatalError() }
     set { fatalError() }
   }
-  func send(_ action: Action) -> Task<Void, Never>? { nil }
+  func send(_ action: Action, origin: Origin) -> Task<Void, Never>? { nil }
 
   @inlinable
   @inline(__always)
@@ -60,18 +65,30 @@ final class RootCore<Root: Reducer>: Core {
     self.state = initialState
     self.reducer = reducer
   }
-  func send(_ action: Root.Action) -> Task<Void, Never>? {
+  func send(_ action: Root.Action, origin: Origin) -> Task<Void, Never>? {
     #if DEBUG
       _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-        _send(action)
+        _send(action, origin: origin)
       }
     #else
-      _send(action)
+      _send(action, origin: origin)
     #endif
   }
-  private func _send(_ action: Root.Action) -> Task<Void, Never>? {
+  private func _send(_ action: Root.Action, origin: Origin) -> Task<Void, Never>? {
     self.bufferedActions.append(action)
-    guard !self.isSending else { return nil }
+    guard !self.isSending else {
+      if origin == .store {
+        reportIssue(
+          """
+          Sent '\(debugCaseOutput(action))' while an action was being processed.
+
+          Reentrant actions are undefined and will be a precondition failure in a future version \
+          of the library.
+          """
+        )
+      }
+      return nil
+    }
 
     self.isSending = true
     var currentState = self.state
@@ -84,7 +101,8 @@ final class RootCore<Root: Reducer>: Core {
       self.isSending = false
       if !self.bufferedActions.isEmpty {
         if let task = self.send(
-          self.bufferedActions.removeLast()
+          self.bufferedActions.removeLast(),
+          origin: .effect
         ) {
           tasks.withValue { $0.append(task) }
         }
@@ -117,7 +135,7 @@ final class RootCore<Root: Reducer>: Core {
               receiveValue: { [weak self] effectAction in
                 guard let self else { return }
                 if let task = continuation.yield({
-                  self.send(effectAction)
+                  self.send(effectAction, origin: .effect)
                 }) {
                   tasks.withValue { $0.append(task) }
                 }
@@ -164,7 +182,7 @@ final class RootCore<Root: Reducer>: Core {
                   )
                 }
                 if let task = continuation.yield({
-                  self?.send(effectAction)
+                  self?.send(effectAction, origin: .effect)
                 }) {
                   tasks.withValue { $0.append(task) }
                 }
@@ -230,8 +248,8 @@ final class ScopedCore<Base: Core, State, Action>: Core {
   }
   @inlinable
   @inline(__always)
-  func send(_ action: Action) -> Task<Void, Never>? {
-    base.send(actionKeyPath(action))
+  func send(_ action: Action, origin: Origin) -> Task<Void, Never>? {
+    base.send(actionKeyPath(action), origin: origin)
   }
   @inlinable
   @inline(__always)
@@ -294,11 +312,11 @@ final class IfLetCore<Base: Core, State, Action>: Core {
   }
   @inlinable
   @inline(__always)
-  func send(_ action: Action) -> Task<Void, Never>? {
+  func send(_ action: Action, origin: Origin) -> Task<Void, Never>? {
     if BindingLocal.isActive && isInvalid {
       return nil
     }
-    return base.send(actionKeyPath(action))
+    return base.send(actionKeyPath(action), origin: origin)
   }
   @inlinable
   @inline(__always)
@@ -350,8 +368,8 @@ final class ClosureScopedCore<Base: Core, State, Action>: Core {
   }
   @inlinable
   @inline(__always)
-  func send(_ action: Action) -> Task<Void, Never>? {
-    base.send(fromAction(action))
+  func send(_ action: Action, origin: Origin) -> Task<Void, Never>? {
+    base.send(fromAction(action), origin: origin)
   }
   @inlinable
   @inline(__always)
