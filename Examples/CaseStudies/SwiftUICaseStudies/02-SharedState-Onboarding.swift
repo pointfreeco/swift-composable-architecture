@@ -119,13 +119,14 @@ private struct BasicsStep: View {
   @Bindable var store: StoreOf<BasicsFeature>
 
   var body: some View {
+    @Binding(store.$signUpData) var signUpData
     Form {
       Section {
-        TextField("Email", text: $store.signUpData.email)
+        TextField("Email", text: $signUpData.email)
       }
       Section {
-        SecureField("Password", text: $store.signUpData.password)
-        SecureField("Password confirmation", text: $store.signUpData.passwordConfirmation)
+        SecureField("Password", text: $signUpData.password)
+        SecureField("Password confirmation", text: $signUpData.passwordConfirmation)
       }
     }
     .navigationTitle("Basics")
@@ -170,11 +171,12 @@ private struct PersonalInfoStep: View {
   @Bindable var store: StoreOf<PersonalInfoFeature>
 
   var body: some View {
+    @Binding(store.$signUpData) var signUpData
     Form {
       Section {
-        TextField("First name", text: $store.signUpData.firstName)
-        TextField("Last name", text: $store.signUpData.lastName)
-        TextField("Phone number", text: $store.signUpData.phoneNumber)
+        TextField("First name", text: $signUpData.firstName)
+        TextField("Last name", text: $signUpData.lastName)
+        TextField("Phone number", text: $signUpData.phoneNumber)
       }
     }
     .navigationTitle("Personal info")
@@ -254,13 +256,14 @@ private struct TopicsStep: View {
   @Bindable var store: StoreOf<TopicsFeature>
 
   var body: some View {
+    @Binding(store.$topics) var topics
     Form {
       Section {
         Text("Please choose all the topics you are interested in.")
       }
       Section {
         ForEach(SignUpData.Topic.allCases) { topic in
-          Toggle(isOn: $store.topics[contains: topic]) {
+          Toggle(isOn: $topics[contains: topic]) {
             Text(topic.rawValue)
           }
         }
