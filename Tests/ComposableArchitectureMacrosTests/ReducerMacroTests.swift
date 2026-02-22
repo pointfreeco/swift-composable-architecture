@@ -304,16 +304,19 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Activity>, ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>>, ComposableArchitecture.Scope<Self.State, Self.Action, Tweet>> {
-            ComposableArchitecture.Scope(state: \Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
-              Activity()
-            }
-            ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
-              Timeline()
-            }
-            ComposableArchitecture.Scope(state: \Self.State.Cases.tweet, action: \Self.Action.Cases.tweet) {
-              Tweet()
-            }
+          static var body: Reduce<Self.State, Self.Action> {
+            ComposableArchitecture.Reduce(
+              ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+              .ifCaseLet(\Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
+                Activity()
+              }
+              .ifCaseLet(\Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+                Timeline()
+              }
+              .ifCaseLet(\Self.State.Cases.tweet, action: \Self.Action.Cases.tweet) {
+                Tweet()
+              }
+            )
           }
 
           enum CaseScope {
@@ -375,13 +378,16 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>, ComposableArchitecture.Scope<Self.State, Self.Action, Meeting>> {
-            ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
-              Timeline()
-            }
-            ComposableArchitecture.Scope(state: \Self.State.Cases.meeting, action: \Self.Action.Cases.meeting) {
-              Meeting(context: .sheet)
-            }
+          static var body: Reduce<Self.State, Self.Action> {
+            ComposableArchitecture.Reduce(
+              ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+              .ifCaseLet(\Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+                Timeline()
+              }
+              .ifCaseLet(\Self.State.Cases.meeting, action: \Self.Action.Cases.meeting) {
+                Meeting(context: .sheet)
+              }
+            )
           }
 
           enum CaseScope {
@@ -639,13 +645,16 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Activity>, ComposableArchitecture.Scope<Self.State, Self.Action, Timeline>> {
-            ComposableArchitecture.Scope(state: \Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
-              Activity()
-            }
-            ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
-              Timeline()
-            }
+          static var body: Reduce<Self.State, Self.Action> {
+            ComposableArchitecture.Reduce(
+              ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+              .ifCaseLet(\Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
+                Activity()
+              }
+              .ifCaseLet(\Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+                Timeline()
+              }
+            )
           }
 
           enum CaseScope {
@@ -703,10 +712,13 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ComposableArchitecture.Scope<Self.State, Self.Action, Timeline> {
-            ComposableArchitecture.Scope(state: \Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
-              Timeline()
-            }
+          static var body: Reduce<Self.State, Self.Action> {
+            ComposableArchitecture.Reduce(
+              ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+              .ifCaseLet(\Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+                Timeline()
+              }
+            )
           }
 
           enum CaseScope {
@@ -833,16 +845,19 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<ComposableArchitecture.Scope<Self.State, Self.Action, Counter>, ComposableArchitecture.Scope<Self.State, Self.Action, Counter>>, ComposableArchitecture.Scope<Self.State, Self.Action, Counter>> {
-            ComposableArchitecture.Scope(state: \Self.State.Cases.drillDown, action: \Self.Action.Cases.drillDown) {
-              Counter()
-            }
-            ComposableArchitecture.Scope(state: \Self.State.Cases.popover, action: \Self.Action.Cases.popover) {
-              Counter()
-            }
-            ComposableArchitecture.Scope(state: \Self.State.Cases.sheet, action: \Self.Action.Cases.sheet) {
-              Counter()
-            }
+          static var body: Reduce<Self.State, Self.Action> {
+            ComposableArchitecture.Reduce(
+              ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+              .ifCaseLet(\Self.State.Cases.drillDown, action: \Self.Action.Cases.drillDown) {
+                Counter()
+              }
+              .ifCaseLet(\Self.State.Cases.popover, action: \Self.Action.Cases.popover) {
+                Counter()
+              }
+              .ifCaseLet(\Self.State.Cases.sheet, action: \Self.Action.Cases.sheet) {
+                Counter()
+              }
+            )
           }
 
           enum CaseScope {
@@ -897,10 +912,13 @@
           }
 
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
-          static var body: ComposableArchitecture.Scope<Self.State, Self.Action, Nested.Feature> {
-            ComposableArchitecture.Scope(state: \Self.State.Cases.feature, action: \Self.Action.Cases.feature) {
-              Nested.Feature()
-            }
+          static var body: Reduce<Self.State, Self.Action> {
+            ComposableArchitecture.Reduce(
+              ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+              .ifCaseLet(\Self.State.Cases.feature, action: \Self.Action.Cases.feature) {
+                Nested.Feature()
+              }
+            )
           }
 
           enum CaseScope {
@@ -1219,34 +1237,33 @@
           @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
           static var body: Reduce<Self.State, Self.Action> {
             ComposableArchitecture.Reduce(
-              ComposableArchitecture.CombineReducers {
-                ComposableArchitecture.Scope(state: \Self.State.Cases.child, action: \Self.Action.Cases.child) {
-                  ChildFeature()
-                }
-                #if os(macOS)
-                ComposableArchitecture.Scope(state: \Self.State.Cases.mac, action: \Self.Action.Cases.mac) {
-                  MacFeature()
-                }
-                #elseif os(iOS)
-                ComposableArchitecture.Scope(state: \Self.State.Cases.phone, action: \Self.Action.Cases.phone) {
-                  PhoneFeature()
-                }
-                #else
-                ComposableArchitecture.Scope(state: \Self.State.Cases.other, action: \Self.Action.Cases.other) {
-                  OtherFeature()
-                }
-                #endif
-
-                #if DEBUG
-                #if INNER
-                ComposableArchitecture.Scope(state: \Self.State.Cases.inner, action: \Self.Action.Cases.inner) {
-                  InnerFeature()
-                }
-                #endif
-
-                #endif
-
+              ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+              .ifCaseLet(\Self.State.Cases.child, action: \Self.Action.Cases.child) {
+                ChildFeature()
               }
+              #if os(macOS)
+              .ifCaseLet(\Self.State.Cases.mac, action: \Self.Action.Cases.mac) {
+                MacFeature()
+              }
+              #elseif os(iOS)
+              .ifCaseLet(\Self.State.Cases.phone, action: \Self.Action.Cases.phone) {
+                PhoneFeature()
+              }
+              #else
+              .ifCaseLet(\Self.State.Cases.other, action: \Self.Action.Cases.other) {
+                OtherFeature()
+              }
+              #endif
+
+              #if DEBUG
+              #if INNER
+              .ifCaseLet(\Self.State.Cases.inner, action: \Self.Action.Cases.inner) {
+                InnerFeature()
+              }
+              #endif
+
+              #endif
+
             )
           }
 

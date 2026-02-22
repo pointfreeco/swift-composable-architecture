@@ -262,18 +262,16 @@ extension ReducerMacro: MemberMacro {
       let enumCaseElements = [ReducerCase](members: enumDecl.memberBlock.members)
       var stateCaseDecls: [String] = []
       var actionCaseDecls: [String] = []
-      var reducerType: ReducerCase.Body = .scoped([])
-      var reducerScopes: [String] = []
+      var reducerIfCaseLets: [String] = []
       var storeCases: [String] = []
       var storeScopes: [String] = []
 
       for enumCaseElement in enumCaseElements {
         stateCaseDecls.append(enumCaseElement.stateCaseDecl)
         actionCaseDecls.append(enumCaseElement.actionCaseDecl)
-        if let reducerScope = enumCaseElement.reducerScope {
-          reducerScopes.append(reducerScope)
+        if let reducerIfCaseLet = enumCaseElement.reducerIfCaseLet {
+          reducerIfCaseLets.append(reducerIfCaseLet)
         }
-        reducerType.append(enumCaseElement.reducerTypeScope)
         storeCases.append(enumCaseElement.storeCase)
         storeScopes.append(enumCaseElement.storeScope)
       }
@@ -326,51 +324,23 @@ extension ReducerMacro: MemberMacro {
         )
       }
       if !hasBody {
-        var staticVarBody = ""
-        switch reducerType {
-        case .erased:
-          staticVarBody = "Reduce<Self.State, Self.Action>"
-        case .scoped(let reducerTypeScopes):
-          if reducerTypeScopes.isEmpty {
-            staticVarBody = "ComposableArchitecture.EmptyReducer<Self.State, Self.Action>"
-          } else if reducerTypeScopes.count == 1 {
-            staticVarBody = reducerTypeScopes[0]
-          } else {
-            for _ in 1...(reducerTypeScopes.count - 1) {
-              staticVarBody.append(
-                "ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>._Sequence<"
-              )
-            }
-            staticVarBody.append(reducerTypeScopes[0])
-            staticVarBody.append(", ")
-            for type in reducerTypeScopes.dropFirst() {
-              staticVarBody.append(type)
-              staticVarBody.append(">, ")
-            }
-            staticVarBody.removeLast(2)
-          }
-        }
+        let staticVarBody =
+          reducerIfCaseLets.isEmpty
+          ? "ComposableArchitecture.EmptyReducer<Self.State, Self.Action>"
+          : "Reduce<Self.State, Self.Action>"
 
         var body = ""
-        if reducerScopes.isEmpty {
+        if reducerIfCaseLets.isEmpty {
           body.append(
             """
             ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
             """
           )
         } else {
-          body.append(
-            """
-            \(reducerScopes.joined(separator: "\n"))
-            """
-          )
-        }
-        if case .erased = reducerType {
           body = """
             ComposableArchitecture.Reduce(
-            ComposableArchitecture.CombineReducers {
-            \(body)
-            }
+            ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+            \(reducerIfCaseLets.joined(separator: "\n"))
             )
             """
         }
@@ -465,22 +435,6 @@ private enum ReducerCase {
     let cases: [ReducerCase]
   }
 
-  enum Body {
-    case erased
-    case scoped([String])
-
-    mutating func append(_ other: Body) {
-      switch (self, other) {
-      case (.scoped(let lhs), .scoped(let rhs)):
-        self = .scoped(lhs + rhs)
-      case (.erased, _):
-        break
-      case (_, .erased):
-        self = .erased
-      }
-    }
-  }
-
   var stateCaseDecl: String {
     switch self {
     case .element(let element, let attribute):
@@ -546,26 +500,7 @@ private enum ReducerCase {
     }
   }
 
-  var reducerTypeScope: Body {
-    switch self {
-    case .element(let element, let attribute):
-      if attribute == nil,
-        let parameterClause = element.parameterClause,
-        parameterClause.parameters.count == 1,
-        let parameter = parameterClause.parameters.first,
-        parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
-      {
-        let type = parameter.type
-        return .scoped(["ComposableArchitecture.Scope<Self.State, Self.Action, \(type.trimmed)>"])
-      } else {
-        return .scoped([])
-      }
-    case .ifConfig:
-      return .erased
-    }
-  }
-
-  var reducerScope: String? {
+  var reducerIfCaseLet: String? {
     switch self {
     case .element(let element, let attribute):
       if attribute == nil,
@@ -578,10 +513,8 @@ private enum ReducerCase {
         let type = parameter.type
         let reducer = parameter.defaultValue?.value.trimmedDescription ?? "\(type.trimmed)()"
         return """
-          ComposableArchitecture.Scope(\
-          state: \\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)\
-          ) {
-          \(reducer)
+          .ifCaseLet(\\Self.State.Cases.\(name), action: \\Self.Action.Cases.\(name)) {
+            \(reducer)
           }
           """
       } else {
@@ -591,10 +524,10 @@ private enum ReducerCase {
       return
         configs
         .map {
-          let reduceScopes = $0.cases.compactMap(\.reducerScope)
+          let ifCaseLets = $0.cases.compactMap(\.reducerIfCaseLet)
           return """
             \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
-            \(reduceScopes.joined(separator: "\n"))
+            \(ifCaseLets.joined(separator: "\n"))
 
             """
         }

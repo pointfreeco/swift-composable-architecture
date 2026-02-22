@@ -10,6 +10,40 @@
   import UIKit
 #endif
 
+// NB: Deprecated with 1.25.0:
+
+extension Scope {
+  @available(
+    *,
+    deprecated,
+    message: """
+      Use a '@Reducer enum' or 'ifCaseLet(_:action:)' on a base reducer, instead.
+      """
+  )
+  @inlinable
+  public init<ChildState, ChildAction>(
+    state toChildState: CaseKeyPath<ParentState, ChildState>,
+    action toChildAction: CaseKeyPath<ParentAction, ChildAction>,
+    @ReducerBuilder<ChildState, ChildAction> child: () -> Child,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) where ChildState == Child.State, ChildAction == Child.Action {
+    self.init(
+      toChildState: .casePath(
+        AnyCasePath(toChildState),
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+      ),
+      toChildAction: AnyCasePath(toChildAction),
+      child: child()
+    )
+  }
+}
+
 // NB: Deprecated with 1.24.0:
 
 @available(
