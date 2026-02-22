@@ -2168,6 +2168,19 @@ extension BindingAction.AllCasePaths {
   }
 }
 
+extension BindingReducer {
+  @inlinable
+  @available(
+    *,
+     deprecated,
+     message:
+      "Use the version of this API that takes a case key path, instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.4#Using-case-key-paths"
+  )
+  public init(action toViewAction: @escaping (_ action: Action) -> ViewAction?) {
+    self.init(internal: toViewAction)
+  }
+}
+
 @available(
   *,
   deprecated,
@@ -3373,7 +3386,7 @@ public func InMemoryFileStorage() -> FileStorage { .inMemory }
 // NB: Deprecated with 1.7.0:
 
 extension Reducer {
-  @available(*, deprecated, message: "Use 'onChange(of:)' with and equatable value, instead.")
+  @available(*, deprecated, message: "Use 'onChange(of:)' with an equatable value, instead.")
   @inlinable
   public func onChange<V, R: Reducer>(
     of toValue: @escaping (State) -> V,
