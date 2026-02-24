@@ -2485,6 +2485,8 @@ extension View {
     }
   }
 
+  @available(tvOS, unavailable)
+  @available(watchOS, unavailable)
   @available(
     *,
     deprecated,
