@@ -42,7 +42,7 @@ extension Effect {
         operation: .publisher(
           Just(())
             .delay(for: dueTime, scheduler: scheduler, options: options)
-            .flatMap { _EffectPublisher(self).receive(on: scheduler) }
+            .flatMap { _EffectPublisher(self) }
             .eraseToAnyPublisher()
         )
       )

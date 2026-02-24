@@ -1,5 +1,6 @@
 import Combine
 @_spi(Internals) import ComposableArchitecture
+import SwiftUI
 import XCTest
 
 final class EffectDebounceTests: BaseTCATestCase {
@@ -93,5 +94,40 @@ final class EffectDebounceTests: BaseTCATestCase {
 
     XCTAssertEqual(values, [1])
     XCTAssertEqual(effectRuns, 1)
+  }
+
+  // NB: Regression test for https://github.com/pointfreeco/swift-composable-architecture/issues/3586
+  @MainActor
+  func testDebouncePreservesAnimationContext() async {
+    let mainQueue = DispatchQueue.test
+    var capturedAnimations: [Animation?] = []
+    var values: [Int] = []
+
+    struct CancelToken: Hashable {}
+
+    let effect = Effect<Int>.send(1, animation: .default)
+      .debounce(id: CancelToken(), for: 1, scheduler: mainQueue)
+
+    let cancellable = _EffectPublisher(effect).sink { value in
+      capturedAnimations.append(Transaction.current.animation)
+      values.append(value)
+    }
+
+    // Nothing emits right away.
+    XCTAssertEqual(values, [])
+    XCTAssertEqual(capturedAnimations.count, 0)
+
+    // Advance past the debounce window.
+    await mainQueue.advance(by: 1)
+
+    // The action should be received and the animation context preserved.
+    XCTAssertEqual(values, [1])
+    XCTAssertEqual(capturedAnimations.count, 1)
+    XCTAssertNotNil(
+      capturedAnimations.first ?? nil,
+      "Animation context should be preserved through debounce"
+    )
+
+    _ = cancellable
   }
 }
