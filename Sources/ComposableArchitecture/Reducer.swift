@@ -73,8 +73,8 @@ extension Reducer {
 
   @available(
     *,
-     deprecated,
-     message: """
+    deprecated,
+    message: """
       Don't invoke a reducer directly. Reducers are processed by the store. If you need to run a \
       reducer on some child state given some child action, use a 'send' effect:
 
