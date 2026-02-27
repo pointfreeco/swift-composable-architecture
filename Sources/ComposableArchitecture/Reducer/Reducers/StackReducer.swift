@@ -424,7 +424,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
     self.column = column
   }
 
-  public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
+  public func _reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
     let idsBefore = state[keyPath: self.toStackState]._mounted
     let destinationEffects: Effect<Base.Action>
     let baseEffects: Effect<Base.Action>
@@ -444,7 +444,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
             }
           )
           .dependency(\.navigationIDPath, elementNavigationIDPath)
-          .reduce(
+          ._reduce(
             into: &state[keyPath: self.toStackState][id: elementID]!,
             action: destinationAction
           )
@@ -481,12 +481,12 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
         destinationEffects = .none
       }
 
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
 
     case .popFrom(let id):
       destinationEffects = .none
       let canPop = state[keyPath: self.toStackState].ids.contains(id)
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
       if canPop {
         state[keyPath: self.toStackState].pop(from: id)
       } else {
@@ -525,7 +525,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           line: line,
           column: column
         )
-        baseEffects = self.base.reduce(into: &state, action: action)
+        baseEffects = self.base._reduce(into: &state, action: action)
         break
       } else if DependencyValues._current.context == .test {
         let nextID = DependencyValues._current.stackElementID.peek()
@@ -550,11 +550,11 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
         }
       }
       state[keyPath: self.toStackState]._dictionary[id] = element
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
 
     case .none:
       destinationEffects = .none
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
     }
 
     let idsAfter = state[keyPath: self.toStackState].ids

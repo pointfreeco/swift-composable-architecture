@@ -465,7 +465,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     self.column = column
   }
 
-  public func reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
+  public func _reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
     let initialPresentationState = state[keyPath: self.toPresentationState]
     let presentationAction = self.toPresentationAction.extract(from: action)
 
@@ -475,7 +475,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     switch (initialPresentationState.wrappedValue, presentationAction) {
     case (.some(let destinationState), .some(.dismiss)):
       destinationEffects = .none
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
       if self.navigationIDPath(for: destinationState)
         == state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
       {
@@ -492,12 +492,12 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
           }
         )
         .dependency(\.navigationIDPath, destinationNavigationIDPath)
-        .reduce(
+        ._reduce(
           into: &state[keyPath: self.toPresentationState].wrappedValue!, action: destinationAction
         )
         .map { [toPresentationAction] in toPresentationAction.embed(.presented($0)) }
         ._cancellable(navigationIDPath: destinationNavigationIDPath)
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
       if let ephemeralType = ephemeralType(of: destinationState),
         destinationNavigationIDPath
           == state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:)),
@@ -508,7 +508,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
 
     case (.none, .none), (.some, .none):
       destinationEffects = .none
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
 
     case (.none, .some):
       reportIssue(
@@ -536,7 +536,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
         column: column
       )
       destinationEffects = .none
-      baseEffects = self.base.reduce(into: &state, action: action)
+      baseEffects = self.base._reduce(into: &state, action: action)
     }
 
     let presentationIdentityChanged =

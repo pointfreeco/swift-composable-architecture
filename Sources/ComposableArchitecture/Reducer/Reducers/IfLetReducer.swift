@@ -150,7 +150,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     self.column = column
   }
 
-  public func reduce(
+  public func _reduce(
     into state: inout Parent.State, action: Parent.Action
   ) -> Effect<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
@@ -158,7 +158,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
     let childIDBefore = state[keyPath: self.toChildState].map {
       NavigationID(base: $0, keyPath: self.toChildState)
     }
-    let parentEffects = self.parent.reduce(into: &state, action: action)
+    let parentEffects = self.parent._reduce(into: &state, action: action)
     let childIDAfter = state[keyPath: self.toChildState].map {
       NavigationID(base: $0, keyPath: self.toChildState)
     }
@@ -224,7 +224,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       base: state[keyPath: self.toChildState]!, keyPath: self.toChildState)
     return self.child
       .dependency(\.navigationIDPath, self.navigationIDPath.appending(navigationID))
-      .reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
+      ._reduce(into: &state[keyPath: self.toChildState]!, action: childAction)
       .map { [toChildAction] in toChildAction.embed($0) }
       ._cancellable(id: navigationID, navigationIDPath: self.navigationIDPath)
   }

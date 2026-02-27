@@ -85,15 +85,15 @@ public enum ReducerBuilder<State, Action> {
     case second(Second)
 
     @inlinable
-    public func reduce(into state: inout First.State, action: First.Action) -> Effect<
+    public func _reduce(into state: inout First.State, action: First.Action) -> Effect<
       First.Action
     > {
       switch self {
       case .first(let first):
-        return first.reduce(into: &state, action: action)
+        return first._reduce(into: &state, action: action)
 
       case .second(let second):
-        return second.reduce(into: &state, action: action)
+        return second._reduce(into: &state, action: action)
       }
     }
   }
@@ -112,9 +112,9 @@ public enum ReducerBuilder<State, Action> {
     }
 
     @inlinable
-    public func reduce(into state: inout R0.State, action: R0.Action) -> Effect<R0.Action> {
-      self.r0.reduce(into: &state, action: action)
-        .merge(with: self.r1.reduce(into: &state, action: action))
+    public func _reduce(into state: inout R0.State, action: R0.Action) -> Effect<R0.Action> {
+      self.r0._reduce(into: &state, action: action)
+        .merge(with: self.r1._reduce(into: &state, action: action))
     }
   }
 
@@ -128,10 +128,10 @@ public enum ReducerBuilder<State, Action> {
     }
 
     @inlinable
-    public func reduce(
+    public func _reduce(
       into state: inout Element.State, action: Element.Action
     ) -> Effect<Element.Action> {
-      self.reducers.reduce(.none) { $0.merge(with: $1.reduce(into: &state, action: action)) }
+      self.reducers.reduce(.none) { $0.merge(with: $1._reduce(into: &state, action: action)) }
     }
   }
 }

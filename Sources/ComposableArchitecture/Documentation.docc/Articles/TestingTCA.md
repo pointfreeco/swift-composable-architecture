@@ -14,53 +14,9 @@ also how effects are executed and feed data back into the system.
 
 ## Testing state changes
 
-State changes are by far the simplest thing to test in features built with the library. A
-``Reducer``'s first responsibility is to mutate the current state based on the action received into
-the system. To test this we can technically run a piece of mutable state through the reducer and
-then assert on how it changed after, like this:
-
-```swift
-@Reducer
-struct Feature {
-  @ObservableState
-  struct State: Equatable {
-    var count = 0
-  }
-  enum Action {
-    case incrementButtonTapped
-    case decrementButtonTapped
-  }
-  var body: some Reduce<State, Action> {
-    Reduce { state, action in
-      switch action {
-      case .incrementButtonTapped:
-        state.count += 1
-        return .none
-      case .decrementButtonTapped:
-        state.count -= 1
-        return .none
-      }
-    }
-  }
-}
-
-@Test
-func basics() {
-  let feature = Feature()
-  var currentState = Feature.State(count: 0)
-  _ = feature.reduce(into: &currentState, action: .incrementButtonTapped)
-  #expect(currentState == State(count: 1))
-
-  _ = feature.reduce(into: &currentState, action: .decrementButtonTapped)
-  #expect(currentState == State(count: 0))
-}
-```
-
-This will technically work, but it's a lot boilerplate for something that should be quite simple.
-
-The library comes with a tool specifically designed to make testing like this much simpler and more
-concise. It's called ``TestStore``, and it is constructed similarly to ``Store`` by providing the
-initial state of the feature and the ``Reducer`` that runs the feature's logic:
+The library comes with a tool specifically designed to test features simply and concisely. It's
+called ``TestStore``, and it is constructed similarly to ``Store`` by providing the initial state of
+the feature and the ``Reducer`` that runs the feature's logic:
 
 ```swift
 import Testing
@@ -80,10 +36,10 @@ struct CounterTests {
 > ``TestStore`` can suspend. And while tests do not _require_ the main actor, ``TestStore`` _is_
 > main actor-isolated, and so we recommend annotating your tests and suites with `@MainActor`.
 
-Test stores have a ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` method, but it behaves differently from
-stores and view stores. You provide an action to send into the system, but then you must also
-provide a trailing closure to describe how the state of the feature changed after sending the
-action:
+Test stores have a ``TestStore/send(_:assert:fileID:file:line:column:)-8f2pl`` method, but it
+behaves differently from stores and view stores. You provide an action to send into the system, but
+then you must also provide a trailing closure to describe how the state of the feature changed after
+sending the action:
 
 ```swift
 await store.send(.incrementButtonTapped) {

@@ -13,7 +13,7 @@ public struct EmptyReducer<State, Action>: Reducer {
   init(internal: Void) {}
 
   @inlinable
-  public func reduce(into _: inout State, action _: Action) -> Effect<Action> {
+  public func _reduce(into _: inout State, action _: Action) -> Effect<Action> {
     .none
   }
 }
