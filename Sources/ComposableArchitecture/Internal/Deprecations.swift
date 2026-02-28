@@ -15,10 +15,10 @@
 extension Effect {
   @available(
     *,
-     deprecated,
-     message: """
+    deprecated,
+    message: """
       Use 'send(_:animation:)' from a 'run' effect instead:
-      
+
           return .run { send in
             await send(.response, animation: .default)
           }
@@ -30,10 +30,10 @@ extension Effect {
 
   @available(
     *,
-     deprecated,
-     message: """
+    deprecated,
+    message: """
       Use 'send(_:transaction:)' from a 'run' effect instead:
-      
+
           return .run { send in
             await send(.response, transaction: transaction)
           }
@@ -109,10 +109,10 @@ private struct TransactionPublisher<Upstream: Publisher>: Publisher {
 extension Effect {
   @available(
     *,
-     deprecated,
-     message: """
+    deprecated,
+    message: """
       Use 'clock.sleep' and 'cancellable(id:cancelInFlight:)' instead:
-      
+
           return .run { send in
             try await clock.sleep(for: .seconds(0.3)
             // ...
@@ -146,10 +146,10 @@ extension Effect {
 extension Effect where Action: Sendable {
   @available(
     *,
-     deprecated,
-     message: """
+    deprecated,
+    message: """
       Use 'clock.sleep', 'cancellable(id:cancelInFlight)' and some last-ran state, instead:
-      
+
           return .run { [lastRan = state.lastRan] store in
             try await clock.sleep(until: (lastRan ?? clock.now).advanced(by: .seconds(1)))
             await store.send(.throttleRan)  // Update 'state.lastRan'
