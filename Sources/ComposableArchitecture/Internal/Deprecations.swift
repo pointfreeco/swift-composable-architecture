@@ -12,6 +12,214 @@
 
 // NB: Deprecated with 1.25.0:
 
+extension Effect {
+  @available(
+    *,
+     deprecated,
+     message: """
+      Use 'send(_:animation:)' from a 'run' effect instead:
+      
+          return .run { send in
+            await send(.response, animation: .default)
+          }
+      """
+  )
+  public func animation(_ animation: Animation? = .default) -> Self {
+    self.transaction(Transaction(animation: animation))
+  }
+
+  @available(
+    *,
+     deprecated,
+     message: """
+      Use 'send(_:transaction:)' from a 'run' effect instead:
+      
+          return .run { send in
+            await send(.response, transaction: transaction)
+          }
+      """
+  )
+  public func transaction(_ transaction: Transaction) -> Self {
+    switch self.operation {
+    case .none:
+      return .none
+    case .publisher(let publisher):
+      return Self(
+        operation: .publisher(
+          TransactionPublisher(upstream: publisher, transaction: transaction).eraseToAnyPublisher()
+        )
+      )
+    case .run(let name, let priority, let operation):
+      let uncheckedTransaction = UncheckedSendable(transaction)
+      return Self(
+        operation: .run(name: name, priority: priority) { send in
+          await operation(
+            Send { value in
+              withTransaction(uncheckedTransaction.value) {
+                send(value)
+              }
+            }
+          )
+        }
+      )
+    }
+  }
+}
+
+private struct TransactionPublisher<Upstream: Publisher>: Publisher {
+  typealias Output = Upstream.Output
+  typealias Failure = Upstream.Failure
+
+  var upstream: Upstream
+  var transaction: Transaction
+
+  func receive(subscriber: some Combine.Subscriber<Upstream.Output, Upstream.Failure>) {
+    let conduit = Subscriber(downstream: subscriber, transaction: self.transaction)
+    self.upstream.receive(subscriber: conduit)
+  }
+
+  private final class Subscriber<Downstream: Combine.Subscriber>: Combine.Subscriber {
+    typealias Input = Downstream.Input
+    typealias Failure = Downstream.Failure
+
+    let downstream: Downstream
+    let transaction: Transaction
+
+    init(downstream: Downstream, transaction: Transaction) {
+      self.downstream = downstream
+      self.transaction = transaction
+    }
+
+    func receive(subscription: any Subscription) {
+      self.downstream.receive(subscription: subscription)
+    }
+
+    func receive(_ input: Input) -> Subscribers.Demand {
+      withTransaction(self.transaction) {
+        self.downstream.receive(input)
+      }
+    }
+
+    func receive(completion: Subscribers.Completion<Failure>) {
+      self.downstream.receive(completion: completion)
+    }
+  }
+}
+
+extension Effect {
+  @available(
+    *,
+     deprecated,
+     message: """
+      Use 'clock.sleep' and 'cancellable(id:cancelInFlight:)' instead:
+      
+          return .run { send in
+            try await clock.sleep(for: .seconds(0.3)
+            // ...
+          }
+          .cancellable(id: CancelID.debounce, cancelInFlight: true)
+      """
+  )
+  public func debounce<S: Scheduler>(
+    id: some Hashable & Sendable,
+    for dueTime: S.SchedulerTimeType.Stride,
+    scheduler: S,
+    options: S.SchedulerOptions? = nil
+  ) -> Self {
+    switch self.operation {
+    case .none:
+      return .none
+    case .publisher, .run:
+      return Self(
+        operation: .publisher(
+          Just(())
+            .delay(for: dueTime, scheduler: scheduler, options: options)
+            .flatMap { _EffectPublisher(self).receive(on: scheduler) }
+            .eraseToAnyPublisher()
+        )
+      )
+      .cancellable(id: id, cancelInFlight: true)
+    }
+  }
+}
+
+extension Effect where Action: Sendable {
+  @available(
+    *,
+     deprecated,
+     message: """
+      Use 'clock.sleep', 'cancellable(id:cancelInFlight)' and some last-ran state, instead:
+      
+          return .run { [lastRan = state.lastRan] store in
+            try await clock.sleep(until: (lastRan ?? clock.now).advanced(by: .seconds(1)))
+            await store.send(.throttleRan)  // Update 'state.lastRan'
+            // ...
+          }
+          .cancellable(id: CancelID.throttle, cancelInFlight: true)
+      """
+  )
+  public func throttle<S: Scheduler & Sendable>(
+    id: some Hashable & Sendable,
+    for interval: S.SchedulerTimeType.Stride,
+    scheduler: S,
+    latest: Bool
+  ) -> Self
+  where S.SchedulerTimeType.Stride: Sendable {
+    switch self.operation {
+    case .none:
+      return .none
+
+    case .run:
+      return .publisher { _EffectPublisher(self) }
+        .throttle(id: id, for: interval, scheduler: scheduler, latest: latest)
+
+    case .publisher(let publisher):
+      return .publisher {
+        publisher
+          .receive(on: scheduler)
+          .flatMap { value -> AnyPublisher<Action, Never> in
+            throttleState.withValue {
+              guard let throttleTime = $0.times[id] as! S.SchedulerTimeType? else {
+                $0.times[id] = scheduler.now
+                $0.values[id] = nil
+                return Just(value).eraseToAnyPublisher()
+              }
+
+              let value = latest ? value : ($0.values[id] as! Action? ?? value)
+              $0.values[id] = value
+
+              guard throttleTime.distance(to: scheduler.now) < interval else {
+                $0.times[id] = scheduler.now
+                $0.values[id] = nil
+                return Just(value).eraseToAnyPublisher()
+              }
+
+              return Just(value)
+                .delay(
+                  for: scheduler.now.distance(to: throttleTime.advanced(by: interval)),
+                  scheduler: scheduler
+                )
+                .handleEvents(
+                  receiveOutput: { _ in
+                    throttleState.withValue {
+                      $0.times[id] = scheduler.now
+                      $0.values[id] = nil
+                    }
+                  }
+                )
+                .eraseToAnyPublisher()
+            }
+          }
+      }
+      .cancellable(id: id, cancelInFlight: true)
+    }
+  }
+}
+
+private let throttleState = LockIsolated<(times: [AnyHashable: Any], values: [AnyHashable: Any])>(
+  (times: [:], values: [:])
+)
+
 extension Scope {
   @available(
     *,
