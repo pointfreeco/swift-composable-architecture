@@ -2629,6 +2629,41 @@ final class PresentationReducerTests: BaseTCATestCase {
   //      XCTAssertNil(store.alert)
   //    }
   #endif
+  
+  @MainActor
+  func testPresentation_dismissWorksAfterParentEnumTransition() async {
+    let scheduler = DispatchQueue.test
+    let store = TestStore(initialState: EnumTransitionParent.State.online(.init())) {
+      EnumTransitionParent()
+    } withDependencies: {
+      $0.mainQueue = scheduler.eraseToAnyScheduler()
+    }
+    
+    // Present modal in .online state
+    await store.send(.online(.presentModal)) {
+      $0.online?.modal = .init()
+    }
+    
+    // Start timer that will dismiss
+    await store.send(.online(.modal(.presented(.startTimer))))
+    
+    // Transition to .offline (timer cancelled, modal stays presented)
+    await store.send(.setOnline(false)) {
+      $0 = .offline($0.online ?? .init())
+    }
+    
+    // Transition back to .online (modal still presented, timer restarts)
+    await store.send(.setOnline(true)) {
+      $0 = .online($0.offline ?? .init())
+    }
+    await store.send(.online(.modal(.presented(.startTimer))))
+    
+    // Timer completes and dismiss should work
+    await scheduler.advance(by: .milliseconds(100))
+    await store.receive(\.online.modal.dismiss) {
+      $0.online?.modal = nil
+    }
+  }
 }
 
 @Reducer
@@ -2656,6 +2691,115 @@ private struct NestedDismissFeature {
     }
     .ifLet(\.$child, action: \.child) {
       Self()
+    }
+  }
+}
+
+@Reducer
+private struct EnumTransitionModal {
+  struct State: Equatable {}
+  enum Action {
+    case startTimer
+  }
+  @Dependency(\.dismiss) var dismiss
+  @Dependency(\.mainQueue) var mainQueue
+  
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .startTimer:
+        return .run { _ in
+          try await mainQueue.sleep(for: .milliseconds(100))
+          await dismiss()
+        }
+      }
+    }
+  }
+}
+
+@Reducer
+private struct EnumTransitionChild {
+  struct State: Equatable {
+    @PresentationState var modal: EnumTransitionModal.State?
+  }
+  enum Action {
+    case presentModal
+    case modal(PresentationAction<EnumTransitionModal.Action>)
+  }
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .presentModal:
+        state.modal = .init()
+        return .none
+      case .modal:
+        return .none
+      }
+    }
+    .ifLet(\.$modal, action: \.modal) {
+      EnumTransitionModal()
+    }
+  }
+}
+
+@Reducer
+private struct EnumTransitionParent {
+  @ObservableState
+  enum State: Equatable {
+    case online(EnumTransitionChild.State)
+    case offline(EnumTransitionChild.State)
+    
+    var online: EnumTransitionChild.State? {
+      get {
+        guard case let .online(state) = self else { return nil }
+        return state
+      }
+      set {
+        guard let newValue else { return }
+        self = .online(newValue)
+      }
+    }
+    
+    var offline: EnumTransitionChild.State? {
+      get {
+        guard case let .offline(state) = self else { return nil }
+        return state
+      }
+      set {
+        guard let newValue else { return }
+        self = .offline(newValue)
+      }
+    }
+  }
+  
+  enum Action {
+    case setOnline(Bool)
+    case online(EnumTransitionChild.Action)
+    case offline(EnumTransitionChild.Action)
+  }
+  
+  var body: some Reducer<State, Action> {
+    Reduce { state, action in
+      switch action {
+      case .setOnline(true):
+        if case let .offline(offlineState) = state {
+          state = .online(offlineState)
+        }
+        return .none
+      case .setOnline(false):
+        if case let .online(onlineState) = state {
+          state = .offline(onlineState)
+        }
+        return .none
+      default:
+        return .none
+      }
+    }
+    .ifCaseLet(\.online, action: \.online) {
+      EnumTransitionChild()
+    }
+    .ifCaseLet(\.offline, action: \.offline) {
+      EmptyReducer()
     }
   }
 }

@@ -57,6 +57,8 @@ public struct PresentationState<State> {
 
   private var storage: Storage
   @usableFromInline var presentedID: NavigationIDPath?
+  // Tracks navigation path when effect was created. Cleared on COW to detect parent context changes.
+  @usableFromInline var effectNavigationIDPath: NavigationIDPath? = nil
 
   public init(wrappedValue: State?) {
     self.storage = Storage(state: wrappedValue)
@@ -67,6 +69,7 @@ public struct PresentationState<State> {
     set {
       if !isKnownUniquelyReferenced(&self.storage) {
         self.storage = Storage(state: newValue)
+        self.effectNavigationIDPath = nil  // Clear on COW to trigger effect recreation
       } else {
         self.storage.state = newValue
       }
@@ -539,9 +542,16 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       baseEffects = self.base._reduce(into: &state, action: action)
     }
 
+    let currentNavigationID = state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
+    let storedEffectPath = initialPresentationState.effectNavigationIDPath
+    
+    // Detect parent context change: if effectNavigationIDPath is nil but presentation exists,
+    // it means COW occurred (effectNavigationIDPath was cleared in wrappedValue setter)
+    let parentContextChanged = currentNavigationID != nil 
+      && (storedEffectPath == nil || storedEffectPath != currentNavigationID)
+
     let presentationIdentityChanged =
-      initialPresentationState.presentedID
-      != state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
+      initialPresentationState.presentedID != currentNavigationID
 
     let dismissEffects: Effect<Base.Action>
     if presentationIdentityChanged,
@@ -558,14 +568,22 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
 
     if presentationIdentityChanged, state[keyPath: self.toPresentationState].wrappedValue == nil {
       state[keyPath: self.toPresentationState].presentedID = nil
+      state[keyPath: self.toPresentationState].effectNavigationIDPath = nil
     }
 
     let presentEffects: Effect<Base.Action>
-    if presentationIdentityChanged || state[keyPath: self.toPresentationState].presentedID == nil,
+    // Recreate Empty effect if:
+    // - Parent context changed (COW occurred during enum transition)
+    // - Presentation identity changed (normal navigation)
+    // - First time presenting (presentedID is nil)
+    if (parentContextChanged 
+      || presentationIdentityChanged 
+      || state[keyPath: self.toPresentationState].presentedID == nil),
       let presentationState = state[keyPath: self.toPresentationState].wrappedValue,
       !isEphemeral(presentationState)
     {
       let presentationDestinationID = self.navigationIDPath(for: presentationState)
+      state[keyPath: self.toPresentationState].effectNavigationIDPath = presentationDestinationID
       state[keyPath: self.toPresentationState].presentedID = presentationDestinationID
       presentEffects = .concatenate(
         .publisher { Empty(completeImmediately: false) }
