@@ -19,6 +19,7 @@ use these tools.
 ### Tree-based navigation
 
 - <doc:TreeBasedNavigation>
+- <doc:AlertsAndDialogs>
 - ``Presents()``
 - ``PresentationAction``
 - ``Reducer/ifLet(_:action:destination:fileID:filePath:line:column:)-4ub6q``

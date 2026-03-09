@@ -51,6 +51,7 @@ day-to-day when building applications, such as:
 - <doc:DependencyManagement>
 - <doc:TestingTCA>
 - <doc:Navigation>
+- <doc:AlertsAndDialogs>
 - <doc:SharingState>
 - <doc:Performance>
 - <doc:FAQ>
