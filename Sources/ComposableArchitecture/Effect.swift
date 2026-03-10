@@ -15,7 +15,7 @@ public struct _Effect<Action>: Sendable {
     case run(
       name: String? = nil,
       priority: TaskPriority? = nil,
-      operation: @Sendable (_ send: Send<Action>) async -> Void
+      operation: @Sendable (_ send: _Send<Action>) async -> Void
     )
   }
 
@@ -97,8 +97,8 @@ extension _Effect {
   public static func run(
     priority: TaskPriority? = nil,
     name: String? = nil,
-    operation: @escaping @Sendable (_ send: Send<Action>) async throws -> Void,
-    catch handler: (@Sendable (_ error: any Error, _ send: Send<Action>) async -> Void)? = nil,
+    operation: @escaping @Sendable (_ send: _Send<Action>) async throws -> Void,
+    catch handler: (@Sendable (_ error: any Error, _ send: _Send<Action>) async -> Void)? = nil,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -154,6 +154,11 @@ extension _Effect {
   }
 }
 
+#if ComposableArchitecture2Deprecations
+  @available(*, deprecated, message: "Use 'SendOf<Feature>' instead")
+#endif
+public typealias Send = _Send
+
 /// A type that can send actions back into the system when used from
 /// ``Effect/run(priority:operation:catch:fileID:filePath:line:column:)``.
 ///
@@ -183,7 +188,7 @@ extension _Effect {
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 @MainActor
-public struct Send<Action>: Sendable {
+public struct _Send<Action>: Sendable {
   let send: @MainActor @Sendable (Action) -> Void
 
   public init(send: @escaping @MainActor @Sendable (Action) -> Void) {
@@ -219,6 +224,8 @@ public struct Send<Action>: Sendable {
     }
   }
 }
+
+public typealias SendOf<R: Reducer> = _Send<R.Action>
 
 // MARK: - Composing Effects
 
@@ -382,7 +389,7 @@ extension _Effect {
           operation: .run(name: name, priority: priority) { send in
             await escaped.yield {
               await operation(
-                Send { action in
+                _Send { action in
                   send(transform(action))
                 }
               )
