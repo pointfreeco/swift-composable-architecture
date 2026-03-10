@@ -24,11 +24,9 @@ extension Reducer {
   ///
   ///   var body: some Reducer<State, Action> {
   ///     BindingReducer()
-  ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled) { oldValue, newValue in
-  ///         Reduce { state, action in
-  ///           .run { send in
-  ///             // Persist new value...
-  ///           }
+  ///       .onChange(of: \.userSettings.isHapticFeedbackEnabled) { oldValue, state in
+  ///         .run { [newValue = state.userSettings.isHapticFeedbackEnabled] send in
+  ///           // Persist new value...
   ///         }
   ///       }
   ///   }
@@ -45,10 +43,29 @@ extension Reducer {
   ///
   /// - Parameters:
   ///   - toValue: A closure that returns a value from the given state.
-  ///   - reducer: A reducer builder closure to run when the value changes.
+  ///   - perform: A closure to run when the value changes and optionally kick off an effect.
   ///     - `oldValue`: The old value that failed the comparison check.
-  ///     - `newValue`: The new value that failed the comparison check.
+  ///     - `state`: The current, mutable state of the feature.
   /// - Returns: A reducer that performs the logic when the state changes.
+  @inlinable
+  public func onChange<V: Equatable>(
+    of toValue: @escaping (State) -> V,
+    _ perform: @escaping (_ oldValue: V, _ state: inout State) -> EffectOf<Self>
+  ) -> some Reducer<State, Action> {
+    _OnChangeReducer(base: self, toValue: toValue, isDuplicate: ==) { oldValue, _ in
+      Reduce(internal: { state, action in
+        perform(oldValue, &state)
+      })
+    }
+  }
+
+  #if ComposableArchitecture2Deprecations
+    @available(
+      *,
+      deprecated,
+      message: "Use 'onChange' that directly returns an 'EffectOf<Feature>' instead"
+    )
+  #endif
   @inlinable
   public func onChange<V: Equatable, R: Reducer>(
     of toValue: @escaping (State) -> V,
