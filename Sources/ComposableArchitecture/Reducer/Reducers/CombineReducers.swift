@@ -38,7 +38,7 @@ where State == Reducers.State, Action == Reducers.Action {
   @inlinable
   public func _reduce(
     into state: inout Reducers.State, action: Reducers.Action
-  ) -> Effect<Reducers.Action> {
+  ) -> _Effect<Reducers.Action> {
     self.reducers._reduce(into: &state, action: action)
   }
 }

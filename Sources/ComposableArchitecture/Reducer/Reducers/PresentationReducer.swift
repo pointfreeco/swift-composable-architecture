@@ -465,12 +465,12 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
     self.column = column
   }
 
-  public func _reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
+  public func _reduce(into state: inout Base.State, action: Base.Action) -> _Effect<Base.Action> {
     let initialPresentationState = state[keyPath: self.toPresentationState]
     let presentationAction = self.toPresentationAction.extract(from: action)
 
-    let destinationEffects: Effect<Base.Action>
-    let baseEffects: Effect<Base.Action>
+    let destinationEffects: _Effect<Base.Action>
+    let baseEffects: _Effect<Base.Action>
 
     switch (initialPresentationState.wrappedValue, presentationAction) {
     case (.some(let destinationState), .some(.dismiss)):
@@ -543,7 +543,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       initialPresentationState.presentedID
       != state[keyPath: self.toPresentationState].wrappedValue.map(self.navigationIDPath(for:))
 
-    let dismissEffects: Effect<Base.Action>
+    let dismissEffects: _Effect<Base.Action>
     if presentationIdentityChanged,
       let presentedPath = initialPresentationState.presentedID,
       initialPresentationState.wrappedValue.map({
@@ -560,7 +560,7 @@ public struct _PresentationReducer<Base: Reducer, Destination: Reducer>: Reducer
       state[keyPath: self.toPresentationState].presentedID = nil
     }
 
-    let presentEffects: Effect<Base.Action>
+    let presentEffects: _Effect<Base.Action>
     if presentationIdentityChanged || state[keyPath: self.toPresentationState].presentedID == nil,
       let presentationState = state[keyPath: self.toPresentationState].wrappedValue,
       !isEphemeral(presentationState)
@@ -628,7 +628,7 @@ extension Task<Never, Never> {
   }
 }
 
-extension Effect {
+extension _Effect {
   internal func _cancellable(
     id: some Hashable & Sendable = _PresentedID(),
     navigationIDPath: NavigationIDPath,

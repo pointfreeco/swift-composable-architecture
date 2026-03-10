@@ -168,7 +168,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   @inlinable
   public func _reduce(
     into state: inout ParentState, action: ParentAction
-  ) -> Effect<ParentAction> {
+  ) -> _Effect<ParentAction> {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     switch self.toChildState {

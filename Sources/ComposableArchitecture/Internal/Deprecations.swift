@@ -10,9 +10,28 @@
   import UIKit
 #endif
 
+// NB: Deprecated with 1.26.0:
+
+extension _Effect {
+  @available(
+    *,
+     deprecated,
+     message: """
+      Use 'send(_:animation:)' from a 'run' effect instead:
+
+          return .run { send in
+            await send(.response, animation: .default)
+          }
+      """
+  )
+  public static func send(_ action: Action, animation: Animation? = nil) -> Self {
+    .send(action).animation(animation)
+  }
+}
+
 // NB: Deprecated with 1.25.0:
 
-extension Effect {
+extension _Effect {
   @available(
     *,
     deprecated,
@@ -106,7 +125,7 @@ private struct TransactionPublisher<Upstream: Publisher>: Publisher {
   }
 }
 
-extension Effect {
+extension _Effect {
   @available(
     *,
     deprecated,
@@ -143,7 +162,7 @@ extension Effect {
   }
 }
 
-extension Effect where Action: Sendable {
+extension _Effect where Action: Sendable {
   @available(
     *,
     deprecated,

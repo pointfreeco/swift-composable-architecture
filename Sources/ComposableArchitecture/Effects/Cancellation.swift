@@ -1,7 +1,7 @@
 @preconcurrency import Combine
 import Foundation
 
-extension Effect {
+extension _Effect {
   /// Turns an effect into one that is capable of being canceled.
   ///
   /// To turn an effect into a cancellable one you must provide an identifier, which is used in
