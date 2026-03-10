@@ -134,21 +134,22 @@ private struct Child2 {
     case name(String)
   }
   var body: some ReducerOf<Self> {
-    Scope(state: \.count, action: \.count) {
-      Reduce { state, action in
-        state = action
-        return state < 0
-          ? .run { await $0(0) }
-          : .none
+    EmptyReducer()
+      .ifCaseLet(\.count, action: \.count) {
+        Reduce { state, action in
+          state = action
+          return state < 0
+            ? .run { await $0(0) }
+            : .none
+        }
       }
-    }
-    Scope(state: \.name, action: \.name) {
-      Reduce { state, action in
-        state = action
-        return state.isEmpty
-          ? .run { await $0("Empty") }
-          : .none
+      .ifCaseLet(\.name, action: \.name) {
+        Reduce { state, action in
+          state = action
+          return state.isEmpty
+            ? .run { await $0("Empty") }
+            : .none
+        }
       }
-    }
   }
 }

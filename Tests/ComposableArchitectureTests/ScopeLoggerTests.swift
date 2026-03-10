@@ -3,6 +3,7 @@ import SwiftUI
 import XCTest
 
 class ScopeLoggerTests: XCTestCase {
+  @available(*, deprecated)
   @MainActor
   func testScoping() {
     #if DEBUG

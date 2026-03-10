@@ -25,6 +25,7 @@ final class MemoryManagementTests: BaseTCATestCase {
     XCTAssertEqual(count, 1)
   }
 
+  @available(*, deprecated)
   @MainActor
   func testOwnership_ViewStoreHoldsOntoStore() {
     let counterReducer = Reduce<Int, Void> { state, _ in

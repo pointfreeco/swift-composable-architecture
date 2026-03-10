@@ -2,6 +2,7 @@
 import ComposableArchitecture
 import XCTest
 
+@available(*, deprecated)
 final class ViewStoreTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 

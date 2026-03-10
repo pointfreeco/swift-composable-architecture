@@ -242,6 +242,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(numCalls3, 6)
   }
 
+  @available(*, deprecated)
   @MainActor
   func testSynchronousEffectsSentAfterSinking() {
     enum Action {
@@ -290,6 +291,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(values, [1, 2, 3, 4])
   }
 
+  @available(*, deprecated)
   @MainActor
   func testLotsOfSynchronousActions() {
     enum Action { case incr, noop }
@@ -361,6 +363,7 @@ final class StoreTests: BaseTCATestCase {
     XCTAssertEqual(outputs, [nil, 1, nil, 1, nil, 1, nil])
   }
 
+  @available(*, deprecated)
   @MainActor
   func testIfLetTwo() {
     let parentStore = Store(initialState: 0) {
@@ -433,6 +436,7 @@ final class StoreTests: BaseTCATestCase {
     subject.send(completion: .finished)
   }
 
+  @available(*, deprecated)
   @MainActor
   func testCoalesceSynchronousActions() {
     let store = Store(initialState: 0) {
@@ -616,6 +620,7 @@ final class StoreTests: BaseTCATestCase {
     }
   }
 
+  @available(*, deprecated)
   @MainActor
   func testOverrideDependenciesDirectlyOnReducer() {
     let store = Store(initialState: 0) {
@@ -640,6 +645,7 @@ final class StoreTests: BaseTCATestCase {
     }
   }
 
+  @available(*, deprecated)
   @MainActor
   func testOverrideDependenciesDirectlyOnStore() {
     @Dependency(\.uuid) var uuid
@@ -829,6 +835,7 @@ final class StoreTests: BaseTCATestCase {
     }
   }
 
+  @available(*, deprecated)
   @MainActor
   func testChildParentEffectCancellation() async throws {
     let mainQueue = DispatchQueue.test
@@ -1312,12 +1319,12 @@ final class StoreTests: BaseTCATestCase {
         Reduce { state, action in
           switch action {
           case .tap:
-            return Effect.run { send in
+            return .run { send in
               await send(.response1)
             }
           case .response1:
             state.count = 42
-            return Effect.run { send in
+            return .run { send in
               try await clock.sleep(for: .seconds(1))
               await send(.response2)
             }
