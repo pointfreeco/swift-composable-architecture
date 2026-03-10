@@ -15,8 +15,8 @@
 extension _Effect {
   @available(
     *,
-     deprecated,
-     message: """
+    deprecated,
+    message: """
       Use 'send(_:animation:)' from a 'run' effect instead:
 
           return .run { send in
@@ -26,6 +26,24 @@ extension _Effect {
   )
   public static func send(_ action: Action, animation: Animation? = nil) -> Self {
     .send(action).animation(animation)
+  }
+}
+
+extension Store {
+  @available(
+    *,
+     deprecated,
+     message:
+      "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
+  )
+  public func withState<R>(_ body: (_ state: State) -> R) -> R {
+    #if DEBUG
+      _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+        body(self.currentState)
+      }
+    #else
+      body(self.currentState)
+    #endif
   }
 }
 
