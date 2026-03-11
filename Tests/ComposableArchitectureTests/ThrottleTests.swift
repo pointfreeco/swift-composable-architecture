@@ -2,6 +2,7 @@ import Combine
 import ComposableArchitecture
 @preconcurrency import XCTest
 
+@available(*, deprecated)
 final class EffectThrottleTests: BaseTCATestCase {
   let mainQueue = DispatchQueue.test
 
@@ -178,6 +179,7 @@ final class EffectThrottleTests: BaseTCATestCase {
 }
 
 @Reducer
+@available(*, deprecated)
 struct ThrottleFeature {
   struct State: Equatable {
     var count = 0

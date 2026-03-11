@@ -4,6 +4,7 @@
   import XCTest
 
   final class RuntimeWarningTests: BaseTCATestCase {
+    @available(*, deprecated)
     @MainActor
     func testBindingUnhandledAction() async throws {
       let line = #line + 2
@@ -64,6 +65,7 @@
       try await Task.sleep(nanoseconds: 1_000_000)
     }
 
+    @available(*, deprecated)
     @MainActor
     func testBindingUnhandledAction_BindingState() async throws {
       struct State: Equatable {

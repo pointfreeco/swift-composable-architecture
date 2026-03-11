@@ -46,6 +46,7 @@ final class ScopeCacheTests: BaseTCATestCase {
     #endif
   }
 
+  @available(*, deprecated)
   @MainActor
   func testOptionalScope_StoreIfLet() {
     #if DEBUG

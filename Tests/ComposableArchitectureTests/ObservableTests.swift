@@ -2,6 +2,10 @@ import Combine
 import ComposableArchitecture
 import XCTest
 
+@available(iOS, deprecated: 17)
+@available(macOS, deprecated: 14)
+@available(tvOS, deprecated: 17)
+@available(watchOS, deprecated: 10)
 final class ObservableTests: BaseTCATestCase {
   func testBasics() async {
     var state = ChildState()
@@ -608,7 +612,7 @@ final class ObservableTests: BaseTCATestCase {
 
   func testArrayMutate() {
     var state = ParentState(children: [ChildState()])
-    var didChange = LockIsolated(false)
+    let didChange = LockIsolated(false)
 
     withPerceptionTracking {
       _ = state.children

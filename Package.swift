@@ -17,6 +17,14 @@ let package = Package(
       targets: ["ComposableArchitecture"]
     )
   ],
+  traits: [
+    .trait(
+      name: "ComposableArchitecture2Deprecations",
+      description: """
+        Prepare for the next major release by enabling some of the more viral deprecations.
+        """
+    ),
+  ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "1.0.2"),

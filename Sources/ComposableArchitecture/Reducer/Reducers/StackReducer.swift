@@ -424,10 +424,10 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
     self.column = column
   }
 
-  public func _reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
+  public func _reduce(into state: inout Base.State, action: Base.Action) -> _Effect<Base.Action> {
     let idsBefore = state[keyPath: self.toStackState]._mounted
-    let destinationEffects: Effect<Base.Action>
-    let baseEffects: Effect<Base.Action>
+    let destinationEffects: _Effect<Base.Action>
+    let baseEffects: _Effect<Base.Action>
 
     switch self.toStackAction.extract(from: action) {
     case .element(let elementID, let destinationAction):
@@ -559,7 +559,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
 
     let idsAfter = state[keyPath: self.toStackState].ids
 
-    let cancelEffects: Effect<Base.Action> =
+    let cancelEffects: _Effect<Base.Action> =
       areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(
@@ -567,7 +567,7 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
           ._cancel(navigationID: self.navigationIDPath(for: $0))
         }
       )
-    let presentEffects: Effect<Base.Action> =
+    let presentEffects: _Effect<Base.Action> =
       areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(

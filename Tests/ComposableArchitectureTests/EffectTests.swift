@@ -11,7 +11,7 @@ final class EffectTests: BaseTCATestCase {
       let clock = TestClock()
       let values = LockIsolated<[Int]>([])
 
-      let effect = Effect<Int>.concatenate(
+      let effect = _Effect<Int>.concatenate(
         (1...3).map { count in
           .run { send in
             try await clock.sleep(for: .seconds(count))
@@ -48,7 +48,7 @@ final class EffectTests: BaseTCATestCase {
     await withMainSerialExecutor { [mainQueue] in
       let values = LockIsolated<[Int]>([])
 
-      let effect = Effect<Int>.concatenate(
+      let effect = _Effect<Int>.concatenate(
         .publisher { Just(1).delay(for: 1, scheduler: mainQueue) }
       )
 
@@ -74,7 +74,7 @@ final class EffectTests: BaseTCATestCase {
     await withMainSerialExecutor {
       let clock = TestClock()
 
-      let effect = Effect<Int>.merge(
+      let effect = _Effect<Int>.merge(
         (1...3).map { count in
           .run { send in
             try await clock.sleep(for: .seconds(count))
@@ -109,7 +109,7 @@ final class EffectTests: BaseTCATestCase {
   func testDoubleCancelInFlight() async {
     var result: Int?
 
-    let effect = Effect.send(42)
+    let effect = _Effect.send(42)
       .cancellable(id: "id", cancelInFlight: true)
       .cancellable(id: "id", cancelInFlight: true)
 
@@ -193,7 +193,7 @@ final class EffectTests: BaseTCATestCase {
     let effect = withDependencies {
       $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
     } operation: {
-      Effect.send(()).map { date() }
+      _Effect.send(()).map { date() }
     }
     var output: Date?
     for await date in effect.actions {
@@ -206,7 +206,7 @@ final class EffectTests: BaseTCATestCase {
       let effect = withDependencies {
         $0.date.now = Date(timeIntervalSince1970: 1_234_567_890)
       } operation: {
-        Effect<Void>.run { send in await send(()) }.map { date() }
+        _Effect<Void>.run { send in await send(()) }.map { date() }
       }
       output = nil
       for await date in effect.actions {

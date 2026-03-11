@@ -151,12 +151,13 @@ private struct Root {
     }
 
     var body: some ReducerOf<Self> {
-      Scope(state: \.featureA, action: \.featureA) {
-        Feature()
-      }
-      Scope(state: \.featureB, action: \.featureB) {
-        Feature()
-      }
+      EmptyReducer()
+        .ifCaseLet(\.featureA, action: \.featureA) {
+          Feature()
+        }
+        .ifCaseLet(\.featureB, action: \.featureB) {
+          Feature()
+        }
     }
   }
 }

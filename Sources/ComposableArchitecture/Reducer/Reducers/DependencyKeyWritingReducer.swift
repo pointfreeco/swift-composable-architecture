@@ -168,7 +168,7 @@ public struct _DependencyKeyWritingReducer<Base: Reducer>: Reducer {
   @inlinable
   public func _reduce(
     into state: inout Base.State, action: Base.Action
-  ) -> Effect<Base.Action> {
+  ) -> _Effect<Base.Action> {
     withDependencies {
       self.update(&$0)
     } operation: {

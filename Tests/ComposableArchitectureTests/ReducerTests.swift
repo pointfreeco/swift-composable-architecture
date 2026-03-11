@@ -7,6 +7,7 @@ import os.signpost
 final class ReducerTests: BaseTCATestCase {
   var cancellables: Set<AnyCancellable> = []
 
+  @available(*, deprecated)
   func testCallableAsFunction() {
     let reducer = Reduce<Int, Void> { state, _ in
       state += 1
@@ -104,12 +105,14 @@ final class ReducerTests: BaseTCATestCase {
     XCTAssertTrue(second)
   }
 
+  @available(*, deprecated)
   func testDefaultSignpost() async {
     let reducer = EmptyReducer<Int, Void>().signpost(log: .default)
     var n = 0
     for await _ in reducer.reduce(into: &n, action: ()).actions {}
   }
 
+  @available(*, deprecated)
   func testDisabledSignpost() async {
     let reducer = EmptyReducer<Int, Void>().signpost(log: .disabled)
     var n = 0

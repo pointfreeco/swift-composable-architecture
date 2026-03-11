@@ -1,6 +1,6 @@
 import Combine
 
-extension Effect {
+extension _Effect {
   /// Creates an effect from a Combine publisher.
   ///
   /// - Parameter createPublisher: The closure to execute when the effect is performed.
@@ -14,9 +14,9 @@ public struct _EffectPublisher<Action>: Publisher {
   public typealias Output = Action
   public typealias Failure = Never
 
-  let effect: Effect<Action>
+  let effect: _Effect<Action>
 
-  public init(_ effect: Effect<Action>) {
+  public init(_ effect: _Effect<Action>) {
     self.effect = effect
   }
 
@@ -34,7 +34,7 @@ public struct _EffectPublisher<Action>: Publisher {
       return .create { subscriber in
         let task = Task(name: name, priority: priority) { @MainActor in
           defer { subscriber.send(completion: .finished) }
-          await operation(Send { subscriber.send($0) })
+          await operation(_Send { subscriber.send($0) })
         }
         return AnyCancellable { @Sendable in
           task.cancel()

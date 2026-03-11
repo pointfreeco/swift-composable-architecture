@@ -49,6 +49,10 @@ final class StorePerceptionTests: BaseTCATestCase {
     }
   #endif
 
+  @available(iOS, deprecated: 17)
+  @available(macOS, deprecated: 14)
+  @available(tvOS, deprecated: 17)
+  @available(watchOS, deprecated: 10)
   @MainActor
   func testPerceptionCheck_AccessStateWithTracking() {
     @MainActor
