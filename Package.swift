@@ -23,7 +23,7 @@ let package = Package(
       description: """
         Prepare for the next major release by enabling some of the more viral deprecations.
         """
-    ),
+    )
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
