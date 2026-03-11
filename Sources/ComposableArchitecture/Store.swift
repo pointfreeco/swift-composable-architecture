@@ -152,27 +152,6 @@ public final class Store<State, Action>: _Store {
     }
   }
 
-  /// Calls the given closure with a snapshot of the current state of the store.
-  ///
-  /// A lightweight way of accessing store state when state is not observable and ``state-1qxwl`` is
-  /// unavailable.
-  ///
-  /// - Parameter body: A closure that takes the current state of the store as its sole argument. If
-  ///   the closure has a return value, that value is also used as the return value of the
-  ///   `withState` method. The state argument reflects the current state of the store only for the
-  ///   duration of the closure's execution, and is only observable over time, _e.g._ by SwiftUI, if
-  ///   it conforms to ``ObservableState``.
-  /// - Returns: The return value, if any, of the `body` closure.
-  public func withState<R>(_ body: (_ state: State) -> R) -> R {
-    #if DEBUG
-      _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-        body(self.currentState)
-      }
-    #else
-      body(self.currentState)
-    #endif
-  }
-
   /// Sends an action to the store.
   ///
   /// This method returns a ``StoreTask``, which represents the lifecycle of the effect started from
