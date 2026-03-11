@@ -130,7 +130,7 @@ struct Feature {
       case .numberFactButtonTapped:
         return .run { [count = state.count] send in
           let (data, _) = try await URLSession.shared.data(
-            from: URL(string: "http://numbersapi.com/\(count)/trivia")!
+            from: URL(string: "http://number-trivia.com/\(count)/trivia")!
           )
           await send(
             .numberFactResponse(String(decoding: data, as: UTF8.self))
@@ -335,7 +335,7 @@ struct MyApp: App {
           Feature(
             numberFact: { number in
               let (data, _) = try await URLSession.shared.data(
-                from: URL(string: "http://numbersapi.com/\(number)")!
+                from: URL(string: "http://number-trivia.com/\(number)")!
               )
               return String(decoding: data, as: UTF8.self)
             }
@@ -396,7 +396,7 @@ extension NumberFactClient: DependencyKey {
   static let liveValue = Self(
     fetch: { number in
       let (data, _) = try await URLSession.shared
-        .data(from: URL(string: "http://numbersapi.com/\(number)")!
+        .data(from: URL(string: "http://number-trivia.com/\(number)")!
       )
       return String(decoding: data, as: UTF8.self)
     }

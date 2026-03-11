@@ -136,8 +136,8 @@ struct EffectsBasicsView: View {
       }
 
       Section {
-        Button("Number facts provided by numbersapi.com") {
-          openURL(URL(string: "http://numbersapi.com")!)
+        Button("Number facts provided by number-trivia.com") {
+          openURL(URL(string: "http://number-trivia.com")!)
         }
         .foregroundStyle(.secondary)
         .frame(maxWidth: .infinity)
