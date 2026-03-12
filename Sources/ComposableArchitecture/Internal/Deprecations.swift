@@ -12,6 +12,229 @@
 
 // NB: Deprecated with 1.26.0:
 
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+@dynamicMemberLookup
+@propertyWrapper
+public struct BindingViewState<Value> {
+  let binding: Binding<Value>
+  let initialValue: Value
+
+  init(binding: Binding<Value>) {
+    self.binding = binding
+    self.initialValue = binding.wrappedValue
+  }
+
+  public var wrappedValue: Value {
+    get { self.binding.wrappedValue }
+    set { self.binding.wrappedValue = newValue }
+  }
+
+  public var projectedValue: Binding<Value> {
+    self.binding
+  }
+
+  public subscript<Subject>(
+    dynamicMember keyPath: WritableKeyPath<Value, Subject>
+  ) -> BindingViewState<Subject> {
+    BindingViewState<Subject>(binding: self.binding[dynamicMember: keyPath])
+  }
+}
+
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+extension BindingViewState: Equatable where Value: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.initialValue == rhs.initialValue && lhs.wrappedValue == rhs.wrappedValue
+  }
+}
+
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+extension BindingViewState: Hashable where Value: Hashable {
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(self.initialValue)
+    hasher.combine(self.wrappedValue)
+  }
+}
+
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+extension BindingViewState: CustomReflectable {
+  public var customMirror: Mirror {
+    Mirror(reflecting: self.wrappedValue)
+  }
+}
+
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+extension BindingViewState: CustomDumpRepresentable {
+  public var customDumpValue: Any {
+    self.wrappedValue
+  }
+}
+
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+extension BindingViewState: CustomDebugStringConvertible
+where Value: CustomDebugStringConvertible {
+  public var debugDescription: String {
+    self.wrappedValue.debugDescription
+  }
+}
+
+@available(
+  *,
+  deprecated,
+  message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+@dynamicMemberLookup
+@propertyWrapper
+@preconcurrency @MainActor
+public struct BindingViewStore<State> {
+  let store: Store<State, BindingAction<State>>
+  #if DEBUG
+    let bindableActionType: Any.Type
+    let fileID: StaticString
+    let filePath: StaticString
+    let line: UInt
+    let column: UInt
+  #endif
+
+  init<Action: BindableAction<State>>(
+    store: Store<State, Action>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) {
+    self.store = store._scope(state: { $0 }, action: { .binding($0) })
+    #if DEBUG
+      self.bindableActionType = type(of: Action.self)
+      self.fileID = fileID
+      self.filePath = filePath
+      self.line = line
+      self.column = column
+    #endif
+  }
+
+  public init(projectedValue: Self) {
+    self = projectedValue
+  }
+
+  public var wrappedValue: State {
+    self.store.withState { $0 }
+  }
+
+  public var projectedValue: Self {
+    get { self }
+    set { self = newValue }
+  }
+
+  public subscript<Value>(dynamicMember keyPath: KeyPath<State, Value>) -> Value {
+    self.wrappedValue[keyPath: keyPath]
+  }
+}
+
+#if DEBUG
+  final class BindableActionViewStoreDebugger<Value: Sendable>: Sendable {
+    enum Context {
+      case bindingState
+      case bindingStore
+      case viewStore
+    }
+
+    let value: Value
+    let bindableActionType: Any.Type
+    let context: Context
+    let isInvalidated: @MainActor @Sendable () -> Bool
+    let fileID: StaticString
+    let filePath: StaticString
+    let line: UInt
+    let column: UInt
+    let wasCalled = LockIsolated(false)
+
+    init(
+      value: Value,
+      bindableActionType: Any.Type,
+      context: Context,
+      isInvalidated: @escaping @MainActor @Sendable () -> Bool,
+      fileID: StaticString,
+      filePath: StaticString,
+      line: UInt,
+      column: UInt
+    ) {
+      self.value = value
+      self.bindableActionType = bindableActionType
+      self.context = context
+      self.isInvalidated = isInvalidated
+      self.fileID = fileID
+      self.filePath = filePath
+      self.line = line
+      self.column = column
+    }
+
+    deinit {
+      guard !self.wasCalled.value
+      else { return }
+
+      Task {
+        @MainActor [
+          context, fileID, filePath, line, column, value, bindableActionType, isInvalidated
+        ] in
+        let tmp = isInvalidated()
+        guard !tmp else { return }
+        var valueDump: String {
+          var valueDump = ""
+          customDump(value, to: &valueDump, maxDepth: 0)
+          return valueDump
+        }
+        reportIssue(
+          """
+          A binding action sent from a store \
+          \(context == .bindingState ? "for binding state defined " : "")at \
+          "\(fileID):\(line)" was not handled.
+
+            Action:
+              \(typeName(bindableActionType)).binding(.set(_, \(valueDump)))
+
+          To fix this, invoke "BindingReducer()" from your feature reducer's "body".
+          """,
+          fileID: fileID,
+          filePath: filePath,
+          line: line,
+          column: column
+        )
+      }
+    }
+  }
+#endif
+
 extension _Effect {
   @available(
     *,
@@ -32,8 +255,8 @@ extension _Effect {
 extension Store {
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
   )
   public func withState<R>(_ body: (_ state: State) -> R) -> R {
