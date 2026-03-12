@@ -235,9 +235,6 @@ extension _Effect {
   ///
   /// - Parameter effects: A variadic list of effects.
   /// - Returns: A new effect
-  #if ComposableArchitecture2Deprecations
-    @available(*, deprecated, message: "Use '.run' with 'async let' or a task group instead")
-  #endif
   @inlinable
   public static func merge(_ effects: Self...) -> Self {
     Self.merge(effects)
@@ -248,9 +245,6 @@ extension _Effect {
   ///
   /// - Parameter effects: A sequence of effects.
   /// - Returns: A new effect
-  #if ComposableArchitecture2Deprecations
-    @available(*, deprecated, message: "Use '.run' with 'async let' or a task group instead")
-  #endif
   @inlinable
   public static func merge(_ effects: some Sequence<Self>) -> Self {
     effects.reduce(.none) { $0.merge(with: $1) }
@@ -260,9 +254,6 @@ extension _Effect {
   ///
   /// - Parameter other: Another effect.
   /// - Returns: An effect that runs this effect and the other at the same time.
-  #if ComposableArchitecture2Deprecations
-    @available(*, deprecated, message: "Use '.run' with 'async let' or a task group instead")
-  #endif
   @inlinable
   public func merge(with other: Self) -> Self {
     switch (self.operation, other.operation) {
