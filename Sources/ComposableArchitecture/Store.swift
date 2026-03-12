@@ -337,6 +337,9 @@ public final class Store<State, Action>: _Store {
   /// store.publisher.alert
   ///   .sink { ... }
   /// ```
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, message: "Use observation ('Observations', 'observe') instead")
+  #endif
   public var publisher: StorePublisher<State> {
     StorePublisher(
       store: self,
@@ -381,6 +384,9 @@ extension Store: ObservableObject {}
 public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
 
 /// A publisher of store state.
+#if ComposableArchitecture2Deprecations
+  @available(*, deprecated, message: "Use observation ('Observations', 'observe') instead")
+#endif
 @dynamicMemberLookup
 public struct StorePublisher<State>: Publisher {
   public typealias Output = State
