@@ -67,17 +67,17 @@ struct MultipleDestinationsView: View {
       }
     }
     .navigationDestination(
-      item: $store.scope(state: \.destination?.drillDown, action: \.destination.drillDown)
+      item: $store.scope(state: \.$destination, action: \.destination).drillDown
     ) { store in
       CounterView(store: store)
     }
     .popover(
-      item: $store.scope(state: \.destination?.popover, action: \.destination.popover)
+      item: $store.scope(state: \.$destination, action: \.destination).popover
     ) { store in
       CounterView(store: store)
     }
     .sheet(
-      item: $store.scope(state: \.destination?.sheet, action: \.destination.sheet)
+      item: $store.scope(state: \.$destination, action: \.destination).sheet
     ) { store in
       CounterView(store: store)
     }

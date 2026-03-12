@@ -7,7 +7,7 @@ where State: CaseReducerState, Body: Reducer, Body.State == State, Body.Action =
   associatedtype State = State
   associatedtype Action = Action
   associatedtype Body = Body
-  associatedtype CaseScope
+  associatedtype CaseScope: _CaseScopeProtocol
 
   @ReducerBuilder<State, Action>
   static var body: Body { get }
@@ -21,6 +21,8 @@ extension CaseReducer {
     Self.body
   }
 }
+
+public protocol _CaseScopeProtocol {}
 
 /// A state type that is associated with a ``CaseReducer``.
 public protocol CaseReducerState {
