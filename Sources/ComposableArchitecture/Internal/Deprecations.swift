@@ -32,8 +32,8 @@ extension _Effect {
 extension Store {
   @available(
     *,
-     deprecated,
-     message:
+    deprecated,
+    message:
       "Use '@ObservableState', instead. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#Using-ObservableState"
   )
   public func withState<R>(_ body: (_ state: State) -> R) -> R {
