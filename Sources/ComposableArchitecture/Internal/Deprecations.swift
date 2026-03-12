@@ -262,6 +262,12 @@ extension TestStore {
   }
 }
 
+@available(
+  *,
+   deprecated,
+   message:
+    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
 extension TestStore where Action: BindableAction, State == Action.State {
   public var bindings: BindingViewStore<State> {
     self._bindings(action: AnyCasePath())
