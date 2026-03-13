@@ -435,6 +435,24 @@ private enum ReducerCase {
     let cases: [ReducerCase]
   }
 
+  private static func renderedIfConfig(
+    _ configs: [IfConfig],
+    transform: (ReducerCase) -> String?
+  ) -> String? {
+    let configs = configs.compactMap { config -> String? in
+      let cases = config.cases.compactMap(transform).filter {
+        !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+      }
+      guard !cases.isEmpty else { return nil }
+      return """
+        \(config.poundKeyword.text) \(config.condition?.trimmedDescription ?? "")
+        \(cases.joined(separator: "\n"))
+        """
+    }
+    guard !configs.isEmpty else { return nil }
+    return configs.joined(separator: "\n") + "#endif\n"
+  }
+
   var stateCaseDecl: String {
     switch self {
     case .element(let element, let attribute):
@@ -451,15 +469,7 @@ private enum ReducerCase {
       }
 
     case .ifConfig(let configs):
-      return
-        configs
-        .map {
-          """
-          \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
-          \($0.cases.map(\.stateCaseDecl).joined(separator: "\n"))
-          """
-        }
-        .joined(separator: "\n") + "#endif\n"
+      return Self.renderedIfConfig(configs) { $0.stateCaseDecl } ?? ""
     }
   }
 
@@ -487,16 +497,7 @@ private enum ReducerCase {
       }
 
     case .ifConfig(let configs):
-      return
-        configs
-        .map {
-          let actionCaseDecls = $0.cases.map(\.actionCaseDecl)
-          return """
-            \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
-            \(actionCaseDecls.joined(separator: "\n"))
-            """
-        }
-        .joined(separator: "\n") + "#endif\n"
+      return Self.renderedIfConfig(configs) { $0.actionCaseDecl } ?? ""
     }
   }
 
@@ -521,17 +522,7 @@ private enum ReducerCase {
         return nil
       }
     case .ifConfig(let configs):
-      return
-        configs
-        .map {
-          let ifCaseLets = $0.cases.compactMap(\.reducerIfCaseLet)
-          return """
-            \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
-            \(ifCaseLets.joined(separator: "\n"))
-
-            """
-        }
-        .joined() + "#endif\n"
+      return Self.renderedIfConfig(configs) { $0.reducerIfCaseLet }
     }
   }
 
@@ -579,15 +570,7 @@ private enum ReducerCase {
           """
       }
     case .ifConfig(let configs):
-      return
-        configs
-        .map {
-          """
-          \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
-          \($0.cases.map(\.storeCasePathProperty).joined(separator: "\n"))
-          """
-        }
-        .joined(separator: "\n") + "#endif\n"
+      return Self.renderedIfConfig(configs) { $0.storeCasePathProperty } ?? ""
     }
   }
 
@@ -607,15 +590,7 @@ private enum ReducerCase {
         return "case \(element.trimmedDescription)"
       }
     case .ifConfig(let configs):
-      return
-        configs
-        .map {
-          """
-          \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
-          \($0.cases.map(\.storeCase).joined(separator: "\n"))
-          """
-        }
-        .joined(separator: "\n") + "#endif\n"
+      return Self.renderedIfConfig(configs) { $0.storeCase } ?? ""
     }
   }
 
@@ -649,15 +624,7 @@ private enum ReducerCase {
           """
       }
     case .ifConfig(let configs):
-      return
-        configs
-        .map {
-          """
-          \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
-          \($0.cases.map(\.storeScope).joined(separator: "\n"))
-          """
-        }
-        .joined(separator: "\n") + "#endif\n"
+      return Self.renderedIfConfig(configs) { $0.storeScope } ?? ""
     }
   }
 }
