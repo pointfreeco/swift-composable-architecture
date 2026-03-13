@@ -295,6 +295,9 @@ extension _Effect {
   ///
   /// - Parameter effects: A variadic list of effects.
   /// - Returns: A new effect
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, message: "Sequence work directly in a '.run' instead")
+  #endif
   @inlinable
   public static func concatenate(_ effects: Self...) -> Self {
     Self.concatenate(effects)
@@ -305,6 +308,9 @@ extension _Effect {
   ///
   /// - Parameter effects: A collection of effects.
   /// - Returns: A new effect
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, message: "Sequence work directly in a '.run' instead")
+  #endif
   @inlinable
   public static func concatenate(_ effects: some Collection<Self>) -> Self {
     effects.reduce(.none) { $0.concatenate(with: $1) }
@@ -316,6 +322,9 @@ extension _Effect {
   /// - Parameter other: Another effect.
   /// - Returns: An effect that runs this effect, and after it completes or is cancelled, runs the
   ///   other.
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, message: "Sequence work directly in a '.run' instead")
+  #endif
   @inlinable
   @_disfavoredOverload
   public func concatenate(with other: Self) -> Self {
@@ -362,6 +371,13 @@ extension _Effect {
   /// - Parameter transform: A closure that transforms the upstream effect's action to a new action.
   /// - Returns: A publisher that uses the provided closure to map elements from the upstream effect
   ///   to new elements that it then publishes.
+  #if ComposableArchitecture2Deprecations
+    @available(
+      *,
+      deprecated,
+      message: "Avoid transforming effects; construct them directly in a feature instead"
+    )
+  #endif
   @inlinable
   public func map<T>(_ transform: @escaping @Sendable (Action) -> T) -> _Effect<T> {
     switch self.operation {
