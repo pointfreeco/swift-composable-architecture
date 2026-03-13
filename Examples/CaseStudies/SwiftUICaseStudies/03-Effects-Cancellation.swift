@@ -99,8 +99,8 @@ struct EffectsCancellationView: View {
       }
 
       Section {
-        Button("Number facts provided by numbersapi.com") {
-          self.openURL(URL(string: "http://numbersapi.com")!)
+        Button("Number facts provided by number-trivia.com") {
+          self.openURL(URL(string: "http://number-trivia.com")!)
         }
         .foregroundStyle(.secondary)
         .frame(maxWidth: .infinity)
