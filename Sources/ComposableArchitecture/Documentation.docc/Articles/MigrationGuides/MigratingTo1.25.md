@@ -122,7 +122,7 @@ Architecture 2.0, `Effect` will change shape, so using the type alias now will e
 
 ```diff
 -func sharedHelper(state: inout State) -> Effect<Action> {
-+func sharedHelper(state: inout State) -> Effect<Action> {
++func sharedHelper(state: inout State) -> EffectOf<Self> {
 ```
 
 ### `Effect.concatenate`, `Effect.map`
