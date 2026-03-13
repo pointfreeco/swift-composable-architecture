@@ -339,6 +339,27 @@ public final class Store<State, Action>: _Store {
   /// ```
   #if ComposableArchitecture2Deprecations
     @available(*, deprecated, message: "Use observation ('Observations', 'observe') instead")
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Use observation ('Observations', 'observe') instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Use observation ('Observations', 'observe') instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Use observation ('Observations', 'observe') instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Use observation ('Observations', 'observe') instead"
+    )
   #endif
   public var publisher: StorePublisher<State> {
     StorePublisher(
@@ -386,6 +407,27 @@ public typealias StoreOf<R: Reducer> = Store<R.State, R.Action>
 /// A publisher of store state.
 #if ComposableArchitecture2Deprecations
   @available(*, deprecated, message: "Use observation ('Observations', 'observe') instead")
+#else
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use observation ('Observations', 'observe') instead"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use observation ('Observations', 'observe') instead"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use observation ('Observations', 'observe') instead"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use observation ('Observations', 'observe') instead"
+  )
 #endif
 @dynamicMemberLookup
 public struct StorePublisher<State>: Publisher {

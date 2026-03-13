@@ -172,6 +172,27 @@ extension Binding {
       deprecated,
       message: "Scope state using projected '\\.$destination' syntax instead"
     )
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
   #endif
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
@@ -267,6 +288,27 @@ extension ObservedObject.Wrapper {
     @available(
       *,
       deprecated,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
       message: "Scope state using projected '\\.$destination' syntax instead"
     )
   #endif
@@ -386,6 +428,27 @@ extension SwiftUI.Bindable {
     @available(
       *,
       deprecated,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
       message: "Scope state using projected '\\.$destination' syntax instead"
     )
   #endif
@@ -539,6 +602,27 @@ extension Perception.Bindable {
       deprecated,
       message: "Scope state using projected '\\.$destination' syntax instead"
     )
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
   #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
@@ -632,6 +716,27 @@ extension UIBindable {
     @available(
       *,
       deprecated,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
       message: "Scope state using projected '\\.$destination' syntax instead"
     )
   #endif
@@ -835,18 +940,28 @@ extension Store where State: ObservableState {
   where ChildState.StateReducer.Action == ChildAction {
     get {
       let store: Store<ChildState, ChildAction>? = self[
-        id: id, state: state, action: action,
-        isInViewBody: isInViewBody, fileID: fileID, filePath: filePath,
-        line: line, column: column
+        id: id,
+        state: state,
+        action: action,
+        isInViewBody: isInViewBody,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       ]
       return store.map { $0.case }
     }
     set {
       guard newValue == nil else { return }
       self[
-        id: id, state: state, action: action,
-        isInViewBody: isInViewBody, fileID: fileID, filePath: filePath,
-        line: line, column: column
+        id: id,
+        state: state,
+        action: action,
+        isInViewBody: isInViewBody,
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
       ] = nil
     }
   }

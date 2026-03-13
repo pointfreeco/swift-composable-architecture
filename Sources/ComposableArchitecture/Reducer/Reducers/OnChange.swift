@@ -65,6 +65,27 @@ extension Reducer {
       deprecated,
       message: "Use 'onChange' that directly returns an 'EffectOf<Feature>' instead"
     )
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Use 'onChange' that directly returns an 'EffectOf<Feature>' instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Use 'onChange' that directly returns an 'EffectOf<Feature>' instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Use 'onChange' that directly returns an 'EffectOf<Feature>' instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Use 'onChange' that directly returns an 'EffectOf<Feature>' instead"
+    )
   #endif
   @inlinable
   public func onChange<V: Equatable, R: Reducer>(

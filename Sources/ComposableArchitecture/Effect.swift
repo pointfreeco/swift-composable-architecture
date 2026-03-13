@@ -4,6 +4,27 @@ import SwiftUI
 
 #if ComposableArchitecture2Deprecations
   @available(*, deprecated, message: "Use 'EffectOf<Feature>' instead")
+#else
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use 'EffectOf<Feature>' instead"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use 'EffectOf<Feature>' instead"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use 'EffectOf<Feature>' instead"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use 'EffectOf<Feature>' instead"
+  )
 #endif
 public typealias Effect = _Effect
 
@@ -156,6 +177,27 @@ extension _Effect {
 
 #if ComposableArchitecture2Deprecations
   @available(*, deprecated, message: "Use 'SendOf<Feature>' instead")
+#else
+  @available(
+    iOS,
+    deprecated: 9999,
+    message: "Use 'SendOf<Feature>' instead"
+  )
+  @available(
+    macOS,
+    deprecated: 9999,
+    message: "Use 'SendOf<Feature>' instead"
+  )
+  @available(
+    tvOS,
+    deprecated: 9999,
+    message: "Use 'SendOf<Feature>' instead"
+  )
+  @available(
+    watchOS,
+    deprecated: 9999,
+    message: "Use 'SendOf<Feature>' instead"
+  )
 #endif
 public typealias Send = _Send
 
@@ -297,6 +339,27 @@ extension _Effect {
   /// - Returns: A new effect
   #if ComposableArchitecture2Deprecations
     @available(*, deprecated, message: "Sequence work directly in a '.run' instead")
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
   #endif
   @inlinable
   public static func concatenate(_ effects: Self...) -> Self {
@@ -310,6 +373,27 @@ extension _Effect {
   /// - Returns: A new effect
   #if ComposableArchitecture2Deprecations
     @available(*, deprecated, message: "Sequence work directly in a '.run' instead")
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
   #endif
   @inlinable
   public static func concatenate(_ effects: some Collection<Self>) -> Self {
@@ -324,6 +408,27 @@ extension _Effect {
   ///   other.
   #if ComposableArchitecture2Deprecations
     @available(*, deprecated, message: "Sequence work directly in a '.run' instead")
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Sequence work directly in a '.run' instead"
+    )
   #endif
   @inlinable
   @_disfavoredOverload
@@ -375,6 +480,27 @@ extension _Effect {
     @available(
       *,
       deprecated,
+      message: "Avoid transforming effects; construct them directly in a feature instead"
+    )
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Avoid transforming effects; construct them directly in a feature instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Avoid transforming effects; construct them directly in a feature instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Avoid transforming effects; construct them directly in a feature instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
       message: "Avoid transforming effects; construct them directly in a feature instead"
     )
   #endif
