@@ -10,7 +10,7 @@
   import UIKit
 #endif
 
-// NB: Deprecated with 1.26.0:
+// NB: Deprecated with 1.25.0:
 
 @available(
   *,
@@ -269,8 +269,6 @@ extension Store {
     #endif
   }
 }
-
-// NB: Deprecated with 1.25.0:
 
 extension _Effect {
   @available(
