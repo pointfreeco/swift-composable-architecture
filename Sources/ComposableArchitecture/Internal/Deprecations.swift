@@ -3396,6 +3396,18 @@ extension TestStore {
     )
   }
 
+  @available(*, deprecated)
+  func _bindings<ViewAction: BindableAction>(
+    action toViewAction: AnyCasePath<Action, ViewAction>
+  ) -> BindingViewStore<State> where State == ViewAction.State {
+    BindingViewStore(
+      store: Store(initialState: self.state) {
+        BindingReducer(action: toViewAction.extract(from:))
+      }
+      ._scope(state: { $0 }, action: toViewAction.embed)
+    )
+  }
+
   @available(
     *,
     deprecated,
