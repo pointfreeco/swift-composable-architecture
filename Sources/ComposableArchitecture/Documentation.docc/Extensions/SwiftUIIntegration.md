@@ -11,6 +11,8 @@ designed with SwiftUI in mind, and comes with many powerful tools to integrate i
 
 ### Alerts and dialogs
 
+- ``AlertState``
+- ``ConfirmationDialogState``
 - ``SwiftUI/View/alert(_:)``
 - ``SwiftUI/View/confirmationDialog(_:)``
 - ``_EphemeralState``

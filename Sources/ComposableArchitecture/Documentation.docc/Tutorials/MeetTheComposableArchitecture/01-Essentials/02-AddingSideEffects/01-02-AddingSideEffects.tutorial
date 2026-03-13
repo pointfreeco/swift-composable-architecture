@@ -71,11 +71,11 @@
       
       @Step {
         Now the question is: how can we perform a side-effect? We will be using 
-        [numbersapi.com][numbersapi.com] to fetch a fact for the state's current count. We might
+        [number-trivia.com][number-trivia.com] to fetch a fact for the state's current count. We might
         hope we can just use `URLSession` directly in the reducer to perform some async work, but
         unfortunately that is not allowed. 
         
-        [numbersapi.com]: http://www.numbersapi.com
+        [number-trivia.com]: http://www.number-trivia.com
         
         @Code(name: "CounterFeature.swift", file: 01-02-01-code-0005.swift)
       }
@@ -116,13 +116,13 @@
       
       @Step {
         The trailing closure of `.run` is the perfect place to perform our network request to fetch
-        data from [numbersapi.com][numbersapi.com] and turn it into a string.
+        data from [number-trivia.com][number-trivia.com] and turn it into a string.
         
-        > Tip: Unfortunately [numbersapi.com][numbersapi.com] does not offer HTTPS, so you will need 
+        > Tip: Unfortunately [number-trivia.com][number-trivia.com] does not offer HTTPS, so you will need 
         > to add an entry to your application's Info.plist in order to allow HTTP requests. See 
         > [this][always-allow] article for information on how to do that.
         
-        [numbersapi.com]: http://www.numbersapi.com
+        [number-trivia.com]: http://www.number-trivia.com
         [always-allow]: https://developer.apple.com/documentation/bundleresources/information_property_list/nsapptransportsecurity
                 
         @Code(name: "CounterFeature.swift", file: 01-02-02-code-0002.swift)
