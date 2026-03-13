@@ -16,7 +16,7 @@
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 @dynamicMemberLookup
 @propertyWrapper
@@ -49,7 +49,7 @@ public struct BindingViewState<Value> {
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 extension BindingViewState: Equatable where Value: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
@@ -61,7 +61,7 @@ extension BindingViewState: Equatable where Value: Equatable {
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 extension BindingViewState: Hashable where Value: Hashable {
   public func hash(into hasher: inout Hasher) {
@@ -74,7 +74,7 @@ extension BindingViewState: Hashable where Value: Hashable {
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 extension BindingViewState: CustomReflectable {
   public var customMirror: Mirror {
@@ -86,7 +86,7 @@ extension BindingViewState: CustomReflectable {
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 extension BindingViewState: CustomDumpRepresentable {
   public var customDumpValue: Any {
@@ -98,7 +98,7 @@ extension BindingViewState: CustomDumpRepresentable {
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 extension BindingViewState: CustomDebugStringConvertible
 where Value: CustomDebugStringConvertible {
@@ -111,7 +111,7 @@ where Value: CustomDebugStringConvertible {
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 @dynamicMemberLookup
 @propertyWrapper
@@ -2511,7 +2511,7 @@ extension Store {
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 @propertyWrapper
 public struct BindingState<Value> {
@@ -2611,7 +2611,7 @@ extension BindingState: Sendable where Value: Sendable {}
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 extension BindableAction {
   public static func set<Value: Equatable & Sendable>(
@@ -2626,7 +2626,7 @@ extension BindableAction {
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 extension BindingAction {
   public static func set<Value: Equatable & Sendable>(
@@ -2658,7 +2658,7 @@ extension BindingAction {
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 extension BindingAction.AllCasePaths {
   public subscript<Value: Equatable & Sendable>(
@@ -2689,7 +2689,7 @@ extension BindingReducer {
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 extension BindingViewStore {
   public subscript<Value: Equatable & Sendable>(
@@ -2732,7 +2732,7 @@ extension BindingViewStore {
   *,
   deprecated,
   message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
 )
 extension ViewStore where ViewAction: BindableAction, ViewAction.State == ViewState {
   public subscript<Value: Equatable & Sendable>(
@@ -3418,6 +3418,18 @@ extension TestStore {
     action toViewAction: AnyCasePath<Action, ViewAction>
   ) -> BindingViewStore<State> where State == ViewAction.State {
     self._bindings(action: toViewAction)
+  }
+}
+
+@available(
+  *,
+   deprecated,
+   message:
+    "Derive bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
+)
+extension TestStore where Action: BindableAction, State == Action.State {
+  public var bindings: BindingViewStore<State> {
+    self._bindings(action: AnyCasePath())
   }
 }
 
