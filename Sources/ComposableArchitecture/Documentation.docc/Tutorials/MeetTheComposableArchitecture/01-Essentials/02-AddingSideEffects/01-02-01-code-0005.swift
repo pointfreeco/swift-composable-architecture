@@ -28,7 +28,7 @@ struct CounterFeature {
         state.isLoading = true
         
         let (data, _) = try await URLSession.shared
-          .data(from: URL(string: "http://numbersapi.com/\(state.count)")!)
+          .data(from: URL(string: "http://number-trivia.com/\(state.count)")!)
         // 🛑 'async' call in a function that does not support concurrency
         // 🛑 Errors thrown from here are not handled
         
