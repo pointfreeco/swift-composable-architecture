@@ -166,6 +166,13 @@ extension Binding {
   ///   - line: The line.
   ///   - column: The column.
   /// - Returns: A binding of an optional child store.
+  #if ComposableArchitecture2Deprecations
+    @available(
+      *,
+      deprecated,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+  #endif
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
@@ -187,9 +194,38 @@ extension Binding {
       column: column
     ]
   }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state: KeyPath<State, PresentationState<ChildState>>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
+    self[
+      id: wrappedValue.currentState[keyPath: state].wrappedValue.flatMap(_identifiableID),
+      state: state.appending(path: \.wrappedValue),
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
 }
 
 extension ObservedObject.Wrapper {
+  #if ComposableArchitecture2Deprecations
+    @available(
+      *,
+      deprecated,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+  #endif
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
@@ -206,6 +242,32 @@ extension ObservedObject.Wrapper {
           id: self[dynamicMember: \._currentState].wrappedValue[keyPath: state]
             .flatMap(_identifiableID),
           state: state,
+          action: action,
+          isInViewBody: _isInPerceptionTracking,
+          fileID: _HashableStaticString(rawValue: fileID),
+          filePath: _HashableStaticString(rawValue: filePath),
+          line: line,
+          column: column
+        ]
+    ]
+  }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state: KeyPath<State, PresentationState<ChildState>>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where ObjectType == Store<State, Action> {
+    self[
+      dynamicMember:
+        \.[
+          id: self[dynamicMember: \._currentState].wrappedValue[keyPath: state].wrappedValue
+            .flatMap(_identifiableID),
+          state: state.appending(path: \.wrappedValue),
           action: action,
           isInViewBody: _isInPerceptionTracking,
           fileID: _HashableStaticString(rawValue: fileID),
@@ -276,6 +338,13 @@ extension SwiftUI.Bindable {
   ///   - line: The line.
   ///   - column: The column.
   /// - Returns: A binding of an optional child store.
+  #if ComposableArchitecture2Deprecations
+    @available(
+      *,
+      deprecated,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+  #endif
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
@@ -289,6 +358,28 @@ extension SwiftUI.Bindable {
     self[
       id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
       state: state,
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state: KeyPath<State, PresentationState<ChildState>>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
+    self[
+      id: wrappedValue.currentState[keyPath: state].wrappedValue.flatMap(_identifiableID),
+      state: state.appending(path: \.wrappedValue),
       action: action,
       isInViewBody: _isInPerceptionTracking,
       fileID: _HashableStaticString(rawValue: fileID),
@@ -354,6 +445,13 @@ extension Perception.Bindable {
   ///   - line: The line.
   ///   - column: The column.
   /// - Returns: A binding of an optional child store.
+  #if ComposableArchitecture2Deprecations
+    @available(
+      *,
+      deprecated,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+  #endif
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
@@ -374,9 +472,37 @@ extension Perception.Bindable {
       column: column
     ]
   }
+
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state: KeyPath<State, PresentationState<ChildState>>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
+    self[
+      id: wrappedValue.currentState[keyPath: state].wrappedValue.flatMap(_identifiableID),
+      state: state.appending(path: \.wrappedValue),
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
 }
 
 extension UIBindable {
+  #if ComposableArchitecture2Deprecations
+    @available(
+      *,
+      deprecated,
+      message: "Scope state using projected '\\.$destination' syntax instead"
+    )
+  #endif
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState, ChildAction>(
     state: KeyPath<State, ChildState?>,
@@ -399,6 +525,28 @@ extension UIBindable {
       state: state,
       action: action,
       isInViewBody: true,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+    state: KeyPath<State, PresentationState<ChildState>>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> UIBinding<Store<ChildState, ChildAction>?>
+  where Value == Store<State, Action> {
+    self[
+      id: wrappedValue.currentState[keyPath: state].wrappedValue.flatMap(_identifiableID),
+      state: state.appending(path: \.wrappedValue),
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
       fileID: _HashableStaticString(rawValue: fileID),
       filePath: _HashableStaticString(rawValue: filePath),
       line: line,
