@@ -1526,7 +1526,6 @@
                 InnerFeature()
               }
               #endif
-
               #endif
 
             )
@@ -1686,6 +1685,104 @@
             case let .innerDialog(v0):
               return .innerDialog(v0)
             #endif
+            #endif
+
+            }
+          }
+        }
+
+        extension Feature: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
+        }
+        """#
+      }
+    }
+
+    func testEnum_IfConfigPrunesEmptyBranches() {
+      assertMacro {
+        """
+        @Reducer
+        enum Feature {
+          case child(ChildFeature)
+
+          #if DEBUG
+            case value(Int, String)
+          #endif
+        }
+        """
+      } expansion: {
+        #"""
+        enum Feature {
+          case child(ChildFeature)
+
+          #if DEBUG
+            case value(Int, String)
+          #endif
+
+          @CasePathable
+          @dynamicMemberLookup
+          @ObservableState
+          enum State: ComposableArchitecture.CaseReducerState {
+            typealias StateReducer = Feature
+            case child(ChildFeature.State)
+            #if DEBUG
+            case value(Int, String)
+            #endif
+
+          }
+
+          @CasePathable
+          enum Action {
+            case child(ChildFeature.Action)
+            #if DEBUG
+            case value(Swift.Never)
+            #endif
+
+          }
+
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+          static var body: Reduce<Self.State, Self.Action> {
+            ComposableArchitecture.Reduce(
+              ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+              .ifCaseLet(\Self.State.Cases.child, action: \Self.Action.Cases.child) {
+                ChildFeature()
+              }
+            )
+          }
+
+          @dynamicMemberLookup
+          enum CaseScope: ComposableArchitecture._CaseScopeProtocol, CasePaths.CasePathable {
+            case child(ComposableArchitecture.StoreOf<ChildFeature>)
+            #if DEBUG
+            case value(Int, String)
+            #endif
+
+            struct AllCasePaths {
+              var child: CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.StoreOf<ChildFeature>> {
+                CasePaths.AnyCasePath(
+                  embed: CaseScope.child,
+                  extract: {
+                    guard case let .child(v0) = $0 else {
+                      return nil
+                    };
+                    return v0
+                  }
+                )
+              }
+
+            }
+            static var allCasePaths: AllCasePaths {
+              AllCasePaths()
+            }
+          }
+
+          @preconcurrency @MainActor
+          static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            switch store.state {
+            case .child:
+              return .child(store.scope(state: \.child, action: \.child)!)
+            #if DEBUG
+            case let .value(v0, v1):
+              return .value(v0, v1)
             #endif
 
             }
