@@ -235,45 +235,6 @@ public struct BindingViewStore<State> {
   }
 #endif
 
-@available(
-  *,
-  deprecated,
-  message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
-)
-extension TestStore {
-  func _bindings<ViewAction: BindableAction>(
-    action toViewAction: AnyCasePath<Action, ViewAction>
-  ) -> BindingViewStore<State> where State == ViewAction.State {
-    BindingViewStore(
-      store: Store(initialState: self.state) {
-        BindingReducer(action: toViewAction.extract(from:))
-      }
-      ._scope(state: { $0 }, action: toViewAction.embed)
-    )
-  }
-
-  public func bindings<ViewAction: BindableAction>(
-    action toViewAction: CaseKeyPath<Action, ViewAction>
-  ) -> BindingViewStore<State> where State == ViewAction.State, Action: CasePathable {
-    self._bindings(
-      action: AnyCasePath(toViewAction)
-    )
-  }
-}
-
-@available(
-  *,
-  deprecated,
-  message:
-    "Deriving bindings directly from stores using '@ObservableState'. See the following migration guide for more information: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/main/documentation/composablearchitecture/migratingto1.7#BindingState"
-)
-extension TestStore where Action: BindableAction, State == Action.State {
-  public var bindings: BindingViewStore<State> {
-    self._bindings(action: AnyCasePath())
-  }
-}
-
 extension _Effect {
   @available(
     *,

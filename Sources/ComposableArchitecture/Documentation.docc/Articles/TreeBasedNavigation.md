@@ -284,26 +284,17 @@ var body: some View {
     // ...
   }
   .sheet(
-    item: $store.scope(
-      state: \.destination?.addItem,
-      action: \.destination.addItem
-    )
+    item: $store.scope(state: \.destination, action: \.destination).addItem
   ) { store in 
     AddFeatureView(store: store)
   }
   .popover(
-    item: $store.scope(
-      state: \.destination?.editItem,
-      action: \.destination.editItem
-    )
+    item: $store.scope(state: \.destination, action: \.destination).editItem
   ) { store in 
     EditFeatureView(store: store)
   }
   .navigationDestination(
-    item: $store.scope(
-      state: \.destination?.detailItem,
-      action: \.destination.detailItem
-    )
+    item: $store.scope(state: \.destination, action: \.destination).detailItem
   ) { store in 
     DetailFeatureView(store: store)
   }

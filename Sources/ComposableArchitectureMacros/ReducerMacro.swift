@@ -258,6 +258,7 @@ extension ReducerMacro: MemberMacro {
       var reducerIfCaseLets: [String] = []
       var storeCases: [String] = []
       var storeScopes: [String] = []
+      var storeCasePathProperties: [String] = []
 
       for enumCaseElement in enumCaseElements {
         stateCaseDecls.append(enumCaseElement.stateCaseDecl)
@@ -267,6 +268,7 @@ extension ReducerMacro: MemberMacro {
         }
         storeCases.append(enumCaseElement.storeCase)
         storeScopes.append(enumCaseElement.storeScope)
+        storeCasePathProperties.append(enumCaseElement.storeCasePathProperty)
       }
       if !hasState {
         var conformances: [String] = []
@@ -349,8 +351,13 @@ extension ReducerMacro: MemberMacro {
       if !typeNames.contains("CaseScope") {
         decls.append(
           """
-          \(access)enum CaseScope {
+          @dynamicMemberLookup
+          \(access)enum CaseScope: ComposableArchitecture._CaseScopeProtocol, CasePaths.CasePathable {
           \(raw: storeCases.joined(separator: "\n"))
+          \(access)struct AllCasePaths {
+          \(raw: storeCasePathProperties.joined(separator: "\n"))
+          }
+          \(access)static var allCasePaths: AllCasePaths { AllCasePaths() }
           }
           """
         )
@@ -525,6 +532,62 @@ private enum ReducerCase {
             """
         }
         .joined() + "#endif\n"
+    }
+  }
+
+  var storeCasePathProperty: String {
+    switch self {
+    case .element(let element, let attribute):
+      let name = element.name.text
+      if attribute == nil,
+        let parameterClause = element.parameterClause,
+        parameterClause.parameters.count == 1,
+        let parameter = parameterClause.parameters.first,
+        parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
+      {
+        let type = parameter.type
+        return """
+          var \(name): CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.StoreOf<\(type.trimmed)>> {
+          CasePaths.AnyCasePath(
+          embed: CaseScope.\(name),
+          extract: { guard case let .\(name)(v0) = $0 else { return nil }; return v0 }
+          )
+          }
+          """
+      } else if let parameterClause = element.parameterClause,
+        parameterClause.parameters.count == 1,
+        let parameter = parameterClause.parameters.first
+      {
+        return """
+          var \(name): CasePaths.AnyCasePath<CaseScope, \(parameter.type.trimmed)> {
+          CasePaths.AnyCasePath(
+          embed: CaseScope.\(name),
+          extract: { guard case let .\(name)(v0) = $0 else { return nil }; return v0 }
+          )
+          }
+          """
+      } else if element.parameterClause?.parameters != nil {
+        return ""
+      } else {
+        return """
+          var \(name): CasePaths.AnyCasePath<CaseScope, Void> {
+          CasePaths.AnyCasePath(
+          embed: { CaseScope.\(name) },
+          extract: { guard case .\(name) = $0 else { return nil }; return () }
+          )
+          }
+          """
+      }
+    case .ifConfig(let configs):
+      return
+        configs
+        .map {
+          """
+          \($0.poundKeyword.text) \($0.condition?.trimmedDescription ?? "")
+          \($0.cases.map(\.storeCasePathProperty).joined(separator: "\n"))
+          """
+        }
+        .joined(separator: "\n") + "#endif\n"
     }
   }
 

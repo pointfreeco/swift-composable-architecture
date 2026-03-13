@@ -216,6 +216,50 @@ extension Binding {
       column: column
     ]
   }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<ChildState.StateReducer.CaseScope?>
+  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
+    self[
+      id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
+      state: state,
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
+    state: KeyPath<State, PresentationState<ChildState>>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<ChildState.StateReducer.CaseScope?>
+  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
+    self[
+      id: wrappedValue.currentState[keyPath: state].wrappedValue.flatMap(_identifiableID),
+      state: state.appending(path: \.wrappedValue),
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
 }
 
 extension ObservedObject.Wrapper {
@@ -388,6 +432,50 @@ extension SwiftUI.Bindable {
       column: column
     ]
   }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<ChildState.StateReducer.CaseScope?>
+  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
+    self[
+      id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
+      state: state,
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
+    state: KeyPath<State, PresentationState<ChildState>>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<ChildState.StateReducer.CaseScope?>
+  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
+    self[
+      id: wrappedValue.currentState[keyPath: state].wrappedValue.flatMap(_identifiableID),
+      state: state.appending(path: \.wrappedValue),
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
 }
 
 @available(iOS, introduced: 13, obsoleted: 17)
@@ -493,6 +581,50 @@ extension Perception.Bindable {
       column: column
     ]
   }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<ChildState.StateReducer.CaseScope?>
+  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
+    self[
+      id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
+      state: state,
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
+    state: KeyPath<State, PresentationState<ChildState>>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> Binding<ChildState.StateReducer.CaseScope?>
+  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
+    self[
+      id: wrappedValue.currentState[keyPath: state].wrappedValue.flatMap(_identifiableID),
+      state: state.appending(path: \.wrappedValue),
+      action: action,
+      isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
 }
 
 extension UIBindable {
@@ -547,6 +679,64 @@ extension UIBindable {
       state: state.appending(path: \.wrappedValue),
       action: action,
       isInViewBody: _isInPerceptionTracking,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
+    state: KeyPath<State, ChildState?>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> UIBinding<ChildState.StateReducer.CaseScope?>
+  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
+    #if DEBUG && canImport(SwiftUI)
+      let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+        wrappedValue.currentState[keyPath: state].flatMap(_identifiableID)
+      }
+    #else
+      let id = wrappedValue.currentState[keyPath: state].flatMap(_identifiableID)
+    #endif
+    return self[
+      id: id,
+      state: state,
+      action: action,
+      isInViewBody: true,
+      fileID: _HashableStaticString(rawValue: fileID),
+      filePath: _HashableStaticString(rawValue: filePath),
+      line: line,
+      column: column
+    ]
+  }
+
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
+    state: KeyPath<State, PresentationState<ChildState>>,
+    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    fileID: StaticString = #fileID,
+    filePath: StaticString = #filePath,
+    line: UInt = #line,
+    column: UInt = #column
+  ) -> UIBinding<ChildState.StateReducer.CaseScope?>
+  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
+    #if DEBUG && canImport(SwiftUI)
+      let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+        wrappedValue.currentState[keyPath: state].wrappedValue.flatMap(_identifiableID)
+      }
+    #else
+      let id = wrappedValue.currentState[keyPath: state].wrappedValue.flatMap(_identifiableID)
+    #endif
+    return self[
+      id: id,
+      state: state.appending(path: \.wrappedValue),
+      action: action,
+      isInViewBody: true,
       fileID: _HashableStaticString(rawValue: fileID),
       filePath: _HashableStaticString(rawValue: filePath),
       line: line,
@@ -627,6 +817,65 @@ extension Store where State: ObservableState {
         }
       }
     }
+  }
+}
+
+extension Store where State: ObservableState {
+  @_spi(Internals)
+  public subscript<ChildState: CaseReducerState, ChildAction>(
+    id id: AnyHashable?,
+    state state: KeyPath<State, ChildState?>,
+    action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    isInViewBody isInViewBody: Bool,
+    fileID fileID: _HashableStaticString,
+    filePath filePath: _HashableStaticString,
+    line line: UInt,
+    column column: UInt
+  ) -> ChildState.StateReducer.CaseScope?
+  where ChildState.StateReducer.Action == ChildAction {
+    get {
+      let store: Store<ChildState, ChildAction>? = self[
+        id: id, state: state, action: action,
+        isInViewBody: isInViewBody, fileID: fileID, filePath: filePath,
+        line: line, column: column
+      ]
+      return store.map { $0.case }
+    }
+    set {
+      guard newValue == nil else { return }
+      self[
+        id: id, state: state, action: action,
+        isInViewBody: isInViewBody, fileID: fileID, filePath: filePath,
+        line: line, column: column
+      ] = nil
+    }
+  }
+}
+
+extension Optional where Wrapped: _CaseScopeProtocol & CasePathable {
+  fileprivate subscript<Case>(case keyPath: CaseKeyPath<Wrapped, Case>) -> Case? {
+    get { flatMap(AnyCasePath(keyPath).extract(from:)) }
+    set { self = newValue.map(AnyCasePath(keyPath).embed) }
+  }
+}
+
+extension Binding {
+  @preconcurrency @MainActor
+  public subscript<Base: _CaseScopeProtocol & CasePathable, Case>(
+    dynamicMember keyPath: CaseKeyPath<Base, Case>
+  ) -> Binding<Case?>
+  where Value == Base? {
+    self[dynamicMember: \.[case: keyPath]]
+  }
+}
+
+extension UIBinding {
+  @preconcurrency @MainActor
+  public subscript<Base: _CaseScopeProtocol & CasePathable, Case>(
+    dynamicMember keyPath: CaseKeyPath<Base, Case>
+  ) -> UIBinding<Case?>
+  where Value == Base? {
+    self[dynamicMember: \.[case: keyPath]]
   }
 }
 

@@ -409,16 +409,14 @@ private struct SummaryStep: View {
       }
     }
     .navigationTitle("Summary")
-    .sheet(
-      item: $store.scope(state: \.destination?.basics, action: \.destination.basics)
-    ) { basicsStore in
+    .sheet(item: $store.scope(state: \.$destination, action: \.destination).basics) { basicsStore in
       NavigationStack {
         BasicsStep(store: basicsStore)
       }
       .presentationDetents([.medium])
     }
     .sheet(
-      item: $store.scope(state: \.destination?.personalInfo, action: \.destination.personalInfo)
+      item: $store.scope(state: \.$destination, action: \.destination).personalInfo
     ) { personalStore in
       NavigationStack {
         PersonalInfoStep(store: personalStore)
@@ -426,14 +424,14 @@ private struct SummaryStep: View {
       .presentationDetents([.medium])
     }
     .sheet(
-      item: $store.scope(state: \.destination?.topics, action: \.destination.topics)
+      item: $store.scope(state: \.$destination, action: \.destination).topics
     ) { topicsStore in
       NavigationStack {
         TopicsStep(store: topicsStore)
       }
       .presentationDetents([.medium])
     }
-    .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
+    .alert($store.scope(state: \.$destination, action: \.destination).alert)
   }
 }
 
