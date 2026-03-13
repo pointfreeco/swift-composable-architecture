@@ -21,7 +21,7 @@ extension FactClient: DependencyKey {
     fetch: { number in
       try await Task.sleep(for: .seconds(1))
       let (data, _) = try await URLSession.shared
-        .data(from: URL(string: "http://numbersapi.com/\(number)/trivia")!)
+        .data(from: URL(string: "http://number-trivia.com/\(number)/trivia")!)
       return String(decoding: data, as: UTF8.self)
     }
   )
