@@ -962,7 +962,7 @@ extension Store where State: ObservableState {
         filePath: filePath,
         line: line,
         column: column
-      ] = nil
+      ] = nil as Store<ChildState, ChildAction>?
     }
   }
 }
