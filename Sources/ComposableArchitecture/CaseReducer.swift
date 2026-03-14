@@ -59,3 +59,33 @@ extension Store where State: CaseReducerState, State.StateReducer.Action == Acti
     State.StateReducer.scope(self)
   }
 }
+
+public protocol _StoreWithCaseScope {
+  associatedtype _CaseScope: CasePathable
+  @preconcurrency @MainActor
+  func _extractCaseScope() -> _CaseScope
+}
+
+extension Store: _StoreWithCaseScope
+where
+  State: CaseReducerState & ObservableState,
+  State.StateReducer.Action == Action,
+  State.StateReducer.CaseScope: CasePathable
+{
+  @preconcurrency @MainActor
+  public func _extractCaseScope() -> State.StateReducer.CaseScope { self.case }
+}
+
+public protocol _OptionalStoreWithCaseScope: ExpressibleByNilLiteral {
+  associatedtype _CaseScope: CasePathable
+  @preconcurrency @MainActor
+  func _extractCaseScope() -> _CaseScope?
+}
+
+extension Optional: _OptionalStoreWithCaseScope
+where Wrapped: _StoreWithCaseScope {
+  @preconcurrency @MainActor
+  public func _extractCaseScope() -> Wrapped._CaseScope? {
+    self.map { $0._extractCaseScope() }
+  }
+}
