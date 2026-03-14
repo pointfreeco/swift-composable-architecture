@@ -240,28 +240,6 @@ extension Binding {
 
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> Binding<ChildState.StateReducer.CaseScope?>
-  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
-    self[
-      id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
-      state: state,
-      action: action,
-      isInViewBody: _isInPerceptionTracking,
-      fileID: _HashableStaticString(rawValue: fileID),
-      filePath: _HashableStaticString(rawValue: filePath),
-      line: line,
-      column: column
-    ]
-  }
-
-  @preconcurrency @MainActor
-  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
     state: KeyPath<State, PresentationState<ChildState>>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
@@ -498,28 +476,6 @@ extension SwiftUI.Bindable {
 
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> Binding<ChildState.StateReducer.CaseScope?>
-  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
-    self[
-      id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
-      state: state,
-      action: action,
-      isInViewBody: _isInPerceptionTracking,
-      fileID: _HashableStaticString(rawValue: fileID),
-      filePath: _HashableStaticString(rawValue: filePath),
-      line: line,
-      column: column
-    ]
-  }
-
-  @preconcurrency @MainActor
-  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
     state: KeyPath<State, PresentationState<ChildState>>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
@@ -668,28 +624,6 @@ extension Perception.Bindable {
 
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> Binding<ChildState.StateReducer.CaseScope?>
-  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
-    self[
-      id: wrappedValue.currentState[keyPath: state].flatMap(_identifiableID),
-      state: state,
-      action: action,
-      isInViewBody: _isInPerceptionTracking,
-      fileID: _HashableStaticString(rawValue: fileID),
-      filePath: _HashableStaticString(rawValue: filePath),
-      line: line,
-      column: column
-    ]
-  }
-
-  @preconcurrency @MainActor
-  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
     state: KeyPath<State, PresentationState<ChildState>>,
     action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
     fileID: StaticString = #fileID,
@@ -784,35 +718,6 @@ extension UIBindable {
       state: state.appending(path: \.wrappedValue),
       action: action,
       isInViewBody: _isInPerceptionTracking,
-      fileID: _HashableStaticString(rawValue: fileID),
-      filePath: _HashableStaticString(rawValue: filePath),
-      line: line,
-      column: column
-    ]
-  }
-
-  @preconcurrency @MainActor
-  public func scope<State: ObservableState, Action, ChildState: CaseReducerState, ChildAction>(
-    state: KeyPath<State, ChildState?>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> UIBinding<ChildState.StateReducer.CaseScope?>
-  where Value == Store<State, Action>, ChildState.StateReducer.Action == ChildAction {
-    #if DEBUG && canImport(SwiftUI)
-      let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-        wrappedValue.currentState[keyPath: state].flatMap(_identifiableID)
-      }
-    #else
-      let id = wrappedValue.currentState[keyPath: state].flatMap(_identifiableID)
-    #endif
-    return self[
-      id: id,
-      state: state,
-      action: action,
-      isInViewBody: true,
       fileID: _HashableStaticString(rawValue: fileID),
       filePath: _HashableStaticString(rawValue: filePath),
       line: line,
