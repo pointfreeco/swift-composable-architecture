@@ -62,30 +62,42 @@ extension Store where State: CaseReducerState, State.StateReducer.Action == Acti
 
 public protocol _StoreWithCaseScope {
   associatedtype _CaseScope: CasePathable
-  @preconcurrency @MainActor
-  func _extractCaseScope() -> _CaseScope
+  var _caseScope: _CaseScope { get }
 }
 
-extension Store: _StoreWithCaseScope
+extension Store: @preconcurrency _StoreWithCaseScope
 where
   State: CaseReducerState & ObservableState,
   State.StateReducer.Action == Action,
   State.StateReducer.CaseScope: CasePathable
 {
-  @preconcurrency @MainActor
-  public func _extractCaseScope() -> State.StateReducer.CaseScope { self.case }
+  public var _caseScope: State.StateReducer.CaseScope { self.case }
 }
 
 public protocol _OptionalStoreWithCaseScope: ExpressibleByNilLiteral {
   associatedtype _CaseScope: CasePathable
-  @preconcurrency @MainActor
-  func _extractCaseScope() -> _CaseScope?
+  var _optionalCaseScope: _CaseScope? { get }
 }
 
-extension Optional: _OptionalStoreWithCaseScope
-where Wrapped: _StoreWithCaseScope {
-  @preconcurrency @MainActor
-  public func _extractCaseScope() -> Wrapped._CaseScope? {
-    self.map { $0._extractCaseScope() }
+extension Optional: _OptionalStoreWithCaseScope where Wrapped: _StoreWithCaseScope {
+  public var _optionalCaseScope: Wrapped._CaseScope? {
+    self.flatMap { ($0 as any _StoreWithCaseScope)._caseScope as? _CaseScope }
+  }
+}
+
+extension _OptionalStoreWithCaseScope {
+  public subscript<Case>(
+    _caseScope keyPath: KeyPath<
+      _CaseScope.AllCasePaths, AnyCasePath<_CaseScope, Case>
+    >
+  ) -> Case? {
+    get {
+      _optionalCaseScope.flatMap {
+        _CaseScope.allCasePaths[keyPath: keyPath].extract(from: $0)
+      }
+    }
+    set {
+      if newValue == nil { self = nil }
+    }
   }
 }
