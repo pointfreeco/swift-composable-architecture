@@ -42,6 +42,19 @@ chain into the individual case:
 This provides a cleaner separation between the destination enum and its cases, and aligns with
 how scoping will work in Composable Architecture 2.0.
 
+One important difference in the new scoping operation is that it no longer wraps non-reducer cases
+in a `Store`, and instead provides direct access to the data. This does mean that the data must
+conform to `Identifiable`, or if it is an empty case (which produces `Optional<Void>`), you must
+migrate to the `isPresented` view modifier and use `Binding.init` to convert `Optional<Void>`
+bindings to `Bool` bindings:
+
+```diff
+-.sheet(item: $store.scope(state: \.destination?.help, action: \.destination.help)) { _ in
++.sheet(
++  isPresented: Binding($store.scope(state: \.$destination, action: \.destination).help)
++) {
+```
+
 ### Streamlined `onChange` operator
 
 A new overload of the `onChange` operator has been added that directly returns an effect instead
