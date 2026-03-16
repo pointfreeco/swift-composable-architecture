@@ -545,7 +545,8 @@ public protocol _ScopableState<Unwrapped> {
 }
 
 extension Optional: _ScopableState {
-  public static func _scopeKeyPath<Root>(_ keyPath: KeyPath<Root, Self>) -> KeyPath<Root, Wrapped?> {
+  public static func _scopeKeyPath<Root>(_ keyPath: KeyPath<Root, Self>) -> KeyPath<Root, Wrapped?>
+  {
     keyPath
   }
   public var _scopeID: AnyHashable? {
