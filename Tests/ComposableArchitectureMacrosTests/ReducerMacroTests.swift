@@ -242,7 +242,7 @@
             @CasePathable
             @dynamicMemberLookup
             @ObservableState
-            enum State: ComposableArchitecture.CaseReducerState {
+            enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
                 typealias StateReducer = Destination
 
             }
@@ -306,7 +306,7 @@
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          enum State: ComposableArchitecture.CaseReducerState {
+          enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
             typealias StateReducer = Destination
             case activity(Activity.State)
             case timeline(Timeline.State)
@@ -384,7 +384,7 @@
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          enum State: ComposableArchitecture.CaseReducerState {
+          enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
             typealias StateReducer = Destination
             case timeline(Timeline.State)
             case meeting(Meeting.State)
@@ -445,7 +445,7 @@
             @CasePathable
             @dynamicMemberLookup
             @ObservableState
-            enum State: ComposableArchitecture.CaseReducerState {
+            enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
                 typealias StateReducer = Destination
 
             }
@@ -493,7 +493,7 @@
             @dynamicMemberLookup
             @ObservableState
 
-            package enum State: ComposableArchitecture.CaseReducerState {
+            package enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
 
                 package typealias StateReducer = Destination
 
@@ -545,7 +545,7 @@
             @dynamicMemberLookup
             @ObservableState
 
-            public enum State: ComposableArchitecture.CaseReducerState {
+            public enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
 
                 public typealias StateReducer = Destination
 
@@ -599,7 +599,7 @@
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          enum State: ComposableArchitecture.CaseReducerState {
+          enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
             typealias StateReducer = Destination
             case alert(AlertState<Never>)
           }
@@ -651,7 +651,7 @@
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          enum State: ComposableArchitecture.CaseReducerState {
+          enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
             typealias StateReducer = Destination
             case activity(Activity.State)
             case timeline(Timeline.State)
@@ -718,7 +718,7 @@
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          enum State: ComposableArchitecture.CaseReducerState {
+          enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
             typealias StateReducer = Destination
             case timeline(Timeline.State)
             case meeting(Meeting)
@@ -785,7 +785,7 @@
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          enum State: ComposableArchitecture.CaseReducerState {
+          enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
             typealias StateReducer = Destination
             case alert(AlertState<Alert>)
             case dialog(ConfirmationDialogState<Dialog>)
@@ -849,7 +849,7 @@
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          enum State: ComposableArchitecture.CaseReducerState, Equatable {
+          enum State: @preconcurrency ComposableArchitecture.CaseReducerState, Equatable {
             typealias StateReducer = Destination
             case drillDown(Counter.State)
             case popover(Counter.State)
@@ -920,7 +920,7 @@
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          enum State: ComposableArchitecture.CaseReducerState {
+          enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
             typealias StateReducer = Destination
             case feature(Nested.Feature.State)
           }
@@ -1185,7 +1185,7 @@
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          enum State: ComposableArchitecture.CaseReducerState {
+          enum State: @preconcurrency ComposableArchitecture.CaseReducerState {
             typealias StateReducer = Feature
             case child(ChildFeature.State)
             #if os(macOS)

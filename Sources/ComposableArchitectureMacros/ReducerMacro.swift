@@ -287,7 +287,7 @@ extension ReducerMacro: MemberMacro {
           @CasePathable
           @dynamicMemberLookup
           @ObservableState
-          \(access)enum State: ComposableArchitecture.CaseReducerState\
+          \(access)enum State: @preconcurrency ComposableArchitecture.CaseReducerState\
           \(raw: conformances.isEmpty ? "" : ", \(conformances.joined(separator: ", "))") {
           \(access)typealias StateReducer = \(enumDecl.name.trimmed)
           \(raw: stateCaseDecls.map(\.description).joined(separator: "\n"))
