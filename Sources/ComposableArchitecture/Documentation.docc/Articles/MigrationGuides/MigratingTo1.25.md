@@ -127,16 +127,8 @@ store _via_ `store.send(_:)` or `Effect.send`.
 The following APIs are deprecated only when the `ComposableArchitecture2Deprecations` package trait
 is enabled, allowing you to prepare for 2.0 on your own timeline.
 
-### `Effect` → `EffectOf`
-
-The `Effect<Action>` type should be replaced with `EffectOf<Feature>`, where `Feature` is your
-reducer type. Similarly, `Send<Action>` should be replaced with `SendOf<Feature>`. In Composable
-Architecture 2.0, `Effect` will change shape, so using the type alias now will ease the transition:
-
-```diff
--func sharedHelper(state: inout State) -> Effect<Action> {
-+func sharedHelper(state: inout State) -> EffectOf<Self> {
-```
+> 1.25.0 temporarily deprecated the `Effect` type for `EffectOf`. This change is no longer
+> necessary in the Composable 2.0 migration story.
 
 ### `Effect.concatenate`, `Effect.map`
 

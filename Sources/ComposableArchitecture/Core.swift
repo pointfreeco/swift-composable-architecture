@@ -160,7 +160,7 @@ final class RootCore<Root: Reducer>: Core {
             let isCompleted = LockIsolated(false)
             defer { isCompleted.setValue(true) }
             await operation(
-              _Send { effectAction in
+              Send { effectAction in
                 if isCompleted.value {
                   reportIssue(
                     """

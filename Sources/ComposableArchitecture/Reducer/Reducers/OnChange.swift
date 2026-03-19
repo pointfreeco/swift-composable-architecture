@@ -124,7 +124,7 @@ where Base.State == Body.State, Base.Action == Body.Action {
   }
 
   @inlinable
-  public func _reduce(into state: inout Base.State, action: Base.Action) -> _Effect<Base.Action> {
+  public func _reduce(into state: inout Base.State, action: Base.Action) -> Effect<Base.Action> {
     let oldValue = toValue(state)
     let baseEffects = self.base._reduce(into: &state, action: action)
     let newValue = toValue(state)

@@ -193,14 +193,14 @@ public struct _ForEachReducer<
 
   public func _reduce(
     into state: inout Parent.State, action: Parent.Action
-  ) -> _Effect<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     let elementEffects = self.reduceForEach(into: &state, action: action)
 
     let idsBefore = state[keyPath: self.toElementsState].ids
     let parentEffects = self.parent._reduce(into: &state, action: action)
     let idsAfter = state[keyPath: self.toElementsState].ids
 
-    let elementCancelEffects: _Effect<Parent.Action> =
+    let elementCancelEffects: Effect<Parent.Action> =
       areOrderedSetsDuplicates(idsBefore, idsAfter)
       ? .none
       : .merge(
@@ -221,7 +221,7 @@ public struct _ForEachReducer<
 
   func reduceForEach(
     into state: inout Parent.State, action: Parent.Action
-  ) -> _Effect<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     guard let (id, elementAction) = self.toElementAction.extract(from: action) else { return .none }
     if state[keyPath: self.toElementsState][id: id] == nil {
       reportIssue(
