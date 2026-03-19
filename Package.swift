@@ -21,9 +21,18 @@ let package = Package(
     .trait(
       name: "ComposableArchitecture2Deprecations",
       description: """
-        Prepare for the next major release by enabling some of the more viral deprecations.
+        Prepare for the next major release by enabling some of the more viral deprecations. Enable \
+        this trait to remain ready for Composable Architecture 2.0.
         """
-    )
+    ),
+    .trait(
+      name: "ComposableArchitecture2DeprecationOverloads",
+      description: """
+        Prepare for the next major release by enabling some of the more viral deprecations. These \
+        deprecations rely on overloads that can tax the compiler and prevent existing applications \
+        from compiling. Temporarily enable this trait to perform these specific migrations.
+        """
+    ),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),

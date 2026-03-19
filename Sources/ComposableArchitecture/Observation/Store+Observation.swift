@@ -239,78 +239,129 @@ extension Store {
 
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 extension SwiftUI.Bindable {
-  /// Scopes the binding of a store to a binding of an optional presentation store.
-  ///
-  /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
-  /// view modifiers, such as `sheet(item:)`, `popover(item:)`, etc.
-  ///
-  ///
-  /// For example, suppose your feature can present a child feature in a sheet. Then your
-  /// feature's domain would hold onto the child's domain using the library's presentation tools
-  /// (see <doc:TreeBasedNavigation> for more information on these tools):
-  ///
-  /// ```swift
-  /// @Reducer
-  /// struct Feature {
-  ///   @ObservableState
-  ///   struct State {
-  ///     @Presents var child: Child.State?
-  ///     // ...
-  ///   }
-  ///   enum Action {
-  ///     case child(PresentationActionOf<Child>)
-  ///     // ...
-  ///   }
-  ///   // ...
-  /// }
-  /// ```
-  ///
-  /// Then you can derive a binding to the child domain that can be handed to the `sheet(item:)`
-  /// view modifier:
-  ///
-  /// ```swift
-  /// struct FeatureView: View {
-  ///   @Bindable var store: StoreOf<Feature>
-  ///
-  ///   var body: some View {
-  ///     // ...
-  ///     .sheet(item: $store.scope(state: \.child, action: \.child)) { store in
-  ///       ChildView(store: store)
-  ///     }
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// - Parameters:
-  ///   - state: A key path to optional child state.
-  ///   - action: A case key path to presentation child actions.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
-  /// - Returns: A binding of an optional child store.
-  @preconcurrency @MainActor
-  public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
-    state: KeyPath<State, Container>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> Binding<Store<Container.Unwrapped, ChildAction>?>
-  where Value == Store<State, Action> {
-    self[
-      id: wrappedValue.currentState[keyPath: state]._scopeID,
-      state: Container._scopeKeyPath(state),
-      action: action,
-      isInViewBody: _isInPerceptionTracking,
-      fileID: _HashableStaticString(rawValue: fileID),
-      filePath: _HashableStaticString(rawValue: filePath),
-      line: line,
-      column: column
-    ]
-  }
+  #if ComposableArchitecture2DeprecationOverloads
+    @preconcurrency @MainActor
+    public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+      state: WritableKeyPath<State, PresentationState<ChildState>>,
+      action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> Binding<Store<ChildState, ChildAction>?>
+    where Value == Store<State, Action> {
+      return self[
+        id: wrappedValue.currentState[keyPath: state]._scopeID,
+        state: state.appending(path: \.wrappedValue),
+        action: action,
+        isInViewBody: _isInPerceptionTracking,
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
+      ]
+    }
 
+    @available(
+      *,
+      deprecated,
+      message:
+        "Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead"
+    )
+    @preconcurrency @MainActor
+    public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
+      state: KeyPath<State, Container>,
+      action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> Binding<Store<Container.Unwrapped, ChildAction>?>
+    where Value == Store<State, Action> {
+      self[
+        id: wrappedValue.currentState[keyPath: state]._scopeID,
+        state: Container._scopeKeyPath(state),
+        action: action,
+        isInViewBody: _isInPerceptionTracking,
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
+      ]
+    }
+  #else
+    /// Scopes the binding of a store to a binding of an optional presentation store.
+    ///
+    /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
+    /// view modifiers, such as `sheet(item:)`, `popover(item:)`, etc.
+    ///
+    ///
+    /// For example, suppose your feature can present a child feature in a sheet. Then your
+    /// feature's domain would hold onto the child's domain using the library's presentation tools
+    /// (see <doc:TreeBasedNavigation> for more information on these tools):
+    ///
+    /// ```swift
+    /// @Reducer
+    /// struct Feature {
+    ///   @ObservableState
+    ///   struct State {
+    ///     @Presents var child: Child.State?
+    ///     // ...
+    ///   }
+    ///   enum Action {
+    ///     case child(PresentationActionOf<Child>)
+    ///     // ...
+    ///   }
+    ///   // ...
+    /// }
+    /// ```
+    ///
+    /// Then you can derive a binding to the child domain that can be handed to the `sheet(item:)`
+    /// view modifier:
+    ///
+    /// ```swift
+    /// struct FeatureView: View {
+    ///   @Bindable var store: StoreOf<Feature>
+    ///
+    ///   var body: some View {
+    ///     // ...
+    ///     .sheet(item: $store.scope(state: \.child, action: \.child)) { store in
+    ///       ChildView(store: store)
+    ///     }
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - state: A key path to optional child state.
+    ///   - action: A case key path to presentation child actions.
+    ///   - fileID: The fileID.
+    ///   - filePath: The filePath.
+    ///   - line: The line.
+    ///   - column: The column.
+    /// - Returns: A binding of an optional child store.
+    @preconcurrency @MainActor
+    public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
+      state: KeyPath<State, Container>,
+      action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> Binding<Store<Container.Unwrapped, ChildAction>?>
+    where Value == Store<State, Action> {
+      self[
+        id: wrappedValue.currentState[keyPath: state]._scopeID,
+        state: Container._scopeKeyPath(state),
+        action: action,
+        isInViewBody: _isInPerceptionTracking,
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
+      ]
+    }
+  #endif
 }
 
 @available(iOS, introduced: 13, obsoleted: 17)
@@ -318,109 +369,225 @@ extension SwiftUI.Bindable {
 @available(tvOS, introduced: 13, obsoleted: 17)
 @available(watchOS, introduced: 6, obsoleted: 10)
 extension Perception.Bindable {
-  /// Scopes the binding of a store to a binding of an optional presentation store.
-  ///
-  /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
-  /// view modifiers, such as `sheet(item:)`, `popover(item:)`, etc.
-  ///
-  ///
-  /// For example, suppose your feature can present a child feature in a sheet. Then your
-  /// feature's domain would hold onto the child's domain using the library's presentation tools
-  /// (see <doc:TreeBasedNavigation> for more information on these tools):
-  ///
-  /// ```swift
-  /// @Reducer
-  /// struct Feature {
-  ///   @ObservableState
-  ///   struct State {
-  ///     @Presents var child: Child.State?
-  ///     // ...
-  ///   }
-  ///   enum Action {
-  ///     case child(PresentationActionOf<Child>)
-  ///     // ...
-  ///   }
-  ///   // ...
-  /// }
-  /// ```
-  ///
-  /// Then you can derive a binding to the child domain that can be handed to the `sheet(item:)`
-  /// view modifier:
-  ///
-  /// ```swift
-  /// struct FeatureView: View {
-  ///   @Bindable var store: StoreOf<Feature>
-  ///
-  ///   var body: some View {
-  ///     // ...
-  ///     .sheet(item: $store.scope(state: \.child, action: \.child)) { store in
-  ///       ChildView(store: store)
-  ///     }
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// - Parameters:
-  ///   - state: A key path to optional child state.
-  ///   - action: A case key path to presentation child actions.
-  ///   - fileID: The fileID.
-  ///   - filePath: The filePath.
-  ///   - line: The line.
-  ///   - column: The column.
-  /// - Returns: A binding of an optional child store.
-  public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
-    state: KeyPath<State, Container>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> Binding<Store<Container.Unwrapped, ChildAction>?>
-  where Value == Store<State, Action> {
-    self[
-      id: wrappedValue.currentState[keyPath: state]._scopeID,
-      state: Container._scopeKeyPath(state),
-      action: action,
-      isInViewBody: _isInPerceptionTracking,
-      fileID: _HashableStaticString(rawValue: fileID),
-      filePath: _HashableStaticString(rawValue: filePath),
-      line: line,
-      column: column
-    ]
-  }
+  #if ComposableArchitecture2DeprecationOverloads
+    @preconcurrency @MainActor
+    public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+      state: WritableKeyPath<State, PresentationState<ChildState>>,
+      action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> Binding<Store<ChildState, ChildAction>?>
+    where Value == Store<State, Action> {
+      self[
+        id: wrappedValue.currentState[keyPath: state]._scopeID,
+        state: state.appending(path: \.wrappedValue),
+        action: action,
+        isInViewBody: _isInPerceptionTracking,
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
+      ]
+    }
 
+    @available(
+      *,
+      deprecated,
+      message:
+        "Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead"
+    )
+    @preconcurrency @MainActor
+    public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
+      state: KeyPath<State, Container>,
+      action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> Binding<Store<Container.Unwrapped, ChildAction>?>
+    where Value == Store<State, Action> {
+      self[
+        id: wrappedValue.currentState[keyPath: state]._scopeID,
+        state: Container._scopeKeyPath(state),
+        action: action,
+        isInViewBody: _isInPerceptionTracking,
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
+      ]
+    }
+  #else
+    /// Scopes the binding of a store to a binding of an optional presentation store.
+    ///
+    /// Use this operator to derive a binding that can be handed to SwiftUI's various navigation
+    /// view modifiers, such as `sheet(item:)`, `popover(item:)`, etc.
+    ///
+    ///
+    /// For example, suppose your feature can present a child feature in a sheet. Then your
+    /// feature's domain would hold onto the child's domain using the library's presentation tools
+    /// (see <doc:TreeBasedNavigation> for more information on these tools):
+    ///
+    /// ```swift
+    /// @Reducer
+    /// struct Feature {
+    ///   @ObservableState
+    ///   struct State {
+    ///     @Presents var child: Child.State?
+    ///     // ...
+    ///   }
+    ///   enum Action {
+    ///     case child(PresentationActionOf<Child>)
+    ///     // ...
+    ///   }
+    ///   // ...
+    /// }
+    /// ```
+    ///
+    /// Then you can derive a binding to the child domain that can be handed to the `sheet(item:)`
+    /// view modifier:
+    ///
+    /// ```swift
+    /// struct FeatureView: View {
+    ///   @Bindable var store: StoreOf<Feature>
+    ///
+    ///   var body: some View {
+    ///     // ...
+    ///     .sheet(item: $store.scope(state: \.child, action: \.child)) { store in
+    ///       ChildView(store: store)
+    ///     }
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - state: A key path to optional child state.
+    ///   - action: A case key path to presentation child actions.
+    ///   - fileID: The fileID.
+    ///   - filePath: The filePath.
+    ///   - line: The line.
+    ///   - column: The column.
+    /// - Returns: A binding of an optional child store.
+    public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
+      state: KeyPath<State, Container>,
+      action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> Binding<Store<Container.Unwrapped, ChildAction>?>
+    where Value == Store<State, Action> {
+      self[
+        id: wrappedValue.currentState[keyPath: state]._scopeID,
+        state: Container._scopeKeyPath(state),
+        action: action,
+        isInViewBody: _isInPerceptionTracking,
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
+      ]
+    }
+  #endif
 }
 
 extension UIBindable {
-  @preconcurrency @MainActor
-  public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
-    state: KeyPath<State, Container>,
-    action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
-    fileID: StaticString = #fileID,
-    filePath: StaticString = #filePath,
-    line: UInt = #line,
-    column: UInt = #column
-  ) -> UIBinding<Store<Container.Unwrapped, ChildAction>?>
-  where Value == Store<State, Action> {
-    #if DEBUG && canImport(SwiftUI)
-      let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-        wrappedValue.currentState[keyPath: state]._scopeID
-      }
-    #else
-      let id = wrappedValue.currentState[keyPath: state]._scopeID
-    #endif
-    return self[
-      id: id,
-      state: Container._scopeKeyPath(state),
-      action: action,
-      isInViewBody: true,
-      fileID: _HashableStaticString(rawValue: fileID),
-      filePath: _HashableStaticString(rawValue: filePath),
-      line: line,
-      column: column
-    ]
-  }
+  #if ComposableArchitecture2DeprecationOverloads
+    @preconcurrency @MainActor
+    public func scope<State: ObservableState, Action, ChildState, ChildAction>(
+      state: WritableKeyPath<State, PresentationState<ChildState>>,
+      action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> UIBinding<Store<ChildState, ChildAction>?>
+    where Value == Store<State, Action> {
+      #if DEBUG && canImport(SwiftUI)
+        let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+          wrappedValue.currentState[keyPath: state]._scopeID
+        }
+      #else
+        let id = wrappedValue.currentState[keyPath: state]._scopeID
+      #endif
+      return self[
+        id: id,
+        state: state.appending(path: \.wrappedValue),
+        action: action,
+        isInViewBody: true,
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
+      ]
+    }
 
+    @available(
+      *,
+      deprecated,
+      message:
+        "Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead"
+    )
+    @preconcurrency @MainActor
+    public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
+      state: KeyPath<State, Container>,
+      action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> UIBinding<Store<Container.Unwrapped, ChildAction>?>
+    where Value == Store<State, Action> {
+      #if DEBUG && canImport(SwiftUI)
+        let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+          wrappedValue.currentState[keyPath: state]._scopeID
+        }
+      #else
+        let id = wrappedValue.currentState[keyPath: state]._scopeID
+      #endif
+      return self[
+        id: id,
+        state: Container._scopeKeyPath(state),
+        action: action,
+        isInViewBody: true,
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
+      ]
+    }
+  #else
+    @preconcurrency @MainActor
+    public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
+      state: KeyPath<State, Container>,
+      action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+      fileID: StaticString = #fileID,
+      filePath: StaticString = #filePath,
+      line: UInt = #line,
+      column: UInt = #column
+    ) -> UIBinding<Store<Container.Unwrapped, ChildAction>?>
+    where Value == Store<State, Action> {
+      #if DEBUG && canImport(SwiftUI)
+        let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
+          wrappedValue.currentState[keyPath: state]._scopeID
+        }
+      #else
+        let id = wrappedValue.currentState[keyPath: state]._scopeID
+      #endif
+      return self[
+        id: id,
+        state: Container._scopeKeyPath(state),
+        action: action,
+        isInViewBody: true,
+        fileID: _HashableStaticString(rawValue: fileID),
+        filePath: _HashableStaticString(rawValue: filePath),
+        line: line,
+        column: column
+      ]
+    }
+  #endif
 }
 
 extension Store where State: ObservableState {
