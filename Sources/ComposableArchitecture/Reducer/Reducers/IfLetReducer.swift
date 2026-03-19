@@ -152,7 +152,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
 
   public func _reduce(
     into state: inout Parent.State, action: Parent.Action
-  ) -> _Effect<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     let childEffects = self.reduceChild(into: &state, action: action)
 
     let childIDBefore = state[keyPath: self.toChildState].map {
@@ -171,7 +171,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
       state[keyPath: toChildState] = nil
     }
 
-    let childCancelEffects: _Effect<Parent.Action>
+    let childCancelEffects: Effect<Parent.Action>
     if let childID = childIDBefore, childID != childIDAfter {
       childCancelEffects = ._cancel(id: childID, navigationID: self.navigationIDPath)
     } else {
@@ -187,7 +187,7 @@ public struct _IfLetReducer<Parent: Reducer, Child: Reducer>: Reducer {
 
   func reduceChild(
     into state: inout Parent.State, action: Parent.Action
-  ) -> _Effect<Parent.Action> {
+  ) -> Effect<Parent.Action> {
     guard let childAction = self.toChildAction.extract(from: action)
     else { return .none }
     guard state[keyPath: self.toChildState] != nil else {

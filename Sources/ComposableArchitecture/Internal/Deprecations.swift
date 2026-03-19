@@ -235,7 +235,7 @@ public struct BindingViewStore<State> {
   }
 #endif
 
-extension _Effect {
+extension Effect {
   @available(
     *,
     deprecated,
@@ -270,7 +270,7 @@ extension Store {
   }
 }
 
-extension _Effect {
+extension Effect {
   @available(
     *,
     deprecated,
@@ -364,7 +364,7 @@ private struct TransactionPublisher<Upstream: Publisher>: Publisher {
   }
 }
 
-extension _Effect {
+extension Effect {
   @available(
     *,
     deprecated,
@@ -401,7 +401,7 @@ extension _Effect {
   }
 }
 
-extension _Effect where Action: Sendable {
+extension Effect where Action: Sendable {
   @available(
     *,
     deprecated,

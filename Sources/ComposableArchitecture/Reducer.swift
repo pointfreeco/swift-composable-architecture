@@ -31,9 +31,9 @@ public protocol Reducer<State, Action> {
       invoked by either reducer.
       """
   )
-  func reduce(into state: inout State, action: Action) -> _Effect<Action>
+  func reduce(into state: inout State, action: Action) -> Effect<Action>
 
-  func _reduce(into state: inout State, action: Action) -> _Effect<Action>
+  func _reduce(into state: inout State, action: Action) -> Effect<Action>
 
   /// The content and behavior of a reducer that is composed from other reducers.
   ///
@@ -67,7 +67,7 @@ public protocol Reducer<State, Action> {
 }
 
 extension Reducer {
-  public func _reduce(into state: inout State, action: Action) -> _Effect<Action> {
+  public func _reduce(into state: inout State, action: Action) -> Effect<Action> {
     reduce(into: &state, action: action)
   }
 
@@ -106,7 +106,7 @@ extension Reducer where Body: Reducer<State, Action> {
   @_optimize(none)
   public func _reduce(
     into state: inout Body.State, action: Body.Action
-  ) -> _Effect<Body.Action> {
+  ) -> Effect<Body.Action> {
     self.body._reduce(into: &state, action: action)
   }
 }

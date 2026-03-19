@@ -14,7 +14,7 @@ final class EffectDebounceTests: BaseTCATestCase {
       Task {
         struct CancelToken: Hashable {}
 
-        let effect = _Effect.send(value)
+        let effect = Effect.send(value)
           .debounce(id: CancelToken(), for: 1, scheduler: mainQueue)
 
         for await action in effect.actions {

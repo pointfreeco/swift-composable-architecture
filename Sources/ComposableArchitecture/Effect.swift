@@ -2,33 +2,7 @@
 import Foundation
 import SwiftUI
 
-#if ComposableArchitecture2Deprecations
-  @available(*, deprecated, message: "Use 'EffectOf<Feature>' instead")
-#else
-  @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use 'EffectOf<Feature>' instead"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use 'EffectOf<Feature>' instead"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use 'EffectOf<Feature>' instead"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use 'EffectOf<Feature>' instead"
-  )
-#endif
-public typealias Effect = _Effect
-
-public struct _Effect<Action>: Sendable {
+public struct Effect<Action>: Sendable {
   @usableFromInline
   enum Operation: Sendable {
     case none
@@ -36,7 +10,7 @@ public struct _Effect<Action>: Sendable {
     case run(
       name: String? = nil,
       priority: TaskPriority? = nil,
-      operation: @Sendable (_ send: _Send<Action>) async -> Void
+      operation: @Sendable (_ send: Send<Action>) async -> Void
     )
   }
 
@@ -62,11 +36,11 @@ public struct _Effect<Action>: Sendable {
 /// ```swift
 /// let effect: EffectOf<Feature>
 /// ```
-public typealias EffectOf<R: Reducer> = _Effect<R.Action>
+public typealias EffectOf<R: Reducer> = Effect<R.Action>
 
 // MARK: - Creating Effects
 
-extension _Effect {
+extension Effect {
   /// An effect that does nothing and completes immediately. Useful for situations where you must
   /// return an effect, but you don't need to do anything.
   @inlinable
@@ -118,8 +92,8 @@ extension _Effect {
   public static func run(
     priority: TaskPriority? = nil,
     name: String? = nil,
-    operation: @escaping @Sendable (_ send: _Send<Action>) async throws -> Void,
-    catch handler: (@Sendable (_ error: any Error, _ send: _Send<Action>) async -> Void)? = nil,
+    operation: @escaping @Sendable (_ send: Send<Action>) async throws -> Void,
+    catch handler: (@Sendable (_ error: any Error, _ send: Send<Action>) async -> Void)? = nil,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     line: UInt = #line,
@@ -175,32 +149,6 @@ extension _Effect {
   }
 }
 
-#if ComposableArchitecture2Deprecations
-  @available(*, deprecated, message: "Use 'SendOf<Feature>' instead")
-#else
-  @available(
-    iOS,
-    deprecated: 9999,
-    message: "Use 'SendOf<Feature>' instead"
-  )
-  @available(
-    macOS,
-    deprecated: 9999,
-    message: "Use 'SendOf<Feature>' instead"
-  )
-  @available(
-    tvOS,
-    deprecated: 9999,
-    message: "Use 'SendOf<Feature>' instead"
-  )
-  @available(
-    watchOS,
-    deprecated: 9999,
-    message: "Use 'SendOf<Feature>' instead"
-  )
-#endif
-public typealias Send = _Send
-
 /// A type that can send actions back into the system when used from
 /// ``Effect/run(priority:operation:catch:fileID:filePath:line:column:)``.
 ///
@@ -230,7 +178,7 @@ public typealias Send = _Send
 ///
 /// [callAsFunction]: https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622
 @MainActor
-public struct _Send<Action>: Sendable {
+public struct Send<Action>: Sendable {
   let send: @MainActor @Sendable (Action) -> Void
 
   public init(send: @escaping @MainActor @Sendable (Action) -> Void) {
@@ -267,11 +215,11 @@ public struct _Send<Action>: Sendable {
   }
 }
 
-public typealias SendOf<R: Reducer> = _Send<R.Action>
+public typealias SendOf<R: Reducer> = Send<R.Action>
 
 // MARK: - Composing Effects
 
-extension _Effect {
+extension Effect {
   /// Merges a variadic list of effects together into a single effect, which runs the effects at the
   /// same time.
   ///
@@ -505,7 +453,7 @@ extension _Effect {
     )
   #endif
   @inlinable
-  public func map<T>(_ transform: @escaping @Sendable (Action) -> T) -> _Effect<T> {
+  public func map<T>(_ transform: @escaping @Sendable (Action) -> T) -> Effect<T> {
     switch self.operation {
     case .none:
       return .none
@@ -531,7 +479,7 @@ extension _Effect {
           operation: .run(name: name, priority: priority) { send in
             await escaped.yield {
               await operation(
-                _Send { action in
+                Send { action in
                   send(transform(action))
                 }
               )
