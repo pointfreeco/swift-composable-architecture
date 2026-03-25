@@ -855,6 +855,107 @@
       }
     }
 
+    func testEnum_TwoCases_AccessControl_Public() {
+      assertMacro {
+        """
+        @Reducer
+        public enum Destination {
+          case activity(Activity)
+          case timeline(Timeline)
+        }
+        """
+      } expansion: {
+        #"""
+        public enum Destination {
+          case activity(Activity)
+          case timeline(Timeline)
+
+          @CasePathable
+          @dynamicMemberLookup
+          @ObservableState
+
+          public enum State: ComposableArchitecture.CaseReducerState {
+
+            public typealias StateReducer = Destination
+            case activity(Activity.State)
+            case timeline(Timeline.State)
+          }
+
+          @CasePathable
+
+          public enum Action {
+            case activity(Activity.Action)
+            case timeline(Timeline.Action)
+          }
+
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+
+          public static var body: Reduce<Self.State, Self.Action> {
+            ComposableArchitecture.Reduce(
+              ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+              .ifCaseLet(\Self.State.Cases.activity, action: \Self.Action.Cases.activity) {
+                Activity()
+              }
+              .ifCaseLet(\Self.State.Cases.timeline, action: \Self.Action.Cases.timeline) {
+                Timeline()
+              }
+            )
+          }
+
+          @dynamicMemberLookup
+
+          public enum CaseScope: ComposableArchitecture._CaseScopeProtocol, CasePaths.CasePathable {
+            case activity(ComposableArchitecture.StoreOf<Activity>)
+            case timeline(ComposableArchitecture.StoreOf<Timeline>)
+
+            public struct AllCasePaths {
+              public var activity: CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.StoreOf<Activity>> {
+                CasePaths.AnyCasePath(
+                  embed: CaseScope.activity,
+                  extract: {
+                    guard case let .activity(v0) = $0 else {
+                      return nil
+                    };
+                    return v0
+                  }
+                )
+              }
+              public var timeline: CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.StoreOf<Timeline>> {
+                CasePaths.AnyCasePath(
+                  embed: CaseScope.timeline,
+                  extract: {
+                    guard case let .timeline(v0) = $0 else {
+                      return nil
+                    };
+                    return v0
+                  }
+                )
+              }
+            }
+
+            public static var allCasePaths: AllCasePaths {
+              AllCasePaths()
+            }
+          }
+
+          @preconcurrency @MainActor
+
+          public static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            switch store.state {
+            case .activity:
+              return .activity(store.scope(state: \.activity, action: \.activity)!)
+            case .timeline:
+              return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
+            }
+          }
+        }
+
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
+        }
+        """#
+      }
+    }
+
     func testEnum_CaseIgnored() {
       assertMacro {
         """

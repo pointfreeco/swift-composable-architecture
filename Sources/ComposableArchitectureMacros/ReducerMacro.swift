@@ -268,7 +268,7 @@ extension ReducerMacro: MemberMacro {
         }
         storeCases.append(enumCaseElement.storeCase)
         storeScopes.append(enumCaseElement.storeScope)
-        storeCasePathProperties.append(enumCaseElement.storeCasePathProperty)
+        storeCasePathProperties.append(enumCaseElement.storeCasePathProperty(access: access))
       }
       if !hasState {
         var conformances: [String] = []
@@ -526,7 +526,8 @@ private enum ReducerCase {
     }
   }
 
-  var storeCasePathProperty: String {
+  func storeCasePathProperty(access: DeclModifierSyntax?) -> String {
+    let accessPrefix = access?.name.text.appending(" ") ?? ""
     switch self {
     case .element(let element, let attribute):
       let name = element.name.text
@@ -538,7 +539,7 @@ private enum ReducerCase {
       {
         let type = parameter.type
         return """
-          var \(name): CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.StoreOf<\(type.trimmed)>> {
+          \(accessPrefix)var \(name): CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.StoreOf<\(type.trimmed)>> {
           CasePaths.AnyCasePath(
           embed: CaseScope.\(name),
           extract: { guard case let .\(name)(v0) = $0 else { return nil }; return v0 }
@@ -550,7 +551,7 @@ private enum ReducerCase {
         let parameter = parameterClause.parameters.first
       {
         return """
-          var \(name): CasePaths.AnyCasePath<CaseScope, \(parameter.type.trimmed)> {
+          \(accessPrefix)var \(name): CasePaths.AnyCasePath<CaseScope, \(parameter.type.trimmed)> {
           CasePaths.AnyCasePath(
           embed: CaseScope.\(name),
           extract: { guard case let .\(name)(v0) = $0 else { return nil }; return v0 }
@@ -561,7 +562,7 @@ private enum ReducerCase {
         return ""
       } else {
         return """
-          var \(name): CasePaths.AnyCasePath<CaseScope, Void> {
+          \(accessPrefix)var \(name): CasePaths.AnyCasePath<CaseScope, Void> {
           CasePaths.AnyCasePath(
           embed: { CaseScope.\(name) },
           extract: { guard case .\(name) = $0 else { return nil }; return () }
@@ -570,7 +571,7 @@ private enum ReducerCase {
           """
       }
     case .ifConfig(let configs):
-      return Self.renderedIfConfig(configs) { $0.storeCasePathProperty } ?? ""
+      return Self.renderedIfConfig(configs) { $0.storeCasePathProperty(access: access) } ?? ""
     }
   }
 
