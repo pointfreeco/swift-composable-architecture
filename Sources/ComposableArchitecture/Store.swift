@@ -177,6 +177,30 @@ public final class Store<State, Action>: _Store {
   /// - Parameters:
   ///   - action: An action.
   ///   - animation: An animation.
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, message: "Use 'withAnimation { _ = store.send(action) }' instead")
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Use 'withAnimation { _ = store.send(action) }' instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Use 'withAnimation { _ = store.send(action) }' instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Use 'withAnimation { _ = store.send(action) }' instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Use 'withAnimation { _ = store.send(action) }' instead"
+    )
+  #endif
   @discardableResult
   public func send(_ action: Action, animation: Animation?) -> StoreTask {
     send(action, transaction: Transaction(animation: animation))
@@ -189,6 +213,36 @@ public final class Store<State, Action>: _Store {
   /// - Parameters:
   ///   - action: An action.
   ///   - transaction: A transaction.
+  #if ComposableArchitecture2Deprecations
+    @available(
+      *,
+      deprecated,
+      message: """
+        Use 'withTransaction(transaction) { _ = store.send(action) }' instead
+        """
+    )
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Use 'withTransaction(transaction) { _ = store.send(action) }' instead"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Use 'withTransaction(transaction) { _ = store.send(action) }' instead"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Use 'withTransaction(transaction) { _ = store.send(action) }' instead"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Use 'withTransaction(transaction) { _ = store.send(action) }' instead"
+    )
+  #endif
   @discardableResult
   public func send(_ action: Action, transaction: Transaction) -> StoreTask {
     withTransaction(transaction) {
