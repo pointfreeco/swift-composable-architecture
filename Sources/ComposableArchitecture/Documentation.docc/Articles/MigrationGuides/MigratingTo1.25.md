@@ -39,9 +39,6 @@ directly to a specific case of a destination enum, you now scope to the entire d
 chain into the individual case:
 
 ```diff
--.alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
-+.alert($store.scope(state: \.$destination, action: \.destination).alert)
-
 -.sheet(item: $store.scope(state: \.destination?.edit, action: \.destination.edit)) {
 +.sheet(item: $store.scope(state: \.$destination, action: \.destination).edit) {
 ```
@@ -61,6 +58,28 @@ bindings to `Bool` bindings:
 +  isPresented: Binding($store.scope(state: \.$destination, action: \.destination).help)
 +) {
 ```
+
+Another important difference is that holding non-feature state in a destination enum with an
+associated action (such as the action of an `AlertState<Action>`) requires an explicit `Action` enum
+definition:
+
+```diff
+ @Reducer enum Destination {
+   case alert(AlertState<Alert>)
+   case settings(Settings)
+
++  @CasePathable enum Action {
++    case alert(Alert)
++    case settings(Settings.Action)
++  }
+
+   enum Alert {
+     case .deleteTapped
+   }
+ }
+```
+
+ComposableArchitecture 2.0 will have newer tools for handling prompts.
 
 ### Streamlined `onChange` operator
 
