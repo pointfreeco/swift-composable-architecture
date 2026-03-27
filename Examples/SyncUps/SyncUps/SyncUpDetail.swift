@@ -9,6 +9,12 @@ struct SyncUpDetail {
     case edit(SyncUpForm)
 
     @CasePathable
+    enum Action {
+      case alert(Alert)
+      case edit(SyncUpForm.Action)
+    }
+
+    @CasePathable
     enum Alert {
       case confirmDeletion
       case continueWithoutRecording
