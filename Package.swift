@@ -49,7 +49,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-sharing", "1.0.4"..<"3.0.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.3.0"),
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.0.0"),
-    .package(url: "https://github.com/swiftlang/swift-syntax", "509.0.0"..<"603.0.0"),
+    .package(url: "https://github.com/swiftlang/swift-syntax", "509.0.0"..<"605.0.0"),
   ],
   targets: [
     .target(
