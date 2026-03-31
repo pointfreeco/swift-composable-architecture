@@ -252,7 +252,28 @@ extension ReducerMacro: MemberMacro {
       } || hasReduceMethod
     var decls: [DeclSyntax] = []
     if let enumDecl = declaration.as(EnumDeclSyntax.self) {
-      let enumCaseElements = [ReducerCase](members: enumDecl.memberBlock.members)
+      var enumCaseElements = [ReducerCase](members: enumDecl.memberBlock.members)
+      if hasAction {
+        let existingActionCases: [String: EnumCaseElementSyntax] = {
+          guard
+            let actionEnum = enumDecl.memberBlock.members.lazy
+              .compactMap({ $0.decl.as(EnumDeclSyntax.self) })
+              .first(where: { $0.name.text == "Action" })
+          else { return [:] }
+          var cases: [String: EnumCaseElementSyntax] = [:]
+          for member in actionEnum.memberBlock.members {
+            if let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) {
+              for element in caseDecl.elements {
+                cases[element.name.text] = element
+              }
+            }
+          }
+          return cases
+        }()
+        if !existingActionCases.isEmpty {
+          enumCaseElements = enumCaseElements.resolvingExplicitActions(existingActionCases)
+        }
+      }
       var stateCaseDecls: [String] = []
       var actionCaseDecls: [String] = []
       var reducerIfCaseLets: [String] = []
@@ -421,7 +442,7 @@ extension ReducerMacro: MemberMacro {
 }
 
 private enum ReducerCase {
-  case element(EnumCaseElementSyntax, attribute: Attribute? = nil)
+  case element(EnumCaseElementSyntax, attribute: Attribute? = nil, explicitActionType: TypeSyntax? = nil)
   indirect case ifConfig([IfConfig])
 
   enum Attribute {
@@ -455,7 +476,7 @@ private enum ReducerCase {
 
   var stateCaseDecl: String {
     switch self {
-    case .element(let element, let attribute):
+    case .element(let element, let attribute, _):
       if attribute != .ignored,
         let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
@@ -475,7 +496,7 @@ private enum ReducerCase {
 
   var actionCaseDecl: String {
     switch self {
-    case .element(let element, let attribute):
+    case .element(let element, let attribute, _):
       if attribute != .ignored,
         let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
@@ -503,7 +524,7 @@ private enum ReducerCase {
 
   var reducerIfCaseLet: String? {
     switch self {
-    case .element(let element, let attribute):
+    case .element(let element, let attribute, _):
       if attribute == nil,
         let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
@@ -529,7 +550,7 @@ private enum ReducerCase {
   func storeCasePathProperty(access: DeclModifierSyntax?) -> String {
     let accessPrefix = access?.name.text.appending(" ") ?? ""
     switch self {
-    case .element(let element, let attribute):
+    case .element(let element, let attribute, let explicitActionType):
       let name = element.name.text
       if attribute == nil,
         let parameterClause = element.parameterClause,
@@ -540,6 +561,20 @@ private enum ReducerCase {
         let type = parameter.type
         return """
           \(accessPrefix)var \(name): CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.StoreOf<\(type.trimmed)>> {
+          CasePaths.AnyCasePath(
+          embed: CaseScope.\(name),
+          extract: { guard case let .\(name)(v0) = $0 else { return nil }; return v0 }
+          )
+          }
+          """
+      } else if let explicitActionType,
+        let parameterClause = element.parameterClause,
+        parameterClause.parameters.count == 1,
+        let parameter = parameterClause.parameters.first
+      {
+        let stateType = parameter.type
+        return """
+          var \(name): CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.Store<\(stateType.trimmed), \(explicitActionType.trimmed)>> {
           CasePaths.AnyCasePath(
           embed: CaseScope.\(name),
           extract: { guard case let .\(name)(v0) = $0 else { return nil }; return v0 }
@@ -577,7 +612,7 @@ private enum ReducerCase {
 
   var storeCase: String {
     switch self {
-    case .element(let element, let attribute):
+    case .element(let element, let attribute, let explicitActionType):
       if attribute == nil,
         let parameterClause = element.parameterClause,
         parameterClause.parameters.count == 1,
@@ -587,6 +622,14 @@ private enum ReducerCase {
         let name = element.name.text
         let type = parameter.type
         return "case \(name)(ComposableArchitecture.StoreOf<\(type.trimmed)>)"
+      } else if let explicitActionType,
+        let parameterClause = element.parameterClause,
+        parameterClause.parameters.count == 1,
+        let parameter = parameterClause.parameters.first
+      {
+        let name = element.name.text
+        let stateType = parameter.type
+        return "case \(name)(ComposableArchitecture.Store<\(stateType.trimmed), \(explicitActionType.trimmed)>)"
       } else {
         return "case \(element.trimmedDescription)"
       }
@@ -597,7 +640,7 @@ private enum ReducerCase {
 
   var storeScope: String {
     switch self {
-    case .element(let element, let attribute):
+    case .element(let element, let attribute, let explicitActionType):
       let name = element.name.text
       if attribute == nil,
         let parameterClause = element.parameterClause,
@@ -605,6 +648,11 @@ private enum ReducerCase {
         let parameter = parameterClause.parameters.first,
         parameter.type.is(IdentifierTypeSyntax.self) || parameter.type.is(MemberTypeSyntax.self)
       {
+        return """
+          case .\(name):
+          return .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
+          """
+      } else if explicitActionType != nil {
         return """
           case .\(name):
           return .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
@@ -653,6 +701,41 @@ extension [ReducerCase] {
         return [.ifConfig(configs)]
       }
       return []
+    }
+  }
+
+  fileprivate func resolvingExplicitActions(
+    _ actionCases: [String: EnumCaseElementSyntax]
+  ) -> [ReducerCase] {
+    self.map { $0.resolvingExplicitActions(actionCases) }
+  }
+}
+
+extension ReducerCase {
+  fileprivate func resolvingExplicitActions(
+    _ actionCases: [String: EnumCaseElementSyntax]
+  ) -> ReducerCase {
+    switch self {
+    case .element(let element, .ignored, _):
+      if let actionElement = actionCases[element.name.text],
+        let actionParams = actionElement.parameterClause?.parameters,
+        actionParams.count == 1,
+        let actionType = actionParams.first?.type,
+        element.parameterClause?.parameters.count == 1
+      {
+        return .element(element, attribute: .ignored, explicitActionType: actionType)
+      }
+      return self
+    case .ifConfig(let configs):
+      return .ifConfig(configs.map {
+        IfConfig(
+          poundKeyword: $0.poundKeyword,
+          condition: $0.condition,
+          cases: $0.cases.map { $0.resolvingExplicitActions(actionCases) }
+        )
+      })
+    default:
+      return self
     }
   }
 }
