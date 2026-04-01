@@ -62,6 +62,7 @@ extension BindingAction {
   /// case .binding(\.enableNotifications):
   ///   // Return an authorization request effect
   /// ```
+  @_disfavoredOverload
   public static func ~= <Value>(
     keyPath: _SendableWritableKeyPath<Root, Value>,
     bindingAction: Self
