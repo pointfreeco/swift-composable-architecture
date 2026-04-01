@@ -442,7 +442,8 @@ extension ReducerMacro: MemberMacro {
 }
 
 private enum ReducerCase {
-  case element(EnumCaseElementSyntax, attribute: Attribute? = nil, explicitActionType: TypeSyntax? = nil)
+  case element(
+    EnumCaseElementSyntax, attribute: Attribute? = nil, explicitActionType: TypeSyntax? = nil)
   indirect case ifConfig([IfConfig])
 
   enum Attribute {
@@ -629,7 +630,8 @@ private enum ReducerCase {
       {
         let name = element.name.text
         let stateType = parameter.type
-        return "case \(name)(ComposableArchitecture.Store<\(stateType.trimmed), \(explicitActionType.trimmed)>)"
+        return
+          "case \(name)(ComposableArchitecture.Store<\(stateType.trimmed), \(explicitActionType.trimmed)>)"
       } else {
         return "case \(element.trimmedDescription)"
       }
@@ -727,13 +729,14 @@ extension ReducerCase {
       }
       return self
     case .ifConfig(let configs):
-      return .ifConfig(configs.map {
-        IfConfig(
-          poundKeyword: $0.poundKeyword,
-          condition: $0.condition,
-          cases: $0.cases.map { $0.resolvingExplicitActions(actionCases) }
-        )
-      })
+      return .ifConfig(
+        configs.map {
+          IfConfig(
+            poundKeyword: $0.poundKeyword,
+            condition: $0.condition,
+            cases: $0.cases.map { $0.resolvingExplicitActions(actionCases) }
+          )
+        })
     default:
       return self
     }

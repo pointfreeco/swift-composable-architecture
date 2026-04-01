@@ -265,8 +265,7 @@ extension SwiftUI.Bindable {
     @available(
       *,
       deprecated,
-      message:
-        """
+      message: """
         Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead. For alert or confirmation cases, additional work is needed. See the migration guide for more details: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/1.25.5/documentation/composablearchitecture/migratingto1.25#Enum-scopes
         """
     )
@@ -397,8 +396,7 @@ extension Perception.Bindable {
     @available(
       *,
       deprecated,
-      message:
-        """
+      message: """
         Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead. For alert or confirmation cases, additional work is needed. See the migration guide for more details: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/1.25.5/documentation/composablearchitecture/migratingto1.25#Enum-scopes
         """
     )
@@ -531,8 +529,7 @@ extension UIBindable {
     @available(
       *,
       deprecated,
-      message:
-        """
+      message: """
         Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead. For alert or confirmation cases, additional work is needed. See the migration guide for more details: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/1.25.5/documentation/composablearchitecture/migratingto1.25#Enum-scopes
         """
     )
