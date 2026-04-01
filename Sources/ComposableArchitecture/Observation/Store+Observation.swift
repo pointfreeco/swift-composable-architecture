@@ -266,7 +266,9 @@ extension SwiftUI.Bindable {
       *,
       deprecated,
       message:
-        "Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead"
+        """
+        Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead. For alert or confirmation cases, additional work is needed. See the migration guide for more details: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/1.25.5/documentation/composablearchitecture/migratingto1.25#Enum-scopes
+        """
     )
     @preconcurrency @MainActor
     public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
@@ -396,7 +398,9 @@ extension Perception.Bindable {
       *,
       deprecated,
       message:
-        "Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead"
+        """
+        Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead. For alert or confirmation cases, additional work is needed. See the migration guide for more details: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/1.25.5/documentation/composablearchitecture/migratingto1.25#Enum-scopes
+        """
     )
     @preconcurrency @MainActor
     public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
@@ -528,7 +532,9 @@ extension UIBindable {
       *,
       deprecated,
       message:
-        "Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead"
+        """
+        Use '$store.scope(state: \\.$destination, action: \\.destination)' (and optional trailing dot syntax '.sheet') instead. For alert or confirmation cases, additional work is needed. See the migration guide for more details: https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/1.25.5/documentation/composablearchitecture/migratingto1.25#Enum-scopes
+        """
     )
     @preconcurrency @MainActor
     public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(

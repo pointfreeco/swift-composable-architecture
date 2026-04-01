@@ -5,7 +5,7 @@ import SwiftUI
 struct SyncUpDetail {
   @Reducer
   enum Destination {
-    case alert(AlertState<Alert>)
+    @ReducerCaseIgnored case alert(AlertState<Alert>)
     case edit(SyncUpForm)
 
     @CasePathable

@@ -60,11 +60,13 @@ bindings to `Bool` bindings:
 ```
 
 Another important difference is that holding non-feature state in a destination enum with an
-associated action (such as the action of an `AlertState<Action>`) requires an explicit `Action` enum
-definition:
+associated action (such as the action of an `AlertState<Action>`) requires an explicit
+`@ReducerCaseIgnored` on the non-feature case, as well as an explicit `Action` enum definition to
+define the corresponding case(s):
 
 ```diff
  @Reducer enum Destination {
++  @ReducerCaseIgnored
    case alert(AlertState<Alert>)
    case settings(Settings)
 
