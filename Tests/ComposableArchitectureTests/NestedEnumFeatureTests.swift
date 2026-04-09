@@ -4,17 +4,17 @@ import ComposableArchitecture
   import SwiftUI
 #endif
 
-@Reducer fileprivate struct Leaf {}
+@Reducer private struct Leaf {}
 
-@Reducer fileprivate enum Inner {
+@Reducer private enum Inner {
   case leaf(Leaf)
 }
 
-@Reducer fileprivate enum Outer {
+@Reducer private enum Outer {
   case inner(Inner.Body = Inner.body)
 }
 
-@Reducer fileprivate struct Parent {
+@Reducer private struct Parent {
   @ObservableState struct State {
     @Presents var destination: Outer.State?
   }
