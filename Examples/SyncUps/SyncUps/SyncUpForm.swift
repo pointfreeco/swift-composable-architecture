@@ -65,6 +65,25 @@ struct SyncUpFormView: View {
   @FocusState var focus: SyncUpForm.State.Field?
 
   var body: some View {
+    SyncUpFormContents(store: store, focus: $focus)
+    .bind($store.focus, to: $focus)
+  }
+}
+
+private struct SyncUpFormPreviewView: View {
+  @Bindable var store: StoreOf<SyncUpForm>
+  @FocusState var focus: SyncUpForm.State.Field?
+
+  var body: some View {
+    SyncUpFormContents(store: store, focus: $focus)
+  }
+}
+
+private struct SyncUpFormContents: View {
+  @Bindable var store: StoreOf<SyncUpForm>
+  @FocusState.Binding var focus: SyncUpForm.State.Field?
+
+  var body: some View {
     Form {
       Section {
         TextField("Title", text: $store.syncUp.title)
@@ -96,7 +115,6 @@ struct SyncUpFormView: View {
         Text("Attendees")
       }
     }
-    .bind($store.focus, to: $focus)
   }
 }
 
@@ -129,7 +147,7 @@ extension Duration {
 
 #Preview {
   NavigationStack {
-    SyncUpFormView(
+    SyncUpFormPreviewView(
       store: Store(initialState: SyncUpForm.State(syncUp: .mock)) {
         SyncUpForm()
       }
