@@ -170,7 +170,7 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   #else
     @available(iOS, deprecated: 9999, renamed: "init(_:action:_:)")
     @available(macOS, deprecated: 9999, renamed: "init(_:action:_:)")
-    @available(tvOS, deprecated: 9999,renamed: "init(_:action:_:)")
+    @available(tvOS, deprecated: 9999, renamed: "init(_:action:_:)")
     @available(watchOS, deprecated: 9999, renamed: "init(_:action:_:)")
   #endif
   @inlinable

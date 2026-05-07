@@ -304,7 +304,7 @@ public final class Store<State, Action>: _Store {
   #else
     @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
-    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
   #endif
   public func scope<ChildState, ChildAction>(

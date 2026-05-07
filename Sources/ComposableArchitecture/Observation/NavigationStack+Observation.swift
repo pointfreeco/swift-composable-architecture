@@ -70,7 +70,7 @@ extension Binding {
   #else
     @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
-    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
   #endif
   @preconcurrency @MainActor
@@ -98,7 +98,7 @@ extension ObservedObject.Wrapper {
   #else
     @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
-    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
   #endif
   @preconcurrency @MainActor
@@ -131,7 +131,7 @@ extension SwiftUI.Bindable {
   #else
     @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
-    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
   #endif
   @preconcurrency @MainActor
@@ -166,7 +166,7 @@ extension Perception.Bindable {
   #else
     @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
-    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
   #endif
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
@@ -197,7 +197,7 @@ extension UIBindable {
   #else
     @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
-    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999, renamed: "scope(_:action:)")
     @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
   #endif
   @preconcurrency @MainActor

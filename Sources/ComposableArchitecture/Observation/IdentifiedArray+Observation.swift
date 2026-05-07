@@ -93,7 +93,7 @@ extension Store where State: ObservableState {
   #else
     @available(iOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     @available(macOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
-    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:fileID:filePath:line:column:)")
+    @available(tvOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     @available(watchOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
   #endif
   @_disfavoredOverload

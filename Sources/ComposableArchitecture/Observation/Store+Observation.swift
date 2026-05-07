@@ -130,7 +130,7 @@ extension Store where State: ObservableState {
   #else
     @available(iOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     @available(macOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
-    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:fileID:filePath:line:column:)")
+    @available(tvOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     @available(watchOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
   #endif
   public func scope<ChildState, ChildAction>(
@@ -230,7 +230,7 @@ extension Binding {
   #else
     @available(iOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     @available(macOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
-    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:fileID:filePath:line:column:)")
+    @available(tvOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     @available(watchOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
   #endif
   @preconcurrency @MainActor
@@ -289,7 +289,7 @@ extension ObservedObject.Wrapper {
   #else
     @available(iOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     @available(macOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
-    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:fileID:filePath:line:column:)")
+    @available(tvOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     @available(watchOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
   #endif
   @preconcurrency @MainActor
@@ -357,7 +357,7 @@ extension SwiftUI.Bindable {
     #else
       @available(iOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(macOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
-      @available(tvOS, deprecated: 9999,renamed: "scope(_:action:fileID:filePath:line:column:)")
+      @available(tvOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(watchOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     #endif
     @preconcurrency @MainActor
@@ -488,7 +488,7 @@ extension SwiftUI.Bindable {
     #else
       @available(iOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(macOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
-      @available(tvOS, deprecated: 9999,renamed: "scope(_:action:fileID:filePath:line:column:)")
+      @available(tvOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(watchOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     #endif
     @preconcurrency @MainActor
@@ -548,7 +548,7 @@ extension Perception.Bindable {
     #else
       @available(iOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(macOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
-      @available(tvOS, deprecated: 9999,renamed: "scope(_:action:fileID:filePath:line:column:)")
+      @available(tvOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(watchOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     #endif
     @preconcurrency @MainActor
@@ -678,7 +678,7 @@ extension Perception.Bindable {
     #else
       @available(iOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(macOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
-      @available(tvOS, deprecated: 9999,renamed: "scope(_:action:fileID:filePath:line:column:)")
+      @available(tvOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(watchOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     #endif
     public func scope<State: ObservableState, Action, Container: _ScopableState, ChildAction>(
@@ -740,7 +740,7 @@ extension UIBindable {
     #else
       @available(iOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(macOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
-      @available(tvOS, deprecated: 9999,renamed: "scope(_:action:fileID:filePath:line:column:)")
+      @available(tvOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(watchOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     #endif
     @preconcurrency @MainActor
@@ -842,7 +842,7 @@ extension UIBindable {
     #else
       @available(iOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(macOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
-      @available(tvOS, deprecated: 9999,renamed: "scope(_:action:fileID:filePath:line:column:)")
+      @available(tvOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
       @available(watchOS, deprecated: 9999, renamed: "scope(_:action:fileID:filePath:line:column:)")
     #endif
     @preconcurrency @MainActor
