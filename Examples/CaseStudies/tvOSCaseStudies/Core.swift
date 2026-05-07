@@ -11,7 +11,7 @@ struct Root {
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.focus, action: \.focus) {
+    Scope(\.focus, action: \.focus) {
       Focus()
     }
   }

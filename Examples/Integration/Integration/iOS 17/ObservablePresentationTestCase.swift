@@ -33,7 +33,7 @@ struct ObservablePresentationView: View {
       }
       .fullScreenCover(
         item: self.$store.scope(
-          state: \.destination?.fullScreenCover,
+          \.destination?.fullScreenCover,
           action: \.destination.fullScreenCover
         )
       ) { store in
@@ -52,7 +52,7 @@ struct ObservablePresentationView: View {
         }
       }
       .popover(
-        item: self.$store.scope(state: \.destination?.popover, action: \.destination.popover)
+        item: self.$store.scope(\.destination?.popover, action: \.destination.popover)
       ) { store in
         NavigationStack {
           Form {
@@ -68,7 +68,7 @@ struct ObservablePresentationView: View {
           }
         }
       }
-      .sheet(item: self.$store.scope(state: \.sheet, action: \.sheet)) { store in
+      .sheet(item: self.$store.scope(\.sheet, action: \.sheet)) { store in
         NavigationStack {
           Form {
             ObservableBasicsView(store: store)

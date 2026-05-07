@@ -9,7 +9,7 @@ struct RootView: View {
       Form {
         Section {
           FocusView(
-            store: store.scope(state: \.focus, action: \.focus)
+            store: store.scope(\.focus, action: \.focus)
           )
         }
       }

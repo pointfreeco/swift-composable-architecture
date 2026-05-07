@@ -76,8 +76,8 @@ struct SyncUpDetailView: View {
         store.send(.editButtonTapped)
       }
     }
-    .alert($store.scope(state: \.alert, action: \.alert))
-    .sheet(item: $store.scope(state: \.editSyncUp, action: \.editSyncUp)) { editSyncUpStore in
+    .alert($store.scope(\.alert, action: \.alert))
+    .sheet(item: $store.scope(\.editSyncUp, action: \.editSyncUp)) { editSyncUpStore in
       NavigationStack {
         SyncUpFormView(store: editSyncUpStore)
           .navigationTitle(store.syncUp.title)

@@ -64,7 +64,7 @@ public final class TwoFactorViewController: UIViewController {
       loginButton.isEnabled = store.isLoginButtonEnabled
     }
 
-    present(item: $store.scope(state: \.alert, action: \.alert)) { store in
+    present(item: $store.scope(\.alert, action: \.alert)) { store in
       UIAlertController(store: store)
     }
   }

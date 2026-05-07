@@ -23,7 +23,7 @@ extension Reducer {
   ///   }
   ///
   ///   var body: some Reducer<State, Action> {
-  ///     Scope(state: \.feature, action: \.feature) {
+  ///     Scope(\.feature, action: \.feature) {
   ///       Feature()
   ///     }
   ///
@@ -46,7 +46,7 @@ extension Reducer {
   ///
   /// ```swift
   /// var body: some Reducer<State, Action> {
-  ///   Scope(state: \.feature, action: \.feature) {
+  ///   Scope(\.feature, action: \.feature) {
   ///     Feature()
   ///       .dependency(\.apiClient, .mock)
   ///       .dependency(\.userDefaults, .mock)

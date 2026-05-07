@@ -56,7 +56,7 @@ struct OptionalBasicsView: View {
         store.send(.toggleCounterButtonTapped)
       }
 
-      if let store = store.scope(state: \.optionalCounter, action: \.optionalCounter) {
+      if let store = store.scope(\.optionalCounter, action: \.optionalCounter) {
         Text(template: "`Counter.State` is non-`nil`")
         CounterView(store: store)
           .buttonStyle(.borderless)

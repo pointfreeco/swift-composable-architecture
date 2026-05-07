@@ -28,7 +28,7 @@ struct NewPresentsOldTestCase: View {
           Button("Present child") { self.store.send(.presentChildButtonTapped) }
         }
       }
-      .sheet(store: self.store.scope(state: \.$child, action: \.child)) { store in
+      .sheet(store: self.store.scope(\.$child, action: \.child)) { store in
         Form {
           BasicsView(store: store)
         }

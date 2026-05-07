@@ -11,7 +11,7 @@ struct AppView: View {
 
   var body: some View {
     NavigationStack(
-      path: $store.scope(state: \.path, action: \.path)
+      path: $store.scope(\.path, action: \.path)
     ) {
 
     } destination: { store in

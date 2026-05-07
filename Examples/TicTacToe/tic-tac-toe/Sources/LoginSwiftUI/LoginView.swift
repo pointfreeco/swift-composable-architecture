@@ -53,8 +53,8 @@ public struct LoginView: View {
       .disabled(store.isLoginButtonDisabled)
     }
     .disabled(store.isFormDisabled)
-    .alert($store.scope(state: \.alert, action: \.alert))
-    .navigationDestination(item: $store.scope(state: \.twoFactor, action: \.twoFactor)) { store in
+    .alert($store.scope(\.alert, action: \.alert))
+    .navigationDestination(item: $store.scope(\.twoFactor, action: \.twoFactor)) { store in
       TwoFactorView(store: store)
     }
     .navigationTitle("Login")

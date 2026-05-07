@@ -88,7 +88,7 @@ struct NavigateAndLoadListView: View {
             set: { id in store.send(.setNavigation(selection: id)) }
           )
         ) {
-          if let store = store.scope(state: \.selection?.value, action: \.counter) {
+          if let store = store.scope(\.selection?.value, action: \.counter) {
             CounterView(store: store)
           } else {
             ProgressView()

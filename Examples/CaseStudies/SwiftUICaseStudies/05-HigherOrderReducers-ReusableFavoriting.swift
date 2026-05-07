@@ -79,7 +79,7 @@ struct FavoriteButton<ID: Hashable & Sendable>: View {
       Image(systemName: "heart")
         .symbolVariant(store.isFavorite ? .fill : .none)
     }
-    .alert($store.scope(state: \.alert, action: \.alert))
+    .alert($store.scope(\.alert, action: \.alert))
   }
 }
 
@@ -105,7 +105,7 @@ struct Episode {
   let favorite: @Sendable (UUID, Bool) async throws -> Bool
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.favorite, action: \.favorite) {
+    Scope(\.favorite, action: \.favorite) {
       Favoriting(favorite: self.favorite)
     }
   }
@@ -120,7 +120,7 @@ struct EpisodeView: View {
 
       Spacer()
 
-      FavoriteButton(store: store.scope(state: \.favorite, action: \.favorite))
+      FavoriteButton(store: store.scope(\.favorite, action: \.favorite))
     }
   }
 }
@@ -157,7 +157,7 @@ struct EpisodesView: View {
         AboutView(readMe: readMe)
       }
 
-      ForEach(store.scope(state: \.episodes, action: \.episodes)) { rowStore in
+      ForEach(store.scope(\.episodes, action: \.episodes)) { rowStore in
         EpisodeView(store: rowStore)
       }
       .buttonStyle(.borderless)

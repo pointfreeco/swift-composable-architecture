@@ -5,7 +5,7 @@ struct ContactsView: View {
   @Bindable var store: StoreOf<ContactsFeature>
   
   var body: some View {
-    NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+    NavigationStack(path: $store.scope(\.path, action: \.path)) {
       List {
         ForEach(store.contacts) { contact in
           HStack {
@@ -32,12 +32,12 @@ struct ContactsView: View {
       }
     }
     .sheet(
-      item: $store.scope(state: \.$destination, action: \.destination).addContact
+      item: $store.scope(\.$destination, action: \.destination).addContact
     ) { addContactStore in
       NavigationStack {
         AddContactView(store: addContactStore)
       }
     }
-    .alert($store.scope(state: \.$destination, action: \.destination).alert)
+    .alert($store.scope(\.$destination, action: \.destination).alert)
   }
 }

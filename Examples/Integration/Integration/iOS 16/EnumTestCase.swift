@@ -51,7 +51,7 @@ struct EnumView: View {
           }
         }
       }
-      IfLetStore(self.store.scope(state: \.$destination, action: \.destination)) { store in
+      IfLetStore(self.store.scope(\.$destination, action: \.destination)) { store in
         SwitchStore(store) {
           switch $0 {
           case .feature1:
@@ -101,10 +101,10 @@ struct EnumView: View {
         case feature2(BasicsView.Feature.Action)
       }
       var body: some ReducerOf<Self> {
-        Scope(state: \.feature1, action: \.feature1) {
+        Scope(\.feature1, action: \.feature1) {
           BasicsView.Feature()
         }
-        Scope(state: \.feature2, action: \.feature2) {
+        Scope(\.feature2, action: \.feature2) {
           BasicsView.Feature()
         }
       }

@@ -652,12 +652,12 @@ private enum ReducerCase {
       {
         return """
           case .\(name):
-          return .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
+          return .\(name)(store.scope(\\.\(name), action: \\.\(name))!)
           """
       } else if explicitActionType != nil {
         return """
           case .\(name):
-          return .\(name)(store.scope(state: \\.\(name), action: \\.\(name))!)
+          return .\(name)(store.scope(\\.\(name), action: \\.\(name))!)
           """
       } else if let parameters = element.parameterClause?.parameters {
         let bindingNames = (0..<parameters.count).map { "v\($0)" }.joined(separator: ", ")

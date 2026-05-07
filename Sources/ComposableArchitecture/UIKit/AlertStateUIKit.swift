@@ -17,7 +17,7 @@
     ///   func viewDidLoad() {
     ///     // ...
     ///
-    ///     present(item: $store.scope(state: \.alert, action: \.alert)) { store in
+    ///     present(item: $store.scope(\.alert, action: \.alert)) { store in
     ///       UIAlertController(store: store)
     ///     }
     ///   }
@@ -41,7 +41,7 @@
     ///   func viewDidLoad() {
     ///     // ...
     ///
-    ///     present(item: $store.scope(state: \.dialog, action: \.dialog)) { store in
+    ///     present(item: $store.scope(\.dialog, action: \.dialog)) { store in
     ///       UIAlertController(store: store)
     ///     }
     ///   }

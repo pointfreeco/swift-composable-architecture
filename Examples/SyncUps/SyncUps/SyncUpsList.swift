@@ -99,7 +99,7 @@ struct SyncUpsListView: View {
     }
     .navigationTitle("Daily Sync-ups")
     .sheet(
-      item: $store.scope(state: \.destination?.add, action: \.destination.add)
+      item: $store.scope(\.destination?.add, action: \.destination.add)
     ) { addSyncUpStore in
       NavigationStack {
         SyncUpFormView(store: addSyncUpStore)

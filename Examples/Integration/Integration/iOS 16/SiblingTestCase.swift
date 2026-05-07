@@ -11,14 +11,14 @@ struct SiblingFeaturesView: View {
       Form {
         Section {
           BasicsView(
-            store: self.store.scope(state: \.child1, action: \.child1)
+            store: self.store.scope(\.child1, action: \.child1)
           )
         } header: {
           Text("Child 1")
         }
         Section {
           BasicsView(
-            store: self.store.scope(state: \.child2, action: \.child2)
+            store: self.store.scope(\.child2, action: \.child2)
           )
         } header: {
           Text("Child 2")
@@ -52,10 +52,10 @@ struct SiblingFeaturesView: View {
       case swapButtonTapped
     }
     var body: some ReducerOf<Self> {
-      Scope(state: \.child1, action: \.child1) {
+      Scope(\.child1, action: \.child1) {
         BasicsView.Feature()
       }
-      Scope(state: \.child2, action: \.child2) {
+      Scope(\.child2, action: \.child2) {
         BasicsView.Feature()
       }
       Reduce { state, action in

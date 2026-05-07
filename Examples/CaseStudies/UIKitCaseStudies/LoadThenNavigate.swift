@@ -94,7 +94,7 @@ final class LazyNavigationViewController: UIViewController {
       guard let self else { return }
       activityIndicator.isHidden = store.isActivityIndicatorHidden
 
-      if let store = store.scope(state: \.optionalCounter, action: \.optionalCounter) {
+      if let store = store.scope(\.optionalCounter, action: \.optionalCounter) {
         navigationController?.pushViewController(
           CounterViewController(store: store), animated: true
         )

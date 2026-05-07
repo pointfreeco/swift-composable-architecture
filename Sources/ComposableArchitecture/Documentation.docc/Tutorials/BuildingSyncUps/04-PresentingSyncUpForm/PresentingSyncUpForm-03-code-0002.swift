@@ -20,7 +20,7 @@ struct SyncUpsListView: View {
         .listRowBackground(syncUp.theme.mainColor)
       }
     }
-    .sheet(item: $store.scope(state: \.addSyncUp, action: \.addSyncUp)) { addSyncUpStore in
+    .sheet(item: $store.scope(\.addSyncUp, action: \.addSyncUp)) { addSyncUpStore in
       NavigationStack {
         SyncUpFormView(store: addSyncUpStore)
           .navigationTitle("New sync-up")

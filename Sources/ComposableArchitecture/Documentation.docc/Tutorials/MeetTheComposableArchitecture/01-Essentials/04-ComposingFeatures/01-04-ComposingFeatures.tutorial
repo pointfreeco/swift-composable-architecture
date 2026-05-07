@@ -195,7 +195,7 @@
       }
       
       @Step {
-        Use the ``ComposableArchitecture/Store/scope(state:action:)-90255`` method on 
+        Use the ``ComposableArchitecture/Store/scope(_:action:)`` method on 
         ``ComposableArchitecture/Store`` to derive a child store focused in on just the `tab1`
         domain. This is done by using key path syntax to single out the field of the state and
         the case of the action enum.
@@ -232,8 +232,8 @@
       simplest form it starts by composing the reducers together in the `body` of a parent reducer
       and using the ``ComposableArchitecture/Scope`` reducer to focus in on a sub-domain of 
       the parent to run a child reducer. Then in the view you derive child stores from the parent
-      using the ``ComposableArchitecture/Store/scope(state:action:)-90255`` and hand those child
-      stores to the child views.
+      using the ``ComposableArchitecture/Store/scope(_:action:)`` and hand those child stores to
+      the child views.
       
       There are more advanced ways of composing features, especially when it comes to navigation. 
       See the article <doc:Navigation> for more information on the navigation tools in the library,

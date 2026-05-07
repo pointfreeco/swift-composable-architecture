@@ -6,7 +6,7 @@ struct AppView: View {
   
   var body: some View {
     TabView {
-      CounterView(store: store.scope(state: \.tab1, action: \.tab1))
+      CounterView(store: store.scope(\.tab1, action: \.tab1))
         .tabItem {
           Text("Counter 1")
         }

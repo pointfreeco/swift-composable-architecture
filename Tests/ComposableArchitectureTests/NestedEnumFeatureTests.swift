@@ -28,13 +28,14 @@ import ComposableArchitecture
 }
 
 #if canImport(SwiftUI)
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
   struct ParentView: View {
-    @Bindable fileprivate var store: StoreOf<Parent>
+    @SwiftUI.Bindable fileprivate var store: StoreOf<Parent>
 
     var body: some View {
       EmptyView()
         .sheet(
-          item: $store.scope(state: \.destination, action: \.destination).inner.leaf
+          item: $store.scope(\.destination, action: \.destination).inner.leaf
         ) { (store: StoreOf<Leaf>) in
           EmptyView()
         }

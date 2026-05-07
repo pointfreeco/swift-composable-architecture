@@ -71,7 +71,7 @@ struct LoadThenPresentView: View {
         }
       }
     }
-    .sheet(item: $store.scope(state: \.counter, action: \.counter)) { store in
+    .sheet(item: $store.scope(\.counter, action: \.counter)) { store in
       CounterView(store: store)
     }
     .navigationTitle("Load and present")

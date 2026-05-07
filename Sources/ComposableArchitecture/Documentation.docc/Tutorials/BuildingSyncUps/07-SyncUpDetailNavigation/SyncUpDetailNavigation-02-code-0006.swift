@@ -11,10 +11,10 @@ struct AppView: View {
 
   var body: some View {
     NavigationStack(
-      path: $store.scope(state: \.path, action: \.path)
+      path: $store.scope(\.path, action: \.path)
     ) {
       SyncUpsListView(
-        store: store.scope(state: \.syncUpsList, action: \.syncUpsList)
+        store: store.scope(\.syncUpsList, action: \.syncUpsList)
       )
     } destination: { store in
       switch store.case {

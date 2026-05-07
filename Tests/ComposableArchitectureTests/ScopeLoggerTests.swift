@@ -18,8 +18,8 @@ class ScopeLoggerTests: XCTestCase {
         NavigationTestCaseView.Feature()
       }
       let viewStore = ViewStore(store, observe: { $0 })
-      let pathStore = store.scope(state: \.path, action: \.path)
-      let elementStore = pathStore.scope(state: \.[id: 0]!, action: \.[id: 0])
+      let pathStore = store.scope(\.path, action: \.path)
+      let elementStore = pathStore.scope(\.[id: 0]!, action: \.[id: 0])
       Logger.shared.clear()
       elementStore.send(.incrementButtonTapped)
       XCTAssertEqual(

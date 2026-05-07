@@ -83,7 +83,7 @@ final class EagerNavigationViewController: UIViewController {
       if store.isNavigationActive {
         navigationController?.pushViewController(
           IfLetStoreController(
-            store.scope(state: \.optionalCounter, action: \.optionalCounter)
+            store.scope(\.optionalCounter, action: \.optionalCounter)
           ) {
             CounterViewController(store: $0)
           } else: {

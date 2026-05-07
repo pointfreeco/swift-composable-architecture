@@ -15,7 +15,7 @@ struct AppFeature {
     case syncUpsList(SyncUpsList.Action)
   }
   var body: some ReducerOf<Self> {
-    Scope(state: \.syncUpsList, action: \.syncUpsList) {
+    Scope(\.syncUpsList, action: \.syncUpsList) {
       SyncUpsList()
     }
     Reduce { state, action in

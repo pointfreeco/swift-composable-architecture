@@ -115,8 +115,8 @@ struct AlertAndConfirmationDialogView: View {
       Button("Confirmation Dialog") { store.send(.confirmationDialogButtonTapped) }
     }
     .navigationTitle("Alerts & Dialogs")
-    .alert($store.scope(state: \.alert, action: \.alert))
-    .confirmationDialog($store.scope(state: \.confirmationDialog, action: \.confirmationDialog))
+    .alert($store.scope(\.alert, action: \.alert))
+    .confirmationDialog($store.scope(\.confirmationDialog, action: \.confirmationDialog))
   }
 }
 

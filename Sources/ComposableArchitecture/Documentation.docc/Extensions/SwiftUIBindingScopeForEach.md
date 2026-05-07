@@ -1,8 +1,8 @@
-# ``SwiftUI/Binding/scope(state:action:)-35r82``
+# ``SwiftUI/Binding/scope(_:action:)``
 
 ## Topics
 
 ### Bindable
 
-- ``SwiftUI/Bindable/scope(state:action:)``
-- ``Perception/Bindable/scope(state:action:)``
+- ``SwiftUI/Bindable/scope(_:action:)``
+- ``Perception/Bindable/scope(_:action:)``
