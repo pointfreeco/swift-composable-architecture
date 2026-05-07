@@ -28,8 +28,9 @@ import ComposableArchitecture
 }
 
 #if canImport(SwiftUI)
+  @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
   struct ParentView: View {
-    @Bindable fileprivate var store: StoreOf<Parent>
+    @SwiftUI.Bindable fileprivate var store: StoreOf<Parent>
 
     var body: some View {
       EmptyView()
