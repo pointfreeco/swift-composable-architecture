@@ -47,7 +47,7 @@
 ///   }
 ///
 ///   var body: some Reducer<State, Action> {
-///     Scope(state: \.child, action: \.child) {
+///     Scope(\.child, action: \.child) {
 ///       Child()
 ///     }
 ///     Reduce { state, action in
@@ -80,7 +80,7 @@
 ///   }
 ///
 ///   var body: some Reducer<State, Action> {
-///     Scope(state: \.loaded, action: \.child) {
+///     Scope(\.loaded, action: \.child) {
 ///       Child()
 ///     }
 ///     Reduce { state, action in
@@ -138,10 +138,10 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   ///
   /// ```swift
   /// var body: some Reducer<State, Action> {
-  ///   Scope(state: \.profile, action: \.profile) {
+  ///   Scope(\.profile, action: \.profile) {
   ///     Profile()
   ///   }
-  ///   Scope(state: \.settings, action: \.settings) {
+  ///   Scope(\.settings, action: \.settings) {
   ///     Settings()
   ///   }
   ///   // ...
@@ -152,6 +152,27 @@ public struct Scope<ParentState, ParentAction, Child: Reducer>: Reducer {
   ///   - toChildState: A writable key path from parent state to a property containing child state.
   ///   - toChildAction: A case path from parent action to a case containing child actions.
   ///   - child: A reducer that will be invoked with child actions against child state.
+  @inlinable
+  public init<ChildState, ChildAction>(
+    _ toChildState: WritableKeyPath<ParentState, ChildState>,
+    action toChildAction: CaseKeyPath<ParentAction, ChildAction>,
+    @ReducerBuilder<ChildState, ChildAction> _ child: () -> Child
+  ) where ChildState == Child.State, ChildAction == Child.Action {
+    self.init(
+      toChildState: .keyPath(toChildState),
+      toChildAction: AnyCasePath(toChildAction),
+      child: child()
+    )
+  }
+
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, renamed: "init(_:action:_:)")
+  #else
+    @available(iOS, deprecated: 9999, renamed: "init(_:action:_:)")
+    @available(macOS, deprecated: 9999, renamed: "init(_:action:_:)")
+    @available(tvOS, deprecated: 9999,renamed: "init(_:action:_:)")
+    @available(watchOS, deprecated: 9999, renamed: "init(_:action:_:)")
+  #endif
   @inlinable
   public init<ChildState, ChildAction>(
     state toChildState: WritableKeyPath<ParentState, ChildState>,

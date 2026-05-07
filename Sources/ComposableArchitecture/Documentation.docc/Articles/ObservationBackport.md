@@ -94,7 +94,7 @@ This means that even if you wrap the body of the view in `WithPerceptionTracking
 
 ```swift
 WithPerceptionTracking {
-  ForEach(store.scope(state: \.rows, action: \.rows), id: \.state.id) { store in
+  ForEach(store.scope(\.rows, action: \.rows), id: \.state.id) { store in
     Text(store.title)
   }
 }
@@ -107,7 +107,7 @@ The fix for this is to wrap the content of the trailing closure in another `With
 
 ```swift
 WithPerceptionTracking {
-  ForEach(store.scope(state: \.rows, action: \.rows), id: \.state.id) { store in
+  ForEach(store.scope(\.rows, action: \.rows), id: \.state.id) { store in
     WithPerceptionTracking {
       Text(store.title)
     }

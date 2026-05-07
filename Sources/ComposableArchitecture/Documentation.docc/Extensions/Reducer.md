@@ -214,13 +214,13 @@ enum of options:
 
 ```swift
 .sheet(
-  item: $store.scope(state: \.destination?.editForm, action: \.destination.editForm)
+  item: $store.scope(\.destination?.editForm, action: \.destination.editForm)
 ) { store in
   FormView(store: store)
 }
 ```
 
-The syntax `state: \.destination?.editForm` is only possible due to both `@dynamicMemberLookup` and
+The syntax `\.destination?.editForm` is only possible due to both `@dynamicMemberLookup` and
 `@CasePathable` being applied to the `State` enum.
 
 ### Automatic fulfillment of reducer requirements
@@ -268,13 +268,13 @@ struct Destination {
     case edit(EditFeature.Action)
   }
   var body: some ReducerOf<Self> {
-    Scope(state: \.add, action: \.add) {
+    Scope(\.add, action: \.add) {
       FormFeature()
     }
-    Scope(state: \.detail, action: \.detail) {
+    Scope(\.detail, action: \.detail) {
       DetailFeature()
     }
-    Scope(state: \.edit, action: \.edit) {
+    Scope(\.edit, action: \.edit) {
       EditFeature()
     }
   }
@@ -333,7 +333,7 @@ In the last trailing closure you can use the ``Store/case`` computed property to
 `Path.State` enum and extract out a store for each case:
 
 ```swift
-NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+NavigationStack(path: $store.scope(\.path, action: \.path)) {
   // Root view
 } destination: { store in
   switch store.case {
@@ -377,7 +377,7 @@ reason we have to ignore it from some of `@Reducer`'s macro expansion.
 Then, to present a view from this case one can do:
 
 ```swift
-.sheet(item: $store.scope(state: \.destination?.item, action: \.destination.item)) { store in
+.sheet(item: $store.scope(\.destination?.item, action: \.destination.item)) { store in
   ItemView(item: store.withState { $0 })
 }
 ```

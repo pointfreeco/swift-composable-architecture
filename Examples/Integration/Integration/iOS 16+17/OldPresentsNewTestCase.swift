@@ -38,7 +38,7 @@ struct OldPresentsNewTestCase: View {
         }
       }
     }
-    .sheet(store: self.store.scope(state: \.$child, action: \.child)) { store in
+    .sheet(store: self.store.scope(\.$child, action: \.child)) { store in
       Form {
         ObservableBasicsView(store: store)
       }

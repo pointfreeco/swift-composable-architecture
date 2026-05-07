@@ -89,10 +89,10 @@ private struct Feature {
     case child2(Child2.Action)
   }
   var body: some ReducerOf<Self> {
-    Scope(state: \.child1, action: \.child1) {
+    Scope(\.child1, action: \.child1) {
       Child1()
     }
-    Scope(state: \.child2, action: \.child2) {
+    Scope(\.child2, action: \.child2) {
       Child2()
     }
   }

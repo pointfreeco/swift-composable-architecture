@@ -142,7 +142,7 @@ struct DownloadComponentView: View {
     VStack {
       if isVisible {
         button
-          .alert($store.scope(state: \.alert, action: \.alert))
+          .alert($store.scope(\.alert, action: \.alert))
       } else {
         button
       }

@@ -44,7 +44,7 @@ struct CityMap {
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.downloadComponent, action: \.downloadComponent) {
+    Scope(\.downloadComponent, action: \.downloadComponent) {
       DownloadComponent()
     }
 
@@ -77,7 +77,7 @@ struct CityMapRowView: View {
         Text(store.download.title)
         Spacer()
         DownloadComponentView(
-          store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
+          store: store.scope(\.downloadComponent, action: \.downloadComponent)
         )
       }
     }
@@ -106,7 +106,7 @@ struct CityMapDetailView: View {
         Spacer()
 
         DownloadComponentView(
-          store: store.scope(state: \.downloadComponent, action: \.downloadComponent)
+          store: store.scope(\.downloadComponent, action: \.downloadComponent)
         )
       }
     }
@@ -140,7 +140,7 @@ struct CitiesView: View {
       Section {
         AboutView(readMe: readMe)
       }
-      ForEach(store.scope(state: \.cityMaps, action: \.cityMaps)) { cityMapStore in
+      ForEach(store.scope(\.cityMaps, action: \.cityMaps)) { cityMapStore in
         CityMapRowView(store: cityMapStore)
       }
     }

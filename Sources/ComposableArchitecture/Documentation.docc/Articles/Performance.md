@@ -326,8 +326,8 @@ This way an action is only sent once the user stops moving the slider.
 
 ### Store scoping
 
-In the 1.5.6 release of the library a change was made to ``Store/scope(state:action:)-90255`` that
-made it more sensitive to performance considerations.
+In the 1.5.6 release of the library a change was made to ``Store/scope(_:action:)`` that made it
+more sensitive to performance considerations.
 
 The most common form of scoping, that of scoping directly along boundaries of child features, is
 the most performant form of scoping and is the intended use of scoping. The library is slowly 
@@ -338,7 +338,7 @@ child view:
 
 ```swift
 ChildView(
-  store: store.scope(state: \.child, action: \.child)
+  store: store.scope(\.child, action: \.child)
 )
 ```
 
@@ -347,7 +347,7 @@ such as ``SwiftUI/View/sheet(store:onDismiss:content:)``, also falls under the i
 use of scope:
 
 ```swift
-.sheet(store: store.scope(state: \.child, action: \.child)) { store in
+.sheet(store: store.scope(\.child, action: \.child)) { store in
   ChildView(store: store)
 }
 ```
@@ -373,7 +373,7 @@ And then in the view, say you scoped along that computed property:
 
 ```swift
 ChildView(
-  store: store.scope(state: \.computedChild, action: \.child)
+  store: store.scope(\.computedChild, action: \.child)
 )
 ```
 
@@ -391,9 +391,8 @@ using computed properties in scopes. You can even put a `print` statement in the
 so that you can see first hand just how many times it is being invoked while running your 
 application.
 
-To fix the problem we recommend using ``Store/scope(state:action:)-90255`` only along stored 
-properties of child features. Such key paths are simple getters, and so not have a problem with
-performance. If you are using a computed property in a scope, then reconsider if that could instead
-be done along a plain, stored property and moving the computed logic into the child view. The 
-further you push the computation towards the leaf nodes of your application, the less performance
-problems you will see.
+To fix the problem we recommend using ``Store/scope(_:action:)`` only along stored properties of
+child features. Such key paths are simple getters, and so not have a problem with performance. If
+you are using a computed property in a scope, then reconsider if that could instead be done along a
+plain, stored property and moving the computed logic into the child view. The further you push the
+computation towards the leaf nodes of your application, the less performance problems you will see.

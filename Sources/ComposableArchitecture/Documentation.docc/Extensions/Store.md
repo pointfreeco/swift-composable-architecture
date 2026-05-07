@@ -22,9 +22,8 @@
 
 ### Scoping stores
 
-- ``scope(state:action:)-90255``
-- ``scope(state:action:fileID:filePath:line:column:)-3yvuf``
-- ``scope(state:action:fileID:filePath:line:column:)-2ym6k``
+- ``scope(_:action:)``
+- ``scope(_:action:fileID:filePath:line:column:)``
 - ``case``
 
 ### Scoping store bindings

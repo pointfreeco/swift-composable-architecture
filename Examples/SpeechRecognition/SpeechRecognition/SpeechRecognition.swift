@@ -148,7 +148,7 @@ struct SpeechRecognitionView: View {
       }
     }
     .padding()
-    .alert($store.scope(state: \.alert, action: \.alert))
+    .alert($store.scope(\.alert, action: \.alert))
   }
 }
 

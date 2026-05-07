@@ -25,7 +25,7 @@ struct NewContainsOldTestCase: View {
           }
         }
         Section {
-          BasicsView(store: self.store.scope(state: \.child, action: \.child))
+          BasicsView(store: self.store.scope(\.child, action: \.child))
         } header: {
           Text("iOS 16")
         }
@@ -47,7 +47,7 @@ struct NewContainsOldTestCase: View {
       case toggleIsObservingChildCount
     }
     var body: some ReducerOf<Self> {
-      Scope(state: \.child, action: \.child) {
+      Scope(\.child, action: \.child) {
         BasicsView.Feature()
       }
       Reduce { state, action in

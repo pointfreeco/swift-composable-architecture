@@ -23,13 +23,13 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// …and then use the ``scope(state:action:)-90255`` method to derive more focused stores that can be
-/// passed to subviews.
+/// …and then use the ``scope(_:action:)`` method to derive more focused stores that can be passed
+/// to subviews.
 ///
 /// ### Scoping
 ///
-/// The most important operation defined on ``Store`` is the ``scope(state:action:)-90255`` method,
-/// which allows you to transform a store into one that deals with child state and actions. This is
+/// The most important operation defined on ``Store`` is the ``scope(_:action:)`` method, which
+/// allows you to transform a store into one that deals with child state and actions. This is
 /// necessary for passing stores to subviews that only care about a small portion of the entire
 /// application's domain.
 ///
@@ -55,9 +55,8 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// We can construct a view for each of these domains by applying ``scope(state:action:)-90255`` to
-/// a store that holds onto the full app domain in order to transform it into a store for each
-/// subdomain:
+/// We can construct a view for each of these domains by applying ``scope(_:action:)`` to a store
+/// that holds onto the full app domain in order to transform it into a store for each subdomain:
 ///
 /// ```swift
 /// struct AppView: View {
@@ -66,17 +65,17 @@ import SwiftUI
 ///   var body: some View {
 ///     TabView {
 ///       ActivityView(
-///         store: store.scope(state: \.activity, action: \.activity)
+///         store: store.scope(\.activity, action: \.activity)
 ///       )
 ///       .tabItem { Text("Activity") }
 ///
 ///       SearchView(
-///         store: store.scope(state: \.search, action: \.search)
+///         store: store.scope(\.search, action: \.search)
 ///       )
 ///       .tabItem { Text("Search") }
 ///
 ///       ProfileView(
-///         store: store.scope(state: \.profile, action: \.profile)
+///         store: store.scope(\.profile, action: \.profile)
 ///       )
 ///       .tabItem { Text("Profile") }
 ///     }
@@ -278,7 +277,7 @@ public final class Store<State, Action>: _Store {
   /// // Construct a login view by scoping the store
   /// // to one that works with only login domain.
   /// LoginView(
-  ///   store: store.scope(state: \.login, action: \.login)
+  ///   store: store.scope(\.login, action: \.login)
   /// )
   /// ```
   ///
@@ -290,6 +289,24 @@ public final class Store<State, Action>: _Store {
   ///   - state: A key path from `State` to `ChildState`.
   ///   - action: A case key path from `Action` to `ChildAction`.
   /// - Returns: A new store with its domain (state and action) transformed.
+  public func scope<ChildState, ChildAction>(
+    _ state: KeyPath<State, ChildState>,
+    action: CaseKeyPath<Action, ChildAction>
+  ) -> Store<ChildState, ChildAction> {
+    func open(_ core: some Core<State, Action>) -> any Core<ChildState, ChildAction> {
+      ScopedCore(base: core, stateKeyPath: state, actionKeyPath: action)
+    }
+    return scope(id: id(state: state, action: action), childCore: open(core))
+  }
+
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, renamed: "scope(_:action:)")
+  #else
+    @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
+  #endif
   public func scope<ChildState, ChildAction>(
     state: KeyPath<State, ChildState>,
     action: CaseKeyPath<Action, ChildAction>

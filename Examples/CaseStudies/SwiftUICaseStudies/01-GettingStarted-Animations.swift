@@ -142,7 +142,7 @@ struct AnimationsView: View {
       Button("Reset") { store.send(.resetButtonTapped) }
         .padding([.horizontal, .bottom])
     }
-    .alert($store.scope(state: \.alert, action: \.alert))
+    .alert($store.scope(\.alert, action: \.alert))
     .navigationBarTitleDisplayMode(.inline)
   }
 }

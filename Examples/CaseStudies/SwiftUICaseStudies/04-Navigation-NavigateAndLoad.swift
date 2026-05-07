@@ -67,7 +67,7 @@ struct NavigateAndLoadView: View {
         "Load optional counter",
         isActive: $store.isNavigationActive.sending(\.setNavigation)
       ) {
-        if let store = store.scope(state: \.optionalCounter, action: \.optionalCounter) {
+        if let store = store.scope(\.optionalCounter, action: \.optionalCounter) {
           CounterView(store: store)
         } else {
           ProgressView()

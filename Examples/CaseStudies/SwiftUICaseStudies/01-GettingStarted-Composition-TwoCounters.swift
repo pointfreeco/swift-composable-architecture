@@ -22,10 +22,10 @@ struct TwoCounters {
   }
 
   var body: some Reducer<State, Action> {
-    Scope(state: \.counter1, action: \.counter1) {
+    Scope(\.counter1, action: \.counter1) {
       Counter()
     }
-    Scope(state: \.counter2, action: \.counter2) {
+    Scope(\.counter2, action: \.counter2) {
       Counter()
     }
   }
@@ -43,13 +43,13 @@ struct TwoCountersView: View {
       HStack {
         Text("Counter 1")
         Spacer()
-        CounterView(store: store.scope(state: \.counter1, action: \.counter1))
+        CounterView(store: store.scope(\.counter1, action: \.counter1))
       }
 
       HStack {
         Text("Counter 2")
         Spacer()
-        CounterView(store: store.scope(state: \.counter2, action: \.counter2))
+        CounterView(store: store.scope(\.counter2, action: \.counter2))
       }
     }
     .buttonStyle(.borderless)

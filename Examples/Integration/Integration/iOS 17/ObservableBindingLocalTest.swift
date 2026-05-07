@@ -90,7 +90,7 @@ struct ObservableBindingLocalTestCaseView: View {
 
   var body: some View {
     WithPerceptionTracking {
-      NavigationStack(path: self.$store.scope(state: \.path, action: \.path)) {
+      NavigationStack(path: self.$store.scope(\.path, action: \.path)) {
         VStack {
           Button("Full-screen-cover") {
             self.store.send(.fullScreenCoverButtonTapped)
@@ -107,19 +107,19 @@ struct ObservableBindingLocalTestCaseView: View {
           }
         }
         .fullScreenCover(
-          item: self.$store.scope(state: \.fullScreenCover, action: \.fullScreenCover)
+          item: self.$store.scope(\.fullScreenCover, action: \.fullScreenCover)
         ) { store in
           ChildView(store: store)
         }
         .navigationDestination(
-          store: self.store.scope(state: \.$navigationDestination, action: \.navigationDestination)
+          store: self.store.scope(\.$navigationDestination, action: \.navigationDestination)
         ) { store in
           ChildView(store: store)
         }
-        .popover(item: self.$store.scope(state: \.popover, action: \.popover)) { store in
+        .popover(item: self.$store.scope(\.popover, action: \.popover)) { store in
           ChildView(store: store)
         }
-        .sheet(item: self.$store.scope(state: \.sheet, action: \.sheet)) { store in
+        .sheet(item: self.$store.scope(\.sheet, action: \.sheet)) { store in
           ChildView(store: store)
         }
       } destination: { store in

@@ -71,7 +71,7 @@ struct NavigationDemoView: View {
   @Bindable var store: StoreOf<NavigationDemo>
 
   var body: some View {
-    NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+    NavigationStack(path: $store.scope(\.path, action: \.path)) {
       Form {
         Section { Text(template: readMe) }
 

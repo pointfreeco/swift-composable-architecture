@@ -91,11 +91,11 @@ public class LoginViewController: UIViewController {
       activityIndicator.isHidden = store.isActivityIndicatorHidden
     }
 
-    present(item: $store.scope(state: \.alert, action: \.alert)) { store in
+    present(item: $store.scope(\.alert, action: \.alert)) { store in
       UIAlertController(store: store)
     }
 
-    navigationDestination(item: $store.scope(state: \.twoFactor, action: \.twoFactor)) { store in
+    navigationDestination(item: $store.scope(\.twoFactor, action: \.twoFactor)) { store in
       TwoFactorViewController(store: store)
     }
   }

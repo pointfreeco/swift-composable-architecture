@@ -35,10 +35,10 @@ struct ObservableEnumView: View {
             }
           }
         }
-        if let store = self.store.scope(state: \.destination, action: \.destination.presented) {
+        if let store = self.store.scope(\.destination, action: \.destination.presented) {
           switch store.state {
           case .feature1:
-            if let store = store.scope(state: \.feature1, action: \.feature1) {
+            if let store = store.scope(\.feature1, action: \.feature1) {
               Section {
                 ObservableBasicsView(store: store)
               } header: {
@@ -46,7 +46,7 @@ struct ObservableEnumView: View {
               }
             }
           case .feature2:
-            if let store = store.scope(state: \.feature2, action: \.feature2) {
+            if let store = store.scope(\.feature2, action: \.feature2) {
               Section {
                 ObservableBasicsView(store: store)
               } header: {

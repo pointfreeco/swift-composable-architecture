@@ -48,7 +48,7 @@ extension Binding {
   ///   @Bindable var store: StoreOf<Feature>
   ///
   ///   var body: some View {
-  ///     NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+  ///     NavigationStack(path: $store.scope(\.path, action: \.path)) {
   ///       // Root view
   ///     } destination: {
   ///       // Destinations
@@ -56,6 +56,23 @@ extension Binding {
   ///   }
   /// }
   /// ```
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    _ state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
+    self[state: state, action: action]
+  }
+
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, renamed: "scope(_:action:)")
+  #else
+    @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
+  #endif
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
@@ -67,6 +84,23 @@ extension Binding {
 }
 
 extension ObservedObject.Wrapper {
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    _ state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where ObjectType == Store<State, Action> {
+    self[state: state, action: action]
+  }
+
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, renamed: "scope(_:action:)")
+  #else
+    @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
+  #endif
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
@@ -81,8 +115,25 @@ extension ObservedObject.Wrapper {
 extension SwiftUI.Bindable {
   /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
   ///
-  /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
-  /// information.
+  /// See ``SwiftUI/Binding/scope(_:action:fileID:filePath:line:column:)`` defined on `Binding` for
+  /// more information.
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    _ state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
+    self[state: state, action: action]
+  }
+
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, renamed: "scope(_:action:)")
+  #else
+    @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
+  #endif
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
@@ -100,8 +151,24 @@ extension SwiftUI.Bindable {
 extension Perception.Bindable {
   /// Derives a binding to a store focused on ``StackState`` and ``StackAction``.
   ///
-  /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
-  /// information.
+  /// See ``SwiftUI/Binding/scope(_:action:fileID:filePath:line:column:)`` defined on `Binding` for
+  /// more information.
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    _ state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> Binding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
+    self[state: state, action: action]
+  }
+
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, renamed: "scope(_:action:)")
+  #else
+    @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
+  #endif
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,
     action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
@@ -116,6 +183,23 @@ extension UIBindable {
   ///
   /// See ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` defined on `Binding` for more
   /// information.
+  @preconcurrency @MainActor
+  public func scope<State: ObservableState, Action, ElementState, ElementAction>(
+    _ state: KeyPath<State, StackState<ElementState>>,
+    action: CaseKeyPath<Action, StackAction<ElementState, ElementAction>>
+  ) -> UIBinding<Store<StackState<ElementState>, StackAction<ElementState, ElementAction>>>
+  where Value == Store<State, Action> {
+    self[state: state, action: action]
+  }
+
+  #if ComposableArchitecture2Deprecations
+    @available(*, deprecated, renamed: "scope(_:action:)")
+  #else
+    @available(iOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(macOS, deprecated: 9999, renamed: "scope(_:action:)")
+    @available(tvOS, deprecated: 9999,renamed: "scope(_:action:)")
+    @available(watchOS, deprecated: 9999, renamed: "scope(_:action:)")
+  #endif
   @preconcurrency @MainActor
   public func scope<State: ObservableState, Action, ElementState, ElementAction>(
     state: KeyPath<State, StackState<ElementState>>,

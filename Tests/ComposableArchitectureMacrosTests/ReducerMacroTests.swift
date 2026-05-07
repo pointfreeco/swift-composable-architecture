@@ -406,11 +406,11 @@
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .activity:
-              return .activity(store.scope(state: \.activity, action: \.activity)!)
+              return .activity(store.scope(\.activity, action: \.activity)!)
             case .timeline:
-              return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
+              return .timeline(store.scope(\.timeline, action: \.timeline)!)
             case .tweet:
-              return .tweet(store.scope(state: \.tweet, action: \.tweet)!)
+              return .tweet(store.scope(\.tweet, action: \.tweet)!)
             case let .alert(v0):
               return .alert(v0)
             }
@@ -503,9 +503,9 @@
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .timeline:
-              return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
+              return .timeline(store.scope(\.timeline, action: \.timeline)!)
             case .meeting:
-              return .meeting(store.scope(state: \.meeting, action: \.meeting)!)
+              return .meeting(store.scope(\.meeting, action: \.meeting)!)
             }
           }
         }
@@ -842,9 +842,9 @@
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .activity:
-              return .activity(store.scope(state: \.activity, action: \.activity)!)
+              return .activity(store.scope(\.activity, action: \.activity)!)
             case .timeline:
-              return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
+              return .timeline(store.scope(\.timeline, action: \.timeline)!)
             }
           }
         }
@@ -943,9 +943,9 @@
           public static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .activity:
-              return .activity(store.scope(state: \.activity, action: \.activity)!)
+              return .activity(store.scope(\.activity, action: \.activity)!)
             case .timeline:
-              return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
+              return .timeline(store.scope(\.timeline, action: \.timeline)!)
             }
           }
         }
@@ -1035,7 +1035,7 @@
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .timeline:
-              return .timeline(store.scope(state: \.timeline, action: \.timeline)!)
+              return .timeline(store.scope(\.timeline, action: \.timeline)!)
             case let .meeting(v0):
               return .meeting(v0)
             }
@@ -1131,9 +1131,9 @@
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .alert:
-              return .alert(store.scope(state: \.alert, action: \.alert)!)
+              return .alert(store.scope(\.alert, action: \.alert)!)
             case .settings:
-              return .settings(store.scope(state: \.settings, action: \.settings)!)
+              return .settings(store.scope(\.settings, action: \.settings)!)
             }
           }
         }
@@ -1339,11 +1339,11 @@
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .drillDown:
-              return .drillDown(store.scope(state: \.drillDown, action: \.drillDown)!)
+              return .drillDown(store.scope(\.drillDown, action: \.drillDown)!)
             case .popover:
-              return .popover(store.scope(state: \.popover, action: \.popover)!)
+              return .popover(store.scope(\.popover, action: \.popover)!)
             case .sheet:
-              return .sheet(store.scope(state: \.sheet, action: \.sheet)!)
+              return .sheet(store.scope(\.sheet, action: \.sheet)!)
             }
           }
         }
@@ -1415,7 +1415,7 @@
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .feature:
-              return .feature(store.scope(state: \.feature, action: \.feature)!)
+              return .feature(store.scope(\.feature, action: \.feature)!)
             }
           }
         }
@@ -1859,18 +1859,18 @@
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .child:
-              return .child(store.scope(state: \.child, action: \.child)!)
+              return .child(store.scope(\.child, action: \.child)!)
             #if os(macOS)
             case .mac:
-              return .mac(store.scope(state: \.mac, action: \.mac)!)
+              return .mac(store.scope(\.mac, action: \.mac)!)
             case let .macAlert(v0):
               return .macAlert(v0)
             #elseif os(iOS)
             case .phone:
-              return .phone(store.scope(state: \.phone, action: \.phone)!)
+              return .phone(store.scope(\.phone, action: \.phone)!)
             #else
             case .other:
-              return .other(store.scope(state: \.other, action: \.other)!)
+              return .other(store.scope(\.other, action: \.other)!)
             case .another:
               return .another
             #endif
@@ -1878,7 +1878,7 @@
             #if DEBUG
             #if INNER
             case .inner:
-              return .inner(store.scope(state: \.inner, action: \.inner)!)
+              return .inner(store.scope(\.inner, action: \.inner)!)
             case let .innerDialog(v0):
               return .innerDialog(v0)
             #endif
@@ -1976,7 +1976,7 @@
           static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
             switch store.state {
             case .child:
-              return .child(store.scope(state: \.child, action: \.child)!)
+              return .child(store.scope(\.child, action: \.child)!)
             #if DEBUG
             case let .value(v0, v1):
               return .value(v0, v1)

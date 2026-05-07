@@ -34,7 +34,7 @@ import ComposableArchitecture
     var body: some View {
       EmptyView()
         .sheet(
-          item: $store.scope(state: \.destination, action: \.destination).inner.leaf
+          item: $store.scope(\.destination, action: \.destination).inner.leaf
         ) { (store: StoreOf<Leaf>) in
           EmptyView()
         }

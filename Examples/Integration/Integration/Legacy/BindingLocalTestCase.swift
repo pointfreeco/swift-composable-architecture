@@ -87,7 +87,7 @@ struct BindingLocalTestCaseView: View {
   }
 
   var body: some View {
-    NavigationStackStore(self.store.scope(state: \.path, action: \.path)) {
+    NavigationStackStore(self.store.scope(\.path, action: \.path)) {
       VStack {
         Button("Full-screen-cover") {
           self.store.send(.fullScreenCoverButtonTapped)
@@ -104,21 +104,21 @@ struct BindingLocalTestCaseView: View {
         }
       }
       .fullScreenCover(
-        store: self.store.scope(state: \.$fullScreenCover, action: \.fullScreenCover)
+        store: self.store.scope(\.$fullScreenCover, action: \.fullScreenCover)
       ) { store in
         ChildView(store: store)
       }
       .navigationDestination(
         store: self.store.scope(
-          state: \.$navigationDestination, action: \.navigationDestination
+          \.$navigationDestination, action: \.navigationDestination
         )
       ) { store in
         ChildView(store: store)
       }
-      .popover(store: self.store.scope(state: \.$popover, action: \.popover)) { store in
+      .popover(store: self.store.scope(\.$popover, action: \.popover)) { store in
         ChildView(store: store)
       }
-      .sheet(store: self.store.scope(state: \.$sheet, action: \.sheet)) { store in
+      .sheet(store: self.store.scope(\.$sheet, action: \.sheet)) { store in
         ChildView(store: store)
       }
     } destination: { store in

@@ -106,7 +106,7 @@ struct InventoryView: View {
       // ...
     }
     .sheet(
-      item: $store.scope(state: \.addItem, action: \.addItem)
+      item: $store.scope(\.addItem, action: \.addItem)
     ) { store in
       ItemFormView(store: store)
     }
@@ -115,7 +115,7 @@ struct InventoryView: View {
 ```
 
 > Note: We use SwiftUI's `@Bindable` property wrapper to produce a binding to a store, which can be
-> further scoped using ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)``.
+> further scoped using ``SwiftUI/Binding/scope(_:action:fileID:filePath:line:column:)``.
 
 With those few steps completed the domains and views of the parent and child features are now
 integrated together, and when the `addItem` state flips to a non-`nil` value the sheet will be
@@ -276,7 +276,8 @@ struct InventoryView: View {
 ```
 
 And then in the `body` of the view you can use the
-``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)`` operator to derive bindings from `$store`:
+``SwiftUI/Binding/scope(_:action:fileID:filePath:line:column:)`` operator to derive bindings from
+`$store`:
 
 ```swift
 var body: some View {
@@ -284,17 +285,17 @@ var body: some View {
     // ...
   }
   .sheet(
-    item: $store.scope(state: \.destination, action: \.destination).addItem
+    item: $store.scope(\.destination, action: \.destination).addItem
   ) { store in 
     AddFeatureView(store: store)
   }
   .popover(
-    item: $store.scope(state: \.destination, action: \.destination).editItem
+    item: $store.scope(\.destination, action: \.destination).editItem
   ) { store in 
     EditFeatureView(store: store)
   }
   .navigationDestination(
-    item: $store.scope(state: \.destination, action: \.destination).detailItem
+    item: $store.scope(\.destination, action: \.destination).detailItem
   ) { store in 
     DetailFeatureView(store: store)
   }
@@ -311,8 +312,8 @@ drill-down will occur immediately.
 One of the best features of tree-based navigation is that it unifies all forms of navigation with a
 single style of API. First of all, regardless of the type of navigation you plan on performing,
 integrating the parent and child features together can be done with the single
-``Reducer/ifLet(_:action:destination:fileID:filePath:line:column:)-4ub6q`` operator. This one single API services
-all forms of optional-driven navigation.
+``Reducer/ifLet(_:action:destination:fileID:filePath:line:column:)-4ub6q`` operator. This one single
+API services all forms of optional-driven navigation.
 
 And then in the view, whether you are wanting to perform a drill-down, show a sheet, display
 an alert, or even show a custom navigation component, all you need to do is invoke an API that
@@ -326,25 +327,25 @@ forms of navigation could be as simple as this:
 
 ```swift
 .sheet(
-  item: $store.scope(state: \.addItem, action: \.addItem)
+  item: $store.scope(\.addItem, action: \.addItem)
 ) { store in 
   AddFeatureView(store: store)
 }
 .popover(
-  item: $store.scope(state: \.editItem, action: \.editItem)
+  item: $store.scope(\.editItem, action: \.editItem)
 ) { store in 
   EditFeatureView(store: store)
 }
 .navigationDestination(
-  item: $store.scope(state: \.detailItem, action: \.detailItem)
+  item: $store.scope(\.detailItem, action: \.detailItem)
 ) { store in 
   DetailFeatureView(store: store)
 }
 .alert(
-  $store.scope(state: \.alert, action: \.alert)
+  $store.scope(\.alert, action: \.alert)
 )
 .confirmationDialog(
-  $store.scope(state: \.confirmationDialog, action: \.confirmationDialog)
+  $store.scope(\.confirmationDialog, action: \.confirmationDialog)
 )
 ```
 

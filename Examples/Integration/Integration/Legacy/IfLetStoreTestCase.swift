@@ -9,7 +9,7 @@ struct IfLetStoreTestCase: View {
   var body: some View {
     Form {
       IfLetStore(
-        store.scope(state: \.$child, action: \.child),
+        store.scope(\.$child, action: \.child),
         then: ChildView.init(store:),
         else: {
           Button(action: { store.send(.show) }) {

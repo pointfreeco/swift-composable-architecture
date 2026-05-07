@@ -41,7 +41,7 @@ struct PresentationView: View {
     }
     .fullScreenCover(
       store: self.store.scope(
-        state: \.$destination.fullScreenCover, action: \.destination.fullScreenCover
+        \.$destination.fullScreenCover, action: \.destination.fullScreenCover
       )
     ) { store in
       NavigationStack {
@@ -59,7 +59,7 @@ struct PresentationView: View {
       }
     }
     .popover(
-      store: self.store.scope(state: \.$destination.popover, action: \.destination.popover)
+      store: self.store.scope(\.$destination.popover, action: \.destination.popover)
     ) { store in
       NavigationStack {
         Form {
@@ -75,7 +75,7 @@ struct PresentationView: View {
         }
       }
     }
-    .sheet(store: self.store.scope(state: \.$sheet, action: \.sheet)) { store in
+    .sheet(store: self.store.scope(\.$sheet, action: \.sheet)) { store in
       NavigationStack {
         Form {
           BasicsView(store: store)

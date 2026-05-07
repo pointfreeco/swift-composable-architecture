@@ -68,7 +68,7 @@ struct PresentAndLoadView: View {
       }
     }
     .sheet(isPresented: $store.isSheetPresented.sending(\.setSheet)) {
-      if let store = store.scope(state: \.optionalCounter, action: \.optionalCounter) {
+      if let store = store.scope(\.optionalCounter, action: \.optionalCounter) {
         CounterView(store: store)
       } else {
         ProgressView()

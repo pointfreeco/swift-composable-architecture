@@ -11,7 +11,7 @@ struct ContactDetailView: View {
       }
     }
     .navigationTitle(Text(store.contact.name))
-    .alert($store.scope(state: \.alert, action: \.alert))
+    .alert($store.scope(\.alert, action: \.alert))
   }
 }
 

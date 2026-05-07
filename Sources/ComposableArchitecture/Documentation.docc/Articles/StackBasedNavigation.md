@@ -120,7 +120,7 @@ struct RootView: View {
 
   var body: some View {
     NavigationStack(
-      path: $store.scope(state: \.path, action: \.path)
+      path: $store.scope(\.path, action: \.path)
     ) {
       // Root view of the navigation stack
     } destination: { store in
@@ -407,7 +407,7 @@ struct Feature {
     enum State: Equatable { case counter(CounterFeature.State) }
     enum Action { case counter(CounterFeature.Action) }
     var body: some ReducerOf<Self> {
-      Scope(state: \.counter, action: \.counter) { CounterFeature() }
+      Scope(\.counter, action: \.counter) { CounterFeature() }
     }
   }
 
@@ -670,7 +670,7 @@ class AppController: NavigationStackController {
   convenience init(store: StoreOf<AppFeature>) {
     @UIBindable var store = store
 
-    self.init(path: $store.scope(state: \.path, action: \.path)) {
+    self.init(path: $store.scope(\.path, action: \.path)) {
       RootViewController(store: store)
     } destination: { store in 
       switch store.case {

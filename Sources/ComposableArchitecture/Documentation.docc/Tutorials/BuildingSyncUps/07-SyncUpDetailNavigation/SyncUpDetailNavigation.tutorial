@@ -165,8 +165,8 @@
       
       @Step {
         For the root view we can construct the `SyncUpsListView` by using 
-        ``ComposableArchitecture/Store/scope(state:action:)-90255`` on the `store` to isolate
-        the `SyncUpsList` domain.
+        ``ComposableArchitecture/Store/scope(_:action:)`` on the `store` to isolate the
+        `SyncUpsList` domain.
         
         @Code(name: "App.swift", file: SyncUpDetailNavigation-02-code-0004.swift)
       }

@@ -113,7 +113,7 @@
       }
 
       XCTExpectFailure {
-        store.scope(state: \.path, action: \.path)[
+        store.scope(\.path, action: \.path)[
           fileID: "file.swift",
           filePath: "/file.swift",
           line: 1,

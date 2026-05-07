@@ -12,7 +12,7 @@ final class ScopeCacheTests: BaseTCATestCase {
       _ =
         store
         .scope(state: { $0 }, action: { $0 })
-        .scope(state: \.child, action: \.child.presented)?
+        .scope(\.child, action: \.child.presented)?
         .send(.show)
     } issueMatcher: {
       $0.compactDescription.hasSuffix(
@@ -40,8 +40,8 @@ final class ScopeCacheTests: BaseTCATestCase {
       let store = StoreOf<Feature>(initialState: Feature.State(child: Feature.State())) {
       }
       store
-        .scope(state: \.self, action: \.self)
-        .scope(state: \.child, action: \.child.presented)?
+        .scope(\.self, action: \.self)
+        .scope(\.child, action: \.child.presented)?
         .send(.show)
     #endif
   }
@@ -55,9 +55,9 @@ final class ScopeCacheTests: BaseTCATestCase {
       }
       let cancellable =
         store
-        .scope(state: \.child, action: \.child.presented)
+        .scope(\.child, action: \.child.presented)
         .ifLet { store in
-          store.scope(state: \.child, action: \.child.presented)?.send(.show)
+          store.scope(\.child, action: \.child.presented)?.send(.show)
         }
       _ = cancellable
     #endif
@@ -73,7 +73,7 @@ final class ScopeCacheTests: BaseTCATestCase {
         store
         .scope(state: { $0 }, action: { $0 })
         .ifLet { store in
-          store.scope(state: \.child, action: \.child.presented)?.send(.show)
+          store.scope(\.child, action: \.child.presented)?.send(.show)
         }
       _ = cancellable
     } issueMatcher: {
@@ -103,8 +103,8 @@ final class ScopeCacheTests: BaseTCATestCase {
 
       let rowsStore = Array(
         store
-          .scope(state: \.self, action: \.self)
-          .scope(state: \.rows, action: \.rows)
+          .scope(\.self, action: \.self)
+          .scope(\.rows, action: \.rows)
       )
       rowsStore[0].send(.show)
     #endif
@@ -120,7 +120,7 @@ final class ScopeCacheTests: BaseTCATestCase {
       _ = Array(
         store
           .scope(state: { $0 }, action: { $0 })
-          .scope(state: \.rows, action: \.rows)
+          .scope(\.rows, action: \.rows)
       )
     } issueMatcher: {
       $0.compactDescription.hasSuffix(

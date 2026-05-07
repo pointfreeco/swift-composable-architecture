@@ -1,8 +1,8 @@
-# ``SwiftUI/Binding/scope(state:action:fileID:filePath:line:column:)``
+# ``SwiftUI/Binding/scope(_:action:fileID:filePath:line:column:)``
 
 ## Topics
 
 ### Bindable
 
-- ``SwiftUI/Bindable/scope(state:action:fileID:line:)``
-- ``Perception/Bindable/scope(state:action:fileID:line:)``
+- ``SwiftUI/Bindable/scope(_:action:fileID:line:)``
+- ``Perception/Bindable/scope(_:action:fileID:line:)``

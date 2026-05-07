@@ -69,7 +69,7 @@ struct SignUpFlow: View {
   }
 
   var body: some View {
-    NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
+    NavigationStack(path: $store.scope(\.path, action: \.path)) {
       Form {
         Section {
           Text(readMe)
@@ -270,7 +270,7 @@ private struct TopicsStep: View {
       }
     }
     .navigationTitle("Topics")
-    .alert($store.scope(state: \.alert, action: \.alert))
+    .alert($store.scope(\.alert, action: \.alert))
     .toolbar {
       ToolbarItem {
         if store.isEditingFromSummary {
@@ -409,14 +409,14 @@ private struct SummaryStep: View {
       }
     }
     .navigationTitle("Summary")
-    .sheet(item: $store.scope(state: \.$destination, action: \.destination).basics) { basicsStore in
+    .sheet(item: $store.scope(\.$destination, action: \.destination).basics) { basicsStore in
       NavigationStack {
         BasicsStep(store: basicsStore)
       }
       .presentationDetents([.medium])
     }
     .sheet(
-      item: $store.scope(state: \.$destination, action: \.destination).personalInfo
+      item: $store.scope(\.$destination, action: \.destination).personalInfo
     ) { personalStore in
       NavigationStack {
         PersonalInfoStep(store: personalStore)
@@ -424,14 +424,14 @@ private struct SummaryStep: View {
       .presentationDetents([.medium])
     }
     .sheet(
-      item: $store.scope(state: \.$destination, action: \.destination).topics
+      item: $store.scope(\.$destination, action: \.destination).topics
     ) { topicsStore in
       NavigationStack {
         TopicsStep(store: topicsStore)
       }
       .presentationDetents([.medium])
     }
-    .alert($store.scope(state: \.$destination, action: \.destination).alert)
+    .alert($store.scope(\.$destination, action: \.destination).alert)
   }
 }
 
