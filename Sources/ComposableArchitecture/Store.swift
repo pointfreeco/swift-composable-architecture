@@ -11,12 +11,12 @@ import SwiftUI
 /// ```swift
 /// @main
 /// struct MyApp: App {
-///   @State var store = Store(initialState: AppFeature.State()) {
+///   static let store = Store(initialState: AppFeature.State()) {
 ///     AppFeature()
 ///   }
 ///   var body: some Scene {
 ///     WindowGroup {
-///       RootView(store: store)
+///       RootView(store: Self.store)
 ///     }
 ///   }
 /// }
@@ -24,6 +24,10 @@ import SwiftUI
 ///
 /// …and then use the ``scope(_:action:)`` method to derive more focused stores that can be passed
 /// to subviews for sub-features.
+///
+/// > Note: Xcode previews create the app entry point when run, which can cause the `Store` to
+/// > be created and dependencies executed when you don't expect them to. For this reason we
+/// > recommend holding onto the root store in `static let`.
 ///
 /// In the view you can access any properties from your feature's state directly on the store and
 /// send actions to the store when the user performs an action:
