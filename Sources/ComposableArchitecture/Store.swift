@@ -4,27 +4,43 @@ import Foundation
 import SwiftUI
 
 /// A store represents the runtime that powers the application. It is the object that you will pass
-/// around to views that need to interact with the application.
+/// around to views so that you can read feature state and send user actions.
 ///
 /// You will typically construct a single one of these at the root of your application:
 ///
 /// ```swift
 /// @main
 /// struct MyApp: App {
+///   @State var store = Store(initialState: AppFeature.State()) {
+///     AppFeature()
+///   }
 ///   var body: some Scene {
 ///     WindowGroup {
-///       RootView(
-///         store: Store(initialState: AppFeature.State()) {
-///           AppFeature()
-///         }
-///       )
+///       RootView(store: store)
 ///     }
 ///   }
 /// }
 /// ```
 ///
 /// …and then use the ``scope(_:action:)`` method to derive more focused stores that can be passed
-/// to subviews.
+/// to subviews for sub-features.
+///
+/// In the view you can access any properties from your feature's state directly on the store and
+/// send actions to the store when the user performs an action:
+///
+/// ```swift
+/// struct RootView: View {
+///   let store: StoreOf<AppFeature>
+///   var body: some View {
+///     Form {
+///       Text("\(store.count)")
+///       Button("Tap") {
+///         store.send(.buttonTapped)
+///       }
+///     }
+///   }
+/// }
+/// ```
 ///
 /// ### Scoping
 ///
