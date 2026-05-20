@@ -2079,6 +2079,8 @@ extension View {
                 if let action {
                   store.send(.presented(fromDestinationAction(action)), animation: animation)
                 }
+              @unknown default:
+                break
               }
             } label: {
               Text(button.label)
@@ -2132,6 +2134,8 @@ extension View {
                 if let action {
                   store.send(.presented(fromDestinationAction(action)), animation: animation)
                 }
+              @unknown default:
+                break
               }
             } label: {
               Text(button.label)
