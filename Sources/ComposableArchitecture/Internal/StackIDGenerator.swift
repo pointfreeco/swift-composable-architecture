@@ -11,52 +11,31 @@ extension DependencyValues {
   public let next: @Sendable () -> StackElementID
   public let peek: @Sendable () -> StackElementID
 
+  init(startingAt generation: Int = 0) {
+    let next = LockIsolated(StackElementID(generation: generation))
+    self.next = {
+      defer {
+        next.withValue { $0 = StackElementID(generation: $0.generation + 1) }
+      }
+      return next.value
+    }
+    self.peek = { next.value }
+  }
+
   @_spi(Internals)
   public func callAsFunction() -> StackElementID {
     self.next()
   }
 
   public static var liveValue: Self {
-    let next = LockIsolated(StackElementID(generation: 0))
-    return Self(
-      next: {
-        defer {
-          next.withValue { $0 = StackElementID(generation: $0.generation + 1) }
-        }
-        return next.value
-      },
-      peek: { next.value }
-    )
+    Self()
   }
 
   public static var testValue: Self {
-    let next = LockIsolated(StackElementID(generation: 0))
-    return Self(
-      next: {
-        defer {
-          next.withValue {
-            $0 = StackElementID(generation: $0.generation + 1)
-          }
-        }
-        return next.value
-      },
-      peek: { next.value }
-    )
+    Self()
   }
 
   func incrementingCopy() -> Self {
-    let peek = self.peek()
-    let next = LockIsolated(StackElementID(generation: peek.generation))
-    return Self(
-      next: {
-        defer {
-          next.withValue {
-            $0 = StackElementID(generation: $0.generation + 1)
-          }
-        }
-        return next.value
-      },
-      peek: { next.value }
-    )
+    Self(startingAt: self.peek().generation)
   }
 }

@@ -527,24 +527,26 @@ public struct _StackReducer<Base: Reducer, Destination: Reducer>: Reducer {
         )
         baseEffects = self.base._reduce(into: &state, action: action)
         break
-      } else if DependencyValues._current.context == .test {
+      } else {
         let nextID = DependencyValues._current.stackElementID.peek()
         if id.generation > nextID.generation {
-          reportIssue(
-            """
-            A "forEach" at "\(self.fileID):\(self.line)" received a "push" action with an \
-            unexpected generational ID.
+          if DependencyValues._current.context == .test {
+            reportIssue(
+              """
+              A "forEach" at "\(self.fileID):\(self.line)" received a "push" action with an \
+              unexpected generational ID.
 
-              Received ID:
-                \(id)
-              Expected ID:
-                \(nextID)
-            """,
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-          )
+                Received ID:
+                  \(id)
+                Expected ID:
+                  \(nextID)
+              """,
+              fileID: fileID,
+              filePath: filePath,
+              line: line,
+              column: column
+            )
+          }
         } else if id.generation == nextID.generation {
           _ = DependencyValues._current.stackElementID.next()
         }

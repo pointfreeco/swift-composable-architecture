@@ -237,17 +237,21 @@ extension NavigationStack {
         column: column
       ]
     ) {
-      root()
-        .modifier(
-          _NavigationDestinationViewModifier(
-            store: path.wrappedValue,
-            destination: destination,
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
+      withDependencies {
+        $0.stackElementID = StackElementIDGenerator()
+      } operation: {
+        root()
+          .modifier(
+            _NavigationDestinationViewModifier(
+              store: path.wrappedValue,
+              destination: destination,
+              fileID: fileID,
+              filePath: filePath,
+              line: line,
+              column: column
+            )
           )
-        )
+      }
     }
   }
 }
@@ -268,11 +272,15 @@ public struct _NavigationDestinationViewModifier<
     content
       .environment(\.navigationDestinationType, State.self)
       .navigationDestination(for: StackState<State>.Component.self) { component in
-        destination(
-          store.scope(
-            component: component, fileID: fileID, filePath: filePath, line: line, column: column)
-        )
-        .environment(\.navigationDestinationType, State.self)
+        withDependencies {
+          $0.stackElementID = StackElementIDGenerator(startingAt: component.id.generation + 1)
+        } operation: {
+          destination(
+            store.scope(
+              component: component, fileID: fileID, filePath: filePath, line: line, column: column)
+          )
+          .environment(\.navigationDestinationType, State.self)
+        }
       }
   }
 }
