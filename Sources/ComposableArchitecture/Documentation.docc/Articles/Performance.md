@@ -175,7 +175,7 @@ store.send(.toggleChanged) {
   $0.isEnabled = true
   // Assert on shared logic
 }
-store.send(.textFieldChanged("Hello") {
+store.send(.textFieldChanged("Hello")) {
   $0.description = "Hello"
   // Assert on shared logic
 }
