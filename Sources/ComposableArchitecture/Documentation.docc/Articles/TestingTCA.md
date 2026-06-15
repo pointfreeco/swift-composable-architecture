@@ -119,7 +119,7 @@ on computed properties you might have defined on your state. For example, if `St
 computed property for checking if `count` was prime, we could test it like so:
 
 ```swift
-store.send(.incrementButtonTapped) {
+await store.send(.incrementButtonTapped) {
   $0.count = 3
 }
 XCTAssertTrue(store.state.isPrime)
@@ -131,7 +131,7 @@ prevents you from being able to use an escape hatch to get around needing to act
 state mutation, like so:
 
 ```swift
-store.send(.incrementButtonTapped) {
+await store.send(.incrementButtonTapped) {
   $0 = store.state  // ❌ store.state is the previous, not current, state.
 }
 ```
