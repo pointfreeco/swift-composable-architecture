@@ -238,7 +238,7 @@ struct InventoryFeature {
 }
 ```
 
-> Note: It's not necessary to specify `Destination` in a trialing closure of `ifLet` because it can
+> Note: It's not necessary to specify `Destination` in a trailing closure of `ifLet` because it can
 > automatically be inferred due to how the `Destination` enum was defined with the ``Reducer()``
 > macro.
 

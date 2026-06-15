@@ -403,19 +403,15 @@ struct Feature {
   }
 
   @Reducer  
-  struct Path {
-    enum State: Equatable { case counter(CounterFeature.State) }
-    enum Action { case counter(CounterFeature.Action) }
-    var body: some ReducerOf<Self> {
-      Scope(\.counter, action: \.counter) { CounterFeature() }
-    }
+  enum Path {
+    case counter(CounterFeature)
   }
 
   var body: some ReducerOf<Self> {
     Reduce { state, action in
       // Logic and behavior for core feature.
     }
-    .forEach(\.path, action: \.path) { Path() }
+    .forEach(\.path, action: \.path) { Path.body }
   }
 }
 ```
@@ -430,7 +426,7 @@ func dismissal() {
   let store = TestStore(
     initialState: Feature.State(
       path: StackState([
-        CounterFeature.State(count: 3)
+        .counter(CounterFeature.State(count: 3))
       ])
     )
   ) {
@@ -553,7 +549,7 @@ func dismissal() {
   let store = TestStore(
     initialState: Feature.State(
       path: StackState([
-        CounterFeature.State(count: 3)
+        .counter(CounterFeature.State(count: 3))
       ])
     )
   ) {
