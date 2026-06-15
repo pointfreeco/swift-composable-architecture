@@ -535,7 +535,7 @@ let store = TestStore(/* ... */)
 // ℹ️ "on" is the default so technically this is not needed
 store.exhaustivity = .on
 
-store.send(.buttonTapped) {
+await store.send(.buttonTapped) {
   $0  // Represents the state *before* the action was sent
 }
 ```
@@ -550,7 +550,7 @@ trailing closure of `send` represents the state _after_ the action was sent:
 let store = TestStore(/* ... */)
 store.exhaustivity = .off
 
-store.send(.buttonTapped) {
+await store.send(.buttonTapped) {
   $0  // Represents the state *after* the action was sent
 }
 ```
