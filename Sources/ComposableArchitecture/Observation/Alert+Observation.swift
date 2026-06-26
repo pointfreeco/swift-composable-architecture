@@ -22,6 +22,8 @@ extension View {
               if let action {
                 store?.send(action, animation: animation)
               }
+            @unknown default:
+              break
             }
           } label: {
             Text(button.label)
@@ -59,6 +61,8 @@ extension View {
               if let action {
                 store?.send(action, animation: animation)
               }
+            @unknown default:
+              break
             }
           } label: {
             Text(button.label)

@@ -216,6 +216,7 @@ extension NavigationStack {
   /// See the dedicated article on <doc:Navigation> for more information on the library's
   /// navigation tools, and in particular see <doc:StackBasedNavigation> for information on using
   /// this view.
+  @MainActor
   public init<State, Action, Destination: View, R>(
     path: Binding<Store<StackState<State>, StackAction<State, Action>>>,
     @ViewBuilder root: () -> R,
