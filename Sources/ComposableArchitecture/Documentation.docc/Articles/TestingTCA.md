@@ -119,7 +119,7 @@ on computed properties you might have defined on your state. For example, if `St
 computed property for checking if `count` was prime, we could test it like so:
 
 ```swift
-store.send(.incrementButtonTapped) {
+await store.send(.incrementButtonTapped) {
   $0.count = 3
 }
 XCTAssertTrue(store.state.isPrime)
@@ -131,7 +131,7 @@ prevents you from being able to use an escape hatch to get around needing to act
 state mutation, like so:
 
 ```swift
-store.send(.incrementButtonTapped) {
+await store.send(.incrementButtonTapped) {
   $0 = store.state  // ❌ store.state is the previous, not current, state.
 }
 ```
@@ -535,7 +535,7 @@ let store = TestStore(/* ... */)
 // ℹ️ "on" is the default so technically this is not needed
 store.exhaustivity = .on
 
-store.send(.buttonTapped) {
+await store.send(.buttonTapped) {
   $0  // Represents the state *before* the action was sent
 }
 ```
@@ -550,7 +550,7 @@ trailing closure of `send` represents the state _after_ the action was sent:
 let store = TestStore(/* ... */)
 store.exhaustivity = .off
 
-store.send(.buttonTapped) {
+await store.send(.buttonTapped) {
   $0  // Represents the state *after* the action was sent
 }
 ```

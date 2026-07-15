@@ -140,7 +140,7 @@ Modeling user actions with an enum rather than methods defined on some object is
   }
   ```
 
-  Again this is only possible thanks to the data type of all actions in the feature. See  for more information on testing in TCA.
+  Again this is only possible thanks to the data type of all actions in the feature. See the [testing article][testing-article] for more information.
 
 <!-- TODO: Navigation tools? -->
 
