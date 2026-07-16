@@ -8,7 +8,8 @@ import Testing
 struct ContactsFeatureTests {
   @Test
   func deleteContact() async {
-    let store = TestStore(initialState: ContactsFeature.State(
+    let store = TestStore(
+      initialState: ContactsFeature.State(
         contacts: [
           Contact(id: UUID(0), name: "Blob"),
           Contact(id: UUID(1), name: "Blob Jr."),
