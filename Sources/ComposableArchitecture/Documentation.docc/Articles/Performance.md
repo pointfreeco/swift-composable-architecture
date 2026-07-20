@@ -81,22 +81,22 @@ let store = TestStore(initialState: Feature.State()) {
   Feature()
 }
 
-store.send(.buttonTapped) {
+await store.send(.buttonTapped) {
   $0.count = 1
 }
-store.receive(\.sharedComputation) {
+await store.receive(\.sharedComputation) {
   // Assert on shared logic
 }
-store.send(.toggleChanged) {
+await store.send(.toggleChanged) {
   $0.isEnabled = true
 }
-store.receive(\.sharedComputation) {
+await store.receive(\.sharedComputation) {
   // Assert on shared logic
 }
-store.send(.textFieldChanged("Hello")) {
+await store.send(.textFieldChanged("Hello")) {
   $0.description = "Hello"
 }
-store.receive(\.sharedComputation) {
+await store.receive(\.sharedComputation) {
   // Assert on shared logic
 }
 ```
@@ -167,15 +167,15 @@ let store = TestStore(initialState: Feature.State()) {
   Feature()
 }
 
-store.send(.buttonTapped) {
+await store.send(.buttonTapped) {
   $0.count = 1
   // Assert on shared logic
 }
-store.send(.toggleChanged) {
+await store.send(.toggleChanged) {
   $0.isEnabled = true
   // Assert on shared logic
 }
-store.send(.textFieldChanged("Hello")) {
+await store.send(.textFieldChanged("Hello")) {
   $0.description = "Hello"
   // Assert on shared logic
 }
