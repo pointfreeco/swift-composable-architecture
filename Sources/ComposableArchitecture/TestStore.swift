@@ -1127,7 +1127,7 @@ extension TestStore {
         {
           var expectedWhenGivenPreviousState = current
           if let updateStateToExpectedResult {
-            _withKnownIssue(isIntermittent: true) {
+            withExpectedIssue(isIntermittent: true) {
               do {
                 try Dependencies.withDependencies {
                   $0 = self.reducer.dependencies
@@ -2202,7 +2202,7 @@ extension TestStore {
       reportIssue(message, fileID: fileID, filePath: filePath, line: line, column: column)
     case .off(let showSkippedAssertions):
       if showSkippedAssertions {
-        _withKnownIssue {
+        withExpectedIssue {
           reportIssue(
             """
             Skipped assertions.
