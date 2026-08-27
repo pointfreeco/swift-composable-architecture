@@ -18,6 +18,7 @@ state:
 ```swift
 @Reducer
 struct Settings {
+  @ObservableState
   struct State: Equatable {
     var isHapticsEnabled = true
     // ...
@@ -33,6 +34,7 @@ define a corresponding action that can be sent updates:
 ```swift
 @Reducer
 struct Settings {
+  @ObservableState
   struct State: Equatable { /* ... */ }
 
   enum Action { 
@@ -49,6 +51,7 @@ When the reducer handles this action, it can update state accordingly:
 ```swift
 @Reducer
 struct Settings {
+  @ObservableState
   struct State: Equatable { /* ... */ }
   enum Action { /* ... */ }
 

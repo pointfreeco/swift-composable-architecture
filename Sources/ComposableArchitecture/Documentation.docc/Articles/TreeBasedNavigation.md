@@ -586,7 +586,7 @@ func dismissal() {
       counter: CounterFeature.State(count: 3)
     )
   ) {
-    CounterFeature()
+    Feature()
   }
 }
 ```
@@ -642,7 +642,7 @@ func dismissal() {
       counter: CounterFeature.State(count: 3)
     )
   ) {
-    CounterFeature()
+    Feature()
   }
   store.exhaustivity = .off
 
