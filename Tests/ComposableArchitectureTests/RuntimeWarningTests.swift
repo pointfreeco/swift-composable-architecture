@@ -114,16 +114,16 @@
 
       XCTExpectFailure {
         store.scope(\.path, action: \.path)[
-          fileID: "file.swift",
-          filePath: "/file.swift",
+          fileID: "Unknown/file.swift",
+          filePath: "/Unknown/file.swift",
           line: 1,
           column: 1
         ] = .init()
       } issueMatcher: {
         $0.compactDescription.hasSuffix(
           """
-          A navigation stack binding at "file.swift:1" was written to with a path that has the \
-          same number of elements that already exist in the store. A view should only write to \
+          A navigation stack binding at "Unknown/file.swift:1" was written to with a path that has \
+          the same number of elements that already exist in the store. A view should only write to \
           this binding with a path that has pushed a new element onto the stack, or popped one or \
           more elements from the stack.
 
@@ -172,15 +172,16 @@
           state: \.destination,
           action: \.destination,
           isInViewBody: false,
-          fileID: "file.swift",
-          filePath: "/file.swift",
+          fileID: "Unknown/file.swift",
+          filePath: "/Unknown/file.swift",
           line: 1,
           column: 1
         ] = nil
       } issueMatcher: {
         $0.compactDescription.hasSuffix(
           """
-          A binding at "file.swift:1" was set to "nil", but the store destination wasn't nil'd out.
+          A binding at "Unknown/file.swift:1" was set to "nil", but the store destination wasn't \
+          nil'd out.
 
           This usually means an "ifLet" has not been integrated with the reducer powering the \
           store, and this reducer is responsible for handling presentation actions.
