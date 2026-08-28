@@ -1143,6 +1143,109 @@
         """#
       }
     }
+    
+    func testEnum_CaseIgnoredExplicitActions_AccessControl_Public() {
+      assertMacro {
+        """
+        @Reducer
+        public enum Destination {
+          @ReducerCaseIgnored case alert(AlertState<Alert>)
+          case settings(Settings)
+
+          public enum Action {
+            case alert(Alert)
+            case settings(Settings.Action)
+          }
+        }
+        """
+      } expansion: {
+        #"""
+        public enum Destination {
+          @ReducerCaseIgnored
+          @ReducerCaseEphemeral case alert(AlertState<Alert>)
+          case settings(Settings)
+          @CasePathable
+
+          public enum Action {
+            case alert(Alert)
+            case settings(Settings.Action)
+          }
+
+          @CasePathable
+          @dynamicMemberLookup
+          @ObservableState
+
+          public enum State: ComposableArchitecture.CaseReducerState {
+
+            public typealias StateReducer = Destination
+            case alert(AlertState<Alert>)
+            case settings(Settings.State)
+          }
+
+          @ComposableArchitecture.ReducerBuilder<Self.State, Self.Action>
+
+          public static var body: Reduce<Self.State, Self.Action> {
+            ComposableArchitecture.Reduce(
+              ComposableArchitecture.EmptyReducer<Self.State, Self.Action>()
+              .ifCaseLet(\Self.State.Cases.settings, action: \Self.Action.Cases.settings) {
+                Settings()
+              }
+            )
+          }
+
+          @dynamicMemberLookup
+
+          public enum CaseScope: ComposableArchitecture._CaseScopeProtocol, CasePaths.CasePathable {
+            case alert(ComposableArchitecture.Store<AlertState<Alert>, Alert>)
+            case settings(ComposableArchitecture.StoreOf<Settings>)
+
+            public struct AllCasePaths {
+              public var alert: CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.Store<AlertState<Alert>, Alert>> {
+                CasePaths.AnyCasePath(
+                  embed: CaseScope.alert,
+                  extract: {
+                    guard case let .alert(v0) = $0 else {
+                      return nil
+                    };
+                    return v0
+                  }
+                )
+              }
+              public var settings: CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.StoreOf<Settings>> {
+                CasePaths.AnyCasePath(
+                  embed: CaseScope.settings,
+                  extract: {
+                    guard case let .settings(v0) = $0 else {
+                      return nil
+                    };
+                    return v0
+                  }
+                )
+              }
+            }
+
+            public static var allCasePaths: AllCasePaths {
+              AllCasePaths()
+            }
+          }
+
+          @preconcurrency @MainActor
+
+          public static func scope(_ store: ComposableArchitecture.Store<Self.State, Self.Action>) -> CaseScope {
+            switch store.state {
+            case .alert:
+              return .alert(store.scope(\.alert, action: \.alert)!)
+            case .settings:
+              return .settings(store.scope(\.settings, action: \.settings)!)
+            }
+          }
+        }
+
+        extension Destination: ComposableArchitecture.CaseReducer, ComposableArchitecture.Reducer {
+        }
+        """#
+      }
+    }
 
     func testEnum_Attributes() {
       assertMacro {

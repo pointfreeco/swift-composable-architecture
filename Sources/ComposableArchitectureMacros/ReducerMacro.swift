@@ -575,7 +575,7 @@ private enum ReducerCase {
       {
         let stateType = parameter.type
         return """
-          var \(name): CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.Store<\(stateType.trimmed), \(explicitActionType.trimmed)>> {
+          \(accessPrefix)var \(name): CasePaths.AnyCasePath<CaseScope, ComposableArchitecture.Store<\(stateType.trimmed), \(explicitActionType.trimmed)>> {
           CasePaths.AnyCasePath(
           embed: CaseScope.\(name),
           extract: { guard case let .\(name)(v0) = $0 else { return nil }; return v0 }
