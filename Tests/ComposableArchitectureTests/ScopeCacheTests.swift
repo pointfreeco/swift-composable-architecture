@@ -46,6 +46,24 @@ final class ScopeCacheTests: BaseTCATestCase {
     #endif
   }
 
+  @MainActor
+  func testOptionalScope_ReshowWithinEvictionDelayKeepsCachedStore() async throws {
+    let store = StoreOf<Feature>(initialState: Feature.State()) {
+      Feature()
+    }
+    store.send(.show)
+    XCTAssertNotNil(store.scope(\.child, action: \.child.presented))
+    store.send(.child(.dismiss))
+    XCTAssertNil(store.scope(\.child, action: \.child.presented))
+
+    store.send(.show)
+    let child = try XCTUnwrap(store.scope(\.child, action: \.child.presented))
+    try await Task.sleep(for: .milliseconds(500))
+
+    XCTAssertIdentical(store.scope(\.child, action: \.child.presented), child)
+    store.send(.child(.dismiss))
+  }
+
   @available(*, deprecated)
   @MainActor
   func testOptionalScope_StoreIfLet() {
