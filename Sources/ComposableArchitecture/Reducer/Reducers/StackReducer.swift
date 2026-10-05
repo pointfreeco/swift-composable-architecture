@@ -224,7 +224,7 @@ extension StackState: CustomDumpReflectable {
 /// See the dedicated article on <doc:Navigation> for more information on the library's navigation
 /// tools, and in particular see <doc:StackBasedNavigation> for information on modeling navigation
 /// using ``StackAction`` for navigation stacks.
-public enum StackAction<State, Action>: CasePathable {
+public enum StackAction<State, Action>: CasePathable, CasePathIterable {
   /// An action sent to the associated stack element at a given identifier.
   indirect case element(id: StackElementID, action: Action)
 
@@ -239,7 +239,19 @@ public enum StackAction<State, Action>: CasePathable {
     AllCasePaths()
   }
 
-  public struct AllCasePaths {
+  public struct AllCasePaths: CasePathReflectable, Sendable, Sequence {
+    public subscript(root: StackAction) -> PartialCaseKeyPath<StackAction> {
+      switch root {
+      case .element: return \.element
+      case .popFrom: return \.popFrom
+      case .push: return \.push
+      }
+    }
+
+    public func makeIterator() -> IndexingIterator<[PartialCaseKeyPath<StackAction>]> {
+      [\.element, \.popFrom, \.push].makeIterator()
+    }
+
     public var element: AnyCasePath<StackAction, (id: StackElementID, action: Action)> {
       AnyCasePath(
         embed: { .element(id: $0, action: $1) },

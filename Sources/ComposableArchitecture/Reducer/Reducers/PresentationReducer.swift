@@ -241,13 +241,24 @@ public enum PresentationAction<Action> {
   indirect case presented(Action)
 }
 
-extension PresentationAction: CasePathable {
+extension PresentationAction: CasePathable, CasePathIterable {
   public static var allCasePaths: AllCasePaths {
     AllCasePaths()
   }
 
   @dynamicMemberLookup
-  public struct AllCasePaths {
+  public struct AllCasePaths: CasePathReflectable, Sendable, Sequence {
+    public subscript(root: PresentationAction) -> PartialCaseKeyPath<PresentationAction> {
+      switch root {
+      case .dismiss: return \.dismiss
+      case .presented: return \.presented
+      }
+    }
+
+    public func makeIterator() -> IndexingIterator<[PartialCaseKeyPath<PresentationAction>]> {
+      [\.dismiss, \.presented].makeIterator()
+    }
+
     public var dismiss: AnyCasePath<PresentationAction, Void> {
       AnyCasePath(
         embed: { .dismiss },
