@@ -4,7 +4,7 @@ import OrderedCollections
 ///
 /// Use this type for modeling a feature's domain that needs to present child features using
 /// ``Reducer/forEach(_:action:element:fileID:filePath:line:column:)-6zye8``.
-public enum IdentifiedAction<ID: Hashable & Sendable, Action>: CasePathable {
+public enum IdentifiedAction<ID: Hashable & Sendable, Action>: CasePathable, CasePathIterable {
   /// An action sent to the element at a given identifier.
   case element(id: ID, action: Action)
 
@@ -12,7 +12,15 @@ public enum IdentifiedAction<ID: Hashable & Sendable, Action>: CasePathable {
     AllCasePaths()
   }
 
-  public struct AllCasePaths {
+  public struct AllCasePaths: CasePathReflectable, Sendable, Sequence {
+    public subscript(root: IdentifiedAction) -> PartialCaseKeyPath<IdentifiedAction> {
+      \.element
+    }
+
+    public func makeIterator() -> IndexingIterator<[PartialCaseKeyPath<IdentifiedAction>]> {
+      [\.element].makeIterator()
+    }
+
     public var element: AnyCasePath<IdentifiedAction, (id: ID, action: Action)> {
       AnyCasePath(
         embed: { .element(id: $0, action: $1) },
