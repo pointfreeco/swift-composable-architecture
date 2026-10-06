@@ -119,8 +119,10 @@ public final class Store<State, Action>: _Store {
   private weak var parent: (any _Store)?
   private let scopeID: AnyHashable?
 
-  func removeChild(scopeID: AnyHashable) {
-    children[scopeID as! ScopeID<State, Action>] = nil
+  func removeChild(_ child: AnyObject, scopeID: AnyHashable) {
+    let scopeID = scopeID as! ScopeID<State, Action>
+    guard children[scopeID] === child else { return }
+    children[scopeID] = nil
   }
 
   let core: any Core<State, Action>
@@ -396,8 +398,9 @@ public final class Store<State, Action>: _Store {
           .sink { [weak self, weak parent] _ in
             guard let scopeID = self?.scopeID
             else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
-              parent?.removeChild(scopeID: scopeID)
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) { [weak self] in
+              guard let self else { return }
+              parent?.removeChild(self, scopeID: scopeID)
             }
           } receiveValue: { [weak self] _ in
             guard let self else { return }
@@ -699,5 +702,5 @@ let _isStorePerceptionCheckingEnabled: Bool = {
 
 @MainActor
 private protocol _Store: AnyObject {
-  func removeChild(scopeID: AnyHashable)
+  func removeChild(_ child: AnyObject, scopeID: AnyHashable)
 }
