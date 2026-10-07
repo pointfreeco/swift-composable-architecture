@@ -35,6 +35,10 @@ struct ContactsView: View {
         AddContactView(store: addContactStore)
       }
     }
-    .alert($store.scope(\.$destination, action: \.destination).alert)
+    .alert($store.scope(\.$destination, action: \.destination).alert) { action in
+      if let action {
+        store.send(.destination(.presented(.alert(action))))
+      }
+    }
   }
 }
