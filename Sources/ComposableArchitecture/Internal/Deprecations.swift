@@ -2482,7 +2482,12 @@ private final class NavigationLinkCore<
 }
 
 extension Store {
-  @available(*, deprecated, message: "Use 'observe' and 'if let store.scope', instead.")
+  @available(
+    *,
+    deprecated,
+    message:
+      "Use 'observe { if let store = store.scope(...) }' and distinguish the optional presence from child state mutations. 'observe' re-fires on every child mutation while 'ifLet(then:else:)' only fires on nil/non-nil transitions; avoid recreating views/controllers inside the 'observe' body or gate on the optional's identity."
+  )
   public func ifLet<Wrapped>(
     then unwrap: @escaping (_ store: Store<Wrapped, Action>) -> Void,
     else: @escaping () -> Void = {}
