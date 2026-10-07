@@ -131,10 +131,10 @@ Modeling user actions with an enum rather than methods defined on some object is
 - Having a data type of all actions in your feature also makes it possible to write exhaustive tests on every aspect of your feature. Using something known as a [`TestStore`][test-store-docs] you can emulate user flows by sending it actions and asserting how state changes each step of the way. And further, you must also assert on how effects feed their data back into the system by asserting on actions received:
 
   ```swift
-  store.send(.refreshButtonTapped) {
+  await store.send(.refreshButtonTapped) {
     $0.isLoading = true
   }
-  store.receive(\.userResponse) {
+  await store.receive(\.userResponse) {
     $0.currentUser = User(id: 42, name: "Blob")
     $0.isLoading = false
   }

@@ -38,7 +38,7 @@ changes of `signUpData` to be automatically persisted to the file system you can
 ```swift
 @ObservableState
 struct State {
-  @Shared(.fileStorage(URL(/* ... */) var signUpData = SignUpData()
+  @Shared(.fileStorage(URL(/* ... */))) var signUpData = SignUpData()
   // ...
 }
 ```
