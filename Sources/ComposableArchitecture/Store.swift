@@ -123,6 +123,25 @@ public final class Store<State, Action>: _Store {
     children[scopeID as! ScopeID<State, Action>] = nil
   }
 
+  private func scheduleRemovalFromParent() {
+    guard let scopeID else { return }
+    invalidationCount += 1
+    let invalidation = invalidationCount
+    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) { [weak self] in
+      // The child's state may have become non-`nil` again in the meantime, for example when `nil`
+      // and a new value are written in quick succession. Keep vending this store in that case, or
+      // the next read of the parent creates a new one and presentations driven by store identity,
+      // like `sheet(item:)`, are dismissed and presented again.
+      guard
+        let self,
+        self.invalidationCount == invalidation,
+        self.core.isInvalid
+      else { return }
+      self.parentCancellable = nil
+      self.parent?.removeChild(scopeID: scopeID)
+    }
+  }
+
   let core: any Core<State, Action>
   @_spi(Internals) public var effectCancellables: [UUID: AnyCancellable] { core.effectCancellables }
 
@@ -134,6 +153,7 @@ public final class Store<State, Action>: _Store {
     let _$observationRegistrar = ObservationRegistrar()
   #endif
   private var parentCancellable: AnyCancellable?
+  private var invalidationCount = 0
 
   /// Initializes a store from an initial state and a reducer.
   ///
@@ -389,19 +409,23 @@ public final class Store<State, Action>: _Store {
     if let stateType = State.self as? any ObservableState.Type {
       func subscribeToDidSet<T: ObservableState>(_ type: T.Type) -> AnyCancellable {
         return core.didSet
-          .prefix { [weak self] _ in self?.core.isInvalid == false }
-          .compactMap { [weak self] in (self?.withState(\.self) as? T)?._$id }
+          .compactMap { [weak self] _ -> ChildStoreObservation? in
+            guard let self else { return nil }
+            if self.core.isInvalid { return .invalid }
+            return (self.withState(\.self) as? T).map { .valid($0._$id) }
+          }
           .removeDuplicates()
-          .dropFirst()
-          .sink { [weak self, weak parent] _ in
-            guard let scopeID = self?.scopeID
-            else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
-              parent?.removeChild(scopeID: scopeID)
-            }
-          } receiveValue: { [weak self] _ in
+          // Skip the store's initial identity, but not its invalidation: a store that is scoped
+          // after its state is gone, like a row rendered while it is removed, is removed, too.
+          .dropFirst(core.isInvalid ? 0 : 1)
+          .sink { [weak self] observation in
             guard let self else { return }
-            self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+            switch observation {
+            case .valid:
+              self._$observationRegistrar.withMutation(of: self, keyPath: \.currentState) {}
+            case .invalid:
+              self.scheduleRemovalFromParent()
+            }
           }
       }
       self.parentCancellable = subscribeToDidSet(stateType)
@@ -700,4 +724,9 @@ let _isStorePerceptionCheckingEnabled: Bool = {
 @MainActor
 private protocol _Store: AnyObject {
   func removeChild(scopeID: AnyHashable)
+}
+
+private enum ChildStoreObservation: Equatable {
+  case invalid
+  case valid(ObservableStateID)
 }
