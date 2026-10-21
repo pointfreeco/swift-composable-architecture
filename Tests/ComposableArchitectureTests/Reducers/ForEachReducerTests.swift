@@ -1,3 +1,4 @@
+import Combine
 import ComposableArchitecture
 import XCTest
 
@@ -32,6 +33,155 @@ final class ForEachReducerTests: BaseTCATestCase {
     }
 
     await store.send(.buttonTapped)
+  }
+
+  @available(*, deprecated, message: "TODO: Update to use case pathable syntax")
+  func testBulkRemoval() {
+    struct Row: Reducer {
+      struct State: Equatable, Identifiable {
+        let id: Int
+      }
+      enum Action: Equatable {}
+      var body: some ReducerOf<Self> {
+        EmptyReducer()
+      }
+    }
+    struct Rows: Reducer {
+      struct State: Equatable {
+        var rows = IdentifiedArrayOf<Row.State>(
+          uniqueElements: (0..<10000).map { Row.State(id: $0) }
+        )
+      }
+      enum Action: Equatable {
+        case replaceRows
+        case rows(id: Int, action: Row.Action)
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .replaceRows:
+            state.rows = IdentifiedArrayOf(uniqueElements: Array(state.rows.prefix(20)))
+            return .none
+          case .rows:
+            return .none
+          }
+        }
+        .forEach(\.rows, action: /Action.rows) {
+          Row()
+        }
+      }
+    }
+
+    let expectation = self.expectation(description: "completed")
+    DispatchQueue.global().async {
+      var state = Rows.State()
+      let effect = Rows().reduce(into: &state, action: .replaceRows)
+      XCTAssertEqual(Array(state.rows.ids), Array(0..<20))
+      _ = _EffectPublisher(effect)
+        .sink(receiveCompletion: { _ in expectation.fulfill() }, receiveValue: { _ in })
+    }
+    self.wait(for: [expectation], timeout: 10)
+  }
+
+  @available(*, deprecated, message: "TODO: Update to use case pathable syntax")
+  func testBulkRemovalEffectCancellation() async {
+    struct Timer: Reducer {
+      struct State: Equatable, Identifiable {
+        let id: Int
+        var elapsed = 0
+      }
+      enum Action: Equatable {
+        case startButtonTapped
+        case tick
+      }
+      @Dependency(\.continuousClock) var clock
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .startButtonTapped:
+            return .run { send in
+              for await _ in self.clock.timer(interval: .seconds(1)) {
+                await send(.tick)
+              }
+            }
+          case .tick:
+            state.elapsed += 1
+            return .none
+          }
+        }
+      }
+    }
+    struct Timers: Reducer {
+      struct State: Equatable {
+        var timers = IdentifiedArrayOf<Timer.State>(
+          uniqueElements: (0..<5000).map { Timer.State(id: $0) }
+        )
+        var otherTimers: IdentifiedArrayOf<Timer.State> = [Timer.State(id: 4999)]
+      }
+      enum Action: Equatable {
+        case replaceRows
+        case removeAll
+        case timers(id: Int, action: Timer.Action)
+        case otherTimers(id: Int, action: Timer.Action)
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { state, action in
+          switch action {
+          case .replaceRows:
+            state.timers = IdentifiedArrayOf(uniqueElements: Array(state.timers.prefix(20)))
+            return .none
+          case .removeAll:
+            state.timers.removeAll()
+            state.otherTimers.removeAll()
+            return .none
+          case .timers, .otherTimers:
+            return .none
+          }
+        }
+        .forEach(\.timers, action: /Action.timers) {
+          Timer()
+        }
+        .forEach(\.otherTimers, action: /Action.otherTimers) {
+          Timer()
+        }
+      }
+    }
+
+    let clock = TestClock()
+    let store = await TestStore(initialState: Timers.State()) {
+      Timers()
+    } withDependencies: {
+      $0.continuousClock = clock
+    }
+    await store.send(.timers(id: 0, action: .startButtonTapped))
+    await store.send(.timers(id: 4999, action: .startButtonTapped))
+    await store.send(.otherTimers(id: 4999, action: .startButtonTapped))
+    await clock.advance(by: .seconds(1))
+    await store.receive(.timers(id: 0, action: .tick)) {
+      $0.timers[id: 0]?.elapsed = 1
+    }
+    await store.receive(.timers(id: 4999, action: .tick)) {
+      $0.timers[id: 4999]?.elapsed = 1
+    }
+    await store.receive(.otherTimers(id: 4999, action: .tick)) {
+      $0.otherTimers[id: 4999]?.elapsed = 1
+    }
+
+    await store.send(.replaceRows) {
+      $0.timers = IdentifiedArrayOf(uniqueElements: Array($0.timers.prefix(20)))
+    }
+    await clock.advance(by: .seconds(1))
+    await store.receive(.timers(id: 0, action: .tick)) {
+      $0.timers[id: 0]?.elapsed = 2
+    }
+    await store.receive(.otherTimers(id: 4999, action: .tick)) {
+      $0.otherTimers[id: 4999]?.elapsed = 2
+    }
+    await store.send(.removeAll) {
+      $0.timers = []
+      $0.otherTimers = []
+    }
+    await store.finish()
   }
 
   func testMissingElement() async {
