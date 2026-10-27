@@ -7,6 +7,34 @@
 /// See ``CombineReducers`` for an entry point into a reducer builder context.
 @resultBuilder
 public enum ReducerBuilder<State, Action> {
+  #if ComposableArchitecture2Deprecations
+    @available(
+      *,
+      deprecated,
+      message: "Please file a GitHub issue with your use case if you'd like to see it supported"
+    )
+  #else
+    @available(
+      iOS,
+      deprecated: 9999,
+      message: "Please file a GitHub issue with your use case if you'd like to see it supported"
+    )
+    @available(
+      macOS,
+      deprecated: 9999,
+      message: "Please file a GitHub issue with your use case if you'd like to see it supported"
+    )
+    @available(
+      tvOS,
+      deprecated: 9999,
+      message: "Please file a GitHub issue with your use case if you'd like to see it supported"
+    )
+    @available(
+      watchOS,
+      deprecated: 9999,
+      message: "Please file a GitHub issue with your use case if you'd like to see it supported"
+    )
+  #endif
   @inlinable
   public static func buildArray(
     _ reducers: [some Reducer<State, Action>]
@@ -75,7 +103,8 @@ public enum ReducerBuilder<State, Action> {
 
   @inlinable
   public static func buildPartialBlock<R0: Reducer<State, Action>, R1: Reducer<State, Action>>(
-    accumulated: R0, next: R1
+    accumulated: R0,
+    next: R1
   ) -> _Sequence<R0, R1> {
     _Sequence(accumulated, next)
   }
@@ -129,7 +158,8 @@ public enum ReducerBuilder<State, Action> {
 
     @inlinable
     public func _reduce(
-      into state: inout Element.State, action: Element.Action
+      into state: inout Element.State,
+      action: Element.Action
     ) -> Effect<Element.Action> {
       self.reducers.reduce(.none) { $0.merge(with: $1._reduce(into: &state, action: action)) }
     }
