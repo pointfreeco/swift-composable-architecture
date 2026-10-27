@@ -208,23 +208,16 @@ public struct _ForEachReducer<
     let parentEffects = self.parent._reduce(into: &state, action: action)
     let idsAfter = state[keyPath: self.toElementsState].ids
 
-    let elementCancelEffects: Effect<Parent.Action> =
-      areOrderedSetsDuplicates(idsBefore, idsAfter)
-      ? .none
-      : .merge(
-        idsBefore.subtracting(idsAfter).map {
-          ._cancel(
-            id: NavigationID(id: $0, keyPath: self.toElementsState),
-            navigationID: self.navigationIDPath
-          )
-        }
-      )
+    if !areOrderedSetsDuplicates(idsBefore, idsAfter) {
+      for id in idsBefore.subtracting(idsAfter) {
+        Task._cancel(
+          id: NavigationID(id: id, keyPath: self.toElementsState),
+          navigationID: self.navigationIDPath
+        )
+      }
+    }
 
-    return .merge(
-      elementEffects,
-      parentEffects,
-      elementCancelEffects
-    )
+    return .merge(elementEffects, parentEffects)
   }
 
   func reduceForEach(
