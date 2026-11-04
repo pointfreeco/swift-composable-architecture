@@ -1,6 +1,32 @@
 @_spi(Logging) import ComposableArchitecture
 import SwiftUI
+import Testing
 import XCTest
+
+#if !os(macOS)
+@MainActor
+@available(*, deprecated)
+@Test func `PerceptionCheck - access state without tracking`() {
+  @MainActor
+  struct FeatureView: View {
+    let store = Store(initialState: Feature.State()) {
+      Feature()
+    }
+    var body: some View {
+      Text(store.count.description)
+    }
+  }
+  #if DEBUG && !os(visionOS)
+    withKnownIssue {
+      render(FeatureView())
+    } matching: { issue in
+      issue.comments.contains {
+        $0.description.contains("Perceptible state '\\State.count' was accessed")
+      }
+    }
+  #endif
+}
+#endif
 
 final class StorePerceptionTests: BaseTCATestCase {
   @MainActor
@@ -25,29 +51,6 @@ final class StorePerceptionTests: BaseTCATestCase {
     }
     render(FeatureView())
   }
-
-  #if !os(macOS)
-    @MainActor
-    @available(*, deprecated)
-    func testPerceptionCheck_AccessStateWithoutTracking() {
-      @MainActor
-      struct FeatureView: View {
-        let store = Store(initialState: Feature.State()) {
-          Feature()
-        }
-        var body: some View {
-          Text(store.count.description)
-        }
-      }
-      #if DEBUG && !os(visionOS)
-        XCTExpectFailure {
-          render(FeatureView())
-        } issueMatcher: {
-          $0.compactDescription.contains("Perceptible state was accessed")
-        }
-      #endif
-    }
-  #endif
 
   @available(iOS, deprecated: 17)
   @available(macOS, deprecated: 14)
@@ -90,12 +93,12 @@ final class StorePerceptionTests: BaseTCATestCase {
       render(ViewRepresentable())
     #endif
   }
+}
 
-  @MainActor
-  private func render(_ view: some View) {
-    let image = ImageRenderer(content: view).cgImage
-    _ = image
-  }
+@MainActor
+private func render(_ view: some View) {
+  let image = ImageRenderer(content: view).cgImage
+  _ = image
 }
 
 @MainActor private let cancellableKey = malloc(1)!

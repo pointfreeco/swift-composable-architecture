@@ -1,18 +1,21 @@
 import ComposableArchitecture
+import Testing
 import XCTest
 
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax")
-final class IfLetReducerTests: BaseTCATestCase {
-  func testNilChild() async {
-    let store = await TestStore(initialState: Int?.none) {
-      EmptyReducer<Int?, Void>()
-        .ifLet(\.self, action: \.self) {}
-    }
+@Test func `IfLetReducer - nil child`() async {
+  let store = await TestStore(initialState: Int?.none) {
+    EmptyReducer<Int?, Void>()
+      .ifLet(\.self, action: \.self) {}
+  }
 
-    XCTExpectFailure {
-      $0.compactDescription.hasSuffix(
+  await withKnownIssue {
+    await store.send(())
+  } matching: { issue in
+    issue.comments.contains {
+      $0.description.hasSuffix(
         """
-        An "ifLet" at "\(#fileID):\(#line - 6)" received a child action when child state \
+        An "ifLet" at "\(#fileID):\(#line - 9)" received a child action when child state \
         was "nil".
 
           Action:
@@ -35,10 +38,11 @@ final class IfLetReducerTests: BaseTCATestCase {
         """
       )
     }
-
-    await store.send(())
   }
+}
 
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax")
+final class IfLetReducerTests: BaseTCATestCase {
   func testEffectCancellation() async {
     struct Child: Reducer {
       struct State: Equatable {

@@ -1,5 +1,271 @@
 @_spi(Internals) import ComposableArchitecture
+import Testing
 import XCTest
+
+struct StackReducerTestingTests {
+  @available(*, deprecated, message: "TODO: Update to use case pathable syntax")
+  @Test func `dismiss receives wrong action`() async {
+    struct Child: Reducer {
+      struct State: Equatable {}
+      enum Action: Equatable { case tap }
+      @Dependency(\.dismiss) var dismiss
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          .run { _ in await self.dismiss() }
+        }
+      }
+    }
+    struct Parent: Reducer {
+      struct State: Equatable {
+        var children = StackState<Child.State>()
+      }
+      enum Action: Equatable {
+        case children(StackActionOf<Child>)
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { _, _ in .none }.forEach(\.children, action: /Action.children) { Child() }
+      }
+    }
+
+    let store = await TestStore(initialState: Parent.State(children: StackState([Child.State()]))) {
+      Parent()
+    }
+
+    await withKnownIssue {
+      await store.send(.children(.element(id: 0, action: .tap)))
+      await store.receive(.children(.popFrom(id: 1))) {
+        $0.children = StackState()
+      }
+    } matching: { issue in
+      issue.comments.contains {
+        $0.description.hasSuffix(
+        """
+          Received unexpected action:
+          
+                StackReducerTestingTests.Parent.Action.children(
+              −   .popFrom(id: #1)
+              +   .popFrom(id: #0)
+                )
+          
+          (Expected: −, Received: +)
+          """
+        )
+      }
+    }
+  }
+
+  @available(*, deprecated, message: "TODO: Update to use case pathable syntax")
+  @Test func `child with in flight effect`() async {
+    struct Child: Reducer {
+      struct State: Equatable {}
+      enum Action { case tap }
+      var body: some Reducer<State, Action> {
+        Reduce { state, action in
+          .run { _ in try await Task.never() }
+        }
+      }
+    }
+    struct Parent: Reducer {
+      struct State: Equatable {
+        var path = StackState<Child.State>()
+      }
+      enum Action {
+        case path(StackActionOf<Child>)
+      }
+      var body: some ReducerOf<Self> {
+        EmptyReducer()
+          .forEach(\.path, action: /Action.path) { Child() }
+      }
+    }
+
+    var path = StackState<Child.State>()
+    path.append(Child.State())
+
+    await withKnownIssue { @MainActor in
+      let store = TestStore(initialState: Parent.State(path: path)) {
+        Parent()
+      }
+      await store.send(.path(.element(id: 0, action: .tap)))
+    } matching: { issue in
+      issue.sourceLocation?.line == #line - 2 &&
+      issue.comments.contains {
+        $0.description.hasSuffix(
+          """
+          An effect returned for this action is still running. It must complete before \
+          the end of the test.
+          
+          To fix, inspect any effects the reducer returns for this action and ensure that all \
+          of them complete by the end of the test. There are a few reasons why an effect may \
+          not have completed:
+          
+          If using async/await in your effect, it may need a little bit of time to properly \
+          finish. To fix you can simply perform "await store.finish()" at the end of your test.
+          
+          If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", \
+          etc.), make sure that you wait enough time for it to perform the effect. If you are \
+          using a test clock/scheduler, advance it so that the effects may complete, or \
+          consider using an immediate clock/scheduler to immediately perform the effect instead.
+          
+          If you are returning a long-living effect (timers, notifications, subjects, etc.), \
+          then make sure those effects are torn down by marking the effect ".cancellable" and \
+          returning a corresponding cancellation effect ("Effect.cancel") from another action, \
+          or, if your effect is driven by a Combine subject, send it a completion.
+          
+          If you do not wish to assert on these effects, perform "await \
+          store.skipInFlightEffects()", or consider using a non-exhaustive test store: \
+          "store.exhaustivity = .off".
+          """
+        )
+      }
+    }
+  }
+
+  @available(*, deprecated, message: "TODO: Update to use case pathable syntax")
+  @Test func `push reused id`() async {
+    struct Child: Reducer {
+      struct State: Equatable {}
+      enum Action: Equatable {}
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
+      }
+    }
+    struct Parent: Reducer {
+      struct State: Equatable {
+        var children = StackState<Child.State>()
+      }
+      enum Action: Equatable {
+        case child(StackActionOf<Child>)
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { _, _ in .none }
+          .forEach(\.children, action: /Action.child) { Child() }
+      }
+    }
+    let line = #line - 3
+
+    let store = await TestStore(initialState: Parent.State()) {
+      Parent()
+    }
+
+    await withKnownIssue {
+      await store.send(.child(.push(id: 0, state: Child.State()))) {
+        $0.children[id: 0] = Child.State()
+      }
+      await store.send(.child(.push(id: 0, state: Child.State())))
+    } matching: { issue in
+      issue.comments.contains {
+        $0.description.hasSuffix(
+          """
+          A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
+          received a "push" action for an element it already contains.
+
+            ID:
+              #0
+            Path IDs:
+              [#0]
+          """
+        )
+      }
+    }
+  }
+
+  @available(*, deprecated, message: "TODO: Update to use case pathable syntax")
+  @Test func `push id greater than next generation`() async {
+    struct Child: Reducer {
+      struct State: Equatable {}
+      enum Action: Equatable {}
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
+      }
+    }
+    struct Parent: Reducer {
+      struct State: Equatable {
+        var children = StackState<Child.State>()
+      }
+      enum Action: Equatable {
+        case child(StackActionOf<Child>)
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { _, _ in .none }
+          .forEach(\.children, action: /Action.child) { Child() }
+      }
+    }
+    let line = #line - 3
+
+    let store = await TestStore(initialState: Parent.State()) {
+      Parent()
+    }
+
+    await withKnownIssue {
+      await store.send(.child(.push(id: 1, state: Child.State()))) {
+        $0.children[id: 1] = Child.State()
+      }
+    } matching: { issue in
+      issue.comments.contains {
+        $0.description.hasSuffix(
+          """
+          A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
+          "push" action with an unexpected generational ID.
+
+            Received ID:
+              #1
+            Expected ID:
+              #0
+          """
+        )
+      }
+    }
+  }
+
+  @available(*, deprecated, message: "TODO: Update to use case pathable syntax")
+  @Test func `mismatched id failure`() async {
+    struct Child: Reducer {
+      struct State: Equatable {}
+      enum Action: Equatable {}
+      var body: some Reducer<State, Action> {
+        EmptyReducer()
+      }
+    }
+    struct Parent: Reducer {
+      struct State: Equatable {
+        var children = StackState<Child.State>()
+      }
+      enum Action: Equatable {
+        case child(StackActionOf<Child>)
+      }
+      var body: some ReducerOf<Self> {
+        Reduce { _, _ in .none }.forEach(\.children, action: /Action.child) { Child() }
+      }
+    }
+
+    let store = await TestStore(initialState: Parent.State()) {
+      Parent()
+    }
+
+    await withKnownIssue {
+      await store.send(.child(.push(id: 0, state: Child.State()))) {
+        $0.children[id: 1] = Child.State()
+      }
+    } matching: { issue in
+      issue.comments.contains {
+        $0.description.hasSuffix(
+          """
+          A state change does not match expectation.
+
+                StackReducerTestingTests.Parent.State(
+                  children: [
+              −     #1: StackReducerTestingTests.Child.State()
+              +     #0: StackReducerTestingTests.Child.State()
+                  ]
+                )
+
+          (Expected: −, Actual: +)
+          """
+        )
+      }
+    }
+  }
+}
 
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax")
 final class StackReducerTests: BaseTCATestCase {
@@ -234,54 +500,6 @@ final class StackReducerTests: BaseTCATestCase {
     await store.send(.children(.element(id: 0, action: .closeButtonTapped)))
     await store.receive(.children(.popFrom(id: 0))) {
       $0.children.removeLast()
-    }
-  }
-
-  func testDismissReceiveWrongAction() async {
-    struct Child: Reducer {
-      struct State: Equatable {}
-      enum Action: Equatable { case tap }
-      @Dependency(\.dismiss) var dismiss
-      var body: some Reducer<State, Action> {
-        Reduce { state, action in
-          .run { _ in await self.dismiss() }
-        }
-      }
-    }
-    struct Parent: Reducer {
-      struct State: Equatable {
-        var children = StackState<Child.State>()
-      }
-      enum Action: Equatable {
-        case children(StackActionOf<Child>)
-      }
-      var body: some ReducerOf<Self> {
-        Reduce { _, _ in .none }.forEach(\.children, action: /Action.children) { Child() }
-      }
-    }
-
-    let store = await TestStore(initialState: Parent.State(children: StackState([Child.State()]))) {
-      Parent()
-    }
-
-    XCTExpectFailure {
-      $0.compactDescription.hasSuffix(
-        """
-        Received unexpected action:
-
-              StackReducerTests.Parent.Action.children(
-            −   .popFrom(id: #1)
-            +   .popFrom(id: #0)
-              )
-
-        (Expected: −, Received: +)
-        """
-      )
-    }
-
-    await store.send(.children(.element(id: 0, action: .tap)))
-    await store.receive(.children(.popFrom(id: 1))) {
-      $0.children = StackState()
     }
   }
 
@@ -850,70 +1068,6 @@ final class StackReducerTests: BaseTCATestCase {
     await store.send(.path(.popFrom(id: 999)))
   }
 
-  func testChildWithInFlightEffect() async {
-    struct Child: Reducer {
-      struct State: Equatable {}
-      enum Action { case tap }
-      var body: some Reducer<State, Action> {
-        Reduce { state, action in
-          .run { _ in try await Task.never() }
-        }
-      }
-    }
-    struct Parent: Reducer {
-      struct State: Equatable {
-        var path = StackState<Child.State>()
-      }
-      enum Action {
-        case path(StackActionOf<Child>)
-      }
-      var body: some ReducerOf<Self> {
-        EmptyReducer()
-          .forEach(\.path, action: /Action.path) { Child() }
-      }
-    }
-
-    var path = StackState<Child.State>()
-    path.append(Child.State())
-    let store = await TestStore(initialState: Parent.State(path: path)) {
-      Parent()
-    }
-    let line = #line
-    await store.send(.path(.element(id: 0, action: .tap)))
-
-    XCTExpectFailure {
-      $0.sourceCodeContext.location?.fileURL.absoluteString.contains("BaseTCATestCase") == true
-        || $0.sourceCodeContext.location?.lineNumber == line + 1
-          && $0.compactDescription.hasSuffix(
-            """
-            An effect returned for this action is still running. It must complete before \
-            the end of the test.
-
-            To fix, inspect any effects the reducer returns for this action and ensure that all \
-            of them complete by the end of the test. There are a few reasons why an effect may \
-            not have completed:
-
-            If using async/await in your effect, it may need a little bit of time to properly \
-            finish. To fix you can simply perform "await store.finish()" at the end of your test.
-
-            If an effect uses a clock (or scheduler, via "receive(on:)", "delay", "debounce", \
-            etc.), make sure that you wait enough time for it to perform the effect. If you are \
-            using a test clock/scheduler, advance it so that the effects may complete, or \
-            consider using an immediate clock/scheduler to immediately perform the effect instead.
-
-            If you are returning a long-living effect (timers, notifications, subjects, etc.), \
-            then make sure those effects are torn down by marking the effect ".cancellable" and \
-            returning a corresponding cancellation effect ("Effect.cancel") from another action, \
-            or, if your effect is driven by a Combine subject, send it a completion.
-
-            If you do not wish to assert on these effects, perform "await \
-            store.skipInFlightEffects()", or consider using a non-exhaustive test store: \
-            "store.exhaustivity = .off".
-            """
-          )
-    }
-  }
-
   func testMultipleChildEffects() async {
     struct Child: Reducer {
       struct State: Equatable { var count = 0 }
@@ -1066,142 +1220,6 @@ final class StackReducerTests: BaseTCATestCase {
     }
     await store.send(.child(.push(id: 0, state: Child.State()))) {
       $0.children[id: 0] = Child.State()
-    }
-  }
-
-  func testPushReusedID() async {
-    struct Child: Reducer {
-      struct State: Equatable {}
-      enum Action: Equatable {}
-      var body: some Reducer<State, Action> {
-        EmptyReducer()
-      }
-    }
-    struct Parent: Reducer {
-      struct State: Equatable {
-        var children = StackState<Child.State>()
-      }
-      enum Action: Equatable {
-        case child(StackActionOf<Child>)
-      }
-      var body: some ReducerOf<Self> {
-        Reduce { _, _ in .none }
-          .forEach(\.children, action: /Action.child) { Child() }
-      }
-    }
-    let line = #line - 3
-
-    let store = await TestStore(initialState: Parent.State()) {
-      Parent()
-    }
-
-    XCTExpectFailure {
-      $0.compactDescription.hasSuffix(
-        """
-        A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" \
-        received a "push" action for an element it already contains.
-
-          ID:
-            #0
-          Path IDs:
-            [#0]
-        """
-      )
-    }
-
-    await store.send(.child(.push(id: 0, state: Child.State()))) {
-      $0.children[id: 0] = Child.State()
-    }
-    await store.send(.child(.push(id: 0, state: Child.State())))
-  }
-
-  func testPushIDGreaterThanNextGeneration() async {
-    struct Child: Reducer {
-      struct State: Equatable {}
-      enum Action: Equatable {}
-      var body: some Reducer<State, Action> {
-        EmptyReducer()
-      }
-    }
-    struct Parent: Reducer {
-      struct State: Equatable {
-        var children = StackState<Child.State>()
-      }
-      enum Action: Equatable {
-        case child(StackActionOf<Child>)
-      }
-      var body: some ReducerOf<Self> {
-        Reduce { _, _ in .none }
-          .forEach(\.children, action: /Action.child) { Child() }
-      }
-    }
-    let line = #line - 3
-
-    let store = await TestStore(initialState: Parent.State()) {
-      Parent()
-    }
-
-    XCTExpectFailure {
-      $0.compactDescription.hasSuffix(
-        """
-        A "forEach" at "ComposableArchitectureTests/StackReducerTests.swift:\(line)" received a \
-        "push" action with an unexpected generational ID.
-
-          Received ID:
-            #1
-          Expected ID:
-            #0
-        """
-      )
-    }
-
-    await store.send(.child(.push(id: 1, state: Child.State()))) {
-      $0.children[id: 1] = Child.State()
-    }
-  }
-
-  func testMismatchedIDFailure() async {
-    struct Child: Reducer {
-      struct State: Equatable {}
-      enum Action: Equatable {}
-      var body: some Reducer<State, Action> {
-        EmptyReducer()
-      }
-    }
-    struct Parent: Reducer {
-      struct State: Equatable {
-        var children = StackState<Child.State>()
-      }
-      enum Action: Equatable {
-        case child(StackActionOf<Child>)
-      }
-      var body: some ReducerOf<Self> {
-        Reduce { _, _ in .none }.forEach(\.children, action: /Action.child) { Child() }
-      }
-    }
-
-    let store = await TestStore(initialState: Parent.State()) {
-      Parent()
-    }
-
-    XCTExpectFailure {
-      $0.compactDescription.hasSuffix(
-        """
-        A state change does not match expectation.
-
-              StackReducerTests.Parent.State(
-                children: [
-            −     #1: StackReducerTests.Child.State()
-            +     #0: StackReducerTests.Child.State()
-                ]
-              )
-
-        (Expected: −, Actual: +)
-        """
-      )
-    }
-    await store.send(.child(.push(id: 0, state: Child.State()))) {
-      $0.children[id: 1] = Child.State()
     }
   }
 

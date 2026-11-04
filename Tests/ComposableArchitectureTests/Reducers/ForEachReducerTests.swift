@@ -1,5 +1,42 @@
 import ComposableArchitecture
+import Testing
 import XCTest
+
+@Test func `ForEachReducer - missing element`() async {
+  let store = await TestStore(initialState: Elements.State()) {
+    EmptyReducer<Elements.State, Elements.Action>()
+      .forEach(\.rows, action: \.rows) {}
+  }
+
+  await withKnownIssue {
+    await store.send(\.rows[id: 1], "Blob Esq.")
+  } matching: { issue in
+    issue.comments.contains {
+      return $0.description.hasSuffix(
+      """
+      A "forEach" at "\(#fileID):\(#line - 9)" received an action for a missing element.
+      
+        Action:
+          Elements.Action.rows(.element(id:, action:))
+      
+      This is generally considered an application logic error, and can happen for a few reasons:
+      
+      A parent reducer removed an element with this ID before this reducer ran. This reducer \
+      must run before any other reducer removes an element, which ensures that element \
+      reducers can handle their actions while their state is still available.
+      
+      An in-flight effect emitted this action when state contained no element at this ID. \
+      While it may be perfectly reasonable to ignore this action, consider canceling the \
+      associated effect before an element is removed, especially if it is a long-living effect.
+      
+      This action was sent to the store while its state contained no element at this ID. To \
+      fix this make sure that actions for this reducer can only be sent from a store when \
+      its state contains an element at this id. In SwiftUI applications, use "ForEachStore".
+      """
+      )
+    }
+  }
+}
 
 final class ForEachReducerTests: BaseTCATestCase {
   func testElementAction() async {
@@ -32,40 +69,6 @@ final class ForEachReducerTests: BaseTCATestCase {
     }
 
     await store.send(.buttonTapped)
-  }
-
-  func testMissingElement() async {
-    let store = await TestStore(initialState: Elements.State()) {
-      EmptyReducer<Elements.State, Elements.Action>()
-        .forEach(\.rows, action: \.rows) {}
-    }
-
-    XCTExpectFailure {
-      $0.compactDescription.hasSuffix(
-        """
-        A "forEach" at "\(#fileID):\(#line - 6)" received an action for a missing element.
-
-          Action:
-            Elements.Action.rows(.element(id:, action:))
-
-        This is generally considered an application logic error, and can happen for a few reasons:
-
-        A parent reducer removed an element with this ID before this reducer ran. This reducer \
-        must run before any other reducer removes an element, which ensures that element \
-        reducers can handle their actions while their state is still available.
-
-        An in-flight effect emitted this action when state contained no element at this ID. \
-        While it may be perfectly reasonable to ignore this action, consider canceling the \
-        associated effect before an element is removed, especially if it is a long-living effect.
-
-        This action was sent to the store while its state contained no element at this ID. To \
-        fix this make sure that actions for this reducer can only be sent from a store when \
-        its state contains an element at this id. In SwiftUI applications, use "ForEachStore".
-        """
-      )
-    }
-
-    await store.send(\.rows[id: 1], "Blob Esq.")
   }
 
   @available(*, deprecated, message: "TODO: Update to use case pathable syntax")

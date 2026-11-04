@@ -1,5 +1,48 @@
 import ComposableArchitecture
+import Testing
 import XCTest
+
+@available(*, deprecated, message: "TODO: Update to use case pathable syntax")
+@Test func `IfCaseLetReducer - nil child`() async {
+  struct SomeError: Error, Equatable {}
+
+  let store = await TestStore(initialState: Result.failure(SomeError())) {
+    EmptyReducer<Result<Int, SomeError>, Result<Int, SomeError>>()
+      .ifCaseLet(\.success, action: \.success) {}
+  }
+
+  await withKnownIssue {
+    await store.send(.success(1))
+  } matching: { issue in
+    issue.comments.contains {
+      $0.description.hasSuffix(
+        """
+        An "ifCaseLet" at "\(#fileID):\(#line - 9)" received a child action when child state was \
+        set to a different case.
+
+          Action:
+            Result.success(1)
+          State:
+            Result.failure(SomeError())
+
+        This is generally considered an application logic error, and can happen for a few reasons:
+
+        A parent reducer set "Result" to a different case before this reducer ran. This \
+        reducer must run before any other reducer sets child state to a different case. This \
+        ensures that child reducers can handle their actions while their state is still available.
+
+        An in-flight effect emitted this action when child state was unavailable. While it may \
+        be perfectly reasonable to ignore this action, consider canceling the associated effect \
+        before child state changes to another case, especially if it is a long-living effect.
+
+        This action was sent to the store while state was another case. Make sure that actions \
+        for this reducer can only be sent from a store when state is set to the appropriate \
+        case. In SwiftUI applications, use "SwitchStore".
+        """
+      )
+    }
+  }
+}
 
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax")
 final class IfCaseLetReducerTests: BaseTCATestCase {
@@ -28,45 +71,6 @@ final class IfCaseLetReducerTests: BaseTCATestCase {
     await store.receive(.success(0)) {
       $0 = .success(0)
     }
-  }
-
-  func testNilChild() async {
-    struct SomeError: Error, Equatable {}
-
-    let store = await TestStore(initialState: Result.failure(SomeError())) {
-      EmptyReducer<Result<Int, SomeError>, Result<Int, SomeError>>()
-        .ifCaseLet(\.success, action: \.success) {}
-    }
-
-    XCTExpectFailure {
-      $0.compactDescription.hasSuffix(
-        """
-        An "ifCaseLet" at "\(#fileID):\(#line - 6)" received a child action when child state was \
-        set to a different case.
-
-          Action:
-            Result.success(1)
-          State:
-            Result.failure(IfCaseLetReducerTests.SomeError())
-
-        This is generally considered an application logic error, and can happen for a few reasons:
-
-        A parent reducer set "Result" to a different case before this reducer ran. This \
-        reducer must run before any other reducer sets child state to a different case. This \
-        ensures that child reducers can handle their actions while their state is still available.
-
-        An in-flight effect emitted this action when child state was unavailable. While it may \
-        be perfectly reasonable to ignore this action, consider canceling the associated effect \
-        before child state changes to another case, especially if it is a long-living effect.
-
-        This action was sent to the store while state was another case. Make sure that actions \
-        for this reducer can only be sent from a store when state is set to the appropriate \
-        case. In SwiftUI applications, use "SwitchStore".
-        """
-      )
-    }
-
-    await store.send(.success(1))
   }
 
   func testEffectCancellation_Siblings() async {

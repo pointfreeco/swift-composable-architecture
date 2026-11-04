@@ -1,6 +1,96 @@
 @preconcurrency import Combine
 import ComposableArchitecture
+import Testing
 import XCTest
+
+struct TestStoreTestingTests {
+  @Test func `receiving action matching predicate`() async {
+    enum Action: Equatable {
+      case noop, finished
+    }
+
+    let store = await TestStore(initialState: 0) {
+      Reduce<Int, Action> { state, action in
+        switch action {
+        case .noop:
+          return .send(.finished)
+        case .finished:
+          return .none
+        }
+      }
+    }
+
+    await confirmation { confirm in
+      await store.send(.noop)
+      await store.receive { action in
+        confirm()
+        return action == .finished
+      }
+    }
+
+    await store.send(.noop)
+    await withKnownIssue {
+      await store.receive(.noop)
+    }
+
+    await store.send(.noop)
+    await withKnownIssue {
+      await store.receive { $0 == .noop }
+    }
+  }
+
+  @Test func `receiving case keypath with value`() async {
+    let store = await TestStore<Int, Action>(initialState: 0) {
+      Reduce { state, action in
+        switch action {
+        case .tap:
+          return .send(.delegate(.success(42)))
+        case .delegate:
+          return .none
+        case .view:
+          return .none
+        }
+      }
+    }
+
+    await store.send(.tap)
+    await store.receive(\.delegate.success, 42)
+
+    await withKnownIssue {
+      await store.send(.tap)
+      await store.receive(\.delegate.success, 43)
+    } matching: { issue in
+      issue.comments.contains {
+        $0.description.hasSuffix(
+          """
+          Received unexpected action:
+
+              Action.delegate(
+            −   .success(43)
+            +   .success(42)
+              )
+
+          (Expected: −, Actual: +)
+          """
+        )
+      }
+    }
+  }
+
+  @Test func `sending an action to a dismissed test store`() async {
+    let store = await TestStore(initialState: TestDismissCancelsEffects.State()) {
+      TestDismissCancelsEffects()
+    }
+    await store.send(.dismiss)
+    await withKnownIssue {
+      await store.send(.onTask)
+    } matching: { issue in
+      issue.comments.contains {
+        $0.description.hasSuffix("Can't send action to dismissed test store.")
+      }
+    }
+  }
+}
 
 final class TestStoreTests: BaseTCATestCase {
   func testEffectConcatenation() async {
@@ -51,6 +141,31 @@ final class TestStoreTests: BaseTCATestCase {
     await store.send(.d)
   }
 
+  func testDoesNotForceTasksToRunOnMainActor() async {
+    let store = await TestStore(initialState: 0, reducer: {
+      Reduce<Int, Action> { state, action in
+        switch action {
+        default: return .none
+        }
+      }
+    })
+
+    let expectation = self.expectation(description: "running other task")
+    expectation.expectedFulfillmentCount = 3
+    @concurrent func doAThingOffMainActor() async {
+      XCTAssertFalse(Thread.isMainThread)
+      expectation.fulfill()
+    }
+
+    await doAThingOffMainActor()
+    Task { await doAThingOffMainActor() }
+    Task.detached { await doAThingOffMainActor() }
+
+    await self.fulfillment(of: [expectation], timeout: 10)
+
+    _ = store // ensure the store stays alive for the entire test.
+  }
+
   func testAsync() async {
     enum Action: Equatable {
       case tap
@@ -74,6 +189,7 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testExpectedStateEquality() async {
     struct State: Equatable {
       var count: Int = 0
@@ -85,7 +201,7 @@ final class TestStoreTests: BaseTCATestCase {
       case changed(from: Int, to: Int)
     }
 
-    let store = await TestStore(initialState: State()) {
+    let store = TestStore(initialState: State()) {
       Reduce<State, Action> { state, action in
         switch action {
         case .increment:
@@ -121,6 +237,7 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
+  @MainActor
   func testExpectedStateEqualityMustModify() async {
     struct State: Equatable {
       var count: Int = 0
@@ -130,7 +247,7 @@ final class TestStoreTests: BaseTCATestCase {
       case noop, finished
     }
 
-    let store = await TestStore(initialState: State()) {
+    let store = TestStore(initialState: State()) {
       Reduce<State, Action> { state, action in
         switch action {
         case .noop:
@@ -153,40 +270,6 @@ final class TestStoreTests: BaseTCATestCase {
     await store.receive(.finished) {
       $0.count = 0
     }
-  }
-
-  func testReceiveActionMatchingPredicate() async {
-    enum Action: Equatable {
-      case noop, finished
-    }
-
-    let store = await TestStore(initialState: 0) {
-      Reduce<Int, Action> { state, action in
-        switch action {
-        case .noop:
-          return .send(.finished)
-        case .finished:
-          return .none
-        }
-      }
-    }
-
-    let predicateShouldBeCalledExpectation = expectation(
-      description: "predicate should be called")
-    await store.send(.noop)
-    await store.receive { action in
-      predicateShouldBeCalledExpectation.fulfill()
-      return action == .finished
-    }
-    _ = { wait(for: [predicateShouldBeCalledExpectation], timeout: 0) }()
-
-    await store.send(.noop)
-    XCTExpectFailure()
-    await store.receive(.noop)
-
-    await store.send(.noop)
-    XCTExpectFailure()
-    await store.receive { $0 == .noop }
   }
 
   @MainActor
@@ -511,65 +594,6 @@ final class TestStoreTests: BaseTCATestCase {
     await task.cancel()
   }
 
-  func testMainSerialExecutor_AutoAssignsAndResets_False() async {
-    uncheckedUseMainSerialExecutor = false
-    XCTAssertFalse(uncheckedUseMainSerialExecutor)
-    var store: TestStore? = await TestStore(initialState: 0) {
-      EmptyReducer<Int, Void>()
-    }
-    XCTAssertTrue(uncheckedUseMainSerialExecutor)
-    store = nil
-    XCTAssertFalse(uncheckedUseMainSerialExecutor)
-    _ = store
-  }
-
-  func testMainSerialExecutor_AutoAssignsAndResets_True() async {
-    uncheckedUseMainSerialExecutor = true
-    XCTAssertTrue(uncheckedUseMainSerialExecutor)
-    var store: TestStore? = await TestStore(initialState: 0) {
-      EmptyReducer<Int, Void>()
-    }
-    XCTAssertTrue(uncheckedUseMainSerialExecutor)
-    store = nil
-    XCTAssertTrue(uncheckedUseMainSerialExecutor)
-    _ = store
-  }
-
-  func testReceiveCaseKeyPathWithValue() async {
-    let store = await TestStore<Int, Action>(initialState: 0) {
-      Reduce { state, action in
-        switch action {
-        case .tap:
-          return .send(.delegate(.success(42)))
-        case .delegate:
-          return .none
-        case .view:
-          return .none
-        }
-      }
-    }
-
-    await store.send(.tap)
-    await store.receive(\.delegate.success, 42)
-
-    XCTExpectFailure {
-      $0.compactDescription.hasSuffix(
-        """
-        Received unexpected action:
-
-            Action.delegate(
-          −   .success(43)
-          +   .success(42)
-            )
-
-        (Expected: −, Actual: +)
-        """
-      )
-    }
-    await store.send(.tap)
-    await store.receive(\.delegate.success, 43)
-  }
-
   func testSendCaseKeyPath() async {
     let store = await TestStore<Int, Action>(initialState: 0) {
       Reduce { state, action in
@@ -618,30 +642,6 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
-  @Reducer
-  struct TestDismissCancelsEffects {
-    struct State: Equatable {}
-    enum Action {
-      case dismiss
-      case onTask
-    }
-    @Dependency(\.dismiss) var dismiss
-    var body: some ReducerOf<Self> {
-      Reduce { state, action in
-        switch action {
-        case .dismiss:
-          return .run { _ in
-            await dismiss()
-          }
-        case .onTask:
-          return .run { _ in
-            try await Task.never()
-          }
-        }
-      }
-    }
-  }
-
   func testDismissCancelsEffects() async {
     let store = await TestStore(initialState: TestDismissCancelsEffects.State()) {
       TestDismissCancelsEffects()
@@ -649,16 +649,29 @@ final class TestStoreTests: BaseTCATestCase {
     await store.send(.onTask)
     await store.send(.dismiss)
   }
+}
 
-  func testDismissedStoreSend() async {
-    let store = await TestStore(initialState: TestDismissCancelsEffects.State()) {
-      TestDismissCancelsEffects()
+@Reducer
+private struct TestDismissCancelsEffects {
+  struct State: Equatable {}
+  enum Action {
+    case dismiss
+    case onTask
+  }
+  @Dependency(\.dismiss) var dismiss
+  var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .dismiss:
+        return .run { _ in
+          await dismiss()
+        }
+      case .onTask:
+        return .run { _ in
+          try await Task.never()
+        }
+      }
     }
-    await store.send(.dismiss)
-    XCTExpectFailure {
-      $0.compactDescription.hasSuffix("Can't send action to dismissed test store.")
-    }
-    await store.send(.onTask)
   }
 }
 
