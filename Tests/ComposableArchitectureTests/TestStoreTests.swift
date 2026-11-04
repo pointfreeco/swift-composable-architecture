@@ -74,6 +74,38 @@ final class TestStoreTests: BaseTCATestCase {
     }
   }
 
+  func testSettingUseMainSerialExecutorToTrue() async {
+    let store = await TestStore(useMainSerialExecutor: true, initialState: 0) {
+      Reduce<Int, Void> { state, action in
+        return .none
+      }
+    }
+
+    @concurrent func runOffMainThread() async {
+      XCTAssert(Thread.isMainThread)
+    }
+
+    await runOffMainThread()
+
+    _ = store
+  }
+
+  func testSettingUseMainSerialExecutorToFalse() async {
+    let store = await TestStore(useMainSerialExecutor: false, initialState: 0) {
+      Reduce<Int, Void> { state, action in
+        return .none
+      }
+    }
+
+    @concurrent func runOffMainThread() async {
+      XCTAssertFalse(Thread.isMainThread)
+    }
+
+    await runOffMainThread()
+
+    _ = store
+  }
+
   func testExpectedStateEquality() async {
     struct State: Equatable {
       var count: Int = 0

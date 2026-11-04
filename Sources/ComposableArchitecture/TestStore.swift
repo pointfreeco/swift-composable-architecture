@@ -511,6 +511,9 @@ public final class TestStore<State: Equatable, Action> {
   /// use a test store.
   ///
   /// - Parameters:
+  ///   - useMainSerialExecutor: Force all tasks while this TestStore is live to run on the main
+  ///     actor. For historical reasons, this defaults to true. If possible, you should set this to
+  ///     false.
   ///   - initialState: The state the feature starts in.
   ///   - reducer: The reducer that powers the runtime of the feature. Unlike
   ///     ``Store/init(initialState:reducer:withDependencies:)``, this is _not_ a builder closure
@@ -525,6 +528,7 @@ public final class TestStore<State: Equatable, Action> {
   ///   - line: The line.
   ///   - column: The column.
   public init(
+    useMainSerialExecutor: Bool = true,
     initialState: @autoclosure () -> State,
     reducer: () -> some Reducer<State, Action>,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
@@ -549,7 +553,7 @@ public final class TestStore<State: Equatable, Action> {
     self.store = Store(initialState: reducer.state) { reducer }
     self.timeout = .seconds(1)
     self.sharedChangeTracker = sharedChangeTracker
-    self.useMainSerialExecutor = true
+    self.useMainSerialExecutor = useMainSerialExecutor
     self.reducer.store = self
   }
 
