@@ -98,7 +98,7 @@ Xcode previews. It works like SwiftUI's `Binding.constant`, but for shared refer
       Feature()
     }
   )
-)
+}
 ```
 
 ## Migrating to 1.11.2
