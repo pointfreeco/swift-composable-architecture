@@ -58,6 +58,18 @@ extension Reducer {
       })
     }
   }
+  
+  @inlinable
+  public func onChange<V: Equatable>(
+    of toValue: @escaping (State) -> V,
+    _ perform: @escaping (_ oldValue: V, _ state: inout State, _ action: Action) -> EffectOf<Self>
+  ) -> some Reducer<State, Action> {
+    _OnChangeReducer(base: self, toValue: toValue, isDuplicate: ==) { oldValue, _ in
+      Reduce(internal: { state, action in
+        perform(oldValue, &state, action)
+      })
+    }
+  }
 
   #if ComposableArchitecture2Deprecations
     @available(
