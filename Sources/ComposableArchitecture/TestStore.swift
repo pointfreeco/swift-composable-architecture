@@ -511,10 +511,10 @@ public final class TestStore<State: Equatable, Action> {
   /// use a test store.
   ///
   /// - Parameters:
+  ///   - initialState: The state the feature starts in.
   ///   - useMainSerialExecutor: Force all tasks while this TestStore is live to run on the main
   ///     actor. For historical reasons, this defaults to true. If possible, you should set this to
   ///     false.
-  ///   - initialState: The state the feature starts in.
   ///   - reducer: The reducer that powers the runtime of the feature. Unlike
   ///     ``Store/init(initialState:reducer:withDependencies:)``, this is _not_ a builder closure
   ///     due to a [Swift bug](https://github.com/apple/swift/issues/72399) that is more likely to
@@ -528,8 +528,8 @@ public final class TestStore<State: Equatable, Action> {
   ///   - line: The line.
   ///   - column: The column.
   public init(
-    useMainSerialExecutor: Bool = true,
     initialState: @autoclosure () -> State,
+    useMainSerialExecutor: Bool = true,
     reducer: () -> some Reducer<State, Action>,
     withDependencies prepareDependencies: (inout DependencyValues) -> Void = { _ in },
     fileID: StaticString = #fileID,
