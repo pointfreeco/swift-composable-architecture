@@ -208,16 +208,16 @@ struct SystemEnvironment<Environment> {
 extension SystemEnvironment: Sendable where Environment: Sendable {}
 
 #if DEBUG
-  import XCTestDynamicOverlay
+  import IssueReporting
 
   extension SystemEnvironment {
     static func unimplemented(
-      date: @escaping @Sendable () -> Date = XCTUnimplemented(
+      date: @escaping @Sendable () -> Date = unimplemented(
         "\(Self.self).date", placeholder: Date()
       ),
       environment: Environment,
       mainQueue: AnySchedulerOf<DispatchQueue> = .unimplemented,
-      uuid: @escaping @Sendable () -> UUID = XCTUnimplemented(
+      uuid: @escaping @Sendable () -> UUID = unimplemented(
         "\(Self.self).uuid", placeholder: UUID()
       )
     ) -> Self {

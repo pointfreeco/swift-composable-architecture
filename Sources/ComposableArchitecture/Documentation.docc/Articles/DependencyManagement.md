@@ -54,6 +54,5 @@ as any reducer `Feature` uses under the hood, _and_ any effects produced by `Fea
 
 [swift-identified-collections]: https://github.com/pointfreeco/swift-identified-collections
 [environment-values-docs]: https://developer.apple.com/documentation/swiftui/environmentvalues
-[xctest-dynamic-overlay-gh]: http://github.com/pointfreeco/xctest-dynamic-overlay
 [swift-dependencies-gh]: http://github.com/pointfreeco/swift-dependencies
 [swift-deps-docs]: https://swiftpackageindex.com/pointfreeco/swift-dependencies/main/documentation/dependencies

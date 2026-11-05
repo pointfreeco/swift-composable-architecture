@@ -716,15 +716,8 @@ extension UIBindable {
       column: UInt = #column
     ) -> UIBinding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
-      #if DEBUG && canImport(SwiftUI)
-        let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-          wrappedValue.currentState[keyPath: state]._scopeID
-        }
-      #else
-        let id = wrappedValue.currentState[keyPath: state]._scopeID
-      #endif
       return self[
-        id: id,
+
         state: state.appending(path: \.wrappedValue),
         action: action,
         isInViewBody: true,
@@ -753,15 +746,7 @@ extension UIBindable {
       column: UInt = #column
     ) -> UIBinding<Store<ChildState, ChildAction>?>
     where Value == Store<State, Action> {
-      #if DEBUG && canImport(SwiftUI)
-        let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-          wrappedValue.currentState[keyPath: state]._scopeID
-        }
-      #else
-        let id = wrappedValue.currentState[keyPath: state]._scopeID
-      #endif
       return self[
-        id: id,
         state: state.appending(path: \.wrappedValue),
         action: action,
         isInViewBody: true,
@@ -789,15 +774,7 @@ extension UIBindable {
       column: UInt = #column
     ) -> UIBinding<Store<Container.Unwrapped, ChildAction>?>
     where Value == Store<State, Action> {
-      #if DEBUG && canImport(SwiftUI)
-        let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-          wrappedValue.currentState[keyPath: state]._scopeID
-        }
-      #else
-        let id = wrappedValue.currentState[keyPath: state]._scopeID
-      #endif
       return self[
-        id: id,
         state: Container._scopeKeyPath(state),
         action: action,
         isInViewBody: true,
@@ -818,15 +795,7 @@ extension UIBindable {
       column: UInt = #column
     ) -> UIBinding<Store<Container.Unwrapped, ChildAction>?>
     where Value == Store<State, Action> {
-      #if DEBUG && canImport(SwiftUI)
-        let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-          wrappedValue.currentState[keyPath: state]._scopeID
-        }
-      #else
-        let id = wrappedValue.currentState[keyPath: state]._scopeID
-      #endif
       return self[
-        id: id,
         state: Container._scopeKeyPath(state),
         action: action,
         isInViewBody: true,
@@ -855,15 +824,7 @@ extension UIBindable {
       column: UInt = #column
     ) -> UIBinding<Store<Container.Unwrapped, ChildAction>?>
     where Value == Store<State, Action> {
-      #if DEBUG && canImport(SwiftUI)
-        let id = _PerceptionLocals.$skipPerceptionChecking.withValue(true) {
-          wrappedValue.currentState[keyPath: state]._scopeID
-        }
-      #else
-        let id = wrappedValue.currentState[keyPath: state]._scopeID
-      #endif
       return self[
-        id: id,
         state: Container._scopeKeyPath(state),
         action: action,
         isInViewBody: true,
@@ -915,6 +876,77 @@ extension Store where State: ObservableState {
       if newValue == nil,
         let childState = self.state[keyPath: state],
         id == _identifiableID(childState),
+        !self.core.isInvalid
+      {
+        self.send(action(.dismiss))
+        if self.state[keyPath: state] != nil {
+          reportIssue(
+            """
+            A binding at "\(fileID):\(line)" was set to "nil", but the store destination wasn't \
+            nil'd out.
+
+            This usually means an "ifLet" has not been integrated with the reducer powering the \
+            store, and this reducer is responsible for handling presentation actions.
+
+            To fix this, ensure that "ifLet" is invoked from the reducer's "body":
+
+                Reduce { state, action in
+                  // ...
+                }
+                .ifLet(\\.destination, action: \\.destination) {
+                  Destination()
+                }
+
+            And ensure that every parent reducer is integrated into the root reducer that powers \
+            the store.
+            """,
+            fileID: fileID.rawValue,
+            filePath: filePath.rawValue,
+            line: line,
+            column: column
+          )
+          return
+        }
+      }
+    }
+  }
+
+  @_spi(Internals)
+  public subscript<ChildState, ChildAction>(
+    state state: KeyPath<State, ChildState?>,
+    action action: CaseKeyPath<Action, PresentationAction<ChildAction>>,
+    isInViewBody isInViewBody: Bool,
+    fileID fileID: _HashableStaticString,
+    filePath filePath: _HashableStaticString,
+    line line: UInt,
+    column column: UInt
+  ) -> Store<ChildState, ChildAction>? {
+    get {
+      #if DEBUG && !os(visionOS)
+        _PerceptionLocals.$isInPerceptionTracking.withValue(isInViewBody) {
+          self.scope(
+            state: state,
+            action: action.appending(path: \.presented),
+            fileID: fileID.rawValue,
+            filePath: filePath.rawValue,
+            line: line,
+            column: column
+          )
+        }
+      #else
+        self.scope(
+          state: state,
+          action: action.appending(path: \.presented),
+          fileID: fileID.rawValue,
+          filePath: filePath.rawValue,
+          line: line,
+          column: column
+        )
+      #endif
+    }
+    set {
+      if newValue == nil,
+        self.state[keyPath: state] != nil,
         !self.core.isInvalid
       {
         self.send(action(.dismiss))

@@ -1564,7 +1564,7 @@ extension TestStore {
   ///     "CasePaths",
   ///     "ComposableArchitecture",
   ///     "IdentifiedCollections",
-  ///     "XCTestDynamicOverlay",
+    ///     "IssueReporting",
   ///   ]
   /// }
   /// ```
