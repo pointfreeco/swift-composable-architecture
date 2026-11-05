@@ -75,7 +75,7 @@ final class TestStoreTests: BaseTCATestCase {
   }
 
   func testSettingUseMainSerialExecutorToTrue() async {
-    let store = await TestStore(useMainSerialExecutor: true, initialState: 0) {
+    let store = await TestStore(initialState: 0, useMainSerialExecutor: true) {
       Reduce<Int, Void> { state, action in
         return .none
       }
@@ -91,7 +91,7 @@ final class TestStoreTests: BaseTCATestCase {
   }
 
   func testSettingUseMainSerialExecutorToFalse() async {
-    let store = await TestStore(useMainSerialExecutor: false, initialState: 0) {
+    let store = await TestStore(initialState: 0, useMainSerialExecutor: false) {
       Reduce<Int, Void> { state, action in
         return .none
       }
