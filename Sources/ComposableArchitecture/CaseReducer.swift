@@ -97,7 +97,7 @@ extension _OptionalStoreWithCaseScope {
       }
     }
     set {
-      if newValue == nil { self = nil }
+      if newValue == nil, self[_caseScope: keyPath] != nil { self = nil }
     }
   }
 }

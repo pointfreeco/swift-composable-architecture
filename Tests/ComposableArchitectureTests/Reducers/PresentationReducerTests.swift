@@ -1,6 +1,10 @@
 import ComposableArchitecture
 import XCTest
 
+#if canImport(SwiftUI)
+  import SwiftUI
+#endif
+
 @available(*, deprecated, message: "TODO: Update to use case pathable syntax")
 final class PresentationReducerTests: BaseTCATestCase {
   func testPresentationStateSubscriptCase() {
@@ -2629,6 +2633,74 @@ final class PresentationReducerTests: BaseTCATestCase {
   //      XCTAssertNil(store.alert)
   //    }
   #endif
+
+  #if canImport(SwiftUI)
+    @MainActor
+    func testEnumScopeBinding_nilInactiveCase_doesNotDismiss() {
+      guard #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) else { return }
+      let store = Store(
+        initialState: EnumScopeBindingFeature.State(
+          destination: .push(EnumScopeBindingFeature.Child.State())
+        )
+      ) {
+        EnumScopeBindingFeature()
+      }
+      let bindable = SwiftUI.Bindable(store)
+
+      bindable.scope(\.destination, action: \.destination).fullScreenCover.wrappedValue = nil
+
+      XCTAssertEqual(store.destination?.is(\.push), true)
+    }
+
+    @MainActor
+    func testEnumScopeBinding_nilActiveCase_dismisses() {
+      guard #available(iOS 17, macOS 14, tvOS 17, watchOS 10, *) else { return }
+      let store = Store(
+        initialState: EnumScopeBindingFeature.State(
+          destination: .fullScreenCover(EnumScopeBindingFeature.Child.State())
+        )
+      ) {
+        EnumScopeBindingFeature()
+      }
+      let bindable = SwiftUI.Bindable(store)
+
+      bindable.scope(\.destination, action: \.destination).fullScreenCover.wrappedValue = nil
+
+      XCTAssertNil(store.destination)
+    }
+  #endif
+
+  @MainActor
+  func testEnumScopeUIBinding_nilInactiveCase_doesNotDismiss() {
+    let store = Store(
+      initialState: EnumScopeBindingFeature.State(
+        destination: .push(EnumScopeBindingFeature.Child.State())
+      )
+    ) {
+      EnumScopeBindingFeature()
+    }
+    let bindable = UIBindable(store)
+
+    bindable.scope(\.destination, action: \.destination).fullScreenCover.wrappedValue = nil
+
+    XCTAssertEqual(store.destination?.is(\.push), true)
+  }
+
+  @MainActor
+  func testEnumScopeUIBinding_nilActiveCase_dismisses() {
+    let store = Store(
+      initialState: EnumScopeBindingFeature.State(
+        destination: .fullScreenCover(EnumScopeBindingFeature.Child.State())
+      )
+    ) {
+      EnumScopeBindingFeature()
+    }
+    let bindable = UIBindable(store)
+
+    bindable.scope(\.destination, action: \.destination).fullScreenCover.wrappedValue = nil
+
+    XCTAssertNil(store.destination)
+  }
 }
 
 @Reducer
@@ -2657,5 +2729,27 @@ private struct NestedDismissFeature {
     .ifLet(\.$child, action: \.child) {
       Self()
     }
+  }
+}
+
+@Reducer
+private struct EnumScopeBindingFeature {
+  @Reducer
+  struct Child {}
+  @Reducer
+  enum Destination {
+    case fullScreenCover(Child)
+    case push(Child)
+  }
+  @ObservableState
+  struct State {
+    @Presents var destination: Destination.State?
+  }
+  enum Action {
+    case destination(PresentationAction<Destination.Action>)
+  }
+  var body: some ReducerOf<Self> {
+    EmptyReducer()
+      .ifLet(\.$destination, action: \.destination)
   }
 }
