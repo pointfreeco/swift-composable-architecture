@@ -123,6 +123,9 @@ struct ContentView: View {
               NavigationLink("Presentation") {
                 ObservablePresentationView()
               }
+              NavigationLink("Enum scope presentation") {
+                ObservableEnumScopePresentationView()
+              }
             }
           }
           .navigationTitle("iOS 17")

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5A1C3E7C2F0A4D2100E1B6C1 /* ObservableEnumScopePresentationTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1C3E7B2F0A4D2100E1B6C1 /* ObservableEnumScopePresentationTestCase.swift */; };
+		5A1C3E7E2F0A4D2100E1B6C1 /* ObservableEnumScopePresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1C3E7D2F0A4D2100E1B6C1 /* ObservableEnumScopePresentationTests.swift */; };
 		CA3A7B9D29CB61E9002CD272 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA3A7B9C29CB61E9002CD272 /* TestHelpers.swift */; };
 		CA487B2C2A15185300F54A79 /* BaseIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA487B2B2A15185300F54A79 /* BaseIntegrationTests.swift */; };
 		CA4BA5E929E76A7F0004FF9D /* NavigationStackTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BA5E829E76A7F0004FF9D /* NavigationStackTestCase.swift */; };
@@ -121,6 +123,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5A1C3E7B2F0A4D2100E1B6C1 /* ObservableEnumScopePresentationTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableEnumScopePresentationTestCase.swift; sourceTree = "<group>"; };
+		5A1C3E7D2F0A4D2100E1B6C1 /* ObservableEnumScopePresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableEnumScopePresentationTests.swift; sourceTree = "<group>"; };
 		CA2DBB282ACB0520009FBCC9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CA3A7B9C29CB61E9002CD272 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
 		CA487B2B2A15185300F54A79 /* BaseIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseIntegrationTests.swift; sourceTree = "<group>"; };
@@ -389,6 +393,7 @@
 			children = (
 				DC6E2D8E2AD5C56F005ACC26 /* ObservableBasicsTestCase.swift */,
 				CAE961782B0EE0A8007A66F5 /* ObservableBindingLocalTest.swift */,
+				5A1C3E7B2F0A4D2100E1B6C1 /* ObservableEnumScopePresentationTestCase.swift */,
 				DC6E2D932AD5C56F005ACC26 /* ObservableEnumTestCase.swift */,
 				DC6E2D8D2AD5C56F005ACC26 /* ObservableIdentifiedListTestCase.swift */,
 				DC6E2D8F2AD5C56F005ACC26 /* ObservableNavigationTestCase.swift */,
@@ -419,6 +424,7 @@
 			children = (
 				DC6E2DA32AD5C677005ACC26 /* ObservableBasicsTests.swift */,
 				CAE9617A2B0EE169007A66F5 /* ObservableBindingLocalTests.swift */,
+				5A1C3E7D2F0A4D2100E1B6C1 /* ObservableEnumScopePresentationTests.swift */,
 				DC6E2D9E2AD5C677005ACC26 /* ObservableEnumTests.swift */,
 				DC6E2D9F2AD5C677005ACC26 /* ObservableIdentifiedListTests.swift */,
 				DC6E2DA02AD5C677005ACC26 /* ObservableNavigationTests.swift */,
@@ -622,6 +628,7 @@
 				CA8B2EAE2AC5A068008272E0 /* PresentationTestCase.swift in Sources */,
 				CA8B2EA12AC57752008272E0 /* EnumTestCase.swift in Sources */,
 				DC6E2D982AD5C56F005ACC26 /* ObservablePresentationTestCase.swift in Sources */,
+				5A1C3E7C2F0A4D2100E1B6C1 /* ObservableEnumScopePresentationTestCase.swift in Sources */,
 				CAA6BEB12ADADE7700FF83BC /* NewOldSiblingsTestCase.swift in Sources */,
 				CAA6BEB52ADAE08A00FF83BC /* NewPresentsOldTestCase.swift in Sources */,
 				CAE961792B0EE0A8007A66F5 /* ObservableBindingLocalTest.swift in Sources */,
@@ -655,6 +662,7 @@
 				DCFFB8E92A15792C006AF839 /* BindingLocalTests.swift in Sources */,
 				DC6E2DA52AD5C677005ACC26 /* ObservableEnumTests.swift in Sources */,
 				DC6E2DAB2AD5C677005ACC26 /* ObservablePresentationTests.swift in Sources */,
+				5A1C3E7E2F0A4D2100E1B6C1 /* ObservableEnumScopePresentationTests.swift in Sources */,
 				CA8B2E9A2AC576CA008272E0 /* BasicsTests.swift in Sources */,
 				DC140CC729E0E8F3006DF553 /* SwitchStoreTests.swift in Sources */,
 				CA8B2E9C2AC576CA008272E0 /* OptionalTests.swift in Sources */,
