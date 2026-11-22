@@ -136,7 +136,7 @@
       testing context, which can be very problematic for things like API clients, analytics,
       and more.
       
-      To fix this we will override the `uuid` dependency when when construct the `TestStore` in the
+      To fix this we will override the `uuid` dependency when we construct the `TestStore` in the
       test.
       
       @Step {
